@@ -15,6 +15,18 @@ Add the following dependency in your `pom.xml`
 </dependency>
 ```
 
+Add the following repository in order to use snapshots.
+
+```xml
+<repository>
+    <id>sonatype-snapshots</id>
+    <name>Sonatype Snapshots</name>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>
+</repository>
+```
 ### Example
 
 
