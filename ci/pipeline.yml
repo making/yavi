@@ -1,0 +1,532 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: v1.1.3
+- name: maven
+  type: docker-image
+  source:
+    repository: pivotalpa/maven-resource
+    tag: 1.3.5
+
+resources:
+  - name: repo-master
+    type: git
+    source:
+      uri: git@github.com:making/yavi.git
+      branch: master
+      private_key: ((github-private-key))
+  - name: repo-develop
+    type: git
+    source:
+      uri: git@github.com:making/yavi.git
+      branch: develop
+      private_key: ((github-private-key))
+  - name: repo-version
+    type: semver
+    source:
+      uri: git@github.com:making/yavi.git
+      branch: version
+      private_key: ((github-private-key))
+      file: version
+      driver: git
+  - name: gpg
+    type: git
+    source:
+      uri: https://github.com/maki-home/encrypted-gpg
+      branch: master
+  - name: nexus
+    type: maven
+    source:
+      url: ((nexus-release-url))
+      snapshot_url: ((nexus-snapshot-url))
+      artifact: am.ik.yavi:yavi:jar
+      username: ((nexus-username))
+      password: ((nexus-password))
+      skip_cert_check: true
+  - name: sonatype-snapshots
+    type: maven
+    source:
+      url: https://oss.sonatype.org/service/local/staging/deploy/maven2
+      snapshot_url: https://oss.sonatype.org/content/repositories/snapshots/
+      artifact: am.ik.yavi:yavi:jar
+      username: ((sonatype-username))
+      password: ((sonatype-password))
+  - name: slack-alert
+    type: slack-notification
+    source:
+      url: ((slack-webhook-url))
+jobs:
+### Dev
+- name: unit-test-develop
+  plan:
+    - aggregate:
+      - get: repo
+        resource: repo-develop
+        trigger: true
+    - task: mvn-test
+      params:
+        <<: *JAVA_OPS
+      config: &MVN_TEST_CONFIG
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: maven
+        inputs:
+        - name: repo
+        caches:
+        - path: repo/m2
+        run:
+          path: bash
+          args:
+          - -c
+          - |
+            set -e
+            cd repo
+            rm -rf ~/.m2
+            ln -fs $(pwd)/m2 ~/.m2
+            mvn test
+      on_failure:
+        put: slack-alert
+        params:
+          <<: *SLACK_FAILURE
+- name: upload-to-nexus-snapshots
+  public: true
+  plan:
+  - get: repo
+    resource: repo-develop
+    passed:
+    - unit-test-develop
+    trigger: true
+  - task: mvn-package
+    config: &NEXUS_PACKAGE_CONFIG
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: repo
+      outputs:
+      - name: build
+      caches:
+      - path: repo/m2
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          cd repo
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          mvn package -DskipTests=true
+          cp target/*.jar ../build/
+  - aggregate:
+    - put: nexus
+      params:
+        file: build/*.jar
+        pom_file: repo/pom.xml
+      on_failure:
+        put: slack-alert
+        params:
+          <<: *SLACK_FAILURE
+    - put: sonatype-snapshots
+      params:
+        file: build/*.jar
+        pom_file: repo/pom.xml
+      on_failure:
+        put: slack-alert
+        params:
+          <<: *SLACK_FAILURE
+
+### Prod
+- name: merge-develop-to-master
+  plan:
+  - aggregate:
+    - get: repo-src
+      resource: repo-develop
+      passed:
+      - upload-to-nexus-snapshots
+    - get: repo-dest
+      resource: repo-master
+  - task: merge-develop-to-master
+    params:
+      <<: *GIT_PARAMS
+      SRC_BRANCH: develop
+    config: &MERGE_SRC_TO_DEST
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: repo-src
+      - name: repo-dest
+      outputs:
+      - name: merged
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          shopt -s dotglob
+          mv -f repo-dest/* merged/
+          cd merged
+          git config --global user.email "${GIT_EMAIL}"
+          git config --global user.name "${GIT_NAME}"
+          git remote add -f src ../repo-src
+          git merge --no-edit src/${SRC_BRANCH}
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - put: repo-master
+    params:
+      repository: merged
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+- name: unit-test-master
+  plan:
+  - get: repo
+    resource: repo-master
+    trigger: true
+    passed:
+    - merge-develop-to-master
+  - task: mvn-test
+    params:
+      <<: *JAVA_OPS
+    config:
+      <<: *MVN_TEST_CONFIG
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+- name: tag-master
+  plan:
+  - aggregate:
+    - get: repo
+      resource: repo-master
+      trigger: true
+      passed:
+      - unit-test-master
+    - get: repo-version
+  - task: mvn-versions-set
+    params:
+      <<: *GIT_PARAMS
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: repo
+      - name: repo-version
+      outputs:
+      - name: output
+      caches:
+      - path: repo/m2
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          VERSION=`cat repo-version/number`
+          cd repo
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          mvn versions:set -DnewVersion=${VERSION}
+          rm -f pom.xml.versionsBackup
+          shopt -s dotglob
+          shopt -s extglob
+          mv -f !(m2) ../output/
+          cd ../output
+          git config --global user.email "${GIT_EMAIL}"
+          git config --global user.name "${GIT_NAME}"
+          git add -A
+          git commit -m "Release ${VERSION}"
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - put: repo-master
+    params:
+      repository: output
+      tag: repo-version/number
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+- name: upload-to-nexus-releases
+  plan:
+  - get: repo
+    resource: repo-master
+    passed:
+    - tag-master
+    trigger: true
+  - task: mvn-package
+    config:
+      <<: *NEXUS_PACKAGE_CONFIG
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - put: nexus
+    params:
+      file: build/*.jar
+      pom_file: repo/pom.xml
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+- name: upload-to-sonatype-releases
+  plan:
+  - aggregate:
+    - get: repo
+      resource: repo-master
+      passed:
+      - tag-master
+      trigger: true
+    - get: gpg
+  - task: mvn-deploy
+    params:
+      SONATYPE_USERNAME: ((sonatype-username))
+      SONATYPE_PASSWORD: ((sonatype-password))
+      GPG_KEYNAME: ((gpg-keyname))
+      GPG_PASSPHRASE: ((gpg-passphrase))
+      ENCRYPTION_PASSWORD: ((gpg-encryption-password))
+      GPG_DIR: .
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+          tag: 3.3.9-jdk-8 # openssl 1.0.1 needed
+      inputs:
+      - name: repo
+      - name: gpg
+      outputs:
+      - name: signed
+      caches:
+      - path: repo/m2
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          mkdir -p ~/.gnupg
+          openssl version
+          gpg/deceypt-pgp.sh repo
+          cd repo
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          cat > settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                 <id>repo</id>
+                 <username>${SONATYPE_USERNAME}</username>
+                 <password>${SONATYPE_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+          mvn javadoc:jar \
+              source:jar \
+              package \
+              org.apache.maven.plugins:maven-gpg-plugin:1.6:sign \
+              org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8:deploy \
+              -s settings.xml \
+              -Dgpg.executable=gpg \
+              -Dgpg.keyname=${GPG_KEYNAME} \
+              -Dgpg.passphrase=${GPG_PASSPHRASE} \
+              -Dgpg.defaultKeyring=false \
+              -Dgpg.publicKeyring=./pubring.gpg \
+              -Dgpg.secretKeyring=./secring.gpg \
+              -DserverId=repo \
+              -DnexusUrl=https://oss.sonatype.org \
+              -DautoReleaseAfterClose=true \
+              -DaltDeploymentRepository=repo::default::https://oss.sonatype.org/service/local/staging/deploy/maven2 \
+              -DskipTests=true
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+- name: bump-to-next-patch-version
+  plan:
+  - aggregate:
+    - get: repo-src
+      resource: repo-master
+      passed:
+      - upload-to-nexus-releases
+      - upload-to-sonatype-releases
+      trigger: true
+    - get: repo-dest
+      resource: repo-develop
+    - get: repo-version
+      params:
+        bump: patch
+  - task: merge-master-to-develop
+    params:
+      <<: *GIT_PARAMS
+      SRC_BRANCH: master
+    config:
+      <<: *MERGE_SRC_TO_DEST
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - task: just-move
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: merged
+      outputs:
+      - name: repo
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          shopt -s dotglob
+          cp -r merged/* repo/
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - task: mvn-versions-set
+    params:
+      <<: *GIT_PARAMS
+    config: &MVN_VERSIONS_SET_CONFIG
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: repo
+      - name: repo-version
+      outputs:
+      - name: output
+      caches:
+      - path: repo/m2
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          VERSION=`cat repo-version/number`-SNAPSHOT
+          cd repo
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          mvn versions:set -DnewVersion=${VERSION} -DallowSnapshots
+          rm -f pom.xml.versionsBackup
+          shopt -s dotglob
+          shopt -s extglob
+          mv -f !(m2) ../output/
+          cd ../output
+          git config --global user.email "${GIT_EMAIL}"
+          git config --global user.name "${GIT_NAME}"
+          git add -A
+          git commit -m "Bump to ${VERSION}"
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - put: repo-develop
+    params:
+      repository: output
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+  - put: repo-version
+    params:
+      file: repo-version/number
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+    on_success:
+      put: slack-alert
+      params:
+        <<: *SLACK_SUCCESS
+- name: bump-to-next-minor-version
+  plan:
+  - aggregate:
+    - get: repo
+      resource: repo-develop
+    - get: repo-version
+      params:
+        bump: minor
+  - task: mvn-versions-set
+    params:
+      <<: *GIT_PARAMS
+    config:
+      <<: *MVN_VERSIONS_SET_CONFIG
+  - put: repo-develop
+    params:
+      repository: output
+  - put: repo-version
+    params:
+      file: repo-version/number
+- name: bump-to-next-major-version
+  plan:
+  - aggregate:
+    - get: repo
+      resource: repo-develop
+    - get: repo-version
+      params:
+        bump: major
+  - task: mvn-versions-set
+    params:
+      <<: *GIT_PARAMS
+    config:
+      <<: *MVN_VERSIONS_SET_CONFIG
+  - put: repo-develop
+    params:
+      repository: output
+  - put: repo-version
+    params:
+      file: repo-version/number
+    on_failure:
+      put: slack-alert
+      params:
+        <<: *SLACK_FAILURE
+    on_success:
+      put: slack-alert
+      params:
+        <<: *SLACK_SUCCESS
+
+
+params:
+  git: &GIT_PARAMS
+    GIT_EMAIL: ((git-email))
+    GIT_NAME: ((git-name))
+    SRC_BRANCH: develop
+  java_opts: &JAVA_OPS
+    _JAVA_OPTIONS: -Duser.timezone=Asia/Tokyo -Duser.language=ja -Duser.country=JP -Djava.security.egd=file:/dev/./urandom
+  slack_on_success_params: &SLACK_SUCCESS
+    channel: '#concourse'
+    text: |
+      <!here> :white_check_mark: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* succeeded with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
+  slack_on_failure_params: &SLACK_FAILURE
+    channel: '#concourse'
+    text: |
+      <!here> :rotating_light: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* failed with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
