@@ -14,7 +14,7 @@ public class NestedValidatorTest {
 		return new Validator<Address>()
 				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 				.constraint(Address::country, "country", Country.validator())
-				.constraintNullable(Address::phoneNumber, "phoneNumber",
+				.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
 						PhoneNumber.validator());
 	}
 

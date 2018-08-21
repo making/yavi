@@ -97,8 +97,8 @@ public class Validator<T> {
 		return this.constraint(nested, name, validator, Nullable.NULL_IS_INVALID);
 	}
 
-	public <N> Validator<T> constraintNullable(Function<T, N> nested, String name,
-			Validator<N> validator) {
+	public <N> Validator<T> constraintIfNotNull(Function<T, N> nested, String name,
+												Validator<N> validator) {
 		return this.constraint(nested, name, validator, Nullable.NULL_IS_VALID);
 	}
 
