@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 public class Validator<T> {
     private final MessageFormatter messageFormatter;
     private final List<ConstraintHolders<T, ?>> holdersList = new ArrayList<>();
+    private static final String SEPARATOR = ".";
 
     public Validator() {
         this(new SimpleMessageFormatter());
@@ -91,6 +92,33 @@ public class Validator<T> {
         return this.constraint(f, name, c, ObjectConstraint::new);
     }
 
+    public <N> Validator<T> constraint(Function<T, N> nested, String name, Validator<N> validator) {
+        return this.constraint(nested, name, validator, Nullable.NULL_IS_INVALID);
+    }
+
+    public <N> Validator<T> constraintNullable(Function<T, N> nested, String name, Validator<N> validator) {
+        return this.constraint(nested, name, validator, Nullable.NULL_IS_VALID);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <N> Validator<T> constraint(Function<T, N> nested, String name, Validator<N> validator, Nullable nullable) {
+        if (!nullable.skipNull()) {
+            this.constraintForObject(nested::apply, name, Constraint::notNull);
+        }
+        validator.holdersList.forEach(holders -> {
+            String nestedName = name + SEPARATOR + holders.name();
+            ConstraintHolders constraintHolders = new NestedConstraintHolders((Function<T, Object>) ((T target) -> {
+                N nestedValue = nested.apply(target);
+                if (nestedValue == null) {
+                    return null;
+                }
+                return holders.toValue().apply(nestedValue);
+            }), nestedName, holders.holders(), nested);
+            this.holdersList.add(constraintHolders);
+        });
+        return this;
+    }
+
     protected final <V, C extends Constraint<T, V, C>> Validator<T> constraint(
             Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
         C constraint = supplier.get();
@@ -100,11 +128,18 @@ public class Validator<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public ConstraintViolations validate(T value) {
+    public ConstraintViolations validate(T target) {
         ConstraintViolations violations = new ConstraintViolations();
         for (ConstraintHolders<T, ?> holders : this.holdersList) {
+            if (holders instanceof NestedConstraintHolders) {
+                NestedConstraintHolders<T, ?, ?> nested = (NestedConstraintHolders<T, ?, ?>) holders;
+                Object nestedValue = nested.nestedValue(target);
+                if (nestedValue == null) {
+                    continue;
+                }
+            }
             for (ConstraintHolder<?> holder : holders.holders()) {
-                Object v = holders.toValue().apply(value);
+                Object v = holders.toValue().apply(target);
                 Predicate<Object> predicate = (Predicate<Object>) holder.predicate();
                 if (v == null && holder.nullable().skipNull()) {
                     continue;
@@ -128,6 +163,7 @@ public class Validator<T> {
         pad[pad.length - 1] = value;
         return pad;
     }
+
 
     public interface ToCharSequence<T> extends Function<T, CharSequence> {
     }
