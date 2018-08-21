@@ -38,7 +38,7 @@ public class NestedValidatorTest {
         assertThat(violations.get(2).message())
                 .isEqualTo("\"phoneNumber.value\" must not be blank");
         assertThat(violations.get(3).message())
-                .isEqualTo("\"phoneNumber.value\" must be greater than 8");
+                .isEqualTo("The size of \"phoneNumber.value\" must be greater than 8");
     }
 
     @Test

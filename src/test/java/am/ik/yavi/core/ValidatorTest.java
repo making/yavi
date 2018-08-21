@@ -37,7 +37,7 @@ public class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message())
-				.isEqualTo("\"name\" must be greater than 1");
+				.isEqualTo("The size of \"name\" must be greater than 1");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
 		assertThat(violations.get(2).message())
@@ -52,7 +52,7 @@ public class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
 		assertThat(violations.get(0).message())
-				.isEqualTo("\"email\" must be greater than 1");
+				.isEqualTo("The size of \"email\" must be greater than 1");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
 	}
