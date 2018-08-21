@@ -30,7 +30,7 @@ public class CharSequenceConstraint<T>
 		this.holders()
 				.add(new ConstraintHolder<>(
 						x -> x != null && x.toString().trim().length() != 0,
-						"charSequence.notBlank", "\"{0}\" must not be empty",
+						"charSequence.notBlank", "\"{0}\" must not be blank",
 						() -> new Object[] {}, NULL_IS_INVALID));
 		return this;
 	}
