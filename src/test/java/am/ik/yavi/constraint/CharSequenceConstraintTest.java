@@ -90,4 +90,13 @@ public class CharSequenceConstraintTest {
 		assertThat(predicate.test("1234")).isTrue();
 		assertThat(predicate.test("134a")).isFalse();
 	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<CharSequence> predicate = constraint.fixedSize(2).holders().get(0)
+				.predicate();
+		assertThat(predicate.test("a")).isFalse();
+		assertThat(predicate.test("ab")).isTrue();
+		assertThat(predicate.test("abc")).isFalse();
+	}
 }

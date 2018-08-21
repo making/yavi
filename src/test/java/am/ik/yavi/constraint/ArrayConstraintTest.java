@@ -58,4 +58,13 @@ public class ArrayConstraintTest {
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
 		assertThat(predicate.test(new String[] { "bar", "baz" })).isFalse();
 	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<String[]> predicate = constraint.fixedSize(2).holders().get(0)
+				.predicate();
+		assertThat(predicate.test(new String[] { "foo" })).isFalse();
+		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
+		assertThat(predicate.test(new String[] { "foo", "bar", "baz" })).isFalse();
+	}
 }

@@ -107,4 +107,24 @@ public class MapConstraintTest {
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
 	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<Map<String, String>> predicate = constraint.fixedSize(2).holders()
+				.get(0).predicate();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
+		assertThat(predicate.test(new HashMap<String, String>() {
+			{
+				put("a", "b");
+				put("b", "c");
+			}
+		})).isTrue();
+		assertThat(predicate.test(new HashMap<String, String>() {
+			{
+				put("a", "b");
+				put("b", "c");
+				put("c", "d");
+			}
+		})).isFalse();
+	}
 }

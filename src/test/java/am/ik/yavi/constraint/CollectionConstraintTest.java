@@ -62,4 +62,13 @@ public class CollectionConstraintTest {
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("bar", "baz"))).isFalse();
 	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<Collection<String>> predicate = constraint.fixedSize(2).holders().get(0)
+				.predicate();
+		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
+		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
+		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isFalse();
+	}
 }
