@@ -3,6 +3,16 @@ YAVI (pronounced jɑ-vάɪ)
 is a lambda based type safe validation for Java. 
  
 
+### Why YAVI?
+
+YAVI sounds as same as Japanese slung "YABAI" that means awesome or awful depending on the context.
+
+The concepts are
+
+* No more reflection!
+* No more Java Beans!
+* Zero dependency!
+
 ### Usage
 
 Add the following dependency in your `pom.xml`
@@ -47,3 +57,11 @@ ConstraintViolations violations = validator.validate(user);
 violations.isValid();
 violations.forEach(x -> System.out.println(x.message()));
 ```
+
+### Required
+
+* Java 8+
+
+### License
+
+Licensed under the Apache License, Version 2.0.
