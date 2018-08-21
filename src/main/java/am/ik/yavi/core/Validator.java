@@ -51,6 +51,16 @@ public class Validator<T> {
         return this.constraint(f, name, c, LongConstraint::new);
     }
 
+    public final Validator<T> constraint(ToFloat<T> f, String name,
+                                         Function<FloatConstraint<T>, FloatConstraint<T>> c) {
+        return this.constraint(f, name, c, FloatConstraint::new);
+    }
+
+    public final Validator<T> constraint(ToDouble<T> f, String name,
+                                         Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
+        return this.constraint(f, name, c, DoubleConstraint::new);
+    }
+
     public final Validator<T> constraint(ToBigInteger<T> f, String name,
                                          Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
         return this.constraint(f, name, c, BigIntegerConstraint::new);
@@ -132,6 +142,12 @@ public class Validator<T> {
     }
 
     public interface ToLong<T> extends Function<T, Long> {
+    }
+
+    public interface ToFloat<T> extends Function<T, Float> {
+    }
+
+    public interface ToDouble<T> extends Function<T, Double> {
     }
 
     public interface ToBigInteger<T> extends Function<T, BigInteger> {
