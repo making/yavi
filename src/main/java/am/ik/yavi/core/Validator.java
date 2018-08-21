@@ -1,5 +1,9 @@
 package am.ik.yavi.core;
 
+import am.ik.yavi.constraint.*;
+import am.ik.yavi.message.MessageFormatter;
+import am.ik.yavi.message.SimpleMessageFormatter;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -10,126 +14,130 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.yavi.constraint.*;
-import am.ik.yavi.message.MessageFormatter;
-import am.ik.yavi.message.SimpleMessageFormatter;
-
 public class Validator<T> {
-	private final MessageFormatter messageFormatter;
-	private final List<ConstraintHolders<T, ?>> holdersList = new ArrayList<>();
+    private final MessageFormatter messageFormatter;
+    private final List<ConstraintHolders<T, ?>> holdersList = new ArrayList<>();
 
-	public Validator() {
-		this(new SimpleMessageFormatter());
-	}
+    public Validator() {
+        this(new SimpleMessageFormatter());
+    }
 
-	public Validator(MessageFormatter messageFormatter) {
-		this.messageFormatter = messageFormatter;
-	}
+    public Validator(MessageFormatter messageFormatter) {
+        this.messageFormatter = messageFormatter;
+    }
 
-	public final Validator<T> constraint(ToCharSequence<T> f, String name,
-			Function<CharSequenceConstraint<T>, CharSequenceConstraint<T>> c) {
-		return this.constraint(f, name, c, CharSequenceConstraint::new);
-	}
+    public final Validator<T> constraint(ToCharSequence<T> f, String name,
+                                         Function<CharSequenceConstraint<T>, CharSequenceConstraint<T>> c) {
+        return this.constraint(f, name, c, CharSequenceConstraint::new);
+    }
 
-	public final Validator<T> constraint(ToShort<T> f, String name,
-			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
-		return this.constraint(f, name, c, ShortConstraint::new);
-	}
+    public final Validator<T> constraint(ToByte<T> f, String name,
+                                         Function<ByteConstraint<T>, ByteConstraint<T>> c) {
+        return this.constraint(f, name, c, ByteConstraint::new);
+    }
 
-	public final Validator<T> constraint(ToInteger<T> f, String name,
-			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
-		return this.constraint(f, name, c, IntegerConstraint::new);
-	}
+    public final Validator<T> constraint(ToShort<T> f, String name,
+                                         Function<ShortConstraint<T>, ShortConstraint<T>> c) {
+        return this.constraint(f, name, c, ShortConstraint::new);
+    }
 
-	public final Validator<T> constraint(ToLong<T> f, String name,
-			Function<LongConstraint<T>, LongConstraint<T>> c) {
-		return this.constraint(f, name, c, LongConstraint::new);
-	}
+    public final Validator<T> constraint(ToInteger<T> f, String name,
+                                         Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
+        return this.constraint(f, name, c, IntegerConstraint::new);
+    }
 
-	public final Validator<T> constraint(ToBigInteger<T> f, String name,
-			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
-		return this.constraint(f, name, c, BigIntegerConstraint::new);
-	}
+    public final Validator<T> constraint(ToLong<T> f, String name,
+                                         Function<LongConstraint<T>, LongConstraint<T>> c) {
+        return this.constraint(f, name, c, LongConstraint::new);
+    }
 
-	public final Validator<T> constraint(ToBigDecimal<T> f, String name,
-			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
-		return this.constraint(f, name, c, BigDecimalConstraint::new);
-	}
+    public final Validator<T> constraint(ToBigInteger<T> f, String name,
+                                         Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
+        return this.constraint(f, name, c, BigIntegerConstraint::new);
+    }
 
-	public final <E> Validator<T> constraint(ToCollection<T, E> f, String name,
-			Function<CollectionConstraint<T, E>, CollectionConstraint<T, E>> c) {
-		return this.constraint(f, name, c, CollectionConstraint::new);
-	}
+    public final Validator<T> constraint(ToBigDecimal<T> f, String name,
+                                         Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
+        return this.constraint(f, name, c, BigDecimalConstraint::new);
+    }
 
-	public final <K, V> Validator<T> constraint(ToMap<T, K, V> f, String name,
-			Function<MapConstraint<T, K, V>, MapConstraint<T, K, V>> c) {
-		return this.constraint(f, name, c, MapConstraint::new);
-	}
+    public final <E> Validator<T> constraint(ToCollection<T, E> f, String name,
+                                             Function<CollectionConstraint<T, E>, CollectionConstraint<T, E>> c) {
+        return this.constraint(f, name, c, CollectionConstraint::new);
+    }
 
-	public final Validator<T> constraintForObject(Function<T, Object> f, String name,
-			Function<ObjectConstraint<T>, ObjectConstraint<T>> c) {
-		return this.constraint(f, name, c, ObjectConstraint::new);
-	}
+    public final <K, V> Validator<T> constraint(ToMap<T, K, V> f, String name,
+                                                Function<MapConstraint<T, K, V>, MapConstraint<T, K, V>> c) {
+        return this.constraint(f, name, c, MapConstraint::new);
+    }
 
-	protected final <V, C extends Constraint<T, V, C>> Validator<T> constraint(
-			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
-		C constraint = supplier.get();
-		List<ConstraintHolder<V>> holders = c.apply(constraint).holders();
-		this.holdersList.add(new ConstraintHolders<>(f, name, holders));
-		return this;
-	}
+    public final Validator<T> constraintForObject(Function<T, Object> f, String name,
+                                                  Function<ObjectConstraint<T>, ObjectConstraint<T>> c) {
+        return this.constraint(f, name, c, ObjectConstraint::new);
+    }
 
-	@SuppressWarnings("unchecked")
-	public ConstraintViolations validate(T value) {
-		ConstraintViolations violations = new ConstraintViolations();
-		for (ConstraintHolders<T, ?> holders : this.holdersList) {
-			for (ConstraintHolder<?> holder : holders.holders()) {
-				Object v = holders.toValue().apply(value);
-				Predicate<Object> predicate = (Predicate<Object>) holder.predicate();
-				if (v == null && holder.nullable().skipNull()) {
-					continue;
-				}
-				if (!predicate.test(v)) {
-					String name = holders.name();
-					Object[] args = holder.args().get();
-					violations.add(new ConstraintViolation(name, holder.messageKey(),
-							holder.defaultMessageFormat(), pad(name, args, v), v,
-							this.messageFormatter));
-				}
-			}
-		}
-		return violations;
-	}
+    protected final <V, C extends Constraint<T, V, C>> Validator<T> constraint(
+            Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
+        C constraint = supplier.get();
+        List<ConstraintHolder<V>> holders = c.apply(constraint).holders();
+        this.holdersList.add(new ConstraintHolders<>(f, name, holders));
+        return this;
+    }
 
-	private Object[] pad(String name, Object[] args, Object value) {
-		Object[] pad = new Object[args.length + 2];
-		pad[0] = name;
-		System.arraycopy(args, 0, pad, 1, args.length);
-		pad[pad.length - 1] = value;
-		return pad;
-	}
+    @SuppressWarnings("unchecked")
+    public ConstraintViolations validate(T value) {
+        ConstraintViolations violations = new ConstraintViolations();
+        for (ConstraintHolders<T, ?> holders : this.holdersList) {
+            for (ConstraintHolder<?> holder : holders.holders()) {
+                Object v = holders.toValue().apply(value);
+                Predicate<Object> predicate = (Predicate<Object>) holder.predicate();
+                if (v == null && holder.nullable().skipNull()) {
+                    continue;
+                }
+                if (!predicate.test(v)) {
+                    String name = holders.name();
+                    Object[] args = holder.args().get();
+                    violations.add(new ConstraintViolation(name, holder.messageKey(),
+                            holder.defaultMessageFormat(), pad(name, args, v), v,
+                            this.messageFormatter));
+                }
+            }
+        }
+        return violations;
+    }
 
-	public interface ToCharSequence<T> extends Function<T, CharSequence> {
-	}
+    private Object[] pad(String name, Object[] args, Object value) {
+        Object[] pad = new Object[args.length + 2];
+        pad[0] = name;
+        System.arraycopy(args, 0, pad, 1, args.length);
+        pad[pad.length - 1] = value;
+        return pad;
+    }
 
-	public interface ToShort<T> extends Function<T, Short> {
-	}
+    public interface ToCharSequence<T> extends Function<T, CharSequence> {
+    }
 
-	public interface ToInteger<T> extends Function<T, Integer> {
-	}
+    public interface ToByte<T> extends Function<T, Byte> {
+    }
 
-	public interface ToLong<T> extends Function<T, Long> {
-	}
+    public interface ToShort<T> extends Function<T, Short> {
+    }
 
-	public interface ToBigInteger<T> extends Function<T, BigInteger> {
-	}
+    public interface ToInteger<T> extends Function<T, Integer> {
+    }
 
-	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
-	}
+    public interface ToLong<T> extends Function<T, Long> {
+    }
 
-	public interface ToCollection<T, E> extends Function<T, Collection<E>> {
-	}
+    public interface ToBigInteger<T> extends Function<T, BigInteger> {
+    }
 
-	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
-	}
+    public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
+    }
+
+    public interface ToCollection<T, E> extends Function<T, Collection<E>> {
+    }
+
+    public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
+    }
 }
