@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint;
+package am.ik.yavi.core;
 
 import org.junit.Test;
 
@@ -9,7 +9,7 @@ import am.ik.yavi.Range;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 
-public class PredicateTest {
+public class CustomValidatorTest {
 
 	@Test
 	public void predicate() {
