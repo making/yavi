@@ -83,12 +83,12 @@ Validator<Address> validator = new Validator<Address>() //
 ### Custom
 
 ```java
-public enum IsbnConstraint implements CustomConstraint<CharSequence> {
+public enum IsbnConstraint implements CustomConstraint<String> {
     SINGLETON;
 
     @Override
-    public Predicate<CharSequence> predicate() {
-        return v -> isISBN13(v.toString());
+    public Predicate<String> predicate() {
+        return ISBNValidator::isISBN13;
     }
 
     @Override

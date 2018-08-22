@@ -11,22 +11,22 @@ import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintHolder;
 
-public class CharSequenceConstraint<T>
-		extends ContainerConstraintBase<T, CharSequence, CharSequenceConstraint<T>> {
+public class CharSequenceConstraint<T, E extends CharSequence>
+		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(
 			"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
 	@Override
-	public CharSequenceConstraint<T> cast() {
+	public CharSequenceConstraint<T, E> cast() {
 		return this;
 	}
 
 	@Override
-	protected ToIntFunction<CharSequence> size() {
+	protected ToIntFunction<E> size() {
 		return CharSequence::length;
 	}
 
-	public CharSequenceConstraint<T> notBlank() {
+	public CharSequenceConstraint<T, E> notBlank() {
 		this.holders()
 				.add(new ConstraintHolder<>(
 						x -> x != null && x.toString().trim().length() != 0,
@@ -35,7 +35,7 @@ public class CharSequenceConstraint<T>
 		return this;
 	}
 
-	public CharSequenceConstraint<T> contains(CharSequence s) {
+	public CharSequenceConstraint<T, E> contains(CharSequence s) {
 		this.holders()
 				.add(new ConstraintHolder<>(x -> x.toString().contains(s),
 						"charSequence.contains", "\"{0}\" must contain {1}",
@@ -43,7 +43,7 @@ public class CharSequenceConstraint<T>
 		return this;
 	}
 
-	public CharSequenceConstraint<T> email() {
+	public CharSequenceConstraint<T, E> email() {
 		this.holders()
 				.add(new ConstraintHolder<>(
 						x -> VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches(),
@@ -52,7 +52,7 @@ public class CharSequenceConstraint<T>
 		return this;
 	}
 
-	public CharSequenceConstraint<T> url() {
+	public CharSequenceConstraint<T, E> url() {
 		this.holders().add(new ConstraintHolder<>(x -> {
 			try {
 				new URL(x.toString());
@@ -66,7 +66,7 @@ public class CharSequenceConstraint<T>
 		return this;
 	}
 
-	public CharSequenceConstraint<T> pattern(String regex) {
+	public CharSequenceConstraint<T, E> pattern(String regex) {
 		this.holders()
 				.add(new ConstraintHolder<>(x -> Pattern.matches(regex, x),
 						"charSequence.pattern", "\"{0}\" must match {1}",

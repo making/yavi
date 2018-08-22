@@ -27,8 +27,9 @@ public class Validator<T> {
 		this.messageFormatter = messageFormatter;
 	}
 
-	public final Validator<T> constraint(ToCharSequence<T> f, String name,
-			Function<CharSequenceConstraint<T>, CharSequenceConstraint<T>> c) {
+	public final <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
+			String name,
+			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
@@ -168,7 +169,7 @@ public class Validator<T> {
 		return pad;
 	}
 
-	public interface ToCharSequence<T> extends Function<T, CharSequence> {
+	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
 	}
 
 	public interface ToByte<T> extends Function<T, Byte> {
