@@ -96,6 +96,15 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
+	public void fixedSize() {
+		Predicate<String> predicate = constraint.fixedSize(2).predicates().get(0)
+				.predicate();
+		assertThat(predicate.test("a")).isFalse();
+		assertThat(predicate.test("ab")).isTrue();
+		assertThat(predicate.test("abc")).isFalse();
+	}
+
+	@Test
 	public void combiningCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>(
 				Normalizer.Form.NFC).fixedSize(2).predicates().get(0).predicate();
