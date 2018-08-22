@@ -89,7 +89,7 @@ Validator<Book> book = new Validator<Book>() //
                     .lessThanOrEquals(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
 				    .predicate(v -> isISBN13(v.toString()), //
-								"custom.isbn13", "\"{0}\" must be ISBN13 format")); //
+				               "custom.isbn13", "\"{0}\" must be ISBN13 format")); //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
