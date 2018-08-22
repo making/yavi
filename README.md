@@ -22,11 +22,11 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 
-Add the following repository in order to use snapshots.
+If you want to try a snapshot version, add the following repository:
 
 ```xml
 <repository>
