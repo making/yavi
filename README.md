@@ -5,11 +5,12 @@ is a lambda based type safe validation for Java.
 
 ### Why YAVI?
 
-YAVI sounds as same as Japanese slung "YABAI" that means awesome or awful depending on the context.
+YAVI sounds as same as a Japanese slang "YABAI" that means awesome or awful depending on the context.
 
 The concepts are
 
 * No more reflection!
+* No more annotation!
 * No more Java Beans!
 * Zero dependency!
 
