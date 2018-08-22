@@ -18,8 +18,8 @@ import am.ik.yavi.message.SimpleMessageFormatter;
 public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
 	private final String messageKeySeparator;
-	private MessageFormatter messageFormatter;
 	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
+	private MessageFormatter messageFormatter;
 
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
