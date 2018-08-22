@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<additionalHeaders>
+    <javadoc_style>
+        <firstLine>/*</firstLine>
+        <beforeEachLine> * </beforeEachLine>
+        <endLine> */</endLine>
+        <allowBlankLines>true</allowBlankLines>
+        <isMultiline>false</isMultiline>
+        <firstLineDetectionPattern>(\s|\t)*/\*.*$
+        </firstLineDetectionPattern>
+        <lastLineDetectionPattern>.*\*/(\s|\t)*$
+        </lastLineDetectionPattern>
+    </javadoc_style>
+</additionalHeaders>
