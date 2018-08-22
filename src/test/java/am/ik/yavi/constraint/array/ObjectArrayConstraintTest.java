@@ -1,13 +1,14 @@
-package am.ik.yavi.constraint;
+package am.ik.yavi.constraint.array;
 
 import java.util.function.Predicate;
 
+import am.ik.yavi.constraint.array.ObjectArrayConstraint;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArrayConstraintTest {
-	private ArrayConstraint<String[], String> constraint = new ArrayConstraint<>();
+public class ObjectArrayConstraintTest {
+	private ObjectArrayConstraint<String[], String> constraint = new ObjectArrayConstraint<>();
 
 	@Test
 	public void notEmpty() {

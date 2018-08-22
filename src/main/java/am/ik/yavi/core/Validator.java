@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.constraint.*;
+import am.ik.yavi.constraint.array.*;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 
@@ -73,11 +74,6 @@ public class Validator<T> {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
-	public final <E> Validator<T> constraint(ToArray<T, E> f, String name,
-			Function<ArrayConstraint<T, E>, ArrayConstraint<T, E>> c) {
-		return this.constraint(f, name, c, ArrayConstraint::new);
-	}
-
 	public final <E> Validator<T> constraint(ToCollection<T, E> f, String name,
 			Function<CollectionConstraint<T, E>, CollectionConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
@@ -86,6 +82,51 @@ public class Validator<T> {
 	public final <K, V> Validator<T> constraint(ToMap<T, K, V> f, String name,
 			Function<MapConstraint<T, K, V>, MapConstraint<T, K, V>> c) {
 		return this.constraint(f, name, c, MapConstraint::new);
+	}
+
+	public final <E> Validator<T> constraint(ToObjectArray<T, E> f, String name,
+			Function<ObjectArrayConstraint<T, E>, ObjectArrayConstraint<T, E>> c) {
+		return this.constraint(f, name, c, ObjectArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToBooleanArray<T> f, String name,
+			Function<BooleanArrayConstraint<T>, BooleanArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, BooleanArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToCharArray<T> f, String name,
+			Function<CharArrayConstraint<T>, CharArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, CharArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToByteArray<T> f, String name,
+			Function<ByteArrayConstraint<T>, ByteArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, ByteArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToShortArray<T> f, String name,
+			Function<ShortArrayConstraint<T>, ShortArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, ShortArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToIntArray<T> f, String name,
+			Function<IntArrayConstraint<T>, IntArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, IntArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToLongArray<T> f, String name,
+			Function<LongArrayConstraint<T>, LongArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, LongArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToFloatArray<T> f, String name,
+			Function<FloatArrayConstraint<T>, FloatArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, FloatArrayConstraint::new);
+	}
+
+	public final Validator<T> constraint(ToDoubleArray<T> f, String name,
+			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
+		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
 	public final <E> Validator<T> constraintForObject(Function<T, E> f, String name,
@@ -196,12 +237,36 @@ public class Validator<T> {
 	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
 	}
 
-	public interface ToArray<T, E> extends Function<T, E[]> {
-	}
-
 	public interface ToCollection<T, E> extends Function<T, Collection<E>> {
 	}
 
 	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
+	}
+
+	public interface ToObjectArray<T, E> extends Function<T, E[]> {
+	}
+
+	public interface ToBooleanArray<T> extends Function<T, boolean[]> {
+	}
+
+	public interface ToCharArray<T> extends Function<T, char[]> {
+	}
+
+	public interface ToByteArray<T> extends Function<T, byte[]> {
+	}
+
+	public interface ToShortArray<T> extends Function<T, short[]> {
+	}
+
+	public interface ToIntArray<T> extends Function<T, int[]> {
+	}
+
+	public interface ToLongArray<T> extends Function<T, long[]> {
+	}
+
+	public interface ToFloatArray<T> extends Function<T, float[]> {
+	}
+
+	public interface ToDoubleArray<T> extends Function<T, double[]> {
 	}
 }
