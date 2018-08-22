@@ -45,10 +45,9 @@ Add the following repository in order to use snapshots.
 ```java
 Validator<User> validator = new Validator<User>() //
             .constraint(User::getName, "name", c -> c.notNull() //
-                    .greaterThanOrEquals(1) //
                     .lessThanOrEquals(20)) //
             .constraint(User::getEmail, "email", c -> c.notNull() //
-                    .greaterThanOrEquals(1) //
+                    .greaterThanOrEquals(5) //
                     .lessThanOrEquals(50) //
                     .email()) //
             .constraint(User::getAge, "age", c -> c.notNull() //
@@ -67,11 +66,9 @@ violations.forEach(x -> System.out.println(x.message()));
 ```java
 Validator<Country> countryValidator = new Validator<Country>() //
             .constraint(Country::getName, "name", c -> c.notBlank() //
-                    .greaterThanOrEquals(1) //
                     .lessThanOrEquals(20));
 Validator<City> cityValidator = new Validator<City>() //
             .constraint(City::getName, "name", c -> c.notBlank() //
-                    .greaterThanOrEquals(1) //
                     .lessThanOrEquals(100));
 
 Validator<Address> validator = new Validator<Address>() //
@@ -107,7 +104,6 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 ```java
 Validator<Book> book = new Validator<Book>() //
             .constraint(Book::getTitle, "title", c -> c.notBlank() //
-                    .greaterThanOrEquals(1) //
                     .lessThanOrEquals(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
                     .predicate(IsbnConstraint.SINGLETON)); //
