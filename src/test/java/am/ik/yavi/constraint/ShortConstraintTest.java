@@ -33,8 +33,8 @@ public class ShortConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<Short> predicate = constraint.greaterThanOrEquals((short) 100)
+	public void greaterThanOrEqual() {
+		Predicate<Short> predicate = constraint.greaterThanOrEqual((short) 100)
 				.predicates().get(0).predicate();
 		assertThat(predicate.test((short) 101)).isTrue();
 		assertThat(predicate.test((short) 100)).isTrue();
@@ -50,8 +50,8 @@ public class ShortConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<Short> predicate = constraint.lessThanOrEquals((short) 100).predicates()
+	public void lessThanOrEqual() {
+		Predicate<Short> predicate = constraint.lessThanOrEqual((short) 100).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test((short) 99)).isTrue();
 		assertThat(predicate.test((short) 100)).isTrue();

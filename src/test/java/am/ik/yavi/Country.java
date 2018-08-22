@@ -27,7 +27,7 @@ public class Country {
 	public static Validator<Country> validator() {
 		return Validator.<Country> builder()
 				.constraint(Country::name, "name", c -> c.notBlank() //
-						.greaterThanOrEquals(2))
+						.greaterThanOrEqual(2))
 				.build();
 	}
 

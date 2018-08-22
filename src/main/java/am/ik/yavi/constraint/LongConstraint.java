@@ -26,7 +26,7 @@ public class LongConstraint<T> extends NumberConstraintBase<T, Long, LongConstra
 	}
 
 	@Override
-	protected Predicate<Long> isGreaterThanOrEquals(Long min) {
+	protected Predicate<Long> isGreaterThanOrEqual(Long min) {
 		return x -> x >= min;
 	}
 
@@ -36,7 +36,7 @@ public class LongConstraint<T> extends NumberConstraintBase<T, Long, LongConstra
 	}
 
 	@Override
-	protected Predicate<Long> isLessThanOrEquals(Long max) {
+	protected Predicate<Long> isLessThanOrEqual(Long max) {
 		return x -> x <= max;
 	}
 

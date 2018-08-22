@@ -34,9 +34,9 @@ public class BigDecimalConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
+	public void greaterThanOrEqual() {
 		Predicate<BigDecimal> predicate = constraint
-				.greaterThanOrEquals(new BigDecimal("100")).predicates().get(0)
+				.greaterThanOrEqual(new BigDecimal("100")).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new BigDecimal("101"))).isTrue();
 		assertThat(predicate.test(new BigDecimal("100"))).isTrue();
@@ -52,9 +52,9 @@ public class BigDecimalConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
+	public void lessThanOrEqual() {
 		Predicate<BigDecimal> predicate = constraint
-				.lessThanOrEquals(new BigDecimal("100")).predicates().get(0).predicate();
+				.lessThanOrEqual(new BigDecimal("100")).predicates().get(0).predicate();
 		assertThat(predicate.test(new BigDecimal("99"))).isTrue();
 		assertThat(predicate.test(new BigDecimal("100"))).isTrue();
 		assertThat(predicate.test(new BigDecimal("101"))).isFalse();

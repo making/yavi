@@ -28,7 +28,7 @@ public class BigIntegerConstraint<T>
 	}
 
 	@Override
-	protected Predicate<BigInteger> isGreaterThanOrEquals(BigInteger min) {
+	protected Predicate<BigInteger> isGreaterThanOrEqual(BigInteger min) {
 		return x -> x.compareTo(min) >= 0;
 	}
 
@@ -38,7 +38,7 @@ public class BigIntegerConstraint<T>
 	}
 
 	@Override
-	protected Predicate<BigInteger> isLessThanOrEquals(BigInteger max) {
+	protected Predicate<BigInteger> isLessThanOrEqual(BigInteger max) {
 		return x -> x.compareTo(max) <= 0;
 	}
 

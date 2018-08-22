@@ -28,7 +28,7 @@ public class BigDecimalConstraint<T>
 	}
 
 	@Override
-	protected Predicate<BigDecimal> isGreaterThanOrEquals(BigDecimal min) {
+	protected Predicate<BigDecimal> isGreaterThanOrEqual(BigDecimal min) {
 		return x -> x.compareTo(min) >= 0;
 	}
 
@@ -38,7 +38,7 @@ public class BigDecimalConstraint<T>
 	}
 
 	@Override
-	protected Predicate<BigDecimal> isLessThanOrEquals(BigDecimal max) {
+	protected Predicate<BigDecimal> isLessThanOrEqual(BigDecimal max) {
 		return x -> x.compareTo(max) <= 0;
 	}
 

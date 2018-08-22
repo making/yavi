@@ -33,8 +33,8 @@ public class FloatConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<Float> predicate = constraint.greaterThanOrEquals(100.0f).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<Float> predicate = constraint.greaterThanOrEqual(100.0f).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(101.0f)).isTrue();
 		assertThat(predicate.test(100.0f)).isTrue();
@@ -50,8 +50,8 @@ public class FloatConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<Float> predicate = constraint.lessThanOrEquals(100.0f).predicates()
+	public void lessThanOrEqual() {
+		Predicate<Float> predicate = constraint.lessThanOrEqual(100.0f).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(99.0f)).isTrue();
 		assertThat(predicate.test(100.0f)).isTrue();

@@ -52,8 +52,8 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<String> predicate = constraint.lessThanOrEquals(3).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
@@ -71,9 +71,9 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<String> predicate = constraint.greaterThanOrEquals(3).predicates()
-				.get(0).predicate();
+	public void greaterThanOrEqual() {
+		Predicate<String> predicate = constraint.greaterThanOrEqual(3).predicates().get(0)
+				.predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("ab")).isFalse();

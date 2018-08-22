@@ -27,7 +27,7 @@ public class DoubleConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Double> isGreaterThanOrEquals(Double min) {
+	protected Predicate<Double> isGreaterThanOrEqual(Double min) {
 		return x -> x >= min;
 	}
 
@@ -37,7 +37,7 @@ public class DoubleConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Double> isLessThanOrEquals(Double max) {
+	protected Predicate<Double> isLessThanOrEqual(Double max) {
 		return x -> x <= max;
 	}
 

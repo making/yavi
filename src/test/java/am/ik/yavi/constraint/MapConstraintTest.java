@@ -49,8 +49,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<Map<String, String>> predicate = constraint.lessThanOrEquals(2)
+	public void lessThanOrEqual() {
+		Predicate<Map<String, String>> predicate = constraint.lessThanOrEqual(2)
 				.predicates().get(0).predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
@@ -88,8 +88,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<Map<String, String>> predicate = constraint.greaterThanOrEquals(2)
+	public void greaterThanOrEqual() {
+		Predicate<Map<String, String>> predicate = constraint.greaterThanOrEqual(2)
 				.predicates().get(0).predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {

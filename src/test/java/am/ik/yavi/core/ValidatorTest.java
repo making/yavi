@@ -27,15 +27,15 @@ public class ValidatorTest {
 	Validator<User> validator() {
 		return Validator.<User> builder() //
 				.constraint(User::getName, "name", c -> c.notNull() //
-						.greaterThanOrEquals(1) //
-						.lessThanOrEquals(20)) //
+						.greaterThanOrEqual(1) //
+						.lessThanOrEqual(20)) //
 				.constraint(User::getEmail, "email", c -> c.notNull() //
-						.greaterThanOrEquals(1) //
-						.lessThanOrEquals(50) //
+						.greaterThanOrEqual(1) //
+						.lessThanOrEqual(50) //
 						.email()) //
 				.constraint(User::getAge, "age", c -> c.notNull() //
-						.greaterThanOrEquals(0) //
-						.lessThanOrEquals(200))
+						.greaterThanOrEqual(0) //
+						.lessThanOrEqual(200))
 				.build();
 	}
 
@@ -57,13 +57,13 @@ public class ValidatorTest {
 		assertThat(violations.get(0).message())
 				.isEqualTo("The size of \"name\" must be greater than or equal to 1");
 		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEquals");
+				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"age\" must not be less than or equal to 200");
-		assertThat(violations.get(2).messageKey()).isEqualTo("number.lessThanOrEquals");
+		assertThat(violations.get(2).messageKey()).isEqualTo("number.lessThanOrEqual");
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class ValidatorTest {
 		assertThat(violations.get(0).message())
 				.isEqualTo("The size of \"email\" must be greater than or equal to 1");
 		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEquals");
+				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
@@ -101,7 +101,7 @@ public class ValidatorTest {
 	public void combiningCharacter() throws Exception {
 		User user = new User("モシ\u3099", null, null);
 		Validator<User> validator = Validator.<User> builder().constraint(User::getName,
-				Normalizer.Form.NFC, "name", c -> c.lessThanOrEquals(2)).build();
+				Normalizer.Form.NFC, "name", c -> c.lessThanOrEqual(2)).build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
 	}

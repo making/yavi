@@ -44,8 +44,8 @@ public class CollectionConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<List<String>> predicate = constraint.lessThanOrEquals(2).predicates()
+	public void lessThanOrEqual() {
+		Predicate<List<String>> predicate = constraint.lessThanOrEqual(2).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
@@ -61,8 +61,8 @@ public class CollectionConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<List<String>> predicate = constraint.greaterThanOrEquals(2).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<List<String>> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();

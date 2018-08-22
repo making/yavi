@@ -33,8 +33,8 @@ public class DoubleConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<Double> predicate = constraint.greaterThanOrEquals(100.0).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<Double> predicate = constraint.greaterThanOrEqual(100.0).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(101.0)).isTrue();
 		assertThat(predicate.test(100.0)).isTrue();
@@ -50,8 +50,8 @@ public class DoubleConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<Double> predicate = constraint.lessThanOrEquals(100.0).predicates()
+	public void lessThanOrEqual() {
+		Predicate<Double> predicate = constraint.lessThanOrEqual(100.0).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(99.0)).isTrue();
 		assertThat(predicate.test(100.0)).isTrue();

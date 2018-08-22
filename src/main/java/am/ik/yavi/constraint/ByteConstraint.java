@@ -26,7 +26,7 @@ public class ByteConstraint<T> extends NumberConstraintBase<T, Byte, ByteConstra
 	}
 
 	@Override
-	protected Predicate<Byte> isGreaterThanOrEquals(Byte min) {
+	protected Predicate<Byte> isGreaterThanOrEqual(Byte min) {
 		return x -> x >= min;
 	}
 
@@ -36,7 +36,7 @@ public class ByteConstraint<T> extends NumberConstraintBase<T, Byte, ByteConstra
 	}
 
 	@Override
-	protected Predicate<Byte> isLessThanOrEquals(Byte max) {
+	protected Predicate<Byte> isLessThanOrEqual(Byte max) {
 		return x -> x <= max;
 	}
 

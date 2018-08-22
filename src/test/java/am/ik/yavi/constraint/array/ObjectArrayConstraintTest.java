@@ -41,8 +41,8 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<String[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<String[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
@@ -58,8 +58,8 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<String[]> predicate = constraint.greaterThanOrEquals(2).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<String[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isFalse();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();

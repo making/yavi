@@ -41,8 +41,8 @@ public class FloatArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<float[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<float[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new float[] { 100.0f })).isTrue();
 		assertThat(predicate.test(new float[] { 100.0f, 101.0f })).isTrue();
@@ -58,8 +58,8 @@ public class FloatArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<float[]> predicate = constraint.greaterThanOrEquals(2).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<float[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(new float[] { 100.0f })).isFalse();
 		assertThat(predicate.test(new float[] { 100.0f, 101.0f })).isTrue();

@@ -33,8 +33,8 @@ public class LongConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<Long> predicate = constraint.greaterThanOrEquals(100L).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<Long> predicate = constraint.greaterThanOrEqual(100L).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(101L)).isTrue();
 		assertThat(predicate.test(100L)).isTrue();
@@ -50,8 +50,8 @@ public class LongConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<Long> predicate = constraint.lessThanOrEquals(100L).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<Long> predicate = constraint.lessThanOrEqual(100L).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(99L)).isTrue();
 		assertThat(predicate.test(100L)).isTrue();

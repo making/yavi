@@ -34,9 +34,9 @@ public class BigIntegerConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
+	public void greaterThanOrEqual() {
 		Predicate<BigInteger> predicate = constraint
-				.greaterThanOrEquals(new BigInteger("100")).predicates().get(0)
+				.greaterThanOrEqual(new BigInteger("100")).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new BigInteger("101"))).isTrue();
 		assertThat(predicate.test(new BigInteger("100"))).isTrue();
@@ -52,9 +52,9 @@ public class BigIntegerConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
+	public void lessThanOrEqual() {
 		Predicate<BigInteger> predicate = constraint
-				.lessThanOrEquals(new BigInteger("100")).predicates().get(0).predicate();
+				.lessThanOrEqual(new BigInteger("100")).predicates().get(0).predicate();
 		assertThat(predicate.test(new BigInteger("99"))).isTrue();
 		assertThat(predicate.test(new BigInteger("100"))).isTrue();
 		assertThat(predicate.test(new BigInteger("101"))).isFalse();

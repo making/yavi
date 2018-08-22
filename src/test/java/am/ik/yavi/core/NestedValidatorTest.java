@@ -58,10 +58,10 @@ public class NestedValidatorTest {
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"phoneNumber.value\" must not be blank");
 		assertThat(violations.get(2).messageKey()).isEqualTo("charSequence.notBlank");
-		assertThat(violations.get(3).message())
-				.isEqualTo("The size of \"phoneNumber.value\" must be greater than or equal to 8");
+		assertThat(violations.get(3).message()).isEqualTo(
+				"The size of \"phoneNumber.value\" must be greater than or equal to 8");
 		assertThat(violations.get(3).messageKey())
-				.isEqualTo("container.greaterThanOrEquals");
+				.isEqualTo("container.greaterThanOrEqual");
 	}
 
 	@Test

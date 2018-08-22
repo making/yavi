@@ -41,8 +41,8 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<double[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<double[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isTrue();
 		assertThat(predicate.test(new double[] { 100.0, 101.0 })).isTrue();
@@ -58,8 +58,8 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<double[]> predicate = constraint.greaterThanOrEquals(2).predicates()
+	public void greaterThanOrEqual() {
+		Predicate<double[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.get(0).predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isFalse();
 		assertThat(predicate.test(new double[] { 100.0, 101.0 })).isTrue();

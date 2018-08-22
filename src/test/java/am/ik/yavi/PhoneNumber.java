@@ -27,7 +27,7 @@ public class PhoneNumber {
 	public static Validator<PhoneNumber> validator() {
 		return Validator.<PhoneNumber> builder()
 				.constraint((PhoneNumber p) -> p.value, "value",
-						c -> c.notBlank().greaterThanOrEquals(8).lessThanOrEquals(16))
+						c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
 				.build();
 	}
 }

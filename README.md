@@ -45,14 +45,14 @@ Add the following repository in order to use snapshots.
 ```java
 Validator<User> validator = Validator.<User> builder() //
             .constraint(User::getName, "name", c -> c.notNull() //
-                    .lessThanOrEquals(20)) //
+                    .lessThanOrEqual(20)) //
             .constraint(User::getEmail, "email", c -> c.notNull() //
-                    .greaterThanOrEquals(5) //
-                    .lessThanOrEquals(50) //
+                    .greaterThanOrEqual(5) //
+                    .lessThanOrEqual(50) //
                     .email()) //
             .constraint(User::getAge, "age", c -> c.notNull() //
-                    .greaterThanOrEquals(0) //
-                    .lessThanOrEquals(200))
+                    .greaterThanOrEqual(0) //
+                    .lessThanOrEqual(200))
             .build();
 
 ConstraintViolations violations = validator.validate(user);
@@ -67,11 +67,11 @@ violations.forEach(x -> System.out.println(x.message()));
 ```java
 Validator<Country> countryValidator = Validator.<Country> builder() //
             .constraint(Country::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEquals(20))
+                    .lessThanOrEqual(20))
             .build();
 Validator<City> cityValidator = Validator.<City> builder() //
             .constraint(City::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEquals(100))
+                    .lessThanOrEqual(100))
             .build();
 
 Validator<Address> validator = Validator.<Address> builder() //
@@ -108,7 +108,7 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 ```java
 Validator<Book> book = Validator.<Book> builder() //
             .constraint(Book::getTitle, "title", c -> c.notBlank() //
-                    .lessThanOrEquals(64)) //
+                    .lessThanOrEqual(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
                     .predicate(IsbnConstraint.SINGLETON))
             .build(); //

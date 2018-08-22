@@ -43,10 +43,10 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 		return cast();
 	}
 
-	public C lessThanOrEquals(int max) {
+	public C lessThanOrEqual(int max) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(x -> size().applyAsInt(x) <= max,
-						"container.lessThanOrEquals",
+						"container.lessThanOrEqual",
 						"The size of \"{0}\" must be less than or equal to {1}",
 						() -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
@@ -59,10 +59,10 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 		return cast();
 	}
 
-	public C greaterThanOrEquals(int min) {
+	public C greaterThanOrEqual(int min) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(x -> size().applyAsInt(x) >= min,
-						"container.greaterThanOrEquals",
+						"container.greaterThanOrEqual",
 						"The size of \"{0}\" must be greater than or equal to {1}",
 						() -> new Object[] { min }, NULL_IS_VALID));
 		return cast();

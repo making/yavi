@@ -41,8 +41,8 @@ public class LongArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<long[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<long[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new long[] { 100L })).isTrue();
 		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
@@ -58,9 +58,9 @@ public class LongArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<long[]> predicate = constraint.greaterThanOrEquals(2).predicates()
-				.get(0).predicate();
+	public void greaterThanOrEqual() {
+		Predicate<long[]> predicate = constraint.greaterThanOrEqual(2).predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(new long[] { 100L })).isFalse();
 		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
 		assertThat(predicate.test(new long[] { 100L, 101L, 102L })).isTrue();

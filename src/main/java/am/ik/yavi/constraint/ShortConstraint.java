@@ -27,7 +27,7 @@ public class ShortConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Short> isGreaterThanOrEquals(Short min) {
+	protected Predicate<Short> isGreaterThanOrEqual(Short min) {
 		return x -> x >= min;
 	}
 
@@ -37,7 +37,7 @@ public class ShortConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Short> isLessThanOrEquals(Short max) {
+	protected Predicate<Short> isLessThanOrEqual(Short max) {
 		return x -> x <= max;
 	}
 

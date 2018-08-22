@@ -27,7 +27,7 @@ public class FloatConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Float> isGreaterThanOrEquals(Float min) {
+	protected Predicate<Float> isGreaterThanOrEqual(Float min) {
 		return x -> x >= min;
 	}
 
@@ -37,7 +37,7 @@ public class FloatConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Float> isLessThanOrEquals(Float max) {
+	protected Predicate<Float> isLessThanOrEqual(Float max) {
 		return x -> x <= max;
 	}
 

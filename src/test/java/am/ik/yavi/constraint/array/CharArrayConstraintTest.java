@@ -41,8 +41,8 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEquals() {
-		Predicate<char[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
+	public void lessThanOrEqual() {
+		Predicate<char[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
@@ -60,9 +60,9 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEquals() {
-		Predicate<char[]> predicate = constraint.greaterThanOrEquals(2).predicates()
-				.get(0).predicate();
+	public void greaterThanOrEqual() {
+		Predicate<char[]> predicate = constraint.greaterThanOrEqual(2).predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isFalse();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101, (char) 102 }))

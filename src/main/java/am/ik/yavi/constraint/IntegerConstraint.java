@@ -27,7 +27,7 @@ public class IntegerConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Integer> isGreaterThanOrEquals(Integer min) {
+	protected Predicate<Integer> isGreaterThanOrEqual(Integer min) {
 		return x -> x >= min;
 	}
 
@@ -37,7 +37,7 @@ public class IntegerConstraint<T>
 	}
 
 	@Override
-	protected Predicate<Integer> isLessThanOrEquals(Integer max) {
+	protected Predicate<Integer> isLessThanOrEqual(Integer max) {
 		return x -> x <= max;
 	}
 
