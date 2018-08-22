@@ -59,11 +59,40 @@ violations.isValid(); // true or false
 violations.forEach(x -> System.out.println(x.message()));
 ```
 
+[sample code](src/test/java/am/ik/yavi/core/ValidatorTest.java)
+
 ### Nested
 
 ```java
+Validator<Country> countryValidator = new Validator<Country>() //
+            .constraint(Country::getName, "name", c -> c.notBlank() //
+                    .greaterThanOrEquals(1) //
+                    .lessThanOrEquals(20));
+Validator<City> cityValidator = new Validator<City>() //
+            .constraint(City::getName, "name", c -> c.notBlank() //
+                    .greaterThanOrEquals(1) //
+                    .lessThanOrEquals(100));
 
+Validator<Address> validator = new Validator<Address>() //
+            .constraint(Address::getCountry, "country", countryValidator) //
+            .constraint(Address::getCity, "city", cityValidator);
 ```
+
+[sample code](src/test/java/am/ik/yavi/core/NestedValidatorTest.java)
+
+### Custom
+
+```java
+Validator<Book> book = new Validator<Book>() //
+            .constraint(Book::getTitle, "title", c -> c.notBlank() //
+                    .greaterThanOrEquals(1) //
+                    .lessThanOrEquals(64)) //
+            .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
+				    .predicate(v -> isISBN13(v.toString()), //
+								"custom.isbn13", "\"{0}\" must be ISBN13 format")); //
+```
+
+[sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
 
 ### Required
 
