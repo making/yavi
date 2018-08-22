@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.text.Normalizer;
 import java.util.function.Predicate;
 
 import org.junit.Test;
@@ -32,6 +33,7 @@ public class CharSequenceConstraintTest {
 				.predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7田")).isTrue(); // surrogate pair
 	}
 
 	@Test
@@ -41,6 +43,7 @@ public class CharSequenceConstraintTest {
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("abcd")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7野屋")).isTrue(); // surrogate pair
 	}
 
 	@Test
@@ -49,6 +52,7 @@ public class CharSequenceConstraintTest {
 				.predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7野屋")).isFalse(); // surrogate pair
 	}
 
 	@Test
@@ -58,6 +62,7 @@ public class CharSequenceConstraintTest {
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("ab")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7田")).isFalse(); // surrogate pair
 	}
 
 	@Test
@@ -91,11 +96,9 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<String> predicate = constraint.fixedSize(2).predicates().get(0)
-				.predicate();
-		assertThat(predicate.test("a")).isFalse();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isFalse();
+	public void combiningCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>(
+				Normalizer.Form.NFC).fixedSize(2).predicates().get(0).predicate();
+		assertThat(predicate.test("モシ\u3099")).isTrue();
 	}
 }

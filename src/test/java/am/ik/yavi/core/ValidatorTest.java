@@ -1,5 +1,7 @@
 package am.ik.yavi.core;
 
+import java.text.Normalizer;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,5 +69,14 @@ public class ValidatorTest {
 		assertThat(violations.get(0).message()).isEqualTo("\"name\" must not be null");
 		assertThat(violations.get(1).message()).isEqualTo("\"email\" must not be null");
 		assertThat(violations.get(2).message()).isEqualTo("\"age\" must not be null");
+	}
+
+	@Test
+	public void combiningCharacter() throws Exception {
+		User user = new User("モシ\u3099", null, null);
+		Validator<User> validator = new Validator<User>().constraint(User::getName,
+				Normalizer.Form.NFC, "name", c -> c.lessThanOrEquals(2));
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
 	}
 }

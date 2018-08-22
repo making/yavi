@@ -2,6 +2,7 @@ package am.ik.yavi.constraint;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.Normalizer;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,16 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(
 			"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
+	private final Normalizer.Form normalizerForm;
+
+	public CharSequenceConstraint() {
+		this(null);
+	}
+
+	public CharSequenceConstraint(Normalizer.Form normalizerForm) {
+		this.normalizerForm = normalizerForm;
+	}
+
 	@Override
 	public CharSequenceConstraint<T, E> cast() {
 		return this;
@@ -23,7 +34,11 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	@Override
 	protected ToIntFunction<E> size() {
-		return CharSequence::length;
+		return cs -> {
+			String s = this.normalizerForm == null ? cs.toString()
+					: Normalizer.normalize(cs, this.normalizerForm);
+			return s.codePointCount(0, s.length());
+		};
 	}
 
 	public CharSequenceConstraint<T, E> notBlank() {

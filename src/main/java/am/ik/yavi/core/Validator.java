@@ -2,6 +2,7 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,13 @@ public class Validator<T> {
 			String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
+	}
+
+	public final <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
+			Normalizer.Form normalizerForm, String name,
+			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
+		return this.constraint(f, name, c,
+				() -> new CharSequenceConstraint<>(normalizerForm));
 	}
 
 	public final Validator<T> constraint(ToByte<T> f, String name,
