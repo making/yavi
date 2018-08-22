@@ -56,10 +56,14 @@ public class ValidatorTest {
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message())
 				.isEqualTo("The size of \"name\" must be greater than 1");
+		assertThat(violations.get(0).messageKey())
+				.isEqualTo("container.greaterThanOrEquals");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"age\" must not be less than 200");
+		assertThat(violations.get(2).messageKey()).isEqualTo("number.lessThanOrEquals");
 	}
 
 	@Test
@@ -71,8 +75,11 @@ public class ValidatorTest {
 		assertThat(violations.size()).isEqualTo(2);
 		assertThat(violations.get(0).message())
 				.isEqualTo("The size of \"email\" must be greater than 1");
+		assertThat(violations.get(0).messageKey())
+				.isEqualTo("container.greaterThanOrEquals");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
 	}
 
 	@Test
@@ -83,8 +90,11 @@ public class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message()).isEqualTo("\"name\" must not be null");
+		assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 		assertThat(violations.get(1).message()).isEqualTo("\"email\" must not be null");
+		assertThat(violations.get(1).messageKey()).isEqualTo("object.notNull");
 		assertThat(violations.get(2).message()).isEqualTo("\"age\" must not be null");
+		assertThat(violations.get(2).messageKey()).isEqualTo("object.notNull");
 	}
 
 	@Test

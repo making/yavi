@@ -67,6 +67,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
@@ -74,6 +75,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"isbn\" must not be null");
+			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 		}
 	}
 
@@ -96,6 +98,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
@@ -124,6 +127,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
@@ -131,6 +135,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"isbn\" must not be null");
+			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 		}
 	}
 
@@ -155,6 +160,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
 		}
 	}
 
@@ -176,6 +182,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
 		}
 	}
 
