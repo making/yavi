@@ -43,7 +43,7 @@ Add the following repository in order to use snapshots.
 #### Simple
 
 ```java
-Validator<User> validator = new Validator<User>() //
+Validator<User> validator = Validator.<User> builder() //
             .constraint(User::getName, "name", c -> c.notNull() //
                     .lessThanOrEquals(20)) //
             .constraint(User::getEmail, "email", c -> c.notNull() //
@@ -52,7 +52,8 @@ Validator<User> validator = new Validator<User>() //
                     .email()) //
             .constraint(User::getAge, "age", c -> c.notNull() //
                     .greaterThanOrEquals(0) //
-                    .lessThanOrEquals(200));
+                    .lessThanOrEquals(200))
+            .build();
 
 ConstraintViolations violations = validator.validate(user);
 violations.isValid(); // true or false
@@ -64,16 +65,19 @@ violations.forEach(x -> System.out.println(x.message()));
 ### Nested
 
 ```java
-Validator<Country> countryValidator = new Validator<Country>() //
+Validator<Country> countryValidator = Validator.<Country> builder() //
             .constraint(Country::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEquals(20));
-Validator<City> cityValidator = new Validator<City>() //
+                    .lessThanOrEquals(20))
+            .build();
+Validator<City> cityValidator = Validator.<City> builder() //
             .constraint(City::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEquals(100));
+                    .lessThanOrEquals(100))
+            .build();
 
-Validator<Address> validator = new Validator<Address>() //
+Validator<Address> validator = Validator.<Address> builder() //
             .constraint(Address::getCountry, "country", countryValidator) //
-            .constraint(Address::getCity, "city", cityValidator);
+            .constraint(Address::getCity, "city", cityValidator)
+            .build();
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/NestedValidatorTest.java)
@@ -102,11 +106,12 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 ```
 
 ```java
-Validator<Book> book = new Validator<Book>() //
+Validator<Book> book = Validator.<Book> builder() //
             .constraint(Book::getTitle, "title", c -> c.notBlank() //
                     .lessThanOrEquals(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
-                    .predicate(IsbnConstraint.SINGLETON)); //
+                    .predicate(IsbnConstraint.SINGLETON))
+            .build(); //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)

@@ -10,7 +10,9 @@ public class PhoneNumber {
 	}
 
 	public static Validator<PhoneNumber> validator() {
-		return new Validator<PhoneNumber>().constraint((PhoneNumber p) -> p.value,
-				"value", c -> c.notBlank().greaterThanOrEquals(8).lessThanOrEquals(16));
+		return Validator.<PhoneNumber> builder()
+				.constraint((PhoneNumber p) -> p.value, "value",
+						c -> c.notBlank().greaterThanOrEquals(8).lessThanOrEquals(16))
+				.build();
 	}
 }

@@ -10,9 +10,10 @@ public class Country {
 	}
 
 	public static Validator<Country> validator() {
-		return new Validator<Country>().constraint(Country::name, "name",
-				c -> c.notBlank() //
-						.greaterThanOrEquals(2));
+		return Validator.<Country> builder()
+				.constraint(Country::name, "name", c -> c.notBlank() //
+						.greaterThanOrEquals(2))
+				.build();
 	}
 
 	public String name() {

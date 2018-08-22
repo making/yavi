@@ -10,7 +10,7 @@ import am.ik.yavi.User;
 
 public class ValidatorTest {
 	Validator<User> validator() {
-		return new Validator<User>() //
+		return Validator.<User> builder() //
 				.constraint(User::getName, "name", c -> c.notNull() //
 						.greaterThanOrEquals(1) //
 						.lessThanOrEquals(20)) //
@@ -20,7 +20,8 @@ public class ValidatorTest {
 						.email()) //
 				.constraint(User::getAge, "age", c -> c.notNull() //
 						.greaterThanOrEquals(0) //
-						.lessThanOrEquals(200));
+						.lessThanOrEquals(200))
+				.build();
 	}
 
 	@Test
@@ -74,8 +75,8 @@ public class ValidatorTest {
 	@Test
 	public void combiningCharacter() throws Exception {
 		User user = new User("モシ\u3099", null, null);
-		Validator<User> validator = new Validator<User>().constraint(User::getName,
-				Normalizer.Form.NFC, "name", c -> c.lessThanOrEquals(2));
+		Validator<User> validator = Validator.<User> builder().constraint(User::getName,
+				Normalizer.Form.NFC, "name", c -> c.lessThanOrEquals(2)).build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
 	}

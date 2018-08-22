@@ -11,11 +11,12 @@ import am.ik.yavi.PhoneNumber;
 public class NestedValidatorTest {
 
 	Validator<Address> validator() {
-		return new Validator<Address>()
+		return Validator.<Address> builder()
 				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 				.constraint(Address::country, "country", Country.validator())
 				.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
-						PhoneNumber.validator());
+						PhoneNumber.validator())
+				.build();
 	}
 
 	@Test

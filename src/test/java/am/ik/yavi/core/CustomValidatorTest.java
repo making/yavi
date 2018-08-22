@@ -35,10 +35,11 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicate() {
-		Validator<Book> validator = new Validator<Book>() //
+		Validator<Book> validator = Validator.<Book> builder() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(CustomValidatorTest::isISBN13, //
-								"custom.isbn13", "\"{0}\" must be ISBN13 format"));
+								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
+				.build();
 		{
 			ConstraintViolations violations = validator
 					.validate(new Book("9784777519699"));
@@ -63,10 +64,11 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateNullable() {
-		Validator<Book> validator = new Validator<Book>() //
+		Validator<Book> validator = Validator.<Book> builder() //
 				.constraint(Book::isbn, "isbn",
 						c -> c.predicateNullable(v -> v != null && isISBN13(v), //
-								"custom.isbn13", "\"{0}\" must be ISBN13 format"));
+								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
+				.build();
 		{
 			ConstraintViolations violations = validator
 					.validate(new Book("9784777519699"));
@@ -91,9 +93,10 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateCustom() {
-		Validator<Book> validator = new Validator<Book>() //
+		Validator<Book> validator = Validator.<Book> builder() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
-						.predicate(IsbnConstraint.SINGLETON));
+						.predicate(IsbnConstraint.SINGLETON))
+				.build();
 		{
 			ConstraintViolations violations = validator
 					.validate(new Book("9784777519699"));
@@ -118,12 +121,13 @@ public class CustomValidatorTest {
 
 	@Test
 	public void range() throws Exception {
-		Validator<Range> validator = new Validator<Range>() //
+		Validator<Range> validator = Validator.<Range> builder() //
 				.constraintForObject(r -> r, "range", c -> c.notNull() //
 						.predicate(r -> {
 							Range range = Range.class.cast(r);
 							return range.getFrom() < range.getTo();
-						}, "custom.range", "\"from\" must be less than \"to\""));
+						}, "custom.range", "\"from\" must be less than \"to\""))
+				.build();
 		{
 			Range range = new Range(0, 10);
 			ConstraintViolations violations = validator.validate(range);
@@ -141,9 +145,10 @@ public class CustomValidatorTest {
 
 	@Test
 	public void rangeCustom() throws Exception {
-		Validator<Range> validator = new Validator<Range>() //
+		Validator<Range> validator = Validator.<Range> builder() //
 				.constraintForObject(r -> r, "range", c -> c.notNull() //
-						.predicateNullable(RangeConstraint.SINGLETON));
+						.predicateNullable(RangeConstraint.SINGLETON))
+				.build();
 		{
 			Range range = new Range(0, 10);
 			ConstraintViolations violations = validator.validate(range);
