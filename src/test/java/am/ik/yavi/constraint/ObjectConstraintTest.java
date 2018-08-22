@@ -11,14 +11,15 @@ public class ObjectConstraintTest {
 
 	@Test
 	public void notNull() {
-		Predicate<String> predicate = constraint.notNull().holders().get(0).predicate();
+		Predicate<String> predicate = constraint.notNull().predicates().get(0)
+				.predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test(null)).isFalse();
 	}
 
 	@Test
 	public void isNull() {
-		Predicate<String> predicate = constraint.isNull().holders().get(0).predicate();
+		Predicate<String> predicate = constraint.isNull().predicates().get(0).predicate();
 		assertThat(predicate.test("foo")).isFalse();
 		assertThat(predicate.test(null)).isTrue();
 	}

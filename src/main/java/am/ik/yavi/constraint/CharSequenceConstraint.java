@@ -9,7 +9,7 @@ import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintHolder;
+import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
@@ -27,8 +27,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> notBlank() {
-		this.holders()
-				.add(new ConstraintHolder<>(
+		this.predicates()
+				.add(new ConstraintPredicate<>(
 						x -> x != null && x.toString().trim().length() != 0,
 						"charSequence.notBlank", "\"{0}\" must not be blank",
 						() -> new Object[] {}, NULL_IS_INVALID));
@@ -36,16 +36,16 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
-		this.holders()
-				.add(new ConstraintHolder<>(x -> x.toString().contains(s),
+		this.predicates()
+				.add(new ConstraintPredicate<>(x -> x.toString().contains(s),
 						"charSequence.contains", "\"{0}\" must contain {1}",
 						() -> new Object[] { s }, NULL_IS_VALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> email() {
-		this.holders()
-				.add(new ConstraintHolder<>(
+		this.predicates()
+				.add(new ConstraintPredicate<>(
 						x -> VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches(),
 						"charSequence.email", "\"{0}\" must be a valid email address",
 						() -> new Object[] {}, NULL_IS_VALID));
@@ -53,7 +53,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> url() {
-		this.holders().add(new ConstraintHolder<>(x -> {
+		this.predicates().add(new ConstraintPredicate<>(x -> {
 			try {
 				new URL(x.toString());
 				return true;
@@ -67,8 +67,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> pattern(String regex) {
-		this.holders()
-				.add(new ConstraintHolder<>(x -> Pattern.matches(regex, x),
+		this.predicates()
+				.add(new ConstraintPredicate<>(x -> Pattern.matches(regex, x),
 						"charSequence.pattern", "\"{0}\" must match {1}",
 						() -> new Object[] { regex }, NULL_IS_VALID));
 		return this;

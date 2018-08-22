@@ -5,7 +5,7 @@ import java.util.function.ToIntFunction;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintHolder;
+import am.ik.yavi.core.ConstraintPredicate;
 
 public class FloatArrayConstraint<T>
 		extends ContainerConstraintBase<T, float[], FloatArrayConstraint<T>> {
@@ -21,7 +21,7 @@ public class FloatArrayConstraint<T>
 	}
 
 	public FloatArrayConstraint<T> contains(float v) {
-		this.holders().add(new ConstraintHolder<>(x -> {
+		this.predicates().add(new ConstraintPredicate<>(x -> {
 			for (float e : x) {
 				if (e == v) {
 					return true;

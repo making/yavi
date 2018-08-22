@@ -3,16 +3,16 @@ package am.ik.yavi.core;
 import java.util.List;
 import java.util.function.Function;
 
-public class ConstraintHolders<T, V> {
+public class ConstraintPredicates<T, V> {
 	private final Function<T, V> toValue;
 	private final String name;
-	private final List<ConstraintHolder<V>> holders;
+	private final List<ConstraintPredicate<V>> predicates;
 
-	public ConstraintHolders(Function<T, V> toValue, String name,
-			List<ConstraintHolder<V>> holders) {
+	public ConstraintPredicates(Function<T, V> toValue, String name,
+			List<ConstraintPredicate<V>> predicates) {
 		this.toValue = toValue;
 		this.name = name;
-		this.holders = holders;
+		this.predicates = predicates;
 	}
 
 	public final Function<T, V> toValue() {
@@ -23,7 +23,7 @@ public class ConstraintHolders<T, V> {
 		return this.name;
 	}
 
-	public final List<ConstraintHolder<V>> holders() {
-		return this.holders;
+	public final List<ConstraintPredicate<V>> predicates() {
+		return this.predicates;
 	}
 }

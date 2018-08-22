@@ -18,7 +18,7 @@ import am.ik.yavi.message.SimpleMessageFormatter;
 public class Validator<T> {
 	private static final String SEPARATOR = ".";
 	private final MessageFormatter messageFormatter;
-	private final List<ConstraintHolders<T, ?>> holdersList = new ArrayList<>();
+	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
 
 	public Validator() {
 		this(new SimpleMessageFormatter());
@@ -150,17 +150,17 @@ public class Validator<T> {
 		if (!nullValidity.skipNull()) {
 			this.constraintForObject(nested, name, Constraint::notNull);
 		}
-		validator.holdersList.forEach(holders -> {
-			String nestedName = name + SEPARATOR + holders.name();
-			ConstraintHolders constraintHolders = new NestedConstraintHolders(
+		validator.predicatesList.forEach(predicates -> {
+			String nestedName = name + SEPARATOR + predicates.name();
+			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
 					(Function<T, Object>) ((T target) -> {
 						N nestedValue = nested.apply(target);
 						if (nestedValue == null) {
 							return null;
 						}
-						return holders.toValue().apply(nestedValue);
-					}), nestedName, holders.holders(), nested);
-			this.holdersList.add(constraintHolders);
+						return predicates.toValue().apply(nestedValue);
+					}), nestedName, predicates.predicates(), nested);
+			this.predicatesList.add(constraintPredicates);
 		});
 		return this;
 	}
@@ -168,34 +168,36 @@ public class Validator<T> {
 	protected final <V, C extends Constraint<T, V, C>> Validator<T> constraint(
 			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
 		C constraint = supplier.get();
-		List<ConstraintHolder<V>> holders = c.apply(constraint).holders();
-		this.holdersList.add(new ConstraintHolders<>(f, name, holders));
+		List<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
+		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
 		return this;
 	}
 
 	@SuppressWarnings("unchecked")
 	public ConstraintViolations validate(T target) {
 		ConstraintViolations violations = new ConstraintViolations();
-		for (ConstraintHolders<T, ?> holders : this.holdersList) {
-			if (holders instanceof NestedConstraintHolders) {
-				NestedConstraintHolders<T, ?, ?> nested = (NestedConstraintHolders<T, ?, ?>) holders;
+		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
+			if (predicates instanceof NestedConstraintPredicates) {
+				NestedConstraintPredicates<T, ?, ?> nested = (NestedConstraintPredicates<T, ?, ?>) predicates;
 				Object nestedValue = nested.nestedValue(target);
 				if (nestedValue == null) {
 					continue;
 				}
 			}
-			for (ConstraintHolder<?> holder : holders.holders()) {
-				Object v = holders.toValue().apply(target);
-				Predicate<Object> predicate = (Predicate<Object>) holder.predicate();
-				if (v == null && holder.nullValidity().skipNull()) {
+			for (ConstraintPredicate<?> constraintPredicate : predicates.predicates()) {
+				Object v = predicates.toValue().apply(target);
+				Predicate<Object> predicate = (Predicate<Object>) constraintPredicate
+						.predicate();
+				if (v == null && constraintPredicate.nullValidity().skipNull()) {
 					continue;
 				}
 				if (!predicate.test(v)) {
-					String name = holders.name();
-					Object[] args = holder.args().get();
-					violations.add(new ConstraintViolation(name, holder.messageKey(),
-							holder.defaultMessageFormat(), pad(name, args, v), v,
-							this.messageFormatter));
+					String name = predicates.name();
+					Object[] args = constraintPredicate.args().get();
+					violations.add(new ConstraintViolation(name,
+							constraintPredicate.messageKey(),
+							constraintPredicate.defaultMessageFormat(),
+							pad(name, args, v), v, this.messageFormatter));
 				}
 			}
 		}

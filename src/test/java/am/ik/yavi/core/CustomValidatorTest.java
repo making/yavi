@@ -33,52 +33,6 @@ public class CustomValidatorTest {
 		return check % 10 == 0;
 	}
 
-	enum IsbnConstraint implements CustomConstraint<String> {
-		SINGLETON;
-
-		@Override
-		public Predicate<String> predicate() {
-			return CustomValidatorTest::isISBN13;
-		}
-
-		@Override
-		public String messageKey() {
-			return "custom.isbn13";
-		}
-
-		@Override
-		public String defaultMessageFormat() {
-			return "\"{0}\" must be ISBN13 format";
-		}
-	}
-
-	enum RangeConstraint implements CustomConstraint<Range>, Predicate<Range> {
-		SINGLETON;
-
-		@Override
-		public Predicate<Range> predicate() {
-			return this;
-		}
-
-		@Override
-		public String messageKey() {
-			return "custom.range";
-		}
-
-		@Override
-		public String defaultMessageFormat() {
-			return "\"from\" must be less than \"to\"";
-		}
-
-		@Override
-		public boolean test(Range r) {
-			if (r == null) {
-				return false;
-			}
-			return r.getFrom() < r.getTo();
-		}
-	}
-
 	@Test
 	public void predicate() {
 		Validator<Book> validator = new Validator<Book>() //
@@ -202,6 +156,52 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
+		}
+	}
+
+	enum IsbnConstraint implements CustomConstraint<String> {
+		SINGLETON;
+
+		@Override
+		public Predicate<String> predicate() {
+			return CustomValidatorTest::isISBN13;
+		}
+
+		@Override
+		public String messageKey() {
+			return "custom.isbn13";
+		}
+
+		@Override
+		public String defaultMessageFormat() {
+			return "\"{0}\" must be ISBN13 format";
+		}
+	}
+
+	enum RangeConstraint implements CustomConstraint<Range>, Predicate<Range> {
+		SINGLETON;
+
+		@Override
+		public Predicate<Range> predicate() {
+			return this;
+		}
+
+		@Override
+		public String messageKey() {
+			return "custom.range";
+		}
+
+		@Override
+		public String defaultMessageFormat() {
+			return "\"from\" must be less than \"to\"";
+		}
+
+		@Override
+		public boolean test(Range r) {
+			if (r == null) {
+				return false;
+			}
+			return r.getFrom() < r.getTo();
 		}
 	}
 }

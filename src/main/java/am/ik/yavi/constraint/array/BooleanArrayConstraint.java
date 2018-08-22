@@ -5,7 +5,7 @@ import java.util.function.ToIntFunction;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintHolder;
+import am.ik.yavi.core.ConstraintPredicate;
 
 public class BooleanArrayConstraint<T>
 		extends ContainerConstraintBase<T, boolean[], BooleanArrayConstraint<T>> {
@@ -21,7 +21,7 @@ public class BooleanArrayConstraint<T>
 	}
 
 	public BooleanArrayConstraint<T> contains(boolean v) {
-		this.holders().add(new ConstraintHolder<>(x -> {
+		this.predicates().add(new ConstraintPredicate<>(x -> {
 			for (boolean e : x) {
 				if (e == v) {
 					return true;

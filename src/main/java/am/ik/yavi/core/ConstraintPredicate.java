@@ -3,14 +3,14 @@ package am.ik.yavi.core;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class ConstraintHolder<V> {
+public class ConstraintPredicate<V> {
 	private final Predicate<V> predicate;
 	private final String messageKey;
 	private final String defaultMessageFormat;
 	private final Supplier<Object[]> args;
 	private final NullValidity nullValidity;
 
-	public ConstraintHolder(Predicate<V> predicate, String messageKey,
+	public ConstraintPredicate(Predicate<V> predicate, String messageKey,
 			String defaultMessageFormat, Supplier<Object[]> args,
 			NullValidity nullValidity) {
 		this.predicate = predicate;

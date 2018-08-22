@@ -11,14 +11,16 @@ public class BooleanConstraintTest {
 
 	@Test
 	public void isTrue() {
-		Predicate<Boolean> predicate = constraint.isTrue().holders().get(0).predicate();
+		Predicate<Boolean> predicate = constraint.isTrue().predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(true)).isTrue();
 		assertThat(predicate.test(false)).isFalse();
 	}
 
 	@Test
 	public void isFalse() {
-		Predicate<Boolean> predicate = constraint.isFalse().holders().get(0).predicate();
+		Predicate<Boolean> predicate = constraint.isFalse().predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(true)).isFalse();
 		assertThat(predicate.test(false)).isTrue();
 	}

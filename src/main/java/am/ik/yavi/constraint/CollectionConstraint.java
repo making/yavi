@@ -6,7 +6,7 @@ import java.util.function.ToIntFunction;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintHolder;
+import am.ik.yavi.core.ConstraintPredicate;
 
 public class CollectionConstraint<T, E>
 		extends ContainerConstraintBase<T, Collection<E>, CollectionConstraint<T, E>> {
@@ -22,8 +22,8 @@ public class CollectionConstraint<T, E>
 	}
 
 	public CollectionConstraint<T, E> contains(E s) {
-		this.holders()
-				.add(new ConstraintHolder<>(x -> x.contains(s), "collection.contains",
+		this.predicates()
+				.add(new ConstraintPredicate<>(x -> x.contains(s), "collection.contains",
 						"\"{0}\" must contain {1}", () -> new Object[] { s },
 						NULL_IS_VALID));
 		return this;

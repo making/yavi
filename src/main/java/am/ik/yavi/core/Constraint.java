@@ -6,21 +6,21 @@ import java.util.function.Predicate;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
-	List<ConstraintHolder<V>> holders();
+	List<ConstraintPredicate<V>> predicates();
 
 	C cast();
 
 	default C notNull() {
-		this.holders()
-				.add(new ConstraintHolder<>(Objects::nonNull, "object.notNull",
+		this.predicates()
+				.add(new ConstraintPredicate<>(Objects::nonNull, "object.notNull",
 						"\"{0}\" must not be null", () -> new Object[] {},
 						NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
 	default C isNull() {
-		this.holders()
-				.add(new ConstraintHolder<>(Objects::isNull, "object.isNull",
+		this.predicates()
+				.add(new ConstraintPredicate<>(Objects::isNull, "object.isNull",
 						"\"{0}\" must be null", () -> new Object[] {},
 						NullValidity.NULL_IS_INVALID));
 		return this.cast();
@@ -28,16 +28,17 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
 	default C predicate(Predicate<V> predicate, String messageKey,
 			String defaultMessageFormat) {
-		this.holders().add(new ConstraintHolder<>(predicate, messageKey,
+		this.predicates().add(new ConstraintPredicate<>(predicate, messageKey,
 				defaultMessageFormat, () -> new Object[] {}, NullValidity.NULL_IS_VALID));
 		return this.cast();
 	}
 
 	default C predicateNullable(Predicate<V> predicate, String messageKey,
 			String defaultMessageFormat) {
-		this.holders()
-				.add(new ConstraintHolder<>(predicate, messageKey, defaultMessageFormat,
-						() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
+		this.predicates()
+				.add(new ConstraintPredicate<>(predicate, messageKey,
+						defaultMessageFormat, () -> new Object[] {},
+						NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 

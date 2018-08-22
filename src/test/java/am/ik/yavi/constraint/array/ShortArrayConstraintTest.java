@@ -11,14 +11,15 @@ public class ShortArrayConstraintTest {
 
 	@Test
 	public void notEmpty() {
-		Predicate<short[]> predicate = constraint.notEmpty().holders().get(0).predicate();
+		Predicate<short[]> predicate = constraint.notEmpty().predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
 		assertThat(predicate.test(new short[] {})).isFalse();
 	}
 
 	@Test
 	public void lessThan() {
-		Predicate<short[]> predicate = constraint.lessThan(2).holders().get(0)
+		Predicate<short[]> predicate = constraint.lessThan(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isFalse();
@@ -26,7 +27,7 @@ public class ShortArrayConstraintTest {
 
 	@Test
 	public void lessThanOrEquals() {
-		Predicate<short[]> predicate = constraint.lessThanOrEquals(2).holders().get(0)
+		Predicate<short[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
@@ -36,7 +37,7 @@ public class ShortArrayConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<short[]> predicate = constraint.greaterThan(2).holders().get(0)
+		Predicate<short[]> predicate = constraint.greaterThan(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isFalse();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101, (short) 102 }))
@@ -45,8 +46,8 @@ public class ShortArrayConstraintTest {
 
 	@Test
 	public void greaterThanOrEquals() {
-		Predicate<short[]> predicate = constraint.greaterThanOrEquals(2).holders().get(0)
-				.predicate();
+		Predicate<short[]> predicate = constraint.greaterThanOrEquals(2).predicates()
+				.get(0).predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101, (short) 102 }))
@@ -55,15 +56,15 @@ public class ShortArrayConstraintTest {
 
 	@Test
 	public void contains() {
-		Predicate<short[]> predicate = constraint.contains((short) 100).holders().get(0)
-				.predicate();
+		Predicate<short[]> predicate = constraint.contains((short) 100).predicates()
+				.get(0).predicate();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 101, (short) 102 })).isFalse();
 	}
 
 	@Test
 	public void fixedSize() {
-		Predicate<short[]> predicate = constraint.fixedSize(2).holders().get(0)
+		Predicate<short[]> predicate = constraint.fixedSize(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();

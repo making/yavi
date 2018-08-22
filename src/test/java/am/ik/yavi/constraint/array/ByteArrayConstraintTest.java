@@ -11,21 +11,23 @@ public class ByteArrayConstraintTest {
 
 	@Test
 	public void notEmpty() {
-		Predicate<byte[]> predicate = constraint.notEmpty().holders().get(0).predicate();
+		Predicate<byte[]> predicate = constraint.notEmpty().predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100 })).isTrue();
 		assertThat(predicate.test(new byte[] {})).isFalse();
 	}
 
 	@Test
 	public void lessThan() {
-		Predicate<byte[]> predicate = constraint.lessThan(2).holders().get(0).predicate();
+		Predicate<byte[]> predicate = constraint.lessThan(2).predicates().get(0)
+				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100 })).isTrue();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isFalse();
 	}
 
 	@Test
 	public void lessThanOrEquals() {
-		Predicate<byte[]> predicate = constraint.lessThanOrEquals(2).holders().get(0)
+		Predicate<byte[]> predicate = constraint.lessThanOrEquals(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100 })).isTrue();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isTrue();
@@ -35,7 +37,7 @@ public class ByteArrayConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<byte[]> predicate = constraint.greaterThan(2).holders().get(0)
+		Predicate<byte[]> predicate = constraint.greaterThan(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isFalse();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101, (byte) 102 }))
@@ -44,8 +46,8 @@ public class ByteArrayConstraintTest {
 
 	@Test
 	public void greaterThanOrEquals() {
-		Predicate<byte[]> predicate = constraint.greaterThanOrEquals(2).holders().get(0)
-				.predicate();
+		Predicate<byte[]> predicate = constraint.greaterThanOrEquals(2).predicates()
+				.get(0).predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100 })).isFalse();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isTrue();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101, (byte) 102 }))
@@ -54,7 +56,7 @@ public class ByteArrayConstraintTest {
 
 	@Test
 	public void contains() {
-		Predicate<byte[]> predicate = constraint.contains((byte) 100).holders().get(0)
+		Predicate<byte[]> predicate = constraint.contains((byte) 100).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isTrue();
 		assertThat(predicate.test(new byte[] { (byte) 101, (byte) 102 })).isFalse();
@@ -62,7 +64,7 @@ public class ByteArrayConstraintTest {
 
 	@Test
 	public void fixedSize() {
-		Predicate<byte[]> predicate = constraint.fixedSize(2).holders().get(0)
+		Predicate<byte[]> predicate = constraint.fixedSize(2).predicates().get(0)
 				.predicate();
 		assertThat(predicate.test(new byte[] { (byte) 100 })).isFalse();
 		assertThat(predicate.test(new byte[] { (byte) 100, (byte) 101 })).isTrue();
