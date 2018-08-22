@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core;
+package am.ik.yavi.constraint;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.NullValidity;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 

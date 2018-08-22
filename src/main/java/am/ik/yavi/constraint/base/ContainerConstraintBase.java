@@ -20,7 +20,7 @@ import java.util.function.ToIntFunction;
 import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
-import am.ik.yavi.core.Constraint;
+import am.ik.yavi.constraint.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C>>

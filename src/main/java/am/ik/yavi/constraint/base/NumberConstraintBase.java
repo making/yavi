@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
-import am.ik.yavi.core.Constraint;
+import am.ik.yavi.constraint.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class NumberConstraintBase<T, V extends Number, C extends Constraint<T, V, C>>
