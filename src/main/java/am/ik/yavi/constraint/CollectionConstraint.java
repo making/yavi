@@ -8,20 +8,20 @@ import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class CollectionConstraint<T, E>
-		extends ContainerConstraintBase<T, Collection<E>, CollectionConstraint<T, E>> {
+public class CollectionConstraint<T, L extends Collection<E>, E>
+		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
 
 	@Override
-	protected ToIntFunction<Collection<E>> size() {
+	protected ToIntFunction<L> size() {
 		return Collection::size;
 	}
 
 	@Override
-	public CollectionConstraint<T, E> cast() {
+	public CollectionConstraint<T, L, E> cast() {
 		return this;
 	}
 
-	public CollectionConstraint<T, E> contains(E s) {
+	public CollectionConstraint<T, L, E> contains(E s) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(x -> x.contains(s), "collection.contains",
 						"\"{0}\" must contain {1}", () -> new Object[] { s },

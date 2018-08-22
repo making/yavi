@@ -74,8 +74,9 @@ public class Validator<T> {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
-	public final <E> Validator<T> constraint(ToCollection<T, E> f, String name,
-			Function<CollectionConstraint<T, E>, CollectionConstraint<T, E>> c) {
+	public final <L extends Collection<E>, E> Validator<T> constraint(
+			ToCollection<T, L, E> f, String name,
+			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
 	}
 
@@ -239,7 +240,7 @@ public class Validator<T> {
 	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
 	}
 
-	public interface ToCollection<T, E> extends Function<T, Collection<E>> {
+	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, L> {
 	}
 
 	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
