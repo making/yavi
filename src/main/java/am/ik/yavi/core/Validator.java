@@ -87,8 +87,8 @@ public class Validator<T> {
 		return this.constraint(f, name, c, MapConstraint::new);
 	}
 
-	public final Validator<T> constraintForObject(Function<T, Object> f, String name,
-			Function<ObjectConstraint<T>, ObjectConstraint<T>> c) {
+	public final <E> Validator<T> constraintForObject(Function<T, E> f, String name,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
 
@@ -106,7 +106,7 @@ public class Validator<T> {
 	private <N> Validator<T> constraint(Function<T, N> nested, String name,
 			Validator<N> validator, NullValidity nullValidity) {
 		if (!nullValidity.skipNull()) {
-			this.constraintForObject(nested::apply, name, Constraint::notNull);
+			this.constraintForObject(nested, name, Constraint::notNull);
 		}
 		validator.holdersList.forEach(holders -> {
 			String nestedName = name + SEPARATOR + holders.name();

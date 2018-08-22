@@ -52,11 +52,11 @@ public class CustomValidatorTest {
 		}
 	}
 
-	enum RangeConstraint implements CustomConstraint<Object>, Predicate<Object> {
+	enum RangeConstraint implements CustomConstraint<Range>, Predicate<Range> {
 		SINGLETON;
 
 		@Override
-		public Predicate<Object> predicate() {
+		public Predicate<Range> predicate() {
 			return this;
 		}
 
@@ -71,12 +71,11 @@ public class CustomValidatorTest {
 		}
 
 		@Override
-		public boolean test(Object r) {
-			if (!(r instanceof Range)) {
+		public boolean test(Range r) {
+			if (r == null) {
 				return false;
 			}
-			Range range = (Range) r;
-			return range.getFrom() < range.getTo();
+			return r.getFrom() < r.getTo();
 		}
 	}
 
