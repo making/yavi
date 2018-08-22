@@ -2,8 +2,8 @@ package am.ik.yavi.constraint.base;
 
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.core.Nullable.NULL_IS_INVALID;
-import static am.ik.yavi.core.Nullable.NULL_IS_VALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintHolder;

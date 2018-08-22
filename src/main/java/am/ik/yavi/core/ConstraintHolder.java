@@ -8,15 +8,16 @@ public class ConstraintHolder<V> {
 	private final String messageKey;
 	private final String defaultMessageFormat;
 	private final Supplier<Object[]> args;
-	private final Nullable nullable;
+	private final NullValidity nullValidity;
 
 	public ConstraintHolder(Predicate<V> predicate, String messageKey,
-			String defaultMessageFormat, Supplier<Object[]> args, Nullable nullable) {
+			String defaultMessageFormat, Supplier<Object[]> args,
+			NullValidity nullValidity) {
 		this.predicate = predicate;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		this.args = args;
-		this.nullable = nullable;
+		this.nullValidity = nullValidity;
 	}
 
 	public final Predicate<V> predicate() {
@@ -35,7 +36,7 @@ public class ConstraintHolder<V> {
 		return this.args;
 	}
 
-	public final Nullable nullable() {
-		return this.nullable;
+	public final NullValidity nullValidity() {
+		return this.nullValidity;
 	}
 }

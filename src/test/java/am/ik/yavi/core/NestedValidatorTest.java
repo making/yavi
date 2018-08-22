@@ -46,7 +46,7 @@ public class NestedValidatorTest {
 	@Test
 	public void nestedValueIsNull() {
 		Validator<Address> addressValidator = validator();
-		Address address = new Address(null, null, null /* nullable */);
+		Address address = new Address(null, null, null /* nullValidity */);
 		ConstraintViolations violations = addressValidator.validate(address);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);

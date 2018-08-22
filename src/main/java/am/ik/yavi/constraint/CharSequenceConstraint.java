@@ -5,8 +5,8 @@ import java.net.URL;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
-import static am.ik.yavi.core.Nullable.NULL_IS_INVALID;
-import static am.ik.yavi.core.Nullable.NULL_IS_VALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintHolder;

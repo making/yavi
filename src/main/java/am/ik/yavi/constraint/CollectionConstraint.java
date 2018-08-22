@@ -3,7 +3,7 @@ package am.ik.yavi.constraint;
 import java.util.Collection;
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.core.Nullable.NULL_IS_VALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintHolder;

@@ -6,10 +6,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.Book;
 import am.ik.yavi.Range;
-import am.ik.yavi.core.ConstraintViolations;
-import am.ik.yavi.core.Validator;
 
 public class CustomValidatorTest {
+
+	// This logic is written in
+	// http://en.wikipedia.org/wiki/International_Standard_Book_Number
+	static boolean isISBN13(String isbn) {
+		if (isbn.length() != 13) {
+			return false;
+		}
+		int check = 0;
+		try {
+			for (int i = 0; i < 12; i += 2) {
+				check += Integer.parseInt(isbn.substring(i, i + 1));
+			}
+			for (int i = 1; i < 12; i += 2) {
+				check += Integer.parseInt(isbn.substring(i, i + 1)) * 3;
+			}
+			check += Integer.parseInt(isbn.substring(12));
+		}
+		catch (NumberFormatException e) {
+			return false;
+		}
+		return check % 10 == 0;
+	}
 
 	@Test
 	public void predicate() {
@@ -88,27 +108,5 @@ public class CustomValidatorTest {
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
 		}
-	}
-
-	// This logic is written in
-	// http://en.wikipedia.org/wiki/International_Standard_Book_Number
-	static boolean isISBN13(String isbn) {
-		if (isbn.length() != 13) {
-			return false;
-		}
-		int check = 0;
-		try {
-			for (int i = 0; i < 12; i += 2) {
-				check += Integer.parseInt(isbn.substring(i, i + 1));
-			}
-			for (int i = 1; i < 12; i += 2) {
-				check += Integer.parseInt(isbn.substring(i, i + 1)) * 3;
-			}
-			check += Integer.parseInt(isbn.substring(12));
-		}
-		catch (NumberFormatException e) {
-			return false;
-		}
-		return check % 10 == 0;
 	}
 }

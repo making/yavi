@@ -39,6 +39,7 @@ Add the following repository in order to use snapshots.
 ```
 ### Example
 
+#### Simple
 
 ```java
 Validator<User> validator = new Validator<User>() //
@@ -54,8 +55,14 @@ Validator<User> validator = new Validator<User>() //
                     .lessThanOrEquals(200));
 
 ConstraintViolations violations = validator.validate(user);
-violations.isValid();
+violations.isValid(); // true or false
 violations.forEach(x -> System.out.println(x.message()));
+```
+
+### Nested
+
+```java
+
 ```
 
 ### Required

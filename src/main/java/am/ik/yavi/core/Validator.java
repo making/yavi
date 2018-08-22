@@ -94,18 +94,18 @@ public class Validator<T> {
 
 	public <N> Validator<T> constraint(Function<T, N> nested, String name,
 			Validator<N> validator) {
-		return this.constraint(nested, name, validator, Nullable.NULL_IS_INVALID);
+		return this.constraint(nested, name, validator, NullValidity.NULL_IS_INVALID);
 	}
 
 	public <N> Validator<T> constraintIfNotNull(Function<T, N> nested, String name,
-												Validator<N> validator) {
-		return this.constraint(nested, name, validator, Nullable.NULL_IS_VALID);
+			Validator<N> validator) {
+		return this.constraint(nested, name, validator, NullValidity.NULL_IS_VALID);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <N> Validator<T> constraint(Function<T, N> nested, String name,
-			Validator<N> validator, Nullable nullable) {
-		if (!nullable.skipNull()) {
+			Validator<N> validator, NullValidity nullValidity) {
+		if (!nullValidity.skipNull()) {
 			this.constraintForObject(nested::apply, name, Constraint::notNull);
 		}
 		validator.holdersList.forEach(holders -> {
@@ -145,7 +145,7 @@ public class Validator<T> {
 			for (ConstraintHolder<?> holder : holders.holders()) {
 				Object v = holders.toValue().apply(target);
 				Predicate<Object> predicate = (Predicate<Object>) holder.predicate();
-				if (v == null && holder.nullable().skipNull()) {
+				if (v == null && holder.nullValidity().skipNull()) {
 					continue;
 				}
 				if (!predicate.test(v)) {

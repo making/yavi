@@ -1,6 +1,6 @@
 package am.ik.yavi.constraint;
 
-import static am.ik.yavi.core.Nullable.NULL_IS_VALID;
+import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.ConstraintHolder;
