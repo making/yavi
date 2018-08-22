@@ -22,32 +22,52 @@ import am.ik.yavi.message.MessageFormatter;
 public class ConstraintViolation {
 	private final String name;
 	private final String messageKey;
-	private final String defaultMessageTemplate;
+	private final String defaultMessageFormat;
 	private final Object[] args;
-	private final Object value;
+	private final Object violatedValue;
 	private final MessageFormatter messageFormatter;
 
 	public ConstraintViolation(String name, String messageKey,
-			String defaultMessageTemplate, Object[] args, Object value,
+			String defaultMessageFormat, Object[] args, Object violatedValue,
 			MessageFormatter messageFormatter) {
 		this.name = name;
 		this.messageKey = messageKey;
-		this.defaultMessageTemplate = defaultMessageTemplate;
+		this.defaultMessageFormat = defaultMessageFormat;
 		this.args = args;
-		this.value = value;
+		this.violatedValue = violatedValue;
 		this.messageFormatter = messageFormatter;
 	}
 
 	public String message() {
 		return this.messageFormatter.format(this.name, this.messageKey,
-				this.defaultMessageTemplate, this.args, this.value);
+				this.defaultMessageFormat, this.args, this.violatedValue);
+	}
+
+	public String name() {
+		return this.name;
+	}
+
+	public String messageKey() {
+		return this.messageKey;
+	}
+
+	public String defaultMessageFormat() {
+		return this.defaultMessageFormat;
+	}
+
+	public Object[] args() {
+		return args;
+	}
+
+	public Object violatedValue() {
+		return violatedValue;
 	}
 
 	@Override
 	public String toString() {
 		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='"
-				+ messageKey + '\'' + ", defaultMessageTemplate='"
-				+ defaultMessageTemplate + '\'' + ", args=" + Arrays.toString(args)
-				+ ", value=" + value + ", messageFormatter=" + messageFormatter + '}';
+				+ messageKey + '\'' + ", defaultMessageFormat='" + defaultMessageFormat
+				+ '\'' + ", args=" + Arrays.toString(args) + ", violatedValue="
+				+ violatedValue + ", messageFormatter=" + messageFormatter + '}';
 	}
 }
