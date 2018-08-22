@@ -29,116 +29,116 @@ public class Validator<T> {
 		this.messageFormatter = messageFormatter;
 	}
 
-	public final <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
+	public <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
 			String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
-	public final <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
+	public <E extends CharSequence> Validator<T> constraint(ToCharSequence<T, E> f,
 			Normalizer.Form normalizerForm, String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c,
 				() -> new CharSequenceConstraint<>(normalizerForm));
 	}
 
-	public final Validator<T> constraint(ToByte<T> f, String name,
+	public Validator<T> constraint(ToByte<T> f, String name,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToShort<T> f, String name,
+	public Validator<T> constraint(ToShort<T> f, String name,
 			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToInteger<T> f, String name,
+	public Validator<T> constraint(ToInteger<T> f, String name,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToLong<T> f, String name,
+	public Validator<T> constraint(ToLong<T> f, String name,
 			Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToFloat<T> f, String name,
+	public Validator<T> constraint(ToFloat<T> f, String name,
 			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToDouble<T> f, String name,
+	public Validator<T> constraint(ToDouble<T> f, String name,
 			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToBigInteger<T> f, String name,
+	public Validator<T> constraint(ToBigInteger<T> f, String name,
 			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToBigDecimal<T> f, String name,
+	public Validator<T> constraint(ToBigDecimal<T> f, String name,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
-	public final <L extends Collection<E>, E> Validator<T> constraint(
-			ToCollection<T, L, E> f, String name,
+	public <L extends Collection<E>, E> Validator<T> constraint(ToCollection<T, L, E> f,
+			String name,
 			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
 	}
 
-	public final <K, V> Validator<T> constraint(ToMap<T, K, V> f, String name,
+	public <K, V> Validator<T> constraint(ToMap<T, K, V> f, String name,
 			Function<MapConstraint<T, K, V>, MapConstraint<T, K, V>> c) {
 		return this.constraint(f, name, c, MapConstraint::new);
 	}
 
-	public final <E> Validator<T> constraint(ToObjectArray<T, E> f, String name,
+	public <E> Validator<T> constraint(ToObjectArray<T, E> f, String name,
 			Function<ObjectArrayConstraint<T, E>, ObjectArrayConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToBooleanArray<T> f, String name,
+	public Validator<T> constraint(ToBooleanArray<T> f, String name,
 			Function<BooleanArrayConstraint<T>, BooleanArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, BooleanArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToCharArray<T> f, String name,
+	public Validator<T> constraint(ToCharArray<T> f, String name,
 			Function<CharArrayConstraint<T>, CharArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, CharArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToByteArray<T> f, String name,
+	public Validator<T> constraint(ToByteArray<T> f, String name,
 			Function<ByteArrayConstraint<T>, ByteArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToShortArray<T> f, String name,
+	public Validator<T> constraint(ToShortArray<T> f, String name,
 			Function<ShortArrayConstraint<T>, ShortArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToIntArray<T> f, String name,
+	public Validator<T> constraint(ToIntArray<T> f, String name,
 			Function<IntArrayConstraint<T>, IntArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, IntArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToLongArray<T> f, String name,
+	public Validator<T> constraint(ToLongArray<T> f, String name,
 			Function<LongArrayConstraint<T>, LongArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, LongArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToFloatArray<T> f, String name,
+	public Validator<T> constraint(ToFloatArray<T> f, String name,
 			Function<FloatArrayConstraint<T>, FloatArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatArrayConstraint::new);
 	}
 
-	public final Validator<T> constraint(ToDoubleArray<T> f, String name,
+	public Validator<T> constraint(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
-	public final <E> Validator<T> constraintForObject(Function<T, E> f, String name,
+	public <E> Validator<T> constraintForObject(Function<T, E> f, String name,
 			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
@@ -154,7 +154,7 @@ public class Validator<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <N> Validator<T> constraint(Function<T, N> nested, String name,
+	protected <N> Validator<T> constraint(Function<T, N> nested, String name,
 			Validator<N> validator, NullValidity nullValidity) {
 		if (!nullValidity.skipNull()) {
 			this.constraintForObject(nested, name, Constraint::notNull);
@@ -183,7 +183,7 @@ public class Validator<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ConstraintViolations validate(T target) {
+	public final ConstraintViolations validate(T target) {
 		ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
 			if (predicates instanceof NestedConstraintPredicates) {
