@@ -42,9 +42,11 @@ public abstract class NumberConstraintBase<T, V extends Number, C extends Constr
 	}
 
 	public C greaterThanOrEquals(V min) {
-		this.predicates().add(new ConstraintPredicate<>(this.isGreaterThanOrEquals(min),
-				"number.greaterThanOrEquals", "\"{0}\" must not be greater than {1}",
-				() -> new Object[] { min }, NULL_IS_VALID));
+		this.predicates()
+				.add(new ConstraintPredicate<>(this.isGreaterThanOrEquals(min),
+						"number.greaterThanOrEquals",
+						"\"{0}\" must not be greater than or equal to {1}",
+						() -> new Object[] { min }, NULL_IS_VALID));
 		return cast();
 	}
 
@@ -59,7 +61,8 @@ public abstract class NumberConstraintBase<T, V extends Number, C extends Constr
 	public C lessThanOrEquals(V max) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(this.isLessThanOrEquals(max),
-						"number.lessThanOrEquals", "\"{0}\" must not be less than {1}",
+						"number.lessThanOrEquals",
+						"\"{0}\" must not be less than or equal to {1}",
 						() -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
