@@ -83,13 +83,33 @@ Validator<Address> validator = new Validator<Address>() //
 ### Custom
 
 ```java
+public enum IsbnConstraint implements CustomConstraint<CharSequence> {
+    SINGLETON;
+
+    @Override
+    public Predicate<CharSequence> predicate() {
+        return v -> isISBN13(v.toString());
+    }
+
+    @Override
+    public String messageKey() {
+        return "custom.isbn13";
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return "\"{0}\" must be ISBN13 format";
+    }
+}
+```
+
+```java
 Validator<Book> book = new Validator<Book>() //
             .constraint(Book::getTitle, "title", c -> c.notBlank() //
                     .greaterThanOrEquals(1) //
                     .lessThanOrEquals(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
-                    .predicate(v -> isISBN13(v.toString()), //
-                            "custom.isbn13", "\"{0}\" must be ISBN13 format")); //
+                    .predicate(IsbnConstraint.SINGLETON)); //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)

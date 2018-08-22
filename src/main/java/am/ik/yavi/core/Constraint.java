@@ -40,4 +40,14 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 						() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
+
+	default C predicate(CustomConstraint<V> constraint) {
+		return this.predicate(constraint.predicate(), constraint.messageKey(),
+				constraint.defaultMessageFormat());
+	}
+
+	default C predicateNullable(CustomConstraint<V> constraint) {
+		return this.predicateNullable(constraint.predicate(), constraint.messageKey(),
+				constraint.defaultMessageFormat());
+	}
 }
