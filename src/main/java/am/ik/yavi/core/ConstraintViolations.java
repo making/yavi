@@ -17,6 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ConstraintViolations implements List<ConstraintViolation> {
 	private final List<ConstraintViolation> delegate = new ArrayList<>();
@@ -39,6 +40,11 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	@Override
 	public String toString() {
 		return this.delegate.toString();
+	}
+
+	public List<ViolationDetail> details() {
+		return this.delegate.stream().map(ConstraintViolation::detail)
+				.collect(Collectors.toList());
 	}
 
 	/**

@@ -61,6 +61,10 @@ public class ConstraintViolation {
 		return this.args[this.args.length - 1];
 	}
 
+	public ViolationDetail detail() {
+		return new ViolationDetail(this.messageKey, this.args, this.message());
+	}
+
 	@Override
 	public String toString() {
 		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='"

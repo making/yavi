@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.text.Normalizer;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -67,6 +68,28 @@ public class ValidatorTest {
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"age\" must be less than or equal to 200");
 		assertThat(violations.get(2).messageKey()).isEqualTo("number.lessThanOrEqual");
+	}
+
+	@Test
+	public void details() throws Exception {
+		User user = new User("", "example.com", 300);
+		Validator<User> validator = validator();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		List<ViolationDetail> details = violations.details();
+		assertThat(details.size()).isEqualTo(3);
+		assertThat(details.get(0).getDefaultMessage())
+				.isEqualTo("The size of \"name\" must be greater than or equal to 1");
+		assertThat(details.get(0).getKey()).isEqualTo("container.greaterThanOrEqual");
+		assertThat(details.get(0).getArgs()).containsExactly("name", 1, "");
+		assertThat(details.get(1).getDefaultMessage())
+				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(details.get(1).getKey()).isEqualTo("charSequence.email");
+		assertThat(details.get(1).getArgs()).containsExactly("email", "example.com");
+		assertThat(details.get(2).getDefaultMessage())
+				.isEqualTo("\"age\" must be less than or equal to 200");
+		assertThat(details.get(2).getKey()).isEqualTo("number.lessThanOrEqual");
+		assertThat(details.get(2).getArgs()).containsExactly("age", 200, 300);
 	}
 
 	@Test
