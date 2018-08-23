@@ -124,14 +124,44 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void combiningCharacter() throws Exception {
+	public void combiningCharacterValid() throws Exception {
 		User user = new User("モシ\u3099", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, Normalizer.Form.NFC, "name",
-						c -> c.lessThanOrEqual(2))
+						c -> c.fixedSize(2).asByteArray().fixedSize(9))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void combiningCharacterByteSizeInValid() throws Exception {
+		User user = new User("モシ\u3099", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, Normalizer.Form.NFC, "name",
+						c -> c.lessThanOrEqual(2).asByteArray().lessThanOrEqual(6))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("The byte size of \"name\" must be less than or equal to 6");
+	}
+
+	@Test
+	public void combiningCharacterSizeAndByteSizeInValid() throws Exception {
+		User user = new User("モシ\u3099", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, Normalizer.Form.NFC, "name",
+						c -> c.lessThanOrEqual(1).asByteArray().lessThanOrEqual(3))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(2);
+		assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 1");
+		assertThat(violations.get(1).message())
+				.isEqualTo("The byte size of \"name\" must be less than or equal to 3");
 	}
 
 	@Test

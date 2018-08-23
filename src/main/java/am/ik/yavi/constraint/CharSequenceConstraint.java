@@ -17,6 +17,8 @@ package am.ik.yavi.constraint;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
@@ -102,5 +104,74 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 						"charSequence.pattern", "\"{0}\" must match {1}",
 						() -> new Object[] { regex }, NULL_IS_VALID));
 		return this;
+	}
+
+	public ByteSizeConstraint<T, E> asByteArray(Charset charset) {
+		return new ByteSizeConstraint<>(this, charset);
+	}
+
+	public ByteSizeConstraint<T, E> asByteArray() {
+		return this.asByteArray(StandardCharsets.UTF_8);
+	}
+
+	public static class ByteSizeConstraint<T, E extends CharSequence>
+			extends CharSequenceConstraint<T, E> {
+		private final Charset charset;
+
+		private ByteSizeConstraint(CharSequenceConstraint<T, E> delete, Charset charset) {
+			super();
+			this.charset = charset;
+			this.predicates().addAll(delete.predicates());
+		}
+
+		@Override
+		public ByteSizeConstraint<T, E> cast() {
+			return this;
+		}
+
+		private int size(E x) {
+			return x.toString().getBytes(charset).length;
+		}
+
+		public ByteSizeConstraint<T, E> lessThan(int max) {
+			this.predicates().add(new ConstraintPredicate<>(x -> size(x) < max,
+					"byteSize.lessThan", "The size of \"{0}\" must be less than {1}",
+					() -> new Object[] { max }, NULL_IS_VALID));
+			return this;
+		}
+
+		public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
+			this.predicates()
+					.add(new ConstraintPredicate<>(x -> size(x) <= max,
+							"byteSize.lessThanOrEqual",
+							"The byte size of \"{0}\" must be less than or equal to {1}",
+							() -> new Object[] { max }, NULL_IS_VALID));
+			return this;
+		}
+
+		public ByteSizeConstraint<T, E> greaterThan(int min) {
+			this.predicates()
+					.add(new ConstraintPredicate<>(x -> size(x) > min,
+							"byteSize.greaterThan",
+							"The byte size of \"{0}\" must be greater than {1}",
+							() -> new Object[] { min }, NULL_IS_VALID));
+			return this;
+		}
+
+		public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
+			this.predicates().add(new ConstraintPredicate<>(x -> size(x) >= min,
+					"byteSize.greaterThanOrEqual",
+					"The byte size of \"{0}\" must be greater than or equal to {1}",
+					() -> new Object[] { min }, NULL_IS_VALID));
+			return this;
+		}
+
+		public ByteSizeConstraint<T, E> fixedSize(int size) {
+			this.predicates()
+					.add(new ConstraintPredicate<>(x -> size(x) == size,
+							"byteSize.fixedSize", "The byte size of \"{0}\" must be {1}",
+							() -> new Object[] { size }, NULL_IS_VALID));
+			return this;
+		}
 	}
 }
