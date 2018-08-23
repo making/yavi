@@ -182,16 +182,35 @@ public class ValidatorBuilder<T> {
 		validator.predicatesList.forEach(predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
-					(Function<T, Object>) ((T target) -> {
-						N nestedValue = nested.apply(target);
-						if (nestedValue == null) {
-							return null;
-						}
-						return predicates.toValue().apply(nestedValue);
-					}), nestedName, predicates.predicates(), nested);
+					this.toNestedValue(nested, predicates), nestedName,
+					predicates.predicates(), nested);
 			this.predicatesList.add(constraintPredicates);
 		});
 		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <N> ValidatorBuilder<T> constraint(Function<T, N> nested,
+			Function<ValidatorBuilder<N>, ValidatorBuilder<N>> converter) {
+		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
+		builder.predicatesList.forEach(predicates -> {
+			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
+					this.toNestedValue(nested, predicates), predicates.name(),
+					predicates.predicates(), nested);
+			this.predicatesList.add(constraintPredicates);
+		});
+		return this;
+	}
+
+	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
+			ConstraintPredicates<N, ?> predicates) {
+		return (T target) -> {
+			N nestedValue = nested.apply(target);
+			if (nestedValue == null) {
+				return null;
+			}
+			return predicates.toValue().apply(nestedValue);
+		};
 	}
 
 	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(

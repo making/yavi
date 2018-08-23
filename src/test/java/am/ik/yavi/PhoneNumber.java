@@ -24,6 +24,10 @@ public class PhoneNumber {
 		this.value = value;
 	}
 
+	public String value() {
+		return this.value;
+	}
+
 	public static Validator<PhoneNumber> validator() {
 		return Validator.<PhoneNumber> builder()
 				.constraint((PhoneNumber p) -> p.value, "value",

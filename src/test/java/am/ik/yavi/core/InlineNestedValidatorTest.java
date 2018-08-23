@@ -18,15 +18,21 @@ package am.ik.yavi.core;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.constraint.Constraint;
 
-public class NestedValidatorTest extends AbstractNestedValidatorTest {
+public class InlineNestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
 	protected Validator<Address> validator() {
 		return Validator.<Address> builder()
 				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-				.constraint(Address::country, "country", Country.validator())
-				.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
-						PhoneNumber.validator())
+				.constraintForObject(Address::country, "country", Constraint::notNull)
+				.constraint(Address::country,
+						b -> b.constraint(Country::name, "country.name", c -> c.notBlank() //
+								.greaterThanOrEqual(2)))
+				.constraint(Address::phoneNumber,
+						b -> b.constraint(PhoneNumber::value, "phoneNumber.value",
+								c -> c.notBlank() //
+										.greaterThanOrEqual(8)))
 				.build();
 	}
 }
