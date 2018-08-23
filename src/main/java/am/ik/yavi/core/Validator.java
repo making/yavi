@@ -36,7 +36,8 @@ public final class Validator<T> {
 		return new ValidatorBuilder<>();
 	}
 
-	public static <T> ValidatorBuilder<T> builder(Class<T> clazz) {
+	public static <T> ValidatorBuilder<T> builder(
+			@SuppressWarnings("unused") Class<T> clazz) {
 		return new ValidatorBuilder<>();
 	}
 
