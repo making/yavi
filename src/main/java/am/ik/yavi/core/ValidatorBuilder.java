@@ -234,6 +234,24 @@ public class ValidatorBuilder<T> {
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name,
 			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
+		return this.constraintForEach(toCollection, name, converter,
+				NullValidity.NULL_IS_INVALID);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfNotNullForEach(
+			ToCollection<T, L, E> toCollection, String name,
+			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
+		return this.constraintForEach(toCollection, name, converter,
+				NullValidity.NULL_IS_VALID);
+	}
+
+	protected <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
+			ToCollection<T, L, E> toCollection, String name,
+			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter,
+			NullValidity nullValidity) {
+		if (!nullValidity.skipNull()) {
+			this.constraintForObject(toCollection, name, Constraint::notNull);
+		}
 		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
 		this.collectionValidators
 				.add(new CollectionValidator<>(toCollection, name, builder.build()));
