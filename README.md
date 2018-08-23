@@ -84,7 +84,7 @@ Validator<Address> validator = Validator.<Address> builder() //
 
 or
 
-```
+```java
 Validator<Address> validator = Validator.<Address> builder() //
             .constraintForObject(Address::getCountry, "country", Constraint::notNull)
             .constraint(Address::getCountry, //
