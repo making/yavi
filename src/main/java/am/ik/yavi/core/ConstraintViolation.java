@@ -24,7 +24,6 @@ public class ConstraintViolation {
 	private final String messageKey;
 	private final String defaultMessageFormat;
 	private final Object[] args;
-	private final Object violatedValue;
 	private final MessageFormatter messageFormatter;
 
 	public ConstraintViolation(String name, String messageKey,
@@ -34,13 +33,12 @@ public class ConstraintViolation {
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		this.args = args;
-		this.violatedValue = violatedValue;
 		this.messageFormatter = messageFormatter;
 	}
 
 	public String message() {
 		return this.messageFormatter.format(this.name, this.messageKey,
-				this.defaultMessageFormat, this.args, this.violatedValue);
+				this.defaultMessageFormat, this.args);
 	}
 
 	public String name() {
@@ -60,14 +58,13 @@ public class ConstraintViolation {
 	}
 
 	public Object violatedValue() {
-		return violatedValue;
+		return this.args[this.args.length - 1];
 	}
 
 	@Override
 	public String toString() {
 		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='"
 				+ messageKey + '\'' + ", defaultMessageFormat='" + defaultMessageFormat
-				+ '\'' + ", args=" + Arrays.toString(args) + ", violatedValue="
-				+ violatedValue + ", messageFormatter=" + messageFormatter + '}';
+				+ '\'' + ", args=" + Arrays.toString(args) + '}';
 	}
 }
