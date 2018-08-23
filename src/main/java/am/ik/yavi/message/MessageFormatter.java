@@ -15,7 +15,8 @@
  */
 package am.ik.yavi.message;
 
+@FunctionalInterface
 public interface MessageFormatter {
-	String format(String name, String messageKey, String defaultMessageTemplate,
+	String format(String name, String messageKey, String defaultMessageFormat,
 			Object[] args);
 }
