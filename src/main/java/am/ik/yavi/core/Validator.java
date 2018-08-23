@@ -34,8 +34,7 @@ public final class Validator<T> {
 			MessageFormatter messageFormatter) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
-		this.collectionValidators = Collections
-				.unmodifiableList(collectionValidators);
+		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
 		this.messageFormatter = messageFormatter;
 	}
 
@@ -88,8 +87,10 @@ public final class Validator<T> {
 				int i = 0;
 				for (Object element : collection) {
 					if (element != null) {
-						ConstraintViolations v = validator.validate(element,
-								collectionValidator.name(), i++);
+						String nestedName = this.indexedName(collectionValidator.name(),
+								collectionName, index);
+						ConstraintViolations v = validator.validate(element, nestedName,
+								i++);
 						violations.addAll(v);
 					}
 				}
