@@ -67,7 +67,7 @@ public class ValidatorTest {
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"age\" must be less than or equal to 200");
-		assertThat(violations.get(2).messageKey()).isEqualTo("number.lessThanOrEqual");
+		assertThat(violations.get(2).messageKey()).isEqualTo("numeric.lessThanOrEqual");
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class ValidatorTest {
 		assertThat(details.get(1).getArgs()).containsExactly("email", "example.com");
 		assertThat(details.get(2).getDefaultMessage())
 				.isEqualTo("\"age\" must be less than or equal to 200");
-		assertThat(details.get(2).getKey()).isEqualTo("number.lessThanOrEqual");
+		assertThat(details.get(2).getKey()).isEqualTo("numeric.lessThanOrEqual");
 		assertThat(details.get(2).getArgs()).containsExactly("age", 200, 300);
 	}
 
@@ -154,7 +154,7 @@ public class ValidatorTest {
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"age\" must be greater than or equal to 0");
 			assertThat(violations.get(0).messageKey())
-					.isEqualTo("number.greaterThanOrEqual");
+					.isEqualTo("numeric.greaterThanOrEqual");
 		}
 	}
 
@@ -176,6 +176,7 @@ public class ValidatorTest {
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"age\" must be greater than or equal to 0");
-		assertThat(violations.get(0).messageKey()).isEqualTo("number.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey())
+				.isEqualTo("numeric.greaterThanOrEqual");
 	}
 }

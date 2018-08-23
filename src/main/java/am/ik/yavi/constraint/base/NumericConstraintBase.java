@@ -36,7 +36,7 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	public C greaterThan(V min) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(this.isGreaterThan(min),
-						"number.greaterThan", "\"{0}\" must be greater than {1}",
+						"numeric.greaterThan", "\"{0}\" must be greater than {1}",
 						() -> new Object[] { min }, NULL_IS_VALID));
 		return cast();
 	}
@@ -44,7 +44,7 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	public C greaterThanOrEqual(V min) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(this.isGreaterThanOrEqual(min),
-						"number.greaterThanOrEqual",
+						"numeric.greaterThanOrEqual",
 						"\"{0}\" must be greater than or equal to {1}",
 						() -> new Object[] { min }, NULL_IS_VALID));
 		return cast();
@@ -52,7 +52,7 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 
 	public C lessThan(V max) {
 		this.predicates()
-				.add(new ConstraintPredicate<>(this.isLessThan(max), "number.lessThan",
+				.add(new ConstraintPredicate<>(this.isLessThan(max), "numeric.lessThan",
 						"\"{0}\" must be less than {1}", () -> new Object[] { max },
 						NULL_IS_VALID));
 		return cast();
@@ -60,7 +60,7 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 
 	public C lessThanOrEqual(V max) {
 		this.predicates().add(new ConstraintPredicate<>(this.isLessThanOrEqual(max),
-				"number.lessThanOrEqual", "\"{0}\" must be less than or equal to {1}",
+				"numeric.lessThanOrEqual", "\"{0}\" must be less than or equal to {1}",
 				() -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
