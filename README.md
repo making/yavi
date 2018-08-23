@@ -152,14 +152,14 @@ YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/d
 
 ```java
 static RouterFunction<ServerResponse> routes() {
-    return route(POST("/"), req -> req.bodyToMono(Message.class) //
+    return route(POST("/"), req -> req.bodyToMono(User.class) //
             .flatMap(body -> validator.validateToEither(body) //
                     .fold(violations -> {
                         Map<String, Object> res = new LinkedHashMap<>();
                         res.put("message", "Invalid request body");
                         res.put("details", violations.details());
                         return badRequest().syncBody(res);
-                    }, b -> ok().syncBody(b))));
+                    }, user -> ok().syncBody(user))));
 }
 ```
 
