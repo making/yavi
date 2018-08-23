@@ -43,7 +43,7 @@ If you want to try a snapshot version, add the following repository:
 #### Simple
 
 ```java
-Validator<User> validator = Validator.<User> builder() //
+Validator<User> validator = Validator.<User> builder() // or Validator.builder(User.class)
             .constraint(User::getName, "name", c -> c.notNull() //
                     .lessThanOrEqual(20)) //
             .constraint(User::getEmail, "email", c -> c.notNull() //
@@ -81,6 +81,23 @@ Validator<Address> validator = Validator.<Address> builder() //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/NestedValidatorTest.java)
+
+or
+
+```
+Validator<Address> validator = Validator.<Address> builder() //
+            .constraintForObject(Address::getCountry, "country", Constraint::notNull)
+            .constraint(Address::getCountry, //
+                        b -> b.constraint(Country::getName, "country.name", c -> c.notBlank() //
+                                             								.greaterThanOrEqual(20))) //
+            .constraintForObject(Address::getCity, "city", Constraint::notNull)
+            .constraint(Address::getCity, //
+                        b -> b.constraint(City::getName, "city.name", c -> c.notBlank() //
+                                             								.greaterThanOrEqual(100))) //
+            .build();
+```
+
+[sample code](src/test/java/am/ik/yavi/core/InlineNestedValidatorTest.java)
 
 ### Custom
 
