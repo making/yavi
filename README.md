@@ -62,7 +62,7 @@ violations.forEach(x -> System.out.println(x.message()));
 
 [sample code](src/test/java/am/ik/yavi/core/ValidatorTest.java)
 
-### Nested
+#### Nested
 
 ```java
 Validator<Country> countryValidator = Validator.<Country> builder() //
@@ -99,7 +99,7 @@ Validator<Address> validator = Validator.<Address> builder() //
 
 [sample code](src/test/java/am/ik/yavi/core/InlineNestedValidatorTest.java)
 
-### Custom
+#### Custom
 
 ```java
 public enum IsbnConstraint implements CustomConstraint<String> {
@@ -132,6 +132,19 @@ Validator<Book> book = Validator.<Book> builder() //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
+
+#### Either API
+
+```java
+Either<User, ConstraintViolations> either = validator.validateToEither(user);
+
+Optional<User> user = either.left();
+Optional<ConstraintViolations> violations = either.right();
+
+HttpStatus status = either.fold(u -> HttpStatus.OK, v -> HttpStatus.BAD_REQUEST);
+```
+
+[Either API](src/main/java/am/ik/yavi/fn/Either.java)
 
 ### Required
 
