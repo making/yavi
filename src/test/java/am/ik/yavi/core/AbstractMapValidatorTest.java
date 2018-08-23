@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import org.junit.Test;
 
@@ -23,28 +23,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
-import am.ik.yavi.FormWithCollection;
+import am.ik.yavi.FormWithMap;
 import am.ik.yavi.PhoneNumber;
 
-public abstract class AbstractCollectionValidatorTest {
-	protected abstract Validator<FormWithCollection> validator();
+public abstract class AbstractMapValidatorTest {
+	protected abstract Validator<FormWithMap> validator();
 
 	@Test
 	public void valid() throws Exception {
-		Validator<FormWithCollection> validator = validator();
-		FormWithCollection form = new FormWithCollection(Arrays.asList(
-				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
-				new Address(new Country("JP"), "osaka", new PhoneNumber("0123456788"))));
+		Validator<FormWithMap> validator = validator();
+		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
+			{
+				put("tokyo", new Address(new Country("JP"), "tokyo",
+						new PhoneNumber("0123456789")));
+				put("osaka", new Address(new Country("JP"), "osaka",
+						new PhoneNumber("0123456788")));
+			}
+		});
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
 	}
 
 	@Test
 	public void allInvalid() throws Exception {
-		Validator<FormWithCollection> validator = validator();
-		FormWithCollection form = new FormWithCollection(
-				Arrays.asList(new Address(new Country(null), null, new PhoneNumber("")),
-						new Address(new Country(null), null, new PhoneNumber(""))));
+		Validator<FormWithMap> validator = validator();
+		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
+			{
+				put("tokyo", new Address(new Country(null), null, new PhoneNumber("")));
+				put("osaka", new Address(new Country(null), null, new PhoneNumber("")));
+			}
+		});
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(8);
@@ -78,11 +86,14 @@ public abstract class AbstractCollectionValidatorTest {
 
 	@Test
 	public void inValidOne() throws Exception {
-		Validator<FormWithCollection> validator = validator();
-
-		FormWithCollection form = new FormWithCollection(Arrays.asList(
-				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
-				new Address(new Country(null), null, new PhoneNumber(""))));
+		Validator<FormWithMap> validator = validator();
+		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
+			{
+				put("tokyo", new Address(new Country("JP"), "tokyo",
+						new PhoneNumber("0123456789")));
+				put("osaka", new Address(new Country(null), null, new PhoneNumber("")));
+			}
+		});
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(4);
@@ -103,11 +114,14 @@ public abstract class AbstractCollectionValidatorTest {
 
 	@Test
 	public void nullElement() throws Exception {
-		Validator<FormWithCollection> validator = validator();
-
-		FormWithCollection form = new FormWithCollection(Arrays.asList(
-				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
-				null));
+		Validator<FormWithMap> validator = validator();
+		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
+			{
+				put("tokyo", new Address(new Country("JP"), "tokyo",
+						new PhoneNumber("0123456789")));
+				put("osaka", null);
+			}
+		});
 		// FIXME: does not check null element
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
@@ -115,9 +129,9 @@ public abstract class AbstractCollectionValidatorTest {
 
 	@Test
 	public void nullCollectionInValid() throws Exception {
-		Validator<FormWithCollection> validator = validator();
+		Validator<FormWithMap> validator = validator();
 
-		FormWithCollection form = new FormWithCollection(null);
+		FormWithMap form = new FormWithMap(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);

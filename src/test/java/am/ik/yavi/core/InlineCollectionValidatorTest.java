@@ -21,14 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
-import am.ik.yavi.Form;
+import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 
 public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Override
-	public Validator<Form> validator() {
-		return Validator.builder(Form.class) //
-				.constraintForEach(Form::getAddresses, "addresses", b -> b
+	public Validator<FormWithCollection> validator() {
+		return Validator.builder(FormWithCollection.class) //
+				.constraintForEach(FormWithCollection::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
 						.constraint(Address::country, "country", Country.validator())
@@ -39,15 +39,15 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<Form> validator = Validator.builder(Form.class) //
-				.constraintIfNotNullForEach(Form::getAddresses, "addresses", b -> b
+		Validator<FormWithCollection> validator = Validator.builder(FormWithCollection.class) //
+				.constraintIfNotNullForEach(FormWithCollection::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
 						.constraint(Address::country, "country", Country.validator())
 						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
-		Form form = new Form(null);
+		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
 	}

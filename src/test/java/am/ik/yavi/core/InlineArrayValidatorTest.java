@@ -21,31 +21,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
-import am.ik.yavi.FormWithCollection;
+import am.ik.yavi.FormWithArray;
 import am.ik.yavi.PhoneNumber;
 
-public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
-	Validator<Address> addressValidator = Validator.<Address> builder()
-			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraint(Address::country, "country", Country.validator())
-			.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
-					PhoneNumber.validator())
-			.build();
-
+public class InlineArrayValidatorTest extends AbstractArrayValidatorTest {
 	@Override
-	public Validator<FormWithCollection> validator() {
-		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses", addressValidator)
+	public Validator<FormWithArray> validator() {
+		return Validator.builder(FormWithArray.class) //
+				.constraintForEach(FormWithArray::getAddresses, "addresses", b -> b
+						.constraint(Address::street, "street",
+								c -> c.notBlank().lessThan(32))
+						.constraint(Address::country, "country", Country.validator())
+						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+								PhoneNumber.validator()))
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = Validator.builder(FormWithCollection.class) //
-				.constraintIfNotNullForEach(FormWithCollection::getAddresses, "addresses",
-						addressValidator)
+		Validator<FormWithArray> validator = Validator.builder(FormWithArray.class) //
+				.constraintIfNotNullForEach(FormWithArray::getAddresses, "addresses",
+						b -> b.constraint(Address::street, "street",
+								c -> c.notBlank().lessThan(32))
+								.constraint(Address::country, "country",
+										Country.validator())
+								.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
-		FormWithCollection form = new FormWithCollection(null);
+		FormWithArray form = new FormWithArray(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
 	}

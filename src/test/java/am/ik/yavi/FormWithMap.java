@@ -15,16 +15,16 @@
  */
 package am.ik.yavi;
 
-import java.util.List;
+import java.util.Map;
 
-public class Form {
-	private final List<Address> addresses;
+public class FormWithMap {
+	private final Map<String, Address> addresses;
 
-	public Form(List<Address> addresses) {
+	public FormWithMap(Map<String, Address> addresses) {
 		this.addresses = addresses;
 	}
 
-	public List<Address> getAddresses() {
+	public Map<String, Address> getAddresses() {
 		return addresses;
 	}
 }

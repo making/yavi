@@ -18,10 +18,7 @@ package am.ik.yavi.core;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -258,6 +255,53 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
+	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
+			Validator<V> validator) {
+		return this.constraintForEach(this.toMapToCollection(toMap), name, validator);
+	}
+
+	public <K, V> ValidatorBuilder<T> constraintIfNotNullForEach(ToMap<T, K, V> toMap,
+			String name, Validator<V> validator) {
+		return this.constraintIfNotNullForEach(this.toMapToCollection(toMap), name,
+				validator);
+	}
+
+	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
+			Function<ValidatorBuilder<V>, ValidatorBuilder<V>> converter) {
+		return this.constraintForEach(this.toMapToCollection(toMap), name, converter);
+	}
+
+	public <K, V> ValidatorBuilder<T> constraintIfNotNullForEach(ToMap<T, K, V> toMap,
+			String name, Function<ValidatorBuilder<V>, ValidatorBuilder<V>> converter) {
+		return this.constraintIfNotNullForEach(this.toMapToCollection(toMap), name,
+				converter);
+	}
+
+	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
+			String name, Validator<E> validator) {
+		return this.constraintForEach(this.toObjectArrayToCollection(toObjectArray), name,
+				validator);
+	}
+
+	public <E> ValidatorBuilder<T> constraintIfNotNullForEach(
+			ToObjectArray<T, E> toObjectArray, String name, Validator<E> validator) {
+		return this.constraintIfNotNullForEach(
+				this.toObjectArrayToCollection(toObjectArray), name, validator);
+	}
+
+	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
+			String name, Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
+		return this.constraintForEach(this.toObjectArrayToCollection(toObjectArray), name,
+				converter);
+	}
+
+	public <E> ValidatorBuilder<T> constraintIfNotNullForEach(
+			ToObjectArray<T, E> toObjectArray, String name,
+			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
+		return this.constraintIfNotNullForEach(
+				this.toObjectArrayToCollection(toObjectArray), name, converter);
+	}
+
 	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
 			ConstraintPredicates<N, ?> predicates) {
 		return (T target) -> {
@@ -266,6 +310,28 @@ public class ValidatorBuilder<T> {
 				return null;
 			}
 			return predicates.toValue().apply(nestedValue);
+		};
+	}
+
+	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
+			ToMap<T, K, V> toMap) {
+		return t -> {
+			Map<K, V> map = toMap.apply(t);
+			if (map == null) {
+				return null;
+			}
+			return map.values();
+		};
+	}
+
+	private <E> ToCollection<T, Collection<E>, E> toObjectArrayToCollection(
+			ToObjectArray<T, E> toObjectArray) {
+		return t -> {
+			E[] array = toObjectArray.apply(t);
+			if (array == null) {
+				return null;
+			}
+			return Arrays.asList(array);
 		};
 	}
 

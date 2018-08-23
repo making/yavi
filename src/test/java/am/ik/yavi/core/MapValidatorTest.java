@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
-import am.ik.yavi.FormWithCollection;
+import am.ik.yavi.FormWithMap;
 import am.ik.yavi.PhoneNumber;
 
-public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
+public class MapValidatorTest extends AbstractMapValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.constraint(Address::country, "country", Country.validator())
@@ -33,19 +33,20 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 			.build();
 
 	@Override
-	public Validator<FormWithCollection> validator() {
-		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses", addressValidator)
+	public Validator<FormWithMap> validator() {
+		return Validator.builder(FormWithMap.class) //
+				.constraintForEach(FormWithMap::getAddresses, "addresses",
+						addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = Validator.builder(FormWithCollection.class) //
-				.constraintIfNotNullForEach(FormWithCollection::getAddresses, "addresses",
+		Validator<FormWithMap> validator = Validator.builder(FormWithMap.class) //
+				.constraintIfNotNullForEach(FormWithMap::getAddresses, "addresses",
 						addressValidator)
 				.build();
-		FormWithCollection form = new FormWithCollection(null);
+		FormWithMap form = new FormWithMap(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
 	}
