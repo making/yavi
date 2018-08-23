@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
 
 public final class Validator<T> {
@@ -68,6 +69,16 @@ public final class Validator<T> {
 			}
 		}
 		return violations;
+	}
+
+	public final Either<T, ConstraintViolations> validateToEither(T target) {
+		ConstraintViolations violations = this.validate(target);
+		if (violations.isValid()) {
+			return Either.left(target);
+		}
+		else {
+			return Either.right(violations);
+		}
 	}
 
 	private Object[] pad(String name, Object[] args, Object value) {

@@ -22,6 +22,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.User;
+import am.ik.yavi.fn.Either;
 
 public class ValidatorTest {
 	Validator<User> validator() {
@@ -106,5 +107,26 @@ public class ValidatorTest {
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void validateToEitherValid() throws Exception {
+		User user = new User("foo", "foo@example.com", 30);
+		Either<User, ConstraintViolations> either = validator().validateToEither(user);
+		assertThat(either.isLeft()).isTrue();
+		assertThat(either.left().get()).isSameAs(user);
+	}
+
+	@Test
+	public void validateToEitherInValid() throws Exception {
+		User user = new User("foo", "foo@example.com", -1);
+		Either<User, ConstraintViolations> either = validator().validateToEither(user);
+		assertThat(either.isRight()).isTrue();
+		ConstraintViolations violations = either.right().get();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"age\" must not be greater than or equal to 0");
+		assertThat(violations.get(0).messageKey()).isEqualTo("number.greaterThanOrEqual");
 	}
 }
