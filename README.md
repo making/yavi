@@ -172,10 +172,29 @@ static RouterFunction<ServerResponse> routes() {
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
     ConstraintViolations violations = validator.validate(userForm);
     if (!violations.isValid()) {
-        violations.forEach(v -> bindingResult.rejectValue(v.name(), v.messageKey(), v.args(), v.message()));
+        violations.forEach(v -> 
+            bindingResult.rejectValue(v.name(), v.messageKey(), v.args(), v.message()));
         return "userForm";
     }
     // ...
+    return "redirect:/";
+}
+```
+
+or 
+
+```java
+@PostMapping("users")
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    return validator.validateToEither(userForm)
+        .fold(violations -> {
+            violations.forEach(v -> 
+                bindingResult.rejectValue(v.name(), v.messageKey(), v.args(), v.message()));
+            return "userForm";
+        }, form -> {
+            // ...
+            return "redirect:/";
+        });
 }
 ```
 
