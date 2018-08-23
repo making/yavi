@@ -209,4 +209,21 @@ public class ValidatorTest {
 		assertThat(violations.get(0).messageKey())
 				.isEqualTo("numeric.greaterThanOrEqual");
 	}
+
+	@Test
+	public void customMessageFormatter() throws Exception {
+		Validator<User> validator = Validator.builder(User.class)
+				.messageFormatter((name, messageKey, defaultMessageFormat,
+						args) -> name.toUpperCase() + "." + messageKey.toUpperCase())
+				.constraint(User::getAge, "age", c -> c.notNull() //
+						.greaterThanOrEqual(0) //
+						.lessThanOrEqual(20))
+				.build();
+		User user = new User("foo", "foo@example.com", 30);
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo("AGE.NUMERIC.LESSTHANOREQUAL");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.lessThanOrEqual");
+	}
 }
