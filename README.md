@@ -14,6 +14,8 @@ The concepts are
 * No more Java Beans!
 * Zero dependency!
 
+If you are not fun of [Bean Validation](https://beanvalidation.org/), YAVI will be a nice alternative.
+
 ### Usage
 
 Add the following dependency in your `pom.xml`
