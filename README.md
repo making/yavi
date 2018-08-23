@@ -165,6 +165,20 @@ static RouterFunction<ServerResponse> routes() {
 }
 ```
 
+#### Example with Spring MVC
+
+```java
+@PostMapping("users")
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    ConstraintViolations violations = validator.validate(userForm);
+    if (!violations.isValid()) {
+        violations.forEach(v -> bindingResult.rejectValue(v.name(), v.messageKey(), v.args(), v.message()));
+        return "userForm";
+    }
+    // ...
+}
+```
+
 ### Required
 
 * Java 8+
