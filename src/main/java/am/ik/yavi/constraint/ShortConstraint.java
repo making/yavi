@@ -17,10 +17,10 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumberConstraintBase;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class ShortConstraint<T>
-		extends NumberConstraintBase<T, Short, ShortConstraint<T>> {
+		extends NumericConstraintBase<T, Short, ShortConstraint<T>> {
 	@Override
 	protected Predicate<Short> isGreaterThan(Short min) {
 		return x -> x > min;

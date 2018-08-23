@@ -17,9 +17,9 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumberConstraintBase;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class LongConstraint<T> extends NumberConstraintBase<T, Long, LongConstraint<T>> {
+public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstraint<T>> {
 	@Override
 	protected Predicate<Long> isGreaterThan(Long min) {
 		return x -> x > min;

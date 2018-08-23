@@ -17,10 +17,10 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumberConstraintBase;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class FloatConstraint<T>
-		extends NumberConstraintBase<T, Float, FloatConstraint<T>> {
+		extends NumericConstraintBase<T, Float, FloatConstraint<T>> {
 	@Override
 	protected Predicate<Float> isGreaterThan(Float min) {
 		return x -> x > min;

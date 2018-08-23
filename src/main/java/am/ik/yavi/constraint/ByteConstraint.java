@@ -17,9 +17,9 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumberConstraintBase;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class ByteConstraint<T> extends NumberConstraintBase<T, Byte, ByteConstraint<T>> {
+public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstraint<T>> {
 	@Override
 	protected Predicate<Byte> isGreaterThan(Byte min) {
 		return x -> x > min;

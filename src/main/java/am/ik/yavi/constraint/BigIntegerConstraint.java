@@ -18,10 +18,10 @@ package am.ik.yavi.constraint;
 import java.math.BigInteger;
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumberConstraintBase;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class BigIntegerConstraint<T>
-		extends NumberConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
+		extends NumericConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
 	@Override
 	protected Predicate<BigInteger> isGreaterThan(BigInteger min) {
 		return x -> x.compareTo(min) > 0;
