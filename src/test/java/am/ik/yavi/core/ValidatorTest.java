@@ -20,7 +20,9 @@ import java.text.Normalizer;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
+import am.ik.yavi.ConstraintViolationsException;
 import am.ik.yavi.User;
 import am.ik.yavi.fn.Either;
 
@@ -107,6 +109,30 @@ public class ValidatorTest {
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void throwIfInValidValid() throws Exception {
+		User user = new User("foo", "foo@example.com", 30);
+		validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);
+	}
+
+	@Test
+	public void throwIfInValidInValid() throws Exception {
+		User user = new User("foo", "foo@example.com", -1);
+		try {
+			validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);
+			fail("fail");
+		}
+		catch (ConstraintViolationsException e) {
+			ConstraintViolations violations = e.getViolations();
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"age\" must be greater than or equal to 0");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("number.greaterThanOrEqual");
+		}
 	}
 
 	@Test

@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class ConstraintViolations implements List<ConstraintViolation> {
 	private final List<ConstraintViolation> delegate = new ArrayList<>();
@@ -26,6 +27,13 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 
 	public final List<ConstraintViolation> violations() {
 		return Collections.unmodifiableList(this.delegate);
+	}
+
+	public final <E extends RuntimeException> void throwIfInvalid(
+			Function<ConstraintViolations, E> toException) throws E {
+		if (!isValid()) {
+			throw toException.apply(this);
+		}
 	}
 
 	@Override
