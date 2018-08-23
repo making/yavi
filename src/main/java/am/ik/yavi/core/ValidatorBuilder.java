@@ -62,6 +62,11 @@ public class ValidatorBuilder<T> {
 				() -> new CharSequenceConstraint<>(normalizerForm));
 	}
 
+	public ValidatorBuilder<T> constraint(ToCharacter<T> f, String name,
+			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
+		return this.constraint(f, name, c, CharacterConstraint::new);
+	}
+
 	public ValidatorBuilder<T> constraint(ToByte<T> f, String name,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
@@ -228,6 +233,9 @@ public class ValidatorBuilder<T> {
 	}
 
 	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	}
+
+	public interface ToCharacter<T> extends Function<T, Character> {
 	}
 
 	public interface ToByte<T> extends Function<T, Byte> {
