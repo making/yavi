@@ -89,11 +89,11 @@ Validator<Address> validator = Validator.<Address> builder() //
             .constraintForObject(Address::getCountry, "country", Constraint::notNull)
             .constraint(Address::getCountry, //
                         b -> b.constraint(Country::getName, "country.name", c -> c.notBlank() //
-                                             								.greaterThanOrEqual(20))) //
+                                                                        .greaterThanOrEqual(20))) //
             .constraintForObject(Address::getCity, "city", Constraint::notNull)
             .constraint(Address::getCity, //
                         b -> b.constraint(City::getName, "city.name", c -> c.notBlank() //
-                                             								.greaterThanOrEqual(100))) //
+                                                                        .greaterThanOrEqual(100))) //
             .build();
 ```
 
