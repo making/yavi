@@ -146,6 +146,23 @@ HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK)
 
 [Either API](src/main/java/am/ik/yavi/fn/Either.java)
 
+#### Example with Spring WebFlux.fn
+
+YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-fn)
+
+```java
+static RouterFunction<ServerResponse> routes() {
+    return route(POST("/"), req -> req.bodyToMono(Message.class) //
+            .flatMap(body -> validator.validateToEither(body) //
+                    .fold(violations -> {
+                        Map<String, Object> res = new LinkedHashMap<>();
+                        res.put("message", "Invalid request body");
+                        res.put("details", violations.details());
+                        return badRequest().syncBody(res);
+                    }, b -> ok().syncBody(b))));
+}
+```
+
 ### Required
 
 * Java 8+
