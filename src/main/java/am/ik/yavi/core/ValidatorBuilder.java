@@ -34,6 +34,7 @@ public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
 	private final String messageKeySeparator;
 	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
+	private final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
 	private MessageFormatter messageFormatter;
 
 	public ValidatorBuilder() {
@@ -207,6 +208,38 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+		return this.constraintForEach(toCollection, name, validator,
+				NullValidity.NULL_IS_INVALID);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfNotNullForEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+		return this.constraintForEach(toCollection, name, validator,
+				NullValidity.NULL_IS_VALID);
+	}
+
+	protected final <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
+			NullValidity nullValidity) {
+		if (!nullValidity.skipNull()) {
+			this.constraintForObject(toCollection, name, Constraint::notNull);
+		}
+		this.collectionValidators
+				.add(new CollectionValidator<>(toCollection, name, validator));
+		return this;
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
+			ToCollection<T, L, E> toCollection, String name,
+			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
+		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
+		this.collectionValidators
+				.add(new CollectionValidator<>(toCollection, name, builder.build()));
+		return this;
+	}
+
 	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
 			ConstraintPredicates<N, ?> predicates) {
 		return (T target) -> {
@@ -227,7 +260,8 @@ public class ValidatorBuilder<T> {
 	}
 
 	public Validator<T> build() {
-		return new Validator<>(this.predicatesList,
+		return new Validator<>(messageKeySeparator, this.predicatesList,
+				this.collectionValidators,
 				this.messageFormatter == null ? new SimpleMessageFormatter()
 						: this.messageFormatter);
 	}

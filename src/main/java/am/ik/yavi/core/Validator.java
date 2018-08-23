@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -23,12 +24,18 @@ import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
 
 public final class Validator<T> {
+	private final String messageKeySeparator;
 	final List<ConstraintPredicates<T, ?>> predicatesList;
+	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 	private final MessageFormatter messageFormatter;
 
-	public Validator(List<ConstraintPredicates<T, ?>> predicatesList,
+	Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
+			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			MessageFormatter messageFormatter) {
+		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
+		this.collectionValidators = Collections
+				.unmodifiableList(collectionValidators);
 		this.messageFormatter = messageFormatter;
 	}
 
@@ -41,8 +48,12 @@ public final class Validator<T> {
 		return new ValidatorBuilder<>();
 	}
 
+	public ConstraintViolations validate(T target) {
+		return this.validate(target, "", -1);
+	}
+
 	@SuppressWarnings("unchecked")
-	public final ConstraintViolations validate(T target) {
+	private ConstraintViolations validate(T target, String collectionName, int index) {
 		ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
 			if (predicates instanceof NestedConstraintPredicates) {
@@ -60,7 +71,8 @@ public final class Validator<T> {
 					continue;
 				}
 				if (!predicate.test(v)) {
-					String name = predicates.name();
+					String name = this.indexedName(predicates.name(), collectionName,
+							index);
 					Object[] args = constraintPredicate.args().get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
@@ -69,10 +81,31 @@ public final class Validator<T> {
 				}
 			}
 		}
+		this.collectionValidators.forEach(collectionValidator -> {
+			Collection collection = collectionValidator.toCollection().apply(target);
+			if (collection != null) {
+				Validator validator = collectionValidator.validator();
+				int i = 0;
+				for (Object element : collection) {
+					if (element != null) {
+						ConstraintViolations v = validator.validate(element,
+								collectionValidator.name(), i++);
+						violations.addAll(v);
+					}
+				}
+			}
+		});
 		return violations;
 	}
 
-	public final Either<ConstraintViolations, T> validateToEither(T target) {
+	private String indexedName(String name, String collectionName, int index) {
+		if (index < 0) {
+			return name;
+		}
+		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
+	}
+
+	public Either<ConstraintViolations, T> validateToEither(T target) {
 		ConstraintViolations violations = this.validate(target);
 		if (violations.isValid()) {
 			return Either.right(target);
