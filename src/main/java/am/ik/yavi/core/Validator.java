@@ -71,13 +71,13 @@ public final class Validator<T> {
 		return violations;
 	}
 
-	public final Either<T, ConstraintViolations> validateToEither(T target) {
+	public final Either<ConstraintViolations, T> validateToEither(T target) {
 		ConstraintViolations violations = this.validate(target);
 		if (violations.isValid()) {
-			return Either.left(target);
+			return Either.right(target);
 		}
 		else {
-			return Either.right(violations);
+			return Either.left(violations);
 		}
 	}
 

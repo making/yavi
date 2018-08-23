@@ -136,12 +136,12 @@ Validator<Book> book = Validator.<Book> builder() //
 #### Either API
 
 ```java
-Either<User, ConstraintViolations> either = validator.validateToEither(user);
+Either<ConstraintViolations, User> either = validator.validateToEither(user);
 
-Optional<User> user = either.left();
-Optional<ConstraintViolations> violations = either.right();
+Optional<ConstraintViolations> violations = either.left();
+Optional<User> user = either.right();
 
-HttpStatus status = either.fold(u -> HttpStatus.OK, v -> HttpStatus.BAD_REQUEST);
+HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK);
 ```
 
 [Either API](src/main/java/am/ik/yavi/fn/Either.java)

@@ -138,17 +138,17 @@ public class ValidatorTest {
 	@Test
 	public void validateToEitherValid() throws Exception {
 		User user = new User("foo", "foo@example.com", 30);
-		Either<User, ConstraintViolations> either = validator().validateToEither(user);
-		assertThat(either.isLeft()).isTrue();
-		assertThat(either.left().get()).isSameAs(user);
+		Either<ConstraintViolations, User> either = validator().validateToEither(user);
+		assertThat(either.isRight()).isTrue();
+		assertThat(either.right().get()).isSameAs(user);
 	}
 
 	@Test
 	public void validateToEitherInValid() throws Exception {
 		User user = new User("foo", "foo@example.com", -1);
-		Either<User, ConstraintViolations> either = validator().validateToEither(user);
-		assertThat(either.isRight()).isTrue();
-		ConstraintViolations violations = either.right().get();
+		Either<ConstraintViolations, User> either = validator().validateToEither(user);
+		assertThat(either.isLeft()).isTrue();
+		ConstraintViolations violations = either.left().get();
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
