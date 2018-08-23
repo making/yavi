@@ -35,6 +35,10 @@ public final class Validator<T> {
 		return new ValidatorBuilder<>();
 	}
 
+	public static <T> ValidatorBuilder<T> builder(Class<T> clazz) {
+		return new ValidatorBuilder<>();
+	}
+
 	@SuppressWarnings("unchecked")
 	public final ConstraintViolations validate(T target) {
 		ConstraintViolations violations = new ConstraintViolations();

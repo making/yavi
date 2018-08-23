@@ -100,8 +100,10 @@ public class ValidatorTest {
 	@Test
 	public void combiningCharacter() throws Exception {
 		User user = new User("モシ\u3099", null, null);
-		Validator<User> validator = Validator.<User> builder().constraint(User::getName,
-				Normalizer.Form.NFC, "name", c -> c.lessThanOrEqual(2)).build();
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, Normalizer.Form.NFC, "name",
+						c -> c.lessThanOrEqual(2))
+				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
 	}
