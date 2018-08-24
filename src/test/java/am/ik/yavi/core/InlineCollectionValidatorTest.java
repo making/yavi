@@ -28,12 +28,13 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 	@Override
 	public Validator<FormWithCollection> validator() {
 		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses", b -> b
-						.constraint(Address::street, "street",
+				.constraintForEach(FormWithCollection::getAddresses, "addresses",
+						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraintForNested(Address::country, "country", Country.validator())
-						.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-								PhoneNumber.validator()))
+								.constraintForNested(Address::country, "country",
+										Country.validator())
+								.constraintIfPresentForNested(Address::phoneNumber,
+										"phoneNumber", PhoneNumber.validator()))
 				.build();
 	}
 
@@ -46,8 +47,8 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 								c -> c.notBlank().lessThan(32))
 								.constraintForNested(Address::country, "country",
 										Country.validator())
-								.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-										PhoneNumber.validator()))
+								.constraintIfPresentForNested(Address::phoneNumber,
+										"phoneNumber", PhoneNumber.validator()))
 				.build();
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);
