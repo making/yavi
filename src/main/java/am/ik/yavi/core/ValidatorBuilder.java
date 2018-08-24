@@ -171,7 +171,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(nested, name, validator, NullValidity.NULL_IS_INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> constraintIfNotNull(Function<T, N> nested, String name,
+	public <N> ValidatorBuilder<T> constraintIfPresent(Function<T, N> nested, String name,
 			Validator<N> validator) {
 		return this.constraint(nested, name, validator, NullValidity.NULL_IS_VALID);
 	}
@@ -211,7 +211,7 @@ public class ValidatorBuilder<T> {
 				NullValidity.NULL_IS_INVALID);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfNotNullForEach(
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
 		return this.constraintForEach(toCollection, name, validator,
 				NullValidity.NULL_IS_VALID);
@@ -235,7 +235,7 @@ public class ValidatorBuilder<T> {
 				NullValidity.NULL_IS_INVALID);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfNotNullForEach(
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToCollection<T, L, E> toCollection, String name,
 			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
 		return this.constraintForEach(toCollection, name, converter,
@@ -260,9 +260,9 @@ public class ValidatorBuilder<T> {
 		return this.constraintForEach(this.toMapToCollection(toMap), name, validator);
 	}
 
-	public <K, V> ValidatorBuilder<T> constraintIfNotNullForEach(ToMap<T, K, V> toMap,
+	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
 			String name, Validator<V> validator) {
-		return this.constraintIfNotNullForEach(this.toMapToCollection(toMap), name,
+		return this.constraintIfPresentForEach(this.toMapToCollection(toMap), name,
 				validator);
 	}
 
@@ -271,9 +271,9 @@ public class ValidatorBuilder<T> {
 		return this.constraintForEach(this.toMapToCollection(toMap), name, converter);
 	}
 
-	public <K, V> ValidatorBuilder<T> constraintIfNotNullForEach(ToMap<T, K, V> toMap,
+	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
 			String name, Function<ValidatorBuilder<V>, ValidatorBuilder<V>> converter) {
-		return this.constraintIfNotNullForEach(this.toMapToCollection(toMap), name,
+		return this.constraintIfPresentForEach(this.toMapToCollection(toMap), name,
 				converter);
 	}
 
@@ -283,9 +283,9 @@ public class ValidatorBuilder<T> {
 				validator);
 	}
 
-	public <E> ValidatorBuilder<T> constraintIfNotNullForEach(
+	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToObjectArray<T, E> toObjectArray, String name, Validator<E> validator) {
-		return this.constraintIfNotNullForEach(
+		return this.constraintIfPresentForEach(
 				this.toObjectArrayToCollection(toObjectArray), name, validator);
 	}
 
@@ -295,10 +295,10 @@ public class ValidatorBuilder<T> {
 				converter);
 	}
 
-	public <E> ValidatorBuilder<T> constraintIfNotNullForEach(
+	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToObjectArray<T, E> toObjectArray, String name,
 			Function<ValidatorBuilder<E>, ValidatorBuilder<E>> converter) {
-		return this.constraintIfNotNullForEach(
+		return this.constraintIfPresentForEach(
 				this.toObjectArrayToCollection(toObjectArray), name, converter);
 	}
 

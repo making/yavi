@@ -28,7 +28,7 @@ public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.constraint(Address::country, "country", Country.validator())
-			.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+			.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 					PhoneNumber.validator())
 			.build();
 
@@ -43,7 +43,7 @@ public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithArray> validator = Validator.builder(FormWithArray.class) //
-				.constraintIfNotNullForEach(FormWithArray::getAddresses, "addresses",
+				.constraintIfPresentForEach(FormWithArray::getAddresses, "addresses",
 						addressValidator)
 				.build();
 		FormWithArray form = new FormWithArray(null);

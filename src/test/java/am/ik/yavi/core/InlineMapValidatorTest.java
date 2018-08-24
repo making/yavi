@@ -32,7 +32,7 @@ public class InlineMapValidatorTest extends AbstractMapValidatorTest {
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
 						.constraint(Address::country, "country", Country.validator())
-						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 	}
@@ -40,11 +40,11 @@ public class InlineMapValidatorTest extends AbstractMapValidatorTest {
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithMap> validator = Validator.builder(FormWithMap.class) //
-				.constraintIfNotNullForEach(FormWithMap::getAddresses, "addresses", b -> b
+				.constraintIfPresentForEach(FormWithMap::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
 						.constraint(Address::country, "country", Country.validator())
-						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 		FormWithMap form = new FormWithMap(null);

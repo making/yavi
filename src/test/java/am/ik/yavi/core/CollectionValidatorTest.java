@@ -28,21 +28,23 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.constraint(Address::country, "country", Country.validator())
-			.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+			.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 					PhoneNumber.validator())
 			.build();
 
 	@Override
 	public Validator<FormWithCollection> validator() {
 		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses", addressValidator)
+				.constraintForEach(FormWithCollection::getAddresses, "addresses",
+						addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = Validator.builder(FormWithCollection.class) //
-				.constraintIfNotNullForEach(FormWithCollection::getAddresses, "addresses",
+		Validator<FormWithCollection> validator = Validator
+				.builder(FormWithCollection.class) //
+				.constraintIfPresentForEach(FormWithCollection::getAddresses, "addresses",
 						addressValidator)
 				.build();
 		FormWithCollection form = new FormWithCollection(null);

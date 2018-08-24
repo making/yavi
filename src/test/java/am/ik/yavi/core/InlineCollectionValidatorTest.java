@@ -32,20 +32,22 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
 						.constraint(Address::country, "country", Country.validator())
-						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = Validator.builder(FormWithCollection.class) //
-				.constraintIfNotNullForEach(FormWithCollection::getAddresses, "addresses", b -> b
-						.constraint(Address::street, "street",
+		Validator<FormWithCollection> validator = Validator
+				.builder(FormWithCollection.class) //
+				.constraintIfPresentForEach(FormWithCollection::getAddresses, "addresses",
+						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraint(Address::country, "country", Country.validator())
-						.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
-								PhoneNumber.validator()))
+								.constraint(Address::country, "country",
+										Country.validator())
+								.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);

@@ -27,7 +27,7 @@ public class MultiNestedCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.constraint(Address::country, "country", Country.validator())
-			.constraintIfNotNull(Address::phoneNumber, "phoneNumber",
+			.constraintIfPresent(Address::phoneNumber, "phoneNumber",
 					PhoneNumber.validator())
 			.build();
 	Validator<FormWithCollection> formValidator = Validator
