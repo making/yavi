@@ -88,11 +88,9 @@ or
 
 ```java
 Validator<Address> validator = Validator.<Address> builder() //
-            .constraintForObject(Address::getCountry, "country", Constraint::notNull)
             .constraintForNested(Address::getCountry, "country", //
                         b -> b.constraint(Country::getName, "name", c -> c.notBlank() //
                                                                         .lessThanOrEqual(20))) //
-            .constraintForObject(Address::getCity, "city", Constraint::notNull)
             .constraintForNested(Address::getCity, "city", //
                         b -> b.constraint(City::getName, "name", c -> c.notBlank() //
                                                                         .lessThanOrEqual(100))) //
