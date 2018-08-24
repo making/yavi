@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import am.ik.yavi.message.MessageFormatter;
 
@@ -25,20 +26,22 @@ public class ConstraintViolation {
 	private final String defaultMessageFormat;
 	private final Object[] args;
 	private final MessageFormatter messageFormatter;
+	private final Locale locale;
 
 	public ConstraintViolation(String name, String messageKey,
 			String defaultMessageFormat, Object[] args, Object violatedValue,
-			MessageFormatter messageFormatter) {
+			MessageFormatter messageFormatter, Locale locale) {
 		this.name = name;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		this.args = args;
 		this.messageFormatter = messageFormatter;
+		this.locale = locale;
 	}
 
 	public String message() {
 		return this.messageFormatter.format(this.name, this.messageKey,
-				this.defaultMessageFormat, this.args);
+				this.defaultMessageFormat, this.args, this.locale);
 	}
 
 	public String name() {
@@ -54,11 +57,15 @@ public class ConstraintViolation {
 	}
 
 	public Object[] args() {
-		return args;
+		return this.args;
 	}
 
 	public Object violatedValue() {
 		return this.args[this.args.length - 1];
+	}
+
+	public Locale locale() {
+		return this.locale;
 	}
 
 	public ViolationDetail detail() {

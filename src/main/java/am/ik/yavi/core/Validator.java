@@ -18,6 +18,7 @@ package am.ik.yavi.core;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
 import am.ik.yavi.fn.Either;
@@ -48,11 +49,16 @@ public final class Validator<T> {
 	}
 
 	public ConstraintViolations validate(T target) {
-		return this.validate(target, "", -1);
+		return this.validate(target, Locale.getDefault());
+	}
+
+	public ConstraintViolations validate(T target, Locale locale) {
+		return this.validate(target, "", -1, locale);
 	}
 
 	@SuppressWarnings("unchecked")
-	private ConstraintViolations validate(T target, String collectionName, int index) {
+	private ConstraintViolations validate(T target, String collectionName, int index,
+			Locale locale) {
 		ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
 			if (predicates instanceof NestedConstraintPredicates) {
@@ -76,7 +82,7 @@ public final class Validator<T> {
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
 							constraintPredicate.defaultMessageFormat(),
-							pad(name, args, v), v, this.messageFormatter));
+							pad(name, args, v), v, this.messageFormatter, locale));
 				}
 			}
 		}
@@ -90,7 +96,7 @@ public final class Validator<T> {
 						String nestedName = this.indexedName(collectionValidator.name(),
 								collectionName, index);
 						ConstraintViolations v = validator.validate(element, nestedName,
-								i++);
+								i++, locale);
 						violations.addAll(v);
 					}
 				}
@@ -107,7 +113,11 @@ public final class Validator<T> {
 	}
 
 	public Either<ConstraintViolations, T> validateToEither(T target) {
-		ConstraintViolations violations = this.validate(target);
+		return this.validateToEither(target, Locale.getDefault());
+	}
+
+	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
+		ConstraintViolations violations = this.validate(target, locale);
 		if (violations.isValid()) {
 			return Either.right(target);
 		}
