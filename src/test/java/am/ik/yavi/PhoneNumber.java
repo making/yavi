@@ -24,14 +24,14 @@ public class PhoneNumber {
 		this.value = value;
 	}
 
-	public String value() {
-		return this.value;
-	}
-
 	public static Validator<PhoneNumber> validator() {
 		return Validator.<PhoneNumber> builder()
 				.constraint((PhoneNumber p) -> p.value, "value",
 						c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
 				.build();
+	}
+
+	public String value() {
+		return this.value;
 	}
 }

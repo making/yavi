@@ -24,8 +24,8 @@ import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
 
 public final class Validator<T> {
-	private final String messageKeySeparator;
 	final List<ConstraintPredicates<T, ?>> predicatesList;
+	private final String messageKeySeparator;
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 	private final MessageFormatter messageFormatter;
 

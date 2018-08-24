@@ -24,7 +24,7 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 	private final Validator<E> validator;
 
 	public CollectionValidator(Function<T, N> toCollection, String name,
-							   Validator<E> validator) {
+			Validator<E> validator) {
 		this.toCollection = toCollection;
 		this.name = name;
 		this.validator = validator;
