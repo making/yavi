@@ -48,6 +48,32 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
+	 * This method is intended to be used with Spring MVC
+	 *
+	 * <h3>sample</h3>
+	 * 
+	 * <pre>
+	 * <code>&#64;PostMapping("users")
+	 * public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+	 *     return validator.validateToEither(userForm)
+	 *         .fold(violations -> {
+	 *             violations.apply(bindingResult::rejectValue);
+	 *             return "userForm";
+	 *         }, form -> {
+	 *             // ...
+	 *             return "redirect:/";
+	 *         });
+	 * }</code>
+	 * </pre>
+	 *
+	 * @param callback
+	 */
+	public void apply(Callback callback) {
+		this.forEach(
+				v -> callback.apply(v.name(), v.messageKey(), v.args(), v.message()));
+	}
+
+	/**
 	 * Returns the number of elements in this list. If this list contains more than
 	 * <tt>Integer.MAX_VALUE</tt> elements, returns <tt>Integer.MAX_VALUE</tt>.
 	 *
@@ -509,13 +535,13 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * commonly exist for arrays). Any operation that expects a list can be used as a
 	 * range operation by passing a subList view instead of a whole list. For example, the
 	 * following idiom removes a range of elements from a list:
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 *      list.subList(from, to).clear();
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * Similar idioms may be constructed for <tt>indexOf</tt> and <tt>lastIndexOf</tt>,
 	 * and all of the algorithms in the <tt>Collections</tt> class can be applied to a
 	 * subList.
@@ -537,5 +563,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	@Override
 	public final List<ConstraintViolation> subList(int fromIndex, int toIndex) {
 		return this.delegate.subList(fromIndex, toIndex);
+	}
+
+	@FunctionalInterface
+	public interface Callback {
+		void apply(String name, String messageKey, Object[] args, String defaultMessage);
 	}
 }
