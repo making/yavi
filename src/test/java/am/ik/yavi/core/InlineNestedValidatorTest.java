@@ -18,19 +18,16 @@ package am.ik.yavi.core;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
-import am.ik.yavi.constraint.Constraint;
 
 public class InlineNestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
 	protected Validator<Address> validator() {
 		return Validator.<Address> builder()
 				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-				.constraintForObject(Address::country, "country",
-						Constraint::notNull)
 				.constraintForNested(Address::country, "country",
 						b -> b.constraint(Country::name, "name", c -> c.notBlank() //
 								.greaterThanOrEqual(2)))
-				.constraintForNested(Address::phoneNumber, "phoneNumber",
+				.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 						b -> b.constraint(PhoneNumber::value, "value", c -> c.notBlank() //
 								.greaterThanOrEqual(8)))
 				.build();

@@ -194,9 +194,25 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
 			ValidatorBuilderConverter<N> converter) {
+		return this.constraintForNested(nested, name, converter,
+				NullValidity.NULL_IS_INVALID);
+	}
+
+	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
+			String name, ValidatorBuilderConverter<N> converter) {
+		return this.constraintForNested(nested, name, converter,
+				NullValidity.NULL_IS_VALID);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
+			String name, ValidatorBuilderConverter<N> converter,
+			NullValidity nullValidity) {
+		if (!nullValidity.skipNull()) {
+			this.constraintForObject(nested, name, Constraint::notNull);
+		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
 		builder.predicatesList.forEach(predicates -> {
 			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
