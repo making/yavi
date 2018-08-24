@@ -1,5 +1,5 @@
 ## YAVI (*Y*et *A*nother *V*al*I*dation)
-YAVI (pronounced jɑ-vάɪ) 
+YAVI (pronounced jɑ-vάɪ) 
 is a lambda based type safe validation for Java. 
  
 
@@ -24,7 +24,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
 </dependency>
 ```
 
