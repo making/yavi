@@ -99,6 +99,12 @@ Validator<Address> validator = Validator.<Address> builder() //
 
 [sample code](src/test/java/am/ik/yavi/core/InlineNestedValidatorTest.java)
 
+#### Elements in a List / Map / Array
+
+* [sample code (List)]](src/test/java/am/ik/yavi/core/CollectionValidatorTest.java)
+* [sample code (Map)]](src/test/java/am/ik/yavi/core/MapValidatorTest.java)
+* [sample code (Array)]](src/test/java/am/ik/yavi/core/ArrayValidatorTest.java)
+
 #### Custom
 
 ```java
