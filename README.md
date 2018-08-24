@@ -68,17 +68,17 @@ violations.forEach(x -> System.out.println(x.message()));
 
 ```java
 Validator<Country> countryValidator = Validator.<Country> builder() //
-            .constraint(Country::getName, "name", c -> c.notBlank() //
+            .constraintForNested(Country::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(20))
             .build();
 Validator<City> cityValidator = Validator.<City> builder() //
-            .constraint(City::getName, "name", c -> c.notBlank() //
+            .constraintForNested(City::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(100))
             .build();
 
 Validator<Address> validator = Validator.<Address> builder() //
-            .constraint(Address::getCountry, "country", countryValidator) //
-            .constraint(Address::getCity, "city", cityValidator)
+            .constraintForNested(Address::getCountry, "country", countryValidator) //
+            .constraintForNested(Address::getCity, "city", cityValidator)
             .build();
 ```
 

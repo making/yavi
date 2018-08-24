@@ -27,8 +27,8 @@ import am.ik.yavi.PhoneNumber;
 public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraint(Address::country, "country", Country.validator())
-			.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+			.constraintForNested(Address::country, "country", Country.validator())
+			.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 					PhoneNumber.validator())
 			.build();
 

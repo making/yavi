@@ -31,8 +31,8 @@ public class InlineArrayValidatorTest extends AbstractArrayValidatorTest {
 				.constraintForEach(FormWithArray::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraint(Address::country, "country", Country.validator())
-						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+						.constraintForNested(Address::country, "country", Country.validator())
+						.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 	}
@@ -43,9 +43,9 @@ public class InlineArrayValidatorTest extends AbstractArrayValidatorTest {
 				.constraintIfPresentForEach(FormWithArray::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraint(Address::country, "country",
+								.constraintForNested(Address::country, "country",
 										Country.validator())
-								.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+								.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 										PhoneNumber.validator()))
 				.build();
 		FormWithArray form = new FormWithArray(null);

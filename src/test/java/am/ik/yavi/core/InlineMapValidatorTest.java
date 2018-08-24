@@ -31,8 +31,8 @@ public class InlineMapValidatorTest extends AbstractMapValidatorTest {
 				.constraintForEach(FormWithMap::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraint(Address::country, "country", Country.validator())
-						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+						.constraintForNested(Address::country, "country", Country.validator())
+						.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 	}
@@ -43,8 +43,8 @@ public class InlineMapValidatorTest extends AbstractMapValidatorTest {
 				.constraintIfPresentForEach(FormWithMap::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraint(Address::country, "country", Country.validator())
-						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+						.constraintForNested(Address::country, "country", Country.validator())
+						.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 		FormWithMap form = new FormWithMap(null);

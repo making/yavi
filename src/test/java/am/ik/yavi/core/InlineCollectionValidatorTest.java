@@ -31,8 +31,8 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 				.constraintForEach(FormWithCollection::getAddresses, "addresses", b -> b
 						.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-						.constraint(Address::country, "country", Country.validator())
-						.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+						.constraintForNested(Address::country, "country", Country.validator())
+						.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 								PhoneNumber.validator()))
 				.build();
 	}
@@ -44,9 +44,9 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 				.constraintIfPresentForEach(FormWithCollection::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraint(Address::country, "country",
+								.constraintForNested(Address::country, "country",
 										Country.validator())
-								.constraintIfPresent(Address::phoneNumber, "phoneNumber",
+								.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
 										PhoneNumber.validator()))
 				.build();
 		FormWithCollection form = new FormWithCollection(null);

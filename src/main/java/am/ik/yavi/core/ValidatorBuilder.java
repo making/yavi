@@ -166,19 +166,21 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
 
-	public <N> ValidatorBuilder<T> constraint(Function<T, N> nested, String name,
+	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
 			Validator<N> validator) {
-		return this.constraint(nested, name, validator, NullValidity.NULL_IS_INVALID);
+		return this.constraintForNested(nested, name, validator,
+				NullValidity.NULL_IS_INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> constraintIfPresent(Function<T, N> nested, String name,
-			Validator<N> validator) {
-		return this.constraint(nested, name, validator, NullValidity.NULL_IS_VALID);
+	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
+			String name, Validator<N> validator) {
+		return this.constraintForNested(nested, name, validator,
+				NullValidity.NULL_IS_VALID);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected final <N> ValidatorBuilder<T> constraint(Function<T, N> nested, String name,
-			Validator<N> validator, NullValidity nullValidity) {
+	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
+			String name, Validator<N> validator, NullValidity nullValidity) {
 		if (!nullValidity.skipNull()) {
 			this.constraintForObject(nested, name, Constraint::notNull);
 		}
