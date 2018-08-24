@@ -76,16 +76,21 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> email() {
-		this.predicates()
-				.add(new ConstraintPredicate<>(
-						x -> VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches(),
-						"charSequence.email", "\"{0}\" must be a valid email address",
-						() -> new Object[] {}, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
+		}, "charSequence.email", "\"{0}\" must be a valid email address",
+				() -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> url() {
 		this.predicates().add(new ConstraintPredicate<>(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
 			try {
 				new URL(x.toString());
 				return true;

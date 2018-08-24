@@ -93,6 +93,7 @@ public class CharSequenceConstraintTest {
 		Predicate<String> predicate = constraint.email().predicates().get(0).predicate();
 		assertThat(predicate.test("abc@example.com")).isTrue();
 		assertThat(predicate.test("example.com")).isFalse();
+		assertThat(predicate.test("")).isTrue();
 	}
 
 	@Test
@@ -100,6 +101,7 @@ public class CharSequenceConstraintTest {
 		Predicate<String> predicate = constraint.url().predicates().get(0).predicate();
 		assertThat(predicate.test("http://example.com")).isTrue();
 		assertThat(predicate.test("example.com")).isFalse();
+		assertThat(predicate.test("")).isTrue();
 	}
 
 	@Test
