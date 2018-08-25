@@ -21,16 +21,4 @@ import java.util.Locale;
 public interface MessageFormatter {
 	String format(String messageKey, String defaultMessageFormat, Object[] args,
 			Locale locale);
-
-	/**
-	 * Use {@link #format(String, String, Object[], Locale)}. <code>name</code> can be
-	 * replaced with <code>args[0]</code>.
-	 *
-	 * This method will be removed in the following release.
-	 */
-	@Deprecated
-	default String format(String name, String messageKey, String defaultMessageFormat,
-			Object[] args, Locale locale) {
-		return this.format(messageKey, defaultMessageFormat, args, locale);
-	}
 }
