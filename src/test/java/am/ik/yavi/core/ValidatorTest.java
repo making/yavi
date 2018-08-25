@@ -213,8 +213,9 @@ public class ValidatorTest {
 	@Test
 	public void customMessageFormatter() throws Exception {
 		Validator<User> validator = Validator.builder(User.class)
-				.messageFormatter((name, messageKey, defaultMessageFormat, args,
-						locale) -> name.toUpperCase() + "." + messageKey.toUpperCase())
+				.messageFormatter((messageKey, defaultMessageFormat, args,
+						locale) -> args[0].toString().toUpperCase() + "."
+								+ messageKey.toUpperCase())
 				.constraint(User::getAge, "age", c -> c.notNull() //
 						.greaterThanOrEqual(0) //
 						.lessThanOrEqual(20))
