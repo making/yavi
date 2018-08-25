@@ -73,7 +73,7 @@ public interface ViolationMessage {
 				"The byte size of \"{0}\" must be {1}"), //
 		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}"), //
 		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
-		MAP_CONTAINS_KEY("map.containsValue", "\"{0}\" must contain key {1}"), //
+		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //
 		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}"), //
 		;
 
