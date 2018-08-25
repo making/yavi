@@ -40,8 +40,8 @@ public class ConstraintViolation {
 	}
 
 	public String message() {
-		return this.messageFormatter.format(this.name, this.messageKey,
-				this.defaultMessageFormat, this.args, this.locale);
+		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat,
+				this.args, this.locale);
 	}
 
 	public String name() {

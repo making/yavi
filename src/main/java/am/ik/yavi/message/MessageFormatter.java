@@ -24,7 +24,9 @@ public interface MessageFormatter {
 
 	/**
 	 * Use {@link #format(String, String, Object[], Locale)}. <code>name</code> can be
-	 * replaced with <code>args[0]</code>
+	 * replaced with <code>args[0]</code>.
+	 *
+	 * This method will be removed in the following release.
 	 */
 	@Deprecated
 	default String format(String name, String messageKey, String defaultMessageFormat,
