@@ -19,6 +19,5 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.ViolationMessage;
 
-public interface CustomConstraint<V> extends ViolationMessage {
-	Predicate<V> predicate();
+public interface CustomConstraint<V> extends Predicate<V>, ViolationMessage {
 }

@@ -58,10 +58,10 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	}
 
 	default C predicate(CustomConstraint<V> constraint) {
-		return this.predicate(constraint.predicate(), constraint);
+		return this.predicate(constraint, constraint);
 	}
 
 	default C predicateNullable(CustomConstraint<V> constraint) {
-		return this.predicateNullable(constraint.predicate(), constraint);
+		return this.predicateNullable(constraint, constraint);
 	}
 }

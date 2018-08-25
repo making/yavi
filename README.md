@@ -112,8 +112,8 @@ public enum IsbnConstraint implements CustomConstraint<String> {
     SINGLETON;
 
     @Override
-    public Predicate<String> predicate() {
-        return ISBNValidator::isISBN13;
+    public boolean test(String s) {
+        return ISBNValidator.isISBN13(s);
     }
 
     @Override

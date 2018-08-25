@@ -15,8 +15,6 @@
  */
 package am.ik.yavi.core;
 
-import java.util.function.Predicate;
-
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -195,8 +193,8 @@ public class CustomValidatorTest {
 		SINGLETON;
 
 		@Override
-		public Predicate<String> predicate() {
-			return CustomValidatorTest::isISBN13;
+		public boolean test(String s) {
+			return isISBN13(s);
 		}
 
 		@Override
@@ -210,13 +208,8 @@ public class CustomValidatorTest {
 		}
 	}
 
-	enum RangeConstraint implements CustomConstraint<Range>, Predicate<Range> {
+	enum RangeConstraint implements CustomConstraint<Range> {
 		SINGLETON;
-
-		@Override
-		public Predicate<Range> predicate() {
-			return this;
-		}
 
 		@Override
 		public String messageKey() {
