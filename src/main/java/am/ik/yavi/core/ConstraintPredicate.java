@@ -18,6 +18,8 @@ package am.ik.yavi.core;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import am.ik.yavi.constraint.ViolationMessage;
+
 public class ConstraintPredicate<V> {
 	private final Predicate<V> predicate;
 	private final String messageKey;
@@ -25,12 +27,11 @@ public class ConstraintPredicate<V> {
 	private final Supplier<Object[]> args;
 	private final NullValidity nullValidity;
 
-	public ConstraintPredicate(Predicate<V> predicate, String messageKey,
-			String defaultMessageFormat, Supplier<Object[]> args,
-			NullValidity nullValidity) {
+	public ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
+			Supplier<Object[]> args, NullValidity nullValidity) {
 		this.predicate = predicate;
-		this.messageKey = messageKey;
-		this.defaultMessageFormat = defaultMessageFormat;
+		this.messageKey = violationMessage.messageKey();
+		this.defaultMessageFormat = violationMessage.defaultMessageFormat();
 		this.args = args;
 		this.nullValidity = nullValidity;
 	}

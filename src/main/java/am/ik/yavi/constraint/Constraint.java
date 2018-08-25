@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.OBJECT_IS_NULL;
+import static am.ik.yavi.constraint.ViolationMessage.Default.OBJECT_NOT_NULL;
+
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.CustomConstraint;
 import am.ik.yavi.core.NullValidity;
@@ -30,44 +33,35 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	C cast();
 
 	default C notNull() {
-		this.predicates()
-				.add(new ConstraintPredicate<>(Objects::nonNull, "object.notNull",
-						"\"{0}\" must not be null", () -> new Object[] {},
-						NullValidity.NULL_IS_INVALID));
+		this.predicates().add(new ConstraintPredicate<>(Objects::nonNull, OBJECT_NOT_NULL,
+				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
 	default C isNull() {
-		this.predicates()
-				.add(new ConstraintPredicate<>(Objects::isNull, "object.isNull",
-						"\"{0}\" must be null", () -> new Object[] {},
-						NullValidity.NULL_IS_INVALID));
+		this.predicates().add(new ConstraintPredicate<>(Objects::isNull, OBJECT_IS_NULL,
+				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
-	default C predicate(Predicate<V> predicate, String messageKey,
-			String defaultMessageFormat) {
-		this.predicates().add(new ConstraintPredicate<>(predicate, messageKey,
-				defaultMessageFormat, () -> new Object[] {}, NullValidity.NULL_IS_VALID));
+	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
+		this.predicates().add(new ConstraintPredicate<>(predicate, violationMessage,
+				() -> new Object[] {}, NullValidity.NULL_IS_VALID));
 		return this.cast();
 	}
 
-	default C predicateNullable(Predicate<V> predicate, String messageKey,
-			String defaultMessageFormat) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(predicate, messageKey,
-						defaultMessageFormat, () -> new Object[] {},
-						NullValidity.NULL_IS_INVALID));
+	default C predicateNullable(Predicate<V> predicate,
+			ViolationMessage violationMessage) {
+		this.predicates().add(new ConstraintPredicate<>(predicate, violationMessage,
+				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
 	default C predicate(CustomConstraint<V> constraint) {
-		return this.predicate(constraint.predicate(), constraint.messageKey(),
-				constraint.defaultMessageFormat());
+		return this.predicate(constraint.predicate(), constraint);
 	}
 
 	default C predicateNullable(CustomConstraint<V> constraint) {
-		return this.predicateNullable(constraint.predicate(), constraint.messageKey(),
-				constraint.defaultMessageFormat());
+		return this.predicateNullable(constraint.predicate(), constraint);
 	}
 }

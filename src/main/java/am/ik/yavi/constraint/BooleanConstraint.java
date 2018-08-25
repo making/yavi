@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.constraint;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_FALSE;
+import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_TRUE;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ConstraintBase;
@@ -24,14 +26,14 @@ public class BooleanConstraint<T>
 		extends ConstraintBase<T, Boolean, BooleanConstraint<T>> {
 
 	public BooleanConstraint<T> isTrue() {
-		this.predicates().add(new ConstraintPredicate<>(x -> x, "boolean.isTrue",
-				"\"{0}\" must be true", () -> new Object[] {}, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> x, BOOLEAN_IS_TRUE,
+				() -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 
 	public BooleanConstraint<T> isFalse() {
-		this.predicates().add(new ConstraintPredicate<>(x -> !x, "boolean.isFalse",
-				"\"{0}\" must be false", () -> new Object[] {}, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> !x, BOOLEAN_IS_FALSE,
+				() -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 

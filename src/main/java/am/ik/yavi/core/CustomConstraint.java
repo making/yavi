@@ -17,10 +17,8 @@ package am.ik.yavi.core;
 
 import java.util.function.Predicate;
 
-public interface CustomConstraint<V> {
+import am.ik.yavi.constraint.ViolationMessage;
+
+public interface CustomConstraint<V> extends ViolationMessage {
 	Predicate<V> predicate();
-
-	String messageKey();
-
-	String defaultMessageFormat();
 }

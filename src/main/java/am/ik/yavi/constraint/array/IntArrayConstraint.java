@@ -18,6 +18,7 @@ package am.ik.yavi.constraint.array;
 import java.util.Arrays;
 import java.util.function.ToIntFunction;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.ARRAY_CONTAINS;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
@@ -37,9 +38,10 @@ public class IntArrayConstraint<T>
 	}
 
 	public IntArrayConstraint<T> contains(int v) {
-		this.predicates().add(new ConstraintPredicate<>(
-				x -> Arrays.stream(x).anyMatch(e -> e == v), "array.contains",
-				"\"{0}\" must contain {1}", () -> new Object[] { v }, NULL_IS_VALID));
+		this.predicates()
+				.add(new ConstraintPredicate<>(
+						x -> Arrays.stream(x).anyMatch(e -> e == v), ARRAY_CONTAINS,
+						() -> new Object[] { v }, NULL_IS_VALID));
 		return this;
 	}
 }

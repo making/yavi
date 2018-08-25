@@ -18,6 +18,8 @@ package am.ik.yavi.constraint;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.MAP_CONTAINS_KEY;
+import static am.ik.yavi.constraint.ViolationMessage.Default.MAP_CONTAINS_VALUE;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
@@ -37,18 +39,14 @@ public class MapConstraint<T, K, V>
 	}
 
 	public MapConstraint<T, K, V> containsValue(V v) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(x -> x.containsValue(v),
-						"map.containsValue", "\"{0}\" must contain value {1}",
-						() -> new Object[] { v }, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> x.containsValue(v),
+				MAP_CONTAINS_VALUE, () -> new Object[] { v }, NULL_IS_VALID));
 		return this;
 	}
 
 	public MapConstraint<T, K, V> containsKey(K k) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(x -> x.containsKey(k), "map.containsValue",
-						"\"{0}\" must contain key {1}", () -> new Object[] { k },
-						NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> x.containsKey(k),
+				MAP_CONTAINS_KEY, () -> new Object[] { k }, NULL_IS_VALID));
 		return this;
 	}
 }

@@ -18,6 +18,7 @@ package am.ik.yavi.constraint;
 import java.util.Collection;
 import java.util.function.ToIntFunction;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.COLLECTION_CONTAINS;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
@@ -37,10 +38,8 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	}
 
 	public CollectionConstraint<T, L, E> contains(E s) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(x -> x.contains(s), "collection.contains",
-						"\"{0}\" must contain {1}", () -> new Object[] { s },
-						NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> x.contains(s),
+				COLLECTION_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
 		return this;
 	}
 }

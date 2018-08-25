@@ -23,6 +23,7 @@ import java.text.Normalizer;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
@@ -62,16 +63,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		this.predicates()
 				.add(new ConstraintPredicate<>(
 						x -> x != null && x.toString().trim().length() != 0,
-						"charSequence.notBlank", "\"{0}\" must not be blank",
-						() -> new Object[] {}, NULL_IS_INVALID));
+						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, NULL_IS_INVALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(x -> x.toString().contains(s),
-						"charSequence.contains", "\"{0}\" must contain {1}",
-						() -> new Object[] { s }, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> x.toString().contains(s),
+				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
 		return this;
 	}
 
@@ -81,8 +79,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 				return true;
 			}
 			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
-		}, "charSequence.email", "\"{0}\" must be a valid email address",
-				() -> new Object[] {}, NULL_IS_VALID));
+		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 
@@ -98,16 +95,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			catch (MalformedURLException e) {
 				return false;
 			}
-		}, "charSequence.url", "\"{0}\" must be a valid URL", () -> new Object[] {},
-				NULL_IS_VALID));
+		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> pattern(String regex) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(x -> Pattern.matches(regex, x),
-						"charSequence.pattern", "\"{0}\" must match {1}",
-						() -> new Object[] { regex }, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(x -> Pattern.matches(regex, x),
+				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, NULL_IS_VALID));
 		return this;
 	}
 
@@ -140,42 +134,35 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 		public ByteSizeConstraint<T, E> lessThan(int max) {
 			this.predicates().add(new ConstraintPredicate<>(x -> size(x) < max,
-					"byteSize.lessThan", "The size of \"{0}\" must be less than {1}",
-					() -> new Object[] { max }, NULL_IS_VALID));
+					BYTE_SIZE_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
 			return this;
 		}
 
 		public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
 			this.predicates()
 					.add(new ConstraintPredicate<>(x -> size(x) <= max,
-							"byteSize.lessThanOrEqual",
-							"The byte size of \"{0}\" must be less than or equal to {1}",
-							() -> new Object[] { max }, NULL_IS_VALID));
+							BYTE_SIZE_LESS_THAN_OR_EQUAL, () -> new Object[] { max },
+							NULL_IS_VALID));
 			return this;
 		}
 
 		public ByteSizeConstraint<T, E> greaterThan(int min) {
-			this.predicates()
-					.add(new ConstraintPredicate<>(x -> size(x) > min,
-							"byteSize.greaterThan",
-							"The byte size of \"{0}\" must be greater than {1}",
-							() -> new Object[] { min }, NULL_IS_VALID));
+			this.predicates().add(new ConstraintPredicate<>(x -> size(x) > min,
+					BYTE_SIZE_GREATER_THAN, () -> new Object[] { min }, NULL_IS_VALID));
 			return this;
 		}
 
 		public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
-			this.predicates().add(new ConstraintPredicate<>(x -> size(x) >= min,
-					"byteSize.greaterThanOrEqual",
-					"The byte size of \"{0}\" must be greater than or equal to {1}",
-					() -> new Object[] { min }, NULL_IS_VALID));
+			this.predicates()
+					.add(new ConstraintPredicate<>(x -> size(x) >= min,
+							BYTE_SIZE_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
+							NULL_IS_VALID));
 			return this;
 		}
 
 		public ByteSizeConstraint<T, E> fixedSize(int size) {
-			this.predicates()
-					.add(new ConstraintPredicate<>(x -> size(x) == size,
-							"byteSize.fixedSize", "The byte size of \"{0}\" must be {1}",
-							() -> new Object[] { size }, NULL_IS_VALID));
+			this.predicates().add(new ConstraintPredicate<>(x -> size(x) == size,
+					BYTE_SIZE_FIXED_SIZE, () -> new Object[] { size }, NULL_IS_VALID));
 			return this;
 		}
 	}

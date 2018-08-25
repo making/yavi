@@ -17,6 +17,7 @@ package am.ik.yavi.constraint.base;
 
 import java.util.function.Predicate;
 
+import static am.ik.yavi.constraint.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.Constraint;
@@ -34,34 +35,28 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	protected abstract Predicate<V> isLessThanOrEqual(V max);
 
 	public C greaterThan(V min) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(this.isGreaterThan(min),
-						"numeric.greaterThan", "\"{0}\" must be greater than {1}",
-						() -> new Object[] { min }, NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(this.isGreaterThan(min),
+				NUMERIC_GREATER_THAN, () -> new Object[] { min }, NULL_IS_VALID));
 		return cast();
 	}
 
 	public C greaterThanOrEqual(V min) {
 		this.predicates()
 				.add(new ConstraintPredicate<>(this.isGreaterThanOrEqual(min),
-						"numeric.greaterThanOrEqual",
-						"\"{0}\" must be greater than or equal to {1}",
-						() -> new Object[] { min }, NULL_IS_VALID));
+						NUMERIC_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
+						NULL_IS_VALID));
 		return cast();
 	}
 
 	public C lessThan(V max) {
-		this.predicates()
-				.add(new ConstraintPredicate<>(this.isLessThan(max), "numeric.lessThan",
-						"\"{0}\" must be less than {1}", () -> new Object[] { max },
-						NULL_IS_VALID));
+		this.predicates().add(new ConstraintPredicate<>(this.isLessThan(max),
+				NUMERIC_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
 
 	public C lessThanOrEqual(V max) {
 		this.predicates().add(new ConstraintPredicate<>(this.isLessThanOrEqual(max),
-				"numeric.lessThanOrEqual", "\"{0}\" must be less than or equal to {1}",
-				() -> new Object[] { max }, NULL_IS_VALID));
+				NUMERIC_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
 }
