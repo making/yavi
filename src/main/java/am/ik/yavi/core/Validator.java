@@ -82,7 +82,7 @@ public final class Validator<T> {
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
 							constraintPredicate.defaultMessageFormat(),
-							pad(name, args, v), v, this.messageFormatter, locale));
+							pad(name, args, v), this.messageFormatter, locale));
 				}
 			}
 		}
@@ -126,11 +126,11 @@ public final class Validator<T> {
 		}
 	}
 
-	private Object[] pad(String name, Object[] args, Object value) {
+	private Object[] pad(String name, Object[] args, Object violatedValue) {
 		Object[] pad = new Object[args.length + 2];
 		pad[0] = name;
 		System.arraycopy(args, 0, pad, 1, args.length);
-		pad[pad.length - 1] = value;
+		pad[pad.length - 1] = violatedValue;
 		return pad;
 	}
 }
