@@ -29,8 +29,8 @@ public class ConstraintViolation {
 	private final Locale locale;
 
 	public ConstraintViolation(String name, String messageKey,
-			String defaultMessageFormat, Object[] args, Object violatedValue,
-			MessageFormatter messageFormatter, Locale locale) {
+			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter,
+			Locale locale) {
 		this.name = name;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
