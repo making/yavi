@@ -37,7 +37,7 @@ public class ShortArrayConstraint<T>
 	}
 
 	public ShortArrayConstraint<T> contains(short v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> {
+		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (short e : x) {
 				if (e == v) {
 					return true;

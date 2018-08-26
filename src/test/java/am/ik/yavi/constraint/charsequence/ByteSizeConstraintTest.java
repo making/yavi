@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.constraint;
+package am.ik.yavi.constraint.charsequence;
 
 import java.util.function.Predicate;
 
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import am.ik.yavi.constraint.CharSequenceConstraint;
 
 public class ByteSizeConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();

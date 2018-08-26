@@ -39,9 +39,8 @@ public class DoubleArrayConstraint<T>
 
 	public DoubleArrayConstraint<T> contains(double v) {
 		this.predicates()
-				.add(new ConstraintPredicate<>(
-						x -> Arrays.stream(x).anyMatch(e -> e == v), ARRAY_CONTAINS,
-						() -> new Object[] { v }, NULL_IS_VALID));
+				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
+						ARRAY_CONTAINS, () -> new Object[] { v }, NULL_IS_VALID));
 		return this;
 	}
 }

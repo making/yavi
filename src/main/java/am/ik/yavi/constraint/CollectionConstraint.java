@@ -38,7 +38,7 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	}
 
 	public CollectionConstraint<T, L, E> contains(E s) {
-		this.predicates().add(new ConstraintPredicate<>(x -> x.contains(s),
+		this.predicates().add(ConstraintPredicate.of(x -> x.contains(s),
 				COLLECTION_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
 		return this;
 	}

@@ -26,13 +26,13 @@ public class BooleanConstraint<T>
 		extends ConstraintBase<T, Boolean, BooleanConstraint<T>> {
 
 	public BooleanConstraint<T> isTrue() {
-		this.predicates().add(new ConstraintPredicate<>(x -> x, BOOLEAN_IS_TRUE,
+		this.predicates().add(ConstraintPredicate.of(x -> x, BOOLEAN_IS_TRUE,
 				() -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}
 
 	public BooleanConstraint<T> isFalse() {
-		this.predicates().add(new ConstraintPredicate<>(x -> !x, BOOLEAN_IS_FALSE,
+		this.predicates().add(ConstraintPredicate.of(x -> !x, BOOLEAN_IS_FALSE,
 				() -> new Object[] {}, NULL_IS_VALID));
 		return this;
 	}

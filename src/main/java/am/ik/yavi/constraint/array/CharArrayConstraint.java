@@ -37,7 +37,7 @@ public class CharArrayConstraint<T>
 	}
 
 	public CharArrayConstraint<T> contains(char v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> {
+		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (char e : x) {
 				if (e == v) {
 					return true;

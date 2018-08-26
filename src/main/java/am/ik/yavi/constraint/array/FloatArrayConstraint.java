@@ -37,7 +37,7 @@ public class FloatArrayConstraint<T>
 	}
 
 	public FloatArrayConstraint<T> contains(float v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> {
+		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (float e : x) {
 				if (e == v) {
 					return true;

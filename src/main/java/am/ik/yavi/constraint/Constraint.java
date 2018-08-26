@@ -33,26 +33,26 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	C cast();
 
 	default C notNull() {
-		this.predicates().add(new ConstraintPredicate<>(Objects::nonNull, OBJECT_NOT_NULL,
+		this.predicates().add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,
 				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
 	default C isNull() {
-		this.predicates().add(new ConstraintPredicate<>(Objects::isNull, OBJECT_IS_NULL,
+		this.predicates().add(ConstraintPredicate.of(Objects::isNull, OBJECT_IS_NULL,
 				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}
 
 	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
-		this.predicates().add(new ConstraintPredicate<>(predicate, violationMessage,
+		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				() -> new Object[] {}, NullValidity.NULL_IS_VALID));
 		return this.cast();
 	}
 
 	default C predicateNullable(Predicate<V> predicate,
 			ViolationMessage violationMessage) {
-		this.predicates().add(new ConstraintPredicate<>(predicate, violationMessage,
+		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
 		return this.cast();
 	}

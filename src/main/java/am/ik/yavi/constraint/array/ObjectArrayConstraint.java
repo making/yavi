@@ -38,7 +38,7 @@ public class ObjectArrayConstraint<T, E>
 	}
 
 	public ObjectArrayConstraint<T, E> contains(E s) {
-		this.predicates().add(new ConstraintPredicate<>(x -> Arrays.asList(x).contains(s),
+		this.predicates().add(ConstraintPredicate.of(x -> Arrays.asList(x).contains(s),
 				ARRAY_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
 		return this;
 	}

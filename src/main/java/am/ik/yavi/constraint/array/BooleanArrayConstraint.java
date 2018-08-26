@@ -37,7 +37,7 @@ public class BooleanArrayConstraint<T>
 	}
 
 	public BooleanArrayConstraint<T> contains(boolean v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> {
+		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (boolean e : x) {
 				if (e == v) {
 					return true;

@@ -39,13 +39,13 @@ public class MapConstraint<T, K, V>
 	}
 
 	public MapConstraint<T, K, V> containsValue(V v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> x.containsValue(v),
+		this.predicates().add(ConstraintPredicate.of(x -> x.containsValue(v),
 				MAP_CONTAINS_VALUE, () -> new Object[] { v }, NULL_IS_VALID));
 		return this;
 	}
 
 	public MapConstraint<T, K, V> containsKey(K k) {
-		this.predicates().add(new ConstraintPredicate<>(x -> x.containsKey(k),
+		this.predicates().add(ConstraintPredicate.of(x -> x.containsKey(k),
 				MAP_CONTAINS_KEY, () -> new Object[] { k }, NULL_IS_VALID));
 		return this;
 	}

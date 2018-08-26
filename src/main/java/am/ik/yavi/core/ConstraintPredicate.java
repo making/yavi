@@ -28,7 +28,7 @@ public class ConstraintPredicate<V> {
 	private final Supplier<Object[]> args;
 	private final NullValidity nullValidity;
 
-	public ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
+	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
 			Supplier<Object[]> args, NullValidity nullValidity) {
 		this.predicate = predicate;
 		this.messageKey = violationMessage.messageKey();
@@ -50,6 +50,12 @@ public class ConstraintPredicate<V> {
 			// violated
 			return Optional.of(new ViolatedValue(target));
 		}
+	}
+
+	public static <V> ConstraintPredicate<V> of(Predicate<V> predicate,
+			ViolationMessage violationMessage, Supplier<Object[]> args,
+			NullValidity nullValidity) {
+		return new ConstraintPredicate<>(predicate, violationMessage, args, nullValidity);
 	}
 
 	public String messageKey() {

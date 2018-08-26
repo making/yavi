@@ -31,40 +31,39 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 
 	public C notEmpty() {
 		this.predicates()
-				.add(new ConstraintPredicate<>(
-						x -> x != null && size().applyAsInt(x) != 0, CONTAINER_NOT_EMPTY,
-						() -> new Object[] {}, NULL_IS_INVALID));
+				.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0,
+						CONTAINER_NOT_EMPTY, () -> new Object[] {}, NULL_IS_INVALID));
 		return cast();
 	}
 
 	public C lessThan(int max) {
-		this.predicates().add(new ConstraintPredicate<>(x -> size().applyAsInt(x) < max,
+		this.predicates().add(ConstraintPredicate.of(x -> size().applyAsInt(x) < max,
 				CONTAINER_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
 
 	public C lessThanOrEqual(int max) {
-		this.predicates().add(new ConstraintPredicate<>(x -> size().applyAsInt(x) <= max,
+		this.predicates().add(ConstraintPredicate.of(x -> size().applyAsInt(x) <= max,
 				CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, NULL_IS_VALID));
 		return cast();
 	}
 
 	public C greaterThan(int min) {
-		this.predicates().add(new ConstraintPredicate<>(x -> size().applyAsInt(x) > min,
+		this.predicates().add(ConstraintPredicate.of(x -> size().applyAsInt(x) > min,
 				CONTAINER_GREATER_THAN, () -> new Object[] { min }, NULL_IS_VALID));
 		return cast();
 	}
 
 	public C greaterThanOrEqual(int min) {
 		this.predicates()
-				.add(new ConstraintPredicate<>(x -> size().applyAsInt(x) >= min,
+				.add(ConstraintPredicate.of(x -> size().applyAsInt(x) >= min,
 						CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
 						NULL_IS_VALID));
 		return cast();
 	}
 
 	public C fixedSize(int size) {
-		this.predicates().add(new ConstraintPredicate<>(x -> size().applyAsInt(x) == size,
+		this.predicates().add(ConstraintPredicate.of(x -> size().applyAsInt(x) == size,
 				CONTAINER_FIXED_SIZE, () -> new Object[] { size }, NULL_IS_VALID));
 		return cast();
 	}

@@ -37,7 +37,7 @@ public class ByteArrayConstraint<T>
 	}
 
 	public ByteArrayConstraint<T> contains(byte v) {
-		this.predicates().add(new ConstraintPredicate<>(x -> {
+		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (byte e : x) {
 				if (e == v) {
 					return true;
