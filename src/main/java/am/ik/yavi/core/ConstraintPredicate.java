@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -38,6 +39,17 @@ public class ConstraintPredicate<V> {
 
 	public final Predicate<V> predicate() {
 		return this.predicate;
+	}
+
+	public Optional<ViolatedValue> violatedValue(V target) {
+		Predicate<V> predicate = this.predicate();
+		if (predicate.test(target)) {
+			return Optional.empty();
+		}
+		else {
+			// violated
+			return Optional.of(new ViolatedValue(target));
+		}
 	}
 
 	public String messageKey() {

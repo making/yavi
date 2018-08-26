@@ -15,11 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Predicate;
+import java.util.*;
 
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
@@ -70,20 +66,21 @@ public final class Validator<T> {
 			}
 			for (ConstraintPredicate<?> constraintPredicate : predicates.predicates()) {
 				Object v = predicates.toValue().apply(target);
-				Predicate<Object> predicate = (Predicate<Object>) constraintPredicate
-						.predicate();
 				if (v == null && constraintPredicate.nullValidity().skipNull()) {
 					continue;
 				}
-				if (!predicate.test(v)) {
+				Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
+						.violatedValue(v);
+				violated.ifPresent(violatedValue -> {
 					String name = this.indexedName(predicates.name(), collectionName,
 							index);
 					Object[] args = constraintPredicate.args().get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
 							constraintPredicate.defaultMessageFormat(),
-							pad(name, args, v), this.messageFormatter, locale));
-				}
+							pad(name, args, violatedValue), this.messageFormatter,
+							locale));
+				});
 			}
 		}
 		this.collectionValidators.forEach(collectionValidator -> {
@@ -126,11 +123,11 @@ public final class Validator<T> {
 		}
 	}
 
-	private Object[] pad(String name, Object[] args, Object violatedValue) {
+	private Object[] pad(String name, Object[] args, ViolatedValue violatedValue) {
 		Object[] pad = new Object[args.length + 2];
 		pad[0] = name;
 		System.arraycopy(args, 0, pad, 1, args.length);
-		pad[pad.length - 1] = violatedValue;
+		pad[pad.length - 1] = violatedValue.value();
 		return pad;
 	}
 }
