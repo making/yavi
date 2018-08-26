@@ -320,6 +320,29 @@ public class ValidatorTest {
 	}
 
 	@Test
+	public void emojiValid() throws Exception {
+		User user = new User("I❤️☕️", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name", c -> c.emoji().lessThanOrEqual(3))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void emojiInValid() throws Exception {
+		User user = new User("I❤️☕️", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name", c -> c.emoji().greaterThan(3)).build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"name\" must be greater than 3. The given size is 3");
+	}
+
+	@Test
 	public void throwIfInValidValid() throws Exception {
 		User user = new User("foo", "foo@example.com", 30);
 		validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);

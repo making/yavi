@@ -38,6 +38,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
+import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
@@ -45,7 +46,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(
 			"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
-	private final Normalizer.Form normalizerForm;
+	protected final Normalizer.Form normalizerForm;
 
 	public CharSequenceConstraint() {
 		this(Normalizer.Form.NFC);
@@ -142,5 +143,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			list.addAll(Arrays.asList(ranges));
 			return list;
 		});
+	}
+
+	public EmojiConstraint<T, E> emoji() {
+		return new EmojiConstraint<>(this, this.normalizerForm);
 	}
 }
