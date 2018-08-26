@@ -31,9 +31,9 @@ public class ConstraintViolationsTest {
 		SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
 		ConstraintViolations violations = new ConstraintViolations();
 		violations.add(new ConstraintViolation("foo0", "abc0", "hello0",
-				new Object[] { 1 }, "foobar0", messageFormatter, Locale.getDefault()));
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
 		violations.add(new ConstraintViolation("foo1", "abc1", "hello1",
-				new Object[] { 1 }, "foobar1", messageFormatter, Locale.getDefault()));
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
 
 		BindingResult bindingResult = new BindingResult();
 		violations.apply(bindingResult::rejectValue);
