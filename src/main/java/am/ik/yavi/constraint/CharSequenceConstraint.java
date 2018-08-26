@@ -48,7 +48,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private final Normalizer.Form normalizerForm;
 
 	public CharSequenceConstraint() {
-		this(null);
+		this(Normalizer.Form.NFC);
 	}
 
 	public CharSequenceConstraint(Normalizer.Form normalizerForm) {
