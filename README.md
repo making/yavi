@@ -169,6 +169,8 @@ static RouterFunction<ServerResponse> routes() {
 }
 ```
 
+[sample app](https://github.com/making/minimal-webflux)
+
 #### Example with Spring MVC
 
 ```java
@@ -199,6 +201,8 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
         });
 }
 ```
+
+[sample app](https://github.com/making/demo-spring-mvc-yavi)
 
 ### Required
 
