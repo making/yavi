@@ -100,6 +100,10 @@ public interface CodePoints<E extends CharSequence> {
 			};
 		}
 
+		static Range single(int value) {
+			return of(value, value);
+		}
+
 		int begin();
 
 		int end();
