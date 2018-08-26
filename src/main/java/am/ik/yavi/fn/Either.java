@@ -82,14 +82,14 @@ public final class Either<L, R> {
 		return new Either<>(null, rightMapper.apply(this.right));
 	}
 
-	public <X> Either<X, R> mapLeft(Function<L, X> leftMapper) {
+	public <X> Either<X, R> leftMap(Function<L, X> leftMapper) {
 		if (isLeft()) {
 			return new Either<>(leftMapper.apply(this.left), null);
 		}
 		return new Either<>(null, this.right);
 	}
 
-	public <Y> Either<L, Y> mapRight(Function<R, Y> rightMapper) {
+	public <Y> Either<L, Y> rightMap(Function<R, Y> rightMapper) {
 		if (isRight()) {
 			return new Either<>(null, rightMapper.apply(this.right));
 		}

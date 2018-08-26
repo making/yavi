@@ -86,14 +86,14 @@ public class EitherTest {
 	@Test
 	public void mapLeft() {
 		Either<Integer, String> either = Either.left(100);
-		Either<Integer, String> map = either.mapLeft(i -> i * 2);
+		Either<Integer, String> map = either.leftMap(i -> i * 2);
 		assertThat(map).isEqualTo(Either.left(200));
 	}
 
 	@Test
 	public void mapRight() {
 		Either<String, Integer> either = Either.right(100);
-		Either<String, Integer> map = either.mapRight(i -> i * 2);
+		Either<String, Integer> map = either.rightMap(i -> i * 2);
 		assertThat(map).isEqualTo(Either.right(200));
 	}
 }
