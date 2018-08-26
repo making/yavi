@@ -16,6 +16,8 @@ The concepts are
 
 If you are not a fun of [Bean Validation](https://beanvalidation.org/), YAVI will be an awesome alternative.
 
+For the migration from Bean Validation, refer [the doc](docs/FromBeanValidationToYAVI.md).
+
 ### Usage
 
 Add the following dependency in your `pom.xml`
