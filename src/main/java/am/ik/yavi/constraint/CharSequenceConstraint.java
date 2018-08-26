@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -143,9 +142,5 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			list.addAll(Arrays.asList(ranges));
 			return list;
 		});
-	}
-
-	public CodePointsConstraint<T, E> codePoints(Supplier<CodePoints<E>> supplier) {
-		return new CodePointsConstraint<>(this, supplier.get());
 	}
 }
