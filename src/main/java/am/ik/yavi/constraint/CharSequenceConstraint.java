@@ -20,6 +20,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -29,6 +34,11 @@ import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
+import am.ik.yavi.constraint.charsequence.CodePoints;
+import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
+import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
+import am.ik.yavi.constraint.charsequence.CodePoints.Range;
+import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
@@ -112,5 +122,30 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	public ByteSizeConstraint<T, E> asByteArray() {
 		return this.asByteArray(StandardCharsets.UTF_8);
+	}
+
+	public CodePointsConstraint<T, E> codePoints(CodePoints<E> codePoints) {
+		return new CodePointsConstraint<>(this, codePoints);
+	}
+
+	public CodePointsConstraint<T, E> codePoints(Set<Integer> allowedCodePoints) {
+		return this.codePoints((CodePointsSet<E>) () -> allowedCodePoints);
+	}
+
+	public CodePointsConstraint<T, E> codePoints(int begin, int end) {
+		return this.codePoints(Range.of(begin, end));
+	}
+
+	public CodePointsConstraint<T, E> codePoints(Range range, Range... ranges) {
+		return this.codePoints((CodePointsRanges<E>) () -> {
+			List<Range> list = new ArrayList<>();
+			list.add(range);
+			list.addAll(Arrays.asList(ranges));
+			return list;
+		});
+	}
+
+	public CodePointsConstraint<T, E> codePoints(Supplier<CodePoints<E>> supplier) {
+		return new CodePointsConstraint<>(this, supplier.get());
 	}
 }

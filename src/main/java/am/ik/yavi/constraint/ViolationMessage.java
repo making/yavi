@@ -75,7 +75,10 @@ public interface ViolationMessage {
 		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
 		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //
 		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}"), //
-		;
+		CODE_POINTS_ALL_INCLUDED("codePoints.allIncluded",
+				"\"{1}\" is/are not allowed for \"{0}\""), //
+		CODE_POINTS_NOT_INCLUDED("codePoints.notIncluded",
+				"\"{1}\" is/are not allowed for \"{0}\"");
 
 		private final String messageKey;
 		private final String defaultMessageFormat;

@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -37,6 +38,24 @@ public class ConstraintPredicate<V> {
 		this.nullValidity = nullValidity;
 	}
 
+	public static <V> ConstraintPredicate<V> of(Predicate<V> predicate,
+			ViolationMessage violationMessage, Supplier<Object[]> args,
+			NullValidity nullValidity) {
+		return new ConstraintPredicate<>(predicate, violationMessage, args, nullValidity);
+	}
+
+	public static <V> ConstraintPredicate<V> withViolatedValue(
+			Function<V, Optional<ViolatedValue>> violatedValue,
+			ViolationMessage violationMessage, Supplier<Object[]> args,
+			NullValidity nullValidity) {
+		return new ConstraintPredicate<V>(null, violationMessage, args, nullValidity) {
+			@Override
+			public Optional<ViolatedValue> violatedValue(V target) {
+				return violatedValue.apply(target);
+			}
+		};
+	}
+
 	public final Predicate<V> predicate() {
 		return this.predicate;
 	}
@@ -50,12 +69,6 @@ public class ConstraintPredicate<V> {
 			// violated
 			return Optional.of(new ViolatedValue(target));
 		}
-	}
-
-	public static <V> ConstraintPredicate<V> of(Predicate<V> predicate,
-			ViolationMessage violationMessage, Supplier<Object[]> args,
-			NullValidity nullValidity) {
-		return new ConstraintPredicate<>(predicate, violationMessage, args, nullValidity);
 	}
 
 	public String messageKey() {

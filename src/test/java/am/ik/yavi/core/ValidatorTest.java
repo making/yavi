@@ -16,7 +16,10 @@
 package am.ik.yavi.core;
 
 import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -25,6 +28,9 @@ import static org.assertj.core.api.Assertions.fail;
 
 import am.ik.yavi.ConstraintViolationsException;
 import am.ik.yavi.User;
+import am.ik.yavi.constraint.charsequence.CodePoints;
+import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
+import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.fn.Either;
 
 public class ValidatorTest {
@@ -162,6 +168,155 @@ public class ValidatorTest {
 				.isEqualTo("The size of \"name\" must be less than or equal to 1");
 		assertThat(violations.get(1).message())
 				.isEqualTo("The byte size of \"name\" must be less than or equal to 3");
+	}
+
+	@Test
+	public void codePointsAllIncludedSet() throws Exception {
+		CodePointsSet<String> whiteList = () -> new HashSet<>(
+				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
+						0x0044 /* D */, 0x0045 /* E */, 0x0046 /* F */, 0x0047 /* G */,
+						0x0048 /* H */, 0x0049 /* I */, 0x004A /* J */, 0x004B /* K */,
+						0x004C /* L */, 0x004D /* M */, 0x004E /* N */, 0x004F /* O */,
+						0x0050 /* P */, 0x0051 /* Q */, 0x0052 /* R */, 0x0053 /* S */,
+						0x0054 /* T */, 0x0055 /* U */, 0x0056 /* V */, 0x0057 /* W */,
+						0x0058 /* X */, 0x0059 /* Y */, 0x005A /* Z */, //
+						0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */,
+						0x0065 /* e */, 0x0066 /* f */, 0x0067 /* g */, 0x0068 /* h */,
+						0x0069 /* i */, 0x006A /* j */, 0x006B /* k */, 0x006C /* l */,
+						0x006D /* m */, 0x006E /* n */, 0x006F /* o */, 0x0070 /* p */,
+						0x0071 /* q */, 0x0072 /* r */, 0x0073 /* s */, 0x0074 /* t */,
+						0x0075 /* u */, 0x0076 /* v */, 0x0077 /* w */, 0x0078 /* x */,
+						0x0079 /* y */, 0x007A /* z */));
+
+		User user = new User("abc@b.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(whiteList).allIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+	}
+
+	@Test
+	public void codePointsAllIncludedRange() throws Exception {
+		CodePointsRanges<String> whiteList = () -> Arrays.asList(
+				CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
+				CodePoints.Range.of(0x0061/* a */, 0x007A /* z */));
+
+		User user = new User("abc@b.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(whiteList).allIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+	}
+
+	@Test
+	public void codePointsNotIncludedSet() throws Exception {
+		CodePointsSet<String> blackList = () -> new HashSet<>(
+				Arrays.asList(0x0061 /* a */, 0x0062 /* b */));
+
+		User user = new User("abcA@Bb.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(blackList).notIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[a, b]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.notIncluded");
+	}
+
+	@Test
+	public void codePointsNotIncludedRange() throws Exception {
+		CodePointsRanges<String> blackList = () -> Arrays.asList(
+				CodePoints.Range.of(0x0041/* A */, 0x0042 /* B */),
+				CodePoints.Range.of(0x0061/* a */, 0x0062 /* b */));
+
+		User user = new User("abcA@Bb.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(blackList).notIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[a, b, A, B]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.notIncluded");
+	}
+
+	@Test
+	public void codePointsAllIncludedSetSet() throws Exception {
+		Set<Integer> whiteList = new HashSet<>(
+				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
+						0x0044 /* D */, 0x0045 /* E */, 0x0046 /* F */, 0x0047 /* G */,
+						0x0048 /* H */, 0x0049 /* I */, 0x004A /* J */, 0x004B /* K */,
+						0x004C /* L */, 0x004D /* M */, 0x004E /* N */, 0x004F /* O */,
+						0x0050 /* P */, 0x0051 /* Q */, 0x0052 /* R */, 0x0053 /* S */,
+						0x0054 /* T */, 0x0055 /* U */, 0x0056 /* V */, 0x0057 /* W */,
+						0x0058 /* X */, 0x0059 /* Y */, 0x005A /* Z */, //
+						0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */,
+						0x0065 /* e */, 0x0066 /* f */, 0x0067 /* g */, 0x0068 /* h */,
+						0x0069 /* i */, 0x006A /* j */, 0x006B /* k */, 0x006C /* l */,
+						0x006D /* m */, 0x006E /* n */, 0x006F /* o */, 0x0070 /* p */,
+						0x0071 /* q */, 0x0072 /* r */, 0x0073 /* s */, 0x0074 /* t */,
+						0x0075 /* u */, 0x0076 /* v */, 0x0077 /* w */, 0x0078 /* x */,
+						0x0079 /* y */, 0x007A /* z */));
+
+		User user = new User("abc@b.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(whiteList).allIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+	}
+
+	@Test
+	public void codePointsAllIncludedRangeRange() throws Exception {
+		User user = new User("abc@b.c", null, null);
+		Validator<User> validator = Validator.builder(User.class).constraint(
+				User::getName, "name",
+				c -> c.codePoints(CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
+						CodePoints.Range.of(0x0061/* a */, 0x007A /* z */)).allIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+	}
+
+	@Test
+	public void codePointsAllIncludedRangeBeginToEnd() throws Exception {
+		User user = new User("abc@b.c", null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.codePoints(0x0041/* A */, 0x007A /* z */).allIncluded())
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
 	}
 
 	@Test
