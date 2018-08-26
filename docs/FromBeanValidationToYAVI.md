@@ -494,7 +494,7 @@ Not Implemented yet
 
 ```java
 public class AddressForm implements Serializable {
-  @NotNull // <-- !!
+  @NotNull
   @Size(min = 1, max = 10)
   private String zipCode;
 
@@ -506,8 +506,8 @@ public class AddressForm implements Serializable {
 }
 
 public class OrderForm implements Serializable {
-  @NotNul
-  @Valid // <-- !!
+  @NotNul // <-- !!
+  @Valid
   private AddressForm address;
   
   // omitted setter/getter
@@ -581,8 +581,8 @@ public class AddressForm implements Serializable {
 }
 
 public class OrderForm implements Serializable {
-  @NotNul
-  @Valid // <-- !!
+  @NotNul // <-- !!
+  @Valid
   private List<AddressForm> addresses;
   
   // omitted setter/getter
