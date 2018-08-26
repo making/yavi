@@ -33,7 +33,8 @@ public class EmojiConstraint<T, E extends CharSequence>
 	}
 
 	private int size(E x) {
-		return Emoji.bestEffortCount(Normalizer.normalize(x.toString(), this.normalizerForm));
+		return Emoji
+				.bestEffortCount(Normalizer.normalize(x.toString(), this.normalizerForm));
 	}
 
 	public EmojiConstraint<T, E> lessThan(int max) {
