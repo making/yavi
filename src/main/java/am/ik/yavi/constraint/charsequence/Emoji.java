@@ -48,7 +48,7 @@ public class Emoji {
 	 * @param str
 	 * @return the length of the given string which may be true
 	 */
-	public static int tryCount(String str) {
+	public static int bestEffortCount(String str) {
 		if (str == null || str.isEmpty()) {
 			return 0;
 		}

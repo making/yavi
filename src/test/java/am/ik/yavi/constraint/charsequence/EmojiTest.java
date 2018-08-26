@@ -27,23 +27,23 @@ public class EmojiTest {
 
 	@Test
 	public void emoji() {
-		assertThat(Emoji.tryCount("I am 👱🏿")).isEqualTo(6);
+		assertThat(Emoji.bestEffortCount("I am 👱🏿")).isEqualTo(6);
 	}
 
 	@Test
 	public void heart() {
-		assertThat(Emoji.tryCount("❤️💙💚💛🧡💜🖤")).isEqualTo(7);
+		assertThat(Emoji.bestEffortCount("❤️💙💚💛🧡💜🖤")).isEqualTo(7);
 	}
 
 	@Test
 	public void family() {
-		assertThat(Emoji.tryCount("👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧"))
+		assertThat(Emoji.bestEffortCount("👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧"))
 				.isEqualTo(6);
 	}
 
 	@Test
 	public void elf() {
-		assertThat(Emoji.tryCount("🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿")).isEqualTo(6);
+		assertThat(Emoji.bestEffortCount("🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿")).isEqualTo(6);
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class EmojiTest {
 				int[] codePoints = Arrays.stream(line.split(";")[0].trim().split(" "))
 						.mapToInt(x -> Integer.parseInt(x, 16)).toArray();
 				String emoji = new String(codePoints, 0, codePoints.length);
-				int len = Emoji.tryCount("This is " + emoji + ".");
+				int len = Emoji.bestEffortCount("This is " + emoji + ".");
 				assertThat(len).describedAs(emoji).isEqualTo(10);
 			}
 			while (line != null);
