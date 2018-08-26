@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +26,7 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.core.ValidatorBuilder.ToCharSequence;
 
 public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
@@ -50,5 +54,76 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	static class Foo {
+		List<String> texts;
+
+		public Foo(List<String> texts) {
+			this.texts = texts;
+		}
+
+		public List<String> getTexts() {
+			return texts;
+		}
+	}
+
+	@Test
+	public void stringListAllValid() throws Exception {
+		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
+		Validator<String> stringValidator = Validator.builder(String.class)
+				.constraint((ToCharSequence<String, String>) o -> o, "value",
+						c -> c.notNull().lessThanOrEqual(2))
+				.build();
+		Validator<Foo> validator = Validator.builder(Foo.class)
+				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void stringListAllInValid() throws Exception {
+		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
+		Validator<String> stringValidator = Validator.builder(String.class)
+				.constraint((ToCharSequence<String, String>) o -> o, "value",
+						c -> c.notNull().lessThanOrEqual(2))
+				.build();
+		Validator<Foo> validator = Validator.builder(Foo.class)
+				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(3);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"texts[0].value\" must be less than or equal to 2");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
+		assertThat(violations.get(1).message()).isEqualTo(
+				"The size of \"texts[1].value\" must be less than or equal to 2");
+		assertThat(violations.get(1).messageKey()).isEqualTo("container.lessThanOrEqual");
+		assertThat(violations.get(2).message()).isEqualTo(
+				"The size of \"texts[2].value\" must be less than or equal to 2");
+		assertThat(violations.get(2).messageKey()).isEqualTo("container.lessThanOrEqual");
+	}
+
+	@Test
+	public void stringListAllInValidEmptyNestedName() throws Exception {
+		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
+		Validator<String> stringValidator = Validator.builder(String.class)
+				.constraint((ToCharSequence<String, String>) o -> o, "",
+						c -> c.notNull().lessThanOrEqual(2))
+				.build();
+		Validator<Foo> validator = Validator.builder(Foo.class)
+				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(3);
+		assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"texts[0]\" must be less than or equal to 2");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
+		assertThat(violations.get(1).message())
+				.isEqualTo("The size of \"texts[1]\" must be less than or equal to 2");
+		assertThat(violations.get(1).messageKey()).isEqualTo("container.lessThanOrEqual");
+		assertThat(violations.get(2).message())
+				.isEqualTo("The size of \"texts[2]\" must be less than or equal to 2");
+		assertThat(violations.get(2).messageKey()).isEqualTo("container.lessThanOrEqual");
 	}
 }
