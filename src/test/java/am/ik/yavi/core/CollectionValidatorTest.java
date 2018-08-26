@@ -56,18 +56,6 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		assertThat(violations.isValid()).isTrue();
 	}
 
-	static class Foo {
-		List<String> texts;
-
-		public Foo(List<String> texts) {
-			this.texts = texts;
-		}
-
-		public List<String> getTexts() {
-			return texts;
-		}
-	}
-
 	@Test
 	public void stringListAllValid() throws Exception {
 		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
@@ -94,13 +82,13 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"texts[0].value\" must be less than or equal to 2");
+				"The size of \"texts[0].value\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		assertThat(violations.get(1).message()).isEqualTo(
-				"The size of \"texts[1].value\" must be less than or equal to 2");
+				"The size of \"texts[1].value\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(1).messageKey()).isEqualTo("container.lessThanOrEqual");
 		assertThat(violations.get(2).message()).isEqualTo(
-				"The size of \"texts[2].value\" must be less than or equal to 2");
+				"The size of \"texts[2].value\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(2).messageKey()).isEqualTo("container.lessThanOrEqual");
 	}
 
@@ -116,14 +104,26 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"texts[0]\" must be less than or equal to 2");
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"texts[0]\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
-		assertThat(violations.get(1).message())
-				.isEqualTo("The size of \"texts[1]\" must be less than or equal to 2");
+		assertThat(violations.get(1).message()).isEqualTo(
+				"The size of \"texts[1]\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(1).messageKey()).isEqualTo("container.lessThanOrEqual");
-		assertThat(violations.get(2).message())
-				.isEqualTo("The size of \"texts[2]\" must be less than or equal to 2");
+		assertThat(violations.get(2).message()).isEqualTo(
+				"The size of \"texts[2]\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(2).messageKey()).isEqualTo("container.lessThanOrEqual");
+	}
+
+	static class Foo {
+		List<String> texts;
+
+		public Foo(List<String> texts) {
+			this.texts = texts;
+		}
+
+		public List<String> getTexts() {
+			return texts;
+		}
 	}
 }

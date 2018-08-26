@@ -39,14 +39,15 @@ public interface ViolationMessage {
 		OBJECT_IS_NULL("object.isNull", "\"{0}\" must be null"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan",
-				"The size of \"{0}\" must be less than {1}"), //
+				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		CONTAINER_LESS_THAN_OR_EQUAL("container.lessThanOrEqual",
-				"The size of \"{0}\" must be less than or equal to {1}"), //
+				"The size of \"{0}\" must be less than or equal to {1}. The given size is {2}"), //
 		CONTAINER_GREATER_THAN("container.greaterThan",
-				"The size of \"{0}\" must be greater than {1}"), //
+				"The size of \"{0}\" must be greater than {1}. The given size is {2}"), //
 		CONTAINER_GREATER_THAN_OR_EQUAL("container.greaterThanOrEqual",
-				"The size of \"{0}\" must be greater than or equal to {1}"), //
-		CONTAINER_FIXED_SIZE("container.fixedSize", "The size of \"{0}\" must be {1}"), //
+				"The size of \"{0}\" must be greater than or equal to {1}. The given size is {2}"), //
+		CONTAINER_FIXED_SIZE("container.fixedSize",
+				"The size of \"{0}\" must be {1}. The given size is {2}"), //
 		NUMERIC_GREATER_THAN("numeric.greaterThan", "\"{0}\" must be greater than {1}"), //
 		NUMERIC_GREATER_THAN_OR_EQUAL("numeric.greaterThanOrEqual",
 				"\"{0}\" must be greater than or equal to {1}"), //
@@ -62,15 +63,15 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
 		BYTE_SIZE_LESS_THAN("byteSize.lessThan",
-				"The size of \"{0}\" must be less than {1}"), //
+				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		BYTE_SIZE_LESS_THAN_OR_EQUAL("byteSize.lessThanOrEqual",
-				"The byte size of \"{0}\" must be less than or equal to {1}"), //
+				"The byte size of \"{0}\" must be less than or equal to {1}. The given size is {2}"), //
 		BYTE_SIZE_GREATER_THAN("byteSize.greaterThan",
-				"The byte size of \"{0}\" must be greater than {1}"), //
+				"The byte size of \"{0}\" must be greater than {1}. The given size is {2}"), //
 		BYTE_SIZE_GREATER_THAN_OR_EQUAL("byteSize.greaterThanOrEqual",
-				"The byte size of \"{0}\" must be greater than or equal to {1}"), //
+				"The byte size of \"{0}\" must be greater than or equal to {1}. The given size is {2}"), //
 		BYTE_SIZE_FIXED_SIZE("byteSize.fixedSize",
-				"The byte size of \"{0}\" must be {1}"), //
+				"The byte size of \"{0}\" must be {1}. The given size is {2}"), //
 		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}"), //
 		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
 		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //

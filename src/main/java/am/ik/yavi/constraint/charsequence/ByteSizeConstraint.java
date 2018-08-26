@@ -43,33 +43,39 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 	}
 
 	public ByteSizeConstraint<T, E> lessThan(int max) {
-		this.predicates().add(ConstraintPredicate.of(x -> size(x) < max,
-				BYTE_SIZE_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) < max, this::size),
+						BYTE_SIZE_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
 		return this;
 	}
 
 	public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
-		this.predicates().add(ConstraintPredicate.of(x -> size(x) <= max,
+		this.predicates().add(ConstraintPredicate.withViolatedValue(
+				this.checkSizePredicate(x -> size(x) <= max, this::size),
 				BYTE_SIZE_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, NULL_IS_VALID));
 		return this;
 	}
 
 	public ByteSizeConstraint<T, E> greaterThan(int min) {
-		this.predicates().add(ConstraintPredicate.of(x -> size(x) > min,
+		this.predicates().add(ConstraintPredicate.withViolatedValue(
+				this.checkSizePredicate(x -> size(x) > min, this::size),
 				BYTE_SIZE_GREATER_THAN, () -> new Object[] { min }, NULL_IS_VALID));
 		return this;
 	}
 
 	public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> size(x) >= min,
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) >= min, this::size),
 						BYTE_SIZE_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
 						NULL_IS_VALID));
 		return this;
 	}
 
 	public ByteSizeConstraint<T, E> fixedSize(int size) {
-		this.predicates().add(ConstraintPredicate.of(x -> size(x) == size,
+		this.predicates().add(ConstraintPredicate.withViolatedValue(
+				this.checkSizePredicate(x -> size(x) == size, this::size),
 				BYTE_SIZE_FIXED_SIZE, () -> new Object[] { size }, NULL_IS_VALID));
 		return this;
 	}

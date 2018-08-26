@@ -64,8 +64,8 @@ public class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"name\" must be greater than or equal to 1");
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
 		assertThat(violations.get(0).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(1).message())
@@ -84,10 +84,10 @@ public class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		List<ViolationDetail> details = violations.details();
 		assertThat(details.size()).isEqualTo(3);
-		assertThat(details.get(0).getDefaultMessage())
-				.isEqualTo("The size of \"name\" must be greater than or equal to 1");
+		assertThat(details.get(0).getDefaultMessage()).isEqualTo(
+				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
 		assertThat(details.get(0).getKey()).isEqualTo("container.greaterThanOrEqual");
-		assertThat(details.get(0).getArgs()).containsExactly("name", 1, "");
+		assertThat(details.get(0).getArgs()).containsExactly("name", 1, 0);
 		assertThat(details.get(1).getDefaultMessage())
 				.isEqualTo("\"email\" must be a valid email address");
 		assertThat(details.get(1).getKey()).isEqualTo("charSequence.email");
@@ -105,8 +105,8 @@ public class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"email\" must be greater than or equal to 5");
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"email\" must be greater than or equal to 5. The given size is 2");
 		assertThat(violations.get(0).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(1).message())
@@ -150,8 +150,8 @@ public class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The byte size of \"name\" must be less than or equal to 6");
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The byte size of \"name\" must be less than or equal to 6. The given size is 9");
 	}
 
 	@Test
@@ -164,10 +164,10 @@ public class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"name\" must be less than or equal to 1");
-		assertThat(violations.get(1).message())
-				.isEqualTo("The byte size of \"name\" must be less than or equal to 3");
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"name\" must be less than or equal to 1. The given size is 2");
+		assertThat(violations.get(1).message()).isEqualTo(
+				"The byte size of \"name\" must be less than or equal to 3. The given size is 9");
 	}
 
 	@Test

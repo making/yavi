@@ -48,7 +48,8 @@ public class ConstraintPredicate<V> {
 			Function<V, Optional<ViolatedValue>> violatedValue,
 			ViolationMessage violationMessage, Supplier<Object[]> args,
 			NullValidity nullValidity) {
-		return new ConstraintPredicate<V>(null, violationMessage, args, nullValidity) {
+		return new ConstraintPredicate<V>(v -> !violatedValue.apply(v).isPresent(),
+				violationMessage, args, nullValidity) {
 			@Override
 			public Optional<ViolatedValue> violatedValue(V target) {
 				return violatedValue.apply(target);

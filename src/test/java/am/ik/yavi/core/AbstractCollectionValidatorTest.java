@@ -58,7 +58,7 @@ public abstract class AbstractCollectionValidatorTest {
 				.isEqualTo("\"addresses[0].phoneNumber.value\" must not be blank");
 		assertThat(violations.get(2).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(3).message()).isEqualTo(
-				"The size of \"addresses[0].phoneNumber.value\" must be greater than or equal to 8");
+				"The size of \"addresses[0].phoneNumber.value\" must be greater than or equal to 8. The given size is 0");
 		assertThat(violations.get(3).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(4).message())
@@ -71,7 +71,7 @@ public abstract class AbstractCollectionValidatorTest {
 				.isEqualTo("\"addresses[1].phoneNumber.value\" must not be blank");
 		assertThat(violations.get(6).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(7).message()).isEqualTo(
-				"The size of \"addresses[1].phoneNumber.value\" must be greater than or equal to 8");
+				"The size of \"addresses[1].phoneNumber.value\" must be greater than or equal to 8. The given size is 0");
 		assertThat(violations.get(7).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 	}
@@ -96,7 +96,7 @@ public abstract class AbstractCollectionValidatorTest {
 				.isEqualTo("\"addresses[1].phoneNumber.value\" must not be blank");
 		assertThat(violations.get(2).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(3).message()).isEqualTo(
-				"The size of \"addresses[1].phoneNumber.value\" must be greater than or equal to 8");
+				"The size of \"addresses[1].phoneNumber.value\" must be greater than or equal to 8. The given size is 0");
 		assertThat(violations.get(3).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 	}

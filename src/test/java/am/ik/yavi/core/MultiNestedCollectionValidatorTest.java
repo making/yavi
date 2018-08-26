@@ -67,7 +67,7 @@ public class MultiNestedCollectionValidatorTest {
 		assertThat(violations.get(0).name())
 				.isEqualTo("forms[0].addresses[0].phoneNumber.value");
 		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"forms[0].addresses[0].phoneNumber.value\" must be greater than or equal to 8");
+				"The size of \"forms[0].addresses[0].phoneNumber.value\" must be greater than or equal to 8. The given size is 7");
 		assertThat(violations.get(1).name()).isEqualTo("forms[0].addresses[1].street");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"forms[0].addresses[1].street\" must not be blank");
