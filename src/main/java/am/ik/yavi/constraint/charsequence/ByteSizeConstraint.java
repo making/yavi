@@ -12,10 +12,10 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		extends CharSequenceConstraint<T, E> {
 	private final Charset charset;
 
-	public ByteSizeConstraint(CharSequenceConstraint<T, E> delete, Charset charset) {
+	public ByteSizeConstraint(CharSequenceConstraint<T, E> delegate, Charset charset) {
 		super();
 		this.charset = charset;
-		this.predicates().addAll(delete.predicates());
+		this.predicates().addAll(delegate.predicates());
 	}
 
 	@Override
