@@ -242,6 +242,54 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 
 [sample app](https://github.com/making/demo-spring-mvc-yavi)
 
+#### Example with Spring Fu
+
+```kotlin
+val app = application {
+    logging {
+        level(LogLevel.INFO)
+        logback {
+            consoleAppender()
+        }
+    }
+    webflux {
+        val port = if (profiles.contains("test")) 8181 else 8080
+        server(netty(port)) {
+            codecs {
+                jackson()
+            }
+            router {
+                POST("/") { req ->
+                    req.bodyToMono(Message::class.java)
+                            .flatMap { message ->
+                                Message.validator.validateToEither(message)
+                                        .fold({
+                                            badRequest().syncBody(mapOf("details" to it.details()))
+                                        }, {
+                                            ok().syncBody(it)
+                                        })
+                            }
+                }
+            }
+        }
+    }
+}
+
+data class Message(
+        val text: String
+) {
+    companion object {
+        val validator = Validator.builder<Message>()
+                .constraint(Message::text, "message") {
+                    it.notBlank().lessThanOrEqual(3)
+                }
+                .build()!!
+    }
+}
+```
+
+[sample app](https://github.com/making/demo-spring-fu-yavi)
+
 ### Required
 
 * Java 8+
