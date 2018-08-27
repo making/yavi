@@ -27,23 +27,37 @@ public class EmojiTest {
 
 	@Test
 	public void emoji() {
-		assertThat(Emoji.bestEffortCount("I am 👱🏿")).isEqualTo(6);
+		String emoji = "I am 👱🏿";
+		assertThat(emoji.length()).isEqualTo(9);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
 	public void heart() {
-		assertThat(Emoji.bestEffortCount("❤️💙💚💛🧡💜🖤")).isEqualTo(7);
+		String emoji = "❤️💙💚💛🧡💜🖤";
+		assertThat(emoji.length()).isEqualTo(14);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(7);
 	}
 
 	@Test
 	public void family() {
-		assertThat(Emoji.bestEffortCount("👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧"))
-				.isEqualTo(6);
+		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
+		assertThat(emoji.length()).isEqualTo(42);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
 	public void elf() {
-		assertThat(Emoji.bestEffortCount("🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿")).isEqualTo(6);
+		String emoji = "🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿";
+		assertThat(emoji.length()).isEqualTo(22);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+	}
+
+	@Test
+	public void subdivisionFlags() {
+		String emoji = "🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢󠁷󠁬󠁳󠁿";
+		assertThat(emoji.length()).isEqualTo(42);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(3);
 	}
 
 	@Test
