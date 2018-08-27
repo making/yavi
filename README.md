@@ -162,7 +162,7 @@ For example,
 
 ```java
 Validator<Message> validator = Validator.<Message> builder() //
-            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+            .constraint(Message::getText, "text", c -> c.notBlank() //
                     .lessThanOrEqual(3)) //
             .build(); //
 validator.validate(new Message("I❤️☕️")).isValid(); // false
@@ -172,7 +172,7 @@ If you want to count as you see (3, in this case), use `emoji()`.
 
 ```java
 Validator<Message> validator = Validator.<Message> builder() //
-            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+            .constraint(Message::getText, "text", c -> c.notBlank() //
                     .emoji().lessThanOrEqual(3)) //
             .build(); //
 validator.validate(new Message("I❤️☕️")).isValid(); // true
@@ -182,7 +182,7 @@ For the safety (such as storing into a database), you can also check the size as
 
 ```java
 Validator<Message> validator = Validator.<Message> builder() //
-            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+            .constraint(Message::getText, "text", c -> c.notBlank() //
                     .emoji().lessThanOrEqual(3)
                     .asByteArray().lessThanOrEqual(16)) //
             .build(); //
