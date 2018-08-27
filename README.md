@@ -180,7 +180,7 @@ validator.validate(new Message("I❤️☕️")).isValid(); // true
 
 For the safety (such as storing a database), you can also check the size as byte arrays
 
-``java
+```java
 Validator<Message> validator = Validator.<Message> builder() //
             .constraint(Book::getTitle, "text", c -> c.notBlank() //
                     .emoji().lessThanOrEqual(3)
