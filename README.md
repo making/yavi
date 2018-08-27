@@ -178,7 +178,7 @@ Validator<Message> validator = Validator.<Message> builder() //
 validator.validate(new Message("I❤️☕️")).isValid(); // true
 ```
 
-For the safety (such as storing a database), you can also check the size as byte arrays
+For the safety (such as storing into a database), you can also check the size as byte arrays
 
 ```java
 Validator<Message> validator = Validator.<Message> builder() //
