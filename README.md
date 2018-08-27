@@ -154,6 +154,42 @@ HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK)
 
 [Either API](src/main/java/am/ik/yavi/fn/Either.java)
 
+#### (Experimental) Emoji support
+
+By default, some Emojis are not counted as you expect.
+
+For example,
+
+```java
+Validator<Message> validator = Validator.<Message> builder() //
+            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+                    .lessThanOrEqual(3)) //
+            .build(); //
+validator.validate(new Message("I❤️☕️")).isValid(); // false
+```
+
+If you want to count as you see (3, in this case), use `emoji()`.
+
+```java
+Validator<Message> validator = Validator.<Message> builder() //
+            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+                    .emoji().lessThanOrEqual(3)) //
+            .build(); //
+validator.validate(new Message("I❤️☕️")).isValid(); // true
+```
+
+For the safety (such as storing a database), you can also check the size as byte arrays
+
+``java
+Validator<Message> validator = Validator.<Message> builder() //
+            .constraint(Book::getTitle, "text", c -> c.notBlank() //
+                    .emoji().lessThanOrEqual(3)
+                    .asByteArray().lessThanOrEqual(16)) //
+            .build(); //
+validator.validate(new Message("I❤️☕️")).isValid(); // true
+validator.validate(new Message("❤️️❤️️❤️️")).isValid(); // false
+```
+
 #### Example with Spring WebFlux.fn
 
 YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-fn)
