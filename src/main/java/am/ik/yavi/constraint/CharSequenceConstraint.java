@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -32,10 +33,16 @@ import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.constraint.charsequence.*;
+import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
+import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
+import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
+import am.ik.yavi.constraint.charsequence.EmojiConstraint;
+import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
+import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
+import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
@@ -44,42 +51,52 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
-	protected final IdeographicVariationSequence ivs;
+	protected final VariantOptions variantOptions;
 
 	public CharSequenceConstraint() {
-		this(Normalizer.Form.NFC, IdeographicVariationSequence.IGNORE);
+		this(Normalizer.Form.NFC, VariantOptions.builder().build());
 	}
 
 	public CharSequenceConstraint(Normalizer.Form normalizerForm,
-			IdeographicVariationSequence ivs) {
+			VariantOptions variantOptions) {
 		this.normalizerForm = normalizerForm;
-		this.ivs = ivs;
+		this.variantOptions = variantOptions;
 	}
 
-	public CharSequenceConstraint<T, E> ivs(IdeographicVariationSequence IVS) {
+	public CharSequenceConstraint<T, E> variant(
+			Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
+		VariantOptions.Builder builder = VariantOptions.builder();
 		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				this.normalizerForm, IVS);
+				this.normalizerForm, opts.apply(builder).build());
 		constraint.predicates().addAll(this.predicates());
 		return constraint;
 	}
 
 	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
 		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				normalizerForm, this.ivs);
+				normalizerForm, this.variantOptions);
 		constraint.predicates().addAll(this.predicates());
 		return constraint;
 	}
 
 	protected String normalize(String s) {
-		String cutIsv;
-		if (this.ivs.ignore()) {
-			cutIsv = s.replaceAll("[" + IdeographicVariationSequence.RANGE + "]", "");
+		String cutSvs;
+		if (this.variantOptions.svs().ignore()) {
+			cutSvs = s.replaceAll("[" + StandardizedVariationSequence.RANGE + "]", "");
 		}
 		else {
-			cutIsv = s;
+			cutSvs = s;
 		}
-		return this.normalizerForm == null ? cutIsv
-				: Normalizer.normalize(cutIsv, this.normalizerForm);
+		String cutIvs;
+		if (this.variantOptions.ivs().ignore()) {
+			cutIvs = cutSvs.replaceAll("[" + IdeographicVariationSequence.RANGE + "]",
+					"");
+		}
+		else {
+			cutIvs = cutSvs;
+		}
+		return this.normalizerForm == null ? cutIvs
+				: Normalizer.normalize(cutIvs, this.normalizerForm);
 	}
 
 	@Override
@@ -171,6 +188,6 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public EmojiConstraint<T, E> emoji() {
-		return new EmojiConstraint<>(this, this.normalizerForm, this.ivs);
+		return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
 	}
 }

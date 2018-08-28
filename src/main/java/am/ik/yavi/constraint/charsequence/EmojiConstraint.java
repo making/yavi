@@ -21,14 +21,15 @@ import static am.ik.yavi.constraint.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class EmojiConstraint<T, E extends CharSequence>
 		extends CharSequenceConstraint<T, E> {
 
 	public EmojiConstraint(CharSequenceConstraint<T, E> delegate,
-			Normalizer.Form normalizerForm, IdeographicVariationSequence ivs) {
-		super(normalizerForm, ivs);
+			Normalizer.Form normalizerForm, VariantOptions variantOptions) {
+		super(normalizerForm, variantOptions);
 		this.predicates().addAll(delegate.predicates());
 	}
 

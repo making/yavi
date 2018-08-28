@@ -30,7 +30,7 @@ import am.ik.yavi.User;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
-import am.ik.yavi.constraint.charsequence.IdeographicVariationSequence;
+import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.fn.Either;
 
 public class ValidatorTest {
@@ -185,12 +185,10 @@ public class ValidatorTest {
 	@Test
 	public void ivsInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
-		Validator<User> validator = Validator
-				.builder(
-						User.class)
-				.constraint(User::getName, "name",
-						c -> c.ivs(IdeographicVariationSequence.NOT_IGNORE).fixedSize(3)
-								.asByteArray().fixedSize(13))
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name", c -> c
+						.variant(ops -> ops.ivs(IdeographicVariationSequence.NOT_IGNORE))
+						.fixedSize(3).asByteArray().fixedSize(13))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -216,10 +214,10 @@ public class ValidatorTest {
 	@Test
 	public void ivsSizeAndByteSizeInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
-		Validator<User> validator = Validator.builder(User.class)
-				.constraint(User::getName, "name",
-						c -> c.ivs(IdeographicVariationSequence.NOT_IGNORE)
-								.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+		Validator<User> validator = Validator.builder(User.class).constraint(
+				User::getName, "name",
+				c -> c.variant(opts -> opts.ivs(IdeographicVariationSequence.NOT_IGNORE))
+						.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();

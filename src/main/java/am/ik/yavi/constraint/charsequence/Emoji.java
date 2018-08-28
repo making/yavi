@@ -15,9 +15,10 @@
  */
 package am.ik.yavi.constraint.charsequence;
 
+import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
+
 public class Emoji {
 	private static final String ZERO_WIDTH_JOINER = "\u200D";
-	private static final String VARIATION_SELECTOR_RANGE = "\uFE00-\uFE0F";
 	private static final String COMBINING_ENCLOSING_KEYCAP = new String(
 			new int[] { 0x20E3 }, 0, 1);
 	private static final String SKIN_TONE_SELECTOR_RANGE = new String(
@@ -53,9 +54,8 @@ public class Emoji {
 			return 0;
 		}
 		String s = str
-				.replaceAll(
-						"[" + VARIATION_SELECTOR_RANGE + COMBINING_ENCLOSING_KEYCAP + "]",
-						"") //
+				.replaceAll("[" + StandardizedVariationSequence.RANGE
+						+ COMBINING_ENCLOSING_KEYCAP + "]", "") //
 				.replaceAll("([" + WHITE_UP_POINTING_INDEX + "-" + ELF + "]["
 						+ SKIN_TONE_SELECTOR_RANGE + "])", "X")
 				.replaceAll("([" + ZERO_WIDTH_JOINER + "][" + SKUL_AND_CROSSBONES + "-"

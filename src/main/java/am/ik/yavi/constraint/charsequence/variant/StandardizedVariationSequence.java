@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.constraint.charsequence;
+package am.ik.yavi.constraint.charsequence.variant;
 
-public enum IdeographicVariationSequence {
+public enum StandardizedVariationSequence {
 	IGNORE(true), NOT_IGNORE(false);
-	public static final String RANGE = new String(new int[] { 0xE0100 }, 0, 1) + "-"
-			+ new String(new int[] { 0xE01EF }, 0, 1);
+	public static final String RANGE = "\uFE00-\uFE0F";
 	private final boolean ignore;
 
-	IdeographicVariationSequence(boolean ignore) {
+	StandardizedVariationSequence(boolean ignore) {
 		this.ignore = ignore;
 	}
 
