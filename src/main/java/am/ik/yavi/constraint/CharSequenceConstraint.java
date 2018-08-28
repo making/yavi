@@ -40,8 +40,6 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
-import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
-import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
 
@@ -80,23 +78,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	protected String normalize(String s) {
-		String cutSvs;
-		if (this.variantOptions.svs().ignore()) {
-			cutSvs = s.replaceAll("[" + StandardizedVariationSequence.RANGE + "]", "");
-		}
-		else {
-			cutSvs = s;
-		}
-		String cutIvs;
-		if (this.variantOptions.ivs().ignore()) {
-			cutIvs = cutSvs.replaceAll("[" + IdeographicVariationSequence.RANGE + "]",
-					"");
-		}
-		else {
-			cutIvs = cutSvs;
-		}
-		return this.normalizerForm == null ? cutIvs
-				: Normalizer.normalize(cutIvs, this.normalizerForm);
+		String str = this.variantOptions.ignored(s);
+		return this.normalizerForm == null ? str
+				: Normalizer.normalize(str, this.normalizerForm);
 	}
 
 	@Override

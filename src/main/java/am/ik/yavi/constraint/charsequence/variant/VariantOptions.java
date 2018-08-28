@@ -18,28 +18,42 @@ package am.ik.yavi.constraint.charsequence.variant;
 public class VariantOptions {
 	private final StandardizedVariationSequence svs;
 	private final IdeographicVariationSequence ivs;
+	private final MongolianFreeVariationSelector fvs;
 
 	public VariantOptions(StandardizedVariationSequence svs,
-			IdeographicVariationSequence ivs) {
+			IdeographicVariationSequence ivs, MongolianFreeVariationSelector fvs) {
 		this.svs = svs;
 		this.ivs = ivs;
+		this.fvs = fvs;
 	}
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	public StandardizedVariationSequence svs() {
-		return svs;
-	}
-
-	public IdeographicVariationSequence ivs() {
-		return ivs;
+	public String ignored(String s) {
+		StringBuilder regex = new StringBuilder("[");
+		if (this.svs.ignore()) {
+			regex.append(StandardizedVariationSequence.RANGE);
+		}
+		if (this.ivs.ignore()) {
+			regex.append(IdeographicVariationSequence.RANGE);
+		}
+		if (this.fvs.ignore()) {
+			regex.append(MongolianFreeVariationSelector.RANGE);
+		}
+		regex.append("]");
+		return regex.length() == 2 ? s : s.replaceAll(regex.toString(), "");
 	}
 
 	public static class Builder {
-		private StandardizedVariationSequence svs = StandardizedVariationSequence.IGNORE;
-		private IdeographicVariationSequence ivs = IdeographicVariationSequence.IGNORE;
+		private StandardizedVariationSequence svs;
+		private IdeographicVariationSequence ivs;
+		private MongolianFreeVariationSelector fvs;
+
+		Builder() {
+			this.ignoreAll();
+		}
 
 		public Builder svs(StandardizedVariationSequence svs) {
 			this.svs = svs;
@@ -51,8 +65,27 @@ public class VariantOptions {
 			return this;
 		}
 
+		public Builder fvs(MongolianFreeVariationSelector fvs) {
+			this.fvs = fvs;
+			return this;
+		}
+
+		public Builder ignoreAll() {
+			this.svs = StandardizedVariationSequence.IGNORE;
+			this.ivs = IdeographicVariationSequence.IGNORE;
+			this.fvs = MongolianFreeVariationSelector.IGNORE;
+			return this;
+		}
+
+		public Builder notIgnoreAll() {
+			this.svs = StandardizedVariationSequence.NOT_IGNORE;
+			this.ivs = IdeographicVariationSequence.NOT_IGNORE;
+			this.fvs = MongolianFreeVariationSelector.NOT_IGNORE;
+			return this;
+		}
+
 		public VariantOptions build() {
-			return new VariantOptions(this.svs, this.ivs);
+			return new VariantOptions(this.svs, this.ivs, this.fvs);
 		}
 	}
 }

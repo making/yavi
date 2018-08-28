@@ -178,7 +178,7 @@ public class ValidatorTest {
 						c -> c.fixedSize(3).asByteArray().fixedSize(13))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
-		System.out.println(violations);
+		violations.forEach(x -> System.out.println(x.message()));
 		assertThat(violations.isValid()).isTrue();
 	}
 
@@ -186,9 +186,9 @@ public class ValidatorTest {
 	public void ivsInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = Validator.builder(User.class)
-				.constraint(User::getName, "name", c -> c
-						.variant(ops -> ops.ivs(IdeographicVariationSequence.NOT_IGNORE))
-						.fixedSize(3).asByteArray().fixedSize(13))
+				.constraint(User::getName, "name",
+						c -> c.variant(ops -> ops.notIgnoreAll()).fixedSize(3)
+								.asByteArray().fixedSize(13))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();

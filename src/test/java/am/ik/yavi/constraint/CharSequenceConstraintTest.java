@@ -22,6 +22,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
+import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
 
 public class CharSequenceConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
@@ -147,9 +148,27 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void notIgnoreIvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(opts -> opts.ivs(IdeographicVariationSequence.NOT_IGNORE))
+				.variant(ops -> ops.ivs(IdeographicVariationSequence.NOT_IGNORE))
 				.fixedSize(2).predicates().get(0).predicate();
 		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
 		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
+	}
+
+	@Test
+	public void ignoreFvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.fixedSize(1).predicates().get(0).predicate();
+		assertThat(predicate.test("ᠠ᠋")).isTrue();
+		assertThat(predicate.test("ᠰ᠌")).isTrue();
+	}
+
+	@Test
+	public void notIgnoreFvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
+				.fixedSize(2)
+				.predicates().get(0).predicate();
+		assertThat(predicate.test("ᠠ᠋")).isTrue();
+		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}
 }
