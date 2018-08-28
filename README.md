@@ -14,7 +14,7 @@ The concepts are
 * No more Java Beans!
 * Zero dependency!
 
-If you are not a fun of [Bean Validation](https://beanvalidation.org/), YAVI will be an awesome alternative.
+If you are not a fan of [Bean Validation](https://beanvalidation.org/), YAVI will be an awesome alternative.
 
 For the migration from Bean Validation, refer [the doc](docs/FromBeanValidationToYAVI.md).
 
