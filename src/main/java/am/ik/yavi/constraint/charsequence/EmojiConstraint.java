@@ -27,14 +27,13 @@ public class EmojiConstraint<T, E extends CharSequence>
 		extends CharSequenceConstraint<T, E> {
 
 	public EmojiConstraint(CharSequenceConstraint<T, E> delegate,
-			Normalizer.Form normalizerForm) {
-		super(normalizerForm);
+			Normalizer.Form normalizerForm, IdeographicVariationSequence ivs) {
+		super(normalizerForm, ivs);
 		this.predicates().addAll(delegate.predicates());
 	}
 
 	private int size(E x) {
-		return Emoji
-				.bestEffortCount(Normalizer.normalize(x.toString(), this.normalizerForm));
+		return Emoji.bestEffortCount(this.normalize(x.toString()));
 	}
 
 	public EmojiConstraint<T, E> lessThan(int max) {

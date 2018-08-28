@@ -15,7 +15,6 @@
  */
 package am.ik.yavi.core;
 
-import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +30,7 @@ import am.ik.yavi.User;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
+import am.ik.yavi.constraint.charsequence.IdeographicVariationSequence;
 import am.ik.yavi.fn.Either;
 
 public class ValidatorTest {
@@ -131,9 +131,9 @@ public class ValidatorTest {
 
 	@Test
 	public void combiningCharacterValid() throws Exception {
-		User user = new User("モシ\u3099", null, null);
+		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = Validator.builder(User.class)
-				.constraint(User::getName, Normalizer.Form.NFC, "name",
+				.constraint(User::getName, "name",
 						c -> c.fixedSize(2).asByteArray().fixedSize(9))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
@@ -142,9 +142,9 @@ public class ValidatorTest {
 
 	@Test
 	public void combiningCharacterByteSizeInValid() throws Exception {
-		User user = new User("モシ\u3099", null, null);
+		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = Validator.builder(User.class)
-				.constraint(User::getName, Normalizer.Form.NFC, "name",
+				.constraint(User::getName, "name",
 						c -> c.lessThanOrEqual(2).asByteArray().lessThanOrEqual(6))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
@@ -156,9 +156,9 @@ public class ValidatorTest {
 
 	@Test
 	public void combiningCharacterSizeAndByteSizeInValid() throws Exception {
-		User user = new User("モシ\u3099", null, null);
+		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = Validator.builder(User.class)
-				.constraint(User::getName, Normalizer.Form.NFC, "name",
+				.constraint(User::getName, "name",
 						c -> c.lessThanOrEqual(1).asByteArray().lessThanOrEqual(3))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
@@ -168,6 +168,66 @@ public class ValidatorTest {
 				"The size of \"name\" must be less than or equal to 1. The given size is 2");
 		assertThat(violations.get(1).message()).isEqualTo(
 				"The byte size of \"name\" must be less than or equal to 3. The given size is 9");
+	}
+
+	@Test
+	public void ivsValid() throws Exception {
+		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.fixedSize(3).asByteArray().fixedSize(13))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		System.out.println(violations);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void ivsInValid() throws Exception {
+		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
+		Validator<User> validator = Validator
+				.builder(
+						User.class)
+				.constraint(User::getName, "name",
+						c -> c.ivs(IdeographicVariationSequence.NOT_IGNORE).fixedSize(3)
+								.asByteArray().fixedSize(13))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be 3. The given size is 4");
+	}
+
+	@Test
+	public void ivsByteSizeInValid() throws Exception {
+		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The byte size of \"name\" must be less than or equal to 12. The given size is 13");
+	}
+
+	@Test
+	public void ivsSizeAndByteSizeInValid() throws Exception {
+		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
+		Validator<User> validator = Validator.builder(User.class)
+				.constraint(User::getName, "name",
+						c -> c.ivs(IdeographicVariationSequence.NOT_IGNORE)
+								.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+				.build();
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(2);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"name\" must be less than or equal to 3. The given size is 4");
+		assertThat(violations.get(1).message()).isEqualTo(
+				"The byte size of \"name\" must be less than or equal to 12. The given size is 13");
 	}
 
 	@Test

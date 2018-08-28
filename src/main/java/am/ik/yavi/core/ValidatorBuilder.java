@@ -17,7 +17,6 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Normalizer;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -51,13 +50,6 @@ public class ValidatorBuilder<T> {
 			String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
-	}
-
-	public <E extends CharSequence> ValidatorBuilder<T> constraint(ToCharSequence<T, E> f,
-			Normalizer.Form normalizerForm, String name,
-			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
-		return this.constraint(f, name, c,
-				() -> new CharSequenceConstraint<>(normalizerForm));
 	}
 
 	public ValidatorBuilder<T> constraint(ToCharacter<T> f, String name,

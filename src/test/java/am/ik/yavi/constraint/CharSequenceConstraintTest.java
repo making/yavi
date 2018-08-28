@@ -15,12 +15,13 @@
  */
 package am.ik.yavi.constraint;
 
-import java.text.Normalizer;
 import java.util.function.Predicate;
 
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import am.ik.yavi.constraint.charsequence.IdeographicVariationSequence;
 
 public class CharSequenceConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
@@ -122,9 +123,33 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void combiningCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>(
-				Normalizer.Form.NFC).fixedSize(2).predicates().get(0).predicate();
-		assertThat(predicate.test("モシ\u3099")).isTrue();
+	public void normalizeCombiningCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.fixedSize(2).predicates().get(0).predicate();
+		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
+	}
+
+	@Test
+	public void notNormalizeCombiningCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.normalizer(null).fixedSize(3).predicates().get(0).predicate();
+		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
+	}
+
+	@Test
+	public void ignoreIvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.fixedSize(1).predicates().get(0).predicate();
+		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
+		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
+	}
+
+	@Test
+	public void notIgnoreIvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.ivs(IdeographicVariationSequence.NOT_IGNORE).fixedSize(2).predicates()
+				.get(0).predicate();
+		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
+		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
 	}
 }
