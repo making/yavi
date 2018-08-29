@@ -25,6 +25,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints;
 public class CompositeCodePoints<E extends CharSequence> implements CodePoints<E> {
 	private final List<CodePoints<E>> composite = new ArrayList<>();
 
+	@SafeVarargs
 	public CompositeCodePoints(CodePoints<E>... codePoints) {
 		final Set<Integer> codePointsSet = new LinkedHashSet<>();
 		final List<Range> ranges = new ArrayList<>();
