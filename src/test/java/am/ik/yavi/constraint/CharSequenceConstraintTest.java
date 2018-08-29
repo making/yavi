@@ -94,6 +94,9 @@ public class CharSequenceConstraintTest {
 	public void email() {
 		Predicate<String> predicate = constraint.email().predicates().get(0).predicate();
 		assertThat(predicate.test("abc@example.com")).isTrue();
+		assertThat(predicate.test("abc@localhost")).isTrue();
+		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
+		assertThat(predicate.test("東京@example.com")).isTrue();
 		assertThat(predicate.test("example.com")).isFalse();
 		assertThat(predicate.test("")).isTrue();
 	}
@@ -166,8 +169,7 @@ public class CharSequenceConstraintTest {
 	public void notIgnoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
-				.fixedSize(2)
-				.predicates().get(0).predicate();
+				.fixedSize(2).predicates().get(0).predicate();
 		assertThat(predicate.test("ᠠ᠋")).isTrue();
 		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}

@@ -45,8 +45,13 @@ import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
-	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(
-			"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+	private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
+	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
+			+ "+)*";
+	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
+	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
+			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
+					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
 	protected final VariantOptions variantOptions;
