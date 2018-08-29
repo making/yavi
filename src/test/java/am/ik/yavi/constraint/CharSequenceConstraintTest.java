@@ -42,6 +42,7 @@ public class CharSequenceConstraintTest {
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test("")).isFalse();
 		assertThat(predicate.test("    ")).isFalse();
+		assertThat(predicate.test("    ")).isFalse();
 	}
 
 	@Test

@@ -104,7 +104,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public CharSequenceConstraint<T, E> notBlank() {
 		this.predicates()
 				.add(ConstraintPredicate.of(
-						x -> x != null && x.toString().trim().length() != 0,
+						x -> x != null && trim(x.toString()).length() != 0,
 						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, NULL_IS_INVALID));
 		return this;
 	}
@@ -178,5 +178,19 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	public EmojiConstraint<T, E> emoji() {
 		return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
+	}
+
+	private static String trim(String s) {
+		if (s.length() == 0) {
+			return s;
+		}
+		StringBuilder sb = new StringBuilder(s);
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
+			sb.deleteCharAt(0);
+		}
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
 	}
 }
