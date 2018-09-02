@@ -265,11 +265,8 @@ val app = application {
                 req.bodyToMono(Message::class.java)
                         .flatMap { message ->
                             Message.validator.validateToEither(message)
-                                    .fold({
-                                        badRequest().syncBody(mapOf("details" to it.details()))
-                                    }, {
-                                        ok().syncBody(it)
-                                    })
+                                    .leftMap { mapOf("details" to it.details()) }
+                                    .fold(badRequest()::syncBody, ok()::syncBody)
                         }
             }
         }
