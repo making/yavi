@@ -45,7 +45,23 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	/**
+	 * Use {@link #asWhiteList()} instead
+	 */
+	@Deprecated
 	public CodePointsConstraint<T, E> allIncluded() {
+		return this.asWhiteList();
+	}
+
+	/**
+	 * Use {@link #asBlackList()} instead
+	 */
+	@Deprecated
+	public CodePointsConstraint<T, E> notIncluded() {
+		return this.asBlackList();
+	}
+
+	public CodePointsConstraint<T, E> asWhiteList() {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
 			Set<Integer> excludedFromWhiteList = this.codePoints.allExcludedCodePoints(x);
 			if (excludedFromWhiteList.isEmpty()) {
@@ -59,7 +75,7 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		return this;
 	}
 
-	public CodePointsConstraint<T, E> notIncluded() {
+	public CodePointsConstraint<T, E> asBlackList() {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
 			Set<Integer> excludedFromBlackList = this.codePoints.allExcludedCodePoints(x);
 			Integer codePoint;

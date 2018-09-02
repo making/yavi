@@ -249,14 +249,14 @@ public class ValidatorTest {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).allIncluded())
+						c -> c.codePoints(whiteList).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
 	@Test
@@ -268,14 +268,14 @@ public class ValidatorTest {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).allIncluded())
+						c -> c.codePoints(whiteList).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
 	@Test
@@ -286,14 +286,14 @@ public class ValidatorTest {
 		User user = new User("abcA@Bb.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(blackList).notIncluded())
+						c -> c.codePoints(blackList).asBlackList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[a, b]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.notIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asBlackList");
 	}
 
 	@Test
@@ -305,14 +305,14 @@ public class ValidatorTest {
 		User user = new User("abcA@Bb.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(blackList).notIncluded())
+						c -> c.codePoints(blackList).asBlackList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[a, b, A, B]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.notIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asBlackList");
 	}
 
 	@Test
@@ -336,14 +336,14 @@ public class ValidatorTest {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).allIncluded())
+						c -> c.codePoints(whiteList).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
 	@Test
@@ -352,14 +352,14 @@ public class ValidatorTest {
 		Validator<User> validator = Validator.builder(User.class).constraint(
 				User::getName, "name",
 				c -> c.codePoints(CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
-						CodePoints.Range.of(0x0061/* a */, 0x007A /* z */)).allIncluded())
+						CodePoints.Range.of(0x0061/* a */, 0x007A /* z */)).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
 	@Test
@@ -367,14 +367,14 @@ public class ValidatorTest {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = Validator.builder(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(0x0041/* A */, 0x007A /* z */).allIncluded())
+						c -> c.codePoints(0x0041/* A */, 0x007A /* z */).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
-		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.allIncluded");
+		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
 	@Test

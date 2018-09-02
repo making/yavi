@@ -50,7 +50,7 @@ public class CodePointsConstraintTest {
 						0x0079 /* y */, 0x007A /* z */));
 
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(whiteList).allIncluded().predicates().get(0);
+				.codePoints(whiteList).asWhiteList().predicates().get(0);
 
 		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
@@ -68,7 +68,7 @@ public class CodePointsConstraintTest {
 				Range.of(0x0061/* a */, 0x007A /* z */));
 
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(whiteList).allIncluded().predicates().get(0);
+				.codePoints(whiteList).asWhiteList().predicates().get(0);
 
 		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
@@ -85,7 +85,7 @@ public class CodePointsConstraintTest {
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
 
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(blackList).notIncluded().predicates().get(0);
+				.codePoints(blackList).asBlackList().predicates().get(0);
 
 		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ab").isPresent()).isFalse();
@@ -103,7 +103,7 @@ public class CodePointsConstraintTest {
 				Range.of(0x0061/* a */, 0x0062 /* b */));
 
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(blackList).notIncluded().predicates().get(0);
+				.codePoints(blackList).asBlackList().predicates().get(0);
 
 		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("cd").isPresent()).isFalse();
