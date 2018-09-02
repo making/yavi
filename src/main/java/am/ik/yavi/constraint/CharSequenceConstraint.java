@@ -155,19 +155,19 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		return this.asByteArray(StandardCharsets.UTF_8);
 	}
 
-	public CodePointsConstraint<T, E> codePoints(CodePoints<E> codePoints) {
-		return new CodePointsConstraint<>(this, codePoints);
+	public CodePointsConstraint.Builer<T, E> codePoints(CodePoints<E> codePoints) {
+		return new CodePointsConstraint.Builer<>(this, codePoints);
 	}
 
-	public CodePointsConstraint<T, E> codePoints(Set<Integer> allowedCodePoints) {
+	public CodePointsConstraint.Builer<T, E> codePoints(Set<Integer> allowedCodePoints) {
 		return this.codePoints((CodePointsSet<E>) () -> allowedCodePoints);
 	}
 
-	public CodePointsConstraint<T, E> codePoints(int begin, int end) {
+	public CodePointsConstraint.Builer<T, E> codePoints(int begin, int end) {
 		return this.codePoints(Range.of(begin, end));
 	}
 
-	public CodePointsConstraint<T, E> codePoints(Range range, Range... ranges) {
+	public CodePointsConstraint.Builer<T, E> codePoints(Range range, Range... ranges) {
 		return this.codePoints((CodePointsRanges<E>) () -> {
 			List<Range> list = new ArrayList<>();
 			list.add(range);

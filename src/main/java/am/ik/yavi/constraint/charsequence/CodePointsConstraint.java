@@ -45,22 +45,6 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		return this;
 	}
 
-	/**
-	 * Use {@link #asWhiteList()} instead
-	 */
-	@Deprecated
-	public CodePointsConstraint<T, E> allIncluded() {
-		return this.asWhiteList();
-	}
-
-	/**
-	 * Use {@link #asBlackList()} instead
-	 */
-	@Deprecated
-	public CodePointsConstraint<T, E> notIncluded() {
-		return this.asBlackList();
-	}
-
 	public CodePointsConstraint<T, E> asWhiteList() {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
 			Set<Integer> excludedFromWhiteList = this.codePoints.allExcludedCodePoints(x);
@@ -97,6 +81,43 @@ public class CodePointsConstraint<T, E extends CharSequence>
 			return Optional.of(new ViolatedValue(includedList));
 		}, CODE_POINTS_NOT_INCLUDED, () -> new Object[] {}, NULL_IS_VALID));
 		return this;
+	}
+
+	public static class Builer<T, E extends CharSequence> {
+		private final CharSequenceConstraint<T, E> delegate;
+		private final CodePoints<E> codePoints;
+
+		public Builer(CharSequenceConstraint<T, E> delegate, CodePoints<E> codePoints) {
+			this.delegate = delegate;
+			this.codePoints = codePoints;
+		}
+
+		public CodePointsConstraint<T, E> asWhiteList() {
+			return new CodePointsConstraint<>(this.delegate, this.codePoints)
+					.asWhiteList();
+		}
+
+		public CodePointsConstraint<T, E> asBlackList() {
+			return new CodePointsConstraint<>(this.delegate, this.codePoints)
+					.asBlackList();
+		}
+
+		/**
+		 * Use {@link #asWhiteList()} instead
+		 */
+		@Deprecated
+		public CodePointsConstraint<T, E> allIncluded() {
+			return this.asWhiteList();
+		}
+
+		/**
+		 * Use {@link #asBlackList()} instead
+		 */
+		@Deprecated
+		public CodePointsConstraint<T, E> notIncluded() {
+			return this.asBlackList();
+		}
+
 	}
 
 }
