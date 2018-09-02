@@ -26,7 +26,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.15</version>
+    <version>0.0.17</version>
 </dependency>
 ```
 
@@ -245,31 +245,32 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 #### Example with Spring Fu
 
 ```kotlin
+package com.example
+
+import am.ik.yavi.core.Validator
+import org.springframework.fu.application
+import org.springframework.fu.module.webflux.jackson.jackson
+import org.springframework.fu.module.webflux.netty
+import org.springframework.fu.module.webflux.server
+
+
 val app = application {
-    logging {
-        level(LogLevel.INFO)
-        logback {
-            consoleAppender()
+    val port = if (profiles.contains("test")) 8181 else 8080
+    server(netty(port)) {
+        codecs {
+            jackson()
         }
-    }
-    webflux {
-        val port = if (profiles.contains("test")) 8181 else 8080
-        server(netty(port)) {
-            codecs {
-                jackson()
-            }
-            router {
-                POST("/") { req ->
-                    req.bodyToMono(Message::class.java)
-                            .flatMap { message ->
-                                Message.validator.validateToEither(message)
-                                        .fold({
-                                            badRequest().syncBody(mapOf("details" to it.details()))
-                                        }, {
-                                            ok().syncBody(it)
-                                        })
-                            }
-                }
+        router {
+            POST("/") { req ->
+                req.bodyToMono(Message::class.java)
+                        .flatMap { message ->
+                            Message.validator.validateToEither(message)
+                                    .fold({
+                                        badRequest().syncBody(mapOf("details" to it.details()))
+                                    }, {
+                                        ok().syncBody(it)
+                                    })
+                        }
             }
         }
     }
@@ -280,12 +281,14 @@ data class Message(
 ) {
     companion object {
         val validator = Validator.builder<Message>()
-                .constraint(Message::text, "message") {
+                .constraint(Message::text, "text") {
                     it.notBlank().lessThanOrEqual(3)
                 }
-                .build()!!
+                .build()
     }
 }
+
+fun main(args: Array<String>) = app.run()
 ```
 
 [sample app](https://github.com/making/demo-spring-fu-yavi)
