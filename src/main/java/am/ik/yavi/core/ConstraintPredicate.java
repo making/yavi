@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.constraint.ViolationMessage;
+import am.ik.yavi.jsr305.Nullable;
 
 public class ConstraintPredicate<V> {
 	private final Predicate<V> predicate;
@@ -51,7 +52,7 @@ public class ConstraintPredicate<V> {
 		return new ConstraintPredicate<V>(v -> !violatedValue.apply(v).isPresent(),
 				violationMessage, args, nullValidity) {
 			@Override
-			public Optional<ViolatedValue> violatedValue(V target) {
+			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return violatedValue.apply(target);
 			}
 		};
@@ -61,7 +62,7 @@ public class ConstraintPredicate<V> {
 		return this.predicate;
 	}
 
-	public Optional<ViolatedValue> violatedValue(V target) {
+	public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 		Predicate<V> predicate = this.predicate();
 		if (predicate.test(target)) {
 			return Optional.empty();

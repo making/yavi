@@ -18,6 +18,8 @@ package am.ik.yavi.core;
 import java.util.List;
 import java.util.function.Function;
 
+import am.ik.yavi.jsr305.Nullable;
+
 public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T, V> {
 	private final Function<T, N> nested;
 
@@ -27,6 +29,7 @@ public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T,
 		this.nested = nested;
 	}
 
+	@Nullable
 	public N nestedValue(T target) {
 		return nested.apply(target);
 	}

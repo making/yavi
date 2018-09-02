@@ -20,6 +20,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import am.ik.yavi.jsr305.Nullable;
+
 @FunctionalInterface
 public interface CodePoints<E extends CharSequence> {
 
@@ -30,7 +32,7 @@ public interface CodePoints<E extends CharSequence> {
 		Set<Integer> asSet();
 
 		@Override
-		default Set<Integer> allExcludedCodePoints(E s) {
+		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
 			if (s == null || s.length() == 0) {
 				return Collections.emptySet();
 			}
@@ -54,7 +56,7 @@ public interface CodePoints<E extends CharSequence> {
 		List<Range> asRanges();
 
 		@Override
-		default Set<Integer> allExcludedCodePoints(E s) {
+		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
 			if (s == null || s.length() == 0) {
 				return Collections.emptySet();
 			}

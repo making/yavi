@@ -106,7 +106,7 @@ public final class Validator<T> {
 		if (index < 0) {
 			return name;
 		}
-		if (name == null || name.isEmpty()) {
+		if (name.isEmpty()) {
 			return collectionName + "[" + index + "]";
 		}
 		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;

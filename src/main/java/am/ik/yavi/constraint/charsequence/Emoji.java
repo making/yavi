@@ -16,6 +16,7 @@
 package am.ik.yavi.constraint.charsequence;
 
 import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
+import am.ik.yavi.jsr305.Nullable;
 
 public class Emoji {
 	private static final String ZERO_WIDTH_JOINER = "\u200D";
@@ -49,7 +50,7 @@ public class Emoji {
 	 * @param str
 	 * @return the length of the given string which may be true
 	 */
-	public static int bestEffortCount(String str) {
+	public static int bestEffortCount(@Nullable String str) {
 		if (str == null || str.isEmpty()) {
 			return 0;
 		}

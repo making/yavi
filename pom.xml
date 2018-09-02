@@ -39,6 +39,12 @@
     </developers>
     <dependencies>
         <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -65,6 +71,9 @@
                     <includes>
                         <include>src/**/*.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>src/main/java/am/ik/yavi/jsr305/*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

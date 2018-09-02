@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.constraint.charsequence.variant;
 
+import am.ik.yavi.jsr305.Nullable;
+
 public class VariantOptions {
 	private final StandardizedVariationSequence svs;
 	private final IdeographicVariationSequence ivs;
@@ -31,7 +33,10 @@ public class VariantOptions {
 		return new Builder();
 	}
 
-	public String ignored(String s) {
+	public String ignored(@Nullable String s) {
+		if (s == null || s.isEmpty()) {
+			return "";
+		}
 		StringBuilder regex = new StringBuilder("[");
 		if (this.svs.ignore()) {
 			regex.append(StandardizedVariationSequence.RANGE);

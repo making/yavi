@@ -13,26 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core;
+@NonNullApi
+package am.ik.yavi.constraint.charsequence.codepoints;
 
-import java.util.Objects;
-
-import am.ik.yavi.jsr305.Nullable;
-
-public class ViolatedValue {
-	private final Object value;
-
-	public ViolatedValue(@Nullable Object value) {
-		this.value = value;
-	}
-
-	@Nullable
-	public Object value() {
-		return this.value;
-	}
-
-	@Override
-	public String toString() {
-		return Objects.toString(this.value, "");
-	}
-}
+import am.ik.yavi.jsr305.NonNullApi;

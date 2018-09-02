@@ -19,11 +19,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import am.ik.yavi.jsr305.Nullable;
+
 public final class Either<L, R> {
 	private final L left;
 	private final R right;
 
-	private Either(L left, R right) {
+	private Either(@Nullable L left, @Nullable R right) {
 		if (left == null && right == null) {
 			throw new IllegalArgumentException("Both left and right are null!");
 		}
@@ -97,7 +99,7 @@ public final class Either<L, R> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o)
 			return true;
 		if (o == null || getClass() != o.getClass())
