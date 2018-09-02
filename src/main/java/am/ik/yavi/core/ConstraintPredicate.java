@@ -28,29 +28,27 @@ public class ConstraintPredicate<V> {
 	private final String messageKey;
 	private final String defaultMessageFormat;
 	private final Supplier<Object[]> args;
-	private final NullValidity nullValidity;
+	private final NullAs nullAs;
 
 	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
-			Supplier<Object[]> args, NullValidity nullValidity) {
+			Supplier<Object[]> args, NullAs nullAs) {
 		this.predicate = predicate;
 		this.messageKey = violationMessage.messageKey();
 		this.defaultMessageFormat = violationMessage.defaultMessageFormat();
 		this.args = args;
-		this.nullValidity = nullValidity;
+		this.nullAs = nullAs;
 	}
 
 	public static <V> ConstraintPredicate<V> of(Predicate<V> predicate,
-			ViolationMessage violationMessage, Supplier<Object[]> args,
-			NullValidity nullValidity) {
-		return new ConstraintPredicate<>(predicate, violationMessage, args, nullValidity);
+			ViolationMessage violationMessage, Supplier<Object[]> args, NullAs nullAs) {
+		return new ConstraintPredicate<>(predicate, violationMessage, args, nullAs);
 	}
 
 	public static <V> ConstraintPredicate<V> withViolatedValue(
 			Function<V, Optional<ViolatedValue>> violatedValue,
-			ViolationMessage violationMessage, Supplier<Object[]> args,
-			NullValidity nullValidity) {
+			ViolationMessage violationMessage, Supplier<Object[]> args, NullAs nullAs) {
 		return new ConstraintPredicate<V>(v -> !violatedValue.apply(v).isPresent(),
-				violationMessage, args, nullValidity) {
+				violationMessage, args, nullAs) {
 			@Override
 			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return violatedValue.apply(target);
@@ -85,7 +83,7 @@ public class ConstraintPredicate<V> {
 		return this.args;
 	}
 
-	public final NullValidity nullValidity() {
-		return this.nullValidity;
+	public final NullAs nullValidity() {
+		return this.nullAs;
 	}
 }

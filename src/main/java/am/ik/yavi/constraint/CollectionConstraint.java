@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.COLLECTION_CONTAINS;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -39,7 +39,7 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 
 	public CollectionConstraint<T, L, E> contains(E s) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.contains(s),
-				COLLECTION_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
+				COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
 		return this;
 	}
 }

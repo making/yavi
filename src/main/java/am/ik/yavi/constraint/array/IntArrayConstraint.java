@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.ARRAY_CONTAINS;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -40,7 +40,7 @@ public class IntArrayConstraint<T>
 	public IntArrayConstraint<T> contains(int v) {
 		this.predicates()
 				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
-						ARRAY_CONTAINS, () -> new Object[] { v }, NULL_IS_VALID));
+						ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
 		return this;
 	}
 }

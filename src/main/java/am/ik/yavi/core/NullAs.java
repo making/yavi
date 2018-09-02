@@ -15,12 +15,12 @@
  */
 package am.ik.yavi.core;
 
-public enum NullValidity {
-	NULL_IS_INVALID(false), NULL_IS_VALID(true);
+public enum NullAs {
+	INVALID(false), VALID(true);
 
 	private final boolean skipNull;
 
-	NullValidity(boolean skipNull) {
+	NullAs(boolean skipNull) {
 		this.skipNull = skipNull;
 	}
 

@@ -29,8 +29,8 @@ import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.*;
-import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.INVALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
@@ -64,6 +64,20 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			VariantOptions variantOptions) {
 		this.normalizerForm = normalizerForm;
 		this.variantOptions = variantOptions;
+	}
+
+	private static String trim(String s) {
+		if (s.length() == 0) {
+			return s;
+		}
+		StringBuilder sb = new StringBuilder(s);
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
+			sb.deleteCharAt(0);
+		}
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
 	}
 
 	public CharSequenceConstraint<T, E> variant(
@@ -105,13 +119,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		this.predicates()
 				.add(ConstraintPredicate.of(
 						x -> x != null && trim(x.toString()).length() != 0,
-						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, NULL_IS_INVALID));
+						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, INVALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
-				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, NULL_IS_VALID));
+				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
 		return this;
 	}
 
@@ -121,7 +135,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 				return true;
 			}
 			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
-		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, NULL_IS_VALID));
+		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -137,13 +151,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			catch (MalformedURLException e) {
 				return false;
 			}
-		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, NULL_IS_VALID));
+		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> pattern(String regex) {
 		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
-				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, NULL_IS_VALID));
+				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
 		return this;
 	}
 
@@ -178,19 +192,5 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	public EmojiConstraint<T, E> emoji() {
 		return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
-	}
-
-	private static String trim(String s) {
-		if (s.length() == 0) {
-			return s;
-		}
-		StringBuilder sb = new StringBuilder(s);
-		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
-			sb.deleteCharAt(0);
-		}
-		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
-			sb.deleteCharAt(sb.length() - 1);
-		}
-		return sb.toString();
 	}
 }

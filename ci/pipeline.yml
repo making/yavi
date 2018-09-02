@@ -12,87 +12,87 @@ resource_types:
     tag: 1.3.5
 
 resources:
-  - name: repo-master
-    type: git
-    source:
-      uri: git@github.com:making/yavi.git
-      branch: master
-      private_key: ((github-private-key))
-  - name: repo-develop
-    type: git
-    source:
-      uri: git@github.com:making/yavi.git
-      branch: develop
-      private_key: ((github-private-key))
-  - name: repo-version
-    type: semver
-    source:
-      uri: git@github.com:making/yavi.git
-      branch: version
-      private_key: ((github-private-key))
-      file: version
-      driver: git
-  - name: gpg
-    type: git
-    source:
-      uri: https://github.com/maki-home/encrypted-gpg
-      branch: master
-  - name: nexus
-    type: maven
-    source:
-      url: ((nexus-release-url))
-      snapshot_url: ((nexus-snapshot-url))
-      artifact: am.ik.yavi:yavi:jar
-      username: ((nexus-username))
-      password: ((nexus-password))
-      skip_cert_check: true
-  - name: sonatype-snapshots
-    type: maven
-    source:
-      url: https://oss.sonatype.org/service/local/staging/deploy/maven2
-      snapshot_url: https://oss.sonatype.org/content/repositories/snapshots/
-      artifact: am.ik.yavi:yavi:jar
-      username: ((sonatype-username))
-      password: ((sonatype-password))
-  - name: slack-alert
-    type: slack-notification
-    source:
-      url: ((slack-webhook-url))
+- name: repo-master
+  type: git
+  source:
+    uri: git@github.com:making/yavi.git
+    branch: master
+    private_key: ((github-private-key))
+- name: repo-develop
+  type: git
+  source:
+    uri: git@github.com:making/yavi.git
+    branch: develop
+    private_key: ((github-private-key))
+- name: repo-version
+  type: semver
+  source:
+    uri: git@github.com:making/yavi.git
+    branch: version
+    private_key: ((github-private-key))
+    file: version
+    driver: git
+- name: gpg
+  type: git
+  source:
+    uri: https://github.com/maki-home/encrypted-gpg
+    branch: master
+- name: nexus
+  type: maven
+  source:
+    url: ((nexus-release-url))
+    snapshot_url: ((nexus-snapshot-url))
+    artifact: am.ik.yavi:yavi:jar
+    username: ((nexus-username))
+    password: ((nexus-password))
+    skip_cert_check: true
+- name: sonatype-snapshots
+  type: maven
+  source:
+    url: https://oss.sonatype.org/service/local/staging/deploy/maven2
+    snapshot_url: https://oss.sonatype.org/content/repositories/snapshots/
+    artifact: am.ik.yavi:yavi:jar
+    username: ((sonatype-username))
+    password: ((sonatype-password))
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook-url))
 jobs:
 ### Dev
 - name: unit-test-develop
   plan:
-    - aggregate:
-      - get: repo
-        resource: repo-develop
-        trigger: true
-    - task: mvn-test
+  - aggregate:
+    - get: repo
+      resource: repo-develop
+      trigger: true
+  - task: mvn-test
+    params:
+      <<: *JAVA_OPS
+    config: &MVN_TEST_CONFIG
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: maven
+      inputs:
+      - name: repo
+      caches:
+      - path: repo/m2
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          cd repo
+          rm -rf ~/.m2
+          ln -fs $(pwd)/m2 ~/.m2
+          mvn test
+    on_failure:
+      put: slack-alert
       params:
-        <<: *JAVA_OPS
-      config: &MVN_TEST_CONFIG
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: maven
-        inputs:
-        - name: repo
-        caches:
-        - path: repo/m2
-        run:
-          path: bash
-          args:
-          - -c
-          - |
-            set -e
-            cd repo
-            rm -rf ~/.m2
-            ln -fs $(pwd)/m2 ~/.m2
-            mvn test
-      on_failure:
-        put: slack-alert
-        params:
-          <<: *SLACK_FAILURE
+        <<: *SLACK_FAILURE
 - name: upload-to-nexus-snapshots
   public: true
   plan:

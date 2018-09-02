@@ -160,20 +160,18 @@ public class ValidatorBuilder<T> {
 
 	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
 			Validator<N> validator) {
-		return this.constraintForNested(nested, name, validator,
-				NullValidity.NULL_IS_INVALID);
+		return this.constraintForNested(nested, name, validator, NullAs.INVALID);
 	}
 
 	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
 			String name, Validator<N> validator) {
-		return this.constraintForNested(nested, name, validator,
-				NullValidity.NULL_IS_VALID);
+		return this.constraintForNested(nested, name, validator, NullAs.VALID);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
-			String name, Validator<N> validator, NullValidity nullValidity) {
-		if (!nullValidity.skipNull()) {
+			String name, Validator<N> validator, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
 			this.constraintForObject(nested, name, Constraint::notNull);
 		}
 		validator.predicatesList.forEach(predicates -> {
@@ -188,21 +186,18 @@ public class ValidatorBuilder<T> {
 
 	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
 			ValidatorBuilderConverter<N> converter) {
-		return this.constraintForNested(nested, name, converter,
-				NullValidity.NULL_IS_INVALID);
+		return this.constraintForNested(nested, name, converter, NullAs.INVALID);
 	}
 
 	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
 			String name, ValidatorBuilderConverter<N> converter) {
-		return this.constraintForNested(nested, name, converter,
-				NullValidity.NULL_IS_VALID);
+		return this.constraintForNested(nested, name, converter, NullAs.VALID);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
-			String name, ValidatorBuilderConverter<N> converter,
-			NullValidity nullValidity) {
-		if (!nullValidity.skipNull()) {
+			String name, ValidatorBuilderConverter<N> converter, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
 			this.constraintForObject(nested, name, Constraint::notNull);
 		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
@@ -218,20 +213,18 @@ public class ValidatorBuilder<T> {
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.constraintForEach(toCollection, name, validator,
-				NullValidity.NULL_IS_INVALID);
+		return this.constraintForEach(toCollection, name, validator, NullAs.INVALID);
 	}
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.constraintForEach(toCollection, name, validator,
-				NullValidity.NULL_IS_VALID);
+		return this.constraintForEach(toCollection, name, validator, NullAs.VALID);
 	}
 
 	protected final <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
-			NullValidity nullValidity) {
-		if (!nullValidity.skipNull()) {
+			NullAs nullAs) {
+		if (!nullAs.skipNull()) {
 			this.constraintForObject(toCollection, name, Constraint::notNull);
 		}
 		this.collectionValidators
@@ -242,21 +235,19 @@ public class ValidatorBuilder<T> {
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter) {
-		return this.constraintForEach(toCollection, name, converter,
-				NullValidity.NULL_IS_INVALID);
+		return this.constraintForEach(toCollection, name, converter, NullAs.INVALID);
 	}
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
 			ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter) {
-		return this.constraintForEach(toCollection, name, converter,
-				NullValidity.NULL_IS_VALID);
+		return this.constraintForEach(toCollection, name, converter, NullAs.VALID);
 	}
 
 	protected <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter, NullValidity nullValidity) {
-		if (!nullValidity.skipNull()) {
+			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
 			this.constraintForObject(toCollection, name, Constraint::notNull);
 		}
 		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());

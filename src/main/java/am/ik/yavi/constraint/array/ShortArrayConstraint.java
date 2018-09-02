@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.array;
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.ARRAY_CONTAINS;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -44,7 +44,7 @@ public class ShortArrayConstraint<T>
 				}
 			}
 			return false;
-		}, ARRAY_CONTAINS, () -> new Object[] { v }, NULL_IS_VALID));
+		}, ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
 		return this;
 	}
 }

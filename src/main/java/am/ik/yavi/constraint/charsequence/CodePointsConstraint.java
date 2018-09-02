@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.CODE_POINTS_ALL_INCLUDED;
 import static am.ik.yavi.constraint.ViolationMessage.Default.CODE_POINTS_NOT_INCLUDED;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -55,7 +55,7 @@ public class CodePointsConstraint<T, E extends CharSequence>
 					.map(i -> new String(new int[] { i }, 0, 1)) //
 					.collect(Collectors.toList());
 			return Optional.of(new ViolatedValue(excludedList));
-		}, CODE_POINTS_ALL_INCLUDED, () -> new Object[] {}, NULL_IS_VALID));
+		}, CODE_POINTS_ALL_INCLUDED, () -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -79,7 +79,7 @@ public class CodePointsConstraint<T, E extends CharSequence>
 					.map(i -> new String(new int[] { i }, 0, 1)) //
 					.collect(Collectors.toList());
 			return Optional.of(new ViolatedValue(includedList));
-		}, CODE_POINTS_NOT_INCLUDED, () -> new Object[] {}, NULL_IS_VALID));
+		}, CODE_POINTS_NOT_INCLUDED, () -> new Object[] {}, VALID));
 		return this;
 	}
 

@@ -21,8 +21,8 @@ import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.*;
-import static am.ik.yavi.core.NullValidity.NULL_IS_INVALID;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.INVALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -36,7 +36,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 	public C notEmpty() {
 		this.predicates()
 				.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0,
-						CONTAINER_NOT_EMPTY, () -> new Object[] {}, NULL_IS_INVALID));
+						CONTAINER_NOT_EMPTY, () -> new Object[] {}, INVALID));
 		return cast();
 	}
 
@@ -56,7 +56,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 				.add(ConstraintPredicate.withViolatedValue(
 						this.checkSizePredicate(x -> size().applyAsInt(x) < max,
 								this.size()),
-						CONTAINER_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
+						CONTAINER_LESS_THAN, () -> new Object[] { max }, VALID));
 		return cast();
 	}
 
@@ -65,8 +65,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 				.add(ConstraintPredicate.withViolatedValue(
 						this.checkSizePredicate(x -> size().applyAsInt(x) <= max,
 								this.size()),
-						CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max },
-						NULL_IS_VALID));
+						CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
 		return cast();
 	}
 
@@ -75,8 +74,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 				.add(ConstraintPredicate.withViolatedValue(
 						this.checkSizePredicate(x -> size().applyAsInt(x) > min,
 								this.size()),
-						CONTAINER_GREATER_THAN, () -> new Object[] { min },
-						NULL_IS_VALID));
+						CONTAINER_GREATER_THAN, () -> new Object[] { min }, VALID));
 		return cast();
 	}
 
@@ -86,7 +84,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 						this.checkSizePredicate(x -> size().applyAsInt(x) >= min,
 								this.size()),
 						CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
-						NULL_IS_VALID));
+						VALID));
 		return cast();
 	}
 
@@ -95,8 +93,7 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 				.add(ConstraintPredicate.withViolatedValue(
 						this.checkSizePredicate(x -> size().applyAsInt(x) == size,
 								this.size()),
-						CONTAINER_FIXED_SIZE, () -> new Object[] { size },
-						NULL_IS_VALID));
+						CONTAINER_FIXED_SIZE, () -> new Object[] { size }, VALID));
 		return cast();
 	}
 }

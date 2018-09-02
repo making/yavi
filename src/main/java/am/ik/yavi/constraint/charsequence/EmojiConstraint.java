@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.charsequence;
 import java.text.Normalizer;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.*;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
@@ -41,37 +41,38 @@ public class EmojiConstraint<T, E extends CharSequence>
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
 						this.checkSizePredicate(x -> size(x) < max, this::size),
-						CONTAINER_LESS_THAN, () -> new Object[] { max }, NULL_IS_VALID));
+						CONTAINER_LESS_THAN, () -> new Object[] { max }, VALID));
 		return this;
 	}
 
 	public EmojiConstraint<T, E> lessThanOrEqual(int max) {
-		this.predicates().add(ConstraintPredicate.withViolatedValue(
-				this.checkSizePredicate(x -> size(x) <= max, this::size),
-				CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, NULL_IS_VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) <= max, this::size),
+						CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
 		return this;
 	}
 
 	public EmojiConstraint<T, E> greaterThan(int min) {
-		this.predicates().add(ConstraintPredicate.withViolatedValue(
-				this.checkSizePredicate(x -> size(x) > min, this::size),
-				CONTAINER_GREATER_THAN, () -> new Object[] { min }, NULL_IS_VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) > min, this::size),
+						CONTAINER_GREATER_THAN, () -> new Object[] { min }, VALID));
 		return this;
 	}
 
 	public EmojiConstraint<T, E> greaterThanOrEqual(int min) {
-		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size(x) >= min, this::size),
-						CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
-						NULL_IS_VALID));
+		this.predicates().add(ConstraintPredicate.withViolatedValue(
+				this.checkSizePredicate(x -> size(x) >= min, this::size),
+				CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min }, VALID));
 		return this;
 	}
 
 	public EmojiConstraint<T, E> fixedSize(int size) {
-		this.predicates().add(ConstraintPredicate.withViolatedValue(
-				this.checkSizePredicate(x -> size(x) == size, this::size),
-				CONTAINER_FIXED_SIZE, () -> new Object[] { size }, NULL_IS_VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) == size, this::size),
+						CONTAINER_FIXED_SIZE, () -> new Object[] { size }, VALID));
 		return this;
 	}
 }

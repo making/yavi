@@ -24,7 +24,7 @@ import static am.ik.yavi.constraint.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.CustomConstraint;
-import am.ik.yavi.core.NullValidity;
+import am.ik.yavi.core.NullAs;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
@@ -34,26 +34,26 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
 	default C notNull() {
 		this.predicates().add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,
-				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
+				() -> new Object[] {}, NullAs.INVALID));
 		return this.cast();
 	}
 
 	default C isNull() {
 		this.predicates().add(ConstraintPredicate.of(Objects::isNull, OBJECT_IS_NULL,
-				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
+				() -> new Object[] {}, NullAs.INVALID));
 		return this.cast();
 	}
 
 	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
-				() -> new Object[] {}, NullValidity.NULL_IS_VALID));
+				() -> new Object[] {}, NullAs.VALID));
 		return this.cast();
 	}
 
 	default C predicateNullable(Predicate<V> predicate,
 			ViolationMessage violationMessage) {
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
-				() -> new Object[] {}, NullValidity.NULL_IS_INVALID));
+				() -> new Object[] {}, NullAs.INVALID));
 		return this.cast();
 	}
 

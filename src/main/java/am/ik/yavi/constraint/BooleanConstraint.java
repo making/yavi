@@ -17,7 +17,7 @@ package am.ik.yavi.constraint;
 
 import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_FALSE;
 import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_TRUE;
-import static am.ik.yavi.core.NullValidity.NULL_IS_VALID;
+import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -27,13 +27,13 @@ public class BooleanConstraint<T>
 
 	public BooleanConstraint<T> isTrue() {
 		this.predicates().add(ConstraintPredicate.of(x -> x, BOOLEAN_IS_TRUE,
-				() -> new Object[] {}, NULL_IS_VALID));
+				() -> new Object[] {}, VALID));
 		return this;
 	}
 
 	public BooleanConstraint<T> isFalse() {
 		this.predicates().add(ConstraintPredicate.of(x -> !x, BOOLEAN_IS_FALSE,
-				() -> new Object[] {}, NULL_IS_VALID));
+				() -> new Object[] {}, VALID));
 		return this;
 	}
 
