@@ -33,25 +33,15 @@ import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
-import am.ik.yavi.constraint.charsequence.CodePoints;
+import am.ik.yavi.constraint.charsequence.*;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
-import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
-import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
-	private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
-	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
-			+ "+)*";
-	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
-	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
-			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
-					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
 	protected final VariantOptions variantOptions;
@@ -134,7 +124,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			if (size().applyAsInt(x) == 0) {
 				return true;
 			}
-			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
+			return Email.isValid(x);
 		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
 		return this;
 	}

@@ -73,6 +73,7 @@
                     </includes>
                     <excludes>
                         <exclude>src/main/java/am/ik/yavi/jsr305/*.java</exclude>
+                        <exclude>src/main/java/am/ik/yavi/constraint/charsequence/Email.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
