@@ -15,10 +15,7 @@
  */
 package am.ik.yavi.constraint.charsequence;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import am.ik.yavi.jsr305.Nullable;
 
@@ -84,6 +81,11 @@ public interface CodePoints<E extends CharSequence> {
 	}
 
 	interface Range {
+		static Range of(String begin, String end) {
+			return Range.of(begin.codePoints().sorted().findFirst().orElse(0),
+					end.codePoints().sorted().findFirst().orElse(0));
+		}
+
 		static Range of(int begin, int end) {
 			if (begin > end) {
 				throw new IllegalArgumentException("begin must not be greater than end ["
@@ -98,6 +100,21 @@ public interface CodePoints<E extends CharSequence> {
 				@Override
 				public int end() {
 					return end;
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(begin, end);
+				}
+
+				@Override
+				public boolean equals(Object obj) {
+					if (!(obj instanceof Range)) {
+						return false;
+					}
+					Range range = (Range) obj;
+					return Objects.equals(begin, range.begin())
+							&& Objects.equals(end, range.end());
 				}
 			};
 		}
