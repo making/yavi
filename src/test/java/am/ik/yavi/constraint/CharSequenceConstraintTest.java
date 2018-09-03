@@ -97,7 +97,7 @@ public class CharSequenceConstraintTest {
 		assertThat(predicate.test("abc@example.com")).isTrue();
 		assertThat(predicate.test("abc@localhost")).isTrue();
 		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
-		assertThat(predicate.test("東京@example.com")).isFalse();
+		assertThat(predicate.test("東京@example.com")).isTrue();
 		assertThat(predicate.test("example.com")).isFalse();
 		assertThat(predicate.test("")).isTrue();
 	}
