@@ -21,7 +21,7 @@ import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
- * Validates bean instances. must be thread safe.
+ * Validates the target instances. must be thread safe.
  * 
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
