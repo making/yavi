@@ -20,6 +20,12 @@ import java.util.*;
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.message.MessageFormatter;
 
+/**
+ * Validates bean instances. must be thread safe.
+ * 
+ * @param <T> the type of the instance to validate
+ * @author Toshiaki Maki
+ */
 public final class Validator<T> {
 	final List<ConstraintPredicates<T, ?>> predicatesList;
 	private final String messageKeySeparator;
@@ -35,19 +41,46 @@ public final class Validator<T> {
 		this.messageFormatter = messageFormatter;
 	}
 
+	/**
+	 * Builder method to build {@code Validator} instance.
+	 * @param <T> the type of the instance to validate
+	 * @return builder instance
+	 */
 	public static <T> ValidatorBuilder<T> builder() {
 		return new ValidatorBuilder<>();
 	}
 
+	/**
+	 * Builder method to build {@code Validator} instance.
+	 * @param clazz the class of the instance to validate
+	 * @param <T> the type of the instance to validate
+	 * @return builder instance
+	 */
 	public static <T> ValidatorBuilder<T> builder(
 			@SuppressWarnings("unused") Class<T> clazz) {
 		return new ValidatorBuilder<>();
 	}
 
+	/**
+	 * Validates all constraints on {@code target}. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 * 
+	 * @param target target to validate
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
 	public ConstraintViolations validate(T target) {
 		return this.validate(target, Locale.getDefault());
 	}
 
+	/**
+	 * Validates all constraints on {@code target}.
+	 * 
+	 * @param target target to validate
+	 * @param locale the locale targeted for the violation messages.
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
 	public ConstraintViolations validate(T target, Locale locale) {
 		return this.validate(target, "", -1, locale);
 	}
@@ -55,6 +88,9 @@ public final class Validator<T> {
 	@SuppressWarnings("unchecked")
 	private ConstraintViolations validate(T target, String collectionName, int index,
 			Locale locale) {
+		if (target == null) {
+			throw new IllegalArgumentException("target must not be null");
+		}
 		ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
 			if (predicates instanceof NestedConstraintPredicates) {
@@ -112,10 +148,30 @@ public final class Validator<T> {
 		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
 	}
 
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 *
+	 * @param target target to validate
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
 	public Either<ConstraintViolations, T> validateToEither(T target) {
 		return this.validateToEither(target, Locale.getDefault());
 	}
 
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 *
+	 * @param target target to validate
+	 * @param locale the locale targeted for the violation messages.
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
 	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
 		ConstraintViolations violations = this.validate(target, locale);
 		if (violations.isValid()) {
