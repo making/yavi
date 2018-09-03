@@ -68,9 +68,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 *
 	 * @param callback
 	 */
-	public void apply(Callback callback) {
+	public ConstraintViolations apply(Callback callback) {
 		this.forEach(
 				v -> callback.apply(v.name(), v.messageKey(), v.args(), v.message()));
+		return this;
 	}
 
 	/**
