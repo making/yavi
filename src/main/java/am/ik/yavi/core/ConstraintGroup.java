@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @FunctionalInterface
 public interface ConstraintGroup {
-	ConstraintGroup DEFAULT = ConstraintGroup.of("default");
+	ConstraintGroup DEFAULT = ConstraintGroup.of("DEFAULT");
 
 	static ConstraintGroup of(String name) {
 		return new ConstraintGroup() {
