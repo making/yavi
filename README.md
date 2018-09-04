@@ -26,7 +26,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.17</version>
+    <version>0.0.18</version>
 </dependency>
 ```
 
@@ -153,6 +153,39 @@ HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK)
 ```
 
 [Either API](src/main/java/am/ik/yavi/fn/Either.java)
+
+#### Conditional Constraint
+
+You can impose a condition on constraints with [`ConstraintCondition`](src/main/java/am/ik/yavi/core/ConstraintCondition.java) interface:
+
+```java
+Validator<User> validator = Validator.builder(User.class) //
+        .constraintOnCondition((user, constraintGroup) -> !user.getName().isEmpty(), //
+                b -> b.constraint(User::getEmail, "email",
+                        c -> c.email().notEmpty())) // <- this constraint on email is active only when name is not empty
+        .build();
+```
+
+You can group the constraint as a part of `ConstraintCondition` with [`ConstraintGroup`](src/main/java/am/ik/yavi/core/ConstraintGroup.java) aas well:
+
+```java
+enum Group implements ConstraintGroup {
+    CREATE, UPDATE, DELETE
+}
+
+Validator<User> validator = Validator.builder(User.class) //
+        .constraintOnCondition(Group.UPDATE.toCondition(), //
+                b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
+        .build();
+```
+
+The group to validate is specified in `validate` method:
+
+```java
+validator.validate(user, Group.UPDATE);
+```
+
+Note that all constraints without conditions will be validated for any constraint group.
 
 #### (Experimental) Emoji support
 
