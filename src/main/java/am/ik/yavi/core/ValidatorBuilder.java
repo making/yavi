@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.constraint.*;
 import am.ik.yavi.constraint.array.*;
+import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 
@@ -31,6 +32,7 @@ public class ValidatorBuilder<T> {
 	private final String messageKeySeparator;
 	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
+	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators = new ArrayList<>();
 	private MessageFormatter messageFormatter;
 
 	public ValidatorBuilder() {
@@ -344,9 +346,22 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
+	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
+			Validator<T> validator) {
+		this.conditionalValidators.add(new Pair<>(condition, validator));
+		return this;
+	}
+
+	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
+			Function<ValidatorBuilder<T>, ValidatorBuilder<T>> converter) {
+		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
+		Validator<T> validator = builder.build();
+		return this.constraintOnCondition(condition, validator);
+	}
+
 	public Validator<T> build() {
 		return new Validator<>(messageKeySeparator, this.predicatesList,
-				this.collectionValidators,
+				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter == null ? new SimpleMessageFormatter()
 						: this.messageFormatter);
 	}

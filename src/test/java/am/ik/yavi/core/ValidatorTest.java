@@ -463,4 +463,150 @@ public class ValidatorTest {
 		assertThat(violations.get(0).message()).isEqualTo("AGE.NUMERIC.LESSTHANOREQUAL");
 		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.lessThanOrEqual");
 	}
+
+	@Test
+	public void group() {
+		User user = new User("foobar", "foo@example.com", -1);
+		Validator<User> validator = Validator.builder(User.class) //
+				.constraintOnCondition(Group.UPDATE.toCondition(), //
+						b -> b.constraint(User::getName, "name",
+								c -> c.lessThanOrEqual(5)))
+				.build();
+		{
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+	}
+
+	@Test
+	public void groupTwoCondition() {
+		User user = new User("foobar", "foo@example.com", -1);
+		Validator<User> validator = Validator.builder(User.class) //
+				.constraintOnCondition(Group.UPDATE.toCondition(), //
+						b -> b.constraint(User::getName, "name",
+								c -> c.lessThanOrEqual(5)))
+				.constraintOnCondition(Group.DELETE.toCondition(), //
+						b -> b.constraint(User::getName, "name",
+								c -> c.greaterThanOrEqual(5)))
+				.build();
+		{
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.DELETE);
+			assertThat(violations.isValid()).isTrue();
+		}
+	}
+
+	@Test
+	public void groupConditionByGroup() {
+		User user = new User("foobar", "foo@example.com", -1);
+		Validator<User> validator = Validator.builder(User.class) //
+				.constraintOnCondition(
+						(u, cg) -> cg == Group.UPDATE || cg == Group.DELETE, //
+						b -> b.constraint(User::getName, "name",
+								c -> c.lessThanOrEqual(5)))
+				.build();
+		{
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.DELETE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+	}
+
+	@Test
+	public void violateGroupAndDefault() {
+		User user = new User("foobar", "foo@example.com", -1);
+		Validator<User> validator = Validator.builder(User.class) //
+				.constraint(User::getEmail, "email", c -> c.email().lessThanOrEqual(10))
+				.constraintOnCondition(Group.UPDATE.toCondition(), //
+						b -> b.constraint(User::getName, "name",
+								c -> c.lessThanOrEqual(5)))
+				.build();
+		{
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"email\" must be less than or equal to 10. The given size is 15");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+		{
+			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(2);
+			assertThat(violations.get(0).message()).isEqualTo(
+					"The size of \"email\" must be less than or equal to 10. The given size is 15");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(1).message()).isEqualTo(
+					"The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(1).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+	}
+
+	@Test
+	public void condition() {
+		Validator<User> validator = Validator.builder(User.class) //
+				.constraintOnCondition((u, cg) -> !u.getName().isEmpty(), //
+						b -> b.constraint(User::getEmail, "email",
+								c -> c.email().notEmpty()))
+				.build();
+		{
+			User user = new User("", "", -1);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			User user = new User("foobar", "", -1);
+			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"email\" must not be empty");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.notEmpty");
+		}
+	}
+
+	enum Group implements ConstraintGroup {
+		UPDATE, DELETE
+	}
 }
