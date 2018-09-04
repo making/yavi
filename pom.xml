@@ -6,7 +6,7 @@
 
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.18</version>
+    <version>0.0.19-SNAPSHOT</version>
 
     <name>yavi</name>
     <description>Yet Another Validation (lambda based type safe validation)</description>
