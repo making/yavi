@@ -1,7 +1,8 @@
 ## YAVI (*Y*et *A*nother *V*al*I*dation)
+![image](https://user-images.githubusercontent.com/106908/45175056-66af8080-b247-11e8-8bc2-ccf34fe77cd7.png)
+
 YAVI (pronounced jɑ-vάɪ) 
 is a lambda based type safe validation for Java. 
- 
 
 ### Why YAVI?
 
