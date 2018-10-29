@@ -284,18 +284,14 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 package com.example
 
 import am.ik.yavi.core.Validator
-import org.springframework.fu.application
-import org.springframework.fu.module.webflux.jackson.jackson
-import org.springframework.fu.module.webflux.netty
-import org.springframework.fu.module.webflux.server
-
+import org.springframework.fu.kofu.application
+import org.springframework.fu.kofu.web.jackson
+import org.springframework.fu.kofu.web.server
 
 val app = application {
-    val port = if (profiles.contains("test")) 8181 else 8080
-    server(netty(port)) {
-        codecs {
-            jackson()
-        }
+    server {
+        port = if (profiles.contains("test")) 8181 else 8080
+        codecs { jackson() }
         router {
             POST("/") { req ->
                 req.bodyToMono(Message::class.java)
