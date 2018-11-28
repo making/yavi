@@ -30,7 +30,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.18</version>
+    <version>0.0.19</version>
 </dependency>
 ```
 
