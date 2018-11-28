@@ -22,6 +22,8 @@ public class User {
 
 	private Integer age;
 
+	private boolean enabled = true;
+
 	public User(String name, String email, Integer age) {
 		this.name = name;
 		this.email = email;
@@ -50,5 +52,13 @@ public class User {
 
 	public void setAge(Integer age) {
 		this.age = age;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

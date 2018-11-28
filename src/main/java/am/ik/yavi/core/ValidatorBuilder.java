@@ -17,12 +17,38 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import am.ik.yavi.constraint.*;
-import am.ik.yavi.constraint.array.*;
+import am.ik.yavi.constraint.BigDecimalConstraint;
+import am.ik.yavi.constraint.BigIntegerConstraint;
+import am.ik.yavi.constraint.BooleanConstraint;
+import am.ik.yavi.constraint.ByteConstraint;
+import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.CharacterConstraint;
+import am.ik.yavi.constraint.CollectionConstraint;
+import am.ik.yavi.constraint.Constraint;
+import am.ik.yavi.constraint.DoubleConstraint;
+import am.ik.yavi.constraint.FloatConstraint;
+import am.ik.yavi.constraint.IntegerConstraint;
+import am.ik.yavi.constraint.LongConstraint;
+import am.ik.yavi.constraint.MapConstraint;
+import am.ik.yavi.constraint.ObjectConstraint;
+import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.array.BooleanArrayConstraint;
+import am.ik.yavi.constraint.array.ByteArrayConstraint;
+import am.ik.yavi.constraint.array.CharArrayConstraint;
+import am.ik.yavi.constraint.array.DoubleArrayConstraint;
+import am.ik.yavi.constraint.array.FloatArrayConstraint;
+import am.ik.yavi.constraint.array.IntArrayConstraint;
+import am.ik.yavi.constraint.array.LongArrayConstraint;
+import am.ik.yavi.constraint.array.ObjectArrayConstraint;
+import am.ik.yavi.constraint.array.ShortArrayConstraint;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
@@ -52,6 +78,11 @@ public class ValidatorBuilder<T> {
 			String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(ToBoolean<T> f, String name,
+			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
+		return this.constraint(f, name, c, BooleanConstraint::new);
 	}
 
 	public ValidatorBuilder<T> constraint(ToCharacter<T> f, String name,
@@ -367,6 +398,9 @@ public class ValidatorBuilder<T> {
 	}
 
 	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	}
+
+	public interface ToBoolean<T> extends Function<T, Boolean> {
 	}
 
 	public interface ToCharacter<T> extends Function<T, Character> {

@@ -45,7 +45,8 @@ public class ValidatorTest {
 						.email()) //
 				.constraint(User::getAge, "age", c -> c.notNull() //
 						.greaterThanOrEqual(0) //
-						.lessThanOrEqual(200))
+						.lessThanOrEqual(200)) //
+				.constraint(User::isEnabled, "enabled", c -> c.isTrue()) //
 				.build();
 	}
 
@@ -60,10 +61,11 @@ public class ValidatorTest {
 	@Test
 	public void allInvalid() throws Exception {
 		User user = new User("", "example.com", 300);
+		user.setEnabled(false);
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.size()).isEqualTo(3);
+		assertThat(violations.size()).isEqualTo(4);
 		assertThat(violations.get(0).message()).isEqualTo(
 				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
 		assertThat(violations.get(0).messageKey())
@@ -74,6 +76,8 @@ public class ValidatorTest {
 		assertThat(violations.get(2).message())
 				.isEqualTo("\"age\" must be less than or equal to 200");
 		assertThat(violations.get(2).messageKey()).isEqualTo("numeric.lessThanOrEqual");
+		assertThat(violations.get(3).message()).isEqualTo("\"enabled\" must be true");
+		assertThat(violations.get(3).messageKey()).isEqualTo("boolean.isTrue");
 	}
 
 	@Test
