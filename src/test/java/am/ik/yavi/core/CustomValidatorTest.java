@@ -189,6 +189,27 @@ public class CustomValidatorTest {
 		}
 	}
 
+	@Test
+	public void rangeConstraintOnTarget() throws Exception {
+		Validator<Range> validator = Validator.<Range> builder() //
+				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
+				.build();
+		{
+			Range range = new Range(0, 10);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			Range range = new Range(11, 10);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+		}
+	}
+
 	enum IsbnConstraint implements CustomConstraint<String> {
 		SINGLETON;
 

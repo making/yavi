@@ -20,9 +20,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.constraint.BigDecimalConstraint;
@@ -40,6 +42,7 @@ import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.ViolationMessage;
 import am.ik.yavi.constraint.array.BooleanArrayConstraint;
 import am.ik.yavi.constraint.array.ByteArrayConstraint;
 import am.ik.yavi.constraint.array.CharArrayConstraint;
@@ -184,6 +187,27 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
+			ViolationMessage violationMessage) {
+		List<ConstraintPredicate<T>> predicates = Collections
+				.singletonList(ConstraintPredicate.of(predicate, violationMessage,
+						() -> new Object[] { name }, NullAs.INVALID));
+		this.predicatesList
+				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
+		return this;
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
+			String messageKey, String defaultMessage) {
+		return this.constraintOnTarget(predicate, name,
+				ViolationMessage.of(messageKey, defaultMessage));
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint,
+			String name) {
+		return this.constraintOnTarget(customConstraint, name, customConstraint);
 	}
 
 	public <E> ValidatorBuilder<T> constraintForObject(Function<T, E> f, String name,

@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import am.ik.yavi.ConstraintViolationsException;
+import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
@@ -607,6 +608,28 @@ public class ValidatorTest {
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"email\" must not be empty");
 			assertThat(violations.get(0).messageKey()).isEqualTo("container.notEmpty");
+		}
+	}
+
+	@Test
+	public void constraintOnTarget() {
+		Validator<Range> validator = Validator.builder(Range.class) //
+				.constraintOnTarget(Range::isToGreaterThanFrom, "to",
+						"to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
+				.build();
+		{
+			Range range = new Range(1, 10);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			Range range = new Range(10, 1);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"to\" must be greater than \"from\".");
+			assertThat(violations.get(0).messageKey()).isEqualTo("to.isGreaterThanFrom");
 		}
 	}
 

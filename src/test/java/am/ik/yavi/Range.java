@@ -31,4 +31,8 @@ public class Range {
 	public int getTo() {
 		return to;
 	}
+
+	public boolean isToGreaterThanFrom() {
+		return this.to > this.from;
+	}
 }
