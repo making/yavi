@@ -31,8 +31,8 @@ public class Emoji {
 	private static final String ELF = new String(new int[] { 0x1F9DD }, 0, 1);
 	private static final String SKUL_AND_CROSSBONES = new String(new int[] { 0x2620 }, 0,
 			1);
-	private static final String EMOJI_COMPONENT_WHITE_HAIR = new String(
-			new int[] { 0x1F9B3 }, 0, 1);
+	private static final String EMOJI_MANUAL_WHEELCHAIR = new String(
+			new int[] { 0x1F9BD }, 0, 1);
 	private static final String ENGLAND = new String(
 			new int[] { 0x1F3F4, 0xE0067, 0xE0062, 0xE0065, 0xE006E, 0xE0067, 0xE007F },
 			0, 7);
@@ -42,11 +42,12 @@ public class Emoji {
 	private static final String WALES = new String(
 			new int[] { 0x1F3F4, 0xE0067, 0xE0062, 0xE0077, 0xE006C, 0xE0073, 0xE007F },
 			0, 7);
+	private static final String DUMMY_REPLACEMENT = "X";
 
 	/**
 	 * Try to return the length of the given string.<br>
 	 * This method does not grantee the exact length.
-	 * @see <a href="https://unicode.org/Public/emoji/11.0/emoji-test.txt">Emoji 11.0</a>
+	 * @see <a href="https://unicode.org/Public/emoji/12.0/emoji-test.txt">Emoji 12.0</a>
 	 * @param str
 	 * @return the length of the given string which may be true
 	 */
@@ -58,13 +59,17 @@ public class Emoji {
 				.replaceAll("[" + StandardizedVariationSequence.RANGE
 						+ COMBINING_ENCLOSING_KEYCAP + "]", "") //
 				.replaceAll("([" + WHITE_UP_POINTING_INDEX + "-" + ELF + "]["
-						+ SKIN_TONE_SELECTOR_RANGE + "])", "X")
+						+ SKIN_TONE_SELECTOR_RANGE + "])", DUMMY_REPLACEMENT)
 				.replaceAll("([" + ZERO_WIDTH_JOINER + "][" + SKUL_AND_CROSSBONES + "-"
-						+ EMOJI_COMPONENT_WHITE_HAIR + "])", "") //
-				.replaceAll("([" + REGIONAL_INDICATOR_SYMBOL_LETTER_RANGE + "]{2})", "X") //
-				.replace(ENGLAND, "X") //
-				.replace(SCOTLAND, "X") //
-				.replace(WALES, "X");
+						+ EMOJI_MANUAL_WHEELCHAIR + "])", "") //
+				.replaceAll("([" + REGIONAL_INDICATOR_SYMBOL_LETTER_RANGE + "]{2})",
+						DUMMY_REPLACEMENT) //
+				.replace(ENGLAND, DUMMY_REPLACEMENT) //
+				.replace(SCOTLAND, DUMMY_REPLACEMENT) //
+				.replace(WALES, DUMMY_REPLACEMENT) //
+				// Support emojis that contains two skin tone selectors introduced in 12
+				.replaceAll("(" + DUMMY_REPLACEMENT + ZERO_WIDTH_JOINER
+						+ DUMMY_REPLACEMENT + ")", DUMMY_REPLACEMENT);
 		return s.codePointCount(0, s.length());
 	}
 }

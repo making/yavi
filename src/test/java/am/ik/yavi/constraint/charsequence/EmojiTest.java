@@ -62,10 +62,21 @@ public class EmojiTest {
 
 	@Test
 	public void emoji11All() throws Exception {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(this
-				.getClass().getClassLoader().getResourceAsStream("emoji-test.txt")))) {
+		verifyEmojiAll("emoji-test-11.txt");
+	}
+
+	@Test
+	public void emoji12All() throws Exception {
+		verifyEmojiAll("emoji-test-12.txt");
+	}
+
+	void verifyEmojiAll(String file) throws Exception {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+				this.getClass().getClassLoader().getResourceAsStream(file)))) {
 			String line;
+			int n = 0;
 			do {
+				n++;
 				line = reader.readLine();
 				if (line == null || line.startsWith("#") || line.isEmpty()) {
 					continue;
@@ -74,7 +85,8 @@ public class EmojiTest {
 						.mapToInt(x -> Integer.parseInt(x, 16)).toArray();
 				String emoji = new String(codePoints, 0, codePoints.length);
 				int len = Emoji.bestEffortCount("This is " + emoji + ".");
-				assertThat(len).describedAs(emoji).isEqualTo(10);
+				assertThat(len).describedAs(emoji + " L" + n).isEqualTo(10);
+
 			}
 			while (line != null);
 		}
