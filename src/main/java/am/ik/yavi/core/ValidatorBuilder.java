@@ -408,7 +408,7 @@ public class ValidatorBuilder<T> {
 	}
 
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
-			Function<ValidatorBuilder<T>, ValidatorBuilder<T>> converter) {
+			ValidatorBuilderConverter<T> converter) {
 		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
 		Validator<T> validator = builder.build();
 		return this.constraintOnCondition(condition, validator);
