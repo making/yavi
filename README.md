@@ -30,7 +30,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.20</version>
+    <version>0.0.21</version>
 </dependency>
 ```
 
@@ -69,6 +69,28 @@ violations.forEach(x -> System.out.println(x.message()));
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/ValidatorTest.java)
+
+If you are using Kotlin, you can write a bit shorter
+
+```kotlin
+val validator: Validator<User> = Validator.builder<User>()
+        .constraint(User::name) {
+            notNull() //
+                    .lessThanOrEqual(20)
+        } //
+        .constraint(User::email) {
+            notNull() //
+                    .greaterThanOrEqual(5) //
+                    .lessThanOrEqual(50) //
+                    .email()
+        } //
+        .constraint(User::age) {
+            notNull() //
+                    .greaterThanOrEqual(0) //
+                    .lessThanOrEqual(200)
+        }
+        .build()
+```
 
 #### Nested
 
@@ -313,8 +335,8 @@ data class Message(
 ) {
     companion object {
         val validator = Validator.builder<Message>()
-                .constraint(Message::text, "text") {
-                    it.notBlank().lessThanOrEqual(3)
+                .constraint(Message::text) {
+                    notBlank().lessThanOrEqual(3)
                 }
                 .build()
     }
