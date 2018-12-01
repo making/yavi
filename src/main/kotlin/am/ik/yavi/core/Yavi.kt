@@ -121,7 +121,7 @@ fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, bloc
 
 @Suppress("UNCHECKED_CAST")
 fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintIfPresentForNested({ prop.get(it) }, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
+        this.constraintIfPresentForNested(prop, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
 
 fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L>, validator: Validator<E>): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name, validator)
