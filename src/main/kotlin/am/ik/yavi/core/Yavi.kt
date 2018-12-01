@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi
+package am.ik.yavi.core
 
 import am.ik.yavi.constraint.*
 import am.ik.yavi.constraint.array.*
-import am.ik.yavi.core.ConstraintCondition
-import am.ik.yavi.core.Validator
-import am.ik.yavi.core.ValidatorBuilder
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.reflect.KProperty1

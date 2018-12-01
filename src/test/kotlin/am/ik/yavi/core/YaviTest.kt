@@ -1,7 +1,5 @@
-package am.ik.yavi
+package am.ik.yavi.core
 
-import am.ik.yavi.core.ConstraintGroup
-import am.ik.yavi.core.Validator
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.math.BigDecimal
