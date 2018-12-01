@@ -167,6 +167,5 @@ fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>>, 
 fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
         this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
 
-fun <T> ValidatorBuilder<T>.constraintOnCondition(condition: ConstraintCondition<T>, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> {
-    return this.constraintOnCondition(condition, ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
-}
+fun <T> ValidatorBuilder<T>.constraintOnCondition(condition: ConstraintCondition<T>, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraintOnCondition(condition, ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
