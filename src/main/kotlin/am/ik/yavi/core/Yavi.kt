@@ -109,7 +109,7 @@ fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, FloatArray?>, block: 
 fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, DoubleArray?>, block: DoubleArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraint(prop, prop.name) { it.apply(block) }
 
-fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N>, validator: Validator<N>): ValidatorBuilder<T> =
+fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
         this.constraintForNested(prop, prop.name, validator)
 
 fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
@@ -129,14 +129,14 @@ fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProp
 fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, validator: Validator<E>): ValidatorBuilder<T> =
         this.constraintIfPresentForEach(prop, prop.name, validator)
 
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name) { it.apply(block) }
 
 fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
         this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>>, validator: Validator<V>): ValidatorBuilder<T> =
+fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name, validator)
 
 @JvmName("constraintIfPresentForEachMap")
@@ -144,7 +144,7 @@ fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T,
         this.constraintIfPresentForEach(prop, prop.name, validator)
 
 @JvmName("constraintForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
+fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintIfPresentForEachMap")
@@ -152,7 +152,7 @@ fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T,
         this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>>, validator: Validator<E>): ValidatorBuilder<T> =
+fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name, validator)
 
 @JvmName("constraintIfPresentForEachArray")
@@ -160,7 +160,7 @@ fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Ar
         this.constraintIfPresentForEach(prop, prop.name, validator)
 
 @JvmName("constraintForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
         this.constraintForEach(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintIfPresentForEachArray")
