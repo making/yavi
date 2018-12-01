@@ -210,9 +210,18 @@ public class ValidatorBuilder<T> {
 		return this.constraintOnTarget(customConstraint, name, customConstraint);
 	}
 
-	public <E> ValidatorBuilder<T> constraintForObject(Function<T, E> f, String name,
+	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, E> f, String name,
 			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
+	}
+
+	/**
+	 * Deprecated in favor of {@link #constraintOnObject(Function, String, Function)}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintForObject(Function<T, E> f, String name,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
+		return this.constraintOnObject(f, name, c);
 	}
 
 	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
@@ -229,7 +238,7 @@ public class ValidatorBuilder<T> {
 	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
 			String name, Validator<N> validator, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
-			this.constraintForObject(nested, name, Constraint::notNull);
+			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
 		validator.predicatesList.forEach(predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
@@ -255,7 +264,7 @@ public class ValidatorBuilder<T> {
 	protected final <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested,
 			String name, ValidatorBuilderConverter<N> converter, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
-			this.constraintForObject(nested, name, Constraint::notNull);
+			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
 		builder.predicatesList.forEach(predicates -> {
@@ -282,7 +291,7 @@ public class ValidatorBuilder<T> {
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
 			NullAs nullAs) {
 		if (!nullAs.skipNull()) {
-			this.constraintForObject(toCollection, name, Constraint::notNull);
+			this.constraintOnObject(toCollection, name, Constraint::notNull);
 		}
 		this.collectionValidators
 				.add(new CollectionValidator<>(toCollection, name, validator));
@@ -305,7 +314,7 @@ public class ValidatorBuilder<T> {
 			ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
-			this.constraintForObject(toCollection, name, Constraint::notNull);
+			this.constraintOnObject(toCollection, name, Constraint::notNull);
 		}
 		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
 		this.collectionValidators

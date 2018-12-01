@@ -144,7 +144,7 @@ public class CustomValidatorTest {
 	@Test
 	public void range() throws Exception {
 		Validator<Range> validator = Validator.<Range> builder() //
-				.constraintForObject(r -> r, "range", c -> c.notNull() //
+				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicate(r -> {
 							Range range = Range.class.cast(r);
 							return range.getFrom() < range.getTo();
@@ -170,7 +170,7 @@ public class CustomValidatorTest {
 	@Test
 	public void rangeCustom() throws Exception {
 		Validator<Range> validator = Validator.<Range> builder() //
-				.constraintForObject(r -> r, "range", c -> c.notNull() //
+				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicateNullable(RangeConstraint.SINGLETON))
 				.build();
 		{
