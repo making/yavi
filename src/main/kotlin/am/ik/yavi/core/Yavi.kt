@@ -26,34 +26,44 @@ fun <T, E : CharSequence?> ValidatorBuilder<T>.constraint(prop: KProperty1<T, E?
         this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnBoolean")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Boolean?>, block: BooleanConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Boolean?>, block: BooleanConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnChar")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Char?>, block: CharacterConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Char?>, block: CharacterConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnByte")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Byte?>, block: ByteConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Byte?>, block: ByteConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnShort")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Short?>, block: ShortConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Short?>, block: ShortConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnInt")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Int?>, block: IntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Int?>, block: IntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnLong")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Long?>, block: LongConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Long?>, block: LongConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnFloat")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Float?>, block: FloatConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Float?>, block: FloatConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnDouble")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Double?>, block: DoubleConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Double?>, block: DoubleConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnBigInteger")
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigInteger?>, block: BigIntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigInteger?>, block: BigIntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnBigDecimal")
-fun <T, E : BigDecimal?> ValidatorBuilder<T>.constraint(prop: KProperty1<T, E?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> = this.constraint(prop, prop.name) { it.apply(block) }
+fun <T, E : BigDecimal?> ValidatorBuilder<T>.constraint(prop: KProperty1<T, E?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("constraintOnCollection")
 fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraint(prop: KProperty1<T, L?>, block: CollectionConstraint<T, L?, E>.() -> Unit): ValidatorBuilder<T> =
