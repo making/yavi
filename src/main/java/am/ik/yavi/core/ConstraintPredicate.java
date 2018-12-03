@@ -36,7 +36,7 @@ public class ConstraintPredicate<V> {
 				violationMessage.defaultMessageFormat(), args, nullAs);
 	}
 
-	public ConstraintPredicate(Predicate<V> predicate, String messageKey,
+    private ConstraintPredicate(Predicate<V> predicate, String messageKey,
 			String defaultMessageFormat, Supplier<Object[]> args, NullAs nullAs) {
 		this.predicate = predicate;
 		this.messageKey = messageKey;
