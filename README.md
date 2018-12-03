@@ -30,7 +30,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.21</version>
+    <version>0.0.22</version>
 </dependency>
 ```
 
@@ -133,6 +133,16 @@ Validator<Address> validator = Validator.<Address> builder() //
 * [sample code (Map)](src/test/java/am/ik/yavi/core/MapValidatorTest.java)
 * [sample code (Array)](src/test/java/am/ik/yavi/core/ArrayValidatorTest.java)
 
+#### Overriding violation messages
+
+```java
+Validator<User> validator = Validator.<User> builder() //
+	.constraint(User::getName, "name", c -> c.notNull().message("name is required!") //
+				.greaterThanOrEqual(1).message("name is too small!") //
+				.lessThanOrEqual(20).message("name is too large!")) //
+	.build()
+```
+
 #### Custom
 
 ```java
@@ -166,6 +176,16 @@ Validator<Book> book = Validator.<Book> builder() //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
+
+#### Multi-fields validation
+
+```java
+Validator<Range> validator = Validator.<Range> builder() //
+        .constraint(range::getFrom, "from", c -> c.greaterThan(0)) //
+        .constraint(range::getTo, "to", c -> c.greaterThan(0)) //
+        .constraintOnTarget(range -> range.to > range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
+        .build();
+```
 
 #### Either API
 
