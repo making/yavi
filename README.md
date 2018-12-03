@@ -347,6 +347,78 @@ fun main(args: Array<String>) = app.run()
 
 [sample app](https://github.com/making/demo-spring-fu-yavi)
 
+
+### Example with Ktor
+
+```kotlin
+package com.example
+
+import am.ik.yavi.core.Validator
+import am.ik.yavi.core.constraint
+import am.ik.yavi.core.constraintForNested
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.features.ContentNegotiation
+import io.ktor.gson.gson
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
+import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.routing
+import java.util.*
+
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
+
+data class Snippet(val text: String)
+data class PostSnippet(val snippet: PostSnippet.Text) {
+    data class Text(val text: String)
+
+    companion object {
+        val validator = Validator.builder<PostSnippet>()
+            .constraintForNested(PostSnippet::snippet) {
+                constraint(Text::text) {
+                    notEmpty().lessThanOrEqual(3)
+                }
+            }
+            .build()
+    }
+}
+
+val snippets = Collections.synchronizedList(
+    mutableListOf(
+        Snippet("hello"),
+        Snippet("world")
+    )
+)
+
+@Suppress("unused") // Referenced in application.conf
+@kotlin.jvm.JvmOverloads
+fun Application.module(testing: Boolean = false) {
+    install(ContentNegotiation) {
+        gson {
+        }
+    }
+
+    routing {
+        get("/snippets") {
+            call.respond(mapOf("snippets" to synchronized(snippets) { snippets.toList() }))
+        }
+        post("/snippets") {
+            val post = call.receive<PostSnippet>()
+            val violations = PostSnippet.validator.validate(post)
+            if (!violations.isValid) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("details" to violations.details()))
+            } else {
+                snippets += Snippet(post.snippet.text)
+                call.respond(mapOf("OK" to true))
+            }
+        }
+    }
+}
+```
+
 ### Required
 
 * Java 8+
