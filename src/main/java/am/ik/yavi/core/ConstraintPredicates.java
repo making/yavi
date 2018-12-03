@@ -15,16 +15,16 @@
  */
 package am.ik.yavi.core;
 
-import java.util.List;
+import java.util.Deque;
 import java.util.function.Function;
 
 public class ConstraintPredicates<T, V> {
 	private final Function<T, V> toValue;
 	private final String name;
-	private final List<ConstraintPredicate<V>> predicates;
+	private final Deque<ConstraintPredicate<V>> predicates;
 
 	public ConstraintPredicates(Function<T, V> toValue, String name,
-			List<ConstraintPredicate<V>> predicates) {
+			Deque<ConstraintPredicate<V>> predicates) {
 		this.toValue = toValue;
 		this.name = name;
 		this.predicates = predicates;
@@ -38,7 +38,7 @@ public class ConstraintPredicates<T, V> {
 		return this.name;
 	}
 
-	public final List<ConstraintPredicate<V>> predicates() {
+	public final Deque<ConstraintPredicate<V>> predicates() {
 		return this.predicates;
 	}
 }

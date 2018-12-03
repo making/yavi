@@ -27,7 +27,7 @@ public class CharacterConstraintTest {
 	@Test
 	public void greaterThan() {
 		Predicate<Character> predicate = constraint.greaterThan((char) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((char) 101)).isTrue();
 		assertThat(predicate.test((char) 100)).isFalse();
 	}
@@ -35,7 +35,7 @@ public class CharacterConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<Character> predicate = constraint.greaterThanOrEqual((char) 100)
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test((char) 101)).isTrue();
 		assertThat(predicate.test((char) 100)).isTrue();
 		assertThat(predicate.test((char) 99)).isFalse();
@@ -44,7 +44,7 @@ public class CharacterConstraintTest {
 	@Test
 	public void lessThan() {
 		Predicate<Character> predicate = constraint.lessThan((char) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((char) 99)).isTrue();
 		assertThat(predicate.test((char) 100)).isFalse();
 	}
@@ -52,7 +52,7 @@ public class CharacterConstraintTest {
 	@Test
 	public void lessThanOrEqual() {
 		Predicate<Character> predicate = constraint.lessThanOrEqual((char) 100)
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test((char) 99)).isTrue();
 		assertThat(predicate.test((char) 100)).isTrue();
 		assertThat(predicate.test((char) 101)).isFalse();

@@ -27,7 +27,7 @@ public class ShortConstraintTest {
 	@Test
 	public void greaterThan() {
 		Predicate<Short> predicate = constraint.greaterThan((short) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((short) 101)).isTrue();
 		assertThat(predicate.test((short) 100)).isFalse();
 	}
@@ -35,7 +35,7 @@ public class ShortConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<Short> predicate = constraint.greaterThanOrEqual((short) 100)
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test((short) 101)).isTrue();
 		assertThat(predicate.test((short) 100)).isTrue();
 		assertThat(predicate.test((short) 99)).isFalse();
@@ -43,8 +43,8 @@ public class ShortConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<Short> predicate = constraint.lessThan((short) 100).predicates().get(0)
-				.predicate();
+		Predicate<Short> predicate = constraint.lessThan((short) 100).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test((short) 99)).isTrue();
 		assertThat(predicate.test((short) 100)).isFalse();
 	}
@@ -52,7 +52,7 @@ public class ShortConstraintTest {
 	@Test
 	public void lessThanOrEqual() {
 		Predicate<Short> predicate = constraint.lessThanOrEqual((short) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((short) 99)).isTrue();
 		assertThat(predicate.test((short) 100)).isTrue();
 		assertThat(predicate.test((short) 101)).isFalse();

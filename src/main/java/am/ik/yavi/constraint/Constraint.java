@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.List;
+import java.util.Deque;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -28,9 +28,27 @@ import am.ik.yavi.core.NullAs;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
-	List<ConstraintPredicate<V>> predicates();
+	Deque<ConstraintPredicate<V>> predicates();
 
 	C cast();
+
+	default C message(String message) {
+		ConstraintPredicate<V> predicate = this.predicates().pollLast();
+		if (predicate == null) {
+			throw new IllegalStateException("no constraint found to override!");
+		}
+		this.predicates().addLast(predicate.overrideMessage(message));
+		return this.cast();
+	}
+
+	default C message(ViolationMessage message) {
+		ConstraintPredicate<V> predicate = this.predicates().pollLast();
+		if (predicate == null) {
+			throw new IllegalStateException("no constraint found to override!");
+		}
+		this.predicates().addLast(predicate.overrideMessage(message));
+		return this.cast();
+	}
 
 	default C notNull() {
 		this.predicates().add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,

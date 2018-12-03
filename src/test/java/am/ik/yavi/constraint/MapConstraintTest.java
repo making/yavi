@@ -30,7 +30,7 @@ public class MapConstraintTest {
 	@Test
 	public void notEmpty() {
 		Predicate<Map<String, String>> predicate = constraint.notEmpty().predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.emptyMap())).isFalse();
 	}
@@ -38,7 +38,7 @@ public class MapConstraintTest {
 	@Test
 	public void lessThan() {
 		Predicate<Map<String, String>> predicate = constraint.lessThan(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -51,7 +51,7 @@ public class MapConstraintTest {
 	@Test
 	public void lessThanOrEqual() {
 		Predicate<Map<String, String>> predicate = constraint.lessThanOrEqual(2)
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -71,7 +71,7 @@ public class MapConstraintTest {
 	@Test
 	public void greaterThan() {
 		Predicate<Map<String, String>> predicate = constraint.greaterThan(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
 				put("a", "b");
@@ -90,7 +90,7 @@ public class MapConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<Map<String, String>> predicate = constraint.greaterThanOrEqual(2)
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -110,7 +110,7 @@ public class MapConstraintTest {
 	@Test
 	public void containsValue() {
 		Predicate<Map<String, String>> predicate = constraint.containsValue("bar")
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("foo", "baz"))).isFalse();
 	}
@@ -118,7 +118,7 @@ public class MapConstraintTest {
 	@Test
 	public void containsKey() {
 		Predicate<Map<String, String>> predicate = constraint.containsKey("foo")
-				.predicates().get(0).predicate();
+				.predicates().peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
 	}
@@ -126,7 +126,7 @@ public class MapConstraintTest {
 	@Test
 	public void fixedSize() {
 		Predicate<Map<String, String>> predicate = constraint.fixedSize(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{

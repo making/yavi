@@ -29,7 +29,7 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void notEmpty() {
-		Predicate<String> predicate = constraint.notEmpty().predicates().get(0)
+		Predicate<String> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test("")).isFalse();
@@ -37,7 +37,7 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void notBlank() {
-		Predicate<String> predicate = constraint.notBlank().predicates().get(0)
+		Predicate<String> predicate = constraint.notBlank().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test("")).isFalse();
@@ -47,7 +47,7 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<String> predicate = constraint.lessThan(3).predicates().get(0)
+		Predicate<String> predicate = constraint.lessThan(3).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
@@ -56,8 +56,8 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void lessThanOrEqual() {
-		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates().get(0)
-				.predicate();
+		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("abcd")).isFalse();
@@ -66,7 +66,7 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<String> predicate = constraint.greaterThan(3).predicates().get(0)
+		Predicate<String> predicate = constraint.greaterThan(3).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
@@ -75,8 +75,8 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void greaterThanOrEqual() {
-		Predicate<String> predicate = constraint.greaterThanOrEqual(3).predicates().get(0)
-				.predicate();
+		Predicate<String> predicate = constraint.greaterThanOrEqual(3).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("ab")).isFalse();
@@ -85,7 +85,7 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void contains() {
-		Predicate<String> predicate = constraint.contains("a").predicates().get(0)
+		Predicate<String> predicate = constraint.contains("a").predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("yavi")).isTrue();
 		assertThat(predicate.test("yvi")).isFalse();
@@ -93,7 +93,8 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void email() {
-		Predicate<String> predicate = constraint.email().predicates().get(0).predicate();
+		Predicate<String> predicate = constraint.email().predicates().peekFirst()
+				.predicate();
 		assertThat(predicate.test("abc@example.com")).isTrue();
 		assertThat(predicate.test("abc@localhost")).isTrue();
 		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
@@ -104,7 +105,8 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void url() {
-		Predicate<String> predicate = constraint.url().predicates().get(0).predicate();
+		Predicate<String> predicate = constraint.url().predicates().peekFirst()
+				.predicate();
 		assertThat(predicate.test("http://example.com")).isTrue();
 		assertThat(predicate.test("example.com")).isFalse();
 		assertThat(predicate.test("")).isTrue();
@@ -112,15 +114,15 @@ public class CharSequenceConstraintTest {
 
 	@Test
 	public void pattern() {
-		Predicate<String> predicate = constraint.pattern("[0-9]{4}").predicates().get(0)
-				.predicate();
+		Predicate<String> predicate = constraint.pattern("[0-9]{4}").predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test("1234")).isTrue();
 		assertThat(predicate.test("134a")).isFalse();
 	}
 
 	@Test
 	public void fixedSize() {
-		Predicate<String> predicate = constraint.fixedSize(2).predicates().get(0)
+		Predicate<String> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("a")).isFalse();
 		assertThat(predicate.test("ab")).isTrue();
@@ -130,21 +132,21 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void normalizeCombiningCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(2).predicates().get(0).predicate();
+				.fixedSize(2).predicates().peekFirst().predicate();
 		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
 	}
 
 	@Test
 	public void notNormalizeCombiningCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.normalizer(null).fixedSize(3).predicates().get(0).predicate();
+				.normalizer(null).fixedSize(3).predicates().peekFirst().predicate();
 		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
 	}
 
 	@Test
 	public void ignoreIvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(1).predicates().get(0).predicate();
+				.fixedSize(1).predicates().peekFirst().predicate();
 		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
 		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
 	}
@@ -153,7 +155,7 @@ public class CharSequenceConstraintTest {
 	public void notIgnoreIvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.variant(ops -> ops.ivs(IdeographicVariationSequence.NOT_IGNORE))
-				.fixedSize(2).predicates().get(0).predicate();
+				.fixedSize(2).predicates().peekFirst().predicate();
 		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
 		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
 	}
@@ -161,7 +163,7 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void ignoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(1).predicates().get(0).predicate();
+				.fixedSize(1).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ᠠ᠋")).isTrue();
 		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}
@@ -170,7 +172,7 @@ public class CharSequenceConstraintTest {
 	public void notIgnoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
-				.fixedSize(2).predicates().get(0).predicate();
+				.fixedSize(2).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ᠠ᠋")).isTrue();
 		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}

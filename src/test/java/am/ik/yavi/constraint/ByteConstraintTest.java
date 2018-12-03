@@ -26,8 +26,8 @@ public class ByteConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<Byte> predicate = constraint.greaterThan((byte) 100).predicates().get(0)
-				.predicate();
+		Predicate<Byte> predicate = constraint.greaterThan((byte) 100).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test((byte) 101)).isTrue();
 		assertThat(predicate.test((byte) 100)).isFalse();
 	}
@@ -35,7 +35,7 @@ public class ByteConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<Byte> predicate = constraint.greaterThanOrEqual((byte) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((byte) 101)).isTrue();
 		assertThat(predicate.test((byte) 100)).isTrue();
 		assertThat(predicate.test((byte) 99)).isFalse();
@@ -43,8 +43,8 @@ public class ByteConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<Byte> predicate = constraint.lessThan((byte) 100).predicates().get(0)
-				.predicate();
+		Predicate<Byte> predicate = constraint.lessThan((byte) 100).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test((byte) 99)).isTrue();
 		assertThat(predicate.test((byte) 100)).isFalse();
 	}
@@ -52,7 +52,7 @@ public class ByteConstraintTest {
 	@Test
 	public void lessThanOrEqual() {
 		Predicate<Byte> predicate = constraint.lessThanOrEqual((byte) 100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test((byte) 99)).isTrue();
 		assertThat(predicate.test((byte) 100)).isTrue();
 		assertThat(predicate.test((byte) 101)).isFalse();

@@ -29,7 +29,7 @@ public class CollectionConstraintTest {
 
 	@Test
 	public void notEmpty() {
-		Predicate<List<String>> predicate = constraint.notEmpty().predicates().get(0)
+		Predicate<List<String>> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Collections.emptyList())).isFalse();
@@ -37,8 +37,8 @@ public class CollectionConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<List<String>> predicate = constraint.lessThan(2).predicates().get(0)
-				.predicate();
+		Predicate<List<String>> predicate = constraint.lessThan(2).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isFalse();
 	}
@@ -46,7 +46,7 @@ public class CollectionConstraintTest {
 	@Test
 	public void lessThanOrEqual() {
 		Predicate<List<String>> predicate = constraint.lessThanOrEqual(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isFalse();
@@ -54,8 +54,8 @@ public class CollectionConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<List<String>> predicate = constraint.greaterThan(2).predicates().get(0)
-				.predicate();
+		Predicate<List<String>> predicate = constraint.greaterThan(2).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isTrue();
 	}
@@ -63,7 +63,7 @@ public class CollectionConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<List<String>> predicate = constraint.greaterThanOrEqual(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isTrue();
@@ -71,16 +71,16 @@ public class CollectionConstraintTest {
 
 	@Test
 	public void contains() {
-		Predicate<List<String>> predicate = constraint.contains("foo").predicates().get(0)
-				.predicate();
+		Predicate<List<String>> predicate = constraint.contains("foo").predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("bar", "baz"))).isFalse();
 	}
 
 	@Test
 	public void fixedSize() {
-		Predicate<List<String>> predicate = constraint.fixedSize(2).predicates().get(0)
-				.predicate();
+		Predicate<List<String>> predicate = constraint.fixedSize(2).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isFalse();

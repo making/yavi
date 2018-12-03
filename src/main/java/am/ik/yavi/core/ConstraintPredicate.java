@@ -32,9 +32,15 @@ public class ConstraintPredicate<V> {
 
 	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
 			Supplier<Object[]> args, NullAs nullAs) {
+		this(predicate, violationMessage.messageKey(),
+				violationMessage.defaultMessageFormat(), args, nullAs);
+	}
+
+	public ConstraintPredicate(Predicate<V> predicate, String messageKey,
+			String defaultMessageFormat, Supplier<Object[]> args, NullAs nullAs) {
 		this.predicate = predicate;
-		this.messageKey = violationMessage.messageKey();
-		this.defaultMessageFormat = violationMessage.defaultMessageFormat();
+		this.messageKey = messageKey;
+		this.defaultMessageFormat = defaultMessageFormat;
 		this.args = args;
 		this.nullAs = nullAs;
 	}
@@ -85,5 +91,14 @@ public class ConstraintPredicate<V> {
 
 	public final NullAs nullValidity() {
 		return this.nullAs;
+	}
+
+	public ConstraintPredicate<V> overrideMessage(ViolationMessage message) {
+		return new ConstraintPredicate<>(this.predicate, message, this.args, this.nullAs);
+	}
+
+	public ConstraintPredicate<V> overrideMessage(String message) {
+		return new ConstraintPredicate<>(this.predicate, this.messageKey, message,
+				this.args, this.nullAs);
 	}
 }

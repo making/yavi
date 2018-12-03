@@ -26,7 +26,7 @@ public class BooleanConstraintTest {
 
 	@Test
 	public void isTrue() {
-		Predicate<Boolean> predicate = constraint.isTrue().predicates().get(0)
+		Predicate<Boolean> predicate = constraint.isTrue().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(true)).isTrue();
 		assertThat(predicate.test(false)).isFalse();
@@ -34,7 +34,7 @@ public class BooleanConstraintTest {
 
 	@Test
 	public void isFalse() {
-		Predicate<Boolean> predicate = constraint.isFalse().predicates().get(0)
+		Predicate<Boolean> predicate = constraint.isFalse().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(true)).isFalse();
 		assertThat(predicate.test(false)).isTrue();

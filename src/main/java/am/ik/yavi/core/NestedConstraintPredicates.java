@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.function.Function;
 
@@ -24,7 +25,7 @@ public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T,
 	private final Function<T, N> nested;
 
 	public NestedConstraintPredicates(Function<T, V> toValue, String name,
-			List<ConstraintPredicate<V>> constraintPredicates, Function<T, N> nested) {
+			Deque<ConstraintPredicate<V>> constraintPredicates, Function<T, N> nested) {
 		super(toValue, name, constraintPredicates);
 		this.nested = nested;
 	}

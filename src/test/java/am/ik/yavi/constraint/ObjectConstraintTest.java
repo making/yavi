@@ -26,7 +26,7 @@ public class ObjectConstraintTest {
 
 	@Test
 	public void notNull() {
-		Predicate<String> predicate = constraint.notNull().predicates().get(0)
+		Predicate<String> predicate = constraint.notNull().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test(null)).isFalse();
@@ -34,7 +34,8 @@ public class ObjectConstraintTest {
 
 	@Test
 	public void isNull() {
-		Predicate<String> predicate = constraint.isNull().predicates().get(0).predicate();
+		Predicate<String> predicate = constraint.isNull().predicates().peekFirst()
+				.predicate();
 		assertThat(predicate.test("foo")).isFalse();
 		assertThat(predicate.test(null)).isTrue();
 	}

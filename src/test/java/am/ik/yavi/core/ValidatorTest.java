@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import am.ik.yavi.constraint.ViolationMessage;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -630,6 +631,81 @@ public class ValidatorTest {
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"to\" must be greater than \"from\".");
 			assertThat(violations.get(0).messageKey()).isEqualTo("to.isGreaterThanFrom");
+		}
+	}
+
+	@Test
+	public void overrideMessage() {
+		Validator<User> validator = Validator.<User> builder() //
+				.constraint(User::getName, "name",
+						c -> c.notNull().message("name is required!") //
+								.greaterThanOrEqual(1).message("name is too small!") //
+								.lessThanOrEqual(20).message("name is too large!")) //
+				.build();
+
+		{
+			User user = new User(null, "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is required!");
+			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
+		}
+		{
+			User user = new User("", "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is too small!");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.greaterThanOrEqual");
+		}
+		{
+			User user = new User("012345678901234567890", "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is too large!");
+			assertThat(violations.get(0).messageKey())
+					.isEqualTo("container.lessThanOrEqual");
+		}
+	}
+
+	@Test
+	public void overrideViolationMessage() {
+		Validator<User> validator = Validator.<User> builder() //
+				.constraint(User::getName, "name",
+						c -> c.notNull()
+								.message(ViolationMessage.of("a", "name is required!")) //
+								.greaterThanOrEqual(1)
+								.message(ViolationMessage.of("b", "name is too small!")) //
+								.lessThanOrEqual(20)
+								.message(ViolationMessage.of("c", "name is too large!"))) //
+				.build();
+
+		{
+			User user = new User(null, "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is required!");
+			assertThat(violations.get(0).messageKey()).isEqualTo("a");
+		}
+		{
+			User user = new User("", "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is too small!");
+			assertThat(violations.get(0).messageKey()).isEqualTo("b");
+		}
+		{
+			User user = new User("012345678901234567890", "a@b.c", 10);
+			ConstraintViolations violations = validator.validate(user);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message()).isEqualTo("name is too large!");
+			assertThat(violations.get(0).messageKey()).isEqualTo("c");
 		}
 	}
 

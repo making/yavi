@@ -15,21 +15,21 @@
  */
 package am.ik.yavi.constraint.base;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import am.ik.yavi.constraint.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class ConstraintBase<T, V, C extends Constraint<T, V, C>>
 		implements Constraint<T, V, C> {
-	private final List<ConstraintPredicate<V>> predicates = new ArrayList<>();
+	private final Deque<ConstraintPredicate<V>> predicates = new LinkedList<>();
 
 	@Override
 	public abstract C cast();
 
 	@Override
-	public List<ConstraintPredicate<V>> predicates() {
+	public Deque<ConstraintPredicate<V>> predicates() {
 		return this.predicates;
 	}
 }

@@ -20,7 +20,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -191,9 +192,9 @@ public class ValidatorBuilder<T> {
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
 			ViolationMessage violationMessage) {
-		List<ConstraintPredicate<T>> predicates = Collections
-				.singletonList(ConstraintPredicate.of(predicate, violationMessage,
-						() -> new Object[] { name }, NullAs.INVALID));
+		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
+		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
+				() -> new Object[] { name }, NullAs.INVALID));
 		this.predicatesList
 				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
 		return this;
@@ -405,7 +406,7 @@ public class ValidatorBuilder<T> {
 	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(
 			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
 		C constraint = supplier.get();
-		List<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
+		Deque<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
 		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
 		return this;
 	}

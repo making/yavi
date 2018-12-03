@@ -26,7 +26,7 @@ public class ObjectArrayConstraintTest {
 
 	@Test
 	public void notEmpty() {
-		Predicate<String[]> predicate = constraint.notEmpty().predicates().get(0)
+		Predicate<String[]> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
 		assertThat(predicate.test(new String[] {})).isFalse();
@@ -34,7 +34,7 @@ public class ObjectArrayConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<String[]> predicate = constraint.lessThan(2).predicates().get(0)
+		Predicate<String[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isFalse();
@@ -42,8 +42,8 @@ public class ObjectArrayConstraintTest {
 
 	@Test
 	public void lessThanOrEqual() {
-		Predicate<String[]> predicate = constraint.lessThanOrEqual(2).predicates().get(0)
-				.predicate();
+		Predicate<String[]> predicate = constraint.lessThanOrEqual(2).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
 		assertThat(predicate.test(new String[] { "foo", "bar", "baz" })).isFalse();
@@ -51,7 +51,7 @@ public class ObjectArrayConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<String[]> predicate = constraint.greaterThan(2).predicates().get(0)
+		Predicate<String[]> predicate = constraint.greaterThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isFalse();
 		assertThat(predicate.test(new String[] { "foo", "bar", "baz" })).isTrue();
@@ -60,7 +60,7 @@ public class ObjectArrayConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<String[]> predicate = constraint.greaterThanOrEqual(2).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isFalse();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
 		assertThat(predicate.test(new String[] { "foo", "bar", "baz" })).isTrue();
@@ -68,15 +68,15 @@ public class ObjectArrayConstraintTest {
 
 	@Test
 	public void contains() {
-		Predicate<String[]> predicate = constraint.contains("foo").predicates().get(0)
-				.predicate();
+		Predicate<String[]> predicate = constraint.contains("foo").predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
 		assertThat(predicate.test(new String[] { "bar", "baz" })).isFalse();
 	}
 
 	@Test
 	public void fixedSize() {
-		Predicate<String[]> predicate = constraint.fixedSize(2).predicates().get(0)
+		Predicate<String[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isFalse();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();

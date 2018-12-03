@@ -26,8 +26,8 @@ public class IntegerConstraintTest {
 
 	@Test
 	public void greaterThan() {
-		Predicate<Integer> predicate = constraint.greaterThan(100).predicates().get(0)
-				.predicate();
+		Predicate<Integer> predicate = constraint.greaterThan(100).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(101)).isTrue();
 		assertThat(predicate.test(100)).isFalse();
 	}
@@ -35,7 +35,7 @@ public class IntegerConstraintTest {
 	@Test
 	public void greaterThanOrEqual() {
 		Predicate<Integer> predicate = constraint.greaterThanOrEqual(100).predicates()
-				.get(0).predicate();
+				.peekFirst().predicate();
 		assertThat(predicate.test(101)).isTrue();
 		assertThat(predicate.test(100)).isTrue();
 		assertThat(predicate.test(99)).isFalse();
@@ -43,7 +43,7 @@ public class IntegerConstraintTest {
 
 	@Test
 	public void lessThan() {
-		Predicate<Integer> predicate = constraint.lessThan(100).predicates().get(0)
+		Predicate<Integer> predicate = constraint.lessThan(100).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(99)).isTrue();
 		assertThat(predicate.test(100)).isFalse();
@@ -51,8 +51,8 @@ public class IntegerConstraintTest {
 
 	@Test
 	public void lessThanOrEqual() {
-		Predicate<Integer> predicate = constraint.lessThanOrEqual(100).predicates().get(0)
-				.predicate();
+		Predicate<Integer> predicate = constraint.lessThanOrEqual(100).predicates()
+				.peekFirst().predicate();
 		assertThat(predicate.test(99)).isTrue();
 		assertThat(predicate.test(100)).isTrue();
 		assertThat(predicate.test(101)).isFalse();
