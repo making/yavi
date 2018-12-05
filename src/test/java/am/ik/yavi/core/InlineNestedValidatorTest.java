@@ -23,11 +23,12 @@ public class InlineNestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
 	protected Validator<Address> validator() {
 		return Validator.<Address> builder()
-				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-				.constraintForNested(Address::country, "country",
+				.constraint(Address::street, "street",
+						c -> c.notBlank().lessThan(32))
+				.nest(Address::country, "country",
 						b -> b.constraint(Country::name, "name", c -> c.notBlank() //
 								.greaterThanOrEqual(2)))
-				.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
+				.nestIfPresent(Address::phoneNumber, "phoneNumber",
 						b -> b.constraint(PhoneNumber::value, "value", c -> c.notBlank() //
 								.greaterThanOrEqual(8)))
 				.build();

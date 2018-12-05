@@ -28,26 +28,24 @@ public class InlineMapValidatorTest extends AbstractMapValidatorTest {
 	@Override
 	public Validator<FormWithMap> validator() {
 		return Validator.builder(FormWithMap.class) //
-				.constraintForEach(FormWithMap::getAddresses, "addresses",
+				.forEach(FormWithMap::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraintForNested(Address::country, "country",
-										Country.validator())
-								.constraintIfPresentForNested(Address::phoneNumber,
-										"phoneNumber", PhoneNumber.validator()))
+								.nest(Address::country, "country", Country.validator())
+								.nestIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithMap> validator = Validator.builder(FormWithMap.class) //
-				.constraintIfPresentForEach(FormWithMap::getAddresses, "addresses",
+				.forEachIfPresent(FormWithMap::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraintForNested(Address::country, "country",
-										Country.validator())
-								.constraintIfPresentForNested(Address::phoneNumber,
-										"phoneNumber", PhoneNumber.validator()))
+								.nest(Address::country, "country", Country.validator())
+								.nestIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
 		FormWithMap form = new FormWithMap(null);
 		ConstraintViolations violations = validator.validate(form);

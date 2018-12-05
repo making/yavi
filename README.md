@@ -96,17 +96,17 @@ val validator: Validator<User> = Validator.builder<User>()
 
 ```java
 Validator<Country> countryValidator = Validator.<Country> builder() //
-            .constraintForNested(Country::getName, "name", c -> c.notBlank() //
+            .nest(Country::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(20))
             .build();
 Validator<City> cityValidator = Validator.<City> builder() //
-            .constraintForNested(City::getName, "name", c -> c.notBlank() //
+            .nest(City::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(100))
             .build();
 
 Validator<Address> validator = Validator.<Address> builder() //
-            .constraintForNested(Address::getCountry, "country", countryValidator) //
-            .constraintForNested(Address::getCity, "city", cityValidator)
+            .nest(Address::getCountry, "country", countryValidator) //
+            .nest(Address::getCity, "city", cityValidator)
             .build();
 ```
 
@@ -116,10 +116,10 @@ or
 
 ```java
 Validator<Address> validator = Validator.<Address> builder() //
-            .constraintForNested(Address::getCountry, "country", //
+            .nest(Address::getCountry, "country", //
                         b -> b.constraint(Country::getName, "name", c -> c.notBlank() //
                                                                         .lessThanOrEqual(20))) //
-            .constraintForNested(Address::getCity, "city", //
+            .nest(Address::getCity, "city", //
                         b -> b.constraint(City::getName, "name", c -> c.notBlank() //
                                                                         .lessThanOrEqual(100))) //
             .build();
@@ -375,7 +375,7 @@ package com.example
 
 import am.ik.yavi.core.Validator
 import am.ik.yavi.core.constraint
-import am.ik.yavi.core.constraintForNested
+import am.ik.yavi.core.nest
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -397,7 +397,7 @@ data class PostSnippet(val snippet: PostSnippet.Text) {
 
     companion object {
         val validator = Validator.builder<PostSnippet>()
-            .constraintForNested(PostSnippet::snippet) {
+            .nest(PostSnippet::snippet) {
                 constraint(Text::text) {
                     notEmpty().lessThanOrEqual(3)
                 }

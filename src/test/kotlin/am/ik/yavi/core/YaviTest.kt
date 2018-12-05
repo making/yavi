@@ -459,7 +459,7 @@ class YaviTest {
     @Test
     fun constraintNested() {
         val validator = Validator.builder<DemoNested>()
-                .constraintForNested(DemoNested::x) {
+                .nest(DemoNested::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -480,7 +480,7 @@ class YaviTest {
     @Test
     fun constraintNestedValidator() {
         val validator = Validator.builder<DemoNested>()
-                .constraintForNested(DemoNested::x, demoStringValidator)
+                .nest(DemoNested::x, demoStringValidator)
                 .build()
 
         var demo = DemoNested(DemoString("foo"))
@@ -499,7 +499,7 @@ class YaviTest {
     @Test
     fun constraintNestedIfPresent() {
         val validator = Validator.builder<DemoNestedIfPresent>()
-                .constraintIfPresentForNested(DemoNestedIfPresent::x) {
+                .nestIfPresent(DemoNestedIfPresent::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -524,7 +524,7 @@ class YaviTest {
     @Test
     fun constraintNestedIfPresentValidator() {
         val validator = Validator.builder<DemoNestedIfPresent>()
-                .constraintIfPresentForNested(DemoNestedIfPresent::x, demoStringValidator)
+                .nestIfPresent(DemoNestedIfPresent::x, demoStringValidator)
                 .build()
 
         var demo = DemoNestedIfPresent(DemoString("foo"))
@@ -547,7 +547,7 @@ class YaviTest {
     @Test
     fun constraintForEachCollection() {
         val validator = Validator.builder<DemoForEachCollection>()
-                .constraintForEach(DemoForEachCollection::x) {
+                .forEach(DemoForEachCollection::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -568,7 +568,7 @@ class YaviTest {
     @Test
     fun constraintForEachCollectionValidator() {
         val validator = Validator.builder<DemoForEachCollection>()
-                .constraintForEach(DemoForEachCollection::x, demoStringValidator)
+                .forEach(DemoForEachCollection::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachCollection(listOf(DemoString("foo")))
@@ -587,7 +587,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentCollection() {
         val validator = Validator.builder<DemoForEachIfPresentCollection>()
-                .constraintIfPresentForEach(DemoForEachIfPresentCollection::x) {
+                .forEachIfPresent(DemoForEachIfPresentCollection::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -612,7 +612,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentCollectionValidator() {
         val validator = Validator.builder<DemoForEachIfPresentCollection>()
-                .constraintIfPresentForEach(DemoForEachIfPresentCollection::x, demoStringValidator)
+                .forEachIfPresent(DemoForEachIfPresentCollection::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachIfPresentCollection(listOf(DemoString("foo")))
@@ -635,7 +635,7 @@ class YaviTest {
     @Test
     fun constraintForEachMap() {
         val validator = Validator.builder<DemoForEachMap>()
-                .constraintForEach(DemoForEachMap::x) {
+                .forEach(DemoForEachMap::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -656,7 +656,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentMap() {
         val validator = Validator.builder<DemoForEachIfPresentMap>()
-                .constraintIfPresentForEach(DemoForEachIfPresentMap::x) {
+                .forEachIfPresent(DemoForEachIfPresentMap::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -681,7 +681,7 @@ class YaviTest {
     @Test
     fun constraintForEachMapValidator() {
         val validator = Validator.builder<DemoForEachMap>()
-                .constraintForEach(DemoForEachMap::x, demoStringValidator)
+                .forEach(DemoForEachMap::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachMap(mapOf("a" to DemoString("foo")))
@@ -700,7 +700,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentMapValidator() {
         val validator = Validator.builder<DemoForEachIfPresentMap>()
-                .constraintIfPresentForEach(DemoForEachIfPresentMap::x, demoStringValidator)
+                .forEachIfPresent(DemoForEachIfPresentMap::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachIfPresentMap(mapOf("a" to DemoString("foo")))
@@ -723,7 +723,7 @@ class YaviTest {
     @Test
     fun constraintForEachArray() {
         val validator = Validator.builder<DemoForEachArray>()
-                .constraintForEach(DemoForEachArray::x) {
+                .forEach(DemoForEachArray::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -744,7 +744,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentArray() {
         val validator = Validator.builder<DemoForEachIfPresentArray>()
-                .constraintIfPresentForEach(DemoForEachIfPresentArray::x) {
+                .forEachIfPresent(DemoForEachIfPresentArray::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
                 .build()
@@ -769,7 +769,7 @@ class YaviTest {
     @Test
     fun constraintForEachArrayValidator() {
         val validator = Validator.builder<DemoForEachArray>()
-                .constraintForEach(DemoForEachArray::x, demoStringValidator)
+                .forEach(DemoForEachArray::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachArray(arrayOf(DemoString("foo")))
@@ -788,7 +788,7 @@ class YaviTest {
     @Test
     fun constraintForEachIfPresentArrayValidator() {
         val validator = Validator.builder<DemoForEachIfPresentArray>()
-                .constraintIfPresentForEach(DemoForEachIfPresentArray::x, demoStringValidator)
+                .forEachIfPresent(DemoForEachIfPresentArray::x, demoStringValidator)
                 .build()
 
         var demo = DemoForEachIfPresentArray(arrayOf(DemoString("foo")))

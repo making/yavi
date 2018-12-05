@@ -26,20 +26,17 @@ import am.ik.yavi.*;
 public class MultiNestedCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraintForNested(Address::country, "country", Country.validator())
-			.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-					PhoneNumber.validator())
+			.nest(Address::country, "country", Country.validator())
+			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 	Validator<FormWithCollection> formValidator = Validator
 			.builder(FormWithCollection.class) //
-			.constraintForEach(FormWithCollection::getAddresses, "addresses",
-					addressValidator)
+			.forEach(FormWithCollection::getAddresses, "addresses", addressValidator)
 			.build();
 
 	Validator<NestedFormWithCollection> validator = Validator
 			.builder(NestedFormWithCollection.class)
-			.constraintForEach(NestedFormWithCollection::getForms, "forms", formValidator)
-			.build();
+			.forEach(NestedFormWithCollection::getForms, "forms", formValidator).build();
 
 	@Test
 	public void valid() {

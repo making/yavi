@@ -112,63 +112,137 @@ fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, DoubleArray?>, block:
 fun <T, E> ValidatorBuilder<T>.constraintOnObject(prop: KProperty1<T, E?>, block: ObjectConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =
         this.constraintOnObject(prop, prop.name) { it.apply(block) }
 
-fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
-        this.constraintForNested(prop, prop.name, validator)
+fun <T, N> ValidatorBuilder<T>.nest(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
+        this.nest(prop, prop.name, validator)
 
-fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
-        this.constraintIfPresentForNested(prop, prop.name, validator)
-
-@Suppress("UNCHECKED_CAST")
-fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintForNested(prop, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
+fun <T, N> ValidatorBuilder<T>.nestIfPresent(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
+        this.nestIfPresent(prop, prop.name, validator)
 
 @Suppress("UNCHECKED_CAST")
-fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintIfPresentForNested(prop, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
+fun <T, N> ValidatorBuilder<T>.nest(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
+        this.nest(prop, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
 
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L>, validator: Validator<E>): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name, validator)
+@Suppress("UNCHECKED_CAST")
+fun <T, N> ValidatorBuilder<T>.nestIfPresent(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
+        this.nestIfPresent(prop, prop.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
 
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, validator: Validator<E>): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name, validator)
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.forEach(prop: KProperty1<T, L>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name, validator)
 
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name) { it.apply(block) }
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, L?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name, validator)
 
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.forEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name) { it.apply(block) }
 
-@JvmName("constraintForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name, validator)
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name) { it.apply(block) }
 
-@JvmName("constraintIfPresentForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name, validator)
+@JvmName("forEachMapMap")
+fun <T, K, V> ValidatorBuilder<T>.forEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name, validator)
 
-@JvmName("constraintForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name) { it.apply(block) }
+@JvmName("forEachIfPresentMap")
+fun <T, K, V> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name, validator)
 
-@JvmName("constraintIfPresentForEachMap")
-fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
+@JvmName("forEachMapMap")
+fun <T, K, V> ValidatorBuilder<T>.forEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name) { it.apply(block) }
 
-@JvmName("constraintForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name, validator)
+@JvmName("forEachIfPresentMap")
+fun <T, K, V> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name) { it.apply(block) }
 
-@JvmName("constraintIfPresentForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name, validator)
+@JvmName("forEachMapArray")
+fun <T, E> ValidatorBuilder<T>.forEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name, validator)
 
-@JvmName("constraintForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintForEach(prop, prop.name) { it.apply(block) }
+@JvmName("forEachIfPresentArray")
+fun <T, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name, validator)
 
-@JvmName("constraintIfPresentForEachArray")
-fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintIfPresentForEach(prop, prop.name) { it.apply(block) }
+@JvmName("forEachMapArray")
+fun <T, E> ValidatorBuilder<T>.forEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, prop.name) { it.apply(block) }
+
+@JvmName("forEachIfPresentArray")
+fun <T, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, prop.name) { it.apply(block) }
 
 fun <T> ValidatorBuilder<T>.constraintOnCondition(condition: ConstraintCondition<T>, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraintOnCondition(condition, ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.nest(prop, validator)"))
+fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
+        this.nest(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.nest(prop, validator)"))
+fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
+        this.nest(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.nest(prop, block)"))
+@Suppress("UNCHECKED_CAST")
+fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
+        this.nest(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.nestIfPresent(prop, block)"))
+@Suppress("UNCHECKED_CAST")
+fun <T, N> ValidatorBuilder<T>.constraintIfPresentForNested(prop: KProperty1<T, N?>, block: ValidatorBuilder<N>.() -> Unit): ValidatorBuilder<T> =
+        this.nestIfPresent(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, validator)"))
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEach(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, validator)"))
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, block)"))
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, block)"))
+fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, L?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, validator)"))
+@JvmName("constraintForEachMap")
+fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
+        this.forEach(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, validator)"))
+@JvmName("constraintIfPresentForEachMap")
+fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Map<K, V>?>, validator: Validator<V>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, block)"))
+@JvmName("constraintForEachMap")
+fun <T, K, V> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, block)"))
+@JvmName("constraintIfPresentForEachMap")
+fun <T, K, V> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Map<K, V>?>, block: ValidatorBuilder<V>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, validator)"))
+@JvmName("constraintForEachArray")
+fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEach(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, validator)"))
+@JvmName("constraintIfPresentForEachArray")
+fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Array<E>?>, validator: Validator<E>): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, validator)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEach(prop, block)"))
+@JvmName("constraintForEachArray")
+fun <T, E> ValidatorBuilder<T>.constraintForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEach(prop, block)
+
+@Deprecated(message = "", replaceWith = ReplaceWith("this.forEachIfPresent(prop, block)"))
+@JvmName("constraintIfPresentForEachArray")
+fun <T, E> ValidatorBuilder<T>.constraintIfPresentForEach(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
+        this.forEachIfPresent(prop, block)

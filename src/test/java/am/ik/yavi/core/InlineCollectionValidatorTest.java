@@ -28,13 +28,12 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 	@Override
 	public Validator<FormWithCollection> validator() {
 		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses",
+				.forEach(FormWithCollection::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraintForNested(Address::country, "country",
-										Country.validator())
-								.constraintIfPresentForNested(Address::phoneNumber,
-										"phoneNumber", PhoneNumber.validator()))
+								.nest(Address::country, "country", Country.validator())
+								.nestIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
 	}
 
@@ -42,13 +41,12 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithCollection> validator = Validator
 				.builder(FormWithCollection.class) //
-				.constraintIfPresentForEach(FormWithCollection::getAddresses, "addresses",
+				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
-								.constraintForNested(Address::country, "country",
-										Country.validator())
-								.constraintIfPresentForNested(Address::phoneNumber,
-										"phoneNumber", PhoneNumber.validator()))
+								.nest(Address::country, "country", Country.validator())
+								.nestIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
 				.build();
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);

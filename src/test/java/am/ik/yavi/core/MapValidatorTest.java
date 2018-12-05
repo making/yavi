@@ -27,23 +27,21 @@ import am.ik.yavi.PhoneNumber;
 public class MapValidatorTest extends AbstractMapValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraintForNested(Address::country, "country", Country.validator())
-			.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-					PhoneNumber.validator())
+			.nest(Address::country, "country", Country.validator())
+			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 
 	@Override
 	public Validator<FormWithMap> validator() {
 		return Validator.builder(FormWithMap.class) //
-				.constraintForEach(FormWithMap::getAddresses, "addresses",
-						addressValidator)
+				.forEach(FormWithMap::getAddresses, "addresses", addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithMap> validator = Validator.builder(FormWithMap.class) //
-				.constraintIfPresentForEach(FormWithMap::getAddresses, "addresses",
+				.forEachIfPresent(FormWithMap::getAddresses, "addresses",
 						addressValidator)
 				.build();
 		FormWithMap form = new FormWithMap(null);

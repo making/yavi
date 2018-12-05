@@ -27,23 +27,21 @@ import am.ik.yavi.PhoneNumber;
 public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraintForNested(Address::country, "country", Country.validator())
-			.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-					PhoneNumber.validator())
+			.nest(Address::country, "country", Country.validator())
+			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 
 	@Override
 	public Validator<FormWithArray> validator() {
 		return Validator.builder(FormWithArray.class) //
-				.constraintForEach(FormWithArray::getAddresses, "addresses",
-						addressValidator)
+				.forEach(FormWithArray::getAddresses, "addresses", addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithArray> validator = Validator.builder(FormWithArray.class) //
-				.constraintIfPresentForEach(FormWithArray::getAddresses, "addresses",
+				.forEachIfPresent(FormWithArray::getAddresses, "addresses",
 						addressValidator)
 				.build();
 		FormWithArray form = new FormWithArray(null);

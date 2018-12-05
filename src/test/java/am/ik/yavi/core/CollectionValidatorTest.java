@@ -31,16 +31,14 @@ import am.ik.yavi.core.ValidatorBuilder.ToCharSequence;
 public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.constraintForNested(Address::country, "country", Country.validator())
-			.constraintIfPresentForNested(Address::phoneNumber, "phoneNumber",
-					PhoneNumber.validator())
+			.nest(Address::country, "country", Country.validator())
+			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 
 	@Override
 	public Validator<FormWithCollection> validator() {
 		return Validator.builder(FormWithCollection.class) //
-				.constraintForEach(FormWithCollection::getAddresses, "addresses",
-						addressValidator)
+				.forEach(FormWithCollection::getAddresses, "addresses", addressValidator)
 				.build();
 	}
 
@@ -48,7 +46,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithCollection> validator = Validator
 				.builder(FormWithCollection.class) //
-				.constraintIfPresentForEach(FormWithCollection::getAddresses, "addresses",
+				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
 						addressValidator)
 				.build();
 		FormWithCollection form = new FormWithCollection(null);
@@ -64,7 +62,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 						c -> c.notNull().lessThanOrEqual(2))
 				.build();
 		Validator<Foo> validator = Validator.builder(Foo.class)
-				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isTrue();
 	}
@@ -77,7 +75,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 						c -> c.notNull().lessThanOrEqual(2))
 				.build();
 		Validator<Foo> validator = Validator.builder(Foo.class)
-				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
@@ -100,7 +98,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 						c -> c.notNull().lessThanOrEqual(2))
 				.build();
 		Validator<Foo> validator = Validator.builder(Foo.class)
-				.constraintForEach(Foo::getTexts, "texts", stringValidator).build();
+				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
