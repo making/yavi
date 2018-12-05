@@ -856,4 +856,23 @@ class YaviTest {
         violations = validator.validate(demo, groupB)
         Assertions.assertThat(violations.isValid).isTrue()
     }
+
+    @Test
+    fun onObject() {
+        val validator = Validator.builder<DemoNestedIfPresent>()
+                .constraintOnObject(DemoNestedIfPresent::x) { notNull() }
+                .build()
+
+        var demo = DemoNestedIfPresent(DemoString("foo"))
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoNestedIfPresent(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        val violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be null""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("object.notNull")
+    }
 }

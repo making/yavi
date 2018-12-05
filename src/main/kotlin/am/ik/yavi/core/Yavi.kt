@@ -109,6 +109,9 @@ fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, FloatArray?>, block: 
 fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, DoubleArray?>, block: DoubleArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraint(prop, prop.name) { it.apply(block) }
 
+fun <T, E> ValidatorBuilder<T>.constraintOnObject(prop: KProperty1<T, E?>, block: ObjectConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =
+        this.constraintOnObject(prop, prop.name) { it.apply(block) }
+
 fun <T, N> ValidatorBuilder<T>.constraintForNested(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
         this.constraintForNested(prop, prop.name, validator)
 
