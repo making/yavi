@@ -17,6 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.*;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
@@ -28,13 +29,13 @@ import am.ik.yavi.message.MessageFormatter;
  * @author Toshiaki Maki
  */
 public final class Validator<T> {
-	final List<ConstraintPredicates<T, ?>> predicatesList;
+	private final List<ConstraintPredicates<T, ?>> predicatesList;
 	private final String messageKeySeparator;
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators;
 	private final MessageFormatter messageFormatter;
 
-	Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
+	public Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
@@ -262,5 +263,9 @@ public final class Validator<T> {
 		System.arraycopy(args, 0, pad, 1, args.length);
 		pad[pad.length - 1] = violatedValue.value();
 		return pad;
+	}
+
+	public List<ConstraintPredicates<T, ?>> getPredicatesList() {
+		return predicatesList;
 	}
 }

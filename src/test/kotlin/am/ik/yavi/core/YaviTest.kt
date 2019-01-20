@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core
 
+import am.ik.yavi.builder.*
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.math.BigDecimal

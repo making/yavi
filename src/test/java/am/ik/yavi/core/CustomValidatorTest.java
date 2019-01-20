@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.builder.CustomConstraint;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
