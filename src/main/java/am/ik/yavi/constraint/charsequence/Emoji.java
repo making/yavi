@@ -31,8 +31,7 @@ public class Emoji {
 	private static final String ELF = new String(new int[] { 0x1F9DD }, 0, 1);
 	private static final String SKUL_AND_CROSSBONES = new String(new int[] { 0x2620 }, 0,
 			1);
-	private static final String EMOJI_MANUAL_WHEELCHAIR = new String(
-			new int[] { 0x1F9BD }, 0, 1);
+	private static final String PERSON = new String(new int[] { 0x1F9D1 }, 0, 1);
 	private static final String ENGLAND = new String(
 			new int[] { 0x1F3F4, 0xE0067, 0xE0062, 0xE0065, 0xE006E, 0xE0067, 0xE007F },
 			0, 7);
@@ -61,7 +60,7 @@ public class Emoji {
 				.replaceAll("([" + WHITE_UP_POINTING_INDEX + "-" + ELF + "]["
 						+ SKIN_TONE_SELECTOR_RANGE + "])", DUMMY_REPLACEMENT)
 				.replaceAll("([" + ZERO_WIDTH_JOINER + "][" + SKUL_AND_CROSSBONES + "-"
-						+ EMOJI_MANUAL_WHEELCHAIR + "])", "") //
+						+ PERSON + "])", "") //
 				.replaceAll("([" + REGIONAL_INDICATOR_SYMBOL_LETTER_RANGE + "]{2})",
 						DUMMY_REPLACEMENT) //
 				.replace(ENGLAND, DUMMY_REPLACEMENT) //
