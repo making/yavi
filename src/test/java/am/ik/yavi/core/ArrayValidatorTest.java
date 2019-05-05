@@ -15,7 +15,6 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +23,7 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithArray;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.builder.ValidatorBuilder;
 
 public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
@@ -31,13 +31,6 @@ public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
-
-	@Override
-	public Validator<FormWithArray> validator() {
-		return ValidatorBuilder.of(FormWithArray.class) //
-				.forEach(FormWithArray::getAddresses, "addresses", addressValidator)
-				.build();
-	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
@@ -48,5 +41,12 @@ public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 		FormWithArray form = new FormWithArray(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Override
+	public Validator<FormWithArray> validator() {
+		return ValidatorBuilder.of(FormWithArray.class) //
+				.forEach(FormWithArray::getAddresses, "addresses", addressValidator)
+				.build();
 	}
 }

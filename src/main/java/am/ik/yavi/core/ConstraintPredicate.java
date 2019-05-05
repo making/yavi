@@ -23,11 +23,15 @@ import java.util.function.Supplier;
 import am.ik.yavi.jsr305.Nullable;
 
 public class ConstraintPredicate<V> {
-	private final Predicate<V> predicate;
-	private final String messageKey;
-	private final String defaultMessageFormat;
 	private final Supplier<Object[]> args;
+
+	private final String defaultMessageFormat;
+
+	private final String messageKey;
+
 	private final NullAs nullAs;
+
+	private final Predicate<V> predicate;
 
 	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage,
 			Supplier<Object[]> args, NullAs nullAs) {
@@ -61,31 +65,16 @@ public class ConstraintPredicate<V> {
 		};
 	}
 
-	public final Predicate<V> predicate() {
-		return this.predicate;
-	}
-
-	public Optional<ViolatedValue> violatedValue(@Nullable V target) {
-		Predicate<V> predicate = this.predicate();
-		if (predicate.test(target)) {
-			return Optional.empty();
-		}
-		else {
-			// violated
-			return Optional.of(new ViolatedValue(target));
-		}
-	}
-
-	public String messageKey() {
-		return this.messageKey;
+	public Supplier<Object[]> args() {
+		return this.args;
 	}
 
 	public final String defaultMessageFormat() {
 		return this.defaultMessageFormat;
 	}
 
-	public Supplier<Object[]> args() {
-		return this.args;
+	public String messageKey() {
+		return this.messageKey;
 	}
 
 	public final NullAs nullValidity() {
@@ -99,5 +88,20 @@ public class ConstraintPredicate<V> {
 	public ConstraintPredicate<V> overrideMessage(String message) {
 		return new ConstraintPredicate<>(this.predicate, this.messageKey, message,
 				this.args, this.nullAs);
+	}
+
+	public final Predicate<V> predicate() {
+		return this.predicate;
+	}
+
+	public Optional<ViolatedValue> violatedValue(@Nullable V target) {
+		Predicate<V> predicate = this.predicate();
+		if (predicate.test(target)) {
+			return Optional.empty();
+		}
+		else {
+			// violated
+			return Optional.of(new ViolatedValue(target));
+		}
 	}
 }

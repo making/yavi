@@ -28,31 +28,26 @@ public class MapConstraintTest {
 	private MapConstraint<Map<String, String>, String, String> constraint = new MapConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<Map<String, String>> predicate = constraint.notEmpty().predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
-		assertThat(predicate.test(Collections.emptyMap())).isFalse();
-	}
-
-	@Test
-	public void lessThan() {
-		Predicate<Map<String, String>> predicate = constraint.lessThan(2).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
-		assertThat(predicate.test(new HashMap<String, String>() {
-			{
-				put("a", "b");
-				put("b", "c");
-			}
-		})).isFalse();
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<Map<String, String>> predicate = constraint.lessThanOrEqual(2)
+	public void containsKey() {
+		Predicate<Map<String, String>> predicate = constraint.containsKey("foo")
 				.predicates().peekFirst().predicate();
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
+		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
+	}
+
+	@Test
+	public void containsValue() {
+		Predicate<Map<String, String>> predicate = constraint.containsValue("bar")
+				.predicates().peekFirst().predicate();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
+		assertThat(predicate.test(Collections.singletonMap("foo", "baz"))).isFalse();
+	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<Map<String, String>> predicate = constraint.fixedSize(2).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
 				put("a", "b");
@@ -108,26 +103,23 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void containsValue() {
-		Predicate<Map<String, String>> predicate = constraint.containsValue("bar")
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
-		assertThat(predicate.test(Collections.singletonMap("foo", "baz"))).isFalse();
-	}
-
-	@Test
-	public void containsKey() {
-		Predicate<Map<String, String>> predicate = constraint.containsKey("foo")
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
-		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
-	}
-
-	@Test
-	public void fixedSize() {
-		Predicate<Map<String, String>> predicate = constraint.fixedSize(2).predicates()
+	public void lessThan() {
+		Predicate<Map<String, String>> predicate = constraint.lessThan(2).predicates()
 				.peekFirst().predicate();
-		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
+		assertThat(predicate.test(new HashMap<String, String>() {
+			{
+				put("a", "b");
+				put("b", "c");
+			}
+		})).isFalse();
+	}
+
+	@Test
+	public void lessThanOrEqual() {
+		Predicate<Map<String, String>> predicate = constraint.lessThanOrEqual(2)
+				.predicates().peekFirst().predicate();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
 				put("a", "b");
@@ -141,5 +133,13 @@ public class MapConstraintTest {
 				put("c", "d");
 			}
 		})).isFalse();
+	}
+
+	@Test
+	public void notEmpty() {
+		Predicate<Map<String, String>> predicate = constraint.notEmpty().predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
+		assertThat(predicate.test(Collections.emptyMap())).isFalse();
 	}
 }

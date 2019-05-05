@@ -26,14 +26,6 @@ public final class Pair<F, S> {
 		this.second = second;
 	}
 
-	public F first() {
-		return this.first;
-	}
-
-	public S second() {
-		return this.second;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -44,8 +36,16 @@ public final class Pair<F, S> {
 		return Objects.equals(first, pair.first) && Objects.equals(second, pair.second);
 	}
 
+	public F first() {
+		return this.first;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(first, second);
+	}
+
+	public S second() {
+		return this.second;
 	}
 }

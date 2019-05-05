@@ -16,7 +16,6 @@
 package am.ik.yavi.core;
 
 import java.util.Deque;
-import java.util.List;
 import java.util.function.Function;
 
 import am.ik.yavi.jsr305.Nullable;

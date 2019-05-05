@@ -21,12 +21,17 @@ import java.util.Locale;
 import am.ik.yavi.message.MessageFormatter;
 
 public class ConstraintViolation {
-	private final String name;
-	private final String messageKey;
-	private final String defaultMessageFormat;
 	private final Object[] args;
-	private final MessageFormatter messageFormatter;
+
+	private final String defaultMessageFormat;
+
 	private final Locale locale;
+
+	private final MessageFormatter messageFormatter;
+
+	private final String messageKey;
+
+	private final String name;
 
 	public ConstraintViolation(String name, String messageKey,
 			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter,
@@ -39,37 +44,33 @@ public class ConstraintViolation {
 		this.locale = locale;
 	}
 
-	public String message() {
-		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat,
-				this.args, this.locale);
-	}
-
-	public String name() {
-		return this.name;
-	}
-
-	public String messageKey() {
-		return this.messageKey;
+	public Object[] args() {
+		return this.args;
 	}
 
 	public String defaultMessageFormat() {
 		return this.defaultMessageFormat;
 	}
 
-	public Object[] args() {
-		return this.args;
-	}
-
-	public Object violatedValue() {
-		return this.args[this.args.length - 1];
+	public ViolationDetail detail() {
+		return new ViolationDetail(this.messageKey, this.args, this.message());
 	}
 
 	public Locale locale() {
 		return this.locale;
 	}
 
-	public ViolationDetail detail() {
-		return new ViolationDetail(this.messageKey, this.args, this.message());
+	public String message() {
+		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat,
+				this.args, this.locale);
+	}
+
+	public String messageKey() {
+		return this.messageKey;
+	}
+
+	public String name() {
+		return this.name;
 	}
 
 	@Override
@@ -77,5 +78,9 @@ public class ConstraintViolation {
 		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='"
 				+ messageKey + '\'' + ", defaultMessageFormat='" + defaultMessageFormat
 				+ '\'' + ", args=" + Arrays.toString(args) + '}';
+	}
+
+	public Object violatedValue() {
+		return this.args[this.args.length - 1];
 	}
 }

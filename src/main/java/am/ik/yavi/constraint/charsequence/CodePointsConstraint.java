@@ -40,25 +40,6 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		this.predicates().addAll(delegate.predicates());
 	}
 
-	@Override
-	public CodePointsConstraint<T, E> cast() {
-		return this;
-	}
-
-	public CodePointsConstraint<T, E> asWhiteList() {
-		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
-			Set<Integer> excludedFromWhiteList = this.codePoints.allExcludedCodePoints(x);
-			if (excludedFromWhiteList.isEmpty()) {
-				return Optional.empty();
-			}
-			List<String> excludedList = excludedFromWhiteList.stream() //
-					.map(i -> new String(new int[] { i }, 0, 1)) //
-					.collect(Collectors.toList());
-			return Optional.of(new ViolatedValue(excludedList));
-		}, CODE_POINTS_ALL_INCLUDED, () -> new Object[] {}, VALID));
-		return this;
-	}
-
 	public CodePointsConstraint<T, E> asBlackList() {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
 			Set<Integer> excludedFromBlackList = this.codePoints.allExcludedCodePoints(x);
@@ -83,23 +64,43 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	public CodePointsConstraint<T, E> asWhiteList() {
+		this.predicates().add(ConstraintPredicate.withViolatedValue(x -> {
+			Set<Integer> excludedFromWhiteList = this.codePoints.allExcludedCodePoints(x);
+			if (excludedFromWhiteList.isEmpty()) {
+				return Optional.empty();
+			}
+			List<String> excludedList = excludedFromWhiteList.stream() //
+					.map(i -> new String(new int[] { i }, 0, 1)) //
+					.collect(Collectors.toList());
+			return Optional.of(new ViolatedValue(excludedList));
+		}, CODE_POINTS_ALL_INCLUDED, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	@Override
+	public CodePointsConstraint<T, E> cast() {
+		return this;
+	}
+
 	public static class Builder<T, E extends CharSequence> {
-		private final CharSequenceConstraint<T, E> delegate;
 		private final CodePoints<E> codePoints;
+
+		private final CharSequenceConstraint<T, E> delegate;
 
 		public Builder(CharSequenceConstraint<T, E> delegate, CodePoints<E> codePoints) {
 			this.delegate = delegate;
 			this.codePoints = codePoints;
 		}
 
-		public CodePointsConstraint<T, E> asWhiteList() {
-			return new CodePointsConstraint<>(this.delegate, this.codePoints)
-					.asWhiteList();
-		}
-
 		public CodePointsConstraint<T, E> asBlackList() {
 			return new CodePointsConstraint<>(this.delegate, this.codePoints)
 					.asBlackList();
+		}
+
+		public CodePointsConstraint<T, E> asWhiteList() {
+			return new CodePointsConstraint<>(this.delegate, this.codePoints)
+					.asWhiteList();
 		}
 	}
 

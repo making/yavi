@@ -25,18 +25,18 @@ public class ObjectConstraintTest {
 	private ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
 
 	@Test
-	public void notNull() {
-		Predicate<String> predicate = constraint.notNull().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("foo")).isTrue();
-		assertThat(predicate.test(null)).isFalse();
-	}
-
-	@Test
 	public void isNull() {
 		Predicate<String> predicate = constraint.isNull().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isFalse();
 		assertThat(predicate.test(null)).isTrue();
+	}
+
+	@Test
+	public void notNull() {
+		Predicate<String> predicate = constraint.notNull().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test("foo")).isTrue();
+		assertThat(predicate.test(null)).isFalse();
 	}
 }

@@ -28,9 +28,13 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
-import static am.ik.yavi.core.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
@@ -66,107 +70,17 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		this.variantOptions = variantOptions;
 	}
 
-	private static String trim(String s) {
-		if (s.length() == 0) {
-			return s;
-		}
-		StringBuilder sb = new StringBuilder(s);
-		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
-			sb.deleteCharAt(0);
-		}
-		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
-			sb.deleteCharAt(sb.length() - 1);
-		}
-		return sb.toString();
-	}
-
-	public CharSequenceConstraint<T, E> variant(
-			Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
-		VariantOptions.Builder builder = VariantOptions.builder();
-		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				this.normalizerForm, opts.apply(builder).build());
-		constraint.predicates().addAll(this.predicates());
-		return constraint;
-	}
-
-	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
-		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				normalizerForm, this.variantOptions);
-		constraint.predicates().addAll(this.predicates());
-		return constraint;
-	}
-
-	protected String normalize(String s) {
-		String str = this.variantOptions.ignored(s);
-		return this.normalizerForm == null ? str
-				: Normalizer.normalize(str, this.normalizerForm);
-	}
-
-	@Override
-	public CharSequenceConstraint<T, E> cast() {
-		return this;
-	}
-
-	@Override
-	protected ToIntFunction<E> size() {
-		return cs -> {
-			String s = this.normalize(cs.toString());
-			return s.codePointCount(0, s.length());
-		};
-	}
-
-	public CharSequenceConstraint<T, E> notBlank() {
-		this.predicates()
-				.add(ConstraintPredicate.of(
-						x -> x != null && trim(x.toString()).length() != 0,
-						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, INVALID));
-		return this;
-	}
-
-	public CharSequenceConstraint<T, E> contains(CharSequence s) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
-				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
-		return this;
-	}
-
-	public CharSequenceConstraint<T, E> email() {
-		this.predicates().add(ConstraintPredicate.of(x -> {
-			if (size().applyAsInt(x) == 0) {
-				return true;
-			}
-			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
-		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
-		return this;
-	}
-
-	public CharSequenceConstraint<T, E> url() {
-		this.predicates().add(ConstraintPredicate.of(x -> {
-			if (size().applyAsInt(x) == 0) {
-				return true;
-			}
-			try {
-				new URL(x.toString());
-				return true;
-			}
-			catch (MalformedURLException e) {
-				return false;
-			}
-		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
-		return this;
-	}
-
-	public CharSequenceConstraint<T, E> pattern(String regex) {
-		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
-				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
-		return this;
-	}
-
 	public ByteSizeConstraint<T, E> asByteArray(Charset charset) {
 		return new ByteSizeConstraint<>(this, charset);
 	}
 
 	public ByteSizeConstraint<T, E> asByteArray() {
 		return this.asByteArray(StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public CharSequenceConstraint<T, E> cast() {
+		return this;
 	}
 
 	public CodePointsConstraint.Builder<T, E> codePoints(CodePoints<E> codePoints) {
@@ -190,7 +104,97 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		});
 	}
 
+	public CharSequenceConstraint<T, E> contains(CharSequence s) {
+		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
+				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
+		return this;
+	}
+
+	public CharSequenceConstraint<T, E> email() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
+		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
 	public EmojiConstraint<T, E> emoji() {
 		return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
+	}
+
+	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
+				normalizerForm, this.variantOptions);
+		constraint.predicates().addAll(this.predicates());
+		return constraint;
+	}
+
+	public CharSequenceConstraint<T, E> notBlank() {
+		this.predicates()
+				.add(ConstraintPredicate.of(
+						x -> x != null && trim(x.toString()).length() != 0,
+						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, INVALID));
+		return this;
+	}
+
+	public CharSequenceConstraint<T, E> pattern(String regex) {
+		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
+				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
+		return this;
+	}
+
+	public CharSequenceConstraint<T, E> url() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			try {
+				new URL(x.toString());
+				return true;
+			}
+			catch (MalformedURLException e) {
+				return false;
+			}
+		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	public CharSequenceConstraint<T, E> variant(
+			Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
+		VariantOptions.Builder builder = VariantOptions.builder();
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
+				this.normalizerForm, opts.apply(builder).build());
+		constraint.predicates().addAll(this.predicates());
+		return constraint;
+	}
+
+	protected String normalize(String s) {
+		String str = this.variantOptions.ignored(s);
+		return this.normalizerForm == null ? str
+				: Normalizer.normalize(str, this.normalizerForm);
+	}
+
+	@Override
+	protected ToIntFunction<E> size() {
+		return cs -> {
+			String s = this.normalize(cs.toString());
+			return s.codePointCount(0, s.length());
+		};
+	}
+
+	private static String trim(String s) {
+		if (s.length() == 0) {
+			return s;
+		}
+		StringBuilder sb = new StringBuilder(s);
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
+			sb.deleteCharAt(0);
+		}
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
 	}
 }

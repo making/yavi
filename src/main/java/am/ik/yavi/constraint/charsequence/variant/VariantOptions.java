@@ -18,9 +18,11 @@ package am.ik.yavi.constraint.charsequence.variant;
 import am.ik.yavi.jsr305.Nullable;
 
 public class VariantOptions {
-	private final StandardizedVariationSequence svs;
-	private final IdeographicVariationSequence ivs;
 	private final MongolianFreeVariationSelector fvs;
+
+	private final IdeographicVariationSequence ivs;
+
+	private final StandardizedVariationSequence svs;
 
 	public VariantOptions(StandardizedVariationSequence svs,
 			IdeographicVariationSequence ivs, MongolianFreeVariationSelector fvs) {
@@ -52,22 +54,18 @@ public class VariantOptions {
 	}
 
 	public static class Builder {
-		private StandardizedVariationSequence svs;
-		private IdeographicVariationSequence ivs;
 		private MongolianFreeVariationSelector fvs;
+
+		private IdeographicVariationSequence ivs;
+
+		private StandardizedVariationSequence svs;
 
 		Builder() {
 			this.ignoreAll();
 		}
 
-		public Builder svs(StandardizedVariationSequence svs) {
-			this.svs = svs;
-			return this;
-		}
-
-		public Builder ivs(IdeographicVariationSequence ivs) {
-			this.ivs = ivs;
-			return this;
+		public VariantOptions build() {
+			return new VariantOptions(this.svs, this.ivs, this.fvs);
 		}
 
 		public Builder fvs(MongolianFreeVariationSelector fvs) {
@@ -82,6 +80,11 @@ public class VariantOptions {
 			return this;
 		}
 
+		public Builder ivs(IdeographicVariationSequence ivs) {
+			this.ivs = ivs;
+			return this;
+		}
+
 		public Builder notIgnoreAll() {
 			this.svs = StandardizedVariationSequence.NOT_IGNORE;
 			this.ivs = IdeographicVariationSequence.NOT_IGNORE;
@@ -89,8 +92,9 @@ public class VariantOptions {
 			return this;
 		}
 
-		public VariantOptions build() {
-			return new VariantOptions(this.svs, this.ivs, this.fvs);
+		public Builder svs(StandardizedVariationSequence svs) {
+			this.svs = svs;
+			return this;
 		}
 	}
 }

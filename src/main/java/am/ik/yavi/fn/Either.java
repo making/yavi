@@ -41,61 +41,12 @@ public final class Either<L, R> {
 		return new Either<>(null, right);
 	}
 
-	public Optional<L> left() {
-		return Optional.ofNullable(this.left);
-	}
-
-	public Optional<R> right() {
-		return Optional.ofNullable(this.right);
-	}
-
-	public L leftOrElseGet(Function<R, L> rightToLeft) {
-		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
-	}
-
-	public R rightOrElseGet(Function<L, R> leftToRight) {
-		return this.right().orElseGet(() -> leftToRight.apply(this.left));
-	}
-
-	public boolean isLeft() {
-		return this.left != null;
-	}
-
-	public boolean isRight() {
-		return this.right != null;
-	}
-
-	public Either<R, L> swap() {
-		return new Either<>(this.right, this.left);
-	}
-
-	public <U> U fold(Function<L, U> leftMapper, Function<R, U> rightMapper) {
-		if (isLeft()) {
-			return leftMapper.apply(this.left);
-		}
-		return rightMapper.apply(this.right);
-	}
-
 	public <X, Y> Either<X, Y> bimap(Function<L, X> leftMapper,
 			Function<R, Y> rightMapper) {
 		if (isLeft()) {
 			return new Either<>(leftMapper.apply(this.left), null);
 		}
 		return new Either<>(null, rightMapper.apply(this.right));
-	}
-
-	public <X> Either<X, R> leftMap(Function<L, X> leftMapper) {
-		if (isLeft()) {
-			return new Either<>(leftMapper.apply(this.left), null);
-		}
-		return new Either<>(null, this.right);
-	}
-
-	public <Y> Either<L, Y> rightMap(Function<R, Y> rightMapper) {
-		if (isRight()) {
-			return new Either<>(null, rightMapper.apply(this.right));
-		}
-		return new Either<>(this.left, null);
 	}
 
 	@Override
@@ -108,8 +59,57 @@ public final class Either<L, R> {
 		return Objects.equals(left, either.left) && Objects.equals(right, either.right);
 	}
 
+	public <U> U fold(Function<L, U> leftMapper, Function<R, U> rightMapper) {
+		if (isLeft()) {
+			return leftMapper.apply(this.left);
+		}
+		return rightMapper.apply(this.right);
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(left, right);
+	}
+
+	public boolean isLeft() {
+		return this.left != null;
+	}
+
+	public boolean isRight() {
+		return this.right != null;
+	}
+
+	public Optional<L> left() {
+		return Optional.ofNullable(this.left);
+	}
+
+	public <X> Either<X, R> leftMap(Function<L, X> leftMapper) {
+		if (isLeft()) {
+			return new Either<>(leftMapper.apply(this.left), null);
+		}
+		return new Either<>(null, this.right);
+	}
+
+	public L leftOrElseGet(Function<R, L> rightToLeft) {
+		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
+	}
+
+	public Optional<R> right() {
+		return Optional.ofNullable(this.right);
+	}
+
+	public <Y> Either<L, Y> rightMap(Function<R, Y> rightMapper) {
+		if (isRight()) {
+			return new Either<>(null, rightMapper.apply(this.right));
+		}
+		return new Either<>(this.left, null);
+	}
+
+	public R rightOrElseGet(Function<L, R> leftToRight) {
+		return this.right().orElseGet(() -> leftToRight.apply(this.left));
+	}
+
+	public Either<R, L> swap() {
+		return new Either<>(this.right, this.left);
 	}
 }

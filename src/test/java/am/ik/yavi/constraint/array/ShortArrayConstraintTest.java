@@ -25,26 +25,18 @@ public class ShortArrayConstraintTest {
 	private ShortArrayConstraint<short[]> constraint = new ShortArrayConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<short[]> predicate = constraint.notEmpty().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
-		assertThat(predicate.test(new short[] {})).isFalse();
-	}
-
-	@Test
-	public void lessThan() {
-		Predicate<short[]> predicate = constraint.lessThan(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
-		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isFalse();
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<short[]> predicate = constraint.lessThanOrEqual(2).predicates()
+	public void contains() {
+		Predicate<short[]> predicate = constraint.contains((short) 100).predicates()
 				.peekFirst().predicate();
-		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
+		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
+		assertThat(predicate.test(new short[] { (short) 101, (short) 102 })).isFalse();
+	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<short[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101, (short) 102 }))
 				.isFalse();
@@ -70,20 +62,28 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void contains() {
-		Predicate<short[]> predicate = constraint.contains((short) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
-		assertThat(predicate.test(new short[] { (short) 101, (short) 102 })).isFalse();
+	public void lessThan() {
+		Predicate<short[]> predicate = constraint.lessThan(2).predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
+		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isFalse();
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<short[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
+	public void lessThanOrEqual() {
+		Predicate<short[]> predicate = constraint.lessThanOrEqual(2).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101, (short) 102 }))
 				.isFalse();
+	}
+
+	@Test
+	public void notEmpty() {
+		Predicate<short[]> predicate = constraint.notEmpty().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
+		assertThat(predicate.test(new short[] {})).isFalse();
 	}
 }

@@ -25,26 +25,18 @@ public class LongArrayConstraintTest {
 	private LongArrayConstraint<long[]> constraint = new LongArrayConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<long[]> predicate = constraint.notEmpty().predicates().peekFirst()
+	public void contains() {
+		Predicate<long[]> predicate = constraint.contains(100L).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new long[] { 100L })).isTrue();
-		assertThat(predicate.test(new long[] {})).isFalse();
+		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
+		assertThat(predicate.test(new long[] { 101L, 102L })).isFalse();
 	}
 
 	@Test
-	public void lessThan() {
-		Predicate<long[]> predicate = constraint.lessThan(2).predicates().peekFirst()
+	public void fixedSize() {
+		Predicate<long[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new long[] { 100L })).isTrue();
-		assertThat(predicate.test(new long[] { 100L, 101L })).isFalse();
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<long[]> predicate = constraint.lessThanOrEqual(2).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(new long[] { 100L })).isTrue();
+		assertThat(predicate.test(new long[] { 100L })).isFalse();
 		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
 		assertThat(predicate.test(new long[] { 100L, 101L, 102L })).isFalse();
 	}
@@ -67,19 +59,27 @@ public class LongArrayConstraintTest {
 	}
 
 	@Test
-	public void contains() {
-		Predicate<long[]> predicate = constraint.contains(100L).predicates().peekFirst()
+	public void lessThan() {
+		Predicate<long[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
-		assertThat(predicate.test(new long[] { 101L, 102L })).isFalse();
+		assertThat(predicate.test(new long[] { 100L })).isTrue();
+		assertThat(predicate.test(new long[] { 100L, 101L })).isFalse();
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<long[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new long[] { 100L })).isFalse();
+	public void lessThanOrEqual() {
+		Predicate<long[]> predicate = constraint.lessThanOrEqual(2).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(new long[] { 100L })).isTrue();
 		assertThat(predicate.test(new long[] { 100L, 101L })).isTrue();
 		assertThat(predicate.test(new long[] { 100L, 101L, 102L })).isFalse();
+	}
+
+	@Test
+	public void notEmpty() {
+		Predicate<long[]> predicate = constraint.notEmpty().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new long[] { 100L })).isTrue();
+		assertThat(predicate.test(new long[] {})).isFalse();
 	}
 }

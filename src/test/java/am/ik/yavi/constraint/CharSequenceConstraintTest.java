@@ -28,40 +28,32 @@ public class CharSequenceConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<String> predicate = constraint.notEmpty().predicates().peekFirst()
+	public void contains() {
+		Predicate<String> predicate = constraint.contains("a").predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test("foo")).isTrue();
-		assertThat(predicate.test("")).isFalse();
+		assertThat(predicate.test("yavi")).isTrue();
+		assertThat(predicate.test("yvi")).isFalse();
 	}
 
 	@Test
-	public void notBlank() {
-		Predicate<String> predicate = constraint.notBlank().predicates().peekFirst()
+	public void email() {
+		Predicate<String> predicate = constraint.email().predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test("foo")).isTrue();
-		assertThat(predicate.test("")).isFalse();
-		assertThat(predicate.test("    ")).isFalse();
-		assertThat(predicate.test("　　　")).isFalse();
+		assertThat(predicate.test("abc@example.com")).isTrue();
+		assertThat(predicate.test("abc@localhost")).isTrue();
+		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
+		assertThat(predicate.test("東京@example.com")).isTrue();
+		assertThat(predicate.test("example.com")).isFalse();
+		assertThat(predicate.test("")).isTrue();
 	}
 
 	@Test
-	public void lessThan() {
-		Predicate<String> predicate = constraint.lessThan(3).predicates().peekFirst()
+	public void fixedSize() {
+		Predicate<String> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
+		assertThat(predicate.test("a")).isFalse();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7田")).isTrue(); // surrogate pair
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isTrue();
-		assertThat(predicate.test("abcd")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7野屋")).isTrue(); // surrogate pair
 	}
 
 	@Test
@@ -84,49 +76,38 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void contains() {
-		Predicate<String> predicate = constraint.contains("a").predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("yavi")).isTrue();
-		assertThat(predicate.test("yvi")).isFalse();
+	public void ignoreFvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.fixedSize(1).predicates().peekFirst().predicate();
+		assertThat(predicate.test("ᠠ᠋")).isTrue();
+		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}
 
 	@Test
-	public void email() {
-		Predicate<String> predicate = constraint.email().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("abc@example.com")).isTrue();
-		assertThat(predicate.test("abc@localhost")).isTrue();
-		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
-		assertThat(predicate.test("東京@example.com")).isTrue();
-		assertThat(predicate.test("example.com")).isFalse();
-		assertThat(predicate.test("")).isTrue();
+	public void ignoreIvsCharacter() {
+		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.fixedSize(1).predicates().peekFirst().predicate();
+		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
+		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
 	}
 
 	@Test
-	public void url() {
-		Predicate<String> predicate = constraint.url().predicates().peekFirst()
+	public void lessThan() {
+		Predicate<String> predicate = constraint.lessThan(3).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test("http://example.com")).isTrue();
-		assertThat(predicate.test("example.com")).isFalse();
-		assertThat(predicate.test("")).isTrue();
-	}
-
-	@Test
-	public void pattern() {
-		Predicate<String> predicate = constraint.pattern("[0-9]{4}").predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test("1234")).isTrue();
-		assertThat(predicate.test("134a")).isFalse();
-	}
-
-	@Test
-	public void fixedSize() {
-		Predicate<String> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("a")).isFalse();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7田")).isTrue(); // surrogate pair
+	}
+
+	@Test
+	public void lessThanOrEqual() {
+		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test("ab")).isTrue();
+		assertThat(predicate.test("abc")).isTrue();
+		assertThat(predicate.test("abcd")).isFalse();
+		assertThat(predicate.test("\uD842\uDFB7野屋")).isTrue(); // surrogate pair
 	}
 
 	@Test
@@ -137,18 +118,30 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void notNormalizeCombiningCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.normalizer(null).fixedSize(3).predicates().peekFirst().predicate();
-		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
+	public void notBlank() {
+		Predicate<String> predicate = constraint.notBlank().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test("foo")).isTrue();
+		assertThat(predicate.test("")).isFalse();
+		assertThat(predicate.test("    ")).isFalse();
+		assertThat(predicate.test("　　　")).isFalse();
 	}
 
 	@Test
-	public void ignoreIvsCharacter() {
+	public void notEmpty() {
+		Predicate<String> predicate = constraint.notEmpty().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test("foo")).isTrue();
+		assertThat(predicate.test("")).isFalse();
+	}
+
+	@Test
+	public void notIgnoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(1).predicates().peekFirst().predicate();
-		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
-		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
+				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
+				.fixedSize(2).predicates().peekFirst().predicate();
+		assertThat(predicate.test("ᠠ᠋")).isTrue();
+		assertThat(predicate.test("ᠰ᠌")).isTrue();
 	}
 
 	@Test
@@ -161,19 +154,26 @@ public class CharSequenceConstraintTest {
 	}
 
 	@Test
-	public void ignoreFvsCharacter() {
+	public void notNormalizeCombiningCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(1).predicates().peekFirst().predicate();
-		assertThat(predicate.test("ᠠ᠋")).isTrue();
-		assertThat(predicate.test("ᠰ᠌")).isTrue();
+				.normalizer(null).fixedSize(3).predicates().peekFirst().predicate();
+		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
 	}
 
 	@Test
-	public void notIgnoreFvsCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
-				.fixedSize(2).predicates().peekFirst().predicate();
-		assertThat(predicate.test("ᠠ᠋")).isTrue();
-		assertThat(predicate.test("ᠰ᠌")).isTrue();
+	public void pattern() {
+		Predicate<String> predicate = constraint.pattern("[0-9]{4}").predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test("1234")).isTrue();
+		assertThat(predicate.test("134a")).isFalse();
+	}
+
+	@Test
+	public void url() {
+		Predicate<String> predicate = constraint.url().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test("http://example.com")).isTrue();
+		assertThat(predicate.test("example.com")).isFalse();
+		assertThat(predicate.test("")).isTrue();
 	}
 }

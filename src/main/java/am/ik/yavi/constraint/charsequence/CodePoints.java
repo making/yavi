@@ -15,7 +15,11 @@
  */
 package am.ik.yavi.constraint.charsequence;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import am.ik.yavi.jsr305.Nullable;
 
@@ -25,33 +29,7 @@ public interface CodePoints<E extends CharSequence> {
 	Set<Integer> allExcludedCodePoints(E s);
 
 	@FunctionalInterface
-	interface CodePointsSet<E extends CharSequence> extends CodePoints<E> {
-		Set<Integer> asSet();
-
-		@Override
-		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
-			if (s == null || s.length() == 0) {
-				return Collections.emptySet();
-			}
-			String str = s.toString();
-			Set<Integer> excludedCodePoints = new LinkedHashSet<>();
-			int len = str.length();
-			Integer codePoint;
-			Set<Integer> set = this.asSet();
-			for (int i = 0; i < len; i += Character.charCount(codePoint)) {
-				codePoint = str.codePointAt(i);
-				if (!set.contains(codePoint)) {
-					excludedCodePoints.add(codePoint);
-				}
-			}
-			return excludedCodePoints;
-		}
-	}
-
-	@FunctionalInterface
 	interface CodePointsRanges<E extends CharSequence> extends CodePoints<E> {
-		List<Range> asRanges();
-
 		@Override
 		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
 			if (s == null || s.length() == 0) {
@@ -78,6 +56,32 @@ public interface CodePoints<E extends CharSequence> {
 			return excludedCodePoints;
 		}
 
+		List<Range> asRanges();
+
+	}
+
+	@FunctionalInterface
+	interface CodePointsSet<E extends CharSequence> extends CodePoints<E> {
+		@Override
+		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
+			if (s == null || s.length() == 0) {
+				return Collections.emptySet();
+			}
+			String str = s.toString();
+			Set<Integer> excludedCodePoints = new LinkedHashSet<>();
+			int len = str.length();
+			Integer codePoint;
+			Set<Integer> set = this.asSet();
+			for (int i = 0; i < len; i += Character.charCount(codePoint)) {
+				codePoint = str.codePointAt(i);
+				if (!set.contains(codePoint)) {
+					excludedCodePoints.add(codePoint);
+				}
+			}
+			return excludedCodePoints;
+		}
+
+		Set<Integer> asSet();
 	}
 
 	interface Range {
@@ -103,11 +107,6 @@ public interface CodePoints<E extends CharSequence> {
 				}
 
 				@Override
-				public int hashCode() {
-					return Objects.hash(begin, end);
-				}
-
-				@Override
 				public boolean equals(Object obj) {
 					if (!(obj instanceof Range)) {
 						return false;
@@ -115,6 +114,11 @@ public interface CodePoints<E extends CharSequence> {
 					Range range = (Range) obj;
 					return Objects.equals(begin, range.begin())
 							&& Objects.equals(end, range.end());
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(begin, end);
 				}
 			};
 		}

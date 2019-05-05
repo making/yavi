@@ -19,9 +19,11 @@ import java.util.Deque;
 import java.util.function.Function;
 
 public class ConstraintPredicates<T, V> {
-	private final Function<T, V> toValue;
 	private final String name;
+
 	private final Deque<ConstraintPredicate<V>> predicates;
+
+	private final Function<T, V> toValue;
 
 	public ConstraintPredicates(Function<T, V> toValue, String name,
 			Deque<ConstraintPredicate<V>> predicates) {
@@ -30,15 +32,15 @@ public class ConstraintPredicates<T, V> {
 		this.predicates = predicates;
 	}
 
-	public final Function<T, V> toValue() {
-		return this.toValue;
-	}
-
 	public final String name() {
 		return this.name;
 	}
 
 	public final Deque<ConstraintPredicate<V>> predicates() {
 		return this.predicates;
+	}
+
+	public final Function<T, V> toValue() {
+		return this.toValue;
 	}
 }

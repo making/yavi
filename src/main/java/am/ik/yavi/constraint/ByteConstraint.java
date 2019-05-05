@@ -21,6 +21,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstraint<T>> {
 	@Override
+	public ByteConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Byte> isGreaterThan(Byte min) {
 		return x -> x > min;
 	}
@@ -38,10 +43,5 @@ public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstr
 	@Override
 	protected Predicate<Byte> isLessThanOrEqual(Byte max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public ByteConstraint<T> cast() {
-		return this;
 	}
 }

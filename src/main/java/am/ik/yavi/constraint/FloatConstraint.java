@@ -22,6 +22,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 public class FloatConstraint<T>
 		extends NumericConstraintBase<T, Float, FloatConstraint<T>> {
 	@Override
+	public FloatConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Float> isGreaterThan(Float min) {
 		return x -> x > min;
 	}
@@ -39,10 +44,5 @@ public class FloatConstraint<T>
 	@Override
 	protected Predicate<Float> isLessThanOrEqual(Float max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public FloatConstraint<T> cast() {
-		return this;
 	}
 }

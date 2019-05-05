@@ -22,37 +22,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EitherTest {
 
 	@Test
-	public void left() {
+	public void bimapForLeft() {
 		Either<String, Integer> either = Either.left("Hello");
-		assertThat(either.isLeft()).isTrue();
-		assertThat(either.isRight()).isFalse();
-		assertThat(either.left().get()).isEqualTo("Hello");
+		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
+		assertThat(bimap).isEqualTo(Either.left("HelloHello"));
 	}
 
 	@Test
-	public void right() {
+	public void bimapForRight() {
 		Either<String, Integer> either = Either.right(100);
-		assertThat(either.isLeft()).isFalse();
-		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isEqualTo(100);
-	}
-
-	@Test
-	public void leftOrElseGet() {
-		Either<String, Integer> either = Either.right(100);
-		assertThat(either.leftOrElseGet(String::valueOf)).isEqualTo("100");
-	}
-
-	@Test
-	public void rightOrElseGet() {
-		Either<String, Integer> either = Either.left("100");
-		assertThat(either.rightOrElseGet(Integer::valueOf)).isEqualTo(100);
-	}
-
-	@Test
-	public void swap() {
-		Either<String, Integer> either = Either.left("Hello");
-		assertThat(either.swap()).isEqualTo(Either.right("Hello"));
+		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
+		assertThat(bimap).isEqualTo(Either.right(200));
 	}
 
 	@Test
@@ -70,17 +50,17 @@ public class EitherTest {
 	}
 
 	@Test
-	public void bimapForLeft() {
+	public void left() {
 		Either<String, Integer> either = Either.left("Hello");
-		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
-		assertThat(bimap).isEqualTo(Either.left("HelloHello"));
+		assertThat(either.isLeft()).isTrue();
+		assertThat(either.isRight()).isFalse();
+		assertThat(either.left().get()).isEqualTo("Hello");
 	}
 
 	@Test
-	public void bimapForRight() {
+	public void leftOrElseGet() {
 		Either<String, Integer> either = Either.right(100);
-		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
-		assertThat(bimap).isEqualTo(Either.right(200));
+		assertThat(either.leftOrElseGet(String::valueOf)).isEqualTo("100");
 	}
 
 	@Test
@@ -95,5 +75,25 @@ public class EitherTest {
 		Either<String, Integer> either = Either.right(100);
 		Either<String, Integer> map = either.rightMap(i -> i * 2);
 		assertThat(map).isEqualTo(Either.right(200));
+	}
+
+	@Test
+	public void right() {
+		Either<String, Integer> either = Either.right(100);
+		assertThat(either.isLeft()).isFalse();
+		assertThat(either.isRight()).isTrue();
+		assertThat(either.right().get()).isEqualTo(100);
+	}
+
+	@Test
+	public void rightOrElseGet() {
+		Either<String, Integer> either = Either.left("100");
+		assertThat(either.rightOrElseGet(Integer::valueOf)).isEqualTo(100);
+	}
+
+	@Test
+	public void swap() {
+		Either<String, Integer> either = Either.left("Hello");
+		assertThat(either.swap()).isEqualTo(Either.right("Hello"));
 	}
 }

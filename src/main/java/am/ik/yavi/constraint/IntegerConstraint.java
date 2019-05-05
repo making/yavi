@@ -22,6 +22,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 public class IntegerConstraint<T>
 		extends NumericConstraintBase<T, Integer, IntegerConstraint<T>> {
 	@Override
+	public IntegerConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Integer> isGreaterThan(Integer min) {
 		return x -> x > min;
 	}
@@ -39,10 +44,5 @@ public class IntegerConstraint<T>
 	@Override
 	protected Predicate<Integer> isLessThanOrEqual(Integer max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public IntegerConstraint<T> cast() {
-		return this;
 	}
 }

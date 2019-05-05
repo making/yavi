@@ -23,6 +23,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 public class BigIntegerConstraint<T>
 		extends NumericConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
 	@Override
+	public BigIntegerConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<BigInteger> isGreaterThan(BigInteger min) {
 		return x -> x.compareTo(min) > 0;
 	}
@@ -40,10 +45,5 @@ public class BigIntegerConstraint<T>
 	@Override
 	protected Predicate<BigInteger> isLessThanOrEqual(BigInteger max) {
 		return x -> x.compareTo(max) <= 0;
-	}
-
-	@Override
-	public BigIntegerConstraint<T> cast() {
-		return this;
 	}
 }

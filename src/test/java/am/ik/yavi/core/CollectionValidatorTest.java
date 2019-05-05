@@ -36,13 +36,6 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 
-	@Override
-	public Validator<FormWithCollection> validator() {
-		return ValidatorBuilder.of(FormWithCollection.class) //
-				.forEach(FormWithCollection::getAddresses, "addresses", addressValidator)
-				.build();
-	}
-
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithCollection> validator = ValidatorBuilder
@@ -52,19 +45,6 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 				.build();
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);
-		assertThat(violations.isValid()).isTrue();
-	}
-
-	@Test
-	public void stringListAllValid() throws Exception {
-		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
-		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
-				.constraint((ToCharSequence<String, String>) o -> o, "value",
-						c -> c.notNull().lessThanOrEqual(2))
-				.build();
-		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
-				.forEach(Foo::getTexts, "texts", stringValidator).build();
-		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isTrue();
 	}
 
@@ -112,6 +92,26 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		assertThat(violations.get(2).message()).isEqualTo(
 				"The size of \"texts[2]\" must be less than or equal to 2. The given size is 3");
 		assertThat(violations.get(2).messageKey()).isEqualTo("container.lessThanOrEqual");
+	}
+
+	@Test
+	public void stringListAllValid() throws Exception {
+		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
+		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
+				.constraint((ToCharSequence<String, String>) o -> o, "value",
+						c -> c.notNull().lessThanOrEqual(2))
+				.build();
+		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
+				.forEach(Foo::getTexts, "texts", stringValidator).build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Override
+	public Validator<FormWithCollection> validator() {
+		return ValidatorBuilder.of(FormWithCollection.class) //
+				.forEach(FormWithCollection::getAddresses, "addresses", addressValidator)
+				.build();
 	}
 
 	static class Foo {

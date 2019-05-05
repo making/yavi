@@ -26,13 +26,13 @@ public class ViolatedValue {
 		this.value = value;
 	}
 
-	@Nullable
-	public Object value() {
-		return this.value;
-	}
-
 	@Override
 	public String toString() {
 		return Objects.toString(this.value, "");
+	}
+
+	@Nullable
+	public Object value() {
+		return this.value;
 	}
 }

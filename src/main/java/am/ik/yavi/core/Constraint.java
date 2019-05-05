@@ -24,9 +24,13 @@ import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
-	Deque<ConstraintPredicate<V>> predicates();
-
 	C cast();
+
+	default C isNull() {
+		this.predicates().add(ConstraintPredicate.of(Objects::isNull, OBJECT_IS_NULL,
+				() -> new Object[] {}, NullAs.INVALID));
+		return this.cast();
+	}
 
 	default C message(String message) {
 		ConstraintPredicate<V> predicate = this.predicates().pollLast();
@@ -52,16 +56,14 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 		return this.cast();
 	}
 
-	default C isNull() {
-		this.predicates().add(ConstraintPredicate.of(Objects::isNull, OBJECT_IS_NULL,
-				() -> new Object[] {}, NullAs.INVALID));
-		return this.cast();
-	}
-
 	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				() -> new Object[] {}, NullAs.VALID));
 		return this.cast();
+	}
+
+	default C predicate(CustomConstraint<V> constraint) {
+		return this.predicate(constraint, constraint);
 	}
 
 	default C predicateNullable(Predicate<V> predicate,
@@ -71,11 +73,9 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 		return this.cast();
 	}
 
-	default C predicate(CustomConstraint<V> constraint) {
-		return this.predicate(constraint, constraint);
-	}
-
 	default C predicateNullable(CustomConstraint<V> constraint) {
 		return this.predicateNullable(constraint, constraint);
 	}
+
+	Deque<ConstraintPredicate<V>> predicates();
 }

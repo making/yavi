@@ -26,9 +26,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EmojiTest {
 
 	@Test
+	public void elf() {
+		String emoji = "🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿";
+		assertThat(emoji.length()).isEqualTo(22);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+	}
+
+	@Test
 	public void emoji() {
 		String emoji = "I am 👱🏿";
 		assertThat(emoji.length()).isEqualTo(9);
+		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+	}
+
+	@Test
+	public void emoji11All() throws Exception {
+		verifyEmojiAll("emoji-test-11.txt");
+	}
+
+	@Test
+	public void emoji12All() throws Exception {
+		verifyEmojiAll("emoji-test-12.txt");
+	}
+
+	@Test
+	public void family() {
+		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
+		assertThat(emoji.length()).isEqualTo(42);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
@@ -40,34 +64,10 @@ public class EmojiTest {
 	}
 
 	@Test
-	public void family() {
-		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
-		assertThat(emoji.length()).isEqualTo(42);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
-	}
-
-	@Test
-	public void elf() {
-		String emoji = "🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿";
-		assertThat(emoji.length()).isEqualTo(22);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
-	}
-
-	@Test
 	public void subdivisionFlags() {
 		String emoji = "🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢󠁷󠁬󠁳󠁿";
 		assertThat(emoji.length()).isEqualTo(42);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(3);
-	}
-
-	@Test
-	public void emoji11All() throws Exception {
-		verifyEmojiAll("emoji-test-11.txt");
-	}
-
-	@Test
-	public void emoji12All() throws Exception {
-		verifyEmojiAll("emoji-test-12.txt");
 	}
 
 	void verifyEmojiAll(String file) throws Exception {

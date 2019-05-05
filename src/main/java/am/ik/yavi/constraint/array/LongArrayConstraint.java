@@ -18,8 +18,8 @@ package am.ik.yavi.constraint.array;
 import java.util.Arrays;
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -32,15 +32,15 @@ public class LongArrayConstraint<T>
 		return this;
 	}
 
-	@Override
-	protected ToIntFunction<long[]> size() {
-		return x -> x.length;
-	}
-
 	public LongArrayConstraint<T> contains(long v) {
 		this.predicates()
 				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
 						ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
 		return this;
+	}
+
+	@Override
+	protected ToIntFunction<long[]> size() {
+		return x -> x.length;
 	}
 }

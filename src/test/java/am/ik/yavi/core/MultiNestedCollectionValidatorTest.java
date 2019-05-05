@@ -44,18 +44,6 @@ public class MultiNestedCollectionValidatorTest {
 			.forEach(NestedFormWithCollection::getForms, "forms", formValidator).build();
 
 	@Test
-	public void valid() {
-		NestedFormWithCollection form = new NestedFormWithCollection(
-				Arrays.asList(new FormWithCollection(Arrays.asList(
-						new Address(new Country("JP"), "tokyo",
-								new PhoneNumber("0123456789")),
-						new Address(new Country("JP"), "osaka",
-								new PhoneNumber("0123456788"))))));
-		ConstraintViolations violations = validator.validate(form);
-		assertThat(violations.isValid()).isTrue();
-	}
-
-	@Test
 	public void invalid() {
 		NestedFormWithCollection form = new NestedFormWithCollection(
 				Arrays.asList(new FormWithCollection(Arrays.asList(
@@ -73,5 +61,17 @@ public class MultiNestedCollectionValidatorTest {
 		assertThat(violations.get(1).name()).isEqualTo("forms[0].addresses[1].street");
 		assertThat(violations.get(1).message())
 				.isEqualTo("\"forms[0].addresses[1].street\" must not be blank");
+	}
+
+	@Test
+	public void valid() {
+		NestedFormWithCollection form = new NestedFormWithCollection(
+				Arrays.asList(new FormWithCollection(Arrays.asList(
+						new Address(new Country("JP"), "tokyo",
+								new PhoneNumber("0123456789")),
+						new Address(new Country("JP"), "osaka",
+								new PhoneNumber("0123456788"))))));
+		ConstraintViolations violations = validator.validate(form);
+		assertThat(violations.isValid()).isTrue();
 	}
 }

@@ -26,18 +26,6 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
 public class InlineArrayValidatorTest extends AbstractArrayValidatorTest {
-	@Override
-	public Validator<FormWithArray> validator() {
-		return ValidatorBuilder.of(FormWithArray.class) //
-				.forEach(FormWithArray::getAddresses, "addresses",
-						b -> b.constraint(Address::street, "street",
-								c -> c.notBlank().lessThan(32))
-								.nest(Address::country, "country", Country.validator())
-								.nestIfPresent(Address::phoneNumber, "phoneNumber",
-										PhoneNumber.validator()))
-				.build();
-	}
-
 	@Test
 	public void nullCollectionValid() throws Exception {
 		Validator<FormWithArray> validator = ValidatorBuilder.of(FormWithArray.class) //
@@ -51,5 +39,17 @@ public class InlineArrayValidatorTest extends AbstractArrayValidatorTest {
 		FormWithArray form = new FormWithArray(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Override
+	public Validator<FormWithArray> validator() {
+		return ValidatorBuilder.of(FormWithArray.class) //
+				.forEach(FormWithArray::getAddresses, "addresses",
+						b -> b.constraint(Address::street, "street",
+								c -> c.notBlank().lessThan(32))
+								.nest(Address::country, "country", Country.validator())
+								.nestIfPresent(Address::phoneNumber, "phoneNumber",
+										PhoneNumber.validator()))
+				.build();
 	}
 }

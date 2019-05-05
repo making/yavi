@@ -21,6 +21,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstraint<T>> {
 	@Override
+	public LongConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Long> isGreaterThan(Long min) {
 		return x -> x > min;
 	}
@@ -38,10 +43,5 @@ public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstr
 	@Override
 	protected Predicate<Long> isLessThanOrEqual(Long max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public LongConstraint<T> cast() {
-		return this;
 	}
 }

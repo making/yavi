@@ -29,20 +29,20 @@ public class ConstraintGroupTest {
 	}
 
 	@Test
+	public void testEnum() {
+		ConstraintCondition<?> condition = CustomGroup.FOO.toCondition();
+		assertThat(condition.test(null, CustomGroup.FOO)).isTrue();
+		assertThat(condition.test(null, CustomGroup.BAR)).isFalse();
+		assertThat(condition.test(null, ConstraintGroup.of("FOO"))).isTrue();
+	}
+
+	@Test
 	public void toCondition() {
 		ConstraintGroup cg = ConstraintGroup.of("foo");
 		ConstraintCondition<?> condition = cg.toCondition();
 		assertThat(condition.test(null, ConstraintGroup.of("foo"))).isTrue();
 		assertThat(condition.test(null, ConstraintGroup.of("Foo"))).isFalse();
 		assertThat(condition.test(null, ConstraintGroup.of("bar"))).isFalse();
-	}
-
-	@Test
-	public void testEnum() {
-		ConstraintCondition<?> condition = CustomGroup.FOO.toCondition();
-		assertThat(condition.test(null, CustomGroup.FOO)).isTrue();
-		assertThat(condition.test(null, CustomGroup.BAR)).isFalse();
-		assertThat(condition.test(null, ConstraintGroup.of("FOO"))).isTrue();
 	}
 
 	enum CustomGroup implements ConstraintGroup {

@@ -25,26 +25,18 @@ public class CharArrayConstraintTest {
 	private CharArrayConstraint<char[]> constraint = new CharArrayConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<char[]> predicate = constraint.notEmpty().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
-		assertThat(predicate.test(new char[] {})).isFalse();
-	}
-
-	@Test
-	public void lessThan() {
-		Predicate<char[]> predicate = constraint.lessThan(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
-		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isFalse();
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<char[]> predicate = constraint.lessThanOrEqual(2).predicates()
+	public void contains() {
+		Predicate<char[]> predicate = constraint.contains((char) 100).predicates()
 				.peekFirst().predicate();
-		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
+		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
+		assertThat(predicate.test(new char[] { (char) 101, (char) 102 })).isFalse();
+	}
+
+	@Test
+	public void fixedSize() {
+		Predicate<char[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new char[] { (char) 100 })).isFalse();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101, (char) 102 }))
 				.isFalse();
@@ -70,20 +62,28 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void contains() {
-		Predicate<char[]> predicate = constraint.contains((char) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
-		assertThat(predicate.test(new char[] { (char) 101, (char) 102 })).isFalse();
+	public void lessThan() {
+		Predicate<char[]> predicate = constraint.lessThan(2).predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
+		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isFalse();
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<char[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new char[] { (char) 100 })).isFalse();
+	public void lessThanOrEqual() {
+		Predicate<char[]> predicate = constraint.lessThanOrEqual(2).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101, (char) 102 }))
 				.isFalse();
+	}
+
+	@Test
+	public void notEmpty() {
+		Predicate<char[]> predicate = constraint.notEmpty().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
+		assertThat(predicate.test(new char[] {})).isFalse();
 	}
 }

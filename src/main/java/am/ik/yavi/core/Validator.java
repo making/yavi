@@ -34,11 +34,15 @@ import am.ik.yavi.message.MessageFormatter;
  * @author Toshiaki Maki
  */
 public final class Validator<T> {
-	private final List<ConstraintPredicates<T, ?>> predicatesList;
-	private final String messageKeySeparator;
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
+
 	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators;
+
 	private final MessageFormatter messageFormatter;
+
+	private final String messageKeySeparator;
+
+	private final List<ConstraintPredicates<T, ?>> predicatesList;
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
@@ -78,17 +82,8 @@ public final class Validator<T> {
 		return ValidatorBuilder.of(clazz);
 	}
 
-	/**
-	 * Validates all constraints on {@code target}. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 * 
-	 * @param target target to validate
-	 * @return constraint violations
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public ConstraintViolations validate(T target) {
-		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
+	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
+		this.predicatesList.forEach(action);
 	}
 
 	/**
@@ -131,8 +126,102 @@ public final class Validator<T> {
 		return this.validate(target, "", -1, locale, constraintGroup);
 	}
 
-	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
-		this.predicatesList.forEach(action);
+	/**
+	 * Validates all constraints on {@code target}. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 *
+	 * @param target target to validate
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	public ConstraintViolations validate(T target) {
+		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.<br>
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 *
+	 * @param target target to validate
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	public Either<ConstraintViolations, T> validateToEither(T target) {
+		return this.validateToEither(target, Locale.getDefault(),
+				ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 *
+	 * @param target target to validate
+	 * @param constraintGroup constraint group to validate
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	public Either<ConstraintViolations, T> validateToEither(T target,
+			ConstraintGroup constraintGroup) {
+		return this.validateToEither(target, Locale.getDefault(), constraintGroup);
+	}
+
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 *
+	 * @param target target to validate
+	 * @param locale the locale targeted for the violation messages.
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
+		return this.validateToEither(target, locale, ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 *
+	 * @param target target to validate
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale,
+			ConstraintGroup constraintGroup) {
+		ConstraintViolations violations = this.validate(target, locale, constraintGroup);
+		if (violations.isValid()) {
+			return Either.right(target);
+		}
+		else {
+			return Either.left(violations);
+		}
+	}
+
+	private String indexedName(String name, String collectionName, int index) {
+		if (index < 0) {
+			return name;
+		}
+		if (name.isEmpty()) {
+			return collectionName + "[" + index + "]";
+		}
+		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
+	}
+
+	private Object[] pad(String name, Object[] args, ViolatedValue violatedValue) {
+		Object[] pad = new Object[args.length + 2];
+		pad[0] = name;
+		System.arraycopy(args, 0, pad, 1, args.length);
+		pad[pad.length - 1] = violatedValue.value();
+		return pad;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -194,90 +283,5 @@ public final class Validator<T> {
 			}
 		});
 		return violations;
-	}
-
-	private String indexedName(String name, String collectionName, int index) {
-		if (index < 0) {
-			return name;
-		}
-		if (name.isEmpty()) {
-			return collectionName + "[" + index + "]";
-		}
-		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
-	}
-
-	/**
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.<br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public Either<ConstraintViolations, T> validateToEither(T target) {
-		return this.validateToEither(target, Locale.getDefault(),
-				ConstraintGroup.DEFAULT);
-	}
-
-	/**
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 *
-	 * @param target target to validate
-	 * @param constraintGroup constraint group to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public Either<ConstraintViolations, T> validateToEither(T target,
-			ConstraintGroup constraintGroup) {
-		return this.validateToEither(target, Locale.getDefault(), constraintGroup);
-	}
-
-	/**
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @param locale the locale targeted for the violation messages.
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
-		return this.validateToEither(target, locale, ConstraintGroup.DEFAULT);
-	}
-
-	/**
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * 
-	 * @param target target to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validate(target, locale, constraintGroup);
-		if (violations.isValid()) {
-			return Either.right(target);
-		}
-		else {
-			return Either.left(violations);
-		}
-	}
-
-	private Object[] pad(String name, Object[] args, ViolatedValue violatedValue) {
-		Object[] pad = new Object[args.length + 2];
-		pad[0] = name;
-		System.arraycopy(args, 0, pad, 1, args.length);
-		pad[pad.length - 1] = violatedValue.value();
-		return pad;
 	}
 }

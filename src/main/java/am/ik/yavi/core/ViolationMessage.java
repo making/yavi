@@ -19,20 +19,20 @@ public interface ViolationMessage {
 	static ViolationMessage of(String messageKey, String defaultMessageFormat) {
 		return new ViolationMessage() {
 			@Override
-			public String messageKey() {
-				return messageKey;
+			public String defaultMessageFormat() {
+				return defaultMessageFormat;
 			}
 
 			@Override
-			public String defaultMessageFormat() {
-				return defaultMessageFormat;
+			public String messageKey() {
+				return messageKey;
 			}
 		};
 	}
 
-	String messageKey();
-
 	String defaultMessageFormat();
+
+	String messageKey();
 
 	enum Default implements ViolationMessage {
 		OBJECT_NOT_NULL("object.notNull", "\"{0}\" must not be null"), //
@@ -81,8 +81,9 @@ public interface ViolationMessage {
 		CODE_POINTS_NOT_INCLUDED("codePoints.asBlackList",
 				"\"{1}\" is/are not allowed for \"{0}\"");
 
-		private final String messageKey;
 		private final String defaultMessageFormat;
+
+		private final String messageKey;
 
 		Default(String messageKey, String defaultMessageFormat) {
 			this.messageKey = messageKey;
@@ -90,13 +91,13 @@ public interface ViolationMessage {
 		}
 
 		@Override
-		public String messageKey() {
-			return this.messageKey;
+		public String defaultMessageFormat() {
+			return this.defaultMessageFormat;
 		}
 
 		@Override
-		public String defaultMessageFormat() {
-			return this.defaultMessageFormat;
+		public String messageKey() {
+			return this.messageKey;
 		}
 	}
 }

@@ -25,18 +25,6 @@ import am.ik.yavi.FormWithArray;
 import am.ik.yavi.PhoneNumber;
 
 public abstract class AbstractArrayValidatorTest {
-	protected abstract Validator<FormWithArray> validator();
-
-	@Test
-	public void valid() throws Exception {
-		Validator<FormWithArray> validator = validator();
-		FormWithArray form = new FormWithArray(new Address[] {
-				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
-				new Address(new Country("JP"), "osaka", new PhoneNumber("0123456788")) });
-		ConstraintViolations violations = validator.validate(form);
-		assertThat(violations.isValid()).isTrue();
-	}
-
 	@Test
 	public void allInvalid() throws Exception {
 		Validator<FormWithArray> validator = validator();
@@ -100,6 +88,19 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
+	public void nullCollectionInValid() throws Exception {
+		Validator<FormWithArray> validator = validator();
+
+		FormWithArray form = new FormWithArray(null);
+		ConstraintViolations violations = validator.validate(form);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"addresses\" must not be null");
+		assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
+	}
+
+	@Test
 	public void nullElement() throws Exception {
 		Validator<FormWithArray> validator = validator();
 
@@ -112,15 +113,14 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
-	public void nullCollectionInValid() throws Exception {
+	public void valid() throws Exception {
 		Validator<FormWithArray> validator = validator();
-
-		FormWithArray form = new FormWithArray(null);
+		FormWithArray form = new FormWithArray(new Address[] {
+				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
+				new Address(new Country("JP"), "osaka", new PhoneNumber("0123456788")) });
 		ConstraintViolations violations = validator.validate(form);
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"addresses\" must not be null");
-		assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
+		assertThat(violations.isValid()).isTrue();
 	}
+
+	protected abstract Validator<FormWithArray> validator();
 }

@@ -15,7 +15,11 @@
  */
 package am.ik.yavi.constraint.charsequence.codepoints;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import am.ik.yavi.constraint.charsequence.CodePoints;
 

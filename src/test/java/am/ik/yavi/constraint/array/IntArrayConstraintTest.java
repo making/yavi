@@ -25,26 +25,18 @@ public class IntArrayConstraintTest {
 	private IntArrayConstraint<int[]> constraint = new IntArrayConstraint<>();
 
 	@Test
-	public void notEmpty() {
-		Predicate<int[]> predicate = constraint.notEmpty().predicates().peekFirst()
+	public void contains() {
+		Predicate<int[]> predicate = constraint.contains(100).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new int[] { 100 })).isTrue();
-		assertThat(predicate.test(new int[] {})).isFalse();
+		assertThat(predicate.test(new int[] { 100, 101 })).isTrue();
+		assertThat(predicate.test(new int[] { 101, 102 })).isFalse();
 	}
 
 	@Test
-	public void lessThan() {
-		Predicate<int[]> predicate = constraint.lessThan(2).predicates().peekFirst()
+	public void fixedSize() {
+		Predicate<int[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new int[] { 100 })).isTrue();
-		assertThat(predicate.test(new int[] { 100, 101 })).isFalse();
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<int[]> predicate = constraint.lessThanOrEqual(2).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(new int[] { 100 })).isTrue();
+		assertThat(predicate.test(new int[] { 100 })).isFalse();
 		assertThat(predicate.test(new int[] { 100, 101 })).isTrue();
 		assertThat(predicate.test(new int[] { 100, 101, 102 })).isFalse();
 	}
@@ -67,19 +59,27 @@ public class IntArrayConstraintTest {
 	}
 
 	@Test
-	public void contains() {
-		Predicate<int[]> predicate = constraint.contains(100).predicates().peekFirst()
+	public void lessThan() {
+		Predicate<int[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
-		assertThat(predicate.test(new int[] { 100, 101 })).isTrue();
-		assertThat(predicate.test(new int[] { 101, 102 })).isFalse();
+		assertThat(predicate.test(new int[] { 100 })).isTrue();
+		assertThat(predicate.test(new int[] { 100, 101 })).isFalse();
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<int[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new int[] { 100 })).isFalse();
+	public void lessThanOrEqual() {
+		Predicate<int[]> predicate = constraint.lessThanOrEqual(2).predicates()
+				.peekFirst().predicate();
+		assertThat(predicate.test(new int[] { 100 })).isTrue();
 		assertThat(predicate.test(new int[] { 100, 101 })).isTrue();
 		assertThat(predicate.test(new int[] { 100, 101, 102 })).isFalse();
+	}
+
+	@Test
+	public void notEmpty() {
+		Predicate<int[]> predicate = constraint.notEmpty().predicates().peekFirst()
+				.predicate();
+		assertThat(predicate.test(new int[] { 100 })).isTrue();
+		assertThat(predicate.test(new int[] {})).isFalse();
 	}
 }

@@ -27,23 +27,14 @@ public class ByteSizeConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
 
 	@Test
-	public void lessThan() {
-		Predicate<String> predicate = constraint.asByteArray().lessThan(3).predicates()
+	public void fixedSize() {
+		Predicate<String> predicate = constraint.asByteArray().fixedSize(4).predicates()
 				.peekFirst().predicate();
-		assertThat(predicate.test("ab")).isTrue();
+		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
 		assertThat(predicate.test("あ")).isFalse(); // 3
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<String> predicate = constraint.asByteArray().lessThanOrEqual(3)
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isTrue();
-		assertThat(predicate.test("abcd")).isFalse();
-		assertThat(predicate.test("あ")).isTrue(); // 3
-		assertThat(predicate.test("あa")).isFalse(); // 4
+		assertThat(predicate.test("あa")).isTrue(); // 4
+		assertThat(predicate.test("\uD842\uDFB7")).isTrue(); // 4
 	}
 
 	@Test
@@ -66,13 +57,22 @@ public class ByteSizeConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<String> predicate = constraint.asByteArray().fixedSize(4).predicates()
+	public void lessThan() {
+		Predicate<String> predicate = constraint.asByteArray().lessThan(3).predicates()
 				.peekFirst().predicate();
-		assertThat(predicate.test("abcd")).isTrue();
+		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
 		assertThat(predicate.test("あ")).isFalse(); // 3
-		assertThat(predicate.test("あa")).isTrue(); // 4
-		assertThat(predicate.test("\uD842\uDFB7")).isTrue(); // 4
+	}
+
+	@Test
+	public void lessThanOrEqual() {
+		Predicate<String> predicate = constraint.asByteArray().lessThanOrEqual(3)
+				.predicates().peekFirst().predicate();
+		assertThat(predicate.test("ab")).isTrue();
+		assertThat(predicate.test("abc")).isTrue();
+		assertThat(predicate.test("abcd")).isFalse();
+		assertThat(predicate.test("あ")).isTrue(); // 3
+		assertThat(predicate.test("あa")).isFalse(); // 4
 	}
 }

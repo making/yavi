@@ -24,11 +24,6 @@ public interface ConstraintGroup {
 	static ConstraintGroup of(String name) {
 		return new ConstraintGroup() {
 			@Override
-			public String name() {
-				return name;
-			}
-
-			@Override
 			public boolean equals(Object obj) {
 				if (!(obj instanceof ConstraintGroup)) {
 					return false;
@@ -40,6 +35,11 @@ public interface ConstraintGroup {
 			@Override
 			public int hashCode() {
 				return Objects.hashCode(this.name());
+			}
+
+			@Override
+			public String name() {
+				return name;
 			}
 		};
 	}

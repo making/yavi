@@ -30,6 +30,21 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 public class CompositeCodePointsTest {
 
 	@Test
+	public void codePointRange() {
+		CodePoints<String> codePoints = new CompositeCodePoints<>(HIRAGANA, KATAKANA);
+		assertThat(codePoints.allExcludedCodePoints("あ")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("い")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("ア")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("イ")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("あア")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("あいアイ")).isEmpty();
+		assertThat(codePoints.allExcludedCodePoints("E")).containsOnly(0x0045);
+		assertThat(codePoints.allExcludedCodePoints("EF")).contains(0x0045, 0x0046);
+		assertThat(codePoints.allExcludedCodePoints("あいアイE")).containsOnly(0x0045);
+		assertThat(codePoints.allExcludedCodePoints("あいアイEF")).contains(0x0045, 0x0046);
+	}
+
+	@Test
 	public void codePointsSet() {
 		CodePointsSet<String> cp1 = () -> new LinkedHashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
@@ -46,21 +61,6 @@ public class CompositeCodePointsTest {
 		assertThat(codePoints.allExcludedCodePoints("EF")).contains(0x0045, 0x0046);
 		assertThat(codePoints.allExcludedCodePoints("ABCDE")).containsOnly(0x0045);
 		assertThat(codePoints.allExcludedCodePoints("ABCDEF")).contains(0x0045, 0x0046);
-	}
-
-	@Test
-	public void codePointRange() {
-		CodePoints<String> codePoints = new CompositeCodePoints<>(HIRAGANA, KATAKANA);
-		assertThat(codePoints.allExcludedCodePoints("あ")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("い")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("ア")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("イ")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("あア")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("あいアイ")).isEmpty();
-		assertThat(codePoints.allExcludedCodePoints("E")).containsOnly(0x0045);
-		assertThat(codePoints.allExcludedCodePoints("EF")).contains(0x0045, 0x0046);
-		assertThat(codePoints.allExcludedCodePoints("あいアイE")).containsOnly(0x0045);
-		assertThat(codePoints.allExcludedCodePoints("あいアイEF")).contains(0x0045, 0x0046);
 	}
 
 	@Test

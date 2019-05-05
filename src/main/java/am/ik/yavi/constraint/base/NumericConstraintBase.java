@@ -17,22 +17,17 @@ package am.ik.yavi.constraint.base;
 
 import java.util.function.Predicate;
 
-import static am.ik.yavi.core.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_GREATER_THAN;
+import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_GREATER_THAN_OR_EQUAL;
+import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_LESS_THAN;
+import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_LESS_THAN_OR_EQUAL;
 
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
-
-	protected abstract Predicate<V> isGreaterThan(V min);
-
-	protected abstract Predicate<V> isGreaterThanOrEqual(V min);
-
-	protected abstract Predicate<V> isLessThan(V max);
-
-	protected abstract Predicate<V> isLessThanOrEqual(V max);
 
 	public C greaterThan(V min) {
 		this.predicates().add(ConstraintPredicate.of(this.isGreaterThan(min),
@@ -57,4 +52,12 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 				NUMERIC_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
 		return cast();
 	}
+
+	protected abstract Predicate<V> isGreaterThan(V min);
+
+	protected abstract Predicate<V> isGreaterThanOrEqual(V min);
+
+	protected abstract Predicate<V> isLessThan(V max);
+
+	protected abstract Predicate<V> isLessThanOrEqual(V max);
 }

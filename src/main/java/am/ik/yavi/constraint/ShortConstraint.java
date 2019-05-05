@@ -22,6 +22,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 public class ShortConstraint<T>
 		extends NumericConstraintBase<T, Short, ShortConstraint<T>> {
 	@Override
+	public ShortConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Short> isGreaterThan(Short min) {
 		return x -> x > min;
 	}
@@ -39,10 +44,5 @@ public class ShortConstraint<T>
 	@Override
 	protected Predicate<Short> isLessThanOrEqual(Short max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public ShortConstraint<T> cast() {
-		return this;
 	}
 }

@@ -16,13 +16,13 @@
 package am.ik.yavi;
 
 public class User {
-	private String name;
+	private Integer age;
 
 	private String email;
 
-	private Integer age;
-
 	private boolean enabled = true;
+
+	private String name;
 
 	public User(String name, String email, Integer age) {
 		this.name = name;
@@ -30,12 +30,12 @@ public class User {
 		this.age = age;
 	}
 
-	public String getName() {
-		return name;
+	public Integer getAge() {
+		return age;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setAge(Integer age) {
+		this.age = age;
 	}
 
 	public String getEmail() {
@@ -46,12 +46,12 @@ public class User {
 		this.email = email;
 	}
 
-	public Integer getAge() {
-		return age;
+	public String getName() {
+		return name;
 	}
 
-	public void setAge(Integer age) {
-		this.age = age;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public boolean isEnabled() {

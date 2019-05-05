@@ -18,9 +18,9 @@ package am.ik.yavi.constraint;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
+import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.MAP_CONTAINS_KEY;
 import static am.ik.yavi.core.ViolationMessage.Default.MAP_CONTAINS_VALUE;
-import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -29,12 +29,13 @@ public class MapConstraint<T, K, V>
 		extends ContainerConstraintBase<T, Map<K, V>, MapConstraint<T, K, V>> {
 
 	@Override
-	protected ToIntFunction<Map<K, V>> size() {
-		return Map::size;
+	public MapConstraint<T, K, V> cast() {
+		return this;
 	}
 
-	@Override
-	public MapConstraint<T, K, V> cast() {
+	public MapConstraint<T, K, V> containsKey(K k) {
+		this.predicates().add(ConstraintPredicate.of(x -> x.containsKey(k),
+				MAP_CONTAINS_KEY, () -> new Object[] { k }, VALID));
 		return this;
 	}
 
@@ -44,9 +45,8 @@ public class MapConstraint<T, K, V>
 		return this;
 	}
 
-	public MapConstraint<T, K, V> containsKey(K k) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.containsKey(k),
-				MAP_CONTAINS_KEY, () -> new Object[] { k }, VALID));
-		return this;
+	@Override
+	protected ToIntFunction<Map<K, V>> size() {
+		return Map::size;
 	}
 }

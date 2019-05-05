@@ -22,6 +22,11 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 public class CharacterConstraint<T>
 		extends NumericConstraintBase<T, Character, CharacterConstraint<T>> {
 	@Override
+	public CharacterConstraint<T> cast() {
+		return this;
+	}
+
+	@Override
 	protected Predicate<Character> isGreaterThan(Character min) {
 		return x -> x > min;
 	}
@@ -39,10 +44,5 @@ public class CharacterConstraint<T>
 	@Override
 	protected Predicate<Character> isLessThanOrEqual(Character max) {
 		return x -> x <= max;
-	}
-
-	@Override
-	public CharacterConstraint<T> cast() {
-		return this;
 	}
 }

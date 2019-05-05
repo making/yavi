@@ -18,19 +18,14 @@ package am.ik.yavi.constraint;
 import java.util.Collection;
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public class CollectionConstraint<T, L extends Collection<E>, E>
 		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
-
-	@Override
-	protected ToIntFunction<L> size() {
-		return Collection::size;
-	}
 
 	@Override
 	public CollectionConstraint<T, L, E> cast() {
@@ -41,5 +36,10 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 		this.predicates().add(ConstraintPredicate.of(x -> x.contains(s),
 				COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
 		return this;
+	}
+
+	@Override
+	protected ToIntFunction<L> size() {
+		return Collection::size;
 	}
 }

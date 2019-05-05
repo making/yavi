@@ -17,8 +17,8 @@ package am.ik.yavi.constraint.array;
 
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -31,11 +31,6 @@ public class CharArrayConstraint<T>
 		return this;
 	}
 
-	@Override
-	protected ToIntFunction<char[]> size() {
-		return x -> x.length;
-	}
-
 	public CharArrayConstraint<T> contains(char v) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			for (char e : x) {
@@ -46,5 +41,10 @@ public class CharArrayConstraint<T>
 			return false;
 		}, ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
 		return this;
+	}
+
+	@Override
+	protected ToIntFunction<char[]> size() {
+		return x -> x.length;
 	}
 }

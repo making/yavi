@@ -32,6 +32,24 @@ import am.ik.yavi.core.ConstraintPredicate;
 public class CodePointsConstraintTest {
 
 	@Test
+	public void allIncludedRange() {
+		CodePointsRanges<String> whiteList = () -> Arrays.asList(
+				Range.of(0x0041/* A */, 0x005A /* Z */),
+				Range.of(0x0061/* a */, 0x007A /* z */));
+
+		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
+
+		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("AbCＤ").get().value())
+				.isEqualTo(Collections.singletonList("Ｄ"));
+		assertThat(predicate.violatedValue("AbあCＤ").get().value())
+				.isEqualTo(Arrays.asList("あ", "Ｄ"));
+	}
+
+	@Test
 	public void allIncludedSet() {
 		CodePointsSet<String> whiteList = () -> new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
@@ -62,21 +80,20 @@ public class CodePointsConstraintTest {
 	}
 
 	@Test
-	public void allIncludedRange() {
-		CodePointsRanges<String> whiteList = () -> Arrays.asList(
-				Range.of(0x0041/* A */, 0x005A /* Z */),
-				Range.of(0x0061/* a */, 0x007A /* z */));
+	public void notIncludedRange() {
+		CodePointsRanges<String> blackList = () -> Arrays.asList(
+				Range.of(0x0041/* A */, 0x0042 /* B */),
+				Range.of(0x0061/* a */, 0x0062 /* b */));
 
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
+				.codePoints(blackList).asBlackList().predicates().peekFirst();
 
-		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbCＤ").get().value())
-				.isEqualTo(Collections.singletonList("Ｄ"));
-		assertThat(predicate.violatedValue("AbあCＤ").get().value())
-				.isEqualTo(Arrays.asList("あ", "Ｄ"));
+		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("cd").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("ABCD").get().value())
+				.isEqualTo(Arrays.asList("A", "B"));
+		assertThat(predicate.violatedValue("AbCD").get().value())
+				.isEqualTo(Arrays.asList("A", "b"));
 	}
 
 	@Test
@@ -94,22 +111,5 @@ public class CodePointsConstraintTest {
 				.isEqualTo(Collections.singletonList("A"));
 		assertThat(predicate.violatedValue("ABCD").get().value())
 				.isEqualTo(Arrays.asList("A", "B"));
-	}
-
-	@Test
-	public void notIncludedRange() {
-		CodePointsRanges<String> blackList = () -> Arrays.asList(
-				Range.of(0x0041/* A */, 0x0042 /* B */),
-				Range.of(0x0061/* a */, 0x0062 /* b */));
-
-		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(blackList).asBlackList().predicates().peekFirst();
-
-		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("cd").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ABCD").get().value())
-				.isEqualTo(Arrays.asList("A", "B"));
-		assertThat(predicate.violatedValue("AbCD").get().value())
-				.isEqualTo(Arrays.asList("A", "b"));
 	}
 }

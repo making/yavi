@@ -25,17 +25,6 @@ import am.ik.yavi.PhoneNumber;
 
 public abstract class AbstractNestedValidatorTest {
 
-	abstract protected Validator<Address> validator();
-
-	@Test
-	public void valid() {
-		Validator<Address> addressValidator = validator();
-		Address address = new Address(new Country("JP"), "tokyo",
-				new PhoneNumber("0123456789"));
-		ConstraintViolations violations = addressValidator.validate(address);
-		assertThat(violations.isValid()).isTrue();
-	}
-
 	@Test
 	public void invalid() {
 		Validator<Address> addressValidator = validator();
@@ -69,4 +58,15 @@ public abstract class AbstractNestedValidatorTest {
 		assertThat(violations.get(1).message()).isEqualTo("\"country\" must not be null");
 		assertThat(violations.get(1).messageKey()).isEqualTo("object.notNull");
 	}
+
+	@Test
+	public void valid() {
+		Validator<Address> addressValidator = validator();
+		Address address = new Address(new Country("JP"), "tokyo",
+				new PhoneNumber("0123456789"));
+		ConstraintViolations violations = addressValidator.validate(address);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	abstract protected Validator<Address> validator();
 }

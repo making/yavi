@@ -25,28 +25,6 @@ import am.ik.yavi.builder.ValidatorBuilder;
 
 public class CustomValidatorTest {
 
-	// This logic is written in
-	// http://en.wikipedia.org/wiki/International_Standard_Book_Number
-	static boolean isISBN13(String isbn) {
-		if (isbn.length() != 13) {
-			return false;
-		}
-		int check = 0;
-		try {
-			for (int i = 0; i < 12; i += 2) {
-				check += Integer.parseInt(isbn.substring(i, i + 1));
-			}
-			for (int i = 1; i < 12; i += 2) {
-				check += Integer.parseInt(isbn.substring(i, i + 1)) * 3;
-			}
-			check += Integer.parseInt(isbn.substring(12));
-		}
-		catch (NumberFormatException e) {
-			return false;
-		}
-		return check % 10 == 0;
-	}
-
 	@Test
 	public void predicate() {
 		Validator<Book> validator = ValidatorBuilder.<Book> of() //
@@ -54,6 +32,36 @@ public class CustomValidatorTest {
 						.predicate(CustomValidatorTest::isISBN13, //
 								ViolationMessage.of("custom.isbn13",
 										"\"{0}\" must be ISBN13 format")))
+				.build();
+		{
+			ConstraintViolations violations = validator
+					.validate(new Book("9784777519699"));
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			ConstraintViolations violations = validator
+					.validate(new Book("1111111111111"));
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
+		}
+		{
+			ConstraintViolations violations = validator.validate(new Book(null));
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"isbn\" must not be null");
+			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
+		}
+	}
+
+	@Test
+	public void predicateCustom() {
+		Validator<Book> validator = ValidatorBuilder.<Book> of() //
+				.constraint(Book::isbn, "isbn", c -> c.notNull() //
+						.predicate(IsbnConstraint.SINGLETON))
 				.build();
 		{
 			ConstraintViolations violations = validator
@@ -112,36 +120,6 @@ public class CustomValidatorTest {
 	}
 
 	@Test
-	public void predicateCustom() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
-				.constraint(Book::isbn, "isbn", c -> c.notNull() //
-						.predicate(IsbnConstraint.SINGLETON))
-				.build();
-		{
-			ConstraintViolations violations = validator
-					.validate(new Book("9784777519699"));
-			assertThat(violations.isValid()).isTrue();
-		}
-		{
-			ConstraintViolations violations = validator
-					.validate(new Book("1111111111111"));
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must be ISBN13 format");
-			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
-		}
-		{
-			ConstraintViolations violations = validator.validate(new Book(null));
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must not be null");
-			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
-		}
-	}
-
-	@Test
 	public void range() throws Exception {
 		Validator<Range> validator = ValidatorBuilder.<Range> of() //
 				.constraintOnObject(r -> r, "range", c -> c.notNull() //
@@ -150,6 +128,27 @@ public class CustomValidatorTest {
 							return range.getFrom() < range.getTo();
 						}, ViolationMessage.of("custom.range",
 								"\"from\" must be less than \"to\"")))
+				.build();
+		{
+			Range range = new Range(0, 10);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isTrue();
+		}
+		{
+			Range range = new Range(11, 10);
+			ConstraintViolations violations = validator.validate(range);
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations.size()).isEqualTo(1);
+			assertThat(violations.get(0).message())
+					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+		}
+	}
+
+	@Test
+	public void rangeConstraintOnTarget() throws Exception {
+		Validator<Range> validator = ValidatorBuilder.<Range> of() //
+				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
 				.build();
 		{
 			Range range = new Range(0, 10);
@@ -189,33 +188,34 @@ public class CustomValidatorTest {
 		}
 	}
 
-	@Test
-	public void rangeConstraintOnTarget() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
-				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
-				.build();
-		{
-			Range range = new Range(0, 10);
-			ConstraintViolations violations = validator.validate(range);
-			assertThat(violations.isValid()).isTrue();
+	// This logic is written in
+	// http://en.wikipedia.org/wiki/International_Standard_Book_Number
+	static boolean isISBN13(String isbn) {
+		if (isbn.length() != 13) {
+			return false;
 		}
-		{
-			Range range = new Range(11, 10);
-			ConstraintViolations violations = validator.validate(range);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"from\" must be less than \"to\"");
-			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+		int check = 0;
+		try {
+			for (int i = 0; i < 12; i += 2) {
+				check += Integer.parseInt(isbn.substring(i, i + 1));
+			}
+			for (int i = 1; i < 12; i += 2) {
+				check += Integer.parseInt(isbn.substring(i, i + 1)) * 3;
+			}
+			check += Integer.parseInt(isbn.substring(12));
 		}
+		catch (NumberFormatException e) {
+			return false;
+		}
+		return check % 10 == 0;
 	}
 
 	enum IsbnConstraint implements CustomConstraint<String> {
 		SINGLETON;
 
 		@Override
-		public boolean test(String s) {
-			return isISBN13(s);
+		public String defaultMessageFormat() {
+			return "\"{0}\" must be ISBN13 format";
 		}
 
 		@Override
@@ -224,8 +224,8 @@ public class CustomValidatorTest {
 		}
 
 		@Override
-		public String defaultMessageFormat() {
-			return "\"{0}\" must be ISBN13 format";
+		public boolean test(String s) {
+			return isISBN13(s);
 		}
 	}
 
@@ -233,13 +233,13 @@ public class CustomValidatorTest {
 		SINGLETON;
 
 		@Override
-		public String messageKey() {
-			return "custom.range";
+		public String defaultMessageFormat() {
+			return "\"from\" must be less than \"to\"";
 		}
 
 		@Override
-		public String defaultMessageFormat() {
-			return "\"from\" must be less than \"to\"";
+		public String messageKey() {
+			return "custom.range";
 		}
 
 		@Override

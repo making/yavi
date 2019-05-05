@@ -68,11 +68,24 @@ import am.ik.yavi.message.SimpleMessageFormatter;
 
 public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
-	private final String messageKeySeparator;
-	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
+
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
+
 	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators = new ArrayList<>();
+
+	private final String messageKeySeparator;
+
+	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
+
 	private MessageFormatter messageFormatter;
+
+	public ValidatorBuilder() {
+		this(DEFAULT_SEPARATOR);
+	}
+
+	public ValidatorBuilder(String messageKeySeparator) {
+		this.messageKeySeparator = messageKeySeparator;
+	}
 
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
@@ -92,17 +105,11 @@ public class ValidatorBuilder<T> {
 		return new ValidatorBuilder<>();
 	}
 
-	public ValidatorBuilder() {
-		this(DEFAULT_SEPARATOR);
-	}
-
-	public ValidatorBuilder(String messageKeySeparator) {
-		this.messageKeySeparator = messageKeySeparator;
-	}
-
-	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
-		this.messageFormatter = messageFormatter;
-		return this;
+	public Validator<T> build() {
+		return new Validator<>(messageKeySeparator, this.predicatesList,
+				this.collectionValidators, this.conditionalValidators,
+				this.messageFormatter == null ? new SimpleMessageFormatter()
+						: this.messageFormatter);
 	}
 
 	public <E extends CharSequence> ValidatorBuilder<T> constraint(ToCharSequence<T, E> f,
@@ -217,213 +224,160 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
-			ViolationMessage violationMessage) {
-		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
-		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
-				() -> new Object[] { name }, NullAs.INVALID));
-		this.predicatesList
-				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
-		return this;
-	}
-
-	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
-			String messageKey, String defaultMessage) {
-		return this.constraintOnTarget(predicate, name,
-				ViolationMessage.of(messageKey, defaultMessage));
-	}
-
-	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint,
-			String name) {
-		return this.constraintOnTarget(customConstraint, name, customConstraint);
-	}
-
-	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, E> f, String name,
-			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
-		return this.constraint(f, name, c, ObjectConstraint::new);
-	}
-
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			Validator<N> validator) {
-		return this.nest(nested, name, validator, NullAs.INVALID);
-	}
-
-	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
-			Validator<N> validator) {
-		return this.nest(nested, name, validator, NullAs.VALID);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			Validator<N> validator, NullAs nullAs) {
-		if (!nullAs.skipNull()) {
-			this.constraintOnObject(nested, name, Constraint::notNull);
-		}
-		validator.forEachPredicates(predicates -> {
-			String nestedName = name + this.messageKeySeparator + predicates.name();
-			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
-					this.toNestedValue(nested, predicates), nestedName,
-					predicates.predicates(), nested);
-			this.predicatesList.add(constraintPredicates);
-		});
-		return this;
-	}
-
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			ValidatorBuilderConverter<N> converter) {
-		return this.nest(nested, name, converter, NullAs.INVALID);
-	}
-
-	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
-			ValidatorBuilderConverter<N> converter) {
-		return this.nest(nested, name, converter, NullAs.VALID);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			ValidatorBuilderConverter<N> converter, NullAs nullAs) {
-		if (!nullAs.skipNull()) {
-			this.constraintOnObject(nested, name, Constraint::notNull);
-		}
-		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
-		builder.predicatesList.forEach(predicates -> {
-			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
-					this.toNestedValue(nested, predicates),
-					name + ValidatorBuilder.this.messageKeySeparator + predicates.name(),
-					predicates.predicates(), nested);
-			this.predicatesList.add(constraintPredicates);
-		});
-		return this;
-	}
-
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.forEach(toCollection, name, validator, NullAs.INVALID);
+		return this.forEach(toCollection, name, validator);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.forEach(toCollection, name, validator, NullAs.VALID);
-	}
-
-	protected final <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
-			NullAs nullAs) {
-		if (!nullAs.skipNull()) {
-			this.constraintOnObject(toCollection, name, Constraint::notNull);
-		}
-		this.collectionValidators
-				.add(new CollectionValidator<>(toCollection, name, validator));
-		return this;
-	}
-
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
 			ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter) {
-		return this.forEach(toCollection, name, converter, NullAs.INVALID);
+		return this.forEach(toCollection, name, converter);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
-			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter) {
-		return this.forEach(toCollection, name, converter, NullAs.VALID);
-	}
-
-	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
-		if (!nullAs.skipNull()) {
-			this.constraintOnObject(toCollection, name, Constraint::notNull);
-		}
-		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
-		this.collectionValidators
-				.add(new CollectionValidator<>(toCollection, name, builder.build()));
-		return this;
-	}
-
-	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name,
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
 			Validator<V> validator) {
-		return this.forEach(this.toMapToCollection(toMap), name, validator);
+		return this.forEach(toMap, name, validator);
 	}
 
-	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name,
-			Validator<V> validator) {
-		return this.forEachIfPresent(this.toMapToCollection(toMap), name, validator);
-	}
-
-	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name,
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
 			ValidatorBuilderConverter<V> converter) {
-		return this.forEach(this.toMapToCollection(toMap), name, converter);
+		return this.forEach(toMap, name, converter);
 	}
 
-	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name,
-			ValidatorBuilderConverter<V> converter) {
-		return this.forEachIfPresent(this.toMapToCollection(toMap), name, converter);
-	}
-
-	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
-			Validator<E> validator) {
-		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
-				validator);
-	}
-
-	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
 			String name, Validator<E> validator) {
-		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
-				validator);
+		return this.forEach(toObjectArray, name, validator);
 	}
 
-	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
-			ValidatorBuilderConverter<E> converter) {
-		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
-				converter);
-	}
-
-	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
+	/**
+	 * Deprecated in favor of {@code forEach}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
 			String name, ValidatorBuilderConverter<E> converter) {
-		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
-				converter);
+		return this.forEach(toObjectArray, name, converter);
 	}
 
-	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
-			ConstraintPredicates<N, ?> predicates) {
-		return (T target) -> {
-			N nestedValue = nested.apply(target);
-			if (nestedValue == null) {
-				return null;
-			}
-			return predicates.toValue().apply(nestedValue);
-		};
+	/**
+	 * Deprecated in favor of {@code nest}
+	 */
+	@Deprecated
+	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
+			Validator<N> validator) {
+		return this.nest(nested, name, validator);
 	}
 
-	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
-			ToMap<T, K, V> toMap) {
-		return t -> {
-			Map<K, V> map = toMap.apply(t);
-			if (map == null) {
-				return null;
-			}
-			return map.values();
-		};
+	/**
+	 * Deprecated in favor of {@code nest}
+	 */
+	@Deprecated
+	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
+			ValidatorBuilderConverter<N> converter) {
+		return this.nest(nested, name, converter);
 	}
 
-	private <E> ToCollection<T, Collection<E>, E> toObjectArrayToCollection(
-			ToObjectArray<T, E> toObjectArray) {
-		return t -> {
-			E[] array = toObjectArray.apply(t);
-			if (array == null) {
-				return null;
-			}
-			return Arrays.asList(array);
-		};
+	/**
+	 * Deprecated in favor of {@link #constraintOnObject(Function, String, Function)}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintForObject(Function<T, E> f, String name,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
+		return this.constraintOnObject(f, name, c);
 	}
 
-	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(
-			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
-		C constraint = supplier.get();
-		Deque<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
-		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
-		return this;
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+		return this.forEachIfPresent(toCollection, name, validator);
+	}
+
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
+			ToCollection<T, L, E> toCollection, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEachIfPresent(toCollection, name, converter);
+	}
+
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
+			String name, Validator<V> validator) {
+		return this.forEachIfPresent(toMap, name, validator);
+	}
+
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
+			String name, ValidatorBuilderConverter<V> converter) {
+		return this.forEachIfPresent(toMap, name, converter);
+	}
+
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
+			ToObjectArray<T, E> toObjectArray, String name, Validator<E> validator) {
+		return this.forEachIfPresent(toObjectArray, name, validator);
+	}
+
+	/**
+	 * Deprecated in favor of {@code forEachIfPresent}
+	 */
+	@Deprecated
+	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
+			ToObjectArray<T, E> toObjectArray, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEachIfPresent(toObjectArray, name, converter);
+	}
+
+	/**
+	 * Deprecated in favor of {@code nestIfPresent}
+	 */
+	@Deprecated
+	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
+			String name, Validator<N> validator) {
+		return this.nestIfPresent(nested, name, validator);
+	}
+
+	/**
+	 * Deprecated in favor of {@code nestIfPresent}
+	 */
+	@Deprecated
+	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
+			String name, ValidatorBuilderConverter<N> converter) {
+		return this.nestIfPresent(nested, name, converter);
 	}
 
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
@@ -449,26 +403,263 @@ public class ValidatorBuilder<T> {
 		return this.constraintOnCondition(group.toCondition(), converter);
 	}
 
-	public Validator<T> build() {
-		return new Validator<>(messageKeySeparator, this.predicatesList,
-				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter == null ? new SimpleMessageFormatter()
-						: this.messageFormatter);
+	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, E> f, String name,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
+		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
 
-	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
+			ViolationMessage violationMessage) {
+		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
+		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
+				() -> new Object[] { name }, NullAs.INVALID));
+		this.predicatesList
+				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
+		return this;
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
+			String messageKey, String defaultMessage) {
+		return this.constraintOnTarget(predicate, name,
+				ViolationMessage.of(messageKey, defaultMessage));
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint,
+			String name) {
+		return this.constraintOnTarget(customConstraint, name, customConstraint);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+		return this.forEach(toCollection, name, validator, NullAs.INVALID);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+			ToCollection<T, L, E> toCollection, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEach(toCollection, name, converter, NullAs.INVALID);
+	}
+
+	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name,
+			Validator<V> validator) {
+		return this.forEach(this.toMapToCollection(toMap), name, validator);
+	}
+
+	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name,
+			ValidatorBuilderConverter<V> converter) {
+		return this.forEach(this.toMapToCollection(toMap), name, converter);
+	}
+
+	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
+			Validator<E> validator) {
+		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
+				validator);
+	}
+
+	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
+				converter);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+		return this.forEach(toCollection, name, validator, NullAs.VALID);
+	}
+
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
+			ToCollection<T, L, E> toCollection, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEach(toCollection, name, converter, NullAs.VALID);
+	}
+
+	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name,
+			Validator<V> validator) {
+		return this.forEachIfPresent(this.toMapToCollection(toMap), name, validator);
+	}
+
+	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name,
+			ValidatorBuilderConverter<V> converter) {
+		return this.forEachIfPresent(this.toMapToCollection(toMap), name, converter);
+	}
+
+	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
+			String name, Validator<E> validator) {
+		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
+				validator);
+	}
+
+	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
+			String name, ValidatorBuilderConverter<E> converter) {
+		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
+				converter);
+	}
+
+	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
+		this.messageFormatter = messageFormatter;
+		return this;
+	}
+
+	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
+			Validator<N> validator) {
+		return this.nest(nested, name, validator, NullAs.INVALID);
+	}
+
+	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
+			ValidatorBuilderConverter<N> converter) {
+		return this.nest(nested, name, converter, NullAs.INVALID);
+	}
+
+	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
+			Validator<N> validator) {
+		return this.nest(nested, name, validator, NullAs.VALID);
+	}
+
+	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
+			ValidatorBuilderConverter<N> converter) {
+		return this.nest(nested, name, converter, NullAs.VALID);
+	}
+
+	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(
+			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
+		C constraint = supplier.get();
+		Deque<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
+		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
+		return this;
+	}
+
+	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+			ToCollection<T, L, E> toCollection, String name,
+			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
+			this.constraintOnObject(toCollection, name, Constraint::notNull);
+		}
+		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
+		this.collectionValidators
+				.add(new CollectionValidator<>(toCollection, name, builder.build()));
+		return this;
+	}
+
+	protected final <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
+			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
+			NullAs nullAs) {
+		if (!nullAs.skipNull()) {
+			this.constraintOnObject(toCollection, name, Constraint::notNull);
+		}
+		this.collectionValidators
+				.add(new CollectionValidator<>(toCollection, name, validator));
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
+			ValidatorBuilderConverter<N> converter, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
+			this.constraintOnObject(nested, name, Constraint::notNull);
+		}
+		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
+		builder.predicatesList.forEach(predicates -> {
+			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
+					this.toNestedValue(nested, predicates),
+					name + ValidatorBuilder.this.messageKeySeparator + predicates.name(),
+					predicates.predicates(), nested);
+			this.predicatesList.add(constraintPredicates);
+		});
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
+			Validator<N> validator, NullAs nullAs) {
+		if (!nullAs.skipNull()) {
+			this.constraintOnObject(nested, name, Constraint::notNull);
+		}
+		validator.forEachPredicates(predicates -> {
+			String nestedName = name + this.messageKeySeparator + predicates.name();
+			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
+					this.toNestedValue(nested, predicates), nestedName,
+					predicates.predicates(), nested);
+			this.predicatesList.add(constraintPredicates);
+		});
+		return this;
+	}
+
+	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
+			ToMap<T, K, V> toMap) {
+		return t -> {
+			Map<K, V> map = toMap.apply(t);
+			if (map == null) {
+				return null;
+			}
+			return map.values();
+		};
+	}
+
+	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
+			ConstraintPredicates<N, ?> predicates) {
+		return (T target) -> {
+			N nestedValue = nested.apply(target);
+			if (nestedValue == null) {
+				return null;
+			}
+			return predicates.toValue().apply(nestedValue);
+		};
+	}
+
+	private <E> ToCollection<T, Collection<E>, E> toObjectArrayToCollection(
+			ToObjectArray<T, E> toObjectArray) {
+		return t -> {
+			E[] array = toObjectArray.apply(t);
+			if (array == null) {
+				return null;
+			}
+			return Arrays.asList(array);
+		};
+	}
+
+	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
+	}
+
+	public interface ToBigInteger<T> extends Function<T, BigInteger> {
 	}
 
 	public interface ToBoolean<T> extends Function<T, Boolean> {
 	}
 
-	public interface ToCharacter<T> extends Function<T, Character> {
+	public interface ToBooleanArray<T> extends Function<T, boolean[]> {
 	}
 
 	public interface ToByte<T> extends Function<T, Byte> {
 	}
 
-	public interface ToShort<T> extends Function<T, Short> {
+	public interface ToByteArray<T> extends Function<T, byte[]> {
+	}
+
+	public interface ToCharArray<T> extends Function<T, char[]> {
+	}
+
+	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	}
+
+	public interface ToCharacter<T> extends Function<T, Character> {
+	}
+
+	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, L> {
+	}
+
+	public interface ToDouble<T> extends Function<T, Double> {
+	}
+
+	public interface ToDoubleArray<T> extends Function<T, double[]> {
+	}
+
+	public interface ToFloat<T> extends Function<T, Float> {
+	}
+
+	public interface ToFloatArray<T> extends Function<T, float[]> {
+	}
+
+	public interface ToIntArray<T> extends Function<T, int[]> {
 	}
 
 	public interface ToInteger<T> extends Function<T, Integer> {
@@ -477,19 +668,7 @@ public class ValidatorBuilder<T> {
 	public interface ToLong<T> extends Function<T, Long> {
 	}
 
-	public interface ToFloat<T> extends Function<T, Float> {
-	}
-
-	public interface ToDouble<T> extends Function<T, Double> {
-	}
-
-	public interface ToBigInteger<T> extends Function<T, BigInteger> {
-	}
-
-	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
-	}
-
-	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, L> {
+	public interface ToLongArray<T> extends Function<T, long[]> {
 	}
 
 	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
@@ -498,187 +677,13 @@ public class ValidatorBuilder<T> {
 	public interface ToObjectArray<T, E> extends Function<T, E[]> {
 	}
 
-	public interface ToBooleanArray<T> extends Function<T, boolean[]> {
-	}
-
-	public interface ToCharArray<T> extends Function<T, char[]> {
-	}
-
-	public interface ToByteArray<T> extends Function<T, byte[]> {
+	public interface ToShort<T> extends Function<T, Short> {
 	}
 
 	public interface ToShortArray<T> extends Function<T, short[]> {
 	}
 
-	public interface ToIntArray<T> extends Function<T, int[]> {
-	}
-
-	public interface ToLongArray<T> extends Function<T, long[]> {
-	}
-
-	public interface ToFloatArray<T> extends Function<T, float[]> {
-	}
-
-	public interface ToDoubleArray<T> extends Function<T, double[]> {
-	}
-
 	public interface ValidatorBuilderConverter<T>
 			extends Function<ValidatorBuilder<T>, ValidatorBuilder<T>> {
-	}
-
-	/**
-	 * Deprecated in favor of {@link #constraintOnObject(Function, String, Function)}
-	 */
-	@Deprecated
-	public <E> ValidatorBuilder<T> constraintForObject(Function<T, E> f, String name,
-			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
-		return this.constraintOnObject(f, name, c);
-	}
-
-	/**
-	 * Deprecated in favor of {@code nest}
-	 */
-	@Deprecated
-	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
-			Validator<N> validator) {
-		return this.nest(nested, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code nestIfPresent}
-	 */
-	@Deprecated
-	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
-			String name, Validator<N> validator) {
-		return this.nestIfPresent(nested, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code nest}
-	 */
-	@Deprecated
-	public <N> ValidatorBuilder<T> constraintForNested(Function<T, N> nested, String name,
-			ValidatorBuilderConverter<N> converter) {
-		return this.nest(nested, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code nestIfPresent}
-	 */
-	@Deprecated
-	public <N> ValidatorBuilder<T> constraintIfPresentForNested(Function<T, N> nested,
-			String name, ValidatorBuilderConverter<N> converter) {
-		return this.nestIfPresent(nested, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.forEach(toCollection, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
-		return this.forEachIfPresent(toCollection, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintForEach(
-			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter) {
-		return this.forEach(toCollection, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraintIfPresentForEach(
-			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter) {
-		return this.forEachIfPresent(toCollection, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
-			Validator<V> validator) {
-		return this.forEach(toMap, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
-			String name, Validator<V> validator) {
-		return this.forEachIfPresent(toMap, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <K, V> ValidatorBuilder<T> constraintForEach(ToMap<T, K, V> toMap, String name,
-			ValidatorBuilderConverter<V> converter) {
-		return this.forEach(toMap, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <K, V> ValidatorBuilder<T> constraintIfPresentForEach(ToMap<T, K, V> toMap,
-			String name, ValidatorBuilderConverter<V> converter) {
-		return this.forEachIfPresent(toMap, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
-			String name, Validator<E> validator) {
-		return this.forEach(toObjectArray, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
-			ToObjectArray<T, E> toObjectArray, String name, Validator<E> validator) {
-		return this.forEachIfPresent(toObjectArray, name, validator);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEach}
-	 */
-	@Deprecated
-	public <E> ValidatorBuilder<T> constraintForEach(ToObjectArray<T, E> toObjectArray,
-			String name, ValidatorBuilderConverter<E> converter) {
-		return this.forEach(toObjectArray, name, converter);
-	}
-
-	/**
-	 * Deprecated in favor of {@code forEachIfPresent}
-	 */
-	@Deprecated
-	public <E> ValidatorBuilder<T> constraintIfPresentForEach(
-			ToObjectArray<T, E> toObjectArray, String name,
-			ValidatorBuilderConverter<E> converter) {
-		return this.forEachIfPresent(toObjectArray, name, converter);
 	}
 }
