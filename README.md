@@ -349,7 +349,7 @@ val app = application {
         codecs { jackson() }
         router {
             POST("/") { req ->
-                req.bodyToMono(Message::class.java)
+                req.bodyToMono<Message>()
                         .flatMap { message ->
                             Message.validator.validateToEither(message)
                                     .leftMap { mapOf("details" to it.details()) }
