@@ -21,9 +21,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_ALL_INCLUDED;
 import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_NOT_INCLUDED;
-import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
@@ -101,23 +101,6 @@ public class CodePointsConstraint<T, E extends CharSequence>
 			return new CodePointsConstraint<>(this.delegate, this.codePoints)
 					.asBlackList();
 		}
-
-		/**
-		 * Use {@link #asWhiteList()} instead
-		 */
-		@Deprecated
-		public CodePointsConstraint<T, E> allIncluded() {
-			return this.asWhiteList();
-		}
-
-		/**
-		 * Use {@link #asBlackList()} instead
-		 */
-		@Deprecated
-		public CodePointsConstraint<T, E> notIncluded() {
-			return this.asBlackList();
-		}
-
 	}
 
 }
