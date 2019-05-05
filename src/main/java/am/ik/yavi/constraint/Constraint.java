@@ -23,6 +23,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.CustomConstraint;
 import am.ik.yavi.core.NullAs;
 import am.ik.yavi.core.ViolationMessage;
 

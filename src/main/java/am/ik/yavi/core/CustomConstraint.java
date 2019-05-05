@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.constraint;
-
-import am.ik.yavi.core.ViolationMessage;
+package am.ik.yavi.core;
 
 import java.util.function.Predicate;
 
