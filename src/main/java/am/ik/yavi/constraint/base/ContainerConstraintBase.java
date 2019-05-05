@@ -24,7 +24,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
 
-import am.ik.yavi.constraint.Constraint;
+import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolatedValue;
 

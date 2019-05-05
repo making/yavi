@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.base;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import am.ik.yavi.constraint.Constraint;
+import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class ConstraintBase<T, V, C extends Constraint<T, V, C>>

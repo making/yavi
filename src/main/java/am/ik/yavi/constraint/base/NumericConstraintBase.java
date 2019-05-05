@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 import static am.ik.yavi.core.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullAs.VALID;
 
-import am.ik.yavi.constraint.Constraint;
+import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>

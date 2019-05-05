@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.constraint;
+package am.ik.yavi.core;
 
 import java.util.Deque;
 import java.util.Objects;
@@ -21,11 +21,6 @@ import java.util.function.Predicate;
 
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
-
-import am.ik.yavi.core.ConstraintPredicate;
-import am.ik.yavi.core.CustomConstraint;
-import am.ik.yavi.core.NullAs;
-import am.ik.yavi.core.ViolationMessage;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
