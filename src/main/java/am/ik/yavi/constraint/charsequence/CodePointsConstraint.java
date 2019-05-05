@@ -83,11 +83,11 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		return this;
 	}
 
-	public static class Builer<T, E extends CharSequence> {
+	public static class Builder<T, E extends CharSequence> {
 		private final CharSequenceConstraint<T, E> delegate;
 		private final CodePoints<E> codePoints;
 
-		public Builer(CharSequenceConstraint<T, E> delegate, CodePoints<E> codePoints) {
+		public Builder(CharSequenceConstraint<T, E> delegate, CodePoints<E> codePoints) {
 			this.delegate = delegate;
 			this.codePoints = codePoints;
 		}
