@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.array;
 import java.util.Arrays;
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.constraint.ViolationMessage.Default.ARRAY_CONTAINS;
+import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;

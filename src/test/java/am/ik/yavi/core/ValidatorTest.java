@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import am.ik.yavi.constraint.ViolationMessage;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

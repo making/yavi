@@ -17,6 +17,7 @@ package am.ik.yavi.constraint;
 
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ViolationMessage;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -15,8 +15,8 @@
  */
 package am.ik.yavi.constraint;
 
-import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_FALSE;
-import static am.ik.yavi.constraint.ViolationMessage.Default.BOOLEAN_IS_TRUE;
+import static am.ik.yavi.core.ViolationMessage.Default.BOOLEAN_IS_FALSE;
+import static am.ik.yavi.core.ViolationMessage.Default.BOOLEAN_IS_TRUE;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ConstraintBase;

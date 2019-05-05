@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.constraint;
+package am.ik.yavi.core;
 
 public interface ViolationMessage {
 	static ViolationMessage of(String messageKey, String defaultMessageFormat) {

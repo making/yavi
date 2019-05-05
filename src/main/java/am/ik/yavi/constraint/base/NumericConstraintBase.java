@@ -17,7 +17,7 @@ package am.ik.yavi.constraint.base;
 
 import java.util.function.Predicate;
 
-import static am.ik.yavi.constraint.ViolationMessage.Default.*;
+import static am.ik.yavi.core.ViolationMessage.Default.*;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.Constraint;

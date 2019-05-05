@@ -20,7 +20,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.yavi.constraint.ViolationMessage;
 import am.ik.yavi.jsr305.Nullable;
 
 public class ConstraintPredicate<V> {
@@ -36,7 +35,7 @@ public class ConstraintPredicate<V> {
 				violationMessage.defaultMessageFormat(), args, nullAs);
 	}
 
-    private ConstraintPredicate(Predicate<V> predicate, String messageKey,
+	private ConstraintPredicate(Predicate<V> predicate, String messageKey,
 			String defaultMessageFormat, Supplier<Object[]> args, NullAs nullAs) {
 		this.predicate = predicate;
 		this.messageKey = messageKey;

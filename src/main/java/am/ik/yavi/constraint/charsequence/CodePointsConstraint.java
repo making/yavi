@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static am.ik.yavi.constraint.ViolationMessage.Default.CODE_POINTS_ALL_INCLUDED;
-import static am.ik.yavi.constraint.ViolationMessage.Default.CODE_POINTS_NOT_INCLUDED;
+import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_ALL_INCLUDED;
+import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_NOT_INCLUDED;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;

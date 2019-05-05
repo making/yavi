@@ -18,8 +18,8 @@ package am.ik.yavi.constraint;
 import java.util.Map;
 import java.util.function.ToIntFunction;
 
-import static am.ik.yavi.constraint.ViolationMessage.Default.MAP_CONTAINS_KEY;
-import static am.ik.yavi.constraint.ViolationMessage.Default.MAP_CONTAINS_VALUE;
+import static am.ik.yavi.core.ViolationMessage.Default.MAP_CONTAINS_KEY;
+import static am.ik.yavi.core.ViolationMessage.Default.MAP_CONTAINS_VALUE;
 import static am.ik.yavi.core.NullAs.VALID;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
