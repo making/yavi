@@ -497,10 +497,10 @@ public class ValidatorTest {
 	public void groupTwoCondition() {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraintOnCondition(Group.UPDATE.toCondition(), //
+				.constraintOnGroup(Group.UPDATE, //
 						b -> b.constraint(User::getName, "name",
 								c -> c.lessThanOrEqual(5)))
-				.constraintOnCondition(Group.DELETE.toCondition(), //
+				.constraintOnGroup(Group.DELETE, //
 						b -> b.constraint(User::getName, "name",
 								c -> c.greaterThanOrEqual(5)))
 				.build();
@@ -561,7 +561,7 @@ public class ValidatorTest {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
 				.constraint(User::getEmail, "email", c -> c.email().lessThanOrEqual(10))
-				.constraintOnCondition(Group.UPDATE.toCondition(), //
+				.constraintOnGroup(Group.UPDATE, //
 						b -> b.constraint(User::getName, "name",
 								c -> c.lessThanOrEqual(5)))
 				.build();

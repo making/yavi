@@ -54,6 +54,7 @@ import am.ik.yavi.constraint.array.ShortArrayConstraint;
 import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintCondition;
+import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ConstraintPredicates;
 import am.ik.yavi.core.CustomConstraint;
@@ -436,6 +437,16 @@ public class ValidatorBuilder<T> {
 		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
 		Validator<T> validator = builder.build();
 		return this.constraintOnCondition(condition, validator);
+	}
+
+	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
+			Validator<T> validator) {
+		return this.constraintOnCondition(group.toCondition(), validator);
+	}
+
+	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
+			ValidatorBuilderConverter<T> converter) {
+		return this.constraintOnCondition(group.toCondition(), converter);
 	}
 
 	public Validator<T> build() {
