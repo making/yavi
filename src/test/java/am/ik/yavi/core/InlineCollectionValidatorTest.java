@@ -23,11 +23,12 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.builder.ValidatorBuilder;
 
 public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Override
 	public Validator<FormWithCollection> validator() {
-		return Validator.builder(FormWithCollection.class) //
+		return ValidatorBuilder.of(FormWithCollection.class) //
 				.forEach(FormWithCollection::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))
@@ -39,8 +40,8 @@ public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTe
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = Validator
-				.builder(FormWithCollection.class) //
+		Validator<FormWithCollection> validator = ValidatorBuilder
+				.of(FormWithCollection.class) //
 				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",
 								c -> c.notBlank().lessThan(32))

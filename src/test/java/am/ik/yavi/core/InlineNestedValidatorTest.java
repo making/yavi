@@ -18,11 +18,12 @@ package am.ik.yavi.core;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.builder.ValidatorBuilder;
 
 public class InlineNestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
 	protected Validator<Address> validator() {
-		return Validator.<Address> builder()
+		return ValidatorBuilder.<Address> of()
 				.constraint(Address::street, "street",
 						c -> c.notBlank().lessThan(32))
 				.nest(Address::country, "country",

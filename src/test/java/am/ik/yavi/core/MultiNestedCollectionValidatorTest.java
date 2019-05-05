@@ -21,21 +21,26 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import am.ik.yavi.*;
+import am.ik.yavi.Address;
+import am.ik.yavi.Country;
+import am.ik.yavi.FormWithCollection;
+import am.ik.yavi.NestedFormWithCollection;
+import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.builder.ValidatorBuilder;
 
 public class MultiNestedCollectionValidatorTest {
-	Validator<Address> addressValidator = Validator.<Address> builder()
+	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
-	Validator<FormWithCollection> formValidator = Validator
-			.builder(FormWithCollection.class) //
+	Validator<FormWithCollection> formValidator = ValidatorBuilder
+			.of(FormWithCollection.class) //
 			.forEach(FormWithCollection::getAddresses, "addresses", addressValidator)
 			.build();
 
-	Validator<NestedFormWithCollection> validator = Validator
-			.builder(NestedFormWithCollection.class)
+	Validator<NestedFormWithCollection> validator = ValidatorBuilder
+			.of(NestedFormWithCollection.class)
 			.forEach(NestedFormWithCollection::getForms, "forms", formValidator).build();
 
 	@Test

@@ -15,6 +15,7 @@
  */
 package am.ik.yavi;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.Validator;
 
 public class Country {
@@ -25,7 +26,7 @@ public class Country {
 	}
 
 	public static Validator<Country> validator() {
-		return Validator.<Country> builder()
+		return ValidatorBuilder.<Country> of()
 				.constraint(Country::name, "name", c -> c.notBlank() //
 						.greaterThanOrEqual(2))
 				.build();

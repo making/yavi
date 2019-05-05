@@ -73,6 +73,24 @@ public class ValidatorBuilder<T> {
 	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators = new ArrayList<>();
 	private MessageFormatter messageFormatter;
 
+	/**
+	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 * @param <X> the type of the instance to validate
+	 * @return builder instance
+	 */
+	public static <X> ValidatorBuilder<X> of(Class<X> clazz) {
+		return new ValidatorBuilder<>();
+	}
+
+	/**
+	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 * @param <X> the type of the instance to validate
+	 * @return builder instance
+	 */
+	public static <X> ValidatorBuilder<X> of() {
+		return new ValidatorBuilder<>();
+	}
+
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
 	}

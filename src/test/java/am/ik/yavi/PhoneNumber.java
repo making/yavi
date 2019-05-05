@@ -15,6 +15,7 @@
  */
 package am.ik.yavi;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.Validator;
 
 public class PhoneNumber {
@@ -25,7 +26,7 @@ public class PhoneNumber {
 	}
 
 	public static Validator<PhoneNumber> validator() {
-		return Validator.<PhoneNumber> builder()
+		return ValidatorBuilder.<PhoneNumber> of()
 				.constraint((PhoneNumber p) -> p.value, "value",
 						c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
 				.build();

@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,7 @@ import am.ik.yavi.FormWithArray;
 import am.ik.yavi.PhoneNumber;
 
 public class ArrayValidatorTest extends AbstractArrayValidatorTest {
-	Validator<Address> addressValidator = Validator.<Address> builder()
+	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
@@ -33,14 +34,14 @@ public class ArrayValidatorTest extends AbstractArrayValidatorTest {
 
 	@Override
 	public Validator<FormWithArray> validator() {
-		return Validator.builder(FormWithArray.class) //
+		return ValidatorBuilder.of(FormWithArray.class) //
 				.forEach(FormWithArray::getAddresses, "addresses", addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithArray> validator = Validator.builder(FormWithArray.class) //
+		Validator<FormWithArray> validator = ValidatorBuilder.of(FormWithArray.class) //
 				.forEachIfPresent(FormWithArray::getAddresses, "addresses",
 						addressValidator)
 				.build();

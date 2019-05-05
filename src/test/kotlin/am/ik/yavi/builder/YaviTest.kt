@@ -54,13 +54,13 @@ data class DemoForEachArray(val x: Array<DemoString>)
 data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
 
 class YaviTest {
-    private val demoStringValidator: Validator<DemoString> = Validator.builder<DemoString>()
+    private val demoStringValidator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
             .constraint(DemoString::x) { greaterThan(1).lessThan(5) }
             .build()
 
     @Test
     fun constraintOnCharSequence() {
-        val validator = Validator.builder<DemoString>()
+        val validator = ValidatorBuilder.of<DemoString>()
                 .constraint(DemoString::x) { notEmpty().lessThan(5) }
                 .build()
 
@@ -80,7 +80,7 @@ class YaviTest {
 
     @Test
     fun constraintOnBoolean() {
-        val validator = Validator.builder<DemoBoolean>()
+        val validator = ValidatorBuilder.of<DemoBoolean>()
                 .constraint(DemoBoolean::x) { isTrue }
                 .build()
 
@@ -99,7 +99,7 @@ class YaviTest {
 
     @Test
     fun constraintOnInteger() {
-        val validator = Validator.builder<DemoInt>()
+        val validator = ValidatorBuilder.of<DemoInt>()
                 .constraint(DemoInt::x) { greaterThan(1).lessThan(10) }
                 .build()
 
@@ -118,7 +118,7 @@ class YaviTest {
 
     @Test
     fun constraintOnChar() {
-        val validator = Validator.builder<DemoChar>()
+        val validator = ValidatorBuilder.of<DemoChar>()
                 .constraint(DemoChar::x) { greaterThan('a').lessThan('z') }
                 .build()
 
@@ -137,7 +137,7 @@ class YaviTest {
 
     @Test
     fun constraintOnByte() {
-        val validator = Validator.builder<DemoByte>()
+        val validator = ValidatorBuilder.of<DemoByte>()
                 .constraint(DemoByte::x) { greaterThan(0x0).lessThan(0xf) }
                 .build()
 
@@ -156,7 +156,7 @@ class YaviTest {
 
     @Test
     fun constraintOnShort() {
-        val validator = Validator.builder<DemoShort>()
+        val validator = ValidatorBuilder.of<DemoShort>()
                 .constraint(DemoShort::x) { greaterThan(1).lessThan(10) }
                 .build()
 
@@ -175,7 +175,7 @@ class YaviTest {
 
     @Test
     fun constraintOnLong() {
-        val validator = Validator.builder<DemoLong>()
+        val validator = ValidatorBuilder.of<DemoLong>()
                 .constraint(DemoLong::x) { greaterThan(1).lessThan(10) }
                 .build()
 
@@ -194,7 +194,7 @@ class YaviTest {
 
     @Test
     fun constraintOnFloat() {
-        val validator = Validator.builder<DemoFloat>()
+        val validator = ValidatorBuilder.of<DemoFloat>()
                 .constraint(DemoFloat::x) { greaterThan(0.0f).lessThan(10.0f) }
                 .build()
 
@@ -213,7 +213,7 @@ class YaviTest {
 
     @Test
     fun constraintOnBigInteger() {
-        val validator = Validator.builder<DemoBigInteger>()
+        val validator = ValidatorBuilder.of<DemoBigInteger>()
                 .constraint(DemoBigInteger::x) { greaterThan(BigInteger.ZERO).lessThan(BigInteger.TEN) }
                 .build()
 
@@ -232,7 +232,7 @@ class YaviTest {
 
     @Test
     fun constraintOnBigDecimal() {
-        val validator = Validator.builder<DemoBigDecimal>()
+        val validator = ValidatorBuilder.of<DemoBigDecimal>()
                 .constraint(DemoBigDecimal::x) { greaterThan(BigDecimal.ZERO).lessThan(BigDecimal.TEN) }
                 .build()
 
@@ -251,7 +251,7 @@ class YaviTest {
 
     @Test
     fun constraintOnCollection() {
-        val validator = Validator.builder<DemoCollection>()
+        val validator = ValidatorBuilder.of<DemoCollection>()
                 .constraint(DemoCollection::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -270,7 +270,7 @@ class YaviTest {
 
     @Test
     fun constraintOnMap() {
-        val validator = Validator.builder<DemoMap>()
+        val validator = ValidatorBuilder.of<DemoMap>()
                 .constraint(DemoMap::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -289,7 +289,7 @@ class YaviTest {
 
     @Test
     fun constraintOnArray() {
-        val validator = Validator.builder<DemoArray>()
+        val validator = ValidatorBuilder.of<DemoArray>()
                 .constraint(DemoArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -308,7 +308,7 @@ class YaviTest {
 
     @Test
     fun constraintOnBooleanArray() {
-        val validator = Validator.builder<DemoBooleanArray>()
+        val validator = ValidatorBuilder.of<DemoBooleanArray>()
                 .constraint(DemoBooleanArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -327,7 +327,7 @@ class YaviTest {
 
     @Test
     fun constraintOnCharArray() {
-        val validator = Validator.builder<DemoCharArray>()
+        val validator = ValidatorBuilder.of<DemoCharArray>()
                 .constraint(DemoCharArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -346,7 +346,7 @@ class YaviTest {
 
     @Test
     fun constraintOnByteArray() {
-        val validator = Validator.builder<DemoByteArray>()
+        val validator = ValidatorBuilder.of<DemoByteArray>()
                 .constraint(DemoByteArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -365,7 +365,7 @@ class YaviTest {
 
     @Test
     fun constraintOnShortArray() {
-        val validator = Validator.builder<DemoShortArray>()
+        val validator = ValidatorBuilder.of<DemoShortArray>()
                 .constraint(DemoShortArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -384,7 +384,7 @@ class YaviTest {
 
     @Test
     fun constraintOnIntArray() {
-        val validator = Validator.builder<DemoIntArray>()
+        val validator = ValidatorBuilder.of<DemoIntArray>()
                 .constraint(DemoIntArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -403,7 +403,7 @@ class YaviTest {
 
     @Test
     fun constraintOnLongArray() {
-        val validator = Validator.builder<DemoLongArray>()
+        val validator = ValidatorBuilder.of<DemoLongArray>()
                 .constraint(DemoLongArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -422,7 +422,7 @@ class YaviTest {
 
     @Test
     fun constraintOnFloatArray() {
-        val validator = Validator.builder<DemoFloatArray>()
+        val validator = ValidatorBuilder.of<DemoFloatArray>()
                 .constraint(DemoFloatArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -441,7 +441,7 @@ class YaviTest {
 
     @Test
     fun constraintOnDoubleArray() {
-        val validator = Validator.builder<DemoDoubleArray>()
+        val validator = ValidatorBuilder.of<DemoDoubleArray>()
                 .constraint(DemoDoubleArray::x) { greaterThan(1).lessThan(3) }
                 .build()
 
@@ -460,7 +460,7 @@ class YaviTest {
 
     @Test
     fun constraintNested() {
-        val validator = Validator.builder<DemoNested>()
+        val validator = ValidatorBuilder.of<DemoNested>()
                 .nest(DemoNested::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -481,7 +481,7 @@ class YaviTest {
 
     @Test
     fun constraintNestedValidator() {
-        val validator = Validator.builder<DemoNested>()
+        val validator = ValidatorBuilder.of<DemoNested>()
                 .nest(DemoNested::x, demoStringValidator)
                 .build()
 
@@ -500,7 +500,7 @@ class YaviTest {
 
     @Test
     fun constraintNestedIfPresent() {
-        val validator = Validator.builder<DemoNestedIfPresent>()
+        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
                 .nestIfPresent(DemoNestedIfPresent::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -525,7 +525,7 @@ class YaviTest {
 
     @Test
     fun constraintNestedIfPresentValidator() {
-        val validator = Validator.builder<DemoNestedIfPresent>()
+        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
                 .nestIfPresent(DemoNestedIfPresent::x, demoStringValidator)
                 .build()
 
@@ -548,7 +548,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachCollection() {
-        val validator = Validator.builder<DemoForEachCollection>()
+        val validator = ValidatorBuilder.of<DemoForEachCollection>()
                 .forEach(DemoForEachCollection::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -569,7 +569,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachCollectionValidator() {
-        val validator = Validator.builder<DemoForEachCollection>()
+        val validator = ValidatorBuilder.of<DemoForEachCollection>()
                 .forEach(DemoForEachCollection::x, demoStringValidator)
                 .build()
 
@@ -588,7 +588,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentCollection() {
-        val validator = Validator.builder<DemoForEachIfPresentCollection>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentCollection>()
                 .forEachIfPresent(DemoForEachIfPresentCollection::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -613,7 +613,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentCollectionValidator() {
-        val validator = Validator.builder<DemoForEachIfPresentCollection>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentCollection>()
                 .forEachIfPresent(DemoForEachIfPresentCollection::x, demoStringValidator)
                 .build()
 
@@ -636,7 +636,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachMap() {
-        val validator = Validator.builder<DemoForEachMap>()
+        val validator = ValidatorBuilder.of<DemoForEachMap>()
                 .forEach(DemoForEachMap::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -657,7 +657,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentMap() {
-        val validator = Validator.builder<DemoForEachIfPresentMap>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentMap>()
                 .forEachIfPresent(DemoForEachIfPresentMap::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -682,7 +682,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachMapValidator() {
-        val validator = Validator.builder<DemoForEachMap>()
+        val validator = ValidatorBuilder.of<DemoForEachMap>()
                 .forEach(DemoForEachMap::x, demoStringValidator)
                 .build()
 
@@ -701,7 +701,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentMapValidator() {
-        val validator = Validator.builder<DemoForEachIfPresentMap>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentMap>()
                 .forEachIfPresent(DemoForEachIfPresentMap::x, demoStringValidator)
                 .build()
 
@@ -724,7 +724,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachArray() {
-        val validator = Validator.builder<DemoForEachArray>()
+        val validator = ValidatorBuilder.of<DemoForEachArray>()
                 .forEach(DemoForEachArray::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -745,7 +745,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentArray() {
-        val validator = Validator.builder<DemoForEachIfPresentArray>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentArray>()
                 .forEachIfPresent(DemoForEachIfPresentArray::x) {
                     constraint(DemoString::x) { greaterThan(1).lessThan(5) }
                 }
@@ -770,7 +770,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachArrayValidator() {
-        val validator = Validator.builder<DemoForEachArray>()
+        val validator = ValidatorBuilder.of<DemoForEachArray>()
                 .forEach(DemoForEachArray::x, demoStringValidator)
                 .build()
 
@@ -789,7 +789,7 @@ class YaviTest {
 
     @Test
     fun constraintForEachIfPresentArrayValidator() {
-        val validator = Validator.builder<DemoForEachIfPresentArray>()
+        val validator = ValidatorBuilder.of<DemoForEachIfPresentArray>()
                 .forEachIfPresent(DemoForEachIfPresentArray::x, demoStringValidator)
                 .build()
 
@@ -815,7 +815,7 @@ class YaviTest {
         val groupA = ConstraintGroup.of("A")
         val groupB = ConstraintGroup.of("B")
 
-        val validator: Validator<DemoString> = Validator.builder<DemoString>()
+        val validator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
                 .constraintOnCondition(groupA.toCondition()) {
                     constraint(DemoString::x) {
                         greaterThan(1)
@@ -861,7 +861,7 @@ class YaviTest {
 
     @Test
     fun onObject() {
-        val validator = Validator.builder<DemoNestedIfPresent>()
+        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
                 .constraintOnObject(DemoNestedIfPresent::x) { notNull() }
                 .build()
 

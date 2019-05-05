@@ -23,9 +23,10 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithMap;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.builder.ValidatorBuilder;
 
 public class MapValidatorTest extends AbstractMapValidatorTest {
-	Validator<Address> addressValidator = Validator.<Address> builder()
+	Validator<Address> addressValidator = ValidatorBuilder.<Address>of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
@@ -33,14 +34,14 @@ public class MapValidatorTest extends AbstractMapValidatorTest {
 
 	@Override
 	public Validator<FormWithMap> validator() {
-		return Validator.builder(FormWithMap.class) //
+		return ValidatorBuilder.of(FormWithMap.class) //
 				.forEach(FormWithMap::getAddresses, "addresses", addressValidator)
 				.build();
 	}
 
 	@Test
 	public void nullCollectionValid() throws Exception {
-		Validator<FormWithMap> validator = Validator.builder(FormWithMap.class) //
+		Validator<FormWithMap> validator = ValidatorBuilder.of(FormWithMap.class) //
 				.forEachIfPresent(FormWithMap::getAddresses, "addresses",
 						addressValidator)
 				.build();

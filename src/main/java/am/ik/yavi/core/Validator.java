@@ -53,23 +53,29 @@ public final class Validator<T> {
 	}
 
 	/**
+	 * Deprecated in favor of {@link ValidatorBuilder#of()}
+	 *
 	 * Builder method to build {@code Validator} instance.
 	 * @param <T> the type of the instance to validate
 	 * @return builder instance
 	 */
+	@Deprecated
 	public static <T> ValidatorBuilder<T> builder() {
-		return new ValidatorBuilder<>();
+		return ValidatorBuilder.of();
 	}
 
 	/**
+	 * Deprecated in favor of {@link ValidatorBuilder#of(Class)}
+	 * 
 	 * Builder method to build {@code Validator} instance.
 	 * @param clazz the class of the instance to validate
 	 * @param <T> the type of the instance to validate
 	 * @return builder instance
 	 */
+	@Deprecated
 	public static <T> ValidatorBuilder<T> builder(
 			@SuppressWarnings("unused") Class<T> clazz) {
-		return new ValidatorBuilder<>();
+		return ValidatorBuilder.of(clazz);
 	}
 
 	/**

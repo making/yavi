@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ViolationMessage;
@@ -51,7 +52,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicate() {
-		Validator<Book> validator = Validator.<Book> builder() //
+		Validator<Book> validator = ValidatorBuilder.<Book> of() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(CustomValidatorTest::isISBN13, //
 								ViolationMessage.of("custom.isbn13",
@@ -83,7 +84,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateNullable() {
-		Validator<Book> validator = Validator.<Book> builder() //
+		Validator<Book> validator = ValidatorBuilder.<Book> of() //
 				.constraint(
 						Book::isbn, "isbn", c -> c
 								.predicateNullable(v -> v != null && isISBN13(v), //
@@ -115,7 +116,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateCustom() {
-		Validator<Book> validator = Validator.<Book> builder() //
+		Validator<Book> validator = ValidatorBuilder.<Book> of() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(IsbnConstraint.SINGLETON))
 				.build();
@@ -145,7 +146,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void range() throws Exception {
-		Validator<Range> validator = Validator.<Range> builder() //
+		Validator<Range> validator = ValidatorBuilder.<Range> of() //
 				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicate(r -> {
 							Range range = Range.class.cast(r);
@@ -171,7 +172,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void rangeCustom() throws Exception {
-		Validator<Range> validator = Validator.<Range> builder() //
+		Validator<Range> validator = ValidatorBuilder.<Range> of() //
 				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicateNullable(RangeConstraint.SINGLETON))
 				.build();
@@ -193,7 +194,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void rangeConstraintOnTarget() throws Exception {
-		Validator<Range> validator = Validator.<Range> builder() //
+		Validator<Range> validator = ValidatorBuilder.<Range> of() //
 				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
 				.build();
 		{
