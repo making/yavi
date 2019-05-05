@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core
+package am.ik.yavi.builder
 
+import am.ik.yavi.core.ConstraintGroup
+import am.ik.yavi.core.Validator
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.math.BigDecimal

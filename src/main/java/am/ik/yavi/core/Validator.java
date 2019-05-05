@@ -15,8 +15,14 @@
  */
 package am.ik.yavi.core;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Consumer;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
@@ -28,13 +34,14 @@ import am.ik.yavi.message.MessageFormatter;
  * @author Toshiaki Maki
  */
 public final class Validator<T> {
-	final List<ConstraintPredicates<T, ?>> predicatesList;
+	private final List<ConstraintPredicates<T, ?>> predicatesList;
 	private final String messageKeySeparator;
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators;
 	private final MessageFormatter messageFormatter;
 
-	Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
+	public Validator(String messageKeySeparator,
+			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
@@ -116,6 +123,10 @@ public final class Validator<T> {
 	public ConstraintViolations validate(T target, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.validate(target, "", -1, locale, constraintGroup);
+	}
+
+	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
+		this.predicatesList.forEach(action);
 	}
 
 	@SuppressWarnings("unchecked")

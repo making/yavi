@@ -374,8 +374,8 @@ fun main(args: Array<String>) = app.run()
 package com.example
 
 import am.ik.yavi.core.Validator
-import am.ik.yavi.core.constraint
-import am.ik.yavi.core.nest
+import am.ik.yavi.builder.constraintOnCharSequence
+import am.ik.yavi.builder.nest
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install

@@ -26,7 +26,7 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
-import am.ik.yavi.core.ValidatorBuilder.ToCharSequence;
+import am.ik.yavi.builder.ValidatorBuilder.ToCharSequence;
 
 public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = Validator.<Address> builder()

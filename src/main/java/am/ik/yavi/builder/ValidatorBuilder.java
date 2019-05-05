@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core;
+package am.ik.yavi.builder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -53,6 +53,14 @@ import am.ik.yavi.constraint.array.IntArrayConstraint;
 import am.ik.yavi.constraint.array.LongArrayConstraint;
 import am.ik.yavi.constraint.array.ObjectArrayConstraint;
 import am.ik.yavi.constraint.array.ShortArrayConstraint;
+import am.ik.yavi.core.CollectionValidator;
+import am.ik.yavi.core.ConstraintCondition;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ConstraintPredicates;
+import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.NestedConstraintPredicates;
+import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
@@ -232,7 +240,7 @@ public class ValidatorBuilder<T> {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
-		validator.predicatesList.forEach(predicates -> {
+		validator.forEachPredicates(predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
 					this.toNestedValue(nested, predicates), nestedName,
