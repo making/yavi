@@ -28,7 +28,7 @@ public class UserForm implements Serializable {
 to
 
 ```java
-Validator<UserForm> validator = Validator.builder(UserForm.class)
+Validator<UserForm> validator = ValidatorBuilder.of(UserForm.class)
   .constraint(UserForm::getName, "name", c -> c.notNull().greaterThan(1).lessThan(20))
   .constraint(UserForm::getEmail, "email", c -> c.notNull().greaterThan(1).lessThan(50).email())
   .constraint(UserForm::getAge, "age", c -> c.notNull().greaterThan(0).lessThan(200))
@@ -51,7 +51,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.notNull())
   .build();
 ```
@@ -70,7 +70,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.isNull())
   .build();
 ```
@@ -89,7 +89,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.pattern("[0-9]+"))
   .build();
 ```
@@ -108,7 +108,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.email())
   .build();
 ```
@@ -127,7 +127,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.url())
   .build();
 ```
@@ -148,7 +148,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.greaterThanOrEqual(1))
   .constraint(Foo::getLongValue, "longValue", c -> c.greaterThanOrEqual(1L))
   .build();
@@ -169,7 +169,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.greaterThan(1))
   .constraint(Foo::getLongValue, "longValue", c -> c.greaterThan(1L))
   .build();
@@ -191,7 +191,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.lessThanOrEqual(100))
   .constraint(Foo::getLongValue, "longValue", c -> c.lessThanOrEqual(100L))
   .build();
@@ -212,7 +212,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.lessThan(100))
   .constraint(Foo::getLongValue, "longValue", c -> c.lessThan(100L))
   .build();
@@ -232,7 +232,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.greaterThan(0))
   .build();
 ```
@@ -251,7 +251,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.greaterThanOrEqual(0))
   .build();
 ```
@@ -270,7 +270,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.lessThan(0))
   .build();
 ```
@@ -289,7 +289,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getIntValue, "intValue", c -> c.lessThanOrEqual(0))
   .build();
 ```
@@ -307,7 +307,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBigDecimalValue, "bigDecimalValue", c -> c.greaterThanOrEqual(new BigDecimal("1")))
   .build();
 ```
@@ -324,7 +324,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBigDecimalValue, "bigDecimalValue", c -> c.greaterThan(new BigDecimal("1")))
   .build();
 ```
@@ -342,7 +342,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBigDecimalValue, "bigDecimalValue", c -> c.lessThanOrEqual(new BigDecimal("100")))
   .build();
 ```
@@ -359,7 +359,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBigDecimalValue, "bigDecimalValue", c -> c.lessThan(new BigDecimal("100")))
   .build();
 ```
@@ -382,7 +382,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.isGreaterThanOrEqual(4).isLessThanOrEqual(64))
   .constraint(Foo::getTexts, "texts", c -> c.isGreaterThanOrEqual(1).isLessThanOrEqual(8))
   .build();
@@ -407,7 +407,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.notEmpty())
   .constraint(Foo::getTexts, "texts", c -> c.notEmpty())
   .build();
@@ -427,7 +427,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.notBlank())
   .build();
 ```
@@ -449,7 +449,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBooleanValue, "booleanValue", c -> c.isTrue())
   .build();
 ```
@@ -467,7 +467,7 @@ public class Foo {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getBooleanValue, "booleanValue", c -> c.isFalse())
   .build();
 ```
@@ -517,7 +517,7 @@ public class OrderForm implements Serializable {
 to
 
 ```java
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintForNested(OrderForm::getAddress, "address", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
@@ -527,12 +527,12 @@ Validator<OrderForm> validator = Validator.builder(OrderForm.class)
 or
 
 ```java
-Validator<AddressForm> addressValidator = Validator.builder(AddressForm.class)
+Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100))
     .build();
 
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintForNested(OrderForm::getAddress, "address", addressValidator)
   .build();
 ```
@@ -549,7 +549,7 @@ public class OrderForm implements Serializable {
 to
 
 ```java
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintIfPresentForNested(OrderForm::getAddress, "address", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
@@ -559,7 +559,7 @@ Validator<OrderForm> validator = Validator.builder(OrderForm.class)
 or
 
 ```java
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintIfPresentForNested(OrderForm::getAddress, "address", addressValidator)
   .build();
 ```
@@ -590,7 +590,7 @@ public class OrderForm implements Serializable {
 ```
 
 ```java
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintForEach(OrderForm::getAddress, "addresses", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
@@ -600,12 +600,12 @@ Validator<OrderForm> validator = Validator.builder(OrderForm.class)
 or
 
 ```java
-Validator<AddressForm> addressValidator = Validator.builder(AddressForm.class)
+Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100))
     .build();
 
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintForEach(OrderForm::getAddresses, "addresses", addressValidator)
   .build();
 ```
@@ -633,7 +633,7 @@ public class OrderForm implements Serializable {
 ```
 
 ```java
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintIfPresentForEach(OrderForm::getAddress, "addresses", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
@@ -643,12 +643,12 @@ Validator<OrderForm> validator = Validator.builder(OrderForm.class)
 or
 
 ```java
-Validator<AddressForm> addressValidator = Validator.builder(AddressForm.class)
+Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100))
     .build();
 
-Validator<OrderForm> validator = Validator.builder(OrderForm.class)
+Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
   .constraintIfPresenForEach(OrderForm::getAddresses, "addresses", addressValidator)
   .build();
 ```
@@ -663,11 +663,11 @@ public class Foo {
 ```
 
 ```java
-Validator<String> stringValidator = Validator.builder(String.class)
+Validator<String> stringValidator = ValidatorBuilder.of(String.class)
   .constraint((ToCharSequence<String, String>) o -> o, "value", c -> c.lessThanOrEqual(2))
   .build();
 
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraintForEach(Foo::getTexts, "texts", stringValidator)
   .build();
 ```
@@ -750,7 +750,7 @@ public enum UpperCaseConstraint implements CustomConstraint<String> {
 to
 
 ```java
-Validator<Foo> validator = Validator.builder(Foo.class)
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .constraint(Foo::getText, "text", c -> c.predicate(UpperCaseConstraint.SINGLETON))
   .build();
 ```

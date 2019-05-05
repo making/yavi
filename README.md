@@ -30,7 +30,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.0.24</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -51,7 +51,7 @@ If you want to try a snapshot version, add the following repository:
 #### Simple
 
 ```java
-Validator<User> validator = Validator.<User> builder() // or Validator.builder(User.class)
+Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
             .constraint(User::getName, "name", c -> c.notNull() //
                     .lessThanOrEqual(20)) //
             .constraint(User::getEmail, "email", c -> c.notNull() //
@@ -73,7 +73,7 @@ violations.forEach(x -> System.out.println(x.message()));
 If you are using Kotlin, you can write a bit shorter
 
 ```kotlin
-val validator: Validator<User> = Validator.builder<User>()
+val validator: Validator<User> = ValidatorBuilder.of<User>()
         .constraint(User::name) {
             notNull() //
                     .lessThanOrEqual(20)
@@ -95,16 +95,16 @@ val validator: Validator<User> = Validator.builder<User>()
 #### Nested
 
 ```java
-Validator<Country> countryValidator = Validator.<Country> builder() //
+Validator<Country> countryValidator = ValidatorBuilder.<Country> of() //
             .nest(Country::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(20))
             .build();
-Validator<City> cityValidator = Validator.<City> builder() //
+Validator<City> cityValidator = ValidatorBuilder.<City> of() //
             .nest(City::getName, "name", c -> c.notBlank() //
                     .lessThanOrEqual(100))
             .build();
 
-Validator<Address> validator = Validator.<Address> builder() //
+Validator<Address> validator = ValidatorBuilder.<Address> of() //
             .nest(Address::getCountry, "country", countryValidator) //
             .nest(Address::getCity, "city", cityValidator)
             .build();
@@ -115,7 +115,7 @@ Validator<Address> validator = Validator.<Address> builder() //
 or
 
 ```java
-Validator<Address> validator = Validator.<Address> builder() //
+Validator<Address> validator = ValidatorBuilder.<Address> of() //
             .nest(Address::getCountry, "country", //
                         b -> b.constraint(Country::getName, "name", c -> c.notBlank() //
                                                                         .lessThanOrEqual(20))) //
@@ -136,7 +136,7 @@ Validator<Address> validator = Validator.<Address> builder() //
 #### Overriding violation messages
 
 ```java
-Validator<User> validator = Validator.<User> builder() //
+Validator<User> validator = ValidatorBuilder.<User> of() //
 	.constraint(User::getName, "name", c -> c.notNull().message("name is required!") //
 				.greaterThanOrEqual(1).message("name is too small!") //
 				.lessThanOrEqual(20).message("name is too large!")) //
@@ -167,7 +167,7 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 ```
 
 ```java
-Validator<Book> book = Validator.<Book> builder() //
+Validator<Book> book = ValidatorBuilder.<Book> of() //
             .constraint(Book::getTitle, "title", c -> c.notBlank() //
                     .lessThanOrEqual(64)) //
             .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
@@ -180,7 +180,7 @@ Validator<Book> book = Validator.<Book> builder() //
 #### Multi-fields validation
 
 ```java
-Validator<Range> validator = Validator.<Range> builder() //
+Validator<Range> validator = ValidatorBuilder.<Range> of() //
         .constraint(range::getFrom, "from", c -> c.greaterThan(0)) //
         .constraint(range::getTo, "to", c -> c.greaterThan(0)) //
         .constraintOnTarget(range -> range.to > range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
@@ -205,7 +205,7 @@ HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK)
 You can impose a condition on constraints with [`ConstraintCondition`](src/main/java/am/ik/yavi/core/ConstraintCondition.java) interface:
 
 ```java
-Validator<User> validator = Validator.builder(User.class) //
+Validator<User> validator = ValidatorBuilder.of(User.class) //
         .constraintOnCondition((user, constraintGroup) -> !user.getName().isEmpty(), //
                 b -> b.constraint(User::getEmail, "email",
                         c -> c.email().notEmpty())) // <- this constraint on email is active only when name is not empty
@@ -219,7 +219,7 @@ enum Group implements ConstraintGroup {
     CREATE, UPDATE, DELETE
 }
 
-Validator<User> validator = Validator.builder(User.class) //
+Validator<User> validator = ValidatorBuilder.of(User.class) //
         .constraintOnCondition(Group.UPDATE.toCondition(), //
                 b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
         .build();
@@ -231,6 +231,15 @@ The group to validate is specified in `validate` method:
 validator.validate(user, Group.UPDATE);
 ```
 
+You can also use a shortcut `constraintOnGroup` method
+
+```
+Validator<User> validator = ValidatorBuilder.of(User.class) //
+        .constraintOnGroup(Group.UPDATE, //
+                b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
+        .build();
+```
+
 Note that all constraints without conditions will be validated for any constraint group.
 
 #### (Experimental) Emoji support
@@ -240,7 +249,7 @@ By default, some Emojis are not counted as you expect.
 For example,
 
 ```java
-Validator<Message> validator = Validator.<Message> builder() //
+Validator<Message> validator = ValidatorBuilder.<Message> of() //
             .constraint(Message::getText, "text", c -> c.notBlank() //
                     .lessThanOrEqual(3)) //
             .build(); //
@@ -250,7 +259,7 @@ validator.validate(new Message("I❤️☕️")).isValid(); // false
 If you want to count as you see (3, in this case), use `emoji()`.
 
 ```java
-Validator<Message> validator = Validator.<Message> builder() //
+Validator<Message> validator = ValidatorBuilder.<Message> of() //
             .constraint(Message::getText, "text", c -> c.notBlank() //
                     .emoji().lessThanOrEqual(3)) //
             .build(); //
@@ -260,7 +269,7 @@ validator.validate(new Message("I❤️☕️")).isValid(); // true
 For the safety (such as storing into a database), you can also check the size as byte arrays
 
 ```java
-Validator<Message> validator = Validator.<Message> builder() //
+Validator<Message> validator = ValidatorBuilder.<Message> of() //
             .constraint(Message::getText, "text", c -> c.notBlank() //
                     .emoji().lessThanOrEqual(3)
                     .asByteArray().lessThanOrEqual(16)) //
@@ -328,6 +337,7 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 ```kotlin
 package com.example
 
+import am.ik.yavi.builder.ValidatorBuilder
 import am.ik.yavi.core.Validator
 import org.springframework.fu.kofu.application
 import org.springframework.fu.kofu.web.jackson
@@ -354,7 +364,7 @@ data class Message(
         val text: String
 ) {
     companion object {
-        val validator = Validator.builder<Message>()
+        val validator = ValidatorBuilder.of<Message>()
                 .constraint(Message::text) {
                     notBlank().lessThanOrEqual(3)
                 }
@@ -374,6 +384,7 @@ fun main(args: Array<String>) = app.run()
 package com.example
 
 import am.ik.yavi.core.Validator
+import am.ik.yavi.builder.ValidatorBuilder
 import am.ik.yavi.builder.constraintOnCharSequence
 import am.ik.yavi.builder.nest
 import io.ktor.application.Application
@@ -396,7 +407,7 @@ data class PostSnippet(val snippet: PostSnippet.Text) {
     data class Text(val text: String)
 
     companion object {
-        val validator = Validator.builder<PostSnippet>()
+        val validator = ValidatorBuilder.of<PostSnippet>()
             .nest(PostSnippet::snippet) {
                 constraint(Text::text) {
                     notEmpty().lessThanOrEqual(3)
