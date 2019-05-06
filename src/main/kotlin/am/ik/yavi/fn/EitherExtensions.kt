@@ -28,3 +28,25 @@ fun <L, R> Either<L, R>.leftOrNull(): L? = this.left
  * @return the right value if exists, `null` otherwise
  */
 fun <L, R> Either<L, R>.rightOrNull(): R? = this.right
+
+/**
+ * Coroutines variant of [am.ik.yavi.fn.Either.bimap].
+ */
+suspend fun <L, R, X, Y> Either<L, R>.awaitBimap(leftMapper: suspend (L) -> X, rightMapper: suspend (R) -> Y) =
+        if (isLeft) Either<X, Y>(leftMapper.invoke(left), null) else Either<X, Y>(null, rightMapper.invoke(right))
+
+/**
+ * Coroutines variant of [am.ik.yavi.fn.Either.fold].
+ */
+suspend fun <L, R, U> Either<L, R>.awaitFold(leftMapper: suspend (L) -> U, rightMapper: suspend (R) -> U) =
+        if (isLeft) leftMapper.invoke(left) else rightMapper.invoke(right)
+
+/**
+ * Coroutines variant of [am.ik.yavi.fn.Either.leftMap].
+ */
+suspend fun <L, R, X> Either<L, R>.awaitLeftMap(leftMapper: suspend (L) -> X) = Either<X, R>(leftMapper.invoke(left), null)
+
+/**
+ * Coroutines variant of [am.ik.yavi.fn.Either.rightMap].
+ */
+suspend fun <L, R, Y> Either<L, R>.awaitRightMap(rightMapper: suspend (R) -> Y) = Either<L, Y>(null, rightMapper.invoke(right))
