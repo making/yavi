@@ -21,25 +21,25 @@ import org.junit.Test
 class EitherExtensionsTest {
     @Test
     fun leftOrNullExists() {
-        val left = Either.left<Int, String>(1)
-        Assertions.assertThat(left.leftOrNull()).isEqualTo(1)
+        val either = Either.left<Int, String>(1)
+        Assertions.assertThat(either.leftOrNull()).isEqualTo(1)
     }
 
     @Test
     fun leftOrNullNotExists() {
-        val left = Either.right<Int, String>("foo")
-        Assertions.assertThat(left.leftOrNull()).isNull()
+        val either = Either.right<Int, String>("foo")
+        Assertions.assertThat(either.leftOrNull()).isNull()
     }
 
     @Test
     fun rightOrNullExists() {
-        val left = Either.right<Int, String>("foo")
-        Assertions.assertThat(left.rightOrNull()).isEqualTo("foo")
+        val either = Either.right<Int, String>("foo")
+        Assertions.assertThat(either.rightOrNull()).isEqualTo("foo")
     }
 
     @Test
     fun rightOrNullNotExists() {
-        val left = Either.left<Int, String>(1)
-        Assertions.assertThat(left.rightOrNull()).isNull()
+        val either = Either.left<Int, String>(1)
+        Assertions.assertThat(either.rightOrNull()).isNull()
     }
 }
