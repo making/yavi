@@ -26,7 +26,7 @@ public final class Either<L, R> {
 	final L left;
 	final R right;
 
-	private Either(@Nullable L left, @Nullable R right) {
+	Either(@Nullable L left, @Nullable R right) {
 		if (left == null && right == null) {
 			throw new IllegalArgumentException("Both left and right are null!");
 		}
