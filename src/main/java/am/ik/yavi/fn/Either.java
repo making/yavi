@@ -95,8 +95,9 @@ public final class Either<L, R> {
 		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
 	}
 
-	public void doOnLeft(Consumer<L> action) {
+	public Either<L, R> doOnLeft(Consumer<L> action) {
 		action.accept(this.left);
+		return this;
 	}
 
 	public Optional<R> right() {
@@ -114,8 +115,9 @@ public final class Either<L, R> {
 		return this.right().orElseGet(() -> leftToRight.apply(this.left));
 	}
 
-	public void doOnRight(Consumer<R> action) {
+	public Either<L, R> doOnRight(Consumer<R> action) {
 		action.accept(this.right);
+		return this;
 	}
 
 	public Either<R, L> swap() {
