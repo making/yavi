@@ -53,7 +53,7 @@ data class DemoForEachIfPresentMap(val x: Map<String, DemoString>?)
 data class DemoForEachArray(val x: Array<DemoString>)
 data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
 
-class YaviTest {
+class ValidatorBuilderExtensionsTest {
     private val demoStringValidator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
             .constraint(DemoString::x) { greaterThan(1).lessThan(5) }
             .build()
