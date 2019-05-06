@@ -17,6 +17,7 @@ package am.ik.yavi.fn;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import am.ik.yavi.jsr305.Nullable;
@@ -94,6 +95,10 @@ public final class Either<L, R> {
 		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
 	}
 
+	public void doOnLeft(Consumer<L> action) {
+		action.accept(this.left);
+	}
+
 	public Optional<R> right() {
 		return Optional.ofNullable(this.right);
 	}
@@ -107,6 +112,10 @@ public final class Either<L, R> {
 
 	public R rightOrElseGet(Function<L, R> leftToRight) {
 		return this.right().orElseGet(() -> leftToRight.apply(this.left));
+	}
+
+	public void doOnRight(Consumer<R> action) {
+		action.accept(this.right);
 	}
 
 	public Either<R, L> swap() {

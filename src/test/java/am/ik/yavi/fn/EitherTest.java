@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.fn;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,6 +66,13 @@ public class EitherTest {
 	}
 
 	@Test
+	public void doOnLeft() {
+		AtomicInteger ref = new AtomicInteger(0);
+		Either.left(1).doOnLeft(ref::set);
+		assertThat(ref.get()).isEqualTo(1);
+	}
+
+	@Test
 	public void mapLeft() {
 		Either<Integer, String> either = Either.left(100);
 		Either<Integer, String> map = either.leftMap(i -> i * 2);
@@ -89,6 +98,13 @@ public class EitherTest {
 	public void rightOrElseGet() {
 		Either<String, Integer> either = Either.left("100");
 		assertThat(either.rightOrElseGet(Integer::valueOf)).isEqualTo(100);
+	}
+
+	@Test
+	public void doOnRight() {
+		AtomicInteger ref = new AtomicInteger(0);
+		Either.right(1).doOnRight(ref::set);
+		assertThat(ref.get()).isEqualTo(1);
 	}
 
 	@Test
