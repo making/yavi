@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.fn;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -67,9 +68,11 @@ public class EitherTest {
 
 	@Test
 	public void doOnLeft() {
-		AtomicInteger ref = new AtomicInteger(0);
-		Either.left(1).doOnLeft(ref::set);
-		assertThat(ref.get()).isEqualTo(1);
+		AtomicInteger lref = new AtomicInteger(0);
+		AtomicBoolean rref = new AtomicBoolean(false);
+		Either.<Integer, Boolean> left(1).doOnLeft(lref::set).doOnRight(rref::set);
+		assertThat(lref.get()).isEqualTo(1);
+		assertThat(rref.get()).isFalse();
 	}
 
 	@Test
@@ -102,9 +105,11 @@ public class EitherTest {
 
 	@Test
 	public void doOnRight() {
-		AtomicInteger ref = new AtomicInteger(0);
-		Either.right(1).doOnRight(ref::set);
-		assertThat(ref.get()).isEqualTo(1);
+		AtomicInteger lref = new AtomicInteger(0);
+		AtomicBoolean rref = new AtomicBoolean(false);
+		Either.<Integer, Boolean> right(true).doOnRight(rref::set);
+		assertThat(lref.get()).isEqualTo(0);
+		assertThat(rref.get()).isTrue();
 	}
 
 	@Test
