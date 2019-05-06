@@ -78,6 +78,7 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void ignoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.variant(opts -> opts.fvs(MongolianFreeVariationSelector.IGNORE))
 				.fixedSize(1).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ᠠ᠋")).isTrue();
 		assertThat(predicate.test("ᠰ᠌")).isTrue();
@@ -86,6 +87,7 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void ignoreIvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
+				.variant(opts -> opts.ivs(IdeographicVariationSequence.IGNORE))
 				.fixedSize(1).predicates().peekFirst().predicate();
 		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
 		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
@@ -138,7 +140,6 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void notIgnoreFvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(ops -> ops.fvs(MongolianFreeVariationSelector.NOT_IGNORE))
 				.fixedSize(2).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ᠠ᠋")).isTrue();
 		assertThat(predicate.test("ᠰ᠌")).isTrue();
@@ -147,7 +148,6 @@ public class CharSequenceConstraintTest {
 	@Test
 	public void notIgnoreIvsCharacter() {
 		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(ops -> ops.ivs(IdeographicVariationSequence.NOT_IGNORE))
 				.fixedSize(2).predicates().peekFirst().predicate();
 		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
 		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();

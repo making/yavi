@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -32,7 +33,6 @@ import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
-import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.fn.Either;
 
 public class ValidatorTest {
@@ -447,7 +447,8 @@ public class ValidatorTest {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
-						c -> c.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+						c -> c.variant(opts -> opts.ivs(IGNORE)).lessThanOrEqual(3)
+								.asByteArray().lessThanOrEqual(12))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -461,8 +462,7 @@ public class ValidatorTest {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
-						c -> c.variant(ops -> ops.notIgnoreAll()).fixedSize(3)
-								.asByteArray().fixedSize(13))
+						c -> c.fixedSize(3).asByteArray().fixedSize(13))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -474,10 +474,9 @@ public class ValidatorTest {
 	@Test
 	public void ivsSizeAndByteSizeInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
-		Validator<User> validator = ValidatorBuilder.of(User.class).constraint(
-				User::getName, "name",
-				c -> c.variant(opts -> opts.ivs(IdeographicVariationSequence.NOT_IGNORE))
-						.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+		Validator<User> validator = ValidatorBuilder.of(User.class)
+				.constraint(User::getName, "name",
+						c -> c.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -493,7 +492,8 @@ public class ValidatorTest {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
-						c -> c.fixedSize(3).asByteArray().fixedSize(13))
+						c -> c.variant(opts -> opts.ivs(IGNORE)).fixedSize(3)
+								.asByteArray().fixedSize(13))
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		violations.forEach(x -> System.out.println(x.message()));

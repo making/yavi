@@ -35,9 +35,16 @@ public class VariantOptions {
 		return new Builder();
 	}
 
+	private boolean isNotIgnoreAll() {
+		return !this.svs.ignore() && !this.fvs.ignore() && !this.ivs.ignore();
+	}
+
 	public String ignored(@Nullable String s) {
 		if (s == null || s.isEmpty()) {
 			return "";
+		}
+		if (this.isNotIgnoreAll()) {
+			return s;
 		}
 		StringBuilder regex = new StringBuilder("[");
 		if (this.svs.ignore()) {
@@ -61,7 +68,7 @@ public class VariantOptions {
 		private StandardizedVariationSequence svs;
 
 		Builder() {
-			this.ignoreAll();
+			this.notIgnoreAll();
 		}
 
 		public VariantOptions build() {
