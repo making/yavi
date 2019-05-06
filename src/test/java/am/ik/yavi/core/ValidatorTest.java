@@ -709,7 +709,4 @@ public class ValidatorTest {
 				.build();
 	}
 
-	enum Group implements ConstraintGroup {
-		UPDATE, DELETE
-	}
 }

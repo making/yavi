@@ -16,6 +16,7 @@
 package am.ik.yavi.builder
 
 import am.ik.yavi.core.ConstraintGroup
+import am.ik.yavi.core.Group
 import am.ik.yavi.core.Validator
 import org.assertj.core.api.Assertions
 import org.junit.Test
@@ -856,6 +857,52 @@ class ValidatorBuilderExtensionsTest {
         Assertions.assertThat(violation.messageKey()).isEqualTo("container.greaterThan")
 
         violations = validator.validate(demo, groupB)
+        Assertions.assertThat(violations.isValid).isTrue()
+    }
+
+    @Test
+    fun onGroup() {
+        val validator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
+                .constraintOnGroup(Group.UPDATE) {
+                    constraint(DemoString::x) {
+                        greaterThan(1)
+                    }
+                }
+                .constraintOnGroup(Group.DELETE) {
+                    constraint(DemoString::x) {
+                        lessThan(3)
+                    }
+                }
+                .build()
+
+        // valid for UPDATE and DELETe
+        var demo = DemoString("aa")
+        var violations = validator.validate(demo, Group.UPDATE)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        violations = validator.validate(demo, Group.DELETE)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        // valid for only UPDATE
+        demo = DemoString("aaa")
+        violations = validator.validate(demo, Group.UPDATE)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        violations = validator.validate(demo, Group.DELETE)
+        Assertions.assertThat(violations.isValid).isFalse()
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 3. The given size is 3""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+
+        // valid for only DELETE
+        demo = DemoString("a")
+        violations = validator.validate(demo, Group.UPDATE)
+        Assertions.assertThat(violations.isValid).isFalse()
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be greater than 1. The given size is 1""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.greaterThan")
+
+        violations = validator.validate(demo, Group.DELETE)
         Assertions.assertThat(violations.isValid).isTrue()
     }
 

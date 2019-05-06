@@ -18,6 +18,7 @@ package am.ik.yavi.builder
 import am.ik.yavi.constraint.*
 import am.ik.yavi.constraint.array.*
 import am.ik.yavi.core.ConstraintCondition
+import am.ik.yavi.core.ConstraintGroup
 import am.ik.yavi.core.Validator
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -174,3 +175,6 @@ fun <T, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Array<E>?>, 
 
 fun <T> ValidatorBuilder<T>.constraintOnCondition(condition: ConstraintCondition<T>, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraintOnCondition(condition, ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
+
+fun <T> ValidatorBuilder<T>.constraintOnGroup(group: ConstraintGroup, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
+        this.constraintOnCondition(group.toCondition(), block)
