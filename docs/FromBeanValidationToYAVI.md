@@ -518,7 +518,7 @@ to
 
 ```java
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintForNested(OrderForm::getAddress, "address", 
+  .nest(OrderForm::getAddress, "address", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
   .build();
@@ -533,7 +533,7 @@ Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .build();
 
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintForNested(OrderForm::getAddress, "address", addressValidator)
+  .nest(OrderForm::getAddress, "address", addressValidator)
   .build();
 ```
 
@@ -550,7 +550,7 @@ to
 
 ```java
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintIfPresentForNested(OrderForm::getAddress, "address", 
+  .nestIfPresent(OrderForm::getAddress, "address", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
   .build();
@@ -560,7 +560,7 @@ or
 
 ```java
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintIfPresentForNested(OrderForm::getAddress, "address", addressValidator)
+  .nestIfPresent(OrderForm::getAddress, "address", addressValidator)
   .build();
 ```
 
@@ -591,7 +591,7 @@ public class OrderForm implements Serializable {
 
 ```java
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintForEach(OrderForm::getAddress, "addresses", 
+  .forEach(OrderForm::getAddress, "addresses", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
   .build();
@@ -606,7 +606,7 @@ Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .build();
 
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintForEach(OrderForm::getAddresses, "addresses", addressValidator)
+  .forEach(OrderForm::getAddresses, "addresses", addressValidator)
   .build();
 ```
 
@@ -634,7 +634,7 @@ public class OrderForm implements Serializable {
 
 ```java
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintIfPresentForEach(OrderForm::getAddress, "addresses", 
+  .forEachIfPresent(OrderForm::getAddress, "addresses", 
   b -> b.constraint(AddressForm::getZipCode, "zipCode", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(10))
     .constraint(AddressForm::getZipCode, "address", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100)))
   .build();
@@ -649,7 +649,7 @@ Validator<AddressForm> addressValidator = ValidatorBuilder.of(AddressForm.class)
     .build();
 
 Validator<OrderForm> validator = ValidatorBuilder.of(OrderForm.class)
-  .constraintIfPresenForEach(OrderForm::getAddresses, "addresses", addressValidator)
+  .forEachIfPresent(OrderForm::getAddresses, "addresses", addressValidator)
   .build();
 ```
 
@@ -668,7 +668,7 @@ Validator<String> stringValidator = ValidatorBuilder.of(String.class)
   .build();
 
 Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
-  .constraintForEach(Foo::getTexts, "texts", stringValidator)
+  .forEach(Foo::getTexts, "texts", stringValidator)
   .build();
 ```
 
