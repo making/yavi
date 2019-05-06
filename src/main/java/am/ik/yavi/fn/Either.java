@@ -23,8 +23,8 @@ import java.util.function.Function;
 import am.ik.yavi.jsr305.Nullable;
 
 public final class Either<L, R> {
-	private final L left;
-	private final R right;
+	final L left;
+	final R right;
 
 	private Either(@Nullable L left, @Nullable R right) {
 		if (left == null && right == null) {

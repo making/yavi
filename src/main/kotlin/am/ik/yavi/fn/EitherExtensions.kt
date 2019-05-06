@@ -20,11 +20,11 @@ package am.ik.yavi.fn
  *
  * @return the left value if exists, `null` otherwise
  */
-fun <L, R> Either<L, R>.leftOrNull(): L? = left().orElse(null)
+fun <L, R> Either<L, R>.leftOrNull(): L? = this.left
 
 /**
  * Returns the right value if exists, `null` otherwise
  *
  * @return the right value if exists, `null` otherwise
  */
-fun <L, R> Either<L, R>.rightOrNull(): R? = right().orElse(null)
+fun <L, R> Either<L, R>.rightOrNull(): R? = this.right
