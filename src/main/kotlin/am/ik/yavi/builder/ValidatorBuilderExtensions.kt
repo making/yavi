@@ -76,7 +76,7 @@ fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigInteger?>, block: 
 
 @JvmName("constraintOnBigDecimal")
 @Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T, E : BigDecimal?> ValidatorBuilder<T>.constraint(prop: KProperty1<T, E?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigDecimal?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
         this.konstraint(prop, block)
 
 @JvmName("constraintOnCollection")
@@ -245,7 +245,7 @@ fun <T> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, BigInteger?>, block: 
         this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("konstraintOnBigDecimal")
-fun <T, E : BigDecimal?> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, E?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
+fun <T> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, BigDecimal?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("konstraintOnCollection")
