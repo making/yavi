@@ -73,8 +73,6 @@ violations.forEach(x -> System.out.println(x.message()));
 If you are using Kotlin, you can write a bit shorter using `konstraint` method instead of `constraint`
 
 ```kotlin
-import am.ik.yavi.builder.constraint
-
 val validator: Validator<User> = ValidatorBuilder.of<User>()
         .konstraint(User::name) {
             notNull() //
