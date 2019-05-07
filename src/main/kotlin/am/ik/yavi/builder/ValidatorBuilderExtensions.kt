@@ -299,4 +299,4 @@ fun <T> ValidatorBuilder<T>.konstraintOnCondition(condition: ConstraintCondition
         this.constraintOnCondition(condition, ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
 
 fun <T> ValidatorBuilder<T>.konstraintOnGroup(group: ConstraintGroup, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
-        this.constraintOnCondition(group.toCondition(), block)
+        this.constraintOnCondition(group.toCondition(), ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
