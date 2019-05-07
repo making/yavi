@@ -30,7 +30,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
 </dependency>
 ```
 
@@ -70,23 +70,23 @@ violations.forEach(x -> System.out.println(x.message()));
 
 [sample code](src/test/java/am/ik/yavi/core/ValidatorTest.java)
 
-If you are using Kotlin, you can write a bit shorter
+If you are using Kotlin, you can write a bit shorter using `konstraint` method instead of `constraint`
 
 ```kotlin
 import am.ik.yavi.builder.constraint
 
 val validator: Validator<User> = ValidatorBuilder.of<User>()
-        .constraint(User::name) {
+        .konstraint(User::name) {
             notNull() //
                     .lessThanOrEqual(20)
         } //
-        .constraint(User::email) {
+        .konstraint(User::email) {
             notNull() //
                     .greaterThanOrEqual(5) //
                     .lessThanOrEqual(50) //
                     .email()
         } //
-        .constraint(User::age) {
+        .konstraint(User::age) {
             notNull() //
                     .greaterThanOrEqual(0) //
                     .lessThanOrEqual(200)
@@ -371,7 +371,7 @@ data class Message(
 ) {
     companion object {
         val validator = ValidatorBuilder.of<Message>()
-                .constraint(Message::text, {
+                .konstraint(Message::text, {
                     notBlank().lessThanOrEqual(3)
                 })
                 .build()
@@ -417,7 +417,7 @@ data class PostSnippet(val snippet: PostSnippet.Text) {
     companion object {
         val validator = ValidatorBuilder.of<PostSnippet>()
             .nest(PostSnippet::snippet) {
-                constraint(Text::text) {
+                konstraint(Text::text) {
                     notEmpty().lessThanOrEqual(3)
                 }
             }
