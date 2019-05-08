@@ -664,7 +664,7 @@ public class Foo {
 
 ```java
 Validator<String> stringValidator = ValidatorBuilder.of(String.class)
-  .constraint((ToCharSequence<String, String>) o -> o, "value", c -> c.lessThanOrEqual(2))
+  .constraint(String::toString, "value", c -> c.lessThanOrEqual(2))
   .build();
 
 Validator<Foo> validator = ValidatorBuilder.of(Foo.class)

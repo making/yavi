@@ -27,7 +27,6 @@ import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.builder.ValidatorBuilder.ToCharSequence;
 
 public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
@@ -51,10 +50,8 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Test
 	public void stringListAllInValid() throws Exception {
 		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
-		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
-				.constraint((ToCharSequence<String, String>) o -> o, "value",
-						c -> c.notNull().lessThanOrEqual(2))
-				.build();
+		Validator<String> stringValidator = ValidatorBuilder.of(String.class).constraint(
+				String::toString, "value", c -> c.notNull().lessThanOrEqual(2)).build();
 		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
 				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
@@ -75,8 +72,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	public void stringListAllInValidEmptyNestedName() throws Exception {
 		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
 		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
-				.constraint((ToCharSequence<String, String>) o -> o, "",
-						c -> c.notNull().lessThanOrEqual(2))
+				.constraint(String::toString, "", c -> c.notNull().lessThanOrEqual(2))
 				.build();
 		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
 				.forEach(Foo::getTexts, "texts", stringValidator).build();
@@ -97,10 +93,8 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Test
 	public void stringListAllValid() throws Exception {
 		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
-		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
-				.constraint((ToCharSequence<String, String>) o -> o, "value",
-						c -> c.notNull().lessThanOrEqual(2))
-				.build();
+		Validator<String> stringValidator = ValidatorBuilder.of(String.class).constraint(
+				String::toString, "value", c -> c.notNull().lessThanOrEqual(2)).build();
 		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
 				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
