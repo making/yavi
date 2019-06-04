@@ -15,46 +15,74 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ByteConstraintTest {
-	private ByteConstraint<Byte> constraint = new ByteConstraint<>();
+class ByteConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<Byte> predicate = constraint.greaterThan((byte) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((byte) 101)).isTrue();
-		assertThat(predicate.test((byte) 100)).isFalse();
+	@ParameterizedTest
+	@ValueSource(bytes = {101, 120})
+	void validGreaterThan(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThan((byte) 100));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<Byte> predicate = constraint.greaterThanOrEqual((byte) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((byte) 101)).isTrue();
-		assertThat(predicate.test((byte) 100)).isTrue();
-		assertThat(predicate.test((byte) 99)).isFalse();
+	@ParameterizedTest
+	@ValueSource(bytes = {100, -50})
+	void invalidGreaterThan(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThan((byte) 100));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<Byte> predicate = constraint.lessThan((byte) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((byte) 99)).isTrue();
-		assertThat(predicate.test((byte) 100)).isFalse();
+	@ParameterizedTest
+	@ValueSource(bytes = {101, 100})
+	void validGreaterThanOrEqual(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThanOrEqual((byte) 100));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<Byte> predicate = constraint.lessThanOrEqual((byte) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((byte) 99)).isTrue();
-		assertThat(predicate.test((byte) 100)).isTrue();
-		assertThat(predicate.test((byte) 101)).isFalse();
+	@ParameterizedTest
+	@ValueSource(bytes = {99, -50})
+	void invalidGreaterThanOrEqual(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThanOrEqual((byte) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(bytes = {99, -50})
+	void validLessThan(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.lessThan((byte) 100));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(bytes = {100, 120})
+	void invalidLessThan(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.lessThan((byte) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(bytes = {99, 100})
+	void validLessThanOrEqual(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.lessThanOrEqual((byte) 100));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(bytes = {101, 120})
+	void invalidLessThanOrEqual(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(c -> c.lessThanOrEqual((byte) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<Byte> retrievePredicate(Function<ByteConstraint<Byte>, ByteConstraint<Byte>> constraint) {
+		return constraint.apply(new ByteConstraint<>()).predicates().peekFirst().predicate();
 	}
 }

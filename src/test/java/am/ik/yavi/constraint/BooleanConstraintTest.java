@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BooleanConstraintTest {
+class BooleanConstraintTest {
 	private BooleanConstraint<Boolean> constraint = new BooleanConstraint<>();
 
 	@Test
-	public void isFalse() {
+	void isFalse() {
 		Predicate<Boolean> predicate = constraint.isFalse().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(true)).isFalse();
@@ -33,7 +33,7 @@ public class BooleanConstraintTest {
 	}
 
 	@Test
-	public void isTrue() {
+	void isTrue() {
 		Predicate<Boolean> predicate = constraint.isTrue().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(true)).isTrue();

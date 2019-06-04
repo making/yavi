@@ -15,46 +15,74 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DoubleConstraintTest {
-	private DoubleConstraint<Double> constraint = new DoubleConstraint<>();
+class DoubleConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<Double> predicate = constraint.greaterThan(100.0).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(101.0)).isTrue();
-		assertThat(predicate.test(100.0)).isFalse();
+	@ParameterizedTest
+	@ValueSource(doubles = {101.0, 150.0})
+	void validGreaterThan(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.greaterThan(100.0));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<Double> predicate = constraint.greaterThanOrEqual(100.0).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(101.0)).isTrue();
-		assertThat(predicate.test(100.0)).isTrue();
-		assertThat(predicate.test(99.0)).isFalse();
+	@ParameterizedTest
+	@ValueSource(doubles = {100.0, -50.0})
+	void invalidGreaterThan(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.greaterThan(100.0));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<Double> predicate = constraint.lessThan(100.0).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(99.0)).isTrue();
-		assertThat(predicate.test(100.0)).isFalse();
+	@ParameterizedTest
+	@ValueSource(doubles = {101.0, 100.0})
+	void validGreaterThanOrEqual(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100.0));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<Double> predicate = constraint.lessThanOrEqual(100.0).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(99.0)).isTrue();
-		assertThat(predicate.test(100.0)).isTrue();
-		assertThat(predicate.test(101.0)).isFalse();
+	@ParameterizedTest
+	@ValueSource(doubles = {99L, -50.0})
+	void invalidGreaterThanOrEqual(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100.0));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(doubles = {99L, -50.0})
+	void validLessThan(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.lessThan(100.0));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = {100.0, 150.0})
+	void invalidLessThan(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.lessThan(100.0));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = {99L, 100.0})
+	void validLessThanOrEqual(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.lessThanOrEqual(100.0));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = {101.0, 150.0})
+	void invalidLessThanOrEqual(double value) {
+		Predicate<Double> predicate = retrievePredicate(c -> c.lessThanOrEqual(100.0));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<Double> retrievePredicate(Function<DoubleConstraint<Double>, DoubleConstraint<Double>> constraint) {
+		return constraint.apply(new DoubleConstraint<>()).predicates().peekFirst().predicate();
 	}
 }

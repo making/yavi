@@ -18,35 +18,32 @@ package am.ik.yavi.constraint;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MapConstraintTest {
-	private MapConstraint<Map<String, String>, String, String> constraint = new MapConstraint<>();
+class MapConstraintTest {
 
 	@Test
-	public void containsKey() {
-		Predicate<Map<String, String>> predicate = constraint.containsKey("foo")
-				.predicates().peekFirst().predicate();
+	void containsKey() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.containsKey("foo"));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
 	}
 
 	@Test
-	public void containsValue() {
-		Predicate<Map<String, String>> predicate = constraint.containsValue("bar")
-				.predicates().peekFirst().predicate();
+	void containsValue() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.containsValue("bar"));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("foo", "baz"))).isFalse();
 	}
 
 	@Test
-	public void fixedSize() {
-		Predicate<Map<String, String>> predicate = constraint.fixedSize(2).predicates()
-				.peekFirst().predicate();
+	void fixedSize() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.fixedSize(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -64,9 +61,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
-		Predicate<Map<String, String>> predicate = constraint.greaterThan(2).predicates()
-				.peekFirst().predicate();
+	void greaterThan() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.greaterThan(2));
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
 				put("a", "b");
@@ -83,9 +79,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
-		Predicate<Map<String, String>> predicate = constraint.greaterThanOrEqual(2)
-				.predicates().peekFirst().predicate();
+	void greaterThanOrEqual() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.greaterThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -103,9 +98,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
-		Predicate<Map<String, String>> predicate = constraint.lessThan(2).predicates()
-				.peekFirst().predicate();
+	void lessThan() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.lessThan(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -116,9 +110,8 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
-		Predicate<Map<String, String>> predicate = constraint.lessThanOrEqual(2)
-				.predicates().peekFirst().predicate();
+	void lessThanOrEqual() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.lessThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -136,10 +129,13 @@ public class MapConstraintTest {
 	}
 
 	@Test
-	public void notEmpty() {
-		Predicate<Map<String, String>> predicate = constraint.notEmpty().predicates()
-				.peekFirst().predicate();
+	void notEmpty() {
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.notEmpty());
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.emptyMap())).isFalse();
 	}
+
+	 private static Predicate<Map<String, String>> retrievePredicate(Function<MapConstraint<Map<String, String>, String, String>, MapConstraint<Map<String, String>, String, String>> constraint) {
+		 return constraint.apply(new MapConstraint<>()).predicates().peekFirst().predicate();
+	 }
 }

@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ObjectConstraintTest {
+class ObjectConstraintTest {
 	private ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
 
 	@Test
-	public void isNull() {
+	void isNull() {
 		Predicate<String> predicate = constraint.isNull().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isFalse();
@@ -33,7 +33,7 @@ public class ObjectConstraintTest {
 	}
 
 	@Test
-	public void notNull() {
+	void notNull() {
 		Predicate<String> predicate = constraint.notNull().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isTrue();

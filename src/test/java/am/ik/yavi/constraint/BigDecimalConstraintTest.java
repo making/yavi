@@ -15,49 +15,75 @@
  */
 package am.ik.yavi.constraint;
 
-import java.math.BigDecimal;
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.math.BigDecimal;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigDecimalConstraintTest {
-	private BigDecimalConstraint<BigDecimal> constraint = new BigDecimalConstraint<>();
+class BigDecimalConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<BigDecimal> predicate = constraint.greaterThan(new BigDecimal("100"))
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(new BigDecimal("101"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("100"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "150"})
+	void validGreaterThan(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.greaterThan(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<BigDecimal> predicate = constraint
-				.greaterThanOrEqual(new BigDecimal("100")).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new BigDecimal("101"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("100"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("99"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"100", "-50"})
+	void invalidGreaterThan(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.greaterThan(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<BigDecimal> predicate = constraint.lessThan(new BigDecimal("100"))
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(new BigDecimal("99"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("100"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "100"})
+	void validGreaterThanOrEqual(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<BigDecimal> predicate = constraint
-				.lessThanOrEqual(new BigDecimal("100")).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new BigDecimal("99"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("100"))).isTrue();
-		assertThat(predicate.test(new BigDecimal("101"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "-50"})
+	void invalidGreaterThanOrEqual(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "-50"})
+	void validLessThan(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.lessThan(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"100", "150"})
+	void invalidLessThan(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.lessThan(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "100"})
+	void validLessThanOrEqual(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "150"})
+	void invalidLessThanOrEqual(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigDecimal("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<BigDecimal> retrievePredicate(Function<BigDecimalConstraint<BigDecimal>, BigDecimalConstraint<BigDecimal>> constraint) {
+		return constraint.apply(new BigDecimalConstraint<>()).predicates().peekFirst().predicate();
 	}
 }

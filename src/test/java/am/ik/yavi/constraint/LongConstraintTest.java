@@ -15,46 +15,74 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LongConstraintTest {
-	private LongConstraint<Long> constraint = new LongConstraint<>();
+class LongConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<Long> predicate = constraint.greaterThan(100L).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(101L)).isTrue();
-		assertThat(predicate.test(100L)).isFalse();
+	@ParameterizedTest
+	@ValueSource(longs = {101L, 150L})
+	void validGreaterThan(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThan(100L));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<Long> predicate = constraint.greaterThanOrEqual(100L).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(101L)).isTrue();
-		assertThat(predicate.test(100L)).isTrue();
-		assertThat(predicate.test(99L)).isFalse();
+	@ParameterizedTest
+	@ValueSource(longs = {100L, -50L})
+	void invalidGreaterThan(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThan(100L));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<Long> predicate = constraint.lessThan(100L).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(99L)).isTrue();
-		assertThat(predicate.test(100L)).isFalse();
+	@ParameterizedTest
+	@ValueSource(longs = {101L, 100L})
+	void validGreaterThanOrEqual(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100L));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<Long> predicate = constraint.lessThanOrEqual(100L).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test(99L)).isTrue();
-		assertThat(predicate.test(100L)).isTrue();
-		assertThat(predicate.test(101L)).isFalse();
+	@ParameterizedTest
+	@ValueSource(longs = {99L, -50L})
+	void invalidGreaterThanOrEqual(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100L));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(longs = {99L, -50L})
+	void validLessThan(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.lessThan(100L));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = {100L, 150L})
+	void invalidLessThan(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.lessThan(100L));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = {99L, 100L})
+	void validLessThanOrEqual(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.lessThanOrEqual(100L));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = {101L, 150L})
+	void invalidLessThanOrEqual(long value) {
+		Predicate<Long> predicate = retrievePredicate(c -> c.lessThanOrEqual(100L));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<Long> retrievePredicate(Function<LongConstraint<Long>, LongConstraint<Long>> constraint) {
+		return constraint.apply(new LongConstraint<>()).predicates().peekFirst().predicate();
 	}
 }

@@ -15,46 +15,74 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShortConstraintTest {
-	private ShortConstraint<Short> constraint = new ShortConstraint<>();
+class ShortConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<Short> predicate = constraint.greaterThan((short) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((short) 101)).isTrue();
-		assertThat(predicate.test((short) 100)).isFalse();
+	@ParameterizedTest
+	@ValueSource(shorts = {101, 150})
+	void validGreaterThan(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThan((short) 100));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<Short> predicate = constraint.greaterThanOrEqual((short) 100)
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test((short) 101)).isTrue();
-		assertThat(predicate.test((short) 100)).isTrue();
-		assertThat(predicate.test((short) 99)).isFalse();
+	@ParameterizedTest
+	@ValueSource(shorts = {100, -50})
+	void invalidGreaterThan(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThan((short) 100));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<Short> predicate = constraint.lessThan((short) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((short) 99)).isTrue();
-		assertThat(predicate.test((short) 100)).isFalse();
+	@ParameterizedTest
+	@ValueSource(shorts = {101, 100})
+	void validGreaterThanOrEqual(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThanOrEqual((short) 100));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<Short> predicate = constraint.lessThanOrEqual((short) 100).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test((short) 99)).isTrue();
-		assertThat(predicate.test((short) 100)).isTrue();
-		assertThat(predicate.test((short) 101)).isFalse();
+	@ParameterizedTest
+	@ValueSource(shorts = {99, -50})
+	void invalidGreaterThanOrEqual(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThanOrEqual((short) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(shorts = {99, -50})
+	void validLessThan(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.lessThan((short) 100));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = {100, 150})
+	void invalidLessThan(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.lessThan((short) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = {99, 100})
+	void validLessThanOrEqual(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.lessThanOrEqual((short) 100));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = {101, 150})
+	void invalidLessThanOrEqual(short value) {
+		Predicate<Short> predicate = retrievePredicate(c -> c.lessThanOrEqual((short) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<Short> retrievePredicate(Function<ShortConstraint<Short>, ShortConstraint<Short>> constraint) {
+		return constraint.apply(new ShortConstraint<>()).predicates().peekFirst().predicate();
 	}
 }

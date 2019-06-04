@@ -15,49 +15,75 @@
  */
 package am.ik.yavi.constraint;
 
-import java.math.BigInteger;
-import java.util.function.Predicate;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.math.BigInteger;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BigIntegerConstraintTest {
-	private BigIntegerConstraint<BigInteger> constraint = new BigIntegerConstraint<>();
+class BigIntegerConstraintTest {
 
-	@Test
-	public void greaterThan() {
-		Predicate<BigInteger> predicate = constraint.greaterThan(new BigInteger("100"))
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(new BigInteger("101"))).isTrue();
-		assertThat(predicate.test(new BigInteger("100"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "150"})
+	void validGreaterThan(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThan(new BigInteger("100")));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<BigInteger> predicate = constraint
-				.greaterThanOrEqual(new BigInteger("100")).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new BigInteger("101"))).isTrue();
-		assertThat(predicate.test(new BigInteger("100"))).isTrue();
-		assertThat(predicate.test(new BigInteger("99"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"100", "-50"})
+	void invalidGreaterThan(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThan(new BigInteger("100")));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void lessThan() {
-		Predicate<BigInteger> predicate = constraint.lessThan(new BigInteger("100"))
-				.predicates().peekFirst().predicate();
-		assertThat(predicate.test(new BigInteger("99"))).isTrue();
-		assertThat(predicate.test(new BigInteger("100"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "100"})
+	void validGreaterThanOrEqual(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigInteger("100")));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<BigInteger> predicate = constraint
-				.lessThanOrEqual(new BigInteger("100")).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test(new BigInteger("99"))).isTrue();
-		assertThat(predicate.test(new BigInteger("100"))).isTrue();
-		assertThat(predicate.test(new BigInteger("101"))).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "-50"})
+	void invalidGreaterThanOrEqual(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigInteger("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "-50"})
+	void validLessThan(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThan(new BigInteger("100")));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"100", "150"})
+	void invalidLessThan(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThan(new BigInteger("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"99", "100"})
+	void validLessThanOrEqual(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigInteger("100")));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"101", "150"})
+	void invalidLessThanOrEqual(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigInteger("100")));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<BigInteger> retrievePredicate(Function<BigIntegerConstraint<BigInteger>, BigIntegerConstraint<BigInteger>> constraint) {
+		return constraint.apply(new BigIntegerConstraint<>()).predicates().peekFirst().predicate();
 	}
 }
