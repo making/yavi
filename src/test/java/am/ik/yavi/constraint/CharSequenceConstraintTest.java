@@ -15,165 +15,217 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.function.Predicate;
+import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
+import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import org.junit.Test;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
-import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
+class CharSequenceConstraintTest {
 
-public class CharSequenceConstraintTest {
-	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
+	@ParameterizedTest
+	@ValueSource(strings = {"yavi", "aは小文字"})
+	void validContains(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.contains("a"));
+		assertThat(predicate.test(value)).isTrue();
+	}
 
-	@Test
-	public void contains() {
-		Predicate<String> predicate = constraint.contains("a").predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("yavi")).isTrue();
-		assertThat(predicate.test("yvi")).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"yvi", "Aは大文字"})
+	void invalidContains(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.contains("a"));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abc@example.com", "abc@localhost", "abc@192.168.1.10", "東京@example.com", ""})
+	void validEmail(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.email());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"example.com", "abc@@example.com"})
+	void invalidEmail(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.email());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ab", "漢字"})
+	void validFixedSize(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.fixedSize(2));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"a", "abc"})
+	void invalidFixedSize(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.fixedSize(2));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abcd", "朝ごはん"})
+	void validGreaterThan(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.greaterThan(3));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abc", "\uD842\uDFB7野屋"})
+	void invalidGreaterThan(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.greaterThan(3));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abcd", "abc"})
+	void validGreaterThanOrEqual(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.greaterThanOrEqual(3));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ab", "\uD842\uDFB7田"})
+	void invalidGreaterThanOrEqual(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.greaterThanOrEqual(3));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ᠠ᠋", "ᠰ᠌"})
+	void ignoreFvsCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c ->
+				c.variant(opts -> opts.fvs(MongolianFreeVariationSelector.IGNORE)).fixedSize(1));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"\uD842\uDF9F\uDB40\uDD00", "\u908A\uDB40\uDD07"})
+	void ignoreIvsCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c ->
+				c.variant(opts -> opts.ivs(IdeographicVariationSequence.IGNORE)).fixedSize(1));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ab", "\uD842\uDFB7田"})
+	void validLessThan(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.lessThan(3));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abc", "\uD842\uDFB7野屋"})
+	void invalidLessThan(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.lessThan(3));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ab", "abc", "\uD842\uDFB7野屋"})
+	void validLessThanOrEqual(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.lessThanOrEqual(3));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"abcd"})
+	void invalidLessThanOrEqual(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.lessThanOrEqual(3));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"モジ" /* モシ\u3099 */})
+	void validNormalizeCombiningCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.fixedSize(2));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"foo", "漢字"})
+	void validNotBlank(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.notBlank());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"", "    ", "　　　"})
+	void invalidNotBlank(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.notBlank());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"foo", " "})
+	void validNotEmpty(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.notEmpty());
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@Test
-	public void email() {
-		Predicate<String> predicate = constraint.email().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("abc@example.com")).isTrue();
-		assertThat(predicate.test("abc@localhost")).isTrue();
-		assertThat(predicate.test("abc@192.168.1.10")).isTrue();
-		assertThat(predicate.test("東京@example.com")).isTrue();
-		assertThat(predicate.test("example.com")).isFalse();
-		assertThat(predicate.test("")).isTrue();
-	}
-
-	@Test
-	public void fixedSize() {
-		Predicate<String> predicate = constraint.fixedSize(2).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("a")).isFalse();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isFalse();
-	}
-
-	@Test
-	public void greaterThan() {
-		Predicate<String> predicate = constraint.greaterThan(3).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("abcd")).isTrue();
-		assertThat(predicate.test("abc")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7野屋")).isFalse(); // surrogate pair
-	}
-
-	@Test
-	public void greaterThanOrEqual() {
-		Predicate<String> predicate = constraint.greaterThanOrEqual(3).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test("abcd")).isTrue();
-		assertThat(predicate.test("abc")).isTrue();
-		assertThat(predicate.test("ab")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7田")).isFalse(); // surrogate pair
-	}
-
-	@Test
-	public void ignoreFvsCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(opts -> opts.fvs(MongolianFreeVariationSelector.IGNORE))
-				.fixedSize(1).predicates().peekFirst().predicate();
-		assertThat(predicate.test("ᠠ᠋")).isTrue();
-		assertThat(predicate.test("ᠰ᠌")).isTrue();
-	}
-
-	@Test
-	public void ignoreIvsCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.variant(opts -> opts.ivs(IdeographicVariationSequence.IGNORE))
-				.fixedSize(1).predicates().peekFirst().predicate();
-		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
-		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
-	}
-
-	@Test
-	public void lessThan() {
-		Predicate<String> predicate = constraint.lessThan(3).predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7田")).isTrue(); // surrogate pair
-	}
-
-	@Test
-	public void lessThanOrEqual() {
-		Predicate<String> predicate = constraint.lessThanOrEqual(3).predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test("ab")).isTrue();
-		assertThat(predicate.test("abc")).isTrue();
-		assertThat(predicate.test("abcd")).isFalse();
-		assertThat(predicate.test("\uD842\uDFB7野屋")).isTrue(); // surrogate pair
-	}
-
-	@Test
-	public void normalizeCombiningCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(2).predicates().peekFirst().predicate();
-		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
-	}
-
-	@Test
-	public void notBlank() {
-		Predicate<String> predicate = constraint.notBlank().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("foo")).isTrue();
+	void invalidNotEmpty() {
+		Predicate<String> predicate = retrievePredicate(c -> c.notEmpty());
 		assertThat(predicate.test("")).isFalse();
-		assertThat(predicate.test("    ")).isFalse();
-		assertThat(predicate.test("　　　")).isFalse();
 	}
 
-	@Test
-	public void notEmpty() {
-		Predicate<String> predicate = constraint.notEmpty().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("foo")).isTrue();
-		assertThat(predicate.test("")).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"ᠠ᠋", "ᠰ᠌"})
+	void notIgnoreFvsCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.fixedSize(2));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void notIgnoreFvsCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(2).predicates().peekFirst().predicate();
-		assertThat(predicate.test("ᠠ᠋")).isTrue();
-		assertThat(predicate.test("ᠰ᠌")).isTrue();
+	@ParameterizedTest
+	@ValueSource(strings = {"\uD842\uDF9F\uDB40\uDD00", "\u908A\uDB40\uDD07"})
+	void notIgnoreIvsCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.fixedSize(2));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void notIgnoreIvsCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.fixedSize(2).predicates().peekFirst().predicate();
-		assertThat(predicate.test("\uD842\uDF9F\uDB40\uDD00")).isTrue();
-		assertThat(predicate.test("\u908A\uDB40\uDD07")).isTrue();
+	@ParameterizedTest
+	@ValueSource(strings = {"モジ" /* モシ\u3099 */})
+	void notNormalizeCombiningCharacter(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.normalizer(null).fixedSize(3));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void notNormalizeCombiningCharacter() {
-		Predicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.normalizer(null).fixedSize(3).predicates().peekFirst().predicate();
-		assertThat(predicate.test("モジ" /* モシ\u3099 */)).isTrue();
+	@ParameterizedTest
+	@ValueSource(strings = {"1234", "0000"})
+	void validPattern(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern("[0-9]{4}"));
+		assertThat(predicate.test(value)).isTrue();
 	}
 
-	@Test
-	public void pattern() {
-		Predicate<String> predicate = constraint.pattern("[0-9]{4}").predicates()
-				.peekFirst().predicate();
-		assertThat(predicate.test("1234")).isTrue();
-		assertThat(predicate.test("134a")).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = {"134a", "abcd"})
+	void invalidPattern(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern("[0-9]{4}"));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
-	@Test
-	public void url() {
-		Predicate<String> predicate = constraint.url().predicates().peekFirst()
-				.predicate();
-		assertThat(predicate.test("http://example.com")).isTrue();
-		assertThat(predicate.test("example.com")).isFalse();
-		assertThat(predicate.test("")).isTrue();
+	@ParameterizedTest
+	@ValueSource(strings = {"http://example.com", "https://example.com", ""})
+	void validUrl(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"example.com", "htt://example.com"})
+	void invalidUrl(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	private static Predicate<String> retrievePredicate(Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
+		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst().predicate();
 	}
 }
