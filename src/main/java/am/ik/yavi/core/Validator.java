@@ -33,10 +33,10 @@ import am.ik.yavi.message.MessageFormatter;
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
  */
-public final class Validator<T> {
+public final class Validator<T> implements ValidatorSubset<T> {
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 
-	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators;
+	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators;
 
 	private final MessageFormatter messageFormatter;
 
@@ -47,7 +47,7 @@ public final class Validator<T> {
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators,
+			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
@@ -82,8 +82,33 @@ public final class Validator<T> {
 		return ValidatorBuilder.of(clazz);
 	}
 
+	/**
+	 * This method is supposed to be used only internally.
+	 * 
+	 * @param action callback per <code>ConstraintPredicates</code>.
+	 */
 	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
 		this.predicatesList.forEach(action);
+	}
+
+	/**
+	 * This method is supposed to be used only internally.
+	 *
+	 * @param action callback per <code>CollectionValidator</code>.
+	 */
+	public void forEachCollectionValidator(
+			Consumer<CollectionValidator<T, ?, ?>> action) {
+		this.collectionValidators.forEach(action);
+	}
+
+	/**
+	 * This method is supposed to be used only internally.
+	 *
+	 * @param action callback per <code>Pair<ConstraintCondition<T>, Validator<T>></code>.
+	 */
+	public void forEachConditionalValidator(
+			Consumer<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> action) {
+		this.conditionalValidators.forEach(action);
 	}
 
 	/**
@@ -206,7 +231,7 @@ public final class Validator<T> {
 		}
 	}
 
-	private String indexedName(String name, String collectionName, int index) {
+	public String indexedName(String name, String collectionName, int index) {
 		if (index < 0) {
 			return name;
 		}
@@ -277,7 +302,7 @@ public final class Validator<T> {
 		this.conditionalValidators.forEach(pair -> {
 			ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
-				Validator<T> validator = pair.second();
+				ValidatorSubset<T> validator = pair.second();
 				ConstraintViolations v = validator.validate(target, locale);
 				violations.addAll(v);
 			}
