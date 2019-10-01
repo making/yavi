@@ -250,7 +250,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		}
 	}
 
-	public String indexedName(String name, String collectionName, int index) {
+	private String indexedName(String name, String collectionName, int index) {
 		if (index < 0) {
 			return name;
 		}
