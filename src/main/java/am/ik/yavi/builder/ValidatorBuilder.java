@@ -87,6 +87,26 @@ public class ValidatorBuilder<T> {
 		this.messageKeySeparator = messageKeySeparator;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <S extends T> ValidatorBuilder<S> cast(Class<S> clazz) {
+		return (ValidatorBuilder<S>) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <S extends T> ValidatorBuilder<S> cast() {
+		return (ValidatorBuilder<S>) this;
+	}
+
+	public ValidatorBuilder<T> clone() {
+		final ValidatorBuilder<T> builder = new ValidatorBuilder<>(
+				this.messageKeySeparator);
+		builder.collectionValidators.addAll(this.collectionValidators);
+		builder.conditionalValidators.addAll(this.conditionalValidators);
+		builder.predicatesList.addAll(this.predicatesList);
+		builder.messageFormatter = this.messageFormatter;
+		return builder;
+	}
+
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
 	 * @param <X> the type of the instance to validate
