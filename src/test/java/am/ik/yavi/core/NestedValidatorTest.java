@@ -20,9 +20,6 @@ import org.junit.jupiter.api.Test;
 import static am.ik.yavi.core.Group.CREATE;
 import static am.ik.yavi.core.Group.UPDATE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
@@ -82,6 +79,17 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.build();
 
 	@Test
+	public void shouldBeInValid_GH28() {
+		MainObject target = new MainObject();
+
+		ConstraintViolations result = mainObjectValidator.validate(target, CREATE);
+
+		assertThat(result.isValid()).isFalse();
+		assertThat(result.get(0).name()).isEqualTo("nested");
+		assertThat(result.get(0).messageKey()).isEqualTo("object.notNull");
+	}
+
+	@Test
 	public void shouldBeInvalid_GH24() {
 		MainObject target = new MainObject();
 		target.setId(1L);
@@ -92,8 +100,8 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		ConstraintViolations result = mainObjectValidator.validate(target, CREATE);
 
-		assertFalse(result.isValid());
-		assertEquals(3, result.size());
+		assertThat(result.isValid()).isFalse();
+		assertThat(result).hasSize(3);
 		assertThat(result.get(0).name()).isEqualTo("nested.text");
 		assertThat(result.get(1).name()).isEqualTo("id");
 		assertThat(result.get(2).name()).isEqualTo("nested.id");
@@ -111,18 +119,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		ConstraintViolations result = mainObjectValidator.validate(target, UPDATE);
 
-		assertTrue(result.isValid());
-	}
-
-	@Test
-	public void shouldBeInValid_GH28() {
-		MainObject target = new MainObject();
-
-		ConstraintViolations result = mainObjectValidator.validate(target, CREATE);
-
-		assertFalse(result.isValid());
-		assertThat(result.get(0).name()).isEqualTo("nested");
-		assertThat(result.get(0).messageKey()).isEqualTo("object.notNull");
+		assertThat(result.isValid()).isTrue();
 	}
 
 	@Test
@@ -132,7 +129,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		ConstraintViolations result = mainObjectIfPresentValidator.validate(target,
 				CREATE);
 
-		assertTrue(result.isValid());
+		assertThat(result.isValid()).isTrue();
 	}
 
 	@Test
