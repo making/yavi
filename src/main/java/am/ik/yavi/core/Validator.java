@@ -33,10 +33,10 @@ import am.ik.yavi.message.MessageFormatter;
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
  */
-public final class Validator<T> {
+public class Validator<T> implements ValidatorSubset<T> {
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 
-	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators;
+	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators;
 
 	private final MessageFormatter messageFormatter;
 
@@ -44,16 +44,35 @@ public final class Validator<T> {
 
 	private final List<ConstraintPredicates<T, ?>> predicatesList;
 
+	private final String prefix;
+
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators,
+			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
+		this(messageKeySeparator, Collections.unmodifiableList(predicatesList),
+				Collections.unmodifiableList(collectionValidators), conditionalValidators,
+				messageFormatter, "");
+	}
+
+	private Validator(String messageKeySeparator,
+			List<ConstraintPredicates<T, ?>> predicatesList,
+			List<CollectionValidator<T, ?, ?>> collectionValidators,
+			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			MessageFormatter messageFormatter, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
-		this.predicatesList = Collections.unmodifiableList(predicatesList);
-		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
+		this.predicatesList = predicatesList;
+		this.collectionValidators = collectionValidators;
 		this.conditionalValidators = conditionalValidators;
 		this.messageFormatter = messageFormatter;
+		this.prefix = prefix;
+	}
+
+	Validator<T> prefixed(String prefix) {
+		return new Validator<>(this.messageKeySeparator, this.predicatesList,
+				this.collectionValidators, this.conditionalValidators,
+				this.messageFormatter, prefix);
 	}
 
 	/**
@@ -82,8 +101,33 @@ public final class Validator<T> {
 		return ValidatorBuilder.of(clazz);
 	}
 
+	/**
+	 * This method is supposed to be used only internally.
+	 * 
+	 * @param action callback per <code>ConstraintPredicates</code>.
+	 */
 	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
 		this.predicatesList.forEach(action);
+	}
+
+	/**
+	 * This method is supposed to be used only internally.
+	 *
+	 * @param action callback per <code>CollectionValidator</code>.
+	 */
+	public void forEachCollectionValidator(
+			Consumer<CollectionValidator<T, ?, ?>> action) {
+		this.collectionValidators.forEach(action);
+	}
+
+	/**
+	 * This method is supposed to be used only internally.
+	 *
+	 * @param action callback per <code>Pair<ConstraintCondition<T>, Validator<T>></code>.
+	 */
+	public void forEachConditionalValidator(
+			Consumer<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> action) {
+		this.conditionalValidators.forEach(action);
 	}
 
 	/**
@@ -206,7 +250,7 @@ public final class Validator<T> {
 		}
 	}
 
-	private String indexedName(String name, String collectionName, int index) {
+	public String indexedName(String name, String collectionName, int index) {
 		if (index < 0) {
 			return name;
 		}
@@ -247,8 +291,8 @@ public final class Validator<T> {
 				Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
 						.violatedValue(v);
 				violated.ifPresent(violatedValue -> {
-					String name = this.indexedName(predicates.name(), collectionName,
-							index);
+					String name = this.prefix
+							+ this.indexedName(predicates.name(), collectionName, index);
 					Object[] args = constraintPredicate.args().get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
@@ -277,7 +321,7 @@ public final class Validator<T> {
 		this.conditionalValidators.forEach(pair -> {
 			ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
-				Validator<T> validator = pair.second();
+				ValidatorSubset<T> validator = pair.second();
 				ConstraintViolations v = validator.validate(target, locale);
 				violations.addAll(v);
 			}

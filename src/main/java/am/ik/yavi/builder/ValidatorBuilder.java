@@ -24,6 +24,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -58,9 +59,12 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ConstraintPredicates;
 import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
+import am.ik.yavi.core.NestedValidatorSubset;
 import am.ik.yavi.core.NullAs;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
@@ -71,7 +75,7 @@ public class ValidatorBuilder<T> {
 
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
 
-	private final List<Pair<ConstraintCondition<T>, Validator<T>>> conditionalValidators = new ArrayList<>();
+	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators = new ArrayList<>();
 
 	private final String messageKeySeparator;
 
@@ -422,30 +426,44 @@ public class ValidatorBuilder<T> {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
-		builder.predicatesList.forEach(predicates -> {
-			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
-					this.toNestedValue(nested, predicates),
-					name + ValidatorBuilder.this.messageKeySeparator + predicates.name(),
-					predicates.predicates(), nested);
-			this.predicatesList.add(constraintPredicates);
-		});
+		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name));
+		builder.conditionalValidators
+				.forEach(this.appendNestedConditionalValidator(nested, name));
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
 			Validator<N> validator, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
-		validator.forEachPredicates(predicates -> {
+		validator.forEachPredicates(this.appendNestedPredicates(nested, name));
+		validator.forEachConditionalValidator(
+				this.appendNestedConditionalValidator(nested, name));
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(
+			Function<T, N> nested, String name) {
+		return predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
-			ConstraintPredicates constraintPredicates = new NestedConstraintPredicates(
+			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
 					this.toNestedValue(nested, predicates), nestedName,
 					predicates.predicates(), nested);
 			this.predicatesList.add(constraintPredicates);
-		});
-		return this;
+		};
+	}
+
+	private <N> Consumer<Pair<ConstraintCondition<N>, ValidatorSubset<N>>> appendNestedConditionalValidator(
+			Function<T, N> nested, String name) {
+		return conditionalValidator -> {
+			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
+					nested, conditionalValidator.first());
+			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
+					conditionalValidator.second(), name + this.messageKeySeparator);
+			this.conditionalValidators.add(new Pair<>(condition, v));
+		};
 	}
 
 	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
