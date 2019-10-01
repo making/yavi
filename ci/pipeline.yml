@@ -1,4 +1,20 @@
 ---
+params:
+  git: &GIT_PARAMS
+    GIT_EMAIL: ((git-email))
+    GIT_NAME: ((git-name))
+    SRC_BRANCH: develop
+  java_opts: &JAVA_OPS
+    _JAVA_OPTIONS: -Duser.timezone=Asia/Tokyo -Duser.language=ja -Duser.country=JP -Djava.security.egd=file:/dev/./urandom
+  slack_on_success_params: &SLACK_SUCCESS
+    channel: '#concourse'
+    text: |
+      <!here> :white_check_mark: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* succeeded with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
+  slack_on_failure_params: &SLACK_FAILURE
+    channel: '#concourse'
+    text: |
+      <!here> :rotating_light: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* failed with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
+
 resource_types:
 - name: slack-notification
   type: docker-image
@@ -37,15 +53,6 @@ resources:
   source:
     uri: https://github.com/maki-home/encrypted-gpg
     branch: master
-- name: nexus
-  type: maven
-  source:
-    url: ((nexus-release-url))
-    snapshot_url: ((nexus-snapshot-url))
-    artifact: am.ik.yavi:yavi:jar
-    username: ((nexus-username))
-    password: ((nexus-password))
-    skip_cert_check: true
 - name: sonatype-snapshots
   type: maven
   source:
@@ -126,14 +133,6 @@ jobs:
           mvn package -DskipTests=true
           cp target/*.jar ../build/
   - aggregate:
-    - put: nexus
-      params:
-        file: build/*.jar
-        pom_file: repo/pom.xml
-      on_failure:
-        put: slack-alert
-        params:
-          <<: *SLACK_FAILURE
     - put: sonatype-snapshots
       params:
         file: build/*.jar
@@ -265,28 +264,6 @@ jobs:
       put: slack-alert
       params:
         <<: *SLACK_FAILURE
-- name: upload-to-nexus-releases
-  plan:
-  - get: repo
-    resource: repo-master
-    passed:
-    - tag-master
-    trigger: true
-  - task: mvn-package
-    config:
-      <<: *NEXUS_PACKAGE_CONFIG
-    on_failure:
-      put: slack-alert
-      params:
-        <<: *SLACK_FAILURE
-  - put: nexus
-    params:
-      file: build/*.jar
-      pom_file: repo/pom.xml
-    on_failure:
-      put: slack-alert
-      params:
-        <<: *SLACK_FAILURE
 - name: upload-to-sonatype-releases
   plan:
   - aggregate:
@@ -368,7 +345,6 @@ jobs:
     - get: repo-src
       resource: repo-master
       passed:
-      - upload-to-nexus-releases
       - upload-to-sonatype-releases
       trigger: true
     - get: repo-dest
@@ -515,18 +491,3 @@ jobs:
         <<: *SLACK_SUCCESS
 
 
-params:
-  git: &GIT_PARAMS
-    GIT_EMAIL: ((git-email))
-    GIT_NAME: ((git-name))
-    SRC_BRANCH: develop
-  java_opts: &JAVA_OPS
-    _JAVA_OPTIONS: -Duser.timezone=Asia/Tokyo -Duser.language=ja -Duser.country=JP -Djava.security.egd=file:/dev/./urandom
-  slack_on_success_params: &SLACK_SUCCESS
-    channel: '#concourse'
-    text: |
-      <!here> :white_check_mark: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* succeeded with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
-  slack_on_failure_params: &SLACK_FAILURE
-    channel: '#concourse'
-    text: |
-      <!here> :rotating_light: *$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME* failed with build <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_NAME>!
