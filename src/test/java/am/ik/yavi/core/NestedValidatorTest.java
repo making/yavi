@@ -72,6 +72,15 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
 			.nest(MainObject::getNested, "nested", nestedObjectValidator).build();
 
+	private Validator<MainObject> mainObjectIfPresentValidator = ValidatorBuilder
+			.<MainObject> of()
+			.constraintOnCondition(CREATE.toCondition(),
+					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+			.constraintOnCondition(UPDATE.toCondition(),
+					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+			.nestIfPresent(MainObject::getNested, "nested", nestedObjectValidator)
+			.build();
+
 	@Test
 	public void shouldBeInvalid_GH24() {
 		MainObject target = new MainObject();
@@ -101,6 +110,27 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		target.setNested(nested);
 
 		ConstraintViolations result = mainObjectValidator.validate(target, UPDATE);
+
+		assertTrue(result.isValid());
+	}
+
+	@Test
+	public void shouldBeInValid_GH28() {
+		MainObject target = new MainObject();
+
+		ConstraintViolations result = mainObjectValidator.validate(target, CREATE);
+
+		assertFalse(result.isValid());
+		assertThat(result.get(0).name()).isEqualTo("nested");
+		assertThat(result.get(0).messageKey()).isEqualTo("object.notNull");
+	}
+
+	@Test
+	public void shouldBeValid_GH28() {
+		MainObject target = new MainObject();
+
+		ConstraintViolations result = mainObjectIfPresentValidator.validate(target,
+				CREATE);
 
 		assertTrue(result.isValid());
 	}
