@@ -294,8 +294,8 @@ static RouterFunction<ServerResponse> routes() {
                         error.put("details", violations.details());
                         return error;
                     })
-                    .fold(error -> badRequest().syncBody(error), //
-                          user -> ok().syncBody(user))))
+                    .fold(error -> badRequest().bodyValue(error), //
+                          user -> ok().bodyValue(user))))
             .build();
 }
 ```
@@ -334,128 +334,6 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 ```
 
 [sample app](https://github.com/making/demo-spring-mvc-yavi)
-
-#### Example with Spring Fu
-
-```kotlin
-package com.example.demospringfuyavi
-
-import am.ik.yavi.builder.ValidatorBuilder
-import am.ik.yavi.builder.constraint
-import org.springframework.boot.WebApplicationType
-import org.springframework.fu.kofu.application
-import org.springframework.fu.kofu.webflux.webFlux
-
-val app = application(WebApplicationType.REACTIVE) {
-    webFlux {
-        port = if (profiles.contains("test")) 8181 else 8080
-        router {
-            POST("/") { req ->
-                req.bodyToMono<Message>()
-                        .flatMap { message ->
-                            Message.validator.validateToEither(message)
-                                    .leftMap { mapOf("details" to it.details()) }
-                                    .fold(badRequest()::syncBody, ok()::syncBody)
-                        }
-            }
-        }
-        codecs {
-            jackson()
-        }
-    }
-}
-
-data class Message(
-        val text: String
-) {
-    companion object {
-        val validator = ValidatorBuilder.of<Message>()
-                .konstraint(Message::text, {
-                    notBlank().lessThanOrEqual(3)
-                })
-                .build()
-    }
-}
-
-fun main() {
-    app.run()
-}
-```
-
-[sample app](https://github.com/making/demo-spring-fu-yavi)
-
-
-### Example with Ktor
-
-```kotlin
-package com.example
-
-import am.ik.yavi.core.Validator
-import am.ik.yavi.builder.ValidatorBuilder
-import am.ik.yavi.builder.constraintOnCharSequence
-import am.ik.yavi.builder.nest
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
-import io.ktor.gson.gson
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.routing
-import java.util.*
-
-fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
-
-data class Snippet(val text: String)
-data class PostSnippet(val snippet: PostSnippet.Text) {
-    data class Text(val text: String)
-
-    companion object {
-        val validator = ValidatorBuilder.of<PostSnippet>()
-            .nest(PostSnippet::snippet) {
-                konstraint(Text::text) {
-                    notEmpty().lessThanOrEqual(3)
-                }
-            }
-            .build()
-    }
-}
-
-val snippets = Collections.synchronizedList(
-    mutableListOf(
-        Snippet("hello"),
-        Snippet("world")
-    )
-)
-
-@Suppress("unused") // Referenced in application.conf
-@kotlin.jvm.JvmOverloads
-fun Application.module(testing: Boolean = false) {
-    install(ContentNegotiation) {
-        gson {
-        }
-    }
-
-    routing {
-        get("/snippets") {
-            call.respond(mapOf("snippets" to synchronized(snippets) { snippets.toList() }))
-        }
-        post("/snippets") {
-            val post = call.receive<PostSnippet>()
-            val violations = PostSnippet.validator.validate(post)
-            if (!violations.isValid) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("details" to violations.details()))
-            } else {
-                snippets += Snippet(post.snippet.text)
-                call.respond(mapOf("OK" to true))
-            }
-        }
-    }
-}
-```
 
 ### Required
 
