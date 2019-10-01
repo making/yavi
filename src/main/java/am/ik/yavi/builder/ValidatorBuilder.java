@@ -105,11 +105,6 @@ public class ValidatorBuilder<T> {
 		return new ValidatorBuilder<>();
 	}
 
-	@SuppressWarnings("unchecked")
-	public <S extends T> ValidatorBuilder<S> cast(Class<S> clazz) {
-		return (ValidatorBuilder<S>) this;
-	}
-
 	public Validator<T> build() {
 		return new Validator<>(messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
