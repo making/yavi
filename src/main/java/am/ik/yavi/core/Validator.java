@@ -33,7 +33,7 @@ import am.ik.yavi.message.MessageFormatter;
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
  */
-public final class Validator<T> implements ValidatorSubset<T> {
+public class Validator<T> implements ValidatorSubset<T> {
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 
 	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators;
@@ -44,16 +44,35 @@ public final class Validator<T> implements ValidatorSubset<T> {
 
 	private final List<ConstraintPredicates<T, ?>> predicatesList;
 
+	private final String prefix;
+
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
+		this(messageKeySeparator, Collections.unmodifiableList(predicatesList),
+				Collections.unmodifiableList(collectionValidators), conditionalValidators,
+				messageFormatter, "");
+	}
+
+	private Validator(String messageKeySeparator,
+			List<ConstraintPredicates<T, ?>> predicatesList,
+			List<CollectionValidator<T, ?, ?>> collectionValidators,
+			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			MessageFormatter messageFormatter, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
-		this.predicatesList = Collections.unmodifiableList(predicatesList);
-		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
+		this.predicatesList = predicatesList;
+		this.collectionValidators = collectionValidators;
 		this.conditionalValidators = conditionalValidators;
 		this.messageFormatter = messageFormatter;
+		this.prefix = prefix;
+	}
+
+	Validator<T> prefixed(String prefix) {
+		return new Validator<>(this.messageKeySeparator, this.predicatesList,
+				this.collectionValidators, this.conditionalValidators,
+				this.messageFormatter, prefix);
 	}
 
 	/**
@@ -272,8 +291,8 @@ public final class Validator<T> implements ValidatorSubset<T> {
 				Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
 						.violatedValue(v);
 				violated.ifPresent(violatedValue -> {
-					String name = this.indexedName(predicates.name(), collectionName,
-							index);
+					String name = this.prefix
+							+ this.indexedName(predicates.name(), collectionName, index);
 					Object[] args = constraintPredicate.args().get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
