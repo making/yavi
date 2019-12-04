@@ -31,11 +31,13 @@ public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 	}
 
 	@Override
-	public ConstraintViolations validate(T target, Locale locale) {
+	public ConstraintViolations validate(T target, Locale locale,
+			ConstraintGroup constraintGroup) {
 		final N n = this.nested.apply(target);
 		if (n != null) {
-			return this.validator.validate(n, locale);
-		} else {
+			return this.validator.validate(n, locale, constraintGroup);
+		}
+		else {
 			return new ConstraintViolations();
 		}
 	}

@@ -322,7 +322,8 @@ public class Validator<T> implements ValidatorSubset<T> {
 			ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
 				ValidatorSubset<T> validator = pair.second();
-				ConstraintViolations v = validator.validate(target, locale);
+				ConstraintViolations v = validator.validate(target, locale,
+						constraintGroup);
 				violations.addAll(v);
 			}
 		});
