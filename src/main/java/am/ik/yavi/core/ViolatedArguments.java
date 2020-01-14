@@ -15,16 +15,16 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Objects;
-import java.util.function.Predicate;
+public interface ViolatedArguments {
 
-public interface CustomConstraint<V>
-		extends Predicate<V>, ViolationMessage, ViolatedArguments {
-
-	Objects[] EMPTY_ARRAY = new Objects[0];
-
-	@Override
-	default Object[] arguments() {
-		return EMPTY_ARRAY;
-	}
+	/**
+	 * returns arguments that can be used to build the violation message<br>
+	 * The argument can be access by <code>{1}</code>, <code>{2}</code> , .... <br>
+	 * Note that <code>{0}</code> is reserved for the property name and the last index in
+	 * reserved for the actual value.<br>
+	 * The implementer don't need to include the property name and the actual value.
+	 * 
+	 * @return the array of arguments
+	 */
+	Object[] arguments();
 }
