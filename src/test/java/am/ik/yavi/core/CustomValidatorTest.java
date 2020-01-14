@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.core;
 
+import java.time.Instant;
+import java.util.Objects;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -188,6 +191,23 @@ public class CustomValidatorTest {
 		}
 	}
 
+	@Test
+	public void instantRangeCustom_gh36() throws Exception {
+		final InstantRangeConstraint constraint = new InstantRangeConstraint(
+			Instant.parse("2020-01-15T00:00:00Z"),
+			Instant.parse("2020-01-16T00:00:00Z"));
+		final Validator<Instant> validator = ValidatorBuilder.of(Instant.class)
+				.constraintOnTarget(constraint, "instant").build();
+
+		final Instant instant = Instant.parse("2020-01-17T00:00:00Z");
+		final ConstraintViolations violations = validator.validate(instant);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"Instant value \"instant\" must be between \"2020-01-15T00:00:00Z\" and \"2020-01-16T00:00:00Z\".");
+		assertThat(violations.get(0).messageKey()).isEqualTo("custom.instant");
+	}
+
 	// This logic is written in
 	// http://en.wikipedia.org/wiki/International_Standard_Book_Number
 	static boolean isISBN13(String isbn) {
@@ -248,6 +268,38 @@ public class CustomValidatorTest {
 				return false;
 			}
 			return r.getFrom() < r.getTo();
+		}
+	}
+
+	static class InstantRangeConstraint implements CustomConstraint<Instant> {
+
+		private final Instant end;
+
+		private final Instant start;
+
+		InstantRangeConstraint(Instant start, Instant end) {
+			this.start = Objects.requireNonNull(start);
+			this.end = Objects.requireNonNull(end);
+		}
+
+		@Override
+		public Object[] arguments() {
+			return new Object[] { this.start, this.end };
+		}
+
+		@Override
+		public String defaultMessageFormat() {
+			return "Instant value \"{0}\" must be between \"{1}\" and \"{2}\".";
+		}
+
+		@Override
+		public String messageKey() {
+			return "custom.instant";
+		}
+
+		@Override
+		public boolean test(Instant instant) {
+			return instant.isAfter(this.start) && instant.isBefore(this.end);
 		}
 	}
 }

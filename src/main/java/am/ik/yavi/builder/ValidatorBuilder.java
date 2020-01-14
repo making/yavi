@@ -65,6 +65,7 @@ import am.ik.yavi.core.NestedValidatorSubset;
 import am.ik.yavi.core.NullAs;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
+import am.ik.yavi.core.ViolatedArguments;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
@@ -277,13 +278,19 @@ public class ValidatorBuilder<T> {
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
-			ViolationMessage violationMessage) {
+			ViolatedArguments violatedArguments, ViolationMessage violationMessage) {
 		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
 		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
-				() -> new Object[] { name }, NullAs.INVALID));
+				violatedArguments::arguments, NullAs.INVALID));
 		this.predicatesList
 				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
 		return this;
+	}
+
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
+			ViolationMessage violationMessage) {
+		return this.constraintOnTarget(predicate, name,
+				() -> CustomConstraint.EMPTY_ARRAY, violationMessage);
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
@@ -294,7 +301,8 @@ public class ValidatorBuilder<T> {
 
 	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint,
 			String name) {
-		return this.constraintOnTarget(customConstraint, name, customConstraint);
+		return this.constraintOnTarget(customConstraint, name, customConstraint,
+				customConstraint);
 	}
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
