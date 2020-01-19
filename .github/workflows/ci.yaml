@@ -13,7 +13,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: '11.x'
-    - name: Cache maven
+    - name: Cache Maven
       uses: actions/cache@v1
       with:
         path: ~/.m2/repository
