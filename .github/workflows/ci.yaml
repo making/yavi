@@ -28,4 +28,4 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Unit Tests
-      run: mvn test
+      run: mvn -V test
