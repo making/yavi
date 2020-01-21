@@ -33,7 +33,7 @@ import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
-import am.ik.yavi.fn.Either;
+import io.vavr.control.Either;
 
 public class ValidatorTest {
 	@Test

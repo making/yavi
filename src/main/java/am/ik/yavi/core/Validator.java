@@ -23,9 +23,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
+import io.vavr.control.Either;
 
 /**
  * Validates the target instances. must be thread safe.

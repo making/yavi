@@ -44,6 +44,12 @@
     </developers>
     <dependencies>
         <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.10.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
