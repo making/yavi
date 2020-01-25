@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class EitherTest {
 
@@ -67,6 +68,16 @@ public class EitherTest {
 	}
 
 	@Test
+	public void leftOrElseThrow() {
+		Either<String, Integer> either = Either.right(100);
+		assertThatThrownBy(() -> either
+				.leftOrElseThrow(x -> new IllegalArgumentException(x.toString())))
+						.isInstanceOfSatisfying(IllegalArgumentException.class, e -> {
+							assertThat(e.getMessage()).isEqualTo("100");
+						});
+	}
+
+	@Test
 	public void doOnLeft() {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
@@ -101,6 +112,15 @@ public class EitherTest {
 	public void rightOrElseGet() {
 		Either<String, Integer> either = Either.left("100");
 		assertThat(either.rightOrElseGet(Integer::valueOf)).isEqualTo(100);
+	}
+
+	@Test
+	public void rightOrElseThrow() {
+		Either<String, Integer> either = Either.left("100");
+		assertThatThrownBy(() -> either.rightOrElseThrow(IllegalArgumentException::new))
+				.isInstanceOfSatisfying(IllegalArgumentException.class, e -> {
+					assertThat(e.getMessage()).isEqualTo("100");
+				});
 	}
 
 	@Test

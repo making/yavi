@@ -95,6 +95,14 @@ public final class Either<L, R> {
 		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
 	}
 
+	/**
+	 * @since 0.3.0
+	 */
+	public <X extends Throwable> L leftOrElseThrow(
+			Function<R, ? extends X> exceptionSupplier) throws X {
+		return this.left().orElseThrow(() -> exceptionSupplier.apply(this.right));
+	}
+
 	public Either<L, R> doOnLeft(Consumer<L> action) {
 		if (this.isLeft()) {
 			action.accept(this.left);
@@ -115,6 +123,14 @@ public final class Either<L, R> {
 
 	public R rightOrElseGet(Function<L, R> leftToRight) {
 		return this.right().orElseGet(() -> leftToRight.apply(this.left));
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public <X extends Throwable> R rightOrElseThrow(
+			Function<L, ? extends X> exceptionSupplier) throws X {
+		return this.right().orElseThrow(() -> exceptionSupplier.apply(this.left));
 	}
 
 	public Either<L, R> doOnRight(Consumer<R> action) {
