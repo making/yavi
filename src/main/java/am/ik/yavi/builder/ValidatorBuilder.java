@@ -74,15 +74,15 @@ import am.ik.yavi.message.SimpleMessageFormatter;
 public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
 
-	private final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
+	final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
 
-	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators = new ArrayList<>();
+	final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators = new ArrayList<>();
 
-	private final String messageKeySeparator;
+	final String messageKeySeparator;
 
-	private final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
+	final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
 
-	private MessageFormatter messageFormatter;
+	MessageFormatter messageFormatter;
 
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
