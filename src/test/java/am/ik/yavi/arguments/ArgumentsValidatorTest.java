@@ -19,15 +19,15 @@ public class ArgumentsValidatorTest {
 	final Arguments1Validator<String, Country> arguments1Validator = ArgumentsValidatorBuilder
 			.of(Country::new) //
 			.builder(b -> b //
-					.$string(Arguments1::arg1, "name", c -> c.greaterThanOrEqual(2)))
+					._string(Arguments1::arg1, "name", c -> c.greaterThanOrEqual(2)))
 			.build();
 
 	final Arguments2Validator<Integer, Integer, Range> arguments2Validator = ArgumentsValidatorBuilder
 			.of(Range::new)
 			.builder(b -> b
-					.$integer(Arguments1::arg1, "from",
+					._integer(Arguments1::arg1, "from",
 							c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
-					.$integer(Arguments2::arg2, "to",
+					._integer(Arguments2::arg2, "to",
 							c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
 					.constraintOnTarget(a -> a.arg1() < a.arg2(), "range",
 							ViolationMessage.of("to.isGreaterThanFrom",
@@ -37,12 +37,12 @@ public class ArgumentsValidatorTest {
 	final Arguments3Validator<String, String, Integer, User> arguments3Validator = ArgumentsValidatorBuilder
 			.of(User::new)
 			.builder(b -> b
-					.$string(Arguments1::arg1, "name",
+					._string(Arguments1::arg1, "name",
 							c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
-					.$string(Arguments2::arg2, "email",
+					._string(Arguments2::arg2, "email",
 							c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50)
 									.email())
-					.$integer(Arguments3::arg3, "age",
+					._integer(Arguments3::arg3, "age",
 							c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200)))
 			.build();
 

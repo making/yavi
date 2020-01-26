@@ -143,13 +143,13 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
-	public <E extends CharSequence> ValidatorBuilder<T> $charSequence(
+	public <E extends CharSequence> ValidatorBuilder<T> _charSequence(
 			ToCharSequence<T, E> f, String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $string(ToCharSequence<T, String> f, String name,
+	public ValidatorBuilder<T> _string(ToCharSequence<T, String> f, String name,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
@@ -159,7 +159,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BooleanConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $boolean(ToBoolean<T> f, String name,
+	public ValidatorBuilder<T> _boolean(ToBoolean<T> f, String name,
 			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
 		return this.constraint(f, name, c, BooleanConstraint::new);
 	}
@@ -169,7 +169,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharacterConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $character(ToCharacter<T> f, String name,
+	public ValidatorBuilder<T> _character(ToCharacter<T> f, String name,
 			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
 		return this.constraint(f, name, c, CharacterConstraint::new);
 	}
@@ -179,7 +179,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $byte(ToByte<T> f, String name,
+	public ValidatorBuilder<T> _byte(ToByte<T> f, String name,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
@@ -189,7 +189,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ShortConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $short(ToShort<T> f, String name,
+	public ValidatorBuilder<T> _short(ToShort<T> f, String name,
 			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortConstraint::new);
 	}
@@ -199,7 +199,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $integer(ToInteger<T> f, String name,
+	public ValidatorBuilder<T> _integer(ToInteger<T> f, String name,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
@@ -209,7 +209,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $long(ToLong<T> f, String name,
+	public ValidatorBuilder<T> _long(ToLong<T> f, String name,
 			Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
@@ -219,7 +219,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $float(ToFloat<T> f, String name,
+	public ValidatorBuilder<T> _float(ToFloat<T> f, String name,
 			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
@@ -229,7 +229,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $double(ToDouble<T> f, String name,
+	public ValidatorBuilder<T> _double(ToDouble<T> f, String name,
 			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleConstraint::new);
 	}
@@ -239,7 +239,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $bigInteger(ToBigInteger<T> f, String name,
+	public ValidatorBuilder<T> _bigInteger(ToBigInteger<T> f, String name,
 			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
 	}
@@ -249,7 +249,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $bigDecimal(ToBigDecimal<T> f, String name,
+	public ValidatorBuilder<T> _bigDecimal(ToBigDecimal<T> f, String name,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
@@ -260,7 +260,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CollectionConstraint::new);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> $collection(
+	public <L extends Collection<E>, E> ValidatorBuilder<T> _collection(
 			ToCollection<T, L, E> f, String name,
 			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
@@ -271,7 +271,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, MapConstraint::new);
 	}
 
-	public <K, V> ValidatorBuilder<T> $map(ToMap<T, K, V> f, String name,
+	public <K, V> ValidatorBuilder<T> _map(ToMap<T, K, V> f, String name,
 			Function<MapConstraint<T, K, V>, MapConstraint<T, K, V>> c) {
 		return this.constraint(f, name, c, MapConstraint::new);
 	}
@@ -281,7 +281,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ObjectArrayConstraint::new);
 	}
 
-	public <E> ValidatorBuilder<T> $objectArray(ToObjectArray<T, E> f, String name,
+	public <E> ValidatorBuilder<T> _objectArray(ToObjectArray<T, E> f, String name,
 			Function<ObjectArrayConstraint<T, E>, ObjectArrayConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectArrayConstraint::new);
 	}
@@ -291,7 +291,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BooleanArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $booleanArray(ToBooleanArray<T> f, String name,
+	public ValidatorBuilder<T> _booleanArray(ToBooleanArray<T> f, String name,
 			Function<BooleanArrayConstraint<T>, BooleanArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, BooleanArrayConstraint::new);
 	}
@@ -301,7 +301,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $charArray(ToCharArray<T> f, String name,
+	public ValidatorBuilder<T> _charArray(ToCharArray<T> f, String name,
 			Function<CharArrayConstraint<T>, CharArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, CharArrayConstraint::new);
 	}
@@ -311,7 +311,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ByteArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $byteArray(ToByteArray<T> f, String name,
+	public ValidatorBuilder<T> _byteArray(ToByteArray<T> f, String name,
 			Function<ByteArrayConstraint<T>, ByteArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteArrayConstraint::new);
 	}
@@ -321,7 +321,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ShortArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $shortArray(ToShortArray<T> f, String name,
+	public ValidatorBuilder<T> _shortArray(ToShortArray<T> f, String name,
 			Function<ShortArrayConstraint<T>, ShortArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortArrayConstraint::new);
 	}
@@ -331,7 +331,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, IntArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $intArray(ToIntArray<T> f, String name,
+	public ValidatorBuilder<T> _intArray(ToIntArray<T> f, String name,
 			Function<IntArrayConstraint<T>, IntArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, IntArrayConstraint::new);
 	}
@@ -341,7 +341,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, LongArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $longArray(ToLongArray<T> f, String name,
+	public ValidatorBuilder<T> _longArray(ToLongArray<T> f, String name,
 			Function<LongArrayConstraint<T>, LongArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, LongArrayConstraint::new);
 	}
@@ -351,7 +351,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, FloatArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $floatArray(ToFloatArray<T> f, String name,
+	public ValidatorBuilder<T> _floatArray(ToFloatArray<T> f, String name,
 			Function<FloatArrayConstraint<T>, FloatArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatArrayConstraint::new);
 	}
@@ -361,7 +361,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> $doubleArrray(ToDoubleArray<T> f, String name,
+	public ValidatorBuilder<T> _doubleArrray(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
