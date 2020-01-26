@@ -31,7 +31,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.2.7</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -70,6 +70,24 @@ violations.forEach(x -> System.out.println(x.message()));
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/ValidatorTest.java)
+
+In order to avoid ambiguous type inferences, you can use explicit `_<type>` method per type instead of `constraint` as follows:
+
+```java
+// Needs YAVI 0.3.0+
+
+Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
+            ._string(User::getName, "name", c -> c.notNull() //
+                    .lessThanOrEqual(20)) //
+            ._string(User::getEmail, "email", c -> c.notNull() //
+                    .greaterThanOrEqual(5) //
+                    .lessThanOrEqual(50) //
+                    .email()) //
+            ._integer(User::getAge, "age", c -> c.notNull() //
+                    .greaterThanOrEqual(0) //
+                    .lessThanOrEqual(200))
+            .build();
+```
 
 If you are using Kotlin, you can write a bit shorter using `konstraint` method instead of `constraint`
 
@@ -139,8 +157,8 @@ Validator<Address> validator = ValidatorBuilder.<Address> of() //
 ```java
 Validator<User> validator = ValidatorBuilder.<User> of() //
 	.constraint(User::getName, "name", c -> c.notNull().message("name is required!") //
-				.greaterThanOrEqual(1).message("name is too small!") //
-				.lessThanOrEqual(20).message("name is too large!")) //
+        .greaterThanOrEqual(1).message("name is too small!") //
+        .lessThanOrEqual(20).message("name is too large!")) //
 	.build()
 ```
 
@@ -242,6 +260,60 @@ Validator<User> validator = ValidatorBuilder.of(User.class) //
 ```
 
 Note that all constraints without conditions will be validated for any constraint group.
+
+#### Arguments Validator
+
+Since YAVI 0.3.0, you can validate arguments of a constructor or factory method "before" creating an object using it.
+
+You can get the object only if the arguments passe the validation.
+Up to 16 arguments are supported.
+
+```java
+final Person person = ArgumentsValidatorBuilder
+    .of(Person::new)
+    .builder(b -> b
+        ._string(Arguments1::arg1, "firstName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._string(Arguments2::arg2, "lastName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._integer(Arguments3::arg3, "age",
+            c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
+    .build()
+    .validated("John", "Doe", 35);
+```
+
+You can also get the result as `Either`.
+
+```java
+final Either<ConstraintViolations, Person> either  = ArgumentsValidatorBuilder
+    .of(Person::new)
+    .builder(b -> b
+        ._string(Arguments1::arg1, "firstName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._string(Arguments2::arg2, "lastName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._integer(Arguments3::arg3, "age",
+            c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
+    .build()
+    .validateArgs("John", "Doe", 35);
+```
+
+Kotlin version
+
+```kotlin
+val person = ArgumentsValidatorBuilder.of(::Person)
+        .builder { b ->
+            b._string({ it.arg1() }, "firstName") {
+                it.greaterThanOrEqual(1).lessThanOrEqual(50)
+            }._string({ it.arg2() }, "lastName") {
+                it.greaterThanOrEqual(1).lessThanOrEqual(50)
+            }._integer({ it.arg3() }, "age") {
+                it.greaterThanOrEqual(20).lessThanOrEqual(99)
+            }
+        }
+        .build()
+        .validated("John", "Doe", 20)
+```
 
 #### (Experimental) Emoji support
 
