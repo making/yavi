@@ -24,120 +24,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.reflect.KProperty1
 
-@JvmName("constraintOnCharSequence")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T, E : CharSequence?> ValidatorBuilder<T>.constraint(prop: KProperty1<T, E?>, block: CharSequenceConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnBoolean")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Boolean?>, block: BooleanConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnChar")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Char?>, block: CharacterConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnByte")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Byte?>, block: ByteConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnShort")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Short?>, block: ShortConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnInt")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Int?>, block: IntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnLong")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Long?>, block: LongConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnFloat")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Float?>, block: FloatConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnDouble")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Double?>, block: DoubleConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnBigInteger")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigInteger?>, block: BigIntegerConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnBigDecimal")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BigDecimal?>, block: BigDecimalConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnCollection")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T, L : Collection<E>?, E> ValidatorBuilder<T>.constraint(prop: KProperty1<T, L?>, block: CollectionConstraint<T, L?, E>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnMap")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T, K, V> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Map<K, V>?>, block: MapConstraint<T, K, V>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnObjectArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T, E> ValidatorBuilder<T>.constraint(prop: KProperty1<T, Array<E>?>, block: ObjectArrayConstraint<T, E>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnBooleanArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, BooleanArray?>, block: BooleanArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnCharArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, CharArray?>, block: CharArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnByteArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, ByteArray?>, block: ByteArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnShortArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, ShortArray?>, block: ShortArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnIntArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, IntArray?>, block: IntArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnLongArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, LongArray?>, block: LongArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnFloatArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, FloatArray?>, block: FloatArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@JvmName("constraintOnDoubleArray")
-@Deprecated(message = "Deprecated in favor of konstraint", replaceWith = ReplaceWith("this.konstraint(prop, block)"))
-fun <T> ValidatorBuilder<T>.constraint(prop: KProperty1<T, DoubleArray?>, block: DoubleArrayConstraint<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraint(prop, block)
-
-@Deprecated(message = "Deprecated in favor of konstraintOnObject", replaceWith = ReplaceWith("this.konstraintOnObject(prop, block)"))
-fun <T, E> ValidatorBuilder<T>.constraintOnObject(prop: KProperty1<T, E?>, block: ObjectConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraintOnObject(prop, block)
-
 fun <T, N> ValidatorBuilder<T>.nest(prop: KProperty1<T, N?>, validator: Validator<N>): ValidatorBuilder<T> =
         this.nest(prop, prop.name, validator)
 
@@ -195,14 +81,6 @@ fun <T, E> ValidatorBuilder<T>.forEach(prop: KProperty1<T, Array<E>?>, block: Va
 @JvmName("forEachIfPresentArray")
 fun <T, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Array<E>?>, block: ValidatorBuilder<E>.() -> Unit): ValidatorBuilder<T> =
         this.forEachIfPresent(prop, prop.name) { it.apply(block) }
-
-@Deprecated(message = "Deprecated in favor of konstraintOnCondition", replaceWith = ReplaceWith("this.konstraintOnCondition(condition, block)"))
-fun <T> ValidatorBuilder<T>.constraintOnCondition(condition: ConstraintCondition<T>, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraintOnCondition(condition, block)
-
-@Deprecated(message = "Deprecated in favor of konstraintOnGroup", replaceWith = ReplaceWith("this.konstraintOnGroup(group, block)"))
-fun <T> ValidatorBuilder<T>.constraintOnGroup(group: ConstraintGroup, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
-        this.konstraintOnGroup(group, block)
 
 @JvmName("konstraintOnCharSequence")
 fun <T, E : CharSequence?> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, E?>, block: CharSequenceConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =

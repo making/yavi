@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
@@ -75,32 +74,6 @@ public class Validator<T> implements ValidatorSubset<T> {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter, prefix);
-	}
-
-	/**
-	 * Deprecated in favor of {@link ValidatorBuilder#of()}
-	 *
-	 * Builder method to build {@code Validator} instance.
-	 * @param <T> the type of the instance to validate
-	 * @return builder instance
-	 */
-	@Deprecated
-	public static <T> ValidatorBuilder<T> builder() {
-		return ValidatorBuilder.of();
-	}
-
-	/**
-	 * Deprecated in favor of {@link ValidatorBuilder#of(Class)}
-	 * 
-	 * Builder method to build {@code Validator} instance.
-	 * @param clazz the class of the instance to validate
-	 * @param <T> the type of the instance to validate
-	 * @return builder instance
-	 */
-	@Deprecated
-	public static <T> ValidatorBuilder<T> builder(
-			@SuppressWarnings("unused") Class<T> clazz) {
-		return ValidatorBuilder.of(clazz);
 	}
 
 	/**
