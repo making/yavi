@@ -78,10 +78,10 @@ public class EitherTest {
 	}
 
 	@Test
-	public void doOnLeft() {
+	public void peekLeft() {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
-		Either.<Integer, Boolean> left(1).doOnLeft(lref::set).doOnRight(rref::set);
+		Either.<Integer, Boolean> left(1).peekLeft(lref::set).peekRight(rref::set);
 		assertThat(lref.get()).isEqualTo(1);
 		assertThat(rref.get()).isFalse();
 	}
@@ -124,10 +124,10 @@ public class EitherTest {
 	}
 
 	@Test
-	public void doOnRight() {
+	public void peekRight() {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
-		Either.<Integer, Boolean> right(true).doOnRight(rref::set);
+		Either.<Integer, Boolean> right(true).peekRight(rref::set);
 		assertThat(lref.get()).isEqualTo(0);
 		assertThat(rref.get()).isTrue();
 	}
