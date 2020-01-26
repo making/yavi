@@ -23,6 +23,7 @@ import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicates;
 import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.fn.Either;
@@ -46,40 +47,20 @@ public final class Arguments3Validator<A1, A2, A3, X>
 		this.mapper = mapper;
 	}
 
-	public ConstraintViolations validateArgs(A1 a1, A2 a2, A3 a3,
-			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2, a3), Locale.getDefault(),
-				constraintGroup);
-	}
-
-	public ConstraintViolations validateArgs(A1 a1, A2 a2, A3 a3, Locale locale) {
-		return this.validate(Arguments.of(a1, a2, a3), locale, ConstraintGroup.DEFAULT);
-	}
-
-	public ConstraintViolations validateArgs(A1 a1, A2 a2, A3 a3, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2, a3), locale, constraintGroup);
-	}
-
-	public ConstraintViolations validateArgs(A1 a1, A2 a2, A3 a3) {
-		return this.validate(Arguments.of(a1, a2, a3), Locale.getDefault(),
-				ConstraintGroup.DEFAULT);
-	}
-
-	public Either<ConstraintViolations, X> validateArgsToEither(A1 a1, A2 a2, A3 a3) {
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3) {
 		return this
 				.validateToEither(Arguments.of(a1, a2, a3), Locale.getDefault(),
 						ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgsToEither(A1 a1, A2 a2, A3 a3,
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3,
 			ConstraintGroup constraintGroup) {
 		return this.validateToEither(Arguments.of(a1, a2, a3), Locale.getDefault(),
 				constraintGroup).rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgsToEither(A1 a1, A2 a2, A3 a3,
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3,
 			Locale locale) {
 		return this
 				.validateToEither(Arguments.of(a1, a2, a3), locale,
@@ -87,7 +68,7 @@ public final class Arguments3Validator<A1, A2, A3, X>
 				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgsToEither(A1 a1, A2 a2, A3 a3,
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3,
 			Locale locale, ConstraintGroup constraintGroup) {
 		ConstraintViolations violations = this.validate(Arguments.of(a1, a2, a3), locale,
 				constraintGroup);
@@ -97,5 +78,27 @@ public final class Arguments3Validator<A1, A2, A3, X>
 		else {
 			return Either.left(violations);
 		}
+	}
+
+	public X validated(A1 a1, A2 a2, A3 a3) throws ConstraintViolationsException {
+		return this.validateArgs(a1, a2, a3)
+				.rightOrElseThrow(ConstraintViolationsException::new);
+	}
+	
+	public X validated(A1 a1, A2 a2, A3 a3, ConstraintGroup constraintGroup)
+			throws ConstraintViolationsException {
+		return this.validateArgs(a1, a2, a3, constraintGroup)
+				.rightOrElseThrow(ConstraintViolationsException::new);
+	}
+
+	public X validated(A1 a1, A2 a2, A3 a3, Locale locale) throws ConstraintViolationsException {
+		return this.validateArgs(a1, a2, a3, locale)
+				.rightOrElseThrow(ConstraintViolationsException::new);
+	}
+
+	public X validated(A1 a1, A2 a2, A3 a3, Locale locale, ConstraintGroup constraintGroup)
+			throws ConstraintViolationsException {
+		return this.validateArgs(a1, a2, a3, locale, constraintGroup)
+				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 }
