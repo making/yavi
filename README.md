@@ -53,16 +53,16 @@ If you want to try a snapshot version, add the following repository:
 
 ```java
 Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
-            .constraint(User::getName, "name", c -> c.notNull() //
-                    .lessThanOrEqual(20)) //
-            .constraint(User::getEmail, "email", c -> c.notNull() //
-                    .greaterThanOrEqual(5) //
-                    .lessThanOrEqual(50) //
-                    .email()) //
-            .constraint(User::getAge, "age", c -> c.notNull() //
-                    .greaterThanOrEqual(0) //
-                    .lessThanOrEqual(200))
-            .build();
+    .constraint(User::getName, "name", c -> c.notNull() //
+        .lessThanOrEqual(20)) //
+    .constraint(User::getEmail, "email", c -> c.notNull() //
+        .greaterThanOrEqual(5) //
+        .lessThanOrEqual(50) //
+        .email()) //
+    .constraint(User::getAge, "age", c -> c.notNull() //
+        .greaterThanOrEqual(0) //
+        .lessThanOrEqual(200))
+    .build();
 
 ConstraintViolations violations = validator.validate(user);
 violations.isValid(); // true or false
@@ -77,56 +77,56 @@ In order to avoid ambiguous type inferences, you can use explicit `_<type>` meth
 // Needs YAVI 0.3.0+
 
 Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
-            ._string(User::getName, "name", c -> c.notNull() //
-                    .lessThanOrEqual(20)) //
-            ._string(User::getEmail, "email", c -> c.notNull() //
-                    .greaterThanOrEqual(5) //
-                    .lessThanOrEqual(50) //
-                    .email()) //
-            ._integer(User::getAge, "age", c -> c.notNull() //
-                    .greaterThanOrEqual(0) //
-                    .lessThanOrEqual(200))
-            .build();
+    ._string(User::getName, "name", c -> c.notNull() //
+        .lessThanOrEqual(20)) //
+    ._string(User::getEmail, "email", c -> c.notNull() //
+        .greaterThanOrEqual(5) //
+        .lessThanOrEqual(50) //
+        .email()) //
+    ._integer(User::getAge, "age", c -> c.notNull() //
+        .greaterThanOrEqual(0) //
+        .lessThanOrEqual(200))
+    .build();
 ```
 
 If you are using Kotlin, you can write a bit shorter using `konstraint` method instead of `constraint`
 
 ```kotlin
 val validator: Validator<User> = ValidatorBuilder.of<User>()
-        .konstraint(User::name) {
-            notNull() //
-                    .lessThanOrEqual(20)
-        } //
-        .konstraint(User::email) {
-            notNull() //
-                    .greaterThanOrEqual(5) //
-                    .lessThanOrEqual(50) //
-                    .email()
-        } //
-        .konstraint(User::age) {
-            notNull() //
-                    .greaterThanOrEqual(0) //
-                    .lessThanOrEqual(200)
-        }
-        .build()
+    .konstraint(User::name) {
+        notNull() //
+            .lessThanOrEqual(20)
+    } //
+    .konstraint(User::email) {
+        notNull() //
+            .greaterThanOrEqual(5) //
+            .lessThanOrEqual(50) //
+            .email()
+    } //
+    .konstraint(User::age) {
+        notNull() //
+            .greaterThanOrEqual(0) //
+            .lessThanOrEqual(200)
+    }
+    .build()
 ```
 
 #### Nested
 
 ```java
 Validator<Country> countryValidator = ValidatorBuilder.<Country> of() //
-            .nest(Country::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEqual(20))
-            .build();
+    .nest(Country::getName, "name", c -> c.notBlank() //
+        .lessThanOrEqual(20))
+    .build();
 Validator<City> cityValidator = ValidatorBuilder.<City> of() //
-            .nest(City::getName, "name", c -> c.notBlank() //
-                    .lessThanOrEqual(100))
-            .build();
+    .nest(City::getName, "name", c -> c.notBlank() //
+        .lessThanOrEqual(100))
+    .build();
 
 Validator<Address> validator = ValidatorBuilder.<Address> of() //
-            .nest(Address::getCountry, "country", countryValidator) //
-            .nest(Address::getCity, "city", cityValidator)
-            .build();
+    .nest(Address::getCountry, "country", countryValidator) //
+    .nest(Address::getCity, "city", cityValidator)
+    .build();
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/NestedValidatorTest.java)
@@ -135,13 +135,13 @@ or
 
 ```java
 Validator<Address> validator = ValidatorBuilder.<Address> of() //
-            .nest(Address::getCountry, "country", //
-                        b -> b.constraint(Country::getName, "name", c -> c.notBlank() //
-                                                                        .lessThanOrEqual(20))) //
-            .nest(Address::getCity, "city", //
-                        b -> b.constraint(City::getName, "name", c -> c.notBlank() //
-                                                                        .lessThanOrEqual(100))) //
-            .build();
+      .nest(Address::getCountry, "country", //
+            b -> b.constraint(Country::getName, "name", c -> c.notBlank() //
+                                    .lessThanOrEqual(20))) //
+      .nest(Address::getCity, "city", //
+            b -> b.constraint(City::getName, "name", c -> c.notBlank() //
+                                    .lessThanOrEqual(100))) //
+      .build();
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/InlineNestedValidatorTest.java)
@@ -156,10 +156,10 @@ Validator<Address> validator = ValidatorBuilder.<Address> of() //
 
 ```java
 Validator<User> validator = ValidatorBuilder.<User> of() //
-	.constraint(User::getName, "name", c -> c.notNull().message("name is required!") //
+    .constraint(User::getName, "name", c -> c.notNull().message("name is required!") //
         .greaterThanOrEqual(1).message("name is too small!") //
         .lessThanOrEqual(20).message("name is too large!")) //
-	.build()
+    .build()
 ```
 
 #### Custom
@@ -187,11 +187,11 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 
 ```java
 Validator<Book> book = ValidatorBuilder.<Book> of() //
-            .constraint(Book::getTitle, "title", c -> c.notBlank() //
-                    .lessThanOrEqual(64)) //
-            .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
-                    .predicate(IsbnConstraint.SINGLETON))
-            .build(); //
+    .constraint(Book::getTitle, "title", c -> c.notBlank() //
+        .lessThanOrEqual(64)) //
+    .constraint(Book::getIsbn, "isbn", c -> c.notBlank()//
+        .predicate(IsbnConstraint.SINGLETON))
+    .build(); //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
@@ -200,10 +200,10 @@ Validator<Book> book = ValidatorBuilder.<Book> of() //
 
 ```java
 Validator<Range> validator = ValidatorBuilder.<Range> of() //
-        .constraint(range::getFrom, "from", c -> c.greaterThan(0)) //
-        .constraint(range::getTo, "to", c -> c.greaterThan(0)) //
-        .constraintOnTarget(range -> range.to > range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
-        .build();
+    .constraint(range::getFrom, "from", c -> c.greaterThan(0)) //
+    .constraint(range::getTo, "to", c -> c.greaterThan(0)) //
+    .constraintOnTarget(range -> range.to > range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
+    .build();
 ```
 
 #### Either API
@@ -225,10 +225,10 @@ You can impose a condition on constraints with [`ConstraintCondition`](src/main/
 
 ```java
 Validator<User> validator = ValidatorBuilder.of(User.class) //
-        .constraintOnCondition((user, constraintGroup) -> !user.getName().isEmpty(), //
-                b -> b.constraint(User::getEmail, "email",
-                        c -> c.email().notEmpty())) // <- this constraint on email is active only when name is not empty
-        .build();
+    .constraintOnCondition((user, constraintGroup) -> !user.getName().isEmpty(), //
+        b -> b.constraint(User::getEmail, "email",
+            c -> c.email().notEmpty())) // <- this constraint on email is active only when name is not empty
+    .build();
 ```
 
 You can group the constraint as a part of `ConstraintCondition` with [`ConstraintGroup`](src/main/java/am/ik/yavi/core/ConstraintGroup.java) aas well:
@@ -239,9 +239,9 @@ enum Group implements ConstraintGroup {
 }
 
 Validator<User> validator = ValidatorBuilder.of(User.class) //
-        .constraintOnCondition(Group.UPDATE.toCondition(), //
-                b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
-        .build();
+    .constraintOnCondition(Group.UPDATE.toCondition(), //
+        b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
+    .build();
 ```
 
 The group to validate is specified in `validate` method:
@@ -254,9 +254,9 @@ You can also use a shortcut `constraintOnGroup` method
 
 ```java
 Validator<User> validator = ValidatorBuilder.of(User.class) //
-        .constraintOnGroup(Group.UPDATE, //
-                b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
-        .build();
+    .constraintOnGroup(Group.UPDATE, //
+        b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
+    .build();
 ```
 
 Note that all constraints without conditions will be validated for any constraint group.
@@ -324,9 +324,9 @@ For example,
 
 ```java
 Validator<Message> validator = ValidatorBuilder.<Message> of() //
-            .constraint(Message::getText, "text", c -> c.notBlank() //
-                    .lessThanOrEqual(3)) //
-            .build(); //
+      .constraint(Message::getText, "text", c -> c.notBlank() //
+          .lessThanOrEqual(3)) //
+      .build(); //
 validator.validate(new Message("I❤️☕️")).isValid(); // false
 ```
 
@@ -334,9 +334,9 @@ If you want to count as you see (3, in this case), use `emoji()`.
 
 ```java
 Validator<Message> validator = ValidatorBuilder.<Message> of() //
-            .constraint(Message::getText, "text", c -> c.notBlank() //
-                    .emoji().lessThanOrEqual(3)) //
-            .build(); //
+      .constraint(Message::getText, "text", c -> c.notBlank() //
+          .emoji().lessThanOrEqual(3)) //
+      .build(); //
 validator.validate(new Message("I❤️☕️")).isValid(); // true
 ```
 
@@ -344,10 +344,10 @@ For the safety (such as storing into a database), you can also check the size as
 
 ```java
 Validator<Message> validator = ValidatorBuilder.<Message> of() //
-            .constraint(Message::getText, "text", c -> c.notBlank() //
-                    .emoji().lessThanOrEqual(3)
-                    .asByteArray().lessThanOrEqual(16)) //
-            .build(); //
+      .constraint(Message::getText, "text", c -> c.notBlank() //
+          .emoji().lessThanOrEqual(3)
+          .asByteArray().lessThanOrEqual(16)) //
+      .build(); //
 validator.validate(new Message("I❤️☕️")).isValid(); // true
 validator.validate(new Message("❤️️❤️️❤️️")).isValid(); // false
 ```
@@ -358,18 +358,18 @@ YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/d
 
 ```java
 static RouterFunction<ServerResponse> routes() {
-    return route()
-            .POST("/", req -> req.bodyToMono(User.class) //
-                .flatMap(body -> validator.validateToEither(body) //
-                    .leftMap(violations -> {
-                        Map<String, Object> error = new LinkedHashMap<>();
-                        error.put("message", "Invalid request body");
-                        error.put("details", violations.details());
-                        return error;
-                    })
-                    .fold(error -> badRequest().bodyValue(error), //
-                          user -> ok().bodyValue(user))))
-            .build();
+  return route()
+      .POST("/", req -> req.bodyToMono(User.class) //
+        .flatMap(body -> validator.validateToEither(body) //
+          .leftMap(violations -> {
+            Map<String, Object> error = new LinkedHashMap<>();
+            error.put("message", "Invalid request body");
+            error.put("details", violations.details());
+            return error;
+          })
+          .fold(error -> badRequest().bodyValue(error), //
+              user -> ok().bodyValue(user))))
+      .build();
 }
 ```
 
@@ -380,13 +380,13 @@ static RouterFunction<ServerResponse> routes() {
 ```java
 @PostMapping("users")
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-    ConstraintViolations violations = validator.validate(userForm);
-    if (!violations.isValid()) {
-        violations.apply(BindingResult::rejectValue);
-        return "userForm";
-    }
-    // ...
-    return "redirect:/";
+  ConstraintViolations violations = validator.validate(userForm);
+  if (!violations.isValid()) {
+    violations.apply(BindingResult::rejectValue);
+    return "userForm";
+  }
+  // ...
+  return "redirect:/";
 }
 ```
 
@@ -395,14 +395,14 @@ or
 ```java
 @PostMapping("users")
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-    return validator.validateToEither(userForm)
-        .fold(violations -> {
-            violations.apply(BindingResult::rejectValue);
-            return "userForm";
-        }, form -> {
-            // ...
-            return "redirect:/";
-        });
+  return validator.validateToEither(userForm)
+    .fold(violations -> {
+      violations.apply(BindingResult::rejectValue);
+      return "userForm";
+    }, form -> {
+      // ...
+      return "redirect:/";
+    });
 }
 ```
 
