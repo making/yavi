@@ -140,229 +140,18 @@ public final class ArgumentsValidatorBuilder {
 	/**
 	 * @since 0.3.0
 	 */
-	public static final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> {
-		private final Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper;
-		private ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
-
-		public Arguments10ValidatorBuilder(
-				Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> build() {
-			final ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments10Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> builder(
-				Function<ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>, ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> {
-		private final Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper;
-		private ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
-
-		public Arguments11ValidatorBuilder(
-				Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> build() {
-			final ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments11Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> builder(
-				Function<ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>, ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> {
-		private final Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper;
-		private ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
-
-		public Arguments12ValidatorBuilder(
-				Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> build() {
-			final ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments12Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> builder(
-				Function<ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>, ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> {
-		private final Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
-		private ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
-
-		public Arguments13ValidatorBuilder(
-				Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> build() {
-			final ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments13Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> builder(
-				Function<ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>, ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> {
-		private final Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper;
-		private ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
-
-		public Arguments14ValidatorBuilder(
-				Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> build() {
-			final ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments14Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> builder(
-				Function<ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>, ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> {
-		private final Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper;
-		private ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
-
-		public Arguments15ValidatorBuilder(
-				Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> build() {
-			final ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments15Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> builder(
-				Function<ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>, ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
-	public static final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> {
-		private final Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper;
-		private ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
-
-		public Arguments16ValidatorBuilder(
-				Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
-			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
-		}
-
-		public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> build() {
-			final ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments16Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> builder(
-				Function<ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>, ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
-		}
-	}
-
-	/**
-	 * @since 0.3.0
-	 */
 	public static final class Arguments1ValidatorBuilder<A1, X> {
 		private final Arguments1.Mapper<A1, X> mapper;
 		private ValidatorBuilder<Arguments1<A1>> builder;
 
 		public Arguments1ValidatorBuilder(Arguments1.Mapper<A1, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments1ValidatorBuilder<A1, X> builder(
+				Function<ValidatorBuilder<Arguments1<A1>>, ValidatorBuilder<Arguments1<A1>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
 		}
 
 		public Arguments1Validator<A1, X> build() {
@@ -375,12 +164,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments1Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments1ValidatorBuilder<A1, X> builder(
-				Function<ValidatorBuilder<Arguments1<A1>>, ValidatorBuilder<Arguments1<A1>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -395,6 +178,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments2ValidatorBuilder<A1, A2, X> builder(
+				Function<ValidatorBuilder<Arguments2<A1, A2>>, ValidatorBuilder<Arguments2<A1, A2>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments2Validator<A1, A2, X> build() {
 			final ValidatorBuilder<Arguments2<A1, A2>> builder = this.builder != null
 					? this.builder
@@ -405,12 +194,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments2Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments2ValidatorBuilder<A1, A2, X> builder(
-				Function<ValidatorBuilder<Arguments2<A1, A2>>, ValidatorBuilder<Arguments2<A1, A2>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -425,6 +208,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments3ValidatorBuilder<A1, A2, A3, X> builder(
+				Function<ValidatorBuilder<Arguments3<A1, A2, A3>>, ValidatorBuilder<Arguments3<A1, A2, A3>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments3Validator<A1, A2, A3, X> build() {
 			final ValidatorBuilder<Arguments3<A1, A2, A3>> builder = this.builder != null
 					? this.builder
@@ -435,12 +224,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments3Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments3ValidatorBuilder<A1, A2, A3, X> builder(
-				Function<ValidatorBuilder<Arguments3<A1, A2, A3>>, ValidatorBuilder<Arguments3<A1, A2, A3>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -455,6 +238,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments4ValidatorBuilder<A1, A2, A3, A4, X> builder(
+				Function<ValidatorBuilder<Arguments4<A1, A2, A3, A4>>, ValidatorBuilder<Arguments4<A1, A2, A3, A4>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments4Validator<A1, A2, A3, A4, X> build() {
 			final ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder = this.builder != null
 					? this.builder
@@ -465,12 +254,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments4Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments4ValidatorBuilder<A1, A2, A3, A4, X> builder(
-				Function<ValidatorBuilder<Arguments4<A1, A2, A3, A4>>, ValidatorBuilder<Arguments4<A1, A2, A3, A4>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -486,6 +269,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> builder(
+				Function<ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>, ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments5Validator<A1, A2, A3, A4, A5, X> build() {
 			final ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder = this.builder != null
 					? this.builder
@@ -496,12 +285,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments5Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> builder(
-				Function<ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>, ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -517,6 +300,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> builder(
+				Function<ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>, ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments6Validator<A1, A2, A3, A4, A5, A6, X> build() {
 			final ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder = this.builder != null
 					? this.builder
@@ -527,12 +316,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments6Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> builder(
-				Function<ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>, ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -548,6 +331,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> builder(
+				Function<ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>, ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> build() {
 			final ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder = this.builder != null
 					? this.builder
@@ -558,12 +347,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments7Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> builder(
-				Function<ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>, ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -579,6 +362,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> builder(
+				Function<ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>, ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> build() {
 			final ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder = this.builder != null
 					? this.builder
@@ -589,12 +378,6 @@ public final class ArgumentsValidatorBuilder {
 			return new Arguments8Validator<>(builder.messageKeySeparator,
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
-		}
-
-		public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> builder(
-				Function<ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>, ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>> definition) {
-			this.builder = definition.apply(ValidatorBuilder.of());
-			return this;
 		}
 	}
 
@@ -610,6 +393,12 @@ public final class ArgumentsValidatorBuilder {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> builder(
+				Function<ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>, ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
 		public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> build() {
 			final ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder = this.builder != null
 					? this.builder
@@ -621,11 +410,222 @@ public final class ArgumentsValidatorBuilder {
 					builder.predicatesList, builder.collectionValidators,
 					builder.conditionalValidators, messageFormatter, mapper);
 		}
+	}
 
-		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> builder(
-				Function<ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>, ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>> definition) {
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> {
+		private final Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper;
+		private ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
+
+		public Arguments10ValidatorBuilder(
+				Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> builder(
+				Function<ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>, ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
+		}
+
+		public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> build() {
+			final ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments10Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> {
+		private final Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper;
+		private ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
+
+		public Arguments11ValidatorBuilder(
+				Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> builder(
+				Function<ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>, ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> build() {
+			final ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments11Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> {
+		private final Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper;
+		private ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
+
+		public Arguments12ValidatorBuilder(
+				Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> builder(
+				Function<ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>, ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> build() {
+			final ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments12Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> {
+		private final Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
+		private ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
+
+		public Arguments13ValidatorBuilder(
+				Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> builder(
+				Function<ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>, ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> build() {
+			final ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments13Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> {
+		private final Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper;
+		private ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
+
+		public Arguments14ValidatorBuilder(
+				Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> builder(
+				Function<ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>, ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> build() {
+			final ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments14Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> {
+		private final Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper;
+		private ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
+
+		public Arguments15ValidatorBuilder(
+				Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> builder(
+				Function<ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>, ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> build() {
+			final ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments15Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
+		}
+	}
+
+	/**
+	 * @since 0.3.0
+	 */
+	public static final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> {
+		private final Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper;
+		private ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
+
+		public Arguments16ValidatorBuilder(
+				Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
+			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
+		}
+
+		public Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> builder(
+				Function<ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>, ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>> definition) {
+			this.builder = definition.apply(ValidatorBuilder.of());
+			return this;
+		}
+
+		public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> build() {
+			final ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder = this.builder != null
+					? this.builder
+					: ValidatorBuilder.of();
+			final MessageFormatter messageFormatter = builder.messageFormatter == null
+					? new SimpleMessageFormatter()
+					: builder.messageFormatter;
+			return new Arguments16Validator<>(builder.messageKeySeparator,
+					builder.predicatesList, builder.collectionValidators,
+					builder.conditionalValidators, messageFormatter, mapper);
 		}
 	}
 }
