@@ -269,7 +269,7 @@ You can get the object only if the arguments passe the validation.
 Up to 16 arguments are supported.
 
 ```java
-final Person person = ArgumentsValidatorBuilder
+Person person = ArgumentsValidatorBuilder
     .of(Person::new)
     .builder(b -> b
         ._string(Arguments1::arg1, "firstName",
@@ -285,7 +285,7 @@ final Person person = ArgumentsValidatorBuilder
 You can also get the result as `Either`.
 
 ```java
-final Either<ConstraintViolations, Person> either  = ArgumentsValidatorBuilder
+Either<ConstraintViolations, Person> either  = ArgumentsValidatorBuilder
     .of(Person::new)
     .builder(b -> b
         ._string(Arguments1::arg1, "firstName",
