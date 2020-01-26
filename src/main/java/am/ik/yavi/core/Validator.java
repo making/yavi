@@ -28,7 +28,9 @@ import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
- * Validates the target instances. must be thread safe.
+ * Validates the target instances.
+ * 
+ * A <code>Validator</code> instance is immutable and can be used as a singleton.
  * 
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
