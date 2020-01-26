@@ -301,18 +301,19 @@ Either<ConstraintViolations, Person> either  = ArgumentsValidatorBuilder
 Kotlin version
 
 ```kotlin
-val person = ArgumentsValidatorBuilder.of(::Person)
-        .builder { b ->
-            b._string({ it.arg1() }, "firstName") {
-                it.greaterThanOrEqual(1).lessThanOrEqual(50)
-            }._string({ it.arg2() }, "lastName") {
-                it.greaterThanOrEqual(1).lessThanOrEqual(50)
-            }._integer({ it.arg3() }, "age") {
-                it.greaterThanOrEqual(20).lessThanOrEqual(99)
-            }
+val person = ArgumentsValidatorBuilder
+    .of(::Person)
+    .builder { b ->
+        b._string({ it.arg1() }, "firstName") {
+            it.greaterThanOrEqual(1).lessThanOrEqual(50)
+        }._string({ it.arg2() }, "lastName") {
+            it.greaterThanOrEqual(1).lessThanOrEqual(50)
+        }._integer({ it.arg3() }, "age") {
+            it.greaterThanOrEqual(20).lessThanOrEqual(99)
         }
-        .build()
-        .validated("John", "Doe", 20)
+    }
+    .build()
+    .validated("John", "Doe", 20)
 ```
 
 #### (Experimental) Emoji support
