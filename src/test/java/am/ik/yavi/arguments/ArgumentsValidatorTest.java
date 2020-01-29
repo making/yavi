@@ -141,4 +141,21 @@ public class ArgumentsValidatorTest {
 		final Country country = arguments1Validator.validated("JP");
 		assertThat(country.name()).isEqualTo("JP");
 	}
+
+	@Test
+	void testValidateOnly_valid() {
+		final Product product = new Product("foo", 100);
+		assertThat(product).isNotNull();
+	}
+
+	@Test
+	void testValidateOnly_invalid() {
+		assertThatThrownBy(() -> new Product("", 0)) //
+				.isInstanceOfSatisfying(ConstraintViolationsException.class,
+						e -> assertThat(e.getMessage()).isEqualTo(
+								"Constraint violations found!" + System.lineSeparator()
+										+ "* \"name\" must not be empty"
+										+ System.lineSeparator()
+										+ "* \"price\" must be greater than 0"));
+	}
 }
