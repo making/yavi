@@ -15,14 +15,14 @@
  */
 package am.ik.yavi.constraint.array;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.IncludedViolationMessages;
+
 import java.util.Arrays;
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
-
-import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintPredicate;
 
 public class DoubleArrayConstraint<T>
 		extends ContainerConstraintBase<T, double[], DoubleArrayConstraint<T>> {
@@ -33,11 +33,11 @@ public class DoubleArrayConstraint<T>
 	}
 
 	public DoubleArrayConstraint<T> contains(double v) {
-		this.predicates()
-				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
-						ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
-		return this;
-	}
+        this.predicates().add(ConstraintPredicate
+                .of(x -> Arrays.stream(x).anyMatch(e -> e == v), IncludedViolationMessages.get().ARRAY_CONTAINS(),
+                        () -> new Object[]{v}, VALID));
+        return this;
+    }
 
 	@Override
 	protected ToIntFunction<double[]> size() {

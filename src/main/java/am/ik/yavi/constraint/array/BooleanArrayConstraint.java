@@ -15,13 +15,13 @@
  */
 package am.ik.yavi.constraint.array;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.IncludedViolationMessages;
+
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
-
-import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintPredicate;
 
 public class BooleanArrayConstraint<T>
 		extends ContainerConstraintBase<T, boolean[], BooleanArrayConstraint<T>> {
@@ -39,7 +39,7 @@ public class BooleanArrayConstraint<T>
 				}
 			}
 			return false;
-		}, ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
+		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
 		return this;
 	}
 

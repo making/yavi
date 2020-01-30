@@ -15,6 +15,11 @@
  */
 package am.ik.yavi.constraint.base;
 
+import am.ik.yavi.core.Constraint;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.IncludedViolationMessages;
+import am.ik.yavi.core.ViolatedValue;
+
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -22,70 +27,52 @@ import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_FIXED_SIZE;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_GREATER_THAN;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_GREATER_THAN_OR_EQUAL;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_LESS_THAN;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_LESS_THAN_OR_EQUAL;
-import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_NOT_EMPTY;
-
-import am.ik.yavi.core.Constraint;
-import am.ik.yavi.core.ConstraintPredicate;
-import am.ik.yavi.core.ViolatedValue;
 
 public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 
 	public C fixedSize(int size) {
-		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) == size,
-								this.size()),
-						CONTAINER_FIXED_SIZE, () -> new Object[] { size }, VALID));
+		this.predicates().add(ConstraintPredicate
+				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) == size, this.size()),
+						IncludedViolationMessages.get().CONTAINER_FIXED_SIZE(), () -> new Object[]{size}, VALID));
 		return cast();
 	}
 
 	public C greaterThan(int min) {
-		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) > min,
-								this.size()),
-						CONTAINER_GREATER_THAN, () -> new Object[] { min }, VALID));
+		this.predicates().add(ConstraintPredicate
+				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) > min, this.size()),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN(), () -> new Object[]{min}, VALID));
 		return cast();
 	}
 
 	public C greaterThanOrEqual(int min) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) >= min,
-								this.size()),
-						CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
+						this.checkSizePredicate(x -> size().applyAsInt(x) >= min, this.size()),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN_OR_EQUAL(), () -> new Object[]{min},
 						VALID));
 		return cast();
 	}
 
 	public C lessThan(int max) {
-		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) < max,
-								this.size()),
-						CONTAINER_LESS_THAN, () -> new Object[] { max }, VALID));
+		this.predicates().add(ConstraintPredicate
+				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) < max, this.size()),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN(), () -> new Object[]{max}, VALID));
 		return cast();
 	}
 
 	public C lessThanOrEqual(int max) {
-		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) <= max,
-								this.size()),
-						CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
+		this.predicates().add(ConstraintPredicate
+				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) <= max, this.size()),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN_OR_EQUAL(), () -> new Object[]{max},
+						VALID));
 		return cast();
 	}
 
 	public C notEmpty() {
-		this.predicates()
-				.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0,
-						CONTAINER_NOT_EMPTY, () -> new Object[] {}, INVALID));
+		this.predicates().add(ConstraintPredicate
+				.of(x -> x != null && size().applyAsInt(x) != 0, IncludedViolationMessages.get().CONTAINER_NOT_EMPTY(),
+						() -> new Object[]{}, INVALID));
 		return cast();
 	}
 

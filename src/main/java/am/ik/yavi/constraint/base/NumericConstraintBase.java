@@ -15,43 +15,44 @@
  */
 package am.ik.yavi.constraint.base;
 
+import am.ik.yavi.core.Constraint;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.IncludedViolationMessages;
+
 import java.util.function.Predicate;
 
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_GREATER_THAN;
-import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_GREATER_THAN_OR_EQUAL;
-import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_LESS_THAN;
-import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_LESS_THAN_OR_EQUAL;
-
-import am.ik.yavi.core.Constraint;
-import am.ik.yavi.core.ConstraintPredicate;
 
 public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 
 	public C greaterThan(V min) {
-		this.predicates().add(ConstraintPredicate.of(this.isGreaterThan(min),
-				NUMERIC_GREATER_THAN, () -> new Object[] { min }, VALID));
-		return cast();
-	}
+        this.predicates().add(ConstraintPredicate
+                .of(this.isGreaterThan(min), IncludedViolationMessages.get().NUMERIC_GREATER_THAN(),
+                        () -> new Object[]{min}, VALID));
+        return cast();
+    }
 
 	public C greaterThanOrEqual(V min) {
-		this.predicates().add(ConstraintPredicate.of(this.isGreaterThanOrEqual(min),
-				NUMERIC_GREATER_THAN_OR_EQUAL, () -> new Object[] { min }, VALID));
-		return cast();
-	}
+        this.predicates().add(ConstraintPredicate
+                .of(this.isGreaterThanOrEqual(min), IncludedViolationMessages.get().NUMERIC_GREATER_THAN_OR_EQUAL(),
+                        () -> new Object[]{min}, VALID));
+        return cast();
+    }
 
 	public C lessThan(V max) {
-		this.predicates().add(ConstraintPredicate.of(this.isLessThan(max),
-				NUMERIC_LESS_THAN, () -> new Object[] { max }, VALID));
-		return cast();
-	}
+        this.predicates().add(ConstraintPredicate
+                .of(this.isLessThan(max), IncludedViolationMessages.get().NUMERIC_LESS_THAN(), () -> new Object[]{max},
+                        VALID));
+        return cast();
+    }
 
 	public C lessThanOrEqual(V max) {
-		this.predicates().add(ConstraintPredicate.of(this.isLessThanOrEqual(max),
-				NUMERIC_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
-		return cast();
-	}
+        this.predicates().add(ConstraintPredicate
+                .of(this.isLessThanOrEqual(max), IncludedViolationMessages.get().NUMERIC_LESS_THAN_OR_EQUAL(),
+                        () -> new Object[]{max}, VALID));
+        return cast();
+    }
 
 	protected abstract Predicate<V> isGreaterThan(V min);
 

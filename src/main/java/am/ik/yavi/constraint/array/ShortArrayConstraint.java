@@ -15,36 +15,35 @@
  */
 package am.ik.yavi.constraint.array;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.IncludedViolationMessages;
+
 import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 
-import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintPredicate;
+public class ShortArrayConstraint<T> extends ContainerConstraintBase<T, short[], ShortArrayConstraint<T>> {
 
-public class ShortArrayConstraint<T>
-		extends ContainerConstraintBase<T, short[], ShortArrayConstraint<T>> {
+    @Override
+    public ShortArrayConstraint<T> cast() {
+        return this;
+    }
 
-	@Override
-	public ShortArrayConstraint<T> cast() {
-		return this;
-	}
+    public ShortArrayConstraint<T> contains(short v) {
+        this.predicates().add(ConstraintPredicate.of(x -> {
+            for (short e : x) {
+                if (e == v) {
+                    return true;
+                }
+            }
+            return false;
+        }, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
+        return this;
+    }
 
-	public ShortArrayConstraint<T> contains(short v) {
-		this.predicates().add(ConstraintPredicate.of(x -> {
-			for (short e : x) {
-				if (e == v) {
-					return true;
-				}
-			}
-			return false;
-		}, ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
-		return this;
-	}
-
-	@Override
-	protected ToIntFunction<short[]> size() {
-		return x -> x.length;
-	}
+    @Override
+    protected ToIntFunction<short[]> size() {
+        return x -> x.length;
+    }
 }
