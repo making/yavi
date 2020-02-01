@@ -26,63 +26,64 @@ import static org.assertj.core.api.Assertions.assertThat;
 class IntegerConstraintTest {
 
 	@ParameterizedTest
-	@ValueSource(ints = {101, 150})
+	@ValueSource(ints = { 101, 150 })
 	void validGreaterThan(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.greaterThan(100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {100, -50})
+	@ValueSource(ints = { 100, -50 })
 	void invalidGreaterThan(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.greaterThan(100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {101, 100})
+	@ValueSource(ints = { 101, 100 })
 	void validGreaterThanOrEqual(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {99, -50})
+	@ValueSource(ints = { 99, -50 })
 	void invalidGreaterThanOrEqual(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
-	@ValueSource(ints = {99, -50})
+	@ValueSource(ints = { 99, -50 })
 	void validLessThan(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.lessThan(100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {100, 150})
+	@ValueSource(ints = { 100, 150 })
 	void invalidLessThan(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.lessThan(100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {99, 100})
+	@ValueSource(ints = { 99, 100 })
 	void validLessThanOrEqual(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.lessThanOrEqual(100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {101, 150})
+	@ValueSource(ints = { 101, 150 })
 	void invalidLessThanOrEqual(int value) {
 		Predicate<Integer> predicate = retrievePredicate(c -> c.lessThanOrEqual(100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-	private static Predicate<Integer> retrievePredicate(Function<IntegerConstraint<Integer>, IntegerConstraint<Integer>> constraint) {
-		return constraint.apply(new IntegerConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<Integer> retrievePredicate(
+			Function<IntegerConstraint<Integer>, IntegerConstraint<Integer>> constraint) {
+		return constraint.apply(new IntegerConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }

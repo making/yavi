@@ -27,63 +27,72 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BigIntegerConstraintTest {
 
 	@ParameterizedTest
-	@ValueSource(strings = {"101", "150"})
+	@ValueSource(strings = { "101", "150" })
 	void validGreaterThan(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThan(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.greaterThan(new BigInteger("100")));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"100", "-50"})
+	@ValueSource(strings = { "100", "-50" })
 	void invalidGreaterThan(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThan(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.greaterThan(new BigInteger("100")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"101", "100"})
+	@ValueSource(strings = { "101", "100" })
 	void validGreaterThanOrEqual(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual(new BigInteger("100")));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"99", "-50"})
+	@ValueSource(strings = { "99", "-50" })
 	void invalidGreaterThanOrEqual(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.greaterThanOrEqual(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual(new BigInteger("100")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
-	@ValueSource(strings = {"99", "-50"})
+	@ValueSource(strings = { "99", "-50" })
 	void validLessThan(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThan(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.lessThan(new BigInteger("100")));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"100", "150"})
+	@ValueSource(strings = { "100", "150" })
 	void invalidLessThan(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThan(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.lessThan(new BigInteger("100")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"99", "100"})
+	@ValueSource(strings = { "99", "100" })
 	void validLessThanOrEqual(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual(new BigInteger("100")));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"101", "150"})
+	@ValueSource(strings = { "101", "150" })
 	void invalidLessThanOrEqual(BigInteger value) {
-		Predicate<BigInteger> predicate = retrievePredicate(c -> c.lessThanOrEqual(new BigInteger("100")));
+		Predicate<BigInteger> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual(new BigInteger("100")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-	private static Predicate<BigInteger> retrievePredicate(Function<BigIntegerConstraint<BigInteger>, BigIntegerConstraint<BigInteger>> constraint) {
-		return constraint.apply(new BigIntegerConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<BigInteger> retrievePredicate(
+			Function<BigIntegerConstraint<BigInteger>, BigIntegerConstraint<BigInteger>> constraint) {
+		return constraint.apply(new BigIntegerConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }

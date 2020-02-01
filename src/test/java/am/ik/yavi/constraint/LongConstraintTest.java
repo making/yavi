@@ -26,63 +26,64 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LongConstraintTest {
 
 	@ParameterizedTest
-	@ValueSource(longs = {101L, 150L})
+	@ValueSource(longs = { 101L, 150L })
 	void validGreaterThan(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThan(100L));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {100L, -50L})
+	@ValueSource(longs = { 100L, -50L })
 	void invalidGreaterThan(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThan(100L));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {101L, 100L})
+	@ValueSource(longs = { 101L, 100L })
 	void validGreaterThanOrEqual(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100L));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {99L, -50L})
+	@ValueSource(longs = { 99L, -50L })
 	void invalidGreaterThanOrEqual(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.greaterThanOrEqual(100L));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
-	@ValueSource(longs = {99L, -50L})
+	@ValueSource(longs = { 99L, -50L })
 	void validLessThan(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.lessThan(100L));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {100L, 150L})
+	@ValueSource(longs = { 100L, 150L })
 	void invalidLessThan(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.lessThan(100L));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {99L, 100L})
+	@ValueSource(longs = { 99L, 100L })
 	void validLessThanOrEqual(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.lessThanOrEqual(100L));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(longs = {101L, 150L})
+	@ValueSource(longs = { 101L, 150L })
 	void invalidLessThanOrEqual(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.lessThanOrEqual(100L));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-	private static Predicate<Long> retrievePredicate(Function<LongConstraint<Long>, LongConstraint<Long>> constraint) {
-		return constraint.apply(new LongConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<Long> retrievePredicate(
+			Function<LongConstraint<Long>, LongConstraint<Long>> constraint) {
+		return constraint.apply(new LongConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }
