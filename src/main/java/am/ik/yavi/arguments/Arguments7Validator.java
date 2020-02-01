@@ -43,39 +43,44 @@ public final class Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>
 			List<ConstraintPredicates<Arguments7<A1, A2, A3, A4, A5, A6, A7>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments7<A1, A2, A3, A4, A5, A6, A7>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments7<A1, A2, A3, A4, A5, A6, A7>>, ValidatorSubset<Arguments7<A1, A2, A3, A4, A5, A6, A7>>>> conditionalValidators,
-			MessageFormatter messageFormatter, Arguments7.Mapper<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+			MessageFormatter messageFormatter,
+			Arguments7.Mapper<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7) {
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
+			A6 a6, A7 a7) {
 		return this
-				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6, a7), Locale.getDefault(),
-						ConstraintGroup.DEFAULT)
+				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6, a7),
+						Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
-			ConstraintGroup constraintGroup) {
-		return this.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6, a7), Locale.getDefault(),
-				constraintGroup).rightMap(values -> values.map(this.mapper));
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
+			A6 a6, A7 a7, ConstraintGroup constraintGroup) {
+		return this
+				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6, a7),
+						Locale.getDefault(), constraintGroup)
+				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
-			Locale locale) {
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
+			A6 a6, A7 a7, Locale locale) {
 		return this
 				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6, a7), locale,
 						ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
-			Locale locale, ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7), locale,
-				constraintGroup);
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
+			A6 a6, A7 a7, Locale locale, ConstraintGroup constraintGroup) {
+		ConstraintViolations violations = this.validate(
+				Arguments.of(a1, a2, a3, a4, a5, a6, a7), locale, constraintGroup);
 		if (violations.isValid()) {
-			return Either.right(Arguments.of(a1, a2, a3, a4, a5, a6, a7).map(this.mapper));
+			return Either
+					.right(Arguments.of(a1, a2, a3, a4, a5, a6, a7).map(this.mapper));
 		}
 		else {
 			return Either.left(violations);
@@ -92,24 +97,26 @@ public final class Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>
 		return this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7), constraintGroup);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7) throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7)
+			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, a5, a6, a7)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
-	
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, ConstraintGroup constraintGroup)
-			throws ConstraintViolationsException {
+
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
+			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, a5, a6, a7, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, Locale locale) throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, Locale locale)
+			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, a5, a6, a7, locale)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, Locale locale, ConstraintGroup constraintGroup)
-			throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, Locale locale,
+			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}

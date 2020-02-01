@@ -35,8 +35,7 @@ import am.ik.yavi.message.MessageFormatter;
  *
  * @since 0.3.0
  */
-public final class Arguments2Validator<A1, A2, X>
-		extends Validator<Arguments2<A1, A2>> {
+public final class Arguments2Validator<A1, A2, X> extends Validator<Arguments2<A1, A2>> {
 	private final Arguments2.Mapper<A1, A2, X> mapper;
 
 	public Arguments2Validator(String messageKeySeparator,
@@ -62,16 +61,14 @@ public final class Arguments2Validator<A1, A2, X>
 				constraintGroup).rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2,
-			Locale locale) {
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, Locale locale) {
 		return this
-				.validateToEither(Arguments.of(a1, a2), locale,
-						ConstraintGroup.DEFAULT)
+				.validateToEither(Arguments.of(a1, a2), locale, ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2,
-			Locale locale, ConstraintGroup constraintGroup) {
+	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, Locale locale,
+			ConstraintGroup constraintGroup) {
 		ConstraintViolations violations = this.validate(Arguments.of(a1, a2), locale,
 				constraintGroup);
 		if (violations.isValid()) {
@@ -95,7 +92,7 @@ public final class Arguments2Validator<A1, A2, X>
 		return this.validateArgs(a1, a2)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
-	
+
 	public X validated(A1 a1, A2 a2, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, constraintGroup)

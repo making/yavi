@@ -43,7 +43,8 @@ public final class Arguments4Validator<A1, A2, A3, A4, X>
 			List<ConstraintPredicates<Arguments4<A1, A2, A3, A4>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments4<A1, A2, A3, A4>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments4<A1, A2, A3, A4>>, ValidatorSubset<Arguments4<A1, A2, A3, A4>>>> conditionalValidators,
-			MessageFormatter messageFormatter, Arguments4.Mapper<A1, A2, A3, A4, X> mapper) {
+			MessageFormatter messageFormatter,
+			Arguments4.Mapper<A1, A2, A3, A4, X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;
@@ -72,8 +73,8 @@ public final class Arguments4Validator<A1, A2, A3, A4, X>
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
 			Locale locale, ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validate(Arguments.of(a1, a2, a3, a4), locale,
-				constraintGroup);
+		ConstraintViolations violations = this.validate(Arguments.of(a1, a2, a3, a4),
+				locale, constraintGroup);
 		if (violations.isValid()) {
 			return Either.right(Arguments.of(a1, a2, a3, a4).map(this.mapper));
 		}
@@ -95,20 +96,21 @@ public final class Arguments4Validator<A1, A2, A3, A4, X>
 		return this.validateArgs(a1, a2, a3, a4)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
-	
+
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale) throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale)
+			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, locale)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale, ConstraintGroup constraintGroup)
-			throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
+			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, a4, locale, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}

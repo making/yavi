@@ -194,8 +194,8 @@ public class CustomValidatorTest {
 	@Test
 	public void instantRangeCustom_gh36() throws Exception {
 		final InstantRangeConstraint constraint = new InstantRangeConstraint(
-			Instant.parse("2020-01-15T00:00:00Z"),
-			Instant.parse("2020-01-16T00:00:00Z"));
+				Instant.parse("2020-01-15T00:00:00Z"),
+				Instant.parse("2020-01-16T00:00:00Z"));
 		final Validator<Instant> validator = ValidatorBuilder.of(Instant.class)
 				.constraintOnTarget(constraint, "instant").build();
 

@@ -95,20 +95,21 @@ public final class Arguments3Validator<A1, A2, A3, X>
 		return this.validateArgs(a1, a2, a3)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
-	
+
 	public X validated(A1 a1, A2 a2, A3 a3, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, Locale locale) throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, Locale locale)
+			throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, locale)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
 
-	public X validated(A1 a1, A2 a2, A3 a3, Locale locale, ConstraintGroup constraintGroup)
-			throws ConstraintViolationsException {
+	public X validated(A1 a1, A2 a2, A3 a3, Locale locale,
+			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
 		return this.validateArgs(a1, a2, a3, locale, constraintGroup)
 				.rightOrElseThrow(ConstraintViolationsException::new);
 	}
