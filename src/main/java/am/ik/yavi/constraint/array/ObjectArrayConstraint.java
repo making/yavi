@@ -33,11 +33,12 @@ public class ObjectArrayConstraint<T, E>
 	}
 
 	public ObjectArrayConstraint<T, E> contains(E s) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> Arrays.asList(x).contains(s), IncludedViolationMessages.get().ARRAY_CONTAINS(),
-                        () -> new Object[]{s}, VALID));
-        return this;
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Arrays.asList(x).contains(s),
+						IncludedViolationMessages.get().ARRAY_CONTAINS(),
+						() -> new Object[] { s }, VALID));
+		return this;
+	}
 
 	@Override
 	protected ToIntFunction<E[]> size() {

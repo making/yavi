@@ -27,32 +27,36 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 
 	public C greaterThan(V min) {
-        this.predicates().add(ConstraintPredicate
-                .of(this.isGreaterThan(min), IncludedViolationMessages.get().NUMERIC_GREATER_THAN(),
-                        () -> new Object[]{min}, VALID));
-        return cast();
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(this.isGreaterThan(min),
+						IncludedViolationMessages.get().NUMERIC_GREATER_THAN(),
+						() -> new Object[] { min }, VALID));
+		return cast();
+	}
 
 	public C greaterThanOrEqual(V min) {
-        this.predicates().add(ConstraintPredicate
-                .of(this.isGreaterThanOrEqual(min), IncludedViolationMessages.get().NUMERIC_GREATER_THAN_OR_EQUAL(),
-                        () -> new Object[]{min}, VALID));
-        return cast();
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(this.isGreaterThanOrEqual(min),
+						IncludedViolationMessages.get().NUMERIC_GREATER_THAN_OR_EQUAL(),
+						() -> new Object[] { min }, VALID));
+		return cast();
+	}
 
 	public C lessThan(V max) {
-        this.predicates().add(ConstraintPredicate
-                .of(this.isLessThan(max), IncludedViolationMessages.get().NUMERIC_LESS_THAN(), () -> new Object[]{max},
-                        VALID));
-        return cast();
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(this.isLessThan(max),
+						IncludedViolationMessages.get().NUMERIC_LESS_THAN(),
+						() -> new Object[] { max }, VALID));
+		return cast();
+	}
 
 	public C lessThanOrEqual(V max) {
-        this.predicates().add(ConstraintPredicate
-                .of(this.isLessThanOrEqual(max), IncludedViolationMessages.get().NUMERIC_LESS_THAN_OR_EQUAL(),
-                        () -> new Object[]{max}, VALID));
-        return cast();
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(this.isLessThanOrEqual(max),
+						IncludedViolationMessages.get().NUMERIC_LESS_THAN_OR_EQUAL(),
+						() -> new Object[] { max }, VALID));
+		return cast();
+	}
 
 	protected abstract Predicate<V> isGreaterThan(V min);
 

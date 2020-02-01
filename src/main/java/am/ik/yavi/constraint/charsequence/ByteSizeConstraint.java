@@ -23,59 +23,68 @@ import java.nio.charset.Charset;
 
 import static am.ik.yavi.core.NullAs.VALID;
 
-public class ByteSizeConstraint<T, E extends CharSequence> extends CharSequenceConstraint<T, E> {
+public class ByteSizeConstraint<T, E extends CharSequence>
+		extends CharSequenceConstraint<T, E> {
 
-    private final Charset charset;
+	private final Charset charset;
 
-    public ByteSizeConstraint(CharSequenceConstraint<T, E> delegate, Charset charset) {
-        super();
-        this.charset = charset;
-        this.predicates().addAll(delegate.predicates());
-    }
+	public ByteSizeConstraint(CharSequenceConstraint<T, E> delegate, Charset charset) {
+		super();
+		this.charset = charset;
+		this.predicates().addAll(delegate.predicates());
+	}
 
-    @Override
-    public ByteSizeConstraint<T, E> cast() {
-        return this;
-    }
+	@Override
+	public ByteSizeConstraint<T, E> cast() {
+		return this;
+	}
 
-    public ByteSizeConstraint<T, E> fixedSize(int size) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) == size, this::size),
-                        IncludedViolationMessages.get().BYTE_SIZE_FIXED_SIZE(), () -> new Object[]{size}, VALID));
-        return this;
-    }
+	public ByteSizeConstraint<T, E> fixedSize(int size) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) == size, this::size),
+						IncludedViolationMessages.get().BYTE_SIZE_FIXED_SIZE(),
+						() -> new Object[] { size }, VALID));
+		return this;
+	}
 
-    private int size(E x) {
-        return x.toString().getBytes(charset).length;
-    }
+	private int size(E x) {
+		return x.toString().getBytes(charset).length;
+	}
 
-    public ByteSizeConstraint<T, E> greaterThan(int min) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) > min, this::size),
-                        IncludedViolationMessages.get().BYTE_SIZE_GREATER_THAN(), () -> new Object[]{min}, VALID));
-        return this;
-    }
+	public ByteSizeConstraint<T, E> greaterThan(int min) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) > min, this::size),
+						IncludedViolationMessages.get().BYTE_SIZE_GREATER_THAN(),
+						() -> new Object[] { min }, VALID));
+		return this;
+	}
 
-    public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) >= min, this::size),
-                        IncludedViolationMessages.get().BYTE_SIZE_GREATER_THAN_OR_EQUAL(), () -> new Object[]{min},
-                        VALID));
-        return this;
-    }
+	public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) >= min, this::size),
+						IncludedViolationMessages.get().BYTE_SIZE_GREATER_THAN_OR_EQUAL(),
+						() -> new Object[] { min }, VALID));
+		return this;
+	}
 
-    public ByteSizeConstraint<T, E> lessThan(int max) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) < max, this::size),
-                        IncludedViolationMessages.get().BYTE_SIZE_LESS_THAN(), () -> new Object[]{max}, VALID));
-        return this;
-    }
+	public ByteSizeConstraint<T, E> lessThan(int max) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) < max, this::size),
+						IncludedViolationMessages.get().BYTE_SIZE_LESS_THAN(),
+						() -> new Object[] { max }, VALID));
+		return this;
+	}
 
-    public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) <= max, this::size),
-                        IncludedViolationMessages.get().BYTE_SIZE_LESS_THAN_OR_EQUAL(), () -> new Object[]{max},
-                        VALID));
-        return this;
-    }
+	public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) <= max, this::size),
+						IncludedViolationMessages.get().BYTE_SIZE_LESS_THAN_OR_EQUAL(),
+						() -> new Object[] { max }, VALID));
+		return this;
+	}
 }

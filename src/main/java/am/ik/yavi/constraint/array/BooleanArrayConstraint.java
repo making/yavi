@@ -39,7 +39,8 @@ public class BooleanArrayConstraint<T>
 				}
 			}
 			return false;
-		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
+		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[] { v },
+				VALID));
 		return this;
 	}
 

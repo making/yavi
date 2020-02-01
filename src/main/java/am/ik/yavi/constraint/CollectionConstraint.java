@@ -25,22 +25,23 @@ import java.util.function.ToIntFunction;
 import static am.ik.yavi.core.NullAs.VALID;
 
 public class CollectionConstraint<T, L extends Collection<E>, E>
-        extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
+		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
 
-    @Override
-    public CollectionConstraint<T, L, E> cast() {
-        return this;
-    }
+	@Override
+	public CollectionConstraint<T, L, E> cast() {
+		return this;
+	}
 
-    public CollectionConstraint<T, L, E> contains(E s) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> x.contains(s), IncludedViolationMessages.get().COLLECTION_CONTAINS(), () -> new Object[]{s},
-                        VALID));
-        return this;
-    }
+	public CollectionConstraint<T, L, E> contains(E s) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.contains(s),
+						IncludedViolationMessages.get().COLLECTION_CONTAINS(),
+						() -> new Object[] { s }, VALID));
+		return this;
+	}
 
-    @Override
-    protected ToIntFunction<L> size() {
-        return Collection::size;
-    }
+	@Override
+	protected ToIntFunction<L> size() {
+		return Collection::size;
+	}
 }

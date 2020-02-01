@@ -24,29 +24,32 @@ import java.util.function.ToIntFunction;
 
 import static am.ik.yavi.core.NullAs.VALID;
 
-public class MapConstraint<T, K, V> extends ContainerConstraintBase<T, Map<K, V>, MapConstraint<T, K, V>> {
+public class MapConstraint<T, K, V>
+		extends ContainerConstraintBase<T, Map<K, V>, MapConstraint<T, K, V>> {
 
-    @Override
-    public MapConstraint<T, K, V> cast() {
-        return this;
-    }
+	@Override
+	public MapConstraint<T, K, V> cast() {
+		return this;
+	}
 
-    public MapConstraint<T, K, V> containsKey(K k) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> x.containsKey(k), IncludedViolationMessages.get().MAP_CONTAINS_KEY(), () -> new Object[]{k},
-                        VALID));
-        return this;
-    }
+	public MapConstraint<T, K, V> containsKey(K k) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.containsKey(k),
+						IncludedViolationMessages.get().MAP_CONTAINS_KEY(),
+						() -> new Object[] { k }, VALID));
+		return this;
+	}
 
-    public MapConstraint<T, K, V> containsValue(V v) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> x.containsValue(v), IncludedViolationMessages.get().MAP_CONTAINS_VALUE(),
-                        () -> new Object[]{v}, VALID));
-        return this;
-    }
+	public MapConstraint<T, K, V> containsValue(V v) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.containsValue(v),
+						IncludedViolationMessages.get().MAP_CONTAINS_VALUE(),
+						() -> new Object[] { v }, VALID));
+		return this;
+	}
 
-    @Override
-    protected ToIntFunction<Map<K, V>> size() {
-        return Map::size;
-    }
+	@Override
+	protected ToIntFunction<Map<K, V>> size() {
+		return Map::size;
+	}
 }

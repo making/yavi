@@ -32,47 +32,60 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 		extends ConstraintBase<T, V, C> {
 
 	public C fixedSize(int size) {
-		this.predicates().add(ConstraintPredicate
-				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) == size, this.size()),
-						IncludedViolationMessages.get().CONTAINER_FIXED_SIZE(), () -> new Object[]{size}, VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size().applyAsInt(x) == size,
+								this.size()),
+						IncludedViolationMessages.get().CONTAINER_FIXED_SIZE(),
+						() -> new Object[] { size }, VALID));
 		return cast();
 	}
 
 	public C greaterThan(int min) {
-		this.predicates().add(ConstraintPredicate
-				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) > min, this.size()),
-						IncludedViolationMessages.get().CONTAINER_GREATER_THAN(), () -> new Object[]{min}, VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size().applyAsInt(x) > min,
+								this.size()),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN(),
+						() -> new Object[] { min }, VALID));
 		return cast();
 	}
 
 	public C greaterThanOrEqual(int min) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) >= min, this.size()),
-						IncludedViolationMessages.get().CONTAINER_GREATER_THAN_OR_EQUAL(), () -> new Object[]{min},
-						VALID));
+						this.checkSizePredicate(x -> size().applyAsInt(x) >= min,
+								this.size()),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN_OR_EQUAL(),
+						() -> new Object[] { min }, VALID));
 		return cast();
 	}
 
 	public C lessThan(int max) {
-		this.predicates().add(ConstraintPredicate
-				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) < max, this.size()),
-						IncludedViolationMessages.get().CONTAINER_LESS_THAN(), () -> new Object[]{max}, VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size().applyAsInt(x) < max,
+								this.size()),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN(),
+						() -> new Object[] { max }, VALID));
 		return cast();
 	}
 
 	public C lessThanOrEqual(int max) {
-		this.predicates().add(ConstraintPredicate
-				.withViolatedValue(this.checkSizePredicate(x -> size().applyAsInt(x) <= max, this.size()),
-						IncludedViolationMessages.get().CONTAINER_LESS_THAN_OR_EQUAL(), () -> new Object[]{max},
-						VALID));
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size().applyAsInt(x) <= max,
+								this.size()),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN_OR_EQUAL(),
+						() -> new Object[] { max }, VALID));
 		return cast();
 	}
 
 	public C notEmpty() {
-		this.predicates().add(ConstraintPredicate
-				.of(x -> x != null && size().applyAsInt(x) != 0, IncludedViolationMessages.get().CONTAINER_NOT_EMPTY(),
-						() -> new Object[]{}, INVALID));
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0,
+						IncludedViolationMessages.get().CONTAINER_NOT_EMPTY(),
+						() -> new Object[] {}, INVALID));
 		return cast();
 	}
 

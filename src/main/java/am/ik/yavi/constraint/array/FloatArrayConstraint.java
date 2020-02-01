@@ -32,14 +32,15 @@ public class FloatArrayConstraint<T>
 	}
 
 	public FloatArrayConstraint<T> contains(float v) {
-        this.predicates().add(ConstraintPredicate.of(x -> {
-            for (float e : x) {
-                if (e == v) {
-                    return true;
-                }
-            }
-            return false;
-        }, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			for (float e : x) {
+				if (e == v) {
+					return true;
+				}
+			}
+			return false;
+		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[] { v },
+				VALID));
 		return this;
 	}
 

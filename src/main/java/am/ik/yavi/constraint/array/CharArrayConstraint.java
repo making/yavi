@@ -32,14 +32,15 @@ public class CharArrayConstraint<T>
 	}
 
 	public CharArrayConstraint<T> contains(char v) {
-        this.predicates().add(ConstraintPredicate.of(x -> {
-            for (char e : x) {
-                if (e == v) {
-                    return true;
-                }
-            }
-            return false;
-        }, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			for (char e : x) {
+				if (e == v) {
+					return true;
+				}
+			}
+			return false;
+		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[] { v },
+				VALID));
 		return this;
 	}
 

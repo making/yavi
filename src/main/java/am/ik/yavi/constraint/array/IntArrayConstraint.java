@@ -33,11 +33,12 @@ public class IntArrayConstraint<T>
 	}
 
 	public IntArrayConstraint<T> contains(int v) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> Arrays.stream(x).anyMatch(e -> e == v), IncludedViolationMessages.get().ARRAY_CONTAINS(),
-                        () -> new Object[]{v}, VALID));
-        return this;
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
+						IncludedViolationMessages.get().ARRAY_CONTAINS(),
+						() -> new Object[] { v }, VALID));
+		return this;
+	}
 
 	@Override
 	protected ToIntFunction<int[]> size() {

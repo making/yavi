@@ -33,11 +33,12 @@ public class DoubleArrayConstraint<T>
 	}
 
 	public DoubleArrayConstraint<T> contains(double v) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> Arrays.stream(x).anyMatch(e -> e == v), IncludedViolationMessages.get().ARRAY_CONTAINS(),
-                        () -> new Object[]{v}, VALID));
-        return this;
-    }
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
+						IncludedViolationMessages.get().ARRAY_CONTAINS(),
+						() -> new Object[] { v }, VALID));
+		return this;
+	}
 
 	@Override
 	protected ToIntFunction<double[]> size() {

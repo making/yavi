@@ -21,58 +21,62 @@ import java.util.function.Predicate;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
-    default C isNull() {
-        this.predicates().add(ConstraintPredicate
-                .of(Objects::isNull, IncludedViolationMessages.get().OBJECT_IS_NULL(), () -> new Object[]{},
-                        NullAs.INVALID));
-        return this.cast();
-    }
+	default C isNull() {
+		this.predicates()
+				.add(ConstraintPredicate.of(Objects::isNull,
+						IncludedViolationMessages.get().OBJECT_IS_NULL(),
+						() -> new Object[] {}, NullAs.INVALID));
+		return this.cast();
+	}
 
-    Deque<ConstraintPredicate<V>> predicates();
+	Deque<ConstraintPredicate<V>> predicates();
 
-    C cast();
+	C cast();
 
-    default C message(String message) {
-        ConstraintPredicate<V> predicate = this.predicates().pollLast();
-        if (predicate == null) {
-            throw new IllegalStateException("no constraint found to override!");
-        }
-        this.predicates().addLast(predicate.overrideMessage(message));
-        return this.cast();
-    }
+	default C message(String message) {
+		ConstraintPredicate<V> predicate = this.predicates().pollLast();
+		if (predicate == null) {
+			throw new IllegalStateException("no constraint found to override!");
+		}
+		this.predicates().addLast(predicate.overrideMessage(message));
+		return this.cast();
+	}
 
-    default C message(ViolationMessage message) {
-        ConstraintPredicate<V> predicate = this.predicates().pollLast();
-        if (predicate == null) {
-            throw new IllegalStateException("no constraint found to override!");
-        }
-        this.predicates().addLast(predicate.overrideMessage(message));
-        return this.cast();
-    }
+	default C message(ViolationMessage message) {
+		ConstraintPredicate<V> predicate = this.predicates().pollLast();
+		if (predicate == null) {
+			throw new IllegalStateException("no constraint found to override!");
+		}
+		this.predicates().addLast(predicate.overrideMessage(message));
+		return this.cast();
+	}
 
-    default C notNull() {
-        this.predicates().add(ConstraintPredicate
-                .of(Objects::nonNull, IncludedViolationMessages.get().OBJECT_NOT_NULL(), () -> new Object[]{},
-                        NullAs.INVALID));
-        return this.cast();
-    }
+	default C notNull() {
+		this.predicates()
+				.add(ConstraintPredicate.of(Objects::nonNull,
+						IncludedViolationMessages.get().OBJECT_NOT_NULL(),
+						() -> new Object[] {}, NullAs.INVALID));
+		return this.cast();
+	}
 
-    default C predicate(CustomConstraint<V> constraint) {
-        return this.predicate(constraint, constraint);
-    }
+	default C predicate(CustomConstraint<V> constraint) {
+		return this.predicate(constraint, constraint);
+	}
 
-    default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
-        this.predicates().add(ConstraintPredicate.of(predicate, violationMessage, () -> new Object[]{}, NullAs.VALID));
-        return this.cast();
-    }
+	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
+		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
+				() -> new Object[] {}, NullAs.VALID));
+		return this.cast();
+	}
 
-    default C predicateNullable(CustomConstraint<V> constraint) {
-        return this.predicateNullable(constraint, constraint);
-    }
+	default C predicateNullable(CustomConstraint<V> constraint) {
+		return this.predicateNullable(constraint, constraint);
+	}
 
-    default C predicateNullable(Predicate<V> predicate, ViolationMessage violationMessage) {
-        this.predicates()
-                .add(ConstraintPredicate.of(predicate, violationMessage, () -> new Object[]{}, NullAs.INVALID));
-        return this.cast();
-    }
+	default C predicateNullable(Predicate<V> predicate,
+			ViolationMessage violationMessage) {
+		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
+				() -> new Object[] {}, NullAs.INVALID));
+		return this.cast();
+	}
 }

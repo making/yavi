@@ -17,21 +17,21 @@ package am.ik.yavi.core;
 
 public interface ViolationMessage {
 
-    public static ViolationMessage of(String messageKey, String defaultMessageFormat) {
-        return new ViolationMessage() {
-            @Override
-            public String defaultMessageFormat() {
-                return defaultMessageFormat;
-            }
+	public static ViolationMessage of(String messageKey, String defaultMessageFormat) {
+		return new ViolationMessage() {
+			@Override
+			public String defaultMessageFormat() {
+				return defaultMessageFormat;
+			}
 
-            @Override
-            public String messageKey() {
-                return messageKey;
-            }
-        };
-    }
+			@Override
+			public String messageKey() {
+				return messageKey;
+			}
+		};
+	}
 
-    String defaultMessageFormat();
+	String defaultMessageFormat();
 
-    String messageKey();
+	String messageKey();
 }

@@ -32,14 +32,15 @@ public class ByteArrayConstraint<T>
 	}
 
 	public ByteArrayConstraint<T> contains(byte v) {
-        this.predicates().add(ConstraintPredicate.of(x -> {
-            for (byte e : x) {
-                if (e == v) {
-                    return true;
-                }
-            }
-            return false;
-        }, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[]{v}, VALID));
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			for (byte e : x) {
+				if (e == v) {
+					return true;
+				}
+			}
+			return false;
+		}, IncludedViolationMessages.get().ARRAY_CONTAINS(), () -> new Object[] { v },
+				VALID));
 		return this;
 	}
 

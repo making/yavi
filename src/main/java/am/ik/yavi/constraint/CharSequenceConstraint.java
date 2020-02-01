@@ -45,147 +45,160 @@ import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
-        extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
+		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
 
-    private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
-    private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART + "+)*";
-    private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
-    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile(
-            "^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN + "|" + IPv4_PATTERN + ")$",
-            Pattern.CASE_INSENSITIVE);
-    protected final Normalizer.Form normalizerForm;
-    protected final VariantOptions variantOptions;
+	private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
+	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
+			+ "+)*";
+	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
+	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
+			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
+					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
+	protected final Normalizer.Form normalizerForm;
+	protected final VariantOptions variantOptions;
 
-    public CharSequenceConstraint() {
-        this(Normalizer.Form.NFC, VariantOptions.builder().build());
-    }
+	public CharSequenceConstraint() {
+		this(Normalizer.Form.NFC, VariantOptions.builder().build());
+	}
 
-    public CharSequenceConstraint(Normalizer.Form normalizerForm, VariantOptions variantOptions) {
-        this.normalizerForm = normalizerForm;
-        this.variantOptions = variantOptions;
-    }
+	public CharSequenceConstraint(Normalizer.Form normalizerForm,
+			VariantOptions variantOptions) {
+		this.normalizerForm = normalizerForm;
+		this.variantOptions = variantOptions;
+	}
 
-    public ByteSizeConstraint<T, E> asByteArray() {
-        return this.asByteArray(StandardCharsets.UTF_8);
-    }
+	public ByteSizeConstraint<T, E> asByteArray() {
+		return this.asByteArray(StandardCharsets.UTF_8);
+	}
 
-    public ByteSizeConstraint<T, E> asByteArray(Charset charset) {
-        return new ByteSizeConstraint<>(this, charset);
-    }
+	public ByteSizeConstraint<T, E> asByteArray(Charset charset) {
+		return new ByteSizeConstraint<>(this, charset);
+	}
 
-    @Override
-    public CharSequenceConstraint<T, E> cast() {
-        return this;
-    }
+	@Override
+	public CharSequenceConstraint<T, E> cast() {
+		return this;
+	}
 
-    public CodePointsConstraint.Builder<T, E> codePoints(Set<Integer> allowedCodePoints) {
-        return this.codePoints((CodePointsSet<E>) () -> allowedCodePoints);
-    }
+	public CodePointsConstraint.Builder<T, E> codePoints(Set<Integer> allowedCodePoints) {
+		return this.codePoints((CodePointsSet<E>) () -> allowedCodePoints);
+	}
 
-    public CodePointsConstraint.Builder<T, E> codePoints(CodePoints<E> codePoints) {
-        return new CodePointsConstraint.Builder<>(this, codePoints);
-    }
+	public CodePointsConstraint.Builder<T, E> codePoints(CodePoints<E> codePoints) {
+		return new CodePointsConstraint.Builder<>(this, codePoints);
+	}
 
-    public CodePointsConstraint.Builder<T, E> codePoints(int begin, int end) {
-        return this.codePoints(Range.of(begin, end));
-    }
+	public CodePointsConstraint.Builder<T, E> codePoints(int begin, int end) {
+		return this.codePoints(Range.of(begin, end));
+	}
 
-    public CodePointsConstraint.Builder<T, E> codePoints(Range range, Range... ranges) {
-        return this.codePoints((CodePointsRanges<E>) () -> {
-            List<Range> list = new ArrayList<>();
-            list.add(range);
-            list.addAll(Arrays.asList(ranges));
-            return list;
-        });
-    }
+	public CodePointsConstraint.Builder<T, E> codePoints(Range range, Range... ranges) {
+		return this.codePoints((CodePointsRanges<E>) () -> {
+			List<Range> list = new ArrayList<>();
+			list.add(range);
+			list.addAll(Arrays.asList(ranges));
+			return list;
+		});
+	}
 
-    public CharSequenceConstraint<T, E> contains(CharSequence s) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> x.toString().contains(s), DefaultIncludedViolationMessages.get().CHAR_SEQUENCE_CONTAINS(),
-                        () -> new Object[]{s}, VALID));
-        return this;
-    }
+	public CharSequenceConstraint<T, E> contains(CharSequence s) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.toString().contains(s),
+						DefaultIncludedViolationMessages.get().CHAR_SEQUENCE_CONTAINS(),
+						() -> new Object[] { s }, VALID));
+		return this;
+	}
 
-    public CharSequenceConstraint<T, E> email() {
-        this.predicates().add(ConstraintPredicate.of(x -> {
-            if (size().applyAsInt(x) == 0) {
-                return true;
-            }
-            return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
-        }, IncludedViolationMessages.get().CHAR_SEQUENCE_EMAIL(), () -> new Object[]{}, VALID));
-        return this;
-    }
+	public CharSequenceConstraint<T, E> email() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
+		}, IncludedViolationMessages.get().CHAR_SEQUENCE_EMAIL(), () -> new Object[] {},
+				VALID));
+		return this;
+	}
 
-    @Override
-    protected ToIntFunction<E> size() {
-        return cs -> {
-            String s = this.normalize(cs.toString());
-            return s.codePointCount(0, s.length());
-        };
-    }
+	@Override
+	protected ToIntFunction<E> size() {
+		return cs -> {
+			String s = this.normalize(cs.toString());
+			return s.codePointCount(0, s.length());
+		};
+	}
 
-    protected String normalize(String s) {
-        String str = this.variantOptions.ignored(s);
-        return this.normalizerForm == null ? str : Normalizer.normalize(str, this.normalizerForm);
-    }
+	protected String normalize(String s) {
+		String str = this.variantOptions.ignored(s);
+		return this.normalizerForm == null ? str
+				: Normalizer.normalize(str, this.normalizerForm);
+	}
 
-    public EmojiConstraint<T, E> emoji() {
-        return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
-    }
+	public EmojiConstraint<T, E> emoji() {
+		return new EmojiConstraint<>(this, this.normalizerForm, this.variantOptions);
+	}
 
-    public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
-        CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(normalizerForm, this.variantOptions);
-        constraint.predicates().addAll(this.predicates());
-        return constraint;
-    }
+	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
+				normalizerForm, this.variantOptions);
+		constraint.predicates().addAll(this.predicates());
+		return constraint;
+	}
 
-    public CharSequenceConstraint<T, E> notBlank() {
-        this.predicates().add(ConstraintPredicate.of(x -> x != null && trim(x.toString()).length() != 0,
-                IncludedViolationMessages.get().CHAR_SEQUENCE_NOT_BLANK(), () -> new Object[]{}, INVALID));
-        return this;
-    }
+	public CharSequenceConstraint<T, E> notBlank() {
+		this.predicates()
+				.add(ConstraintPredicate.of(
+						x -> x != null && trim(x.toString()).length() != 0,
+						IncludedViolationMessages.get().CHAR_SEQUENCE_NOT_BLANK(),
+						() -> new Object[] {}, INVALID));
+		return this;
+	}
 
-    private static String trim(String s) {
-        if (s.length() == 0) {
-            return s;
-        }
-        StringBuilder sb = new StringBuilder(s);
-        while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
-            sb.deleteCharAt(0);
-        }
-        while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
-            sb.deleteCharAt(sb.length() - 1);
-        }
-        return sb.toString();
-    }
+	private static String trim(String s) {
+		if (s.length() == 0) {
+			return s;
+		}
+		StringBuilder sb = new StringBuilder(s);
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(0))) {
+			sb.deleteCharAt(0);
+		}
+		while (sb.length() > 0 && Character.isWhitespace(sb.charAt(sb.length() - 1))) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
+	}
 
-    public CharSequenceConstraint<T, E> pattern(String regex) {
-        this.predicates().add(ConstraintPredicate
-                .of(x -> Pattern.matches(regex, x), IncludedViolationMessages.get().CHAR_SEQUENCE_PATTERN(),
-                        () -> new Object[]{regex}, VALID));
-        return this;
-    }
+	public CharSequenceConstraint<T, E> pattern(String regex) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
+						IncludedViolationMessages.get().CHAR_SEQUENCE_PATTERN(),
+						() -> new Object[] { regex }, VALID));
+		return this;
+	}
 
-    public CharSequenceConstraint<T, E> url() {
-        this.predicates().add(ConstraintPredicate.of(x -> {
-            if (size().applyAsInt(x) == 0) {
-                return true;
-            }
-            try {
-                new URL(x.toString());
-                return true;
-            } catch (MalformedURLException e) {
-                return false;
-            }
-        }, IncludedViolationMessages.get().CHAR_SEQUENCE_URL(), () -> new Object[]{}, VALID));
-        return this;
-    }
+	public CharSequenceConstraint<T, E> url() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			try {
+				new URL(x.toString());
+				return true;
+			}
+			catch (MalformedURLException e) {
+				return false;
+			}
+		}, IncludedViolationMessages.get().CHAR_SEQUENCE_URL(), () -> new Object[] {},
+				VALID));
+		return this;
+	}
 
-    public CharSequenceConstraint<T, E> variant(Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
-        VariantOptions.Builder builder = VariantOptions.builder();
-        CharSequenceConstraint<T, E> constraint =
-                new CharSequenceConstraint<>(this.normalizerForm, opts.apply(builder).build());
-        constraint.predicates().addAll(this.predicates());
-        return constraint;
-    }
+	public CharSequenceConstraint<T, E> variant(
+			Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
+		VariantOptions.Builder builder = VariantOptions.builder();
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
+				this.normalizerForm, opts.apply(builder).build());
+		constraint.predicates().addAll(this.predicates());
+		return constraint;
+	}
 }

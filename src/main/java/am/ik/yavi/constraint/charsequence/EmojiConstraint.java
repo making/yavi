@@ -24,52 +24,61 @@ import java.text.Normalizer;
 
 import static am.ik.yavi.core.NullAs.VALID;
 
-public class EmojiConstraint<T, E extends CharSequence> extends CharSequenceConstraint<T, E> {
+public class EmojiConstraint<T, E extends CharSequence>
+		extends CharSequenceConstraint<T, E> {
 
-    public EmojiConstraint(CharSequenceConstraint<T, E> delegate, Normalizer.Form normalizerForm,
-            VariantOptions variantOptions) {
-        super(normalizerForm, variantOptions);
-        this.predicates().addAll(delegate.predicates());
-    }
+	public EmojiConstraint(CharSequenceConstraint<T, E> delegate,
+			Normalizer.Form normalizerForm, VariantOptions variantOptions) {
+		super(normalizerForm, variantOptions);
+		this.predicates().addAll(delegate.predicates());
+	}
 
-    public EmojiConstraint<T, E> fixedSize(int size) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) == size, this::size),
-                        IncludedViolationMessages.get().CONTAINER_FIXED_SIZE(), () -> new Object[]{size}, VALID));
-        return this;
-    }
+	public EmojiConstraint<T, E> fixedSize(int size) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) == size, this::size),
+						IncludedViolationMessages.get().CONTAINER_FIXED_SIZE(),
+						() -> new Object[] { size }, VALID));
+		return this;
+	}
 
-    private int size(E x) {
-        return Emoji.bestEffortCount(this.normalize(x.toString()));
-    }
+	private int size(E x) {
+		return Emoji.bestEffortCount(this.normalize(x.toString()));
+	}
 
-    public EmojiConstraint<T, E> greaterThan(int min) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) > min, this::size),
-                        IncludedViolationMessages.get().CONTAINER_GREATER_THAN(), () -> new Object[]{min}, VALID));
-        return this;
-    }
+	public EmojiConstraint<T, E> greaterThan(int min) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) > min, this::size),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN(),
+						() -> new Object[] { min }, VALID));
+		return this;
+	}
 
-    public EmojiConstraint<T, E> greaterThanOrEqual(int min) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) >= min, this::size),
-                        IncludedViolationMessages.get().CONTAINER_GREATER_THAN_OR_EQUAL(), () -> new Object[]{min},
-                        VALID));
-        return this;
-    }
+	public EmojiConstraint<T, E> greaterThanOrEqual(int min) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) >= min, this::size),
+						IncludedViolationMessages.get().CONTAINER_GREATER_THAN_OR_EQUAL(),
+						() -> new Object[] { min }, VALID));
+		return this;
+	}
 
-    public EmojiConstraint<T, E> lessThan(int max) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) < max, this::size),
-                        IncludedViolationMessages.get().CONTAINER_LESS_THAN(), () -> new Object[]{max}, VALID));
-        return this;
-    }
+	public EmojiConstraint<T, E> lessThan(int max) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) < max, this::size),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN(),
+						() -> new Object[] { max }, VALID));
+		return this;
+	}
 
-    public EmojiConstraint<T, E> lessThanOrEqual(int max) {
-        this.predicates().add(ConstraintPredicate
-                .withViolatedValue(this.checkSizePredicate(x -> size(x) <= max, this::size),
-                        IncludedViolationMessages.get().CONTAINER_LESS_THAN_OR_EQUAL(), () -> new Object[]{max},
-                        VALID));
-        return this;
-    }
+	public EmojiConstraint<T, E> lessThanOrEqual(int max) {
+		this.predicates()
+				.add(ConstraintPredicate.withViolatedValue(
+						this.checkSizePredicate(x -> size(x) <= max, this::size),
+						IncludedViolationMessages.get().CONTAINER_LESS_THAN_OR_EQUAL(),
+						() -> new Object[] { max }, VALID));
+		return this;
+	}
 }
