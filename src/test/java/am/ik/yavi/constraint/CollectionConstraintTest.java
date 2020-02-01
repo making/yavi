@@ -28,14 +28,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CollectionConstraintTest {
 
 	@Test
-	 void contains() {
+	void contains() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.contains("foo"));
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("bar", "baz"))).isFalse();
 	}
 
 	@Test
-	 void fixedSize() {
+	void fixedSize() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.fixedSize(2));
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
@@ -43,29 +43,30 @@ class CollectionConstraintTest {
 	}
 
 	@Test
-	 void greaterThan() {
+	void greaterThan() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.greaterThan(2));
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isTrue();
 	}
 
 	@Test
-	 void greaterThanOrEqual() {
-		Predicate<List<String>> predicate = retrievePredicate(c -> c.greaterThanOrEqual(2));
+	void greaterThanOrEqual() {
+		Predicate<List<String>> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isTrue();
 	}
 
 	@Test
-	 void lessThan() {
+	void lessThan() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.lessThan(2));
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isFalse();
 	}
 
 	@Test
-	 void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.lessThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
@@ -73,13 +74,15 @@ class CollectionConstraintTest {
 	}
 
 	@Test
-	 void notEmpty() {
+	void notEmpty() {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.notEmpty());
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Collections.emptyList())).isFalse();
 	}
 
-	private static Predicate<List<String>> retrievePredicate(Function<CollectionConstraint<List<String>, List<String>, String>, CollectionConstraint<List<String>, List<String>, String>> constraint) {
-		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<List<String>> retrievePredicate(
+			Function<CollectionConstraint<List<String>, List<String>, String>, CollectionConstraint<List<String>, List<String>, String>> constraint) {
+		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }

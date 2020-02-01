@@ -17,6 +17,7 @@ package am.ik.yavi.constraint.charsequence.variant;
 
 public enum StandardizedVariationSequence {
 	IGNORE(true), NOT_IGNORE(false);
+
 	public static final String RANGE = "\uFE00-\uFE0F";
 	private final boolean ignore;
 

@@ -26,63 +26,68 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ShortConstraintTest {
 
 	@ParameterizedTest
-	@ValueSource(shorts = {101, 150})
+	@ValueSource(shorts = { 101, 150 })
 	void validGreaterThan(short value) {
 		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThan((short) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {100, -50})
+	@ValueSource(shorts = { 100, -50 })
 	void invalidGreaterThan(short value) {
 		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThan((short) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {101, 100})
+	@ValueSource(shorts = { 101, 100 })
 	void validGreaterThanOrEqual(short value) {
-		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThanOrEqual((short) 100));
+		Predicate<Short> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual((short) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {99, -50})
+	@ValueSource(shorts = { 99, -50 })
 	void invalidGreaterThanOrEqual(short value) {
-		Predicate<Short> predicate = retrievePredicate(c -> c.greaterThanOrEqual((short) 100));
+		Predicate<Short> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual((short) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
-	@ValueSource(shorts = {99, -50})
+	@ValueSource(shorts = { 99, -50 })
 	void validLessThan(short value) {
 		Predicate<Short> predicate = retrievePredicate(c -> c.lessThan((short) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {100, 150})
+	@ValueSource(shorts = { 100, 150 })
 	void invalidLessThan(short value) {
 		Predicate<Short> predicate = retrievePredicate(c -> c.lessThan((short) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {99, 100})
+	@ValueSource(shorts = { 99, 100 })
 	void validLessThanOrEqual(short value) {
-		Predicate<Short> predicate = retrievePredicate(c -> c.lessThanOrEqual((short) 100));
+		Predicate<Short> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual((short) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(shorts = {101, 150})
+	@ValueSource(shorts = { 101, 150 })
 	void invalidLessThanOrEqual(short value) {
-		Predicate<Short> predicate = retrievePredicate(c -> c.lessThanOrEqual((short) 100));
+		Predicate<Short> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual((short) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-	private static Predicate<Short> retrievePredicate(Function<ShortConstraint<Short>, ShortConstraint<Short>> constraint) {
-		return constraint.apply(new ShortConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<Short> retrievePredicate(
+			Function<ShortConstraint<Short>, ShortConstraint<Short>> constraint) {
+		return constraint.apply(new ShortConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }

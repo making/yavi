@@ -26,63 +26,70 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CharacterConstraintTest {
 
 	@ParameterizedTest
-	@ValueSource(chars = {101, 120})
+	@ValueSource(chars = { 101, 120 })
 	void validGreaterThan(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.greaterThan((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.greaterThan((char) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {100, 0})
+	@ValueSource(chars = { 100, 0 })
 	void invalidGreaterThan(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.greaterThan((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.greaterThan((char) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {101, 100})
+	@ValueSource(chars = { 101, 100 })
 	void validGreaterThanOrEqual(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.greaterThanOrEqual((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual((char) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {99, 0})
+	@ValueSource(chars = { 99, 0 })
 	void invalidGreaterThanOrEqual(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.greaterThanOrEqual((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.greaterThanOrEqual((char) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
-	@ValueSource(chars = {99, 0})
+	@ValueSource(chars = { 99, 0 })
 	void validLessThan(char value) {
 		Predicate<Character> predicate = retrievePredicate(c -> c.lessThan((char) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {100, 120})
+	@ValueSource(chars = { 100, 120 })
 	void invalidLessThan(char value) {
 		Predicate<Character> predicate = retrievePredicate(c -> c.lessThan((char) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {99, 100})
+	@ValueSource(chars = { 99, 100 })
 	void validLessThanOrEqual(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.lessThanOrEqual((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual((char) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(chars = {101, 120})
+	@ValueSource(chars = { 101, 120 })
 	void invalidLessThanOrEqual(char value) {
-		Predicate<Character> predicate = retrievePredicate(c -> c.lessThanOrEqual((char) 100));
+		Predicate<Character> predicate = retrievePredicate(
+				c -> c.lessThanOrEqual((char) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-	private static Predicate<Character> retrievePredicate(Function<CharacterConstraint<Character>, CharacterConstraint<Character>> constraint) {
-		return constraint.apply(new CharacterConstraint<>()).predicates().peekFirst().predicate();
+	private static Predicate<Character> retrievePredicate(
+			Function<CharacterConstraint<Character>, CharacterConstraint<Character>> constraint) {
+		return constraint.apply(new CharacterConstraint<>()).predicates().peekFirst()
+				.predicate();
 	}
 }

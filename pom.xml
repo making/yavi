@@ -201,6 +201,16 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
             </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>2.11.0</version>
+                <configuration>
+                    <configFile>${project.basedir}/src/etc/eclipse-code-formatter.xml</configFile>
+                    <encoding>UTF-8</encoding>
+                    <lineEnding>LF</lineEnding>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
