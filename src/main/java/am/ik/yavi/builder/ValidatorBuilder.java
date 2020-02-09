@@ -70,6 +70,18 @@ import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
+import am.ik.yavi.meta.BigDecimalConstraintMeta;
+import am.ik.yavi.meta.BigIntegerConstraintMeta;
+import am.ik.yavi.meta.BooleanConstraintMeta;
+import am.ik.yavi.meta.ByteConstraintMeta;
+import am.ik.yavi.meta.CharacterConstraintMeta;
+import am.ik.yavi.meta.DoubleConstraintMeta;
+import am.ik.yavi.meta.FloatConstraintMeta;
+import am.ik.yavi.meta.IntegerConstraintMeta;
+import am.ik.yavi.meta.LongConstraintMeta;
+import am.ik.yavi.meta.ObjectConstraintMeta;
+import am.ik.yavi.meta.ShortConstraintMeta;
+import am.ik.yavi.meta.StringConstraintMeta;
 
 public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
@@ -143,6 +155,12 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(StringConstraintMeta<T> meta,
+			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				CharSequenceConstraint::new);
+	}
+
 	public <E extends CharSequence> ValidatorBuilder<T> _charSequence(
 			ToCharSequence<T, E> f, String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
@@ -159,6 +177,11 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BooleanConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(BooleanConstraintMeta<T> meta,
+			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, BooleanConstraint::new);
+	}
+
 	public ValidatorBuilder<T> _boolean(ToBoolean<T> f, String name,
 			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
 		return this.constraint(f, name, c, BooleanConstraint::new);
@@ -167,6 +190,11 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToCharacter<T> f, String name,
 			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
 		return this.constraint(f, name, c, CharacterConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(CharacterConstraintMeta<T> meta,
+			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, CharacterConstraint::new);
 	}
 
 	public ValidatorBuilder<T> _character(ToCharacter<T> f, String name,
@@ -179,6 +207,11 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(ByteConstraintMeta<T> meta,
+			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, ByteConstraint::new);
+	}
+
 	public ValidatorBuilder<T> _byte(ToByte<T> f, String name,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
@@ -187,6 +220,11 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToShort<T> f, String name,
 			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(ShortConstraintMeta<T> meta,
+			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, ShortConstraint::new);
 	}
 
 	public ValidatorBuilder<T> _short(ToShort<T> f, String name,
@@ -199,6 +237,11 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(IntegerConstraintMeta<T> meta,
+			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, IntegerConstraint::new);
+	}
+
 	public ValidatorBuilder<T> _integer(ToInteger<T> f, String name,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, IntegerConstraint::new);
@@ -207,6 +250,11 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToLong<T> f, String name,
 			Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(f, name, c, LongConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(LongConstraintMeta<T> meta,
+			Function<LongConstraint<T>, LongConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LongConstraint::new);
 	}
 
 	public ValidatorBuilder<T> _long(ToLong<T> f, String name,
@@ -219,6 +267,11 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(FloatConstraintMeta<T> meta,
+			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, FloatConstraint::new);
+	}
+
 	public ValidatorBuilder<T> _float(ToFloat<T> f, String name,
 			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatConstraint::new);
@@ -227,6 +280,11 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToDouble<T> f, String name,
 			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(DoubleConstraintMeta<T> meta,
+			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, DoubleConstraint::new);
 	}
 
 	public ValidatorBuilder<T> _double(ToDouble<T> f, String name,
@@ -239,6 +297,11 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(BigIntegerConstraintMeta<T> meta,
+			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, BigIntegerConstraint::new);
+	}
+
 	public ValidatorBuilder<T> _bigInteger(ToBigInteger<T> f, String name,
 			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
@@ -247,6 +310,11 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToBigDecimal<T> f, String name,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(BigDecimalConstraintMeta<T> meta,
+			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, BigDecimalConstraint::new);
 	}
 
 	public ValidatorBuilder<T> _bigDecimal(ToBigDecimal<T> f, String name,
@@ -392,6 +460,11 @@ public class ValidatorBuilder<T> {
 	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, E> f, String name,
 			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(ObjectConstraintMeta<T> meta,
+			Function<ObjectConstraint<T, Object>, ObjectConstraint<T, Object>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, ObjectConstraint::new);
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
