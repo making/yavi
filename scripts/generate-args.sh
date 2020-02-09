@@ -258,13 +258,14 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 		}
 	}
 
-	public ConstraintViolations validateOnly(${args}) {
-		return this.validate(Arguments.of(${as}));
+	public void validateAndThrowIfInvalid(${args}) {
+		this.validate(Arguments.of(${as}))
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
-	public ConstraintViolations validateOnly(${args},
-			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(${as}), constraintGroup);
+	public void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
+		this.validate(Arguments.of(${as}), constraintGroup)
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}) throws ConstraintViolationsException {
