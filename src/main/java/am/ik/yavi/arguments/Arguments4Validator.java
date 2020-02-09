@@ -83,13 +83,16 @@ public final class Arguments4Validator<A1, A2, A3, A4, X>
 		}
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4) {
-		return this.validate(Arguments.of(a1, a2, a3, a4));
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4) {
+		this.validate(Arguments.of(a1, a2, a3, a4))
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4,
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4,
 			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2, a3, a4), constraintGroup);
+		this.validate(Arguments.of(a1, a2, a3, a4), constraintGroup)
+				.throwIfInvalid(ConstraintViolationsException::new);
+		;
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4) throws ConstraintViolationsException {

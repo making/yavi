@@ -1,7 +1,6 @@
 package am.ik.yavi.arguments;
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
-import am.ik.yavi.core.ConstraintViolationsException;
 
 public class Product {
 	private final String name;
@@ -15,8 +14,7 @@ public class Product {
 			.build();
 
 	public Product(String name, int price) {
-		validator.validateOnly(name, price)
-				.throwIfInvalid(ConstraintViolationsException::new);
+		validator.validateAndThrowIfInvalid(name, price);
 		this.name = name;
 		this.price = price;
 	}

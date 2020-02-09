@@ -86,13 +86,16 @@ public final class Arguments6Validator<A1, A2, A3, A4, A5, A6, X>
 		}
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
-		return this.validate(Arguments.of(a1, a2, a3, a4, a5, a6));
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
+		this.validate(Arguments.of(a1, a2, a3, a4, a5, a6))
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
 			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2, a3, a4, a5, a6), constraintGroup);
+		this.validate(Arguments.of(a1, a2, a3, a4, a5, a6), constraintGroup)
+				.throwIfInvalid(ConstraintViolationsException::new);
+		;
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6)

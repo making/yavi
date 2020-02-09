@@ -79,13 +79,15 @@ public final class Arguments2Validator<A1, A2, X> extends Validator<Arguments2<A
 		}
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2) {
-		return this.validate(Arguments.of(a1, a2));
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2) {
+		this.validate(Arguments.of(a1, a2))
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2,
-			ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2), constraintGroup);
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, ConstraintGroup constraintGroup) {
+		this.validate(Arguments.of(a1, a2), constraintGroup)
+				.throwIfInvalid(ConstraintViolationsException::new);
+		;
 	}
 
 	public X validated(A1 a1, A2 a2) throws ConstraintViolationsException {

@@ -87,14 +87,17 @@ public final class Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>
 		}
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
 			A7 a7) {
-		return this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7));
+		this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7))
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
-	public ConstraintViolations validateOnly(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
-			A7 a7, ConstraintGroup constraintGroup) {
-		return this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7), constraintGroup);
+	public void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
+			ConstraintGroup constraintGroup) {
+		this.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7), constraintGroup)
+				.throwIfInvalid(ConstraintViolationsException::new);
+		;
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7)
