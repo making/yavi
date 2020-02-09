@@ -87,7 +87,6 @@ public final class Arguments1Validator<A1, X> extends Validator<Arguments1<A1>> 
 	public void validateAndThrowIfInvalid(A1 a1, ConstraintGroup constraintGroup) {
 		this.validate(Arguments.of(a1), constraintGroup)
 				.throwIfInvalid(ConstraintViolationsException::new);
-		;
 	}
 
 	public X validated(A1 a1) throws ConstraintViolationsException {

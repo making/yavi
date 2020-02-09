@@ -265,7 +265,7 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 
 	public void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
 		this.validate(Arguments.of(${as}), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);;
+				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}) throws ConstraintViolationsException {

@@ -91,7 +91,6 @@ public final class Arguments3Validator<A1, A2, A3, X>
 			ConstraintGroup constraintGroup) {
 		this.validate(Arguments.of(a1, a2, a3), constraintGroup)
 				.throwIfInvalid(ConstraintViolationsException::new);
-		;
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3) throws ConstraintViolationsException {
