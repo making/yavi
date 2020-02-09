@@ -31,7 +31,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
 </dependency>
 ```
 
@@ -314,6 +314,28 @@ val person = ArgumentsValidatorBuilder
     }
     .build()
     .validated("John", "Doe", 20)
+```
+
+If you want to validate arguments in the constructor, use `validateAndThrowIfInvalid` so that the constructor cannot be called recursively in the constructor.
+
+```java
+static final Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidatorBuilder
+    .of(Person::new)
+    .builder(b -> b
+        ._string(Arguments1::arg1, "firstName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._string(Arguments2::arg2, "lastName",
+            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+        ._integer(Arguments3::arg3, "age",
+            c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
+    .build();
+
+public Perrson(String firstName, String lastName, int age) {
+    validator.validateAndThrowIfInvalid(firstName, lastName, age);
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.age = age;
+}
 ```
 
 #### (Experimental) Emoji support
