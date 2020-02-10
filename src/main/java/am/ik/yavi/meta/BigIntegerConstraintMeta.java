@@ -17,6 +17,9 @@ package am.ik.yavi.meta;
 
 import java.math.BigInteger;
 
+/**
+ * @since 0.4.0
+ */
 public interface BigIntegerConstraintMeta<T> extends ConstraintMeta<T, BigInteger> {
 
 }

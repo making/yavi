@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.meta;
 
+/**
+ * @since 0.4.0
+ */
 public interface StringConstraintMeta<T> extends ConstraintMeta<T, String> {
 
 }

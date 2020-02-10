@@ -58,6 +58,9 @@ import am.ik.yavi.fn.Pair;
 import am.ik.yavi.meta.ConstraintArguments;
 import am.ik.yavi.meta.ConstraintTarget;
 
+/**
+ * @since 0.4.0
+ */
 @SupportedAnnotationTypes({ "am.ik.yavi.meta.ConstraintTarget",
 		"am.ik.yavi.meta.ConstraintArguments" })
 public class ConstraintMetaProcessor extends AbstractProcessor {

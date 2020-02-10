@@ -17,6 +17,9 @@ package am.ik.yavi.meta;
 
 import java.math.BigDecimal;
 
+/**
+ * @since 0.4.0
+ */
 public interface BigDecimalConstraintMeta<T> extends ConstraintMeta<T, BigDecimal> {
 
 }

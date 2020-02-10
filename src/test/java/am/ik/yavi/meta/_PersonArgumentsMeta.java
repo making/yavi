@@ -17,7 +17,7 @@ package am.ik.yavi.meta;
 
 // Generated at 2020-02-10T11:56:30.484098+09:00
 public class _PersonArgumentsMeta {
-  
+
 	public static final am.ik.yavi.meta.StringConstraintMeta<am.ik.yavi.arguments.Arguments3<java.lang.String, java.lang.String, java.lang.Integer>> FIRSTNAME = new am.ik.yavi.meta.StringConstraintMeta<am.ik.yavi.arguments.Arguments3<java.lang.String, java.lang.String, java.lang.Integer>>() {
 
 		@Override

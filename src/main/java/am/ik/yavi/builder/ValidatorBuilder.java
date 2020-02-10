@@ -155,6 +155,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(StringConstraintMeta<T> meta,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c,
@@ -177,6 +180,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BooleanConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(BooleanConstraintMeta<T> meta,
 			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BooleanConstraint::new);
@@ -192,6 +198,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, CharacterConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(CharacterConstraintMeta<T> meta,
 			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, CharacterConstraint::new);
@@ -207,6 +216,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(ByteConstraintMeta<T> meta,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ByteConstraint::new);
@@ -222,6 +234,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ShortConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(ShortConstraintMeta<T> meta,
 			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ShortConstraint::new);
@@ -237,6 +252,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(IntegerConstraintMeta<T> meta,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, IntegerConstraint::new);
@@ -252,6 +270,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(LongConstraintMeta<T> meta,
 			Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, LongConstraint::new);
@@ -267,6 +288,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(FloatConstraintMeta<T> meta,
 			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, FloatConstraint::new);
@@ -282,6 +306,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(DoubleConstraintMeta<T> meta,
 			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, DoubleConstraint::new);
@@ -297,6 +324,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigIntegerConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(BigIntegerConstraintMeta<T> meta,
 			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BigIntegerConstraint::new);
@@ -312,6 +342,9 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
 	public ValidatorBuilder<T> constraint(BigDecimalConstraintMeta<T> meta,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BigDecimalConstraint::new);

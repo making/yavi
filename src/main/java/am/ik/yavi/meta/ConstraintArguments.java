@@ -20,6 +20,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @since 0.4.0
+ */
 @Target({ ElementType.CONSTRUCTOR })
 @Retention(RetentionPolicy.SOURCE)
 public @interface ConstraintArguments {

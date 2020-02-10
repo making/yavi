@@ -17,6 +17,9 @@ package am.ik.yavi.meta;
 
 import java.util.function.Function;
 
+/**
+ * @since 0.4.0
+ */
 public interface ConstraintMeta<T, V> {
 	String name();
 
