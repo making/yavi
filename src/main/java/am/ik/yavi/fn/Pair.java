@@ -48,4 +48,9 @@ public final class Pair<F, S> {
 	public S second() {
 		return this.second;
 	}
+
+	@Override
+	public String toString() {
+		return "Pair{" + "first=" + first + ", second=" + second + '}';
+	}
 }

@@ -6,9 +6,13 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validator;
 
 public class ValidatorBuilderTest {
@@ -292,5 +296,32 @@ public class ValidatorBuilderTest {
 				.isEqualTo("\"shortValue\" must be greater than 0");
 		assertThat(constraintViolations.get(19).message())
 				.isEqualTo("\"stringValue\" must not be empty");
+	}
+
+	@Test
+	void arguments() {
+		final Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidatorBuilder
+				.of(Person::new)
+				.builder(b -> b
+						.constraint(_PersonArgumentsMeta.FIRSTNAME,
+								c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+						.constraint(_PersonArgumentsMeta.LASTNAME,
+								c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
+						.constraint(_PersonArgumentsMeta.AGE,
+								c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
+				.build();
+
+		assertThatThrownBy(() -> validator.validated("", "", 0))
+				.isInstanceOfSatisfying(ConstraintViolationsException.class, e -> {
+					final ConstraintViolations violations = e.violations();
+					assertThat(violations.isValid()).isFalse();
+					assertThat(violations.size()).isEqualTo(3);
+					assertThat(violations.get(0).message()).isEqualTo(
+							"The size of \"firstName\" must be greater than or equal to 1. The given size is 0");
+					assertThat(violations.get(1).message()).isEqualTo(
+							"The size of \"lastName\" must be greater than or equal to 1. The given size is 0");
+					assertThat(violations.get(2).message())
+							.isEqualTo("\"age\" must be greater than or equal to 20");
+				});
 	}
 }

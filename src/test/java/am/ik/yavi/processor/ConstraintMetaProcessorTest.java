@@ -73,6 +73,15 @@ class ConstraintMetaProcessorTest {
 	}
 
 	@Test
+	void processArguments() {
+		assertThat(JavaFileObjects.forResource("test/Car2.java"))
+				.processedWith(new ConstraintMetaProcessor()) //
+				.compilesWithoutError().and().generatesSources(
+						JavaFileObjects.forResource("test/_Car2ArgumentsMeta.java"));
+		;
+	}
+
+	@Test
 	void testBeanLowerCamel() {
 		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("Name"))
 				.isEqualTo("name");
@@ -91,4 +100,5 @@ class ConstraintMetaProcessorTest {
 		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAME"))
 				.isEqualTo("NAME");
 	}
+
 }

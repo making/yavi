@@ -59,6 +59,27 @@ class ConstraintMetaTemplate {
 				useField ? "x  -> x." + target : className + "::" + method);
 	}
 
+	static String templateArgument(String className, String type, String target,
+			int position) {
+		final String simpleType = simpleType(type);
+		return String.format("\n" + //
+				"\tpublic static final am.ik.yavi.meta.%sConstraintMeta<%s> %s = new am.ik.yavi.meta.%sConstraintMeta<%s>() {\n"
+				+ "\n" + //
+				"\t\t@Override\n" + //
+				"\t\tpublic String name() {\n" + //
+				"\t\t\treturn \"%s\";\n" + //
+				"\t\t}\n" + //
+				"\n" + //
+				"\t\t@Override\n" //
+				+ "\t\tpublic java.util.function.Function<%s, %s> toValue() {\n" //
+				+ "\t\t\treturn %s;\n" + //
+				"\t\t}\n" + //
+				"\t}", simpleType, className, target.toUpperCase(), simpleType, className,
+				target, className,
+				"Object".equals(simpleType) ? "java.lang.Object" : type,
+				"am.ik.yavi.arguments.Arguments" + position + "::arg" + position);
+	}
+
 	private static String simpleType(String type) {
 		if (supportedTypes.contains(type)) {
 			final int lastDot = type.lastIndexOf('.');
