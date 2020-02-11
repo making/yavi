@@ -495,6 +495,14 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
 
+	/**
+	 * @since 0.4.0
+	 */
+	public <E> ValidatorBuilder<T> _object(Function<T, E> f, String name,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
+		return this.constraint(f, name, c, ObjectConstraint::new);
+	}
+
 	public ValidatorBuilder<T> constraint(ObjectConstraintMeta<T> meta,
 			Function<ObjectConstraint<T, Object>, ObjectConstraint<T, Object>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ObjectConstraint::new);

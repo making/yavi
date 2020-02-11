@@ -265,6 +265,8 @@ Note that all constraints without conditions will be validated for any constrain
 
 Since YAVI 0.3.0, you can validate arguments of a constructor or factory method "before" creating an object using it.
 
+##### Validating Constructor Arguments
+
 You can get the object only if the arguments passe the validation.
 Up to 16 arguments are supported.
 
@@ -337,6 +339,36 @@ public Perrson(String firstName, String lastName, int age) {
     this.age = age;
 }
 ```
+
+##### Validating Method Arguments
+
+Arguments Validator can be used for validating method arguments as well.
+
+```java
+// From https://beanvalidation.org/
+public class UserService {
+
+  public User createUser(/* @Email */ String email,
+                         /* @NotNull */ String name) {
+    ...
+  }
+}
+```
+
+```java
+static final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
+        .of(UserService::createUser) //
+        .builder(b -> b //
+                ._object(Arguments1::arg1, "userService", c -> c.notNull())
+                ._string(Arguments2::arg2, "email", c -> c.email())
+                ._string(Arguments3::arg3, "name", c -> c.notNull())) //
+        .build();
+
+UserService userService = new UserService();
+User user = validator.validated(userService, "jd@example.com", "John Doe");
+```
+
+Note that `void` cannot be used as return type while `java.lang.Void` is available.
 
 #### (Experimental) Emoji support
 

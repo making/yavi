@@ -15,27 +15,17 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.builder.ArgumentsValidatorBuilder;
-
-public class Product {
+public class User {
+	private final String email;
 	private final String name;
-	private final int price;
 
-	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder
-			.of(Product::new) //
-			.builder(b -> b //
-					._string(Arguments1::arg1, "name", c -> c.notEmpty())
-					._integer(Arguments2::arg2, "price", c -> c.greaterThan(0)))
-			.build();
-
-	public Product(String name, int price) {
-		validator.validateAndThrowIfInvalid(name, price);
+	public User(String email, String name) {
+		this.email = email;
 		this.name = name;
-		this.price = price;
 	}
 
 	@Override
 	public String toString() {
-		return "Product{" + "name='" + name + '\'' + ", price=" + price + '}';
+		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + '}';
 	}
 }
