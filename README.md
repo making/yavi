@@ -181,7 +181,7 @@ Validator<Address> validator = ValidatorBuilder.<Address> of() //
             b -> b.constraint(_Address_CountryMeta.NAME, c -> c.notBlank() //
                                     .lessThanOrEqual(20))) //
       .nest(_AddressMeta.CITY, //
-            b -> b.constraint(_Address_City.NAME, c -> c.notBlank() //
+            b -> b.constraint(_Address_CityMeta.NAME, c -> c.notBlank() //
                                     .lessThanOrEqual(100))) //
       .build();
 ```
