@@ -38,6 +38,8 @@ jobs:
         mvn -V org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
     - name: Codacy Coverage Reporter
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
         set -e
         curl -Ls -o codacy-coverage-reporter "$(curl -Ls https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r '.assets | map({name, browser_download_url} | select(.name | contains("codacy-coverage-reporter-linux"))) | .[0].browser_download_url')"
