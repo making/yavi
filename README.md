@@ -94,15 +94,17 @@ Does specifying `"fieldName"`s look redundant?
 If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md).
 
 ```java
-Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
-    .constraint(_UserMeta.NAME, c -> c.notNull() //
-        .lessThanOrEqual(20)) //
-    .constraint(_UserMeta.EMAIL, c -> c.notNull() //
-        .greaterThanOrEqual(5) //
-        .lessThanOrEqual(50) //
-        .email()) //
-    .constraint(_UserMeta.AGE, c -> c.notNull() //
-        .greaterThanOrEqual(0) //
+// Needs YAVI 0.4.0+
+
+Validator<User> validator = ValidatorBuilder.<User> of()
+    .constraint(_UserMeta.NAME, c -> c.notNull()
+        .lessThanOrEqual(20))
+    .constraint(_UserMeta.EMAIL, c -> c.notNull()
+        .greaterThanOrEqual(5)
+        .lessThanOrEqual(50)
+        .email())
+    .constraint(_UserMeta.AGE, c -> c.notNull()
+        .greaterThanOrEqual(0)
         .lessThanOrEqual(200))
     .build();
 ```
@@ -169,20 +171,20 @@ Does specifying `"fieldName"`s look redundant?
 If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md).
 
 ```java
-Validator<Address> validator = ValidatorBuilder.<Address> of() //
-    .nest(_AddressMeta.COUNTRY, countryValidator) //
-    .nest(_AddressMeta.CITY, "city", cityValidator)
+Validator<Address> validator = ValidatorBuilder.<Address> of()
+    .nest(_AddressMeta.COUNTRY, countryValidator)
+    .nest(_AddressMeta.CITY, cityValidator)
     .build();
 
 // or
 
-Validator<Address> validator = ValidatorBuilder.<Address> of() //
-      .nest(_AddressMeta.COUNTRY, //
-            b -> b.constraint(_Address_CountryMeta.NAME, c -> c.notBlank() //
-                                    .lessThanOrEqual(20))) //
-      .nest(_AddressMeta.CITY, //
-            b -> b.constraint(_Address_CityMeta.NAME, c -> c.notBlank() //
-                                    .lessThanOrEqual(100))) //
+Validator<Address> validator = ValidatorBuilder.<Address> of()
+      .nest(_AddressMeta.COUNTRY,
+            b -> b.constraint(_Address_CountryMeta.NAME, c -> c.notBlank()
+                                    .lessThanOrEqual(20)))
+      .nest(_AddressMeta.CITY,
+            b -> b.constraint(_Address_CityMeta.NAME, c -> c.notBlank()
+                                    .lessThanOrEqual(100)))
       .build();
 ```
 
