@@ -359,6 +359,7 @@ public class UserService {
 static final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
         .of(UserService::createUser) //
         .builder(b -> b //
+				._object(Arguments1::arg1, "userService", c -> c.notNull())
                 ._string(Arguments2::arg2, "email", c -> c.email())
                 ._string(Arguments3::arg3, "name", c -> c.notNull())) //
         .build();
