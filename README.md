@@ -15,7 +15,7 @@ YAVI sounds as same as a Japanese slang "YABAI" that means awesome or awful depe
 The concepts are
 
 * No more reflection!
-* No more annotation!
+* No more (runtime) annotation!
 * No more Java Beans!
 * Zero dependency!
 
@@ -89,6 +89,24 @@ Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.
     .build();
 ```
 
+Does specifying `"fieldName"`s look redundant?
+
+If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md).
+
+```java
+Validator<User> validator = ValidatorBuilder.<User> of() // or ValidatorBuilder.of(User.class)
+    .constraint(_UserMeta.NAME, c -> c.notNull() //
+        .lessThanOrEqual(20)) //
+    .constraint(_UserMeta.EMAIL, c -> c.notNull() //
+        .greaterThanOrEqual(5) //
+        .lessThanOrEqual(50) //
+        .email()) //
+    .constraint(_UserMeta.AGE, c -> c.notNull() //
+        .greaterThanOrEqual(0) //
+        .lessThanOrEqual(200))
+    .build();
+```
+
 If you are using Kotlin, you can write a bit shorter using `konstraint` method instead of `constraint`
 
 ```kotlin
@@ -145,6 +163,28 @@ Validator<Address> validator = ValidatorBuilder.<Address> of() //
 ```
 
 [sample code](src/test/java/am/ik/yavi/core/InlineNestedValidatorTest.java)
+
+Does specifying `"fieldName"`s look redundant?
+
+If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md).
+
+```java
+Validator<Address> validator = ValidatorBuilder.<Address> of() //
+    .nest(_AddressMeta.COUNTRY, countryValidator) //
+    .nest(_AddressMeta.CITY, "city", cityValidator)
+    .build();
+
+// or
+
+Validator<Address> validator = ValidatorBuilder.<Address> of() //
+      .nest(_AddressMeta.COUNTRY, //
+            b -> b.constraint(_Address_CountryMeta.NAME, c -> c.notBlank() //
+                                    .lessThanOrEqual(20))) //
+      .nest(_AddressMeta.CITY, //
+            b -> b.constraint(_Address_City.NAME, c -> c.notBlank() //
+                                    .lessThanOrEqual(100))) //
+      .build();
+```
 
 #### Elements in a List / Map / Array
 
@@ -340,6 +380,8 @@ public Perrson(String firstName, String lastName, int age) {
 }
 ```
 
+Does specifying `"fieldName"`s look redundant? If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
+
 ##### Validating Method Arguments
 
 Arguments Validator can be used for validating method arguments as well.
@@ -369,6 +411,8 @@ User user = validator.validated(userService, "jd@example.com", "John Doe");
 ```
 
 Note that `void` cannot be used as return type while `java.lang.Void` is available.
+
+Does specifying `"fieldName"`s look redundant? If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
 
 #### (Experimental) Emoji support
 
