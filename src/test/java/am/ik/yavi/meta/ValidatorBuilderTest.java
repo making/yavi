@@ -346,10 +346,10 @@ public class ValidatorBuilderTest {
 		final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
 				.of(UserService::createUser) //
 				.builder(b -> b //
-						.constraint(_UserServiceArgumentsMeta.USERSERVICE,
+						.constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE,
 								c -> c.notNull())
-						.constraint(_UserServiceArgumentsMeta.EMAIL, c -> c.email())
-						.constraint(_UserServiceArgumentsMeta.NAME, c -> c.notNull()))
+						.constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -> c.email())
+						.constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -> c.notNull()))
 				.build();
 
 		assertThatThrownBy(() -> validator.validated(userService, "jd", null)) //
