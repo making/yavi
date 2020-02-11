@@ -184,6 +184,10 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>

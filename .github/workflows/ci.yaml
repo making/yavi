@@ -30,12 +30,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Unit Tests
-      if: github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master'
+      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: mvn -V test
     - name: Unit Tests with Coverage
-      if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: |
-        mvn -V org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
+        mvn -V jacoco:prepare-agent test jacoco:report
     - name: Codacy Coverage Reporter
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       env:
