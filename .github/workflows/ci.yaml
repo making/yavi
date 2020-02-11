@@ -30,4 +30,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Unit Tests
+      if: github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master'
       run: mvn -V test
+    - name: Unit Tests with Coverage
+      if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+      run: |
+        mvn -V org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
+    - name: Check Report
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+      run: |
+        ls -la target/site/jacoco/jacoco.xml
