@@ -85,7 +85,7 @@ class ConstraintMetaProcessorTest {
 		assertThat(JavaFileObjects.forResource("test/UserService.java"))
 				.processedWith(new ConstraintMetaProcessor()) //
 				.compilesWithoutError().and().generatesSources(JavaFileObjects
-						.forResource("test/_UserServiceArgumentsMeta.java"));
+						.forResource("test/_UserServiceCreateUserArgumentsMeta.java"));
 	}
 
 	@Test

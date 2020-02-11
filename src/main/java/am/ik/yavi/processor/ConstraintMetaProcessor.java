@@ -121,8 +121,11 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		for (Element element : elementsAnnotatedWith) {
 			final List<Element> parameters = new ArrayList<>(
 					((ExecutableElement) element).getParameters());
+			String className = element.getEnclosingElement().toString();
 			if (element.getKind() == METHOD) {
 				parameters.add(0, element.getEnclosingElement());
+				className = className
+						+ beanUpperCamel(element.getSimpleName().toString());
 			}
 			final String argumentsClass = "am.ik.yavi.arguments.Arguments"
 					+ parameters.size() + "<" + parameters.stream()
@@ -130,9 +133,8 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 					+ ">";
 			final List<Pair<Element, Integer>> pairs = parameters.stream()
 					.map(x -> new Pair<>(x, parameters.indexOf(x))).collect(toList());
-			this.writeConstraintArgumentMetaFile(
-					element.getEnclosingElement().toString() + "Arguments",
-					argumentsClass, pairs);
+			this.writeConstraintArgumentMetaFile(className + "Arguments", argumentsClass,
+					pairs);
 		}
 	}
 

@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.meta;
 
-public class _UserServiceArgumentsMeta {
+public class _UserServiceCreateUserArgumentsMeta {
 
 	public static final ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, am.ik.yavi.meta.UserService> USERSERVICE = new ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, am.ik.yavi.meta.UserService>() {
 
