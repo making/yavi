@@ -73,12 +73,19 @@ class ConstraintMetaProcessorTest {
 	}
 
 	@Test
-	void processArguments() {
+	void processConstructorArguments() {
 		assertThat(JavaFileObjects.forResource("test/Car2.java"))
 				.processedWith(new ConstraintMetaProcessor()) //
 				.compilesWithoutError().and().generatesSources(
 						JavaFileObjects.forResource("test/_Car2ArgumentsMeta.java"));
-		;
+	}
+
+	@Test
+	void processMethodArguments() {
+		assertThat(JavaFileObjects.forResource("test/UserService.java"))
+				.processedWith(new ConstraintMetaProcessor()) //
+				.compilesWithoutError().and().generatesSources(JavaFileObjects
+						.forResource("test/_UserServiceArgumentsMeta.java"));
 	}
 
 	@Test

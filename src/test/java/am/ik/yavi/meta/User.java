@@ -15,15 +15,17 @@
  */
 package am.ik.yavi.meta;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class User {
+	private final String email;
+	private final String name;
 
-/**
- * @since 0.4.0
- */
-@Target({ ElementType.CONSTRUCTOR, ElementType.METHOD })
-@Retention(RetentionPolicy.SOURCE)
-public @interface ConstraintArguments {
+	public User(String email, String name) {
+		this.email = email;
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + '}';
+	}
 }

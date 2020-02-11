@@ -314,7 +314,7 @@ public class ValidatorBuilderTest {
 	}
 
 	@Test
-	void arguments() {
+	void constructorArguments() {
 		final Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidatorBuilder
 				.of(Person::new)
 				.builder(b -> b
@@ -338,5 +338,26 @@ public class ValidatorBuilderTest {
 					assertThat(violations.get(2).message())
 							.isEqualTo("\"age\" must be greater than or equal to 20");
 				});
+	}
+
+	@Test
+	void methodArguments() {
+		final UserService userService = new UserService();
+		final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
+				.of(UserService::createUser) //
+				.builder(b -> b //
+						.constraint(_UserServiceArgumentsMeta.USERSERVICE,
+								c -> c.notNull())
+						.constraint(_UserServiceArgumentsMeta.EMAIL, c -> c.email())
+						.constraint(_UserServiceArgumentsMeta.NAME, c -> c.notNull()))
+				.build();
+
+		assertThatThrownBy(() -> validator.validated(userService, "jd", null)) //
+				.isInstanceOfSatisfying(ConstraintViolationsException.class,
+						e -> assertThat(e.getMessage()).isEqualTo(
+								"Constraint violations found!" + System.lineSeparator()
+										+ "* \"email\" must be a valid email address"
+										+ System.lineSeparator()
+										+ "* \"name\" must not be null"));
 	}
 }

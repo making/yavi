@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import javax.tools.JavaFileObject;
 import static am.ik.yavi.processor.ConstraintMetaTemplate.template;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.METHOD;
 import static javax.lang.model.element.ElementKind.PARAMETER;
 import static javax.lang.model.type.TypeKind.BOOLEAN;
@@ -117,15 +119,17 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 				.getElementsAnnotatedWith(typeElement);
 
 		for (Element element : elementsAnnotatedWith) {
-			final List<? extends VariableElement> parameters = ((ExecutableElement) element)
-					.getParameters();
+			final List<Element> parameters = new ArrayList<>(
+					((ExecutableElement) element).getParameters());
+			if (element.getKind() == METHOD) {
+				parameters.add(0, element.getEnclosingElement());
+			}
 			final String argumentsClass = "am.ik.yavi.arguments.Arguments"
 					+ parameters.size() + "<" + parameters.stream()
 							.map(x -> type(x.asType())).collect(Collectors.joining(", "))
 					+ ">";
 			final List<Pair<Element, Integer>> pairs = parameters.stream()
-					.map(x -> new Pair<Element, Integer>(x, parameters.indexOf(x)))
-					.collect(toList());
+					.map(x -> new Pair<>(x, parameters.indexOf(x))).collect(toList());
 			this.writeConstraintArgumentMetaFile(
 					element.getEnclosingElement().toString() + "Arguments",
 					argumentsClass, pairs);
@@ -168,8 +172,10 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			final TypeMirror type = element.asType();
 			final int position = pair.second() + 1;
 			final String name = element.getSimpleName().toString();
-			metas.put(name, ConstraintMetaTemplate.templateArgument(argumentsClass,
-					type(type), name, position));
+			metas.put(name,
+					ConstraintMetaTemplate.templateArgument(argumentsClass, type(type),
+							element.getKind() == CLASS ? beanLowerCamel(name) : name,
+							position));
 		});
 	}
 

@@ -15,15 +15,9 @@
  */
 package am.ik.yavi.meta;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * @since 0.4.0
- */
-@Target({ ElementType.CONSTRUCTOR, ElementType.METHOD })
-@Retention(RetentionPolicy.SOURCE)
-public @interface ConstraintArguments {
+public class UserService {
+	@ConstraintArguments
+	public User createUser(String email, String name) {
+		return new User(email, name);
+	}
 }
