@@ -243,6 +243,7 @@ jobs:
           rm -rf ~/.m2
           ln -fs $(pwd)/m2 ~/.m2
           mvn versions:set -DnewVersion=${VERSION}
+          sed -i "s|<version>.*</version>|<version>${VERSION}</version>|" README.md
           rm -f pom.xml.versionsBackup
           shopt -s dotglob
           shopt -s extglob
