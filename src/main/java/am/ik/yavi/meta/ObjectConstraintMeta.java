@@ -18,6 +18,6 @@ package am.ik.yavi.meta;
 /**
  * @since 0.4.0
  */
-public interface ObjectConstraintMeta<T> extends ConstraintMeta<T, Object> {
+public interface ObjectConstraintMeta<T, E> extends ConstraintMeta<T, E> {
 
 }

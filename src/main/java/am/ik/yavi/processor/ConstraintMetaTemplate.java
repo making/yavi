@@ -44,6 +44,8 @@ class ConstraintMetaTemplate {
 	static String template(String className, String type, String target, String method,
 			boolean useField) {
 		final String simpleType = simpleType(type);
+		final String metaType = "Object".equals(simpleType) ? className + ", " + type
+				: className;
 		return String.format("\n" + //
 				"\tpublic static final am.ik.yavi.meta.%sConstraintMeta<%s> %s = new am.ik.yavi.meta.%sConstraintMeta<%s>() {\n"
 				+ "\n" + //
@@ -56,15 +58,16 @@ class ConstraintMetaTemplate {
 				+ "\t\tpublic java.util.function.Function<%s, %s> toValue() {\n" //
 				+ "\t\t\treturn %s;\n" + //
 				"\t\t}\n" + //
-				"\t}", simpleType, className, target.toUpperCase(), simpleType, className,
-				target, className,
-				"Object".equals(simpleType) ? "java.lang.Object" : type,
+				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType,
+				target, className, type,
 				useField ? "x  -> x." + target : className + "::" + method);
 	}
 
 	static String templateArgument(String className, String type, String target,
 			int position) {
 		final String simpleType = simpleType(type);
+		final String metaType = "Object".equals(simpleType) ? className + ", " + type
+				: className;
 		return String.format("\n" + //
 				"\tpublic static final am.ik.yavi.meta.%sConstraintMeta<%s> %s = new am.ik.yavi.meta.%sConstraintMeta<%s>() {\n"
 				+ "\n" + //
@@ -77,9 +80,8 @@ class ConstraintMetaTemplate {
 				+ "\t\tpublic java.util.function.Function<%s, %s> toValue() {\n" //
 				+ "\t\t\treturn %s;\n" + //
 				"\t\t}\n" + //
-				"\t}", simpleType, className, target.toUpperCase(), simpleType, className,
-				target, className,
-				"Object".equals(simpleType) ? "java.lang.Object" : type,
+				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType,
+				target, className, type,
 				"am.ik.yavi.arguments.Arguments" + position + "::arg" + position);
 	}
 

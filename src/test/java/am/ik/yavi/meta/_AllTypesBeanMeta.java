@@ -265,7 +265,7 @@ public class _AllTypesBeanMeta {
 		}
 	};
 
-	public static final am.ik.yavi.meta.ObjectConstraintMeta<am.ik.yavi.meta.AllTypesBean> LOCALDATEVALUE = new am.ik.yavi.meta.ObjectConstraintMeta<am.ik.yavi.meta.AllTypesBean>() {
+	public static final am.ik.yavi.meta.ObjectConstraintMeta<am.ik.yavi.meta.AllTypesBean, java.time.LocalDate> LOCALDATEVALUE = new am.ik.yavi.meta.ObjectConstraintMeta<am.ik.yavi.meta.AllTypesBean, java.time.LocalDate>() {
 
 		@Override
 		public String name() {
@@ -273,7 +273,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Object> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.time.LocalDate> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getLocalDateValue;
 		}
 	};

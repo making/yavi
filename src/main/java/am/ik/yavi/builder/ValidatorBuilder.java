@@ -503,8 +503,8 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
 
-	public ValidatorBuilder<T> constraint(ObjectConstraintMeta<T> meta,
-			Function<ObjectConstraint<T, Object>, ObjectConstraint<T, Object>> c) {
+	public <E> ValidatorBuilder<T> constraint(ObjectConstraintMeta<T, E> meta,
+			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ObjectConstraint::new);
 	}
 
@@ -612,9 +612,19 @@ public class ValidatorBuilder<T> {
 		return this.nest(nested, name, validator, NullAs.INVALID);
 	}
 
+	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
+			Validator<N> validator) {
+		return this.nest(meta.toValue(), meta.name(), validator, NullAs.INVALID);
+	}
+
 	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
 			ValidatorBuilderConverter<N> converter) {
 		return this.nest(nested, name, converter, NullAs.INVALID);
+	}
+
+	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
+			ValidatorBuilderConverter<N> converter) {
+		return this.nest(meta.toValue(), meta.name(), converter, NullAs.INVALID);
 	}
 
 	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
@@ -622,9 +632,19 @@ public class ValidatorBuilder<T> {
 		return this.nest(nested, name, validator, NullAs.VALID);
 	}
 
+	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
+			Validator<N> validator) {
+		return this.nest(meta.toValue(), meta.name(), validator, NullAs.VALID);
+	}
+
 	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
 			ValidatorBuilderConverter<N> converter) {
 		return this.nest(nested, name, converter, NullAs.VALID);
+	}
+
+	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
+			ValidatorBuilderConverter<N> converter) {
+		return this.nest(meta.toValue(), meta.name(), converter, NullAs.VALID);
 	}
 
 	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(

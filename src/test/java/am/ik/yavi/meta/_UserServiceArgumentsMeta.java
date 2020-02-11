@@ -17,7 +17,7 @@ package am.ik.yavi.meta;
 
 public class _UserServiceArgumentsMeta {
 
-	public static final ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>> USERSERVICE = new ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>>() {
+	public static final ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, am.ik.yavi.meta.UserService> USERSERVICE = new ObjectConstraintMeta<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, am.ik.yavi.meta.UserService>() {
 
 		@Override
 		public String name() {
@@ -25,7 +25,7 @@ public class _UserServiceArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, Object> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<am.ik.yavi.meta.UserService, String, String>, am.ik.yavi.meta.UserService> toValue() {
 			return am.ik.yavi.arguments.Arguments1::arg1;
 		}
 	};
