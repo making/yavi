@@ -380,7 +380,7 @@ public Perrson(String firstName, String lastName, int age) {
 }
 ```
 
-Does specifying `"fieldName"`s look redundant? If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
+Does specifying `"fieldName"`s look redundant? Try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
 
 ##### Validating Method Arguments
 
@@ -412,7 +412,7 @@ User user = validator.validated(userService, "jd@example.com", "John Doe");
 
 Note that `void` cannot be used as return type while `java.lang.Void` is available.
 
-Does specifying `"fieldName"`s look redundant? If you want to write as following, try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
+Does specifying `"fieldName"`s look redundant? Try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
 
 #### (Experimental) Emoji support
 
