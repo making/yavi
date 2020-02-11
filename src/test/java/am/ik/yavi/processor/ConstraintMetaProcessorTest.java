@@ -89,6 +89,17 @@ class ConstraintMetaProcessorTest {
 	}
 
 	@Test
+	void processInnerClass() {
+		assertThat(JavaFileObjects.forResource("test/Address.java"))
+				.processedWith(new ConstraintMetaProcessor()) //
+				.compilesWithoutError().and()
+				.generatesSources(JavaFileObjects.forResource("test/_AddressMeta.java"),
+						JavaFileObjects.forResource("test/_Address_CountryMeta.java"),
+						JavaFileObjects
+								.forResource("test/_Address_PhoneNumberMeta.java"));
+	}
+
+	@Test
 	void testBeanLowerCamel() {
 		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("Name"))
 				.isEqualTo("name");
