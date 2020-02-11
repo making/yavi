@@ -37,7 +37,8 @@ jobs:
       run: |
         mvn -V org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report
     - name: Check Report
-      if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(${JAVA_HOME}, '/opt/hostedtoolcache/jdk/8')
       run: |
-        env
+        set -e
+        env | sort
         ls -la target/site/jacoco/jacoco.xml
