@@ -179,15 +179,12 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 
 	private void writeMetaFile(String className, List<Pair<Element, Integer>> elements,
 			BiConsumer<Pair<Element, Integer>, Map<String, String>> processElement) {
-		String packageName = "";
-		final int lastDot = className.lastIndexOf('.');
-		if (lastDot > 0) {
-			packageName = className.substring(0, lastDot);
-		}
-
-		final String simpleClassName = className.substring(lastDot + 1);
-		final String metaClassName = packageName + "._" + simpleClassName + "Meta";
-		final String metaSimpleClassName = metaClassName.substring(lastDot + 1);
+		final Pair<String, String> pair = splitClassName(className);
+		final String packageName = pair.first();
+		final String simpleClassName = pair.second();
+		final String metaSimpleClassName = "_" + simpleClassName.replace('.', '_')
+				+ "Meta";
+		final String metaClassName = packageName + "." + metaSimpleClassName;
 		try {
 			final JavaFileObject builderFile = super.processingEnv.getFiler()
 					.createSourceFile(metaClassName);
@@ -216,6 +213,26 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	static Pair<String, String> splitClassName(String className) {
+		String packageName = "";
+		final int p = firstUpperPosition(className);
+		if (p > 0) {
+			packageName = className.substring(0, p - 1);
+		}
+		final String simpleClassName = className.substring(p);
+		return new Pair<>(packageName, simpleClassName);
+	}
+
+	static int firstUpperPosition(String s) {
+		final String lower = s.toLowerCase();
+		for (int i = 0; i < s.length(); i++) {
+			if (s.charAt(i) != lower.charAt(i)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	static String getterPrefix(TypeMirror type) {

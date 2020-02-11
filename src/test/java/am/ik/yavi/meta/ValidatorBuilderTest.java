@@ -360,4 +360,33 @@ public class ValidatorBuilderTest {
 										+ System.lineSeparator()
 										+ "* \"name\" must not be null"));
 	}
+
+	@Test
+	void nested() {
+		final Validator<Address> validator = ValidatorBuilder.<Address> of() //
+				.nest(_AddressMeta.COUNTRY, b -> b //
+						.constraint(_Address_CountryMeta.NAME, c -> c //
+								.greaterThanOrEqual(2) //
+								.lessThanOrEqual(16)))
+				.constraint(_AddressMeta.STREET, c -> c //
+						.greaterThanOrEqual(2) //
+						.lessThanOrEqual(100))
+				.nest(_AddressMeta.PHONENUMBER, b -> b //
+						.constraint(_Address_PhoneNumberMeta.VALUE, c -> c //
+								.greaterThanOrEqual(8) //
+								.lessThanOrEqual(16)))
+				.build();
+
+		final ConstraintViolations violations = validator.validate(
+				new Address(new Address.Country(""), "", new Address.PhoneNumber("")));
+
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(3);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"country.name\" must be greater than or equal to 2. The given size is 0");
+		assertThat(violations.get(1).message()).isEqualTo(
+				"The size of \"street\" must be greater than or equal to 2. The given size is 0");
+		assertThat(violations.get(2).message()).isEqualTo(
+				"The size of \"phoneNumber.value\" must be greater than or equal to 8. The given size is 0");
+	}
 }
