@@ -39,4 +39,5 @@ jobs:
     - name: Check Report
       if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
       run: |
+        env
         ls -la target/site/jacoco/jacoco.xml
