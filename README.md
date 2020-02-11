@@ -188,6 +188,8 @@ Validator<Address> validator = ValidatorBuilder.<Address> of()
       .build();
 ```
 
+[sample code](https://github.com/making/yavi/tree/develop/src/test/java/am/ik/yavi/meta)
+
 #### Elements in a List / Map / Array
 
 * [sample code (List)](src/test/java/am/ik/yavi/core/CollectionValidatorTest.java)
