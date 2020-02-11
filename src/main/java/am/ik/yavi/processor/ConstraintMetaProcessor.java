@@ -146,18 +146,16 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			final String name = element.getSimpleName().toString();
 			if (kind == METHOD) {
 				final TypeMirror type = ((ExecutableElement) element).getReturnType();
-				final String getterPrefix = type.getKind() == BOOLEAN ? "is" : "get";
 				final String target = beanLowerCamel(constraintTarget.getter()
-						? name.replaceFirst("^" + getterPrefix, "")
+						? name.replaceFirst("^" + getterPrefix(type), "")
 						: name);
 				metas.put(target, template(className, type(type), target, name,
 						constraintTarget.field()));
 			}
 			else if (kind == PARAMETER) {
 				final TypeMirror type = element.asType();
-				final String getterPrefix = type.getKind() == BOOLEAN ? "is" : "get";
 				final String method = (constraintTarget.getter()
-						? getterPrefix + beanUpperCamel(name)
+						? getterPrefix(type) + beanUpperCamel(name)
 						: name);
 				metas.put(name, template(className, type(type), name, method,
 						constraintTarget.field()));
@@ -218,6 +216,10 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	static String getterPrefix(TypeMirror type) {
+		return type.getKind() == BOOLEAN ? "is" : "get";
 	}
 
 	static String type(final TypeMirror typeMirror) {
