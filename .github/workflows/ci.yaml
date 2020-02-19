@@ -4,12 +4,10 @@ on:
     branches:
     - develop
     - master
-    - 0.2.x
   pull_request:
     branches:
     - develop
     - master
-    - 0.2.x
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,11 +29,11 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Unit Tests
       if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
-      run: mvn -V test
+      run: ./mvnw -V test
     - name: Unit Tests with Coverage
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: |
-        mvn -V jacoco:prepare-agent test jacoco:report
+        ./mvnw -V jacoco:prepare-agent test jacoco:report
     - name: Codacy Coverage Reporter
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       env:
