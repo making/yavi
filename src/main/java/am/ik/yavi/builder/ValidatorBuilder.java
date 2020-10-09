@@ -59,6 +59,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ConstraintPredicates;
 import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.NestedCollectionValidator;
 import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
 import am.ik.yavi.core.NestedValidatorSubset;
@@ -688,6 +689,7 @@ public class ValidatorBuilder<T> {
 		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name));
 		builder.conditionalValidators
 				.forEach(this.appendNestedConditionalValidator(nested, name));
+		builder.collectionValidators.forEach(appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
@@ -699,6 +701,7 @@ public class ValidatorBuilder<T> {
 		validator.forEachPredicates(this.appendNestedPredicates(nested, name));
 		validator.forEachConditionalValidator(
 				this.appendNestedConditionalValidator(nested, name));
+		validator.forEachCollectionValidator(appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
@@ -725,6 +728,18 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
+	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(
+			Function<T, N> nested, String name) {
+
+		return collectionValidator -> {
+			String nestedName = name + this.messageKeySeparator + collectionValidator.name();
+			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
+					toNestedCollection(nested, collectionValidator), nestedName,
+					collectionValidator.validator(), nested);
+			this.collectionValidators.add(validator);
+		};
+	}
+
 	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
 			ToMap<T, K, V> toMap) {
 		return t -> {
@@ -744,6 +759,17 @@ public class ValidatorBuilder<T> {
 				return null;
 			}
 			return predicates.toValue().apply(nestedValue);
+		};
+	}
+
+	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(Function<T, N> nested,
+													   CollectionValidator<N, C, ?> validator) {
+		return (T target) -> {
+			N nestedCollection = nested.apply(target);
+			if (nestedCollection == null) {
+				return null;
+			}
+			return validator.toCollection().apply(nestedCollection);
 		};
 	}
 
