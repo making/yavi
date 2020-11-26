@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import static am.ik.yavi.core.Group.CREATE;
@@ -98,6 +101,24 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 							nestedObjectValidator_GH29))
 			.constraintOnCondition(UPDATE.toCondition(), b -> b
 					.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
+			.build();
+
+	private Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder
+			.<NestedObject> of()
+			.constraintOnCondition(CREATE.toCondition(),
+					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
+			.constraintOnCondition(UPDATE.toCondition(),
+					b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
+			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
+			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator)
+			.build();
+
+	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder.<MainObject> of()
+			.constraintOnCondition(CREATE.toCondition(),
+					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+			.constraintOnCondition(UPDATE.toCondition(),
+					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90)
 			.build();
 
 	@Test
@@ -207,6 +228,39 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		assertThat(result.isValid()).isTrue();
 	}
 
+	@Test
+	void shouldBeValid_GH90() {
+		MainObject target = new MainObject();
+
+		NestedObject nested = new NestedObject();
+		nested.setText("test");
+		nested.setIntRanges(Collections.singletonList(new IntRange(1, 2)));
+
+		target.setNested(nested);
+
+		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
+
+		assertThat(result.isValid()).isTrue();
+	}
+
+	@Test
+	void shouldBeInvalid_GH90() {
+		MainObject target = new MainObject();
+
+		NestedObject nested = new NestedObject();
+		nested.setText("test");
+		nested.setIntRanges(Collections.singletonList(new IntRange(null, 2)));
+
+		target.setNested(nested);
+
+		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
+
+		assertThat(result.isValid()).isFalse();
+		assertThat(result)
+				.extracting(ConstraintViolation::name)
+				.containsExactly("nested.intRanges[0].small");
+	}
+
 	public static class Nested {
 		IntRange intRange;
 
@@ -249,6 +303,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	public static class NestedObject {
 		Long id;
 		String text;
+		List<IntRange> intRanges;
 
 		public Long getId() {
 			return id;
@@ -264,6 +319,14 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		public void setText(String text) {
 			this.text = text;
+		}
+
+		public List<IntRange> getIntRanges() {
+			return intRanges;
+		}
+
+		public void setIntRanges(List<IntRange> intRanges) {
+			this.intRanges = intRanges;
 		}
 	}
 }
