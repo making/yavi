@@ -103,7 +103,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 					.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
 			.build();
 
-	private Validator<NestedObject> nestedObjectValidator_GH30 = ValidatorBuilder
+	private Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder
 			.<NestedObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
@@ -113,12 +113,12 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator)
 			.build();
 
-	private Validator<MainObject> mainObjectValidator_GH30 = ValidatorBuilder.<MainObject> of()
+	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
 			.constraintOnCondition(UPDATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH30)
+			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90)
 			.build();
 
 	@Test
@@ -229,7 +229,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	}
 
 	@Test
-	void shouldBeValid_GH30() {
+	void shouldBeValid_GH90() {
 		MainObject target = new MainObject();
 
 		NestedObject nested = new NestedObject();
@@ -238,13 +238,13 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		target.setNested(nested);
 
-		ConstraintViolations result = mainObjectValidator_GH30.validate(target, CREATE);
+		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
 
 		assertThat(result.isValid()).isTrue();
 	}
 
 	@Test
-	void shouldBeInvalid_GH30() {
+	void shouldBeInvalid_GH90() {
 		MainObject target = new MainObject();
 
 		NestedObject nested = new NestedObject();
@@ -253,7 +253,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		target.setNested(nested);
 
-		ConstraintViolations result = mainObjectValidator_GH30.validate(target, CREATE);
+		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
 
 		assertThat(result.isValid()).isFalse();
 		assertThat(result)
