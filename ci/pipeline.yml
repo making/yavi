@@ -24,8 +24,8 @@ resource_types:
 - name: maven
   type: docker-image
   source:
-    repository: pivotalpa/maven-resource
-    tag: 1.3.5
+    repository: nulldriver/maven-resource
+    tag: latest
 
 resources:
 - name: repo-master
