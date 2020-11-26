@@ -689,7 +689,8 @@ public class ValidatorBuilder<T> {
 		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name));
 		builder.conditionalValidators
 				.forEach(this.appendNestedConditionalValidator(nested, name));
-		builder.collectionValidators.forEach(appendNestedCollectionValidator(nested, name));
+		builder.collectionValidators
+				.forEach(appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
@@ -701,7 +702,8 @@ public class ValidatorBuilder<T> {
 		validator.forEachPredicates(this.appendNestedPredicates(nested, name));
 		validator.forEachConditionalValidator(
 				this.appendNestedConditionalValidator(nested, name));
-		validator.forEachCollectionValidator(appendNestedCollectionValidator(nested, name));
+		validator.forEachCollectionValidator(
+				appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
@@ -732,7 +734,8 @@ public class ValidatorBuilder<T> {
 			Function<T, N> nested, String name) {
 
 		return collectionValidator -> {
-			String nestedName = name + this.messageKeySeparator + collectionValidator.name();
+			String nestedName = name + this.messageKeySeparator
+					+ collectionValidator.name();
 			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
 					toNestedCollection(nested, collectionValidator), nestedName,
 					collectionValidator.validator(), nested);
@@ -762,8 +765,8 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
-	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(Function<T, N> nested,
-													   CollectionValidator<N, C, ?> validator) {
+	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(
+			Function<T, N> nested, CollectionValidator<N, C, ?> validator) {
 		return (T target) -> {
 			N nestedCollection = nested.apply(target);
 			if (nestedCollection == null) {

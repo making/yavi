@@ -110,16 +110,15 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.constraintOnCondition(UPDATE.toCondition(),
 					b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
 			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
-			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator)
-			.build();
+			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator).build();
 
-	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder.<MainObject> of()
+	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder
+			.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
 			.constraintOnCondition(UPDATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90)
-			.build();
+			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90).build();
 
 	@Test
 	void shouldBeInValid_GH28() {
@@ -256,8 +255,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
 
 		assertThat(result.isValid()).isFalse();
-		assertThat(result)
-				.extracting(ConstraintViolation::name)
+		assertThat(result).extracting(ConstraintViolation::name)
 				.containsExactly("nested.intRanges[0].small");
 	}
 

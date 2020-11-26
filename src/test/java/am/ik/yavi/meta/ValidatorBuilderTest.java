@@ -348,8 +348,10 @@ public class ValidatorBuilderTest {
 				.builder(b -> b //
 						.constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE,
 								c -> c.notNull())
-						.constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -> c.email())
-						.constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -> c.notNull()))
+						.constraint(_UserServiceCreateUserArgumentsMeta.EMAIL,
+								c -> c.email())
+						.constraint(_UserServiceCreateUserArgumentsMeta.NAME,
+								c -> c.notNull()))
 				.build();
 
 		assertThatThrownBy(() -> validator.validated(userService, "jd", null)) //
