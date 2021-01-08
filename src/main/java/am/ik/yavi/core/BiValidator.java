@@ -19,12 +19,12 @@ import java.util.function.BiConsumer;
 
 /**
  * <code>BiValidator</code> is a wrapper class of <code>Validator</code> that takes target
- * object to validate and arbitrary error object. <br>
+ * object to validate and arbitrary errors object. <br>
  * This class is useful for a library to adopt both YAVI and other validation library such
  * as Spring Framework's <code>org.springframework.validation.Validator</code>.
  *
  * @param <T> the type of the instance to validate
- * @param <E> the type of the error object
+ * @param <E> the type of the errors object
  * @author Toshiaki Maki
  * @since 0.5.0
  */
@@ -46,7 +46,7 @@ public class BiValidator<T, E> implements BiConsumer<T, E> {
 
 	@FunctionalInterface
 	public interface ErrorHandler<E> {
-		void handleError(E error, String name, String messageKey, Object[] args,
+		void handleError(E errors, String name, String messageKey, Object[] args,
 				String defaultMessage);
 	}
 }
