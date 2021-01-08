@@ -8,7 +8,7 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2020 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ done
 
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/arguments/Arguments.java
 /*
- * Copyright (C) 2018-2020 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ EOF
 
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/builder/ArgumentsValidatorBuilder.java
 /*
- * Copyright (C) 2018-2020 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2020 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
