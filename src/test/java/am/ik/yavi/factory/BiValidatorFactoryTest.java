@@ -13,46 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core;
+package am.ik.yavi.factory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import am.ik.yavi.User;
-import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.BiValidator;
+import am.ik.yavi.core.BiValidator.ErrorHandler;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.message.SimpleMessageFormatter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BiValidatorTest {
-	final BiValidator<User, List<ConstraintViolation>> validator = ValidatorBuilder
-			.of(User.class)
-			.constraint(User::getName, "name",
-					c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
-			.constraint(User::getEmail, "email",
-					c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
-			.constraint(User::getAge, "age",
-					c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
-			.constraint(User::isEnabled, "enabled", c -> c.isTrue())
-			.build((errors, name, messageKey, args, defaultMessage) -> errors
-					.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-							new SimpleMessageFormatter(), Locale.ENGLISH)));
+class BiValidatorFactoryTest {
+	private final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name,
+			messageKey, args,
+			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey,
+					defaultMessage, args, new SimpleMessageFormatter(), Locale.ENGLISH));
+
+	private final BiValidatorFactory<List<ConstraintViolation>> validatorFactory = new BiValidatorFactory<>(
+			this.errorHandler);
 
 	@Test
-	public void allValid() throws Exception {
-		User user = new User("Demo", "demo@example.com", 100);
-		user.setEnabled(true);
-		final List<ConstraintViolation> violations = new ArrayList<>();
+	void validator() {
+		final BiValidator<User, List<ConstraintViolation>> validator = this.validatorFactory
+				.validator(builder -> builder
+						.constraint(User::getName, "name",
+								c -> c.notNull().greaterThanOrEqual(1)
+										.lessThanOrEqual(20))
+						.constraint(User::getEmail, "email",
+								c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50)
+										.email())
+						.constraint(User::getAge, "age",
+								c -> c.notNull().greaterThanOrEqual(0)
+										.lessThanOrEqual(200))
+						.constraint(User::isEnabled, "enabled", c -> c.isTrue()));
 
-		validator.accept(user, violations);
-		assertThat(violations.size()).isEqualTo(0);
-	}
-
-	@Test
-	public void allInvalid() throws Exception {
-		User user = new User("", "example.com", 300);
+		final User user = new User("", "example.com", 300);
 		user.setEnabled(false);
 		final List<ConstraintViolation> violations = new ArrayList<>();
 

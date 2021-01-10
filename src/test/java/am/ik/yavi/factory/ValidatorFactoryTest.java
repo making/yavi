@@ -13,50 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package am.ik.yavi.core;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+package am.ik.yavi.factory;
 
 import am.ik.yavi.User;
-import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.message.SimpleMessageFormatter;
-import org.junit.Test;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BiValidatorTest {
-	final BiValidator<User, List<ConstraintViolation>> validator = ValidatorBuilder
-			.of(User.class)
-			.constraint(User::getName, "name",
-					c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
-			.constraint(User::getEmail, "email",
-					c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
-			.constraint(User::getAge, "age",
-					c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
-			.constraint(User::isEnabled, "enabled", c -> c.isTrue())
-			.build((errors, name, messageKey, args, defaultMessage) -> errors
-					.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-							new SimpleMessageFormatter(), Locale.ENGLISH)));
+class ValidatorFactoryTest {
+	private final ValidatorFactory validatorFactory = new ValidatorFactory();
 
 	@Test
-	public void allValid() throws Exception {
-		User user = new User("Demo", "demo@example.com", 100);
-		user.setEnabled(true);
-		final List<ConstraintViolation> violations = new ArrayList<>();
+	void validator() {
+		final Validator<User> validator = this.validatorFactory
+				.validator(builder -> builder
+						.constraint(User::getName, "name",
+								c -> c.notNull().greaterThanOrEqual(1)
+										.lessThanOrEqual(20))
+						.constraint(User::getEmail, "email",
+								c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50)
+										.email())
+						.constraint(User::getAge, "age",
+								c -> c.notNull().greaterThanOrEqual(0)
+										.lessThanOrEqual(200))
+						.constraint(User::isEnabled, "enabled", c -> c.isTrue()));
 
-		validator.accept(user, violations);
-		assertThat(violations.size()).isEqualTo(0);
-	}
-
-	@Test
-	public void allInvalid() throws Exception {
-		User user = new User("", "example.com", 300);
+		final User user = new User("", "example.com", 300);
 		user.setEnabled(false);
-		final List<ConstraintViolation> violations = new ArrayList<>();
 
-		validator.accept(user, violations);
+		final ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.size()).isEqualTo(4);
 		assertThat(violations.get(0).message()).isEqualTo(
 				"The size of \"name\" must be greater than or equal to 1. The given size is 0");

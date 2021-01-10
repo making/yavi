@@ -59,6 +59,7 @@ import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ConstraintPredicates;
+import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.CustomConstraint;
 import am.ik.yavi.core.NestedCollectionValidator;
 import am.ik.yavi.core.NestedConstraintCondition;
