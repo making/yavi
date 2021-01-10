@@ -24,6 +24,15 @@ import java.util.function.BiConsumer;
  * This class is useful for a library to adapt both YAVI and other validation library such
  * as Spring Framework's <code>org.springframework.validation.Validator</code>.
  *
+ * Validator can be wrapped as follows:
+ * <pre>
+ * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
+ *                        .constraint(CartItem::getQuantity, "quantity", c -> c.greaterThan(0))
+ *                        .constraint(...)
+ *                        .build();
+ * BiValidator&lt;CartItem, Errors&gt; validator = new BiValidator&lt;&gt;(validator, Errors::rejectValue);
+ * </pre>
+ *
  * @param <T> the type of the instance to validate
  * @param <E> the type of the errors object
  * @author Toshiaki Maki

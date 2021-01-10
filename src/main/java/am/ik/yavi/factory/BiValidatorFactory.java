@@ -25,7 +25,29 @@ import am.ik.yavi.message.MessageFormatter;
 
 /**
  * A factory class of <code>BiValidator</code>. It can be used to manage the common
- * configurations of <code>BiValidator</code> in IoC container etc.
+ * configurations of <code>BiValidator</code> in IoC container etc.<br>
+ *
+ * In case of Spring Framework, you can define <code>BiValidatorFactory</code> as follows:
+ *
+ * <pre>
+ *{@literal @Bean}
+ * public BiValidatorFactory&lt;Errors&gt;(MessageSource messageSource) biValidatorFactory {
+ *   MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+ *   return new BiValidatorFactory&lt;&gt;(null, messageFormatter, Errors::rejectValues);
+ * }
+ * </pre>
+ *
+ * A component can create a validator like following:
+ * <pre>
+ *{@literal @RestController}
+ * public calls OrderController {
+ *     private final BiValidator&lt;CartItem, Errors&gt; validator;
+ *
+ *     public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
+ *         this.validator = factory.validator(builder -> builder.constraint(...));
+ *     }
+ * }
+ * </pre>
  *
  * @param <E> the type of the errors object
  * @author Toshiaki Maki
