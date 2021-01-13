@@ -31,7 +31,7 @@ import am.ik.yavi.message.MessageFormatter;
  *
  * <pre>
  *{@literal @Bean}
- * public BiValidatorFactory&lt;Errors&gt;(MessageSource messageSource) biValidatorFactory {
+ * public BiValidatorFactory&lt;Errors&gt; biValidatorFactory(MessageSource messageSource) {
  *   MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
  *   return new BiValidatorFactory&lt;&gt;(null, messageFormatter, Errors::rejectValues);
  * }
@@ -41,7 +41,7 @@ import am.ik.yavi.message.MessageFormatter;
  * 
  * <pre>
  *{@literal @RestController}
- * public calls OrderController {
+ * public class OrderController {
  *     private final BiValidator&lt;CartItem, Errors&gt; validator;
  *
  *     public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {

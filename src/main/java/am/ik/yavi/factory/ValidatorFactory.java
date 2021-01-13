@@ -30,7 +30,7 @@ import am.ik.yavi.message.MessageFormatter;
  *
  * <pre>
  *{@literal @Bean}
- * public ValidatorFactory(MessageSource messageSource) validatorFactory {
+ * public ValidatorFactory validatorFactory(MessageSource messageSource) {
  *   MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
  *   return new ValidatorFactory(null, messageFormatter);
  * }
@@ -40,7 +40,7 @@ import am.ik.yavi.message.MessageFormatter;
  * 
  * <pre>
  *{@literal @RestController}
- * public calls OrderController {
+ * public class OrderController {
  *     private final Validator&lt;CartItem&gt; validator;
  *
  *     public OrderController(ValidatorFactory factory) {
