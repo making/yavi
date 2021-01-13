@@ -31,7 +31,7 @@ Add the following dependency in your `pom.xml`
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.4.1</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 
@@ -509,6 +509,76 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 ```
 
 [sample app](https://github.com/making/demo-spring-mvc-yavi)
+
+#### Validator Factory
+
+If you want to customize `ValidatorBuilder` and manage it with an IoC Container like Spring Framework, you can use `ValidatorFactory` since 0.5.0
+
+```java
+@Bean
+public ValidatorFactory yaviValidatorFactory(MessageSource messageSource) {
+  MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+  return new ValidatorFactory(null, messageFormatter);
+}
+```
+
+The usage of a `Validator` would look like following:
+
+```java
+@RestController
+public class OrderController {
+  private final Validator<CartItem> validator;
+
+  public OrderController(ValidatorFactory factory) {
+    this.validator = factory.validator(builder -> builder.constraint(...));
+  }
+}
+```
+
+#### BiValidator
+
+`BiValidator<T, E>` is a `BiConsumer<T, E>`. `T` means the type of target object as usual and `E` means the type of errors object. 
+
+This class is helpful for libraries or apps to adapt both YAVI and other validation framework that accepts these two arguments like Spring Framework's `org.springframework.validation.Validator#validate(Object, Errors)`.
+
+`BiValidator` can be obtained as below
+
+```java
+BiValidator<CartItem, Errors> validator = ValidatorBuilder.<CartItem>of()
+	     .constraint(...)
+	     .build(Errors::rejectValue);
+```
+
+There is a factory for `BiValidator` as well
+
+```java
+@Bean
+public BiValidatorFactory<Errors> biValidatorFactory() {
+  return new BiValidatorFactory<>(Errors::rejectValues);
+}
+```
+or, if you want to customize the builder
+
+```java
+@Bean
+public BiValidatorFactory<Errors> biValidatorFactory(MessageSource messageSource) {
+  MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+  return new BiValidatorFactory<>(null, messageFormatter, Errors::rejectValues);
+}
+```
+
+The usage of a `BiValidator` would look like following:
+
+```java
+@RestController
+public class OrderController {
+  private final BiValidator<CartItem, Errors> validator;
+
+  public OrderController(BiValidatorFactory<Errors> factory) {
+    this.validator = factory.validator(builder -> builder.constraint(...));
+  }
+}
+```
 
 ### Required
 
