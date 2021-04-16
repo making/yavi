@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.builder;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -84,6 +87,7 @@ import am.ik.yavi.meta.LongConstraintMeta;
 import am.ik.yavi.meta.ObjectConstraintMeta;
 import am.ik.yavi.meta.ShortConstraintMeta;
 import am.ik.yavi.meta.StringConstraintMeta;
+import javax.annotation.Nonnull;
 
 public class ValidatorBuilder<T> {
 	private static final String DEFAULT_SEPARATOR = ".";
@@ -173,6 +177,12 @@ public class ValidatorBuilder<T> {
 			String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
+	}
+
+	public <E extends CharSequence> ValidatorBuilder<T> constraint(ToCharSequence<T, E> extractorMethodReference,
+			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
+		return this.constraint(extractorMethodReference, constraintName(extractorMethodReference),
+				c, CharSequenceConstraint::new);
 	}
 
 	/**
@@ -270,6 +280,15 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraint(ToInteger<T> f, String name,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(f, name, c, IntegerConstraint::new);
+	}
+
+	/**
+	 * since 0.5.1
+	 */
+	public ValidatorBuilder<T> constraint(ToInteger<T> extractorMethodReference,
+			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
+		return this.constraint(extractorMethodReference, constraintName(extractorMethodReference),
+				c, IntegerConstraint::new);
 	}
 
 	/**
@@ -827,7 +846,7 @@ public class ValidatorBuilder<T> {
 	public interface ToCharArray<T> extends Function<T, char[]> {
 	}
 
-	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E>, Serializable {
 	}
 
 	public interface ToCharacter<T> extends Function<T, Character> {
@@ -851,7 +870,7 @@ public class ValidatorBuilder<T> {
 	public interface ToIntArray<T> extends Function<T, int[]> {
 	}
 
-	public interface ToInteger<T> extends Function<T, Integer> {
+	public interface ToInteger<T> extends Function<T, Integer>, Serializable {
 	}
 
 	public interface ToLong<T> extends Function<T, Long> {
@@ -875,4 +894,22 @@ public class ValidatorBuilder<T> {
 	public interface ValidatorBuilderConverter<T>
 			extends Function<ValidatorBuilder<T>, ValidatorBuilder<T>> {
 	}
+
+	@Nonnull
+	static String constraintName(Serializable extractorMethodReference) {
+		Method method = LambdaUtils.unreferenceLambdaMethod(extractorMethodReference);
+		if (method == null) {
+			return "extracted";
+		}
+		String methodName = method.getName();
+		if (methodName.startsWith("get")
+				&& methodName.length() > 3
+				&& Character.isUpperCase(methodName.charAt(3))) {
+			return methodName.substring(3, 4).toLowerCase(Locale.ENGLISH)
+					+ methodName.substring(4);
+		} else {
+			return methodName;
+		}
+	}
+
 }
