@@ -15,20 +15,19 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
-import static am.ik.yavi.core.Group.CREATE;
-import static am.ik.yavi.core.Group.UPDATE;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+
+import static am.ik.yavi.core.Group.CREATE;
+import static am.ik.yavi.core.Group.UPDATE;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
@@ -259,6 +258,107 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 				.containsExactly("nested.intRanges[0].small");
 	}
 
+	@org.junit.jupiter.api.Nested
+	class DeepNestingGH60Tests {
+
+		@Test
+		void shouldBeValidForObjectValidation() {
+			Validator<NestedObject> NestedObjectValidator = ValidatorBuilder.<NestedObject>of()
+					.constraint(NestedObject::getText, "text", Constraint::notNull)
+					.build();
+			Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject>of()
+					.nestIfPresent(MainObject::getNested, "nested", NestedObjectValidator)
+					.build();
+			Validator<Root> rootValidator = ValidatorBuilder.<Root>of()
+					.nest(Root::getMainObject, "mainObject", mainObjectValidator)
+					.build();
+
+			MainObject mainObject = new MainObject();
+			mainObject.setNested(null);
+			Root root = new Root(mainObject);
+
+			ConstraintViolations rootViolations = rootValidator.validate(root);
+
+			assertThat(rootViolations.isValid()).isTrue();
+		}
+
+		@Test
+		void shouldBeInvalidForObjectValidation() {
+			Validator<NestedObject> NestedObjectValidator = ValidatorBuilder.<NestedObject>of()
+					.constraint(NestedObject::getText, "text", Constraint::notNull)
+					.build();
+			Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject>of()
+					.nest(MainObject::getNested, "nested", NestedObjectValidator)
+					.build();
+			Validator<Root> rootValidator = ValidatorBuilder.<Root>of()
+					.nest(Root::getMainObject, "mainObject", mainObjectValidator)
+					.build();
+
+			MainObject mainObject = new MainObject();
+			mainObject.setNested(null);
+			Root root = new Root(mainObject);
+
+			ConstraintViolations rootViolations = rootValidator.validate(root);
+
+			assertThat(rootViolations.isValid()).isFalse();
+		}
+
+		@Test
+		void shouldBeValidForEachVersion() {
+			Validator<NestedObject> NestedObjectValidator = ValidatorBuilder.<NestedObject>of()
+					.constraint(NestedObject::getText, "text", Constraint::notNull)
+					.build();
+			Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject>of()
+					.forEachIfPresent(MainObject::getNestedList, "nestedList", NestedObjectValidator)
+					.build();
+			Validator<Root> rootValidator = ValidatorBuilder.<Root>of()
+					.nest(Root::getMainObject, "mainObject", mainObjectValidator)
+					.build();
+
+			MainObject mainObject = new MainObject();
+			mainObject.setNestedList(null);
+			Root root = new Root(mainObject);
+
+			ConstraintViolations rootViolations = rootValidator.validate(root);
+
+			assertThat(rootViolations.isValid()).isTrue();
+		}
+
+		@Test
+		void shouldBeInvalidForEachVersion() {
+			Validator<NestedObject> NestedObjectValidator = ValidatorBuilder.<NestedObject>of()
+					.constraint(NestedObject::getText, "text", Constraint::notNull)
+					.build();
+			Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject>of()
+					.forEach(MainObject::getNestedList, "nestedList", NestedObjectValidator)
+					.build();
+			Validator<Root> rootValidator = ValidatorBuilder.<Root>of()
+					.nest(Root::getMainObject, "mainObject", mainObjectValidator)
+					.build();
+
+			MainObject mainObject = new MainObject();
+			mainObject.setNestedList(null);
+			Root root = new Root(mainObject);
+
+			ConstraintViolations rootViolations = rootValidator.validate(root);
+
+			assertThat(rootViolations.isValid()).isFalse();
+		}
+
+	}
+
+	private static class Root {
+		private MainObject mainObject;
+
+		public Root(MainObject mainObject) {
+			this.mainObject = mainObject;
+		}
+
+		public MainObject getMainObject() {
+			return mainObject;
+		}
+	}
+
 	public static class Nested {
 		IntRange intRange;
 
@@ -280,6 +380,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	public static class MainObject {
 		Long id;
 		NestedObject nested;
+		List<NestedObject> nestedList;
 
 		public Long getId() {
 			return id;
@@ -295,6 +396,14 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 		public void setNested(NestedObject nested) {
 			this.nested = nested;
+		}
+
+		public List<NestedObject> getNestedList() {
+			return nestedList;
+		}
+
+		public void setNestedList(List<NestedObject> nestedList) {
+			this.nestedList = nestedList;
 		}
 	}
 
