@@ -733,9 +733,17 @@ public class ValidatorBuilder<T> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
 					this.toNestedValue(nested, predicates), nestedName,
-					predicates.predicates(), nested);
+					predicates.predicates(), this.toNestedFunction(nested, predicates));
 			this.predicatesList.add(constraintPredicates);
 		};
+	}
+
+	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
+		if (predicates instanceof NestedConstraintPredicates) {
+			return this.toNestedValue(nested, predicates);
+		}
+
+		return nested;
 	}
 
 	private <N> Consumer<Pair<ConstraintCondition<N>, ValidatorSubset<N>>> appendNestedConditionalValidator(
