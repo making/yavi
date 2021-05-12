@@ -23,7 +23,7 @@ package am.ik.yavi.fn;
  */
 public interface Function1<T1, R> {
 
-	R apply(T1 t1) throws Exception;
+	R apply(T1 t1);
 
 	default Function1<T1, R> curried() {
 		return t1 -> this.apply(t1);

@@ -135,7 +135,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value()).isEqualTo(
 				"s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16");
@@ -166,7 +166,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f1", "f2", "f3", "f4", "f5", "f6",
@@ -198,7 +198,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f1");
@@ -229,7 +229,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f16");

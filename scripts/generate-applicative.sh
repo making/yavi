@@ -32,7 +32,7 @@ package am.ik.yavi.fn;
  */
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> {
 
-	R apply($(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} t${j}, ";done) | sed 's/,$//')) throws Exception;
+	R apply($(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} t${j}, ";done) | sed 's/,$//'));
 
 	default $(echo $(for j in `seq 1 ${i}`;do echo -n "Function1<T${j}, ";done)) R$(echo $(for j in `seq 1 ${i}`;do echo -n ">";done)) curried() {
 		return $(echo $(for j in `seq 1 ${i}`;do echo -n "t${j} -> ";done)) this.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "t${j}, ";done) | sed 's/,$//'));

@@ -94,13 +94,8 @@ public interface Validation<E, T> extends Serializable {
 		if (isValid()) {
 			if (validation.isValid()) {
 				final Function1<T, U> f = validation.value();
-				try {
-					final U u = f.apply(this.value());
-					return Validation.success(u);
-				}
-				catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+				final U u = f.apply(this.value());
+				return Validation.success(u);
 			}
 			else {
 				final List<E> error = validation.error();
