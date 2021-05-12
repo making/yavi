@@ -146,6 +146,9 @@ public interface Validation<E, T> extends Serializable {
 		public final T value;
 
 		Success(T value) {
+			if (value == null) {
+				throw new IllegalArgumentException("'value' must not be null.");
+			}
 			this.value = value;
 		}
 
@@ -186,6 +189,9 @@ public interface Validation<E, T> extends Serializable {
 		private final E error;
 
 		Failure(E error) {
+			if (error == null) {
+				throw new IllegalArgumentException("'error' must not be null.");
+			}
 			this.error = error;
 		}
 
