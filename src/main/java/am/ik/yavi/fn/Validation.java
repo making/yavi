@@ -29,8 +29,8 @@ import java.util.function.Function;
  * <a href="https://docs.vavr.io/#_validation">Validation</a> control.<br>
  * The Validation control is an applicative functor and facilitates accumulating errors.
  *
- * @param <E> value type in the case of invalid
- * @param <T> value type in the case of valid
+ * @param <E> value type in the case of failure
+ * @param <T> value type in the case of success
  * @since 0.6.0
  */
 public interface Validation<E, T> extends Serializable {
