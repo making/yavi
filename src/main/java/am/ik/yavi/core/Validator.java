@@ -28,9 +28,9 @@ import am.ik.yavi.message.MessageFormatter;
 
 /**
  * Validates the target instances.
- * 
+ *
  * A <code>Validator</code> instance is immutable and can be used as a singleton.
- * 
+ *
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
  */
@@ -73,12 +73,12 @@ public class Validator<T> implements ValidatorSubset<T> {
 	Validator<T> prefixed(String prefix) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter, prefix);
+				this.messageFormatter, prefix + this.messageKeySeparator);
 	}
 
 	/**
 	 * This method is supposed to be used only internally.
-	 * 
+	 *
 	 * @param action callback per <code>ConstraintPredicates</code>.
 	 */
 	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
@@ -121,7 +121,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 	/**
 	 * Validates all constraints on {@code target}.<br>
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 * 
+	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @return constraint violations
@@ -156,6 +156,15 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 */
 	public ConstraintViolations validate(T target) {
 		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Convert to the applicative validator
+	 * @return applicative validator
+	 * @since 0.6.0
+	 */
+	public ApplicativeValidator<T> applicative() {
+		return new ApplicativeValidator<>(this);
 	}
 
 	/**

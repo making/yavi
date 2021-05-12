@@ -26,7 +26,38 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ConstraintViolations implements List<ConstraintViolation> {
-	private final List<ConstraintViolation> delegate = new ArrayList<>();
+	private final List<ConstraintViolation> delegate;
+
+	/**
+	 * Constructs an empty list with an initial capacity of ten.
+	 */
+	public ConstraintViolations() {
+		this.delegate = new ArrayList<>();
+	}
+
+	/**
+	 * Constructs an empty list with the specified initial capacity.
+	 *
+	 * @param initialCapacity the initial capacity of the list
+	 * @throws IllegalArgumentException if the specified initial capacity is negative
+	 * @since 0.6.0
+	 */
+	public ConstraintViolations(int initialCapacity) {
+		this.delegate = new ArrayList<>(initialCapacity);
+	}
+
+	/**
+	 * Concatenate all violations
+	 * @param violations
+	 * @return concatenated violations
+	 * @since 0.6.0
+	 */
+	public static ConstraintViolations concat(List<ConstraintViolations> violations) {
+		final ConstraintViolations constraintViolations = new ConstraintViolations(
+				violations.stream().mapToInt(ConstraintViolations::size).sum());
+		violations.forEach(constraintViolations::addAll);
+		return constraintViolations;
+	}
 
 	/**
 	 * Appends the specified element to the end of this list (optional operation).

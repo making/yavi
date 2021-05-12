@@ -18,13 +18,34 @@ package am.ik.yavi.core;
 import java.util.Arrays;
 import java.util.Locale;
 
-import org.junit.Test;
+import am.ik.yavi.message.SimpleMessageFormatter;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import am.ik.yavi.message.SimpleMessageFormatter;
-
 public class ConstraintViolationsTest {
+
+	@Test
+	public void concat() {
+		SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
+		ConstraintViolations violations1 = new ConstraintViolations();
+		violations1.add(new ConstraintViolation("foo0", "abc0", "hello0",
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
+		violations1.add(new ConstraintViolation("foo1", "abc1", "hello1",
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
+
+		ConstraintViolations violations2 = new ConstraintViolations();
+		violations2.add(new ConstraintViolation("bar0", "abc0", "hello0",
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
+		violations2.add(new ConstraintViolation("bar1", "abc1", "hello1",
+				new Object[] { 1 }, messageFormatter, Locale.getDefault()));
+
+		final ConstraintViolations violations = ConstraintViolations
+				.concat(Arrays.asList(violations1, violations2));
+		assertThat(violations).hasSize(4);
+		assertThat(violations).containsExactly(violations1.get(0), violations.get(1),
+				violations2.get(0), violations2.get(1));
+	}
 
 	@Test
 	public void apply() {
