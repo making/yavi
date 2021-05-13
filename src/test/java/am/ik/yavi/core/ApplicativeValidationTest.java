@@ -57,7 +57,7 @@ class ApplicativeValidationTest {
 				.compose(phoneNumberValidator.validate(new PhoneNumber("1234567")))
 				.apply(Address::new);
 		assertThat(validation.isValid()).isFalse();
-		final List<ConstraintViolation> violations = validation.error();
+		final List<ConstraintViolation> violations = validation.errors();
 		assertThat(violations).hasSize(3);
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
 		assertThat(violations.get(0).messageKey())

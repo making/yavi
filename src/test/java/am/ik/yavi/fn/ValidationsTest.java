@@ -59,7 +59,7 @@ class ValidationsTest {
 						Validation.failure(Arrays.asList("e1", "e2")),
 						Validation.success(2),
 						Validation.failure(Arrays.asList("e3", "e4"))));
-		assertThat(validation.error()).containsExactly("e1", "e2", "e3", "e4");
+		assertThat(validation.errors()).containsExactly("e1", "e2", "e3", "e4");
 	}
 
 	@Test
@@ -81,6 +81,6 @@ class ValidationsTest {
 								Arrays.asList("e" + (-2 * i - 1), "e" + (-2 * i)));
 					}
 				});
-		assertThat(validation.error()).containsExactly("e1", "e2", "e3", "e4");
+		assertThat(validation.errors()).containsExactly("e1", "e2", "e3", "e4");
 	}
 }

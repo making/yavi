@@ -46,13 +46,13 @@ public interface Validation<E, T> extends Serializable {
 	T value();
 
 	/**
-	 * Returns the error of this {@code Validation} if it is an {@code Failure} or throws
+	 * Returns the errors of this {@code Validation} if it is an {@code Failure} or throws
 	 * if this is a {@code Success}.
 	 *
-	 * @return The error, if present
+	 * @return The errors, if present
 	 * @throws NoSuchElementException if this is a {@code Success}
 	 */
-	List<E> error();
+	List<E> errors();
 
 	@SuppressWarnings("unchecked")
 	default <T2> Validation<E, T2> map(Function<T, T2> mapper) {
@@ -73,14 +73,14 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	default <E2> Validation<E2, T> mapError(Function<List<E>, List<E2>> errorMapper) {
+	default <E2> Validation<E2, T> mapErrors(Function<List<E>, List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
-				: Validation.failure(errorMapper.apply(error()));
+				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
-	default Validation<E, T> peekError(Consumer<List<E>> consumer) {
+	default Validation<E, T> peekErrors(Consumer<List<E>> consumer) {
 		if (!isValid()) {
-			consumer.accept(error());
+			consumer.accept(errors());
 		}
 		return this;
 	}
@@ -91,12 +91,12 @@ public interface Validation<E, T> extends Serializable {
 			return value();
 		}
 		else {
-			throw exceptionMapper.apply(error());
+			throw exceptionMapper.apply(errors());
 		}
 	}
 
-	default <U> U fold(Function<List<E>, U> errorMapper, Function<T, U> mapper) {
-		return isValid() ? mapper.apply(value()) : errorMapper.apply(error());
+	default <U> U fold(Function<List<E>, U> errorsMapper, Function<T, U> mapper) {
+		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
 	default <U> Validation<E, U> apply(Validation<E, Function1<T, U>> validation) {
@@ -107,25 +107,25 @@ public interface Validation<E, T> extends Serializable {
 				return Validation.success(u);
 			}
 			else {
-				final List<E> error = validation.error();
-				return Validation.failure(error);
+				final List<E> errors = validation.errors();
+				return Validation.failure(errors);
 			}
 		}
 		else {
-			final List<E> error = this.error();
+			final List<E> errors = this.errors();
 			if (validation.isValid()) {
-				return Validation.failure(error);
+				return Validation.failure(errors);
 			}
 			else {
-				final List<E> errors = new ArrayList<>(validation.error());
-				errors.addAll(error);
-				return Validation.failure(errors);
+				final List<E> errorsList = new ArrayList<>(validation.errors());
+				errorsList.addAll(errors);
+				return Validation.failure(errorsList);
 			}
 		}
 	}
 
 	default Either<List<E>, T> toEither() {
-		return isValid() ? Either.right(value()) : Either.left(error());
+		return isValid() ? Either.right(value()) : Either.left(errors());
 	}
 
 	default <T2> Composing2<E, T, T2> compose(Validation<E, T2> validation) {
@@ -140,12 +140,12 @@ public interface Validation<E, T> extends Serializable {
 		return new Success<>(value);
 	}
 
-	static <E, T> Validation<E, T> failure(E e) {
-		return new Failure<>(Collections.singletonList(e));
+	static <E, T> Validation<E, T> failure(E error) {
+		return new Failure<>(Collections.singletonList(error));
 	}
 
-	static <E, T> Validation<E, T> failure(List<E> error) {
-		return new Failure<>(error);
+	static <E, T> Validation<E, T> failure(List<E> errors) {
+		return new Failure<>(errors);
 	}
 
 	class Success<E, T> implements Validation<E, T> {
@@ -171,8 +171,8 @@ public interface Validation<E, T> extends Serializable {
 		}
 
 		@Override
-		public List<E> error() throws RuntimeException {
-			throw new NoSuchElementException("error of 'Success' Validation");
+		public List<E> errors() throws RuntimeException {
+			throw new NoSuchElementException("errors of 'Success' Validation");
 		}
 
 		@Override
@@ -194,13 +194,13 @@ public interface Validation<E, T> extends Serializable {
 	class Failure<E, T> implements Validation<E, T> {
 		private static final long serialVersionUID = 1L;
 
-		private final List<E> error;
+		private final List<E> errors;
 
-		Failure(List<E> error) {
-			if (error == null) {
-				throw new IllegalArgumentException("'error' must not be null.");
+		Failure(List<E> errors) {
+			if (errors == null) {
+				throw new IllegalArgumentException("'errors' must not be null.");
 			}
-			this.error = Collections.unmodifiableList(error);
+			this.errors = Collections.unmodifiableList(errors);
 		}
 
 		@Override
@@ -214,8 +214,8 @@ public interface Validation<E, T> extends Serializable {
 		}
 
 		@Override
-		public List<E> error() {
-			return this.error;
+		public List<E> errors() {
+			return this.errors;
 		}
 
 		@Override
@@ -225,12 +225,12 @@ public interface Validation<E, T> extends Serializable {
 			if (o == null || getClass() != o.getClass())
 				return false;
 			Failure<?, ?> failure = (Failure<?, ?>) o;
-			return error.equals(failure.error);
+			return errors.equals(failure.errors);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(error);
+			return Objects.hash(errors);
 		}
 	}
 }

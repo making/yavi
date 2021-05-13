@@ -131,7 +131,7 @@ $(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 
 		final List<T> values = new ArrayList<>();
 		for (Validation<E, T> validation : validations) {
 			if (!validation.isValid()) {
-				errors.addAll(validation.error());
+				errors.addAll(validation.errors());
 			}
 			else if (errors.isEmpty()) {
 				values.add(validation.value());
