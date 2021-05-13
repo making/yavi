@@ -155,10 +155,13 @@ public class ValidatorBuilder<T> {
 	 * Create a <code>BiValidator</code> instance using the given constraints.
 	 *
 	 * In case of Spring Framework's Validator integration
-	 * <pre>BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
+	 * 
+	 * <pre>
+	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
 	 *   .&lt;CartItem&gt;of()
 	 *   .constraint(...)
-	 *   .build(Errors::rejectValue);</pre>
+	 *   .build(Errors::rejectValue);
+	 * </pre>
 	 *
 	 * @param errorHandler handler that handle if the validation fails
 	 * @param <E> the type of the error object
@@ -738,7 +741,8 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
-	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
+	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested,
+			ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
 			return target -> {
 				N nestedValue = nested.apply(target);
@@ -746,7 +750,8 @@ public class ValidatorBuilder<T> {
 					return null;
 				}
 
-				return (N) ((NestedConstraintPredicates) predicates).nestedValue(nestedValue);
+				return (N) ((NestedConstraintPredicates) predicates)
+						.nestedValue(nestedValue);
 			};
 		}
 

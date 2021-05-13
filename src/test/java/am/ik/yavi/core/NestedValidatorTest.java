@@ -264,121 +264,108 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenInnerNestedObjectIsRequired() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b",
-							b -> b.nest(B::getC, "c",
-									c -> c.nest(C::getD, "d",
-											d -> d.nest(D::getE, "e",
-													e -> e._integer(E::getValue, "value",
-															value -> value.greaterThanOrEqual(100))))))
+					.nest(A::getB, "b", b -> b.nest(B::getC, "c",
+							c -> c.nest(C::getD, "d", d -> d.nest(D::getE, "e",
+									e -> e._integer(E::getValue, "value",
+											value -> value.greaterThanOrEqual(100))))))
 					.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null")
-						.isFalse();
+						.as("1-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null")
-						.isFalse();
+						.as("2-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null")
-						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+						.as("3-layer nested object is null").isFalse();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(null, null))))).isValid())
 						.as("4-layer nested object is null (when it is required)")
 						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
-						.as("5-layer constraint is valid")
-						.isTrue();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
+						.as("5-layer constraint is valid").isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenInnerNestedObjectIsOptional() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b",
-							b -> b.nestIfPresent(B::getC, "c",
-									c -> c.nest(C::getD, "d",
-											d -> d.nestIfPresent(D::getE, "e",
-													e -> e._integer(E::getValue, "value",
-															value -> value.greaterThanOrEqual(100))))))
+					.nest(A::getB, "b", b -> b.nestIfPresent(B::getC, "c",
+							c -> c.nest(C::getD, "d", d -> d.nestIfPresent(D::getE, "e",
+									e -> e._integer(E::getValue, "value",
+											value -> value.greaterThanOrEqual(100))))))
 					.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null")
-						.isFalse();
+						.as("1-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
 						.as("2-layer nested object is null (when it is optional)")
 						.isTrue();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null")
-						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+						.as("3-layer nested object is null").isFalse();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(null, null))))).isValid())
 						.as("4-layer nested object is null (when it is optional)")
 						.isTrue();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
-						.as("5-layer constraint is valid")
-						.isTrue();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
+						.as("5-layer constraint is valid").isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenForEachMethodIsUsed() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b",
-							b -> b.nest(B::getC, "c",
-									c -> c.nest(C::getD, "d",
-											d -> d.forEach(D::getList, "list",
-													e -> e._integer(E::getValue, "value",
-															value -> value.greaterThanOrEqual(100))))))
+					.nest(A::getB, "b", b -> b.nest(B::getC, "c",
+							c -> c.nest(C::getD, "d", d -> d.forEach(D::getList, "list",
+									e -> e._integer(E::getValue, "value",
+											value -> value.greaterThanOrEqual(100))))))
 					.build();
-
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null")
-						.isFalse();
+						.as("1-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null")
-						.isFalse();
+						.as("2-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null")
-						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+						.as("3-layer nested object is null").isFalse();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(null, null))))).isValid())
 						.as("4-layer nested object is null (when it is required)")
 						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, singletonList(new E(100))))))).isValid())
-						.as("5-layer constraint is valid")
-						.isTrue();
+				softly.assertThat(validator
+						.validate(new A(
+								new B(new C(new D(null, singletonList(new E(100)))))))
+						.isValid()).as("5-layer constraint is valid").isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenForEachIfPresentMethodIsUsed() {
-			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b",
-							b -> b.nestIfPresent(B::getC, "c",
-									c -> c.nest(C::getD, "d",
-											d -> d.forEachIfPresent(D::getList, "list",
-													e -> e._integer(E::getValue, "value",
-															value -> value.greaterThanOrEqual(100))))))
+			final Validator<A> validator = ValidatorBuilder.of(A.class).nest(A::getB, "b",
+					b -> b.nestIfPresent(B::getC, "c", c -> c.nest(C::getD, "d",
+							d -> d.forEachIfPresent(D::getList, "list",
+									e -> e._integer(E::getValue, "value",
+											value -> value.greaterThanOrEqual(100))))))
 					.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null")
-						.isFalse();
+						.as("1-layer nested object is null").isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
 						.as("2-layer nested object is null (when it is optional)")
 						.isTrue();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null")
-						.isFalse();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+						.as("3-layer nested object is null").isFalse();
+				softly.assertThat(validator
+						.validate(new A(new B(new C(new D(null, null))))).isValid())
 						.as("4-layer nested object is null (when it is optional)")
 						.isTrue();
-				softly.assertThat(validator.validate(new A(new B(new C(new D(null, singletonList(new E(100))))))).isValid())
-						.as("5-layer constraint is valid")
-						.isTrue();
+				softly.assertThat(validator
+						.validate(new A(
+								new B(new C(new D(null, singletonList(new E(100)))))))
+						.isValid()).as("5-layer constraint is valid").isTrue();
 			});
 		}
 	}
