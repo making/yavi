@@ -70,7 +70,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.prefix = prefix;
 	}
 
-	Validator<T> prefixed(String prefix) {
+	public Validator<T> prefixed(String prefix) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter, prefix + this.messageKeySeparator);
