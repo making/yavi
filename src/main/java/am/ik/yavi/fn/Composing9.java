@@ -58,8 +58,8 @@ public class Composing9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> {
 
 	public <R> Validation<E, R> apply(
 			Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, R> f) {
-		return v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(
-				v3.apply(v2.apply(v1.apply(Validation.success(f.curried()))))))))));
+		return v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(v3
+				.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f)))))))))));
 	}
 
 	public <T10> Composing10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> compose(

@@ -44,8 +44,8 @@ public class Composing5<E, T1, T2, T3, T4, T5> {
 	}
 
 	public <R> Validation<E, R> apply(Function5<T1, T2, T3, T4, T5, R> f) {
-		return v5.apply(
-				v4.apply(v3.apply(v2.apply(v1.apply(Validation.success(f.curried()))))));
+		return v5.apply(v4.apply(
+				v3.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f)))))));
 	}
 
 	public <T6> Composing6<E, T1, T2, T3, T4, T5, T6> compose(Validation<E, T6> v6) {

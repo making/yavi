@@ -78,9 +78,9 @@ public class Composing15<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T
 
 	public <R> Validation<E, R> apply(
 			Function15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> f) {
-		return v15.apply(v14.apply(v13.apply(v12.apply(v11.apply(
-				v10.apply(v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(v3.apply(
-						v2.apply(v1.apply(Validation.success(f.curried()))))))))))))))));
+		return v15.apply(v14.apply(v13.apply(v12.apply(v11.apply(v10.apply(
+				v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(v3.apply(v2.apply(
+						v1.apply(Validation.success(Functions.curry(f)))))))))))))))));
 	}
 
 	public <T16> Composing16<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> compose(

@@ -34,7 +34,7 @@ public class Composing2<E, T1, T2> {
 	}
 
 	public <R> Validation<E, R> apply(Function2<T1, T2, R> f) {
-		return v2.apply(v1.apply(Validation.success(f.curried())));
+		return v2.apply(v1.apply(Validation.success(Functions.curry(f))));
 	}
 
 	public <T3> Composing3<E, T1, T2, T3> compose(Validation<E, T3> v3) {
