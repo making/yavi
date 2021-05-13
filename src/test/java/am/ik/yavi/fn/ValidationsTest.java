@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.fn;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -42,5 +43,44 @@ class ValidationsTest {
 		final String s = Validations
 				.apply(v1, v2, v3, (s1, s2, s3) -> String.join("-", s1, s2, s3)).value();
 		assertThat(s).isEqualTo("s1-s2-s3");
+	}
+
+	@Test
+	void sequenceValid() {
+		final Validation<List<String>, List<Integer>> validation = Validations
+				.sequence(Arrays.asList(Validation.success(1), Validation.success(2)));
+		assertThat(validation.value()).containsExactly(1, 2);
+	}
+
+	@Test
+	void sequenceInvalid() {
+		final Validation<List<String>, List<Integer>> validation = Validations
+				.sequence(Arrays.asList(Validation.success(1),
+						Validation.failure(Arrays.asList("e1", "e2")),
+						Validation.success(2),
+						Validation.failure(Arrays.asList("e3", "e4"))));
+		assertThat(validation.error()).containsExactly("e1", "e2", "e3", "e4");
+	}
+
+	@Test
+	void traverseValid() {
+		final Validation<List<String>, List<Integer>> validation = Validations
+				.traverse(Arrays.asList(1, 2), Validation::success);
+		assertThat(validation.value()).containsExactly(1, 2);
+	}
+
+	@Test
+	void traverseInvalid() {
+		final Validation<List<String>, List<Integer>> validation = Validations
+				.traverse(Arrays.asList(1, -1, 2, -2), i -> {
+					if (i > 0) {
+						return Validation.success(i);
+					}
+					else {
+						return Validation.failure(
+								Arrays.asList("e" + (-2 * i - 1), "e" + (-2 * i)));
+					}
+				});
+		assertThat(validation.error()).containsExactly("e1", "e2", "e3", "e4");
 	}
 }
