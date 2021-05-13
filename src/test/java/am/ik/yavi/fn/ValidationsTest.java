@@ -54,7 +54,7 @@ class ValidationsTest {
 
 	@Test
 	void sequenceInvalid() {
-		final Validation<List<String>, List<Integer>> validation = Validations
+		final Validation<String, List<Integer>> validation = Validations
 				.sequence(Arrays.asList(Validation.success(1),
 						Validation.failure(Arrays.asList("e1", "e2")),
 						Validation.success(2),
@@ -64,14 +64,14 @@ class ValidationsTest {
 
 	@Test
 	void traverseValid() {
-		final Validation<List<String>, List<Integer>> validation = Validations
+		final Validation<String, List<Integer>> validation = Validations
 				.traverse(Arrays.asList(1, 2), i -> Validation.success(i));
 		assertThat(validation.value()).containsExactly(1, 2);
 	}
 
 	@Test
 	void traverseInvalid() {
-		final Validation<List<String>, List<Integer>> validation = Validations
+		final Validation<String, List<Integer>> validation = Validations
 				.traverse(Arrays.asList(1, -1, 2, -2), i -> {
 					if (i > 0) {
 						return Validation.success(i);

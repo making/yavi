@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.core;
 
+import java.util.List;
+
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
@@ -36,10 +38,10 @@ class ApplicativeValidationTest {
 
 	@Test
 	void validated_valid() {
-		final Validation<ConstraintViolations, Address> validation = countryValidator
+		final Validation<ConstraintViolation, Address> validation = countryValidator
 				.validate(new Country("jp")).compose(streetValidator.validate("xyz"))
 				.compose(phoneNumberValidator.validate(new PhoneNumber("12345678")))
-				.apply(Address::new).mapError(ConstraintViolations::concat);
+				.apply(Address::new);
 		assertThat(validation.isValid()).isTrue();
 		final Address address = validation.value();
 		assertThat(address).isNotNull();
@@ -50,12 +52,12 @@ class ApplicativeValidationTest {
 
 	@Test
 	void validated_invalid() {
-		final Validation<ConstraintViolations, Address> validation = countryValidator
+		final Validation<ConstraintViolation, Address> validation = countryValidator
 				.validate(new Country("j")).compose(streetValidator.validate(""))
 				.compose(phoneNumberValidator.validate(new PhoneNumber("1234567")))
-				.apply(Address::new).mapError(ConstraintViolations::concat);
+				.apply(Address::new);
 		assertThat(validation.isValid()).isFalse();
-		final ConstraintViolations violations = validation.error();
+		final List<ConstraintViolation> violations = validation.error();
 		assertThat(violations).hasSize(3);
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
 		assertThat(violations.get(0).messageKey())

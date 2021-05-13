@@ -33,7 +33,7 @@ public class Composing2<E, T1, T2> {
 		this.v2 = v2;
 	}
 
-	public <R> Validation<List<E>, R> apply(Function2<T1, T2, R> f) {
+	public <R> Validation<E, R> apply(Function2<T1, T2, R> f) {
 		return v2.apply(v1.apply(Validation.success(f.curried())));
 	}
 

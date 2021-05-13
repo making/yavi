@@ -145,49 +145,48 @@ public class Validations {
 				v14, v15, v16);
 	}
 
-	public static <R, E, T1> Validation<List<E>, R> apply(Validation<E, T1> v1,
+	public static <R, E, T1> Validation<E, R> apply(Validation<E, T1> v1,
 			Function1<T1, R> f) {
 		return compose(v1).apply(f);
 	}
 
-	public static <R, E, T1, T2> Validation<List<E>, R> apply(Validation<E, T1> v1,
+	public static <R, E, T1, T2> Validation<E, R> apply(Validation<E, T1> v1,
 			Validation<E, T2> v2, Function2<T1, T2, R> f) {
 		return compose(v1, v2).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3> Validation<List<E>, R> apply(Validation<E, T1> v1,
+	public static <R, E, T1, T2, T3> Validation<E, R> apply(Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Function3<T1, T2, T3, R> f) {
 		return compose(v1, v2, v3).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4> Validation<List<E>, R> apply(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Function4<T1, T2, T3, T4, R> f) {
+	public static <R, E, T1, T2, T3, T4> Validation<E, R> apply(Validation<E, T1> v1,
+			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
+			Function4<T1, T2, T3, T4, R> f) {
 		return compose(v1, v2, v3, v4).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5> Validation<List<E>, R> apply(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5,
-			Function5<T1, T2, T3, T4, T5, R> f) {
+	public static <R, E, T1, T2, T3, T4, T5> Validation<E, R> apply(Validation<E, T1> v1,
+			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
+			Validation<E, T5> v5, Function5<T1, T2, T3, T4, T5, R> f) {
 		return compose(v1, v2, v3, v4, v5).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Function6<T1, T2, T3, T4, T5, T6, R> f) {
 		return compose(v1, v2, v3, v4, v5, v6).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Function7<T1, T2, T3, T4, T5, T6, T7, R> f) {
 		return compose(v1, v2, v3, v4, v5, v6, v7).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8,
@@ -195,7 +194,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -203,7 +202,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -212,7 +211,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -221,7 +220,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -230,7 +229,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -240,7 +239,7 @@ public class Validations {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -251,7 +250,7 @@ public class Validations {
 				.apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -262,7 +261,7 @@ public class Validations {
 				.apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Validation<List<E>, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Validation<E, R> apply(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -274,11 +273,11 @@ public class Validations {
 				v16).apply(f);
 	}
 
-	public static <E, T> Validation<List<E>, List<T>> sequence(
-			Iterable<Validation<List<E>, T>> validations) {
+	public static <E, T> Validation<E, List<T>> sequence(
+			Iterable<Validation<E, T>> validations) {
 		final List<E> errors = new ArrayList<>();
 		final List<T> values = new ArrayList<>();
-		for (Validation<List<E>, T> validation : validations) {
+		for (Validation<E, T> validation : validations) {
 			if (!validation.isValid()) {
 				errors.addAll(validation.error());
 			}
@@ -289,8 +288,8 @@ public class Validations {
 		return errors.isEmpty() ? Validation.success(values) : Validation.failure(errors);
 	}
 
-	public static <E, T, U> Validation<List<E>, List<U>> traverse(Iterable<T> values,
-			Function<T, Validation<List<E>, U>> mapper) {
+	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
+			Function<T, Validation<E, U>> mapper) {
 		return sequence(StreamSupport.stream(values.spliterator(), false).map(mapper)
 				.collect(Collectors.toList()));
 	}

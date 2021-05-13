@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,12 +29,14 @@ class ValidationTest {
 
 	@Test
 	void success() {
-		final Validation<List<String>, String> validation = Validation.success("test");
+		final Validation<String, String> validation = Validation.success("test");
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value()).isEqualTo("test");
 		assertThatThrownBy(validation::error).isInstanceOf(NoSuchElementException.class);
 		assertThat(validation.map(String::toUpperCase).value()).isEqualTo("TEST");
-		assertThat(validation.mapError(List::size).value()).isEqualTo("test");
+		assertThat(validation
+				.mapError(x -> x.stream().map(String::toUpperCase).collect(toList()))
+				.value()).isEqualTo("test");
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).value())
 				.isEqualTo("hello test");
 		assertThat(validation).isEqualTo(Validation.success("test"));
@@ -43,14 +46,16 @@ class ValidationTest {
 
 	@Test
 	void failure() {
-		final Validation<List<String>, String> validation = Validation
+		final Validation<String, String> validation = Validation
 				.failure(Arrays.asList("error1", "error2"));
 		assertThat(validation.isValid()).isFalse();
 		assertThatThrownBy(validation::value).isInstanceOf(NoSuchElementException.class);
 		assertThat(validation.error()).isEqualTo(Arrays.asList("error1", "error2"));
 		assertThat(validation.map(String::toUpperCase).error())
 				.isEqualTo(Arrays.asList("error1", "error2"));
-		assertThat(validation.mapError(x -> x.size()).error()).isEqualTo(2);
+		assertThat(validation
+				.mapError(x -> x.stream().map(String::toUpperCase).collect(toList()))
+				.error()).isEqualTo(Arrays.asList("ERROR1", "ERROR2"));
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).error())
 				.isEqualTo(Arrays.asList("error1", "error2"));
 		assertThat(validation)
@@ -61,7 +66,7 @@ class ValidationTest {
 
 	@Test
 	void foldSuccess() {
-		final Validation<List<String>, String> validation = Validation.success("test");
+		final Validation<String, String> validation = Validation.success("test");
 		final String fold = validation.fold(e -> String.join(",", e),
 				String::toUpperCase);
 		assertThat(fold).isEqualTo("TEST");
@@ -69,7 +74,7 @@ class ValidationTest {
 
 	@Test
 	void foldFailure() {
-		final Validation<List<String>, String> validation = Validation
+		final Validation<String, String> validation = Validation
 				.failure(Arrays.asList("error1", "error2"));
 		final String fold = validation.fold(e -> String.join(",", e),
 				String::toUpperCase);
@@ -78,7 +83,7 @@ class ValidationTest {
 
 	@Test
 	void successToEither() {
-		final Validation<List<String>, String> validation = Validation.success("test");
+		final Validation<String, String> validation = Validation.success("test");
 		final Either<List<String>, String> either = validation.toEither();
 		assertThat(either.isRight()).isTrue();
 		assertThat(either.right().get()).isEqualTo("test");
@@ -86,7 +91,7 @@ class ValidationTest {
 
 	@Test
 	void failureToEither() {
-		final Validation<List<String>, String> validation = Validation
+		final Validation<String, String> validation = Validation
 				.failure(Arrays.asList("error1", "error2"));
 		final Either<List<String>, String> either = validation.toEither();
 		assertThat(either.isLeft()).isTrue();
@@ -96,7 +101,7 @@ class ValidationTest {
 	@Test
 	void successFromEither() {
 		final Either<List<String>, String> either = Either.right("test");
-		final Validation<List<String>, String> validation = Validation.fromEither(either);
+		final Validation<String, String> validation = Validation.fromEither(either);
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value()).isEqualTo("test");
 	}
@@ -105,7 +110,7 @@ class ValidationTest {
 	void failureFromEither() {
 		final Either<List<String>, String> either = Either
 				.left(Arrays.asList("error1", "error2"));
-		final Validation<List<String>, String> validation = Validation.fromEither(either);
+		final Validation<String, String> validation = Validation.fromEither(either);
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).isEqualTo(Arrays.asList("error1", "error2"));
 	}
@@ -129,13 +134,13 @@ class ValidationTest {
 		final Validation<String, String> v15 = Validation.success("s15");
 		final Validation<String, String> v16 = Validation.success("s16");
 
-		final Validation<List<String>, String> validation = v1.compose(v2).compose(v3)
+		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
 				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value()).isEqualTo(
 				"s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16");
@@ -160,13 +165,13 @@ class ValidationTest {
 		final Validation<String, String> v15 = Validation.failure("f15");
 		final Validation<String, String> v16 = Validation.failure("f16");
 
-		final Validation<List<String>, String> validation = v1.compose(v2).compose(v3)
+		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
 				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f1", "f2", "f3", "f4", "f5", "f6",
@@ -192,13 +197,13 @@ class ValidationTest {
 		final Validation<String, String> v15 = Validation.success("s15");
 		final Validation<String, String> v16 = Validation.success("s16");
 
-		final Validation<List<String>, String> validation = v1.compose(v2).compose(v3)
+		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
 				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f1");
@@ -223,13 +228,13 @@ class ValidationTest {
 		final Validation<String, String> v15 = Validation.success("s15");
 		final Validation<String, String> v16 = Validation.failure("f16");
 
-		final Validation<List<String>, String> validation = v1.compose(v2).compose(v3)
+		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
 				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.error()).containsExactly("f16");
@@ -237,16 +242,17 @@ class ValidationTest {
 
 	@Test
 	void orElseThrowSuccess() {
-		final String s = Validation.<List<String>, String>success("test")
+		final String s = Validation.<List<String>, String> success("test")
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors));
 		assertThat(s).isEqualTo("test");
 	}
 
 	@Test
 	void orElseThrowFailure() {
-		assertThatThrownBy(() -> Validation.<List<String>, String>failure(Arrays.asList("e1", "e2"))
+		assertThatThrownBy(() -> Validation
+				.<String, String> failure(Arrays.asList("e1", "e2"))
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors)))
-				.hasMessage("errors=[e1, e2]")
-				.isInstanceOf(IllegalArgumentException.class);
+						.hasMessage("errors=[e1, e2]")
+						.isInstanceOf(IllegalArgumentException.class);
 	}
 }

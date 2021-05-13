@@ -79,7 +79,7 @@ $(for j in `seq 1 ${i}`;do echo "	protected final Validation<E, T${j}> v${j};";e
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
-	public <R> Validation<List<E>, R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
+	public <R> Validation<E, R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
 		return $(echo $(for j in `seq ${i} 1`;do echo -n "v${j}.apply(";done) | sed 's/,$//')Validation.success(f.curried())$(echo $(for j in `seq 1 ${i}`;do echo -n ")";done));
 	}
 $(if [ ${i} -lt ${n} ];then echo;echo "	public <T$((${i} + 1))> Composing$((${i} + 1))<E, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "T${j}, ";done) | sed 's/,$//')> compose(Validation<E, T$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Composing$((${i} + 1))<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
@@ -123,13 +123,13 @@ import java.util.stream.StreamSupport;
 public class ${class} {
 $(for i in `seq 1 ${n}`;do echo "	public static <E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Composing${i}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> compose($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return new Composing${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
 
-$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Validation<List<E>, R> apply($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done))Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {"; echo "		return compose($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Validation<E, R> apply($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done))Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {"; echo "		return compose($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
 
-	public static <E, T> Validation<List<E>, List<T>> sequence(
-			Iterable<Validation<List<E>, T>> validations) {
+	public static <E, T> Validation<E, List<T>> sequence(
+			Iterable<Validation<E, T>> validations) {
 		final List<E> errors = new ArrayList<>();
 		final List<T> values = new ArrayList<>();
-		for (Validation<List<E>, T> validation : validations) {
+		for (Validation<E, T> validation : validations) {
 			if (!validation.isValid()) {
 				errors.addAll(validation.error());
 			}
@@ -140,8 +140,8 @@ $(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 
 		return errors.isEmpty() ? Validation.success(values) : Validation.failure(errors);
 	}
 
-	public static <E, T, U> Validation<List<E>, List<U>> traverse(Iterable<T> values,
-			Function<T, Validation<List<E>, U>> mapper) {
+	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
+			Function<T, Validation<E, U>> mapper) {
 		return sequence(StreamSupport.stream(values.spliterator(), false).map(mapper)
 				.collect(Collectors.toList()));
 	}

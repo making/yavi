@@ -46,7 +46,7 @@ public class Composing6<E, T1, T2, T3, T4, T5, T6> {
 		this.v6 = v6;
 	}
 
-	public <R> Validation<List<E>, R> apply(Function6<T1, T2, T3, T4, T5, T6, R> f) {
+	public <R> Validation<E, R> apply(Function6<T1, T2, T3, T4, T5, T6, R> f) {
 		return v6.apply(v5.apply(
 				v4.apply(v3.apply(v2.apply(v1.apply(Validation.success(f.curried())))))));
 	}

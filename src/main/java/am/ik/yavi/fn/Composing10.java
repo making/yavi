@@ -60,7 +60,7 @@ public class Composing10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> {
 		this.v10 = v10;
 	}
 
-	public <R> Validation<List<E>, R> apply(
+	public <R> Validation<E, R> apply(
 			Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> f) {
 		return v10.apply(v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(
 				v3.apply(v2.apply(v1.apply(Validation.success(f.curried())))))))))));
