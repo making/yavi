@@ -36,27 +36,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
-	 * Constructs an empty list with the specified initial capacity.
-	 *
-	 * @param initialCapacity the initial capacity of the list
-	 * @throws IllegalArgumentException if the specified initial capacity is negative
+	 * Constructs with the constraintViolations to delegate
+	 * @param delegate constraintViolations to delegate
 	 * @since 0.6.0
 	 */
-	public ConstraintViolations(int initialCapacity) {
-		this.delegate = new ArrayList<>(initialCapacity);
-	}
-
-	/**
-	 * Concatenate all violations
-	 * @param violations
-	 * @return concatenated violations
-	 * @since 0.6.0
-	 */
-	public static ConstraintViolations concat(List<ConstraintViolations> violations) {
-		final ConstraintViolations constraintViolations = new ConstraintViolations(
-				violations.stream().mapToInt(ConstraintViolations::size).sum());
-		violations.forEach(constraintViolations::addAll);
-		return constraintViolations;
+	public ConstraintViolations(List<ConstraintViolation> delegate) {
+		this.delegate = delegate;
 	}
 
 	/**
