@@ -740,7 +740,14 @@ public class ValidatorBuilder<T> {
 
 	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
-			return this.toNestedValue(nested, predicates);
+			return target -> {
+				N nestedValue = nested.apply(target);
+				if (nestedValue == null) {
+					return null;
+				}
+
+				return (N) ((NestedConstraintPredicates) predicates).nestedValue(nestedValue);
+			};
 		}
 
 		return nested;
