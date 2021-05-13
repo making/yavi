@@ -85,6 +85,15 @@ public interface Validation<E, T> extends Serializable {
 		return this;
 	}
 
+	default <X extends Throwable> T orElseThrow(Function<E, ? extends X> exceptionMapper) throws X {
+		if (isValid()) {
+			return value();
+		}
+		else {
+			throw exceptionMapper.apply(error());
+		}
+	}
+
 	default <U> U fold(Function<E, U> errorMapper, Function<T, U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorMapper.apply(error());
 	}
