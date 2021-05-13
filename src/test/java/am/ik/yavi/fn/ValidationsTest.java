@@ -65,7 +65,7 @@ class ValidationsTest {
 	@Test
 	void traverseValid() {
 		final Validation<List<String>, List<Integer>> validation = Validations
-				.traverse(Arrays.asList(1, 2), Validation::success);
+				.traverse(Arrays.asList(1, 2), i -> Validation.success(i));
 		assertThat(validation.value()).containsExactly(1, 2);
 	}
 
