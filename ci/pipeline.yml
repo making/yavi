@@ -69,7 +69,7 @@ jobs:
 ### Dev
 - name: unit-test-develop
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo
       resource: repo-develop
       trigger: true
@@ -82,6 +82,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: repo
       caches:
@@ -95,7 +96,7 @@ jobs:
           cd repo
           rm -rf ~/.m2
           ln -fs $(pwd)/m2 ~/.m2
-          mvn test
+          mvn -V test
     on_failure:
       put: slack-alert
       params:
@@ -115,6 +116,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: repo
       outputs:
@@ -132,7 +134,7 @@ jobs:
           ln -fs $(pwd)/m2 ~/.m2
           mvn package -DskipTests=true
           cp target/*.jar ../build/
-  - aggregate:
+  - in_parallel:
     - put: sonatype-snapshots
       params:
         file: build/*.jar
@@ -145,7 +147,7 @@ jobs:
 ### Prod
 - name: merge-develop-to-master
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo-src
       resource: repo-develop
       passed:
@@ -162,6 +164,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: repo-src
       - name: repo-dest
@@ -209,7 +212,7 @@ jobs:
         <<: *SLACK_FAILURE
 - name: tag-master
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo
       resource: repo-master
       trigger: true
@@ -225,6 +228,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: repo
       - name: repo-version
@@ -267,7 +271,7 @@ jobs:
         <<: *SLACK_FAILURE
 - name: upload-to-sonatype-releases
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo
       resource: repo-master
       passed:
@@ -342,7 +346,7 @@ jobs:
         <<: *SLACK_FAILURE
 - name: bump-to-next-patch-version
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo-src
       resource: repo-master
       passed:
@@ -370,6 +374,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: merged
       outputs:
@@ -395,6 +400,7 @@ jobs:
         type: docker-image
         source:
           repository: maven
+          tag: 3.8.1-jdk-8
       inputs:
       - name: repo
       - name: repo-version
@@ -446,7 +452,7 @@ jobs:
         <<: *SLACK_SUCCESS
 - name: bump-to-next-minor-version
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo
       resource: repo-develop
     - get: repo-version
@@ -465,7 +471,7 @@ jobs:
       file: repo-version/number
 - name: bump-to-next-major-version
   plan:
-  - aggregate:
+  - in_parallel:
     - get: repo
       resource: repo-develop
     - get: repo-version
