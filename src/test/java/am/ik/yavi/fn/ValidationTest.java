@@ -140,7 +140,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value()).isEqualTo(
 				"s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16");
@@ -171,11 +171,11 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
-		assertThat(validation.errors()).containsExactly("f1", "f2", "f3", "f4", "f5", "f6",
-				"f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16");
+		assertThat(validation.errors()).containsExactly("f1", "f2", "f3", "f4", "f5",
+				"f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16");
 	}
 
 	@Test
@@ -203,7 +203,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f1");
@@ -234,7 +234,7 @@ class ValidationTest {
 				.compose(v15).compose(v16)
 				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
 						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-						s11, s12, s13, s14, s15, s16));
+								s11, s12, s13, s14, s15, s16));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f16");
@@ -242,7 +242,7 @@ class ValidationTest {
 
 	@Test
 	void orElseThrowSuccess() {
-		final String s = Validation.<List<String>, String>success("test")
+		final String s = Validation.<List<String>, String> success("test")
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors));
 		assertThat(s).isEqualTo("test");
 	}
@@ -250,9 +250,9 @@ class ValidationTest {
 	@Test
 	void orElseThrowFailure() {
 		assertThatThrownBy(() -> Validation
-				.<String, String>failure(Arrays.asList("e1", "e2"))
+				.<String, String> failure(Arrays.asList("e1", "e2"))
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors)))
-				.hasMessage("errors=[e1, e2]")
-				.isInstanceOf(IllegalArgumentException.class);
+						.hasMessage("errors=[e1, e2]")
+						.isInstanceOf(IllegalArgumentException.class);
 	}
 }
