@@ -28,6 +28,21 @@ import java.util.stream.Collectors;
 public class ConstraintViolations implements List<ConstraintViolation> {
 	private final List<ConstraintViolation> delegate;
 
+
+	/**
+	 * Constructs with the constraintViolations to delegate.
+	 * If the given value is <code>ConstraintViolations</code> itself, cast and return it.
+	 *
+	 * @param delegate constraintViolations to delegate
+	 * @since 0.6.0
+	 */
+	public static ConstraintViolations of(List<ConstraintViolation> delegate) {
+		if (delegate instanceof ConstraintViolations) {
+			return (ConstraintViolations) delegate;
+		}
+		return new ConstraintViolations(delegate);
+	}
+
 	/**
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
