@@ -55,17 +55,17 @@ public interface Validation<E, T> extends Serializable {
 	List<E> errors();
 
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<E, T2> map(Function<T, T2> mapper) {
+	default <T2> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
 		return isValid() ? Validation.success(mapper.apply(value()))
 				: (Validation<E, T2>) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<E, T2> flatMap(Function<T, Validation<E, T2>> mapper) {
+	default <T2> Validation<? super E, ? extends T2> flatMap(Function<? super T, Validation<? super E, ? extends T2>> mapper) {
 		return isValid() ? mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
-	default Validation<E, T> peek(Consumer<T> consumer) {
+	default Validation<E, T> peek(Consumer<? super T> consumer) {
 		if (isValid()) {
 			consumer.accept(value());
 		}
@@ -73,12 +73,12 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	default <E2> Validation<E2, T> mapErrors(Function<List<E>, List<E2>> errorsMapper) {
+	default <E2> Validation<E2, T> mapErrors(Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
-	default Validation<E, T> peekErrors(Consumer<List<E>> consumer) {
+	default Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
 		if (!isValid()) {
 			consumer.accept(errors());
 		}
@@ -86,7 +86,7 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	default <X extends Throwable> T orElseThrow(
-			Function<List<E>, ? extends X> exceptionMapper) throws X {
+			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (isValid()) {
 			return value();
 		}
@@ -95,14 +95,14 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	default <U> U fold(Function<List<E>, U> errorsMapper, Function<T, U> mapper) {
+	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
-	default <U> Validation<E, U> apply(Validation<E, Function1<T, U>> validation) {
+	default <U> Validation<E, U> apply(Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
-				final Function1<T, U> f = validation.value();
+				final Function1<? super T, ? extends U> f = validation.value();
 				final U u = f.apply(this.value());
 				return Validation.success(u);
 			}
