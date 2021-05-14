@@ -47,6 +47,11 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final String prefix;
 
+	private final EitherValidator<T> eitherValidator = new EitherValidator<>(this);
+
+	private final ApplicativeValidator<T> applicativeValidator = new ApplicativeValidator<>(
+			this);
+
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
@@ -161,15 +166,26 @@ public class Validator<T> implements ValidatorSubset<T> {
 	}
 
 	/**
-	 * Convert to the applicative validator
+	 * Returns the corresponding either validator
+	 * @return either validator
+	 * @since 0.6.0
+	 */
+	public EitherValidator<T> either() {
+		return this.eitherValidator;
+	}
+
+	/**
+	 * Returns the corresponding applicative validator
 	 * @return applicative validator
 	 * @since 0.6.0
 	 */
 	public ApplicativeValidator<T> applicative() {
-		return new ApplicativeValidator<>(this);
+		return this.applicativeValidator;
 	}
 
 	/**
+	 * Deprecated in favor of {@code either().validate(target)}
+	 *
 	 * Validates all constraints on {@code target} and returns {@code Either} object that
 	 * has constraint violations on the left or validated object on the right. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.<br>
@@ -180,12 +196,14 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
+	@Deprecated
 	public Either<ConstraintViolations, T> validateToEither(T target) {
-		return this.validateToEither(target, Locale.getDefault(),
-				ConstraintGroup.DEFAULT);
+		return this.eitherValidator.validate(target);
 	}
 
 	/**
+	 * Deprecated in favor of {@code either().validate(target, constraintGroup)}
+	 *
 	 * Validates all constraints on {@code target} and returns {@code Either} object that
 	 * has constraint violations on the left or validated object on the right. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
@@ -196,12 +214,15 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
+	@Deprecated
 	public Either<ConstraintViolations, T> validateToEither(T target,
 			ConstraintGroup constraintGroup) {
-		return this.validateToEither(target, Locale.getDefault(), constraintGroup);
+		return this.eitherValidator.validate(target, constraintGroup);
 	}
 
 	/**
+	 * Deprecated in favor of {@code either().validate(target, locale)}
+	 *
 	 * Validates all constraints on {@code target} and returns {@code Either} object that
 	 * has constraint violations on the left or validated object on the right. <br>
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
@@ -212,11 +233,14 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
+	@Deprecated
 	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
-		return this.validateToEither(target, locale, ConstraintGroup.DEFAULT);
+		return this.either().validate(target, locale);
 	}
 
 	/**
+	 * Deprecated in favor of {@code either().validate(target, locale, constraintGroup)}
+	 *
 	 * Validates all constraints on {@code target} and returns {@code Either} object that
 	 * has constraint violations on the left or validated object on the right. <br>
 	 *
@@ -225,15 +249,10 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
+	@Deprecated
 	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale,
 			ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validate(target, locale, constraintGroup);
-		if (violations.isValid()) {
-			return Either.right(target);
-		}
-		else {
-			return Either.left(violations);
-		}
+		return this.either().validate(target, locale, constraintGroup);
 	}
 
 	private String indexedName(String name, String collectionName, int index) {

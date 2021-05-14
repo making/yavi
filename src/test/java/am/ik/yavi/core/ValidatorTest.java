@@ -20,12 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
-
-import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
 import am.ik.yavi.ConstraintViolationsException;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
@@ -34,6 +28,11 @@ import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.fn.Either;
+import org.junit.Test;
+
+import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class ValidatorTest {
 	@Test
@@ -641,7 +640,7 @@ public class ValidatorTest {
 	@Test
 	public void validateToEitherInValid() throws Exception {
 		User user = new User("foo", "foo@example.com", -1);
-		Either<ConstraintViolations, User> either = validator().validateToEither(user);
+		Either<ConstraintViolations, User> either = validator().either().validate(user);
 		assertThat(either.isLeft()).isTrue();
 		ConstraintViolations violations = either.left().get();
 		assertThat(violations.isValid()).isFalse();
@@ -655,7 +654,7 @@ public class ValidatorTest {
 	@Test
 	public void validateToEitherValid() throws Exception {
 		User user = new User("foo", "foo@example.com", 30);
-		Either<ConstraintViolations, User> either = validator().validateToEither(user);
+		Either<ConstraintViolations, User> either = validator().either().validate(user);
 		assertThat(either.isRight()).isTrue();
 		assertThat(either.right().get()).isSameAs(user);
 	}
