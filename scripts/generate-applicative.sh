@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-n=16
+n=10
 
 for i in `seq 1 ${n}`;do
   class="Function${i}"
