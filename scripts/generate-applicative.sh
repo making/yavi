@@ -30,6 +30,7 @@ package am.ik.yavi.fn;
  *
  * @since 0.6.0
  */
+@FunctionalInterface
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> {
 
 	R apply($(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} t${j}, ";done) | sed 's/,$//'));

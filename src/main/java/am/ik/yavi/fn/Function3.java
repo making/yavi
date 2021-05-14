@@ -21,6 +21,7 @@ package am.ik.yavi.fn;
  *
  * @since 0.6.0
  */
+@FunctionalInterface
 public interface Function3<T1, T2, T3, R> {
 
 	R apply(T1 t1, T2 t2, T3 t3);
