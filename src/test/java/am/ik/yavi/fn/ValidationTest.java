@@ -226,7 +226,7 @@ class ValidationTest {
 
 	@Test
 	void orElseThrowSuccess() {
-		final String s = Validation.<String, String>success("test")
+		final String s = Validation.<String, String> success("test")
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors));
 		assertThat(s).isEqualTo("test");
 	}
@@ -234,22 +234,22 @@ class ValidationTest {
 	@Test
 	void orElseThrowFailure() {
 		assertThatThrownBy(() -> Validation
-				.<String, String>failure(Arrays.asList("e1", "e2"))
+				.<String, String> failure(Arrays.asList("e1", "e2"))
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors)))
-				.hasMessage("errors=[e1, e2]")
-				.isInstanceOf(IllegalArgumentException.class);
+						.hasMessage("errors=[e1, e2]")
+						.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void orElseGetSuccess() {
-		final String s = Validation.<String, String>success("test")
+		final String s = Validation.<String, String> success("test")
 				.orElseGet(errors -> String.join(",", errors));
 		assertThat(s).isEqualTo("test");
 	}
 
 	@Test
 	void orElseGetFailure() {
-		final String s = Validation.<String, String>failure("e1", "e2")
+		final String s = Validation.<String, String> failure("e1", "e2")
 				.orElseGet(errors -> String.join(",", errors));
 		assertThat(s).isEqualTo("e1,e2");
 	}
