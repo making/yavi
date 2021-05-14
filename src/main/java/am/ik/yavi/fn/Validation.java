@@ -61,7 +61,8 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<? super E, ? extends T2> flatMap(Function<? super T, Validation<? super E, ? extends T2>> mapper) {
+	default <T2> Validation<? super E, ? extends T2> flatMap(
+			Function<? super T, Validation<? super E, ? extends T2>> mapper) {
 		return isValid() ? mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
@@ -73,7 +74,8 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	default <E2> Validation<E2, T> mapErrors(Function<? super List<E>, ? extends List<E2>> errorsMapper) {
+	default <E2> Validation<E2, T> mapErrors(
+			Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
@@ -95,11 +97,13 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
+	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper,
+			Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
-	default <U> Validation<E, U> apply(Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
+	default <U> Validation<E, U> apply(
+			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
 				final Function1<? super T, ? extends U> f = validation.value();

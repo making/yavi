@@ -79,8 +79,8 @@ class ApplicativeValidationTest {
 		return Stream.of(
 				arguments(countryValidation.compose(streetValidation)
 						.compose(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation, streetValidation,
-						phoneNumberValidation)));
+				arguments(Validations.apply(Address::new, countryValidation,
+						streetValidation, phoneNumberValidation)));
 	}
 
 	static Stream<Arguments> invalidValidations() {
@@ -93,7 +93,7 @@ class ApplicativeValidationTest {
 		return Stream.of(
 				arguments(countryValidation.compose(streetValidation)
 						.compose(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation, streetValidation,
-						phoneNumberValidation)));
+				arguments(Validations.apply(Address::new, countryValidation,
+						streetValidation, phoneNumberValidation)));
 	}
 }
