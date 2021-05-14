@@ -18,14 +18,12 @@ package am.ik.yavi.core;
 import java.util.Arrays;
 import java.util.Locale;
 
-import org.junit.Test;
+import am.ik.yavi.message.SimpleMessageFormatter;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import am.ik.yavi.message.SimpleMessageFormatter;
-
 public class ConstraintViolationsTest {
-
 	@Test
 	public void apply() {
 		SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();

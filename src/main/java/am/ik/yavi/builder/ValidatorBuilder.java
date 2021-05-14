@@ -764,7 +764,7 @@ public class ValidatorBuilder<T> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
 			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
-					conditionalValidator.second(), name + this.messageKeySeparator);
+					conditionalValidator.second(), name);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
