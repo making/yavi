@@ -67,13 +67,15 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.collectionValidators = collectionValidators;
 		this.conditionalValidators = conditionalValidators;
 		this.messageFormatter = messageFormatter;
-		this.prefix = prefix;
+		this.prefix = (prefix == null || prefix.isEmpty()
+				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
+						: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter, prefix + this.messageKeySeparator);
+				this.messageFormatter, prefix);
 	}
 
 	/**
