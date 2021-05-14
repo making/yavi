@@ -17,6 +17,7 @@ package am.ik.yavi.fn;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -77,6 +78,13 @@ public interface Validation<E, T> extends Serializable {
 	default <E2> Validation<E2, T> mapErrors(
 			Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
+				: Validation.failure(errorsMapper.apply(errors()));
+	}
+
+	default <E2, T2> Validation<E2, T2> bimap(
+			Function<? super List<E>, ? extends List<E2>> errorsMapper,
+			Function<? super T, ? extends T2> mapper) {
+		return isValid() ? Validation.success(mapper.apply(value()))
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
@@ -144,12 +152,12 @@ public interface Validation<E, T> extends Serializable {
 		return new Success<>(value);
 	}
 
-	static <E, T> Validation<E, T> failure(E error) {
-		return new Failure<>(Collections.singletonList(error));
-	}
-
 	static <E, T> Validation<E, T> failure(List<E> errors) {
 		return new Failure<>(errors);
+	}
+
+	static <E, T> Validation<E, T> failure(E... errors) {
+		return new Failure<>(Arrays.asList(errors));
 	}
 
 	class Success<E, T> implements Validation<E, T> {
@@ -203,6 +211,9 @@ public interface Validation<E, T> extends Serializable {
 		Failure(List<E> errors) {
 			if (errors == null) {
 				throw new IllegalArgumentException("'errors' must not be null.");
+			}
+			if (errors.isEmpty()) {
+				throw new IllegalArgumentException("'errors' must not be empty.");
 			}
 			this.errors = Collections.unmodifiableList(errors);
 		}
