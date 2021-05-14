@@ -127,23 +127,14 @@ class ValidationTest {
 		final Validation<String, String> v8 = Validation.success("s8");
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
-		final Validation<String, String> v11 = Validation.success("s11");
-		final Validation<String, String> v12 = Validation.success("s12");
-		final Validation<String, String> v13 = Validation.success("s13");
-		final Validation<String, String> v14 = Validation.success("s14");
-		final Validation<String, String> v15 = Validation.success("s15");
-		final Validation<String, String> v16 = Validation.success("s16");
 
 		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
-				.compose(v15).compose(v16)
-				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
-						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-								s11, s12, s13, s14, s15, s16));
+				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 		assertThat(validation.isValid()).isTrue();
-		assertThat(validation.value()).isEqualTo(
-				"s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16");
+		assertThat(validation.value())
+				.isEqualTo("s1, s2, s3, s4, s5, s6, s7, s8, s9, s10");
 	}
 
 	@Test
@@ -158,24 +149,15 @@ class ValidationTest {
 		final Validation<String, String> v8 = Validation.failure("f8");
 		final Validation<String, String> v9 = Validation.failure("f9");
 		final Validation<String, String> v10 = Validation.failure("f10");
-		final Validation<String, String> v11 = Validation.failure("f11");
-		final Validation<String, String> v12 = Validation.failure("f12");
-		final Validation<String, String> v13 = Validation.failure("f13");
-		final Validation<String, String> v14 = Validation.failure("f14");
-		final Validation<String, String> v15 = Validation.failure("f15");
-		final Validation<String, String> v16 = Validation.failure("f16");
 
 		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
-				.compose(v15).compose(v16)
-				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
-						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-								s11, s12, s13, s14, s15, s16));
+				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f1", "f2", "f3", "f4", "f5",
-				"f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16");
+				"f6", "f7", "f8", "f9", "f10");
 	}
 
 	@Test
@@ -190,20 +172,11 @@ class ValidationTest {
 		final Validation<String, String> v8 = Validation.success("s8");
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
-		final Validation<String, String> v11 = Validation.success("s11");
-		final Validation<String, String> v12 = Validation.success("s12");
-		final Validation<String, String> v13 = Validation.success("s13");
-		final Validation<String, String> v14 = Validation.success("s14");
-		final Validation<String, String> v15 = Validation.success("s15");
-		final Validation<String, String> v16 = Validation.success("s16");
 
 		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
-				.compose(v15).compose(v16)
-				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
-						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-								s11, s12, s13, s14, s15, s16));
+				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f1");
@@ -221,20 +194,11 @@ class ValidationTest {
 		final Validation<String, String> v8 = Validation.success("s8");
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
-		final Validation<String, String> v11 = Validation.success("s11");
-		final Validation<String, String> v12 = Validation.success("s12");
-		final Validation<String, String> v13 = Validation.success("s13");
-		final Validation<String, String> v14 = Validation.success("s14");
-		final Validation<String, String> v15 = Validation.success("s15");
-		final Validation<String, String> v16 = Validation.failure("f16");
 
 		final Validation<String, String> validation = v1.compose(v2).compose(v3)
 				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).compose(v11).compose(v12).compose(v13).compose(v14)
-				.compose(v15).compose(v16)
-				.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
-						s16) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10,
-								s11, s12, s13, s14, s15, s16));
+				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f16");

@@ -89,62 +89,6 @@ public class Validations {
 		return new Composing10<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Composing11<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11) {
-		return new Composing11<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
-	}
-
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Composing12<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12) {
-		return new Composing12<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
-	}
-
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Composing13<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13) {
-		return new Composing13<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13);
-	}
-
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Composing14<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14) {
-		return new Composing14<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13,
-				v14);
-	}
-
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Composing15<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14, Validation<E, T15> v15) {
-		return new Composing15<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13,
-				v14, v15);
-	}
-
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Composing16<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> compose(
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14, Validation<E, T15> v15,
-			Validation<E, T16> v16) {
-		return new Composing16<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13,
-				v14, v15, v16);
-	}
-
 	public static <R, E, T1> Validation<E, R> apply(Function1<T1, R> f,
 			Validation<E, T1> v1) {
 		return compose(v1).apply(f);
@@ -210,68 +154,6 @@ public class Validations {
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
 			Validation<E, T10> v10) {
 		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10).apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Validation<E, R> apply(
-			Function11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11).apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Validation<E, R> apply(
-			Function12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12).apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Validation<E, R> apply(
-			Function13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13).apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Validation<E, R> apply(
-			Function14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14)
-				.apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Validation<E, R> apply(
-			Function15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14, Validation<E, T15> v15) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15)
-				.apply(f);
-	}
-
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Validation<E, R> apply(
-			Function16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10, Validation<E, T11> v11, Validation<E, T12> v12,
-			Validation<E, T13> v13, Validation<E, T14> v14, Validation<E, T15> v15,
-			Validation<E, T16> v16) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15,
-				v16).apply(f);
 	}
 
 	public static <E, T> Validation<E, List<T>> sequence(
