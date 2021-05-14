@@ -105,6 +105,15 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
+	default T orElseGet(Function<? super List<E>, ? extends T> other) {
+		if (isValid()) {
+			return value();
+		}
+		else {
+			return other.apply(errors());
+		}
+	}
+
 	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper,
 			Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
