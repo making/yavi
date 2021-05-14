@@ -16,32 +16,35 @@
 package am.ik.yavi.core;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.fn.Validation;
-import org.junit.jupiter.api.Test;
+import am.ik.yavi.fn.Validations;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class ApplicativeValidationTest {
-	final ApplicativeValidator<Country> countryValidator = Country.validator()
+	static final ApplicativeValidator<Country> countryValidator = Country.validator()
 			.prefixed("country").applicative();
 
-	final ApplicativeValidator<String> streetValidator = ValidatorBuilder.of(String.class)
-			._string(s -> s, "street", c -> c.notBlank()).build().applicative();
+	static final ApplicativeValidator<String> streetValidator = ValidatorBuilder
+			.of(String.class)._string(s -> s, "street", c -> c.notBlank()).build()
+			.applicative();
 
-	final ApplicativeValidator<PhoneNumber> phoneNumberValidator = PhoneNumber.validator()
-			.prefixed("phoneNumber").applicative();
+	static final ApplicativeValidator<PhoneNumber> phoneNumberValidator = PhoneNumber
+			.validator().prefixed("phoneNumber").applicative();
 
-	@Test
-	void validated_valid() {
-		final Validation<ConstraintViolation, Address> validation = countryValidator
-				.validate(new Country("jp")).compose(streetValidator.validate("xyz"))
-				.compose(phoneNumberValidator.validate(new PhoneNumber("12345678")))
-				.apply(Address::new);
+	@ParameterizedTest
+	@MethodSource("validValidations")
+	void validated_valid(Validation<ConstraintViolation, Address> validation) {
 		assertThat(validation.isValid()).isTrue();
 		final Address address = validation.value();
 		assertThat(address).isNotNull();
@@ -50,12 +53,9 @@ class ApplicativeValidationTest {
 		assertThat(address.phoneNumber().value()).isEqualTo("12345678");
 	}
 
-	@Test
-	void validated_invalid() {
-		final Validation<ConstraintViolation, Address> validation = countryValidator
-				.validate(new Country("j")).compose(streetValidator.validate(""))
-				.compose(phoneNumberValidator.validate(new PhoneNumber("1234567")))
-				.apply(Address::new);
+	@ParameterizedTest
+	@MethodSource("invalidValidations")
+	void validated_invalid(Validation<ConstraintViolation, Address> validation) {
 		assertThat(validation.isValid()).isFalse();
 		final List<ConstraintViolation> violations = validation.errors();
 		assertThat(violations).hasSize(3);
@@ -67,5 +67,33 @@ class ApplicativeValidationTest {
 		assertThat(violations.get(2).name()).isEqualTo("phoneNumber.value");
 		assertThat(violations.get(2).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
+	}
+
+	static Stream<Arguments> validValidations() {
+		final Validation<ConstraintViolation, Country> countryValidation = countryValidator
+				.validate(new Country("jp"));
+		final Validation<ConstraintViolation, String> streetValidation = streetValidator
+				.validate("xyz");
+		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = phoneNumberValidator
+				.validate(new PhoneNumber("12345678"));
+		return Stream.of(
+				arguments(countryValidation.compose(streetValidation)
+						.compose(phoneNumberValidation).apply(Address::new)),
+				arguments(Validations.apply(Address::new, countryValidation, streetValidation,
+						phoneNumberValidation)));
+	}
+
+	static Stream<Arguments> invalidValidations() {
+		final Validation<ConstraintViolation, Country> countryValidation = countryValidator
+				.validate(new Country("j"));
+		final Validation<ConstraintViolation, String> streetValidation = streetValidator
+				.validate("");
+		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = phoneNumberValidator
+				.validate(new PhoneNumber("1234567"));
+		return Stream.of(
+				arguments(countryValidation.compose(streetValidation)
+						.compose(phoneNumberValidation).apply(Address::new)),
+				arguments(Validations.apply(Address::new, countryValidation, streetValidation,
+						phoneNumberValidation)));
 	}
 }
