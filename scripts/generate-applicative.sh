@@ -118,7 +118,7 @@ import java.util.stream.StreamSupport;
 public class ${class} {
 $(for i in `seq 1 ${n}`;do echo "	public static <E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Composing${i}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> compose($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return new Composing${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
 
-$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Validation<E, R> apply($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done))Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {"; echo "		return compose($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Validation<E, R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return compose($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
 
 	public static <E, T> Validation<E, List<T>> sequence(
 			Iterable<Validation<E, T>> validations) {

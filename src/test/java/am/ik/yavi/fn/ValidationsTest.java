@@ -41,7 +41,7 @@ class ValidationsTest {
 		final Validation<List<String>, String> v3 = Validation.success("s3");
 
 		final String s = Validations
-				.apply(v1, v2, v3, (s1, s2, s3) -> String.join("-", s1, s2, s3)).value();
+				.apply((s1, s2, s3) -> String.join("-", s1, s2, s3), v1, v2, v3).value();
 		assertThat(s).isEqualTo("s1-s2-s3");
 	}
 
