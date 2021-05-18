@@ -52,24 +52,24 @@ public final class Arguments6Validator<A1, A2, A3, A4, A5, A6, X>
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
 			A6 a6) {
-		return this
-				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6),
-						Locale.getDefault(), ConstraintGroup.DEFAULT)
+		return this.either()
+				.validate(Arguments.of(a1, a2, a3, a4, a5, a6), Locale.getDefault(),
+						ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
 			A6 a6, ConstraintGroup constraintGroup) {
 		return this
-				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6),
+				.either().validate(Arguments.of(a1, a2, a3, a4, a5, a6),
 						Locale.getDefault(), constraintGroup)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5,
 			A6 a6, Locale locale) {
-		return this
-				.validateToEither(Arguments.of(a1, a2, a3, a4, a5, a6), locale,
+		return this.either()
+				.validate(Arguments.of(a1, a2, a3, a4, a5, a6), locale,
 						ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}

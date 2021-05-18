@@ -49,21 +49,20 @@ public final class Arguments1Validator<A1, X> extends Validator<Arguments1<A1>> 
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1) {
-		return this
-				.validateToEither(Arguments.of(a1), Locale.getDefault(),
-						ConstraintGroup.DEFAULT)
+		return this.either()
+				.validate(Arguments.of(a1), Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1,
 			ConstraintGroup constraintGroup) {
-		return this
-				.validateToEither(Arguments.of(a1), Locale.getDefault(), constraintGroup)
+		return this.either()
+				.validate(Arguments.of(a1), Locale.getDefault(), constraintGroup)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(A1 a1, Locale locale) {
-		return this.validateToEither(Arguments.of(a1), locale, ConstraintGroup.DEFAULT)
+		return this.either().validate(Arguments.of(a1), locale, ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 

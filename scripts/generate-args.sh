@@ -227,22 +227,22 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 
 	public Either<ConstraintViolations, X> validateArgs(${args}) {
 		return this
-				.validateToEither(Arguments.of(${as}), Locale.getDefault(),
-						ConstraintGroup.DEFAULT)
+				.either()
+				.validate(Arguments.of(${as}), Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(${args},
 			ConstraintGroup constraintGroup) {
-		return this.validateToEither(Arguments.of(${as}), Locale.getDefault(),
-				constraintGroup).rightMap(values -> values.map(this.mapper));
+		return this.either()
+		        .validate(Arguments.of(${as}), Locale.getDefault(), constraintGroup)
+		        .rightMap(values -> values.map(this.mapper));
 	}
 
 	public Either<ConstraintViolations, X> validateArgs(${args},
 			Locale locale) {
 		return this
-				.validateToEither(Arguments.of(${as}), locale,
-						ConstraintGroup.DEFAULT)
+				.either().validate(Arguments.of(${as}), locale, ConstraintGroup.DEFAULT)
 				.rightMap(values -> values.map(this.mapper));
 	}
 
