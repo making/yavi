@@ -193,7 +193,8 @@ public interface Validation<E, T> extends Serializable {
 
 		@Override
 		public List<E> errors() throws RuntimeException {
-			throw new NoSuchElementException("errors of 'Success' Validation");
+			throw new NoSuchElementException(
+					"errors of 'Success' Validation does not exist.");
 		}
 
 		@Override
@@ -234,7 +235,8 @@ public interface Validation<E, T> extends Serializable {
 
 		@Override
 		public T value() {
-			throw new NoSuchElementException("get of 'Failure' Validation");
+			throw new NoSuchElementException(
+					"value of 'Failure' Validation does not exists. Errors=" + errors);
 		}
 
 		@Override
