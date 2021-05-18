@@ -32,15 +32,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class ApplicativeValidationTest {
-	static final ApplicativeValidator<Country> countryValidator = Country.validator()
-			.prefixed("country").applicative();
 
 	static final ApplicativeValidator<String> streetValidator = ValidatorBuilder
 			.of(String.class)._string(s -> s, "street", c -> c.notBlank()).build()
 			.applicative();
-
-	static final ApplicativeValidator<PhoneNumber> phoneNumberValidator = PhoneNumber
-			.validator().prefixed("phoneNumber").applicative();
 
 	@ParameterizedTest
 	@MethodSource("validValidations")
@@ -70,12 +65,12 @@ class ApplicativeValidationTest {
 	}
 
 	static Stream<Arguments> validValidations() {
-		final Validation<ConstraintViolation, Country> countryValidation = countryValidator
-				.validate(new Country("jp"));
+		final Validation<ConstraintViolation, Country> countryValidation = Country
+				.of("jp");
 		final Validation<ConstraintViolation, String> streetValidation = streetValidator
 				.validate("xyz");
-		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = phoneNumberValidator
-				.validate(new PhoneNumber("12345678"));
+		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
+				.of("12345678");
 		return Stream.of(
 				arguments(countryValidation.compose(streetValidation)
 						.compose(phoneNumberValidation).apply(Address::new)),
@@ -84,12 +79,12 @@ class ApplicativeValidationTest {
 	}
 
 	static Stream<Arguments> invalidValidations() {
-		final Validation<ConstraintViolation, Country> countryValidation = countryValidator
-				.validate(new Country("j"));
+		final Validation<ConstraintViolation, Country> countryValidation = Country
+				.of("j");
 		final Validation<ConstraintViolation, String> streetValidation = streetValidator
 				.validate("");
-		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = phoneNumberValidator
-				.validate(new PhoneNumber("1234567"));
+		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
+				.of("1234567");
 		return Stream.of(
 				arguments(countryValidation.compose(streetValidation)
 						.compose(phoneNumberValidation).apply(Address::new)),

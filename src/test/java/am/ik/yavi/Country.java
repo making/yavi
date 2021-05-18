@@ -16,7 +16,10 @@
 package am.ik.yavi;
 
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ApplicativeValidator;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.fn.Validation;
 
 public class Country {
 	private final String name;
@@ -24,6 +27,9 @@ public class Country {
 	public Country(String name) {
 		this.name = name;
 	}
+
+	static final ApplicativeValidator<Country> applicativeValidator = validator()
+			.prefixed("country").applicative();
 
 	public static Validator<Country> validator() {
 		return ValidatorBuilder.<Country> of()
@@ -34,5 +40,9 @@ public class Country {
 
 	public String name() {
 		return this.name;
+	}
+
+	public static Validation<ConstraintViolation, Country> of(String name) {
+		return applicativeValidator.validate(new Country(name));
 	}
 }

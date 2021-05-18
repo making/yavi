@@ -16,10 +16,16 @@
 package am.ik.yavi;
 
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ApplicativeValidator;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.fn.Validation;
 
 public class PhoneNumber {
 	private final String value;
+
+	static final ApplicativeValidator<PhoneNumber> applicativeValidator = validator()
+			.prefixed("phoneNumber").applicative();
 
 	public PhoneNumber(String value) {
 		this.value = value;
@@ -34,5 +40,9 @@ public class PhoneNumber {
 
 	public String value() {
 		return this.value;
+	}
+
+	public static Validation<ConstraintViolation, PhoneNumber> of(String value) {
+		return applicativeValidator.validate(new PhoneNumber(value));
 	}
 }
