@@ -18,7 +18,7 @@ package am.ik.yavi.fn;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,35 +26,35 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class EitherTest {
 
 	@Test
-	public void bimapForLeft() {
+	void bimapForLeft() {
 		Either<String, Integer> either = Either.left("Hello");
 		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
 		assertThat(bimap).isEqualTo(Either.left("HelloHello"));
 	}
 
 	@Test
-	public void bimapForRight() {
+	void bimapForRight() {
 		Either<String, Integer> either = Either.right(100);
 		Either<String, Integer> bimap = either.bimap(s -> s + s, i -> i * 2);
 		assertThat(bimap).isEqualTo(Either.right(200));
 	}
 
 	@Test
-	public void foldForLeft() {
+	void foldForLeft() {
 		Either<String, Integer> either = Either.left("Hello");
 		String ret = either.fold(s -> s + "!!", String::valueOf);
 		assertThat(ret).isEqualTo("Hello!!");
 	}
 
 	@Test
-	public void foldForRight() {
+	void foldForRight() {
 		Either<String, Integer> either = Either.right(100);
 		String ret = either.fold(s -> s + "!!", String::valueOf);
 		assertThat(ret).isEqualTo("100");
 	}
 
 	@Test
-	public void left() {
+	void left() {
 		Either<String, Integer> either = Either.left("Hello");
 		assertThat(either.isLeft()).isTrue();
 		assertThat(either.isRight()).isFalse();
@@ -62,13 +62,13 @@ public class EitherTest {
 	}
 
 	@Test
-	public void leftOrElseGet() {
+	void leftOrElseGet() {
 		Either<String, Integer> either = Either.right(100);
 		assertThat(either.leftOrElseGet(String::valueOf)).isEqualTo("100");
 	}
 
 	@Test
-	public void leftOrElseThrow() {
+	void leftOrElseThrow() {
 		Either<String, Integer> either = Either.right(100);
 		assertThatThrownBy(() -> either
 				.leftOrElseThrow(x -> new IllegalArgumentException(x.toString())))
@@ -78,7 +78,7 @@ public class EitherTest {
 	}
 
 	@Test
-	public void peekLeft() {
+	void peekLeft() {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
 		Either.<Integer, Boolean> left(1).peekLeft(lref::set).peekRight(rref::set);
@@ -87,21 +87,21 @@ public class EitherTest {
 	}
 
 	@Test
-	public void mapLeft() {
+	void mapLeft() {
 		Either<Integer, String> either = Either.left(100);
 		Either<Integer, String> map = either.leftMap(i -> i * 2);
 		assertThat(map).isEqualTo(Either.left(200));
 	}
 
 	@Test
-	public void mapRight() {
+	void mapRight() {
 		Either<String, Integer> either = Either.right(100);
 		Either<String, Integer> map = either.rightMap(i -> i * 2);
 		assertThat(map).isEqualTo(Either.right(200));
 	}
 
 	@Test
-	public void right() {
+	void right() {
 		Either<String, Integer> either = Either.right(100);
 		assertThat(either.isLeft()).isFalse();
 		assertThat(either.isRight()).isTrue();
@@ -109,13 +109,13 @@ public class EitherTest {
 	}
 
 	@Test
-	public void rightOrElseGet() {
+	void rightOrElseGet() {
 		Either<String, Integer> either = Either.left("100");
 		assertThat(either.rightOrElseGet(Integer::valueOf)).isEqualTo(100);
 	}
 
 	@Test
-	public void rightOrElseThrow() {
+	void rightOrElseThrow() {
 		Either<String, Integer> either = Either.left("100");
 		assertThatThrownBy(() -> either.rightOrElseThrow(IllegalArgumentException::new))
 				.isInstanceOfSatisfying(IllegalArgumentException.class, e -> {
@@ -124,7 +124,7 @@ public class EitherTest {
 	}
 
 	@Test
-	public void peekRight() {
+	void peekRight() {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
 		Either.<Integer, Boolean> right(true).peekRight(rref::set);
@@ -133,8 +133,24 @@ public class EitherTest {
 	}
 
 	@Test
-	public void swap() {
+	void swap() {
 		Either<String, Integer> either = Either.left("Hello");
 		assertThat(either.swap()).isEqualTo(Either.right("Hello"));
+	}
+
+	@Test
+	void flatMapRight() {
+		final Either<String, Integer> either = Either.<String, Integer> right(21)
+				.flatMap(v -> Either.right(v * 2));
+		assertThat(either.isRight()).isTrue();
+		assertThat(either.right).isEqualTo(42);
+	}
+
+	@Test
+	void flatMapLest() {
+		final Either<String, Integer> either = Either.<String, Integer> left("Error!")
+				.flatMap(v -> Either.right(v * 2));
+		assertThat(either.isLeft()).isTrue();
+		assertThat(either.left).isEqualTo("Error!");
 	}
 }

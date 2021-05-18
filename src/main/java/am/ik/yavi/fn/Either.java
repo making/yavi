@@ -24,6 +24,7 @@ import am.ik.yavi.jsr305.Nullable;
 
 public final class Either<L, R> {
 	final L left;
+
 	final R right;
 
 	Either(@Nullable L left, @Nullable R right) {
@@ -158,5 +159,18 @@ public final class Either<L, R> {
 
 	public Either<R, L> swap() {
 		return new Either<>(this.right, this.left);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <U> Either<L, U> flatMap(Function<R, Either<L, U>> mapper) {
+		if (isRight()) {
+			return mapper.apply(this.right);
+		}
+		else {
+			return (Either<L, U>) this;
+		}
 	}
 }
