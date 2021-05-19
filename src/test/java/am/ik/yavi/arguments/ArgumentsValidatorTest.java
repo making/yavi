@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.fn.Validation;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,10 +107,10 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_allInvalid() {
-		final Either<ConstraintViolations, User> either = arguments3Validator
+		final Validation<ConstraintViolation, User> either = arguments3Validator
 				.validateArgs("", "example.com", 300);
-		assertThat(either.isRight()).isFalse();
-		final ConstraintViolations violations = either.left().get();
+		assertThat(either.isValid()).isFalse();
+		final ConstraintViolations violations = ConstraintViolations.of(either.errors());
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message()).isEqualTo(
@@ -125,10 +127,10 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_valid() {
-		final Either<ConstraintViolations, User> either = arguments3Validator
+		final Validation<ConstraintViolation, User> either = arguments3Validator
 				.validateArgs("foo", "foo@example.com", 30);
-		assertThat(either.isRight()).isTrue();
-		final User user = either.right().get();
+		assertThat(either.isValid()).isTrue();
+		final User user = either.value();
 		assertThat(user.getName()).isEqualTo("foo");
 		assertThat(user.getEmail()).isEqualTo("foo@example.com");
 		assertThat(user.getAge()).isEqualTo(30);

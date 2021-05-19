@@ -198,12 +198,12 @@ import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicates;
-import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
-import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
+import am.ik.yavi.fn.Validation;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -225,37 +225,32 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 		this.mapper = mapper;
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(${args}) {
+	public Validation<ConstraintViolation, X> validateArgs(${args}) {
 		return this
-				.either()
+				.applicative()
 				.validate(Arguments.of(${as}), Locale.getDefault(), ConstraintGroup.DEFAULT)
-				.rightMap(values -> values.map(this.mapper));
+				.map(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(${args},
+	public Validation<ConstraintViolation, X> validateArgs(${args},
 			ConstraintGroup constraintGroup) {
-		return this.either()
+		return this.applicative()
 		        .validate(Arguments.of(${as}), Locale.getDefault(), constraintGroup)
-		        .rightMap(values -> values.map(this.mapper));
+		        .map(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(${args},
+	public Validation<ConstraintViolation, X> validateArgs(${args},
 			Locale locale) {
 		return this
-				.either().validate(Arguments.of(${as}), locale, ConstraintGroup.DEFAULT)
-				.rightMap(values -> values.map(this.mapper));
+				.applicative().validate(Arguments.of(${as}), locale, ConstraintGroup.DEFAULT)
+				.map(values -> values.map(this.mapper));
 	}
 
-	public Either<ConstraintViolations, X> validateArgs(${args},
+	public Validation<ConstraintViolation, X> validateArgs(${args},
 			Locale locale, ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validate(Arguments.of(${as}), locale,
-				constraintGroup);
-		if (violations.isValid()) {
-			return Either.right(Arguments.of(${as}).map(this.mapper));
-		}
-		else {
-			return Either.left(violations);
-		}
+		return this
+				.applicative().validate(Arguments.of(${as}), locale, constraintGroup)
+				.map(values -> values.map(this.mapper));
 	}
 
 	public void validateAndThrowIfInvalid(${args}) {
@@ -270,24 +265,24 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 
 	public X validated(${args}) throws ConstraintViolationsException {
 		return this.validateArgs(${as})
-				.rightOrElseThrow(ConstraintViolationsException::new);
+				.orElseThrow(ConstraintViolationsException::new);
 	}
 	
 	public X validated(${args}, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
 		return this.validateArgs(${as}, constraintGroup)
-				.rightOrElseThrow(ConstraintViolationsException::new);
+				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}, Locale locale) throws ConstraintViolationsException {
 		return this.validateArgs(${as}, locale)
-				.rightOrElseThrow(ConstraintViolationsException::new);
+				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}, Locale locale, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
 		return this.validateArgs(${as}, locale, constraintGroup)
-				.rightOrElseThrow(ConstraintViolationsException::new);
+				.orElseThrow(ConstraintViolationsException::new);
 	}
 }
 EOF

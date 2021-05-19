@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -24,15 +25,15 @@ public class ConstraintViolationsException extends RuntimeException {
 	private final ConstraintViolations violations;
 
 	public ConstraintViolationsException(String message,
-			ConstraintViolations violations) {
+			List<ConstraintViolation> violations) {
 		super(message);
-		this.violations = violations;
+		this.violations = ConstraintViolations.of(violations);
 	}
 
-	public ConstraintViolationsException(ConstraintViolations violations) {
+	public ConstraintViolationsException(List<ConstraintViolation> violations) {
 		this("Constraint violations found!" + System.lineSeparator()
-				+ violations.violations().stream().map(ConstraintViolation::message)
-						.map(s -> "* " + s)
+				+ ConstraintViolations.of(violations).violations().stream()
+						.map(ConstraintViolation::message).map(s -> "* " + s)
 						.collect(Collectors.joining(System.lineSeparator())),
 				violations);
 	}
