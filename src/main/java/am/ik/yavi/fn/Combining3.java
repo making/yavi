@@ -23,21 +23,24 @@ import java.util.List;
  *
  * @since 0.6.0
  */
-public class Composing2<E, T1, T2> {
+public class Combining3<E, T1, T2, T3> {
 	protected final Validation<E, T1> v1;
 
 	protected final Validation<E, T2> v2;
 
-	public Composing2(Validation<E, T1> v1, Validation<E, T2> v2) {
+	protected final Validation<E, T3> v3;
+
+	public Combining3(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3) {
 		this.v1 = v1;
 		this.v2 = v2;
+		this.v3 = v3;
 	}
 
-	public <R> Validation<E, R> apply(Function2<T1, T2, R> f) {
-		return v2.apply(v1.apply(Validation.success(Functions.curry(f))));
+	public <R> Validation<E, R> apply(Function3<T1, T2, T3, R> f) {
+		return v3.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f)))));
 	}
 
-	public <T3> Composing3<E, T1, T2, T3> compose(Validation<E, T3> v3) {
-		return new Composing3<>(v1, v2, v3);
+	public <T4> Combining4<E, T1, T2, T3, T4> combine(Validation<E, T4> v4) {
+		return new Combining4<>(v1, v2, v3, v4);
 	}
 }

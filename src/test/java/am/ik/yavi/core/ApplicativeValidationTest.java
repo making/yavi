@@ -72,8 +72,8 @@ class ApplicativeValidationTest {
 		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
 				.of("12345678");
 		return Stream.of(
-				arguments(countryValidation.compose(streetValidation)
-						.compose(phoneNumberValidation).apply(Address::new)),
+				arguments(countryValidation.combine(streetValidation)
+						.combine(phoneNumberValidation).apply(Address::new)),
 				arguments(Validations.apply(Address::new, countryValidation,
 						streetValidation, phoneNumberValidation)));
 	}
@@ -86,8 +86,8 @@ class ApplicativeValidationTest {
 		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
 				.of("1234567");
 		return Stream.of(
-				arguments(countryValidation.compose(streetValidation)
-						.compose(phoneNumberValidation).apply(Address::new)),
+				arguments(countryValidation.combine(streetValidation)
+						.combine(phoneNumberValidation).apply(Address::new)),
 				arguments(Validations.apply(Address::new, countryValidation,
 						streetValidation, phoneNumberValidation)));
 	}

@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @since 0.6.0
  */
-public class Composing9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> {
+public class Combining4<E, T1, T2, T3, T4> {
 	protected final Validation<E, T1> v1;
 
 	protected final Validation<E, T2> v2;
@@ -32,38 +32,20 @@ public class Composing9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> {
 
 	protected final Validation<E, T4> v4;
 
-	protected final Validation<E, T5> v5;
-
-	protected final Validation<E, T6> v6;
-
-	protected final Validation<E, T7> v7;
-
-	protected final Validation<E, T8> v8;
-
-	protected final Validation<E, T9> v9;
-
-	public Composing9(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9) {
+	public Combining4(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
+			Validation<E, T4> v4) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
 		this.v4 = v4;
-		this.v5 = v5;
-		this.v6 = v6;
-		this.v7 = v7;
-		this.v8 = v8;
-		this.v9 = v9;
 	}
 
-	public <R> Validation<E, R> apply(
-			Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, R> f) {
-		return v9.apply(v8.apply(v7.apply(v6.apply(v5.apply(v4.apply(v3
-				.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f)))))))))));
+	public <R> Validation<E, R> apply(Function4<T1, T2, T3, T4, R> f) {
+		return v4.apply(
+				v3.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f))))));
 	}
 
-	public <T10> Composing10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> compose(
-			Validation<E, T10> v10) {
-		return new Composing10<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+	public <T5> Combining5<E, T1, T2, T3, T4, T5> combine(Validation<E, T5> v5) {
+		return new Combining5<>(v1, v2, v3, v4, v5);
 	}
 }

@@ -28,107 +28,107 @@ import java.util.stream.StreamSupport;
  * @since 0.6.0
  */
 public class Validations {
-	public static <E, T1> Composing1<E, T1> compose(Validation<E, T1> v1) {
-		return new Composing1<>(v1);
+	public static <E, T1> Combining1<E, T1> combine(Validation<E, T1> v1) {
+		return new Combining1<>(v1);
 	}
 
-	public static <E, T1, T2> Composing2<E, T1, T2> compose(Validation<E, T1> v1,
+	public static <E, T1, T2> Combining2<E, T1, T2> combine(Validation<E, T1> v1,
 			Validation<E, T2> v2) {
-		return new Composing2<>(v1, v2);
+		return new Combining2<>(v1, v2);
 	}
 
-	public static <E, T1, T2, T3> Composing3<E, T1, T2, T3> compose(Validation<E, T1> v1,
+	public static <E, T1, T2, T3> Combining3<E, T1, T2, T3> combine(Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3) {
-		return new Composing3<>(v1, v2, v3);
+		return new Combining3<>(v1, v2, v3);
 	}
 
-	public static <E, T1, T2, T3, T4> Composing4<E, T1, T2, T3, T4> compose(
+	public static <E, T1, T2, T3, T4> Combining4<E, T1, T2, T3, T4> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4) {
-		return new Composing4<>(v1, v2, v3, v4);
+		return new Combining4<>(v1, v2, v3, v4);
 	}
 
-	public static <E, T1, T2, T3, T4, T5> Composing5<E, T1, T2, T3, T4, T5> compose(
+	public static <E, T1, T2, T3, T4, T5> Combining5<E, T1, T2, T3, T4, T5> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5) {
-		return new Composing5<>(v1, v2, v3, v4, v5);
+		return new Combining5<>(v1, v2, v3, v4, v5);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6> Composing6<E, T1, T2, T3, T4, T5, T6> compose(
+	public static <E, T1, T2, T3, T4, T5, T6> Combining6<E, T1, T2, T3, T4, T5, T6> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6) {
-		return new Composing6<>(v1, v2, v3, v4, v5, v6);
+		return new Combining6<>(v1, v2, v3, v4, v5, v6);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6, T7> Composing7<E, T1, T2, T3, T4, T5, T6, T7> compose(
+	public static <E, T1, T2, T3, T4, T5, T6, T7> Combining7<E, T1, T2, T3, T4, T5, T6, T7> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7) {
-		return new Composing7<>(v1, v2, v3, v4, v5, v6, v7);
+		return new Combining7<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8> Composing8<E, T1, T2, T3, T4, T5, T6, T7, T8> compose(
+	public static <E, T1, T2, T3, T4, T5, T6, T7, T8> Combining8<E, T1, T2, T3, T4, T5, T6, T7, T8> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8) {
-		return new Composing8<>(v1, v2, v3, v4, v5, v6, v7, v8);
+		return new Combining8<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Composing9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> compose(
+	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Combining9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9) {
-		return new Composing9<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
+		return new Combining9<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 
-	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Composing10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> compose(
+	public static <E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Combining10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> combine(
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
 			Validation<E, T10> v10) {
-		return new Composing10<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+		return new Combining10<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
 	public static <R, E, T1> Validation<E, R> apply(Function1<T1, R> f,
 			Validation<E, T1> v1) {
-		return compose(v1).apply(f);
+		return combine(v1).apply(f);
 	}
 
 	public static <R, E, T1, T2> Validation<E, R> apply(Function2<T1, T2, R> f,
 			Validation<E, T1> v1, Validation<E, T2> v2) {
-		return compose(v1, v2).apply(f);
+		return combine(v1, v2).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3> Validation<E, R> apply(Function3<T1, T2, T3, R> f,
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3) {
-		return compose(v1, v2, v3).apply(f);
+		return combine(v1, v2, v3).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4> Validation<E, R> apply(
 			Function4<T1, T2, T3, T4, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4) {
-		return compose(v1, v2, v3, v4).apply(f);
+		return combine(v1, v2, v3, v4).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5> Validation<E, R> apply(
 			Function5<T1, T2, T3, T4, T5, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5) {
-		return compose(v1, v2, v3, v4, v5).apply(f);
+		return combine(v1, v2, v3, v4, v5).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5, T6> Validation<E, R> apply(
 			Function6<T1, T2, T3, T4, T5, T6, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6) {
-		return compose(v1, v2, v3, v4, v5, v6).apply(f);
+		return combine(v1, v2, v3, v4, v5, v6).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5, T6, T7> Validation<E, R> apply(
 			Function7<T1, T2, T3, T4, T5, T6, T7, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7) {
-		return compose(v1, v2, v3, v4, v5, v6, v7).apply(f);
+		return combine(v1, v2, v3, v4, v5, v6, v7).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8> Validation<E, R> apply(
@@ -136,7 +136,7 @@ public class Validations {
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7,
 			Validation<E, T8> v8) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8).apply(f);
+		return combine(v1, v2, v3, v4, v5, v6, v7, v8).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Validation<E, R> apply(
@@ -144,7 +144,7 @@ public class Validations {
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7,
 			Validation<E, T8> v8, Validation<E, T9> v9) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9).apply(f);
+		return combine(v1, v2, v3, v4, v5, v6, v7, v8, v9).apply(f);
 	}
 
 	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Validation<E, R> apply(
@@ -153,7 +153,7 @@ public class Validations {
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
 			Validation<E, T10> v10) {
-		return compose(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10).apply(f);
+		return combine(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10).apply(f);
 	}
 
 	public static <E, T> Validation<E, List<T>> sequence(

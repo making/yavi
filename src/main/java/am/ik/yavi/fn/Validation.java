@@ -149,8 +149,8 @@ public interface Validation<E, T> extends Serializable {
 		return isValid() ? Either.right(value()) : Either.left(errors());
 	}
 
-	default <T2> Composing2<E, T, T2> compose(Validation<E, T2> validation) {
-		return new Composing2<>(this, validation);
+	default <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
+		return new Combining2<>(this, validation);
 	}
 
 	static <E, T> Validation<E, T> fromEither(Either<List<E>, T> either) {

@@ -136,7 +136,7 @@ class ValidationTest {
 	}
 
 	@Test
-	void compose_all_valid() {
+	void combine_all_valid() {
 		final Validation<String, String> v1 = Validation.success("s1");
 		final Validation<String, String> v2 = Validation.success("s2");
 		final Validation<String, String> v3 = Validation.success("s3");
@@ -148,9 +148,9 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
 
-		final Validation<String, String> validation = v1.compose(v2).compose(v3)
-				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+		final Validation<String, String> validation = v1.combine(v2).combine(v3)
+				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
+				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
 						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 		assertThat(validation.isValid()).isTrue();
 		assertThat(validation.value())
@@ -158,7 +158,7 @@ class ValidationTest {
 	}
 
 	@Test
-	void compose_all_invalid() {
+	void combine_all_invalid() {
 		final Validation<String, String> v1 = Validation.failure("f1");
 		final Validation<String, String> v2 = Validation.failure("f2");
 		final Validation<String, String> v3 = Validation.failure("f3");
@@ -170,9 +170,9 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.failure("f9");
 		final Validation<String, String> v10 = Validation.failure("f10");
 
-		final Validation<String, String> validation = v1.compose(v2).compose(v3)
-				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+		final Validation<String, String> validation = v1.combine(v2).combine(v3)
+				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
+				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
 						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();
@@ -181,7 +181,7 @@ class ValidationTest {
 	}
 
 	@Test
-	void compose_first_invalid() {
+	void combine_first_invalid() {
 		final Validation<String, String> v1 = Validation.failure("f1");
 		final Validation<String, String> v2 = Validation.success("s2");
 		final Validation<String, String> v3 = Validation.success("s3");
@@ -193,9 +193,9 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
 
-		final Validation<String, String> validation = v1.compose(v2).compose(v3)
-				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+		final Validation<String, String> validation = v1.combine(v2).combine(v3)
+				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
+				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
 						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();
@@ -203,7 +203,7 @@ class ValidationTest {
 	}
 
 	@Test
-	void compose_last_invalid() {
+	void combine_last_invalid() {
 		final Validation<String, String> v1 = Validation.success("s1");
 		final Validation<String, String> v2 = Validation.success("s2");
 		final Validation<String, String> v3 = Validation.success("s3");
@@ -215,9 +215,9 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.failure("f10");
 
-		final Validation<String, String> validation = v1.compose(v2).compose(v3)
-				.compose(v4).compose(v5).compose(v6).compose(v7).compose(v8).compose(v9)
-				.compose(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
+		final Validation<String, String> validation = v1.combine(v2).combine(v3)
+				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
+				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
 						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
 
 		assertThat(validation.isValid()).isFalse();

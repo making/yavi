@@ -24,12 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidationsTest {
 	@Test
-	void compose() {
+	void combine() {
 		final Validation<List<String>, String> v1 = Validation.success("s1");
 		final Validation<List<String>, String> v2 = Validation.success("s2");
 		final Validation<List<String>, String> v3 = Validation.success("s3");
 
-		final String s = Validations.compose(v1, v2, v3)
+		final String s = Validations.combine(v1, v2, v3)
 				.apply((s1, s2, s3) -> String.join("-", s1, s2, s3)).value();
 		assertThat(s).isEqualTo("s1-s2-s3");
 	}
