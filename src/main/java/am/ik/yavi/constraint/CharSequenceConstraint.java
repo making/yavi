@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.constraint;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -28,14 +30,6 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
-import static am.ik.yavi.core.NullAs.INVALID;
-import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
-
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
 import am.ik.yavi.constraint.charsequence.CodePoints;
@@ -46,18 +40,39 @@ import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ViolationMessage;
+
+import static am.ik.yavi.core.NullAs.INVALID;
+import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGDECIMAL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGINTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BYTE;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
 	private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
+
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
+
 	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
+
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
 			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
 					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
+
 	protected final VariantOptions variantOptions;
 
 	public CharSequenceConstraint() {
@@ -118,6 +133,79 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
 		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
 		return this;
+	}
+
+	private <U> CharSequenceConstraint<T, E> isValidRepresentationOf(
+			Function<String, U> converter, ViolationMessage message) {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			try {
+				converter.apply(x.toString());
+				return true;
+			}
+			catch (NumberFormatException ignored) {
+				return false;
+			}
+		}, message, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isByte() {
+		return this.isValidRepresentationOf(Byte::parseByte, CHAR_SEQUENCE_BYTE);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isShort() {
+		return this.isValidRepresentationOf(Short::parseShort, CHAR_SEQUENCE_SHORT);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isInteger() {
+		return this.isValidRepresentationOf(Integer::parseInt, CHAR_SEQUENCE_INTEGER);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isLong() {
+		return this.isValidRepresentationOf(Long::parseLong, CHAR_SEQUENCE_LONG);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isFloat() {
+		return this.isValidRepresentationOf(Float::parseFloat, CHAR_SEQUENCE_FLOAT);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isDouble() {
+		return this.isValidRepresentationOf(Double::parseDouble, CHAR_SEQUENCE_DOUBLE);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isBigInteger() {
+		return this.isValidRepresentationOf(BigInteger::new, CHAR_SEQUENCE_BIGINTEGER);
+	}
+
+	/**
+	 * @since 0.6.0
+	 */
+	public CharSequenceConstraint<T, E> isBigDecimal() {
+		return this.isValidRepresentationOf(BigDecimal::new, CHAR_SEQUENCE_BIGDECIMAL);
 	}
 
 	public EmojiConstraint<T, E> emoji() {

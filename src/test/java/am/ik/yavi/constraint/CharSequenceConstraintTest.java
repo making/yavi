@@ -15,14 +15,14 @@
  */
 package am.ik.yavi.constraint;
 
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -226,6 +226,118 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "example.com", "htt://example.com" })
 	void invalidUrl(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-128", "0", "127" })
+	void validIsByte(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isByte());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-129", "128", "a" })
+	void invalidIsByte(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isByte());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-32768", "0", "32767" })
+	void validIsShort(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isShort());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-32769", "32768", "a" })
+	void invalidIsShort(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isShort());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-2147483648", "0", "2147483647" })
+	void validIsInteger(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isInteger());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-2147483649", "2147483648", "a" })
+	void invalidIsInteger(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isInteger());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-9223372036854775808", "0", "9223372036854775807" })
+	void validIsLong(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isLong());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-9223372036854775809", "9223372036854775808", "a" })
+	void invalidIsLong(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isLong());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
+	void validIsFloat(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isFloat());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "a" })
+	void invalidIsFloat(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isFloat());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
+	void validIsDouble(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isDouble());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "a" })
+	void invalidIsDouble(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isDouble());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-9223372036854775809", "0", "9223372036854775808" })
+	void validIsBigInteger(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isBigInteger());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "a", "0.1" })
+	void invalidIsBigInteger(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isBigInteger());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
+	void validIsBigDecimal(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isBigDecimal());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "a" })
+	void invalidIsBigDecimal(String value) {
+		Predicate<String> predicate = retrievePredicate(c -> c.isBigDecimal());
 		assertThat(predicate.test(value)).isFalse();
 	}
 
