@@ -43,7 +43,7 @@ public final class Either<L, R> {
 		return new Either<>(null, right);
 	}
 
-	public <X, Y> Either<X, Y> bimap(Function<L, X> leftMapper,
+	public <X, Y> Either<X, Y> bimap(Function<? super L, ? extends X> leftMapper,
 			Function<R, Y> rightMapper) {
 		if (isLeft()) {
 			return new Either<>(leftMapper.apply(this.left), null);
@@ -61,7 +61,8 @@ public final class Either<L, R> {
 		return Objects.equals(left, either.left) && Objects.equals(right, either.right);
 	}
 
-	public <U> U fold(Function<L, U> leftMapper, Function<R, U> rightMapper) {
+	public <U> U fold(Function<? super L, ? extends U> leftMapper,
+			Function<? super R, ? extends U> rightMapper) {
 		if (isLeft()) {
 			return leftMapper.apply(this.left);
 		}
@@ -85,14 +86,14 @@ public final class Either<L, R> {
 		return Optional.ofNullable(this.left);
 	}
 
-	public <X> Either<X, R> leftMap(Function<L, X> leftMapper) {
+	public <X> Either<X, R> leftMap(Function<? super L, ? extends X> leftMapper) {
 		if (isLeft()) {
 			return new Either<>(leftMapper.apply(this.left), null);
 		}
 		return new Either<>(null, this.right);
 	}
 
-	public L leftOrElseGet(Function<R, L> rightToLeft) {
+	public L leftOrElseGet(Function<? super R, ? extends L> rightToLeft) {
 		return this.left().orElseGet(() -> rightToLeft.apply(this.right));
 	}
 
@@ -100,7 +101,7 @@ public final class Either<L, R> {
 	 * @since 0.3.0
 	 */
 	public <X extends Throwable> L leftOrElseThrow(
-			Function<R, ? extends X> exceptionSupplier) throws X {
+			Function<? super R, ? extends X> exceptionSupplier) throws X {
 		return this.left().orElseThrow(() -> exceptionSupplier.apply(this.right));
 	}
 
@@ -108,11 +109,11 @@ public final class Either<L, R> {
 	 * Use {@link #peekLeft(Consumer)} instead.
 	 */
 	@Deprecated
-	public Either<L, R> doOnLeft(Consumer<L> action) {
+	public Either<L, R> doOnLeft(Consumer<? super L> action) {
 		return this.peekLeft(action);
 	}
 
-	public Either<L, R> peekLeft(Consumer<L> action) {
+	public Either<L, R> peekLeft(Consumer<? super L> action) {
 		if (this.isLeft()) {
 			action.accept(this.left);
 		}
@@ -123,14 +124,14 @@ public final class Either<L, R> {
 		return Optional.ofNullable(this.right);
 	}
 
-	public <Y> Either<L, Y> rightMap(Function<R, Y> rightMapper) {
+	public <Y> Either<L, Y> rightMap(Function<? super R, ? extends Y> rightMapper) {
 		if (isRight()) {
 			return new Either<>(null, rightMapper.apply(this.right));
 		}
 		return new Either<>(this.left, null);
 	}
 
-	public R rightOrElseGet(Function<L, R> leftToRight) {
+	public R rightOrElseGet(Function<? super L, ? extends R> leftToRight) {
 		return this.right().orElseGet(() -> leftToRight.apply(this.left));
 	}
 
@@ -138,7 +139,7 @@ public final class Either<L, R> {
 	 * @since 0.3.0
 	 */
 	public <X extends Throwable> R rightOrElseThrow(
-			Function<L, ? extends X> exceptionSupplier) throws X {
+			Function<? super L, ? extends X> exceptionSupplier) throws X {
 		return this.right().orElseThrow(() -> exceptionSupplier.apply(this.left));
 	}
 
@@ -146,11 +147,11 @@ public final class Either<L, R> {
 	 * Use {@link #peekRight(Consumer)} instead.
 	 */
 	@Deprecated
-	public Either<L, R> doOnRight(Consumer<R> action) {
+	public Either<L, R> doOnRight(Consumer<? super R> action) {
 		return this.peekRight(action);
 	}
 
-	public Either<L, R> peekRight(Consumer<R> action) {
+	public Either<L, R> peekRight(Consumer<? super R> action) {
 		if (this.isRight()) {
 			action.accept(this.right);
 		}
@@ -165,7 +166,7 @@ public final class Either<L, R> {
 	 * @since 0.6.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <U> Either<L, U> flatMap(Function<R, Either<L, U>> mapper) {
+	public <U> Either<L, U> flatMap(Function<? super R, ? extends Either<L, U>> mapper) {
 		if (isRight()) {
 			return mapper.apply(this.right);
 		}
