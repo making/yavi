@@ -250,10 +250,47 @@ Validator<Range> validator = ValidatorBuilder.<Range> of() //
     .build();
 ```
 
-#### Either API
+#### Validation using Applicative Functor
+
+Since 0.6.0, YAVI supports a functional programming concept known as [Applicative Functor](https://en.wikipedia.org/wiki/Applicative_functor).
+A sequence of validations are executed while accumulating the results (`ConstraintViolation`), even if some or all of these validations fail during the execution chain.
+
+It will be helpful when you wanto combine validations of multiple value objects to produce a new object.
+
+`Validation<E, T>` class is the implementation of Applicative Functor. It can be obtained by `ApplicativeValidator` that can be converted from `Validator` by `applicative()` method.
+
+`Validated<T>` is a shortcut of `Validation<ConstraintViolation, T>` which is specialized for `Validator`'s usage. 
 
 ```java
-Either<ConstraintViolations, User> either = validator.validateToEither(user);
+Validator<Email> emailValidator = ...;
+Validator<PhoneNumber> phoneNumberValidator = ...;
+
+Validated<Email> emailValidated = emailValidator.applicative().validate(email);
+Validated<PhoneNumber> phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);
+
+Validated<ContactInfo> contactInfoValidated = emailValidated.combine(phoneNumberValidated)
+            .apply((em, ph) -> new ContactInfo(em, ph));
+// or
+Validated<ContactInfo> contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidation)
+		.apply((em, ph) -> new ContactInfo(em, ph));
+
+boolean isValid = contactInfoValidated.isValid();
+
+ContactInfo contactInfo = contactInfoValidated.orElseThrow(violations -> new ConstraintViolationsException(violation));
+
+HttpStatus status = contactInfoValidated.fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
+```
+
+[Validation API](src/main/java/am/ik/yavi/fn/Validation.java)
+
+#### Either API
+
+> Since YAVI 0.6.0, Applicative Functor is the preferred method to Either
+
+```java
+Either<ConstraintViolations, User> either = validator.either().validate(user);
+// prior to YAVI 0.6.0
+// Either<ConstraintViolations, User> either = validator.validateToEither(user);
 
 Optional<ConstraintViolations> violations = either.left();
 Optional<User> user = either.right();
@@ -328,10 +365,10 @@ Person person = ArgumentsValidatorBuilder
     .validated("John", "Doe", 35);
 ```
 
-You can also get the result as `Either`.
+You can also get the result as `Validated`.
 
 ```java
-Either<ConstraintViolations, Person> either  = ArgumentsValidatorBuilder
+Validated<Person> validatedPerson  = ArgumentsValidatorBuilder
     .of(Person::new)
     .builder(b -> b
         ._string(Arguments1::arg1, "firstName",
@@ -462,7 +499,7 @@ YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/d
 static RouterFunction<ServerResponse> routes() {
   return route()
       .POST("/", req -> req.bodyToMono(User.class) //
-        .flatMap(body -> validator.validateToEither(body) //
+        .flatMap(body -> validator.either().validate(body) //
           .leftMap(violations -> {
             Map<String, Object> error = new LinkedHashMap<>();
             error.put("message", "Invalid request body");
@@ -497,7 +534,7 @@ or
 ```java
 @PostMapping("users")
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-  return validator.validateToEither(userForm)
+  return validator.either().validate(userForm)
     .fold(violations -> {
       violations.apply(BindingResult::rejectValue);
       return "userForm";
