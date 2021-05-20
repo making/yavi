@@ -40,9 +40,12 @@ public class Combining4<E, T1, T2, T3, T4> {
 		this.v4 = v4;
 	}
 
-	public <R> Validation<E, R> apply(Function4<T1, T2, T3, T4, R> f) {
-		return v4.apply(
-				v3.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f))))));
+	public <R, V extends Validation<E, R>> V apply(Function4<T1, T2, T3, T4, R> f) {
+		final Validation<E, Function1<T2, Function1<T3, Function1<T4, R>>>> apply1 = v1
+				.apply(Validation.success(Functions.curry(f)));
+		final Validation<E, Function1<T3, Function1<T4, R>>> apply2 = v2.apply(apply1);
+		final Validation<E, Function1<T4, R>> apply3 = v3.apply(apply2);
+		return v4.apply(apply3);
 	}
 
 	public <T5> Combining5<E, T1, T2, T3, T4, T5> combine(Validation<E, T5> v5) {

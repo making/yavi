@@ -22,7 +22,6 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -39,7 +38,7 @@ class ApplicativeValidationTest {
 
 	@ParameterizedTest
 	@MethodSource("validValidations")
-	void validated_valid(Validation<ConstraintViolation, Address> validation) {
+	void validated_valid(Validated<Address> validation) {
 		assertThat(validation.isValid()).isTrue();
 		final Address address = validation.value();
 		assertThat(address).isNotNull();
@@ -50,7 +49,7 @@ class ApplicativeValidationTest {
 
 	@ParameterizedTest
 	@MethodSource("invalidValidations")
-	void validated_invalid(Validation<ConstraintViolation, Address> validation) {
+	void validated_invalid(Validated<Address> validation) {
 		assertThat(validation.isValid()).isFalse();
 		final List<ConstraintViolation> violations = validation.errors();
 		assertThat(violations).hasSize(3);
@@ -65,12 +64,9 @@ class ApplicativeValidationTest {
 	}
 
 	static Stream<Arguments> validValidations() {
-		final Validation<ConstraintViolation, Country> countryValidation = Country
-				.of("jp");
-		final Validation<ConstraintViolation, String> streetValidation = streetValidator
-				.validate("xyz");
-		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
-				.of("12345678");
+		final Validated<Country> countryValidation = Country.of("jp");
+		final Validated<String> streetValidation = streetValidator.validate("xyz");
+		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("12345678");
 		return Stream.of(
 				arguments(countryValidation.combine(streetValidation)
 						.combine(phoneNumberValidation).apply(Address::new)),
@@ -79,12 +75,9 @@ class ApplicativeValidationTest {
 	}
 
 	static Stream<Arguments> invalidValidations() {
-		final Validation<ConstraintViolation, Country> countryValidation = Country
-				.of("j");
-		final Validation<ConstraintViolation, String> streetValidation = streetValidator
-				.validate("");
-		final Validation<ConstraintViolation, PhoneNumber> phoneNumberValidation = PhoneNumber
-				.of("1234567");
+		final Validated<Country> countryValidation = Country.of("j");
+		final Validated<String> streetValidation = streetValidator.validate("");
+		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("1234567");
 		return Stream.of(
 				arguments(countryValidation.combine(streetValidation)
 						.combine(phoneNumberValidation).apply(Address::new)),

@@ -17,9 +17,8 @@ package am.ik.yavi;
 
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ApplicativeValidator;
-import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.fn.Validation;
 
 public class Country {
 	private final String name;
@@ -42,7 +41,7 @@ public class Country {
 		return this.name;
 	}
 
-	public static Validation<ConstraintViolation, Country> of(String name) {
+	public static Validated<Country> of(String name) {
 		return applicativeValidator.validate(new Country(name));
 	}
 }

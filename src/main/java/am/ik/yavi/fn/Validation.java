@@ -56,9 +56,9 @@ public interface Validation<E, T> extends Serializable {
 	List<E> errors();
 
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
-		return isValid() ? Validation.success(mapper.apply(value()))
-				: (Validation<E, T2>) this;
+	default <T2, V extends Validation<E, T2>> V map(
+			Function<? super T, ? extends T2> mapper) {
+		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (V) this;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -119,28 +119,38 @@ public interface Validation<E, T> extends Serializable {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
-	default <U> Validation<E, U> apply(
+	@SuppressWarnings("unchecked")
+	default <U, V extends Validation<E, U>> V yieldSuccess(U value) {
+		return (V) Validation.success(value);
+	}
+
+	@SuppressWarnings("unchecked")
+	default <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
+		return (V) Validation.failure(errors);
+	}
+
+	default <U, V extends Validation<E, U>> V apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
 				final Function1<? super T, ? extends U> f = validation.value();
 				final U u = f.apply(this.value());
-				return Validation.success(u);
+				return this.yieldSuccess(u);
 			}
 			else {
 				final List<E> errors = validation.errors();
-				return Validation.failure(errors);
+				return this.yieldFailure(errors);
 			}
 		}
 		else {
 			final List<E> errors = this.errors();
 			if (validation.isValid()) {
-				return Validation.failure(errors);
+				return this.yieldFailure(errors);
 			}
 			else {
 				final List<E> errorsList = new ArrayList<>(validation.errors());
 				errorsList.addAll(errors);
-				return Validation.failure(errorsList);
+				return this.yieldFailure(errorsList);
 			}
 		}
 	}

@@ -75,8 +75,18 @@ $(for j in `seq 1 ${i}`;do echo "	protected final Validation<E, T${j}> v${j};";e
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
-	public <R> Validation<E, R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
-		return $(echo $(for j in `seq ${i} 1`;do echo -n "v${j}.apply(";done) | sed 's/,$//')Validation.success(Functions.curry(f))$(echo $(for j in `seq 1 ${i}`;do echo -n ")";done));
+	public <R, V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
+$(for j in `seq 1 ${i}`;do
+		  if [ ${j} -lt ${i} ];then
+          echo "		final Validation<E, $(for k in `seq $((j + 1)) ${i}`;do echo -n "Function1<T$k, ";done)R>$(for k in `seq $((j + 1)) ${i}`;do echo -n ">";done) apply${j} = v${j}.apply($(if [ "${j}" == "1" ];then echo "Validation.success(Functions.curry(f))";else echo "apply$((${j} - 1))";fi));"
+      else
+          if [ ${i} -gt 1 ];then
+            echo "		return v${j}.apply(apply$((${j} - 1)));"
+          else
+            echo "		return v1.apply(Validation.success(Functions.curry(f)));"
+          fi
+		  fi
+		done)
 	}
 $(if [ ${i} -lt ${n} ];then echo;echo "	public <T$((${i} + 1))> Combining$((${i} + 1))<E, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine(Validation<E, T$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Combining$((${i} + 1))<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
@@ -119,7 +129,7 @@ import java.util.stream.StreamSupport;
 public class ${class} {
 $(for i in `seq 1 ${n}`;do echo "	public static <E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Combining${i}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return new Combining${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
 
-$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Validation<E, R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return combine($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return combine($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
 
 	public static <E, T> Validation<E, List<T>> sequence(
 			Iterable<Validation<E, T>> validations) {

@@ -31,28 +31,27 @@ public final class ApplicativeValidator<T> {
 		this.validator = validator;
 	}
 
-	public Validation<ConstraintViolation, T> validate(T target) {
+	public Validated<T> validate(T target) {
 		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
-	public Validation<ConstraintViolation, T> validate(T target,
-			ConstraintGroup constraintGroup) {
+	public Validated<T> validate(T target, ConstraintGroup constraintGroup) {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
 	}
 
-	public Validation<ConstraintViolation, T> validate(T target, Locale locale) {
+	public Validated<T> validate(T target, Locale locale) {
 		return this.validate(target, locale, ConstraintGroup.DEFAULT);
 	}
 
-	public Validation<ConstraintViolation, T> validate(T target, Locale locale,
+	public Validated<T> validate(T target, Locale locale,
 			ConstraintGroup constraintGroup) {
 		final ConstraintViolations violations = this.validator.validate(target, locale,
 				constraintGroup);
 		if (violations.isValid()) {
-			return Validation.success(target);
+			return Validated.of(Validation.success(target));
 		}
 		else {
-			return Validation.failure(violations);
+			return Validated.of(Validation.failure(violations));
 		}
 	}
 }

@@ -89,49 +89,50 @@ public class Validations {
 		return new Combining10<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
-	public static <R, E, T1> Validation<E, R> apply(Function1<T1, R> f,
+	public static <R, E, T1, V extends Validation<E, R>> V apply(Function1<T1, R> f,
 			Validation<E, T1> v1) {
 		return combine(v1).apply(f);
 	}
 
-	public static <R, E, T1, T2> Validation<E, R> apply(Function2<T1, T2, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2) {
+	public static <R, E, T1, T2, V extends Validation<E, R>> V apply(
+			Function2<T1, T2, R> f, Validation<E, T1> v1, Validation<E, T2> v2) {
 		return combine(v1, v2).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3> Validation<E, R> apply(Function3<T1, T2, T3, R> f,
-			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3) {
+	public static <R, E, T1, T2, T3, V extends Validation<E, R>> V apply(
+			Function3<T1, T2, T3, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
+			Validation<E, T3> v3) {
 		return combine(v1, v2, v3).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, V extends Validation<E, R>> V apply(
 			Function4<T1, T2, T3, T4, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4) {
 		return combine(v1, v2, v3, v4).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, V extends Validation<E, R>> V apply(
 			Function5<T1, T2, T3, T4, T5, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5) {
 		return combine(v1, v2, v3, v4, v5).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, V extends Validation<E, R>> V apply(
 			Function6<T1, T2, T3, T4, T5, T6, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6) {
 		return combine(v1, v2, v3, v4, v5, v6).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, V extends Validation<E, R>> V apply(
 			Function7<T1, T2, T3, T4, T5, T6, T7, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7) {
 		return combine(v1, v2, v3, v4, v5, v6, v7).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, V extends Validation<E, R>> V apply(
 			Function8<T1, T2, T3, T4, T5, T6, T7, T8, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7,
@@ -139,7 +140,7 @@ public class Validations {
 		return combine(v1, v2, v3, v4, v5, v6, v7, v8).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, V extends Validation<E, R>> V apply(
 			Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7,
@@ -147,7 +148,7 @@ public class Validations {
 		return combine(v1, v2, v3, v4, v5, v6, v7, v8, v9).apply(f);
 	}
 
-	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Validation<E, R> apply(
+	public static <R, E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, V extends Validation<E, R>> V apply(
 			Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> f,
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,

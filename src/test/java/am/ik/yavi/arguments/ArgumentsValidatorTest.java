@@ -15,21 +15,18 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.core.ConstraintViolation;
-import am.ik.yavi.fn.Validation;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import am.ik.yavi.Country;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ViolationMessage;
-import am.ik.yavi.fn.Either;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ArgumentsValidatorTest {
 
@@ -107,10 +104,10 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_allInvalid() {
-		final Validation<ConstraintViolation, User> either = arguments3Validator
+		final Validated<User> either = arguments3Validator
 				.validateArgs("", "example.com", 300);
 		assertThat(either.isValid()).isFalse();
-		final ConstraintViolations violations = ConstraintViolations.of(either.errors());
+		final ConstraintViolations violations = either.errors();
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(3);
 		assertThat(violations.get(0).message()).isEqualTo(
@@ -127,7 +124,7 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_valid() {
-		final Validation<ConstraintViolation, User> either = arguments3Validator
+		final Validated<User> either = arguments3Validator
 				.validateArgs("foo", "foo@example.com", 30);
 		assertThat(either.isValid()).isTrue();
 		final User user = either.value();

@@ -17,9 +17,8 @@ package am.ik.yavi;
 
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ApplicativeValidator;
-import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.fn.Validation;
 
 public class PhoneNumber {
 	private final String value;
@@ -42,7 +41,7 @@ public class PhoneNumber {
 		return this.value;
 	}
 
-	public static Validation<ConstraintViolation, PhoneNumber> of(String value) {
+	public static Validated<PhoneNumber> of(String value) {
 		return applicativeValidator.validate(new PhoneNumber(value));
 	}
 }

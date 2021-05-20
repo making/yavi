@@ -22,12 +22,11 @@ import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicates;
-import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.fn.Pair;
-import am.ik.yavi.fn.Validation;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -48,25 +47,24 @@ public final class Arguments2Validator<A1, A2, X> extends Validator<Arguments2<A
 		this.mapper = mapper;
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2) {
+	public Validated<X> validateArgs(A1 a1, A2 a2) {
 		return this.applicative().validate(Arguments.of(a1, a2), Locale.getDefault(),
 				ConstraintGroup.DEFAULT).map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2,
-			ConstraintGroup constraintGroup) {
+	public Validated<X> validateArgs(A1 a1, A2 a2, ConstraintGroup constraintGroup) {
 		return this.applicative()
 				.validate(Arguments.of(a1, a2), Locale.getDefault(), constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, Locale locale) {
+	public Validated<X> validateArgs(A1 a1, A2 a2, Locale locale) {
 		return this.applicative()
 				.validate(Arguments.of(a1, a2), locale, ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, Locale locale,
+	public Validated<X> validateArgs(A1 a1, A2 a2, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.applicative().validate(Arguments.of(a1, a2), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));

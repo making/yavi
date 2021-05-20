@@ -33,8 +33,10 @@ public class Combining2<E, T1, T2> {
 		this.v2 = v2;
 	}
 
-	public <R> Validation<E, R> apply(Function2<T1, T2, R> f) {
-		return v2.apply(v1.apply(Validation.success(Functions.curry(f))));
+	public <R, V extends Validation<E, R>> V apply(Function2<T1, T2, R> f) {
+		final Validation<E, Function1<T2, R>> apply1 = v1
+				.apply(Validation.success(Functions.curry(f)));
+		return v2.apply(apply1);
 	}
 
 	public <T3> Combining3<E, T1, T2, T3> combine(Validation<E, T3> v3) {

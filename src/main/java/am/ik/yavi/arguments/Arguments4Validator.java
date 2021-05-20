@@ -22,12 +22,11 @@ import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicates;
-import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.fn.Pair;
-import am.ik.yavi.fn.Validation;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -50,28 +49,27 @@ public final class Arguments4Validator<A1, A2, A3, A4, X>
 		this.mapper = mapper;
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4) {
+	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4) {
 		return this.applicative().validate(Arguments.of(a1, a2, a3, a4),
 				Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
+	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
 			ConstraintGroup constraintGroup) {
 		return this.applicative().validate(Arguments.of(a1, a2, a3, a4),
 				Locale.getDefault(), constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
-			Locale locale) {
+	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale) {
 		return this.applicative()
 				.validate(Arguments.of(a1, a2, a3, a4), locale, ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
-			Locale locale, ConstraintGroup constraintGroup) {
+	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
+			ConstraintGroup constraintGroup) {
 		return this.applicative()
 				.validate(Arguments.of(a1, a2, a3, a4), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));

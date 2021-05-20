@@ -198,12 +198,11 @@ import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.ConstraintCondition;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicates;
-import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.fn.Pair;
-import am.ik.yavi.fn.Validation;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -225,28 +224,28 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 		this.mapper = mapper;
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(${args}) {
+	public Validated<X> validateArgs(${args}) {
 		return this
 				.applicative()
 				.validate(Arguments.of(${as}), Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(${args},
+	public Validated<X> validateArgs(${args},
 			ConstraintGroup constraintGroup) {
 		return this.applicative()
 		        .validate(Arguments.of(${as}), Locale.getDefault(), constraintGroup)
 		        .map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(${args},
+	public Validated<X> validateArgs(${args},
 			Locale locale) {
 		return this
 				.applicative().validate(Arguments.of(${as}), locale, ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
-	public Validation<ConstraintViolation, X> validateArgs(${args},
+	public Validated<X> validateArgs(${args},
 			Locale locale, ConstraintGroup constraintGroup) {
 		return this
 				.applicative().validate(Arguments.of(${as}), locale, constraintGroup)

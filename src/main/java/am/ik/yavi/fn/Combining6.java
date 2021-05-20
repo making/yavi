@@ -46,9 +46,17 @@ public class Combining6<E, T1, T2, T3, T4, T5, T6> {
 		this.v6 = v6;
 	}
 
-	public <R> Validation<E, R> apply(Function6<T1, T2, T3, T4, T5, T6, R> f) {
-		return v6.apply(v5.apply(v4.apply(
-				v3.apply(v2.apply(v1.apply(Validation.success(Functions.curry(f))))))));
+	public <R, V extends Validation<E, R>> V apply(
+			Function6<T1, T2, T3, T4, T5, T6, R> f) {
+		final Validation<E, Function1<T2, Function1<T3, Function1<T4, Function1<T5, Function1<T6, R>>>>>> apply1 = v1
+				.apply(Validation.success(Functions.curry(f)));
+		final Validation<E, Function1<T3, Function1<T4, Function1<T5, Function1<T6, R>>>>> apply2 = v2
+				.apply(apply1);
+		final Validation<E, Function1<T4, Function1<T5, Function1<T6, R>>>> apply3 = v3
+				.apply(apply2);
+		final Validation<E, Function1<T5, Function1<T6, R>>> apply4 = v4.apply(apply3);
+		final Validation<E, Function1<T6, R>> apply5 = v5.apply(apply4);
+		return v6.apply(apply5);
 	}
 
 	public <T7> Combining7<E, T1, T2, T3, T4, T5, T6, T7> combine(Validation<E, T7> v7) {
