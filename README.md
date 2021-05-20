@@ -274,11 +274,21 @@ Validated<ContactInfo> contactInfoValidated = emailValidated.combine(phoneNumber
 Validated<ContactInfo> contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidation)
 		.apply((em, ph) -> new ContactInfo(em, ph));
 
+// output
 boolean isValid = contactInfoValidated.isValid();
 
-ContactInfo contactInfo = contactInfoValidated.orElseThrow(violations -> new ConstraintViolationsException(violation));
+ContactInfo contactInfo = contactInfoValidated
+        		.orElseThrow(violations -> new ConstraintViolationsException(violation));
 
-HttpStatus status = contactInfoValidated.fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
+HttpStatus status = contactInfoValidated
+        		.fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
+```
+
+if you want to add a prefix to the name of `ContraintViolation` (e.g. `email.value` rather than `value`), you can use `prefixed()` of `Validator` as follows.
+
+```java
+Validated<Email> emailValidated = emailValidator.prefixed("email").applicative().validate(email);
+Validated<PhoneNumber> phoneNumberValidated = phoneNumberValidator.prefixed("phoneNumber").applicative().validate(phoneNumber);
 ```
 
 [Validation API](src/main/java/am/ik/yavi/fn/Validation.java)
