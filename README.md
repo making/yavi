@@ -308,6 +308,17 @@ Optional<User> user = either.right();
 HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK);
 ```
 
+`Validation` <-> `Either` can be converted as follows:
+
+```java
+// Either -> Validation
+Either<ConstraintViolations, User> either = ...
+Validation<ConstraintViolation, User> validation = Validation.from(either);
+
+// Validation -> Either
+Either<List<ConstraintViolation>, User> either = validation.toEither();
+```
+
 [Either API](src/main/java/am/ik/yavi/fn/Either.java)
 
 #### Conditional Constraint
