@@ -34,8 +34,10 @@ import java.util.function.Function;
  * @param <T> value type in the case of success
  * @since 0.6.0
  */
-public interface Validation<E, T> extends Serializable {
-	boolean isValid();
+public abstract class Validation<E, T> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	public abstract boolean isValid();
 
 	/**
 	 * Returns the value of this {@code Validation} if is a {@code Success} or throws if
@@ -44,7 +46,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @return The value of this {@code Validation}
 	 * @throws NoSuchElementException if this is an {@code Failure}
 	 */
-	T value();
+	public abstract T value();
 
 	/**
 	 * Returns the errors of this {@code Validation} if it is an {@code Failure} or throws
@@ -53,21 +55,21 @@ public interface Validation<E, T> extends Serializable {
 	 * @return The errors, if present
 	 * @throws NoSuchElementException if this is a {@code Success}
 	 */
-	List<E> errors();
+	public abstract List<E> errors();
 
 	@SuppressWarnings("unchecked")
-	default <T2, V extends Validation<E, T2>> V map(
+	public <T2, V extends Validation<E, T2>> V map(
 			Function<? super T, ? extends T2> mapper) {
 		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (V) this;
 	}
 
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<? super E, ? extends T2> flatMap(
+	public <T2> Validation<? super E, ? extends T2> flatMap(
 			Function<? super T, Validation<? super E, ? extends T2>> mapper) {
 		return isValid() ? mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
-	default Validation<E, T> peek(Consumer<? super T> consumer) {
+	public Validation<E, T> peek(Consumer<? super T> consumer) {
 		if (isValid()) {
 			consumer.accept(value());
 		}
@@ -75,27 +77,27 @@ public interface Validation<E, T> extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	default <E2> Validation<E2, T> mapErrors(
+	public <E2> Validation<E2, T> mapErrors(
 			Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
-	default <E2, T2> Validation<E2, T2> bimap(
+	public <E2, T2> Validation<E2, T2> bimap(
 			Function<? super List<E>, ? extends List<E2>> errorsMapper,
 			Function<? super T, ? extends T2> mapper) {
 		return isValid() ? Validation.success(mapper.apply(value()))
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
-	default Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
+	public Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
 		if (!isValid()) {
 			consumer.accept(errors());
 		}
 		return this;
 	}
 
-	default <X extends Throwable> T orElseThrow(
+	public <X extends Throwable> T orElseThrow(
 			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (isValid()) {
 			return value();
@@ -105,7 +107,7 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	default T orElseGet(Function<? super List<E>, ? extends T> other) {
+	public T orElseGet(Function<? super List<E>, ? extends T> other) {
 		if (isValid()) {
 			return value();
 		}
@@ -114,22 +116,22 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper,
+	public <U> U fold(Function<? super List<E>, ? extends U> errorsMapper,
 			Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<E, U>> V yieldSuccess(U value) {
+	protected <U, V extends Validation<E, U>> V yieldSuccess(U value) {
 		return (V) Validation.success(value);
 	}
 
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
+	protected <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
 		return (V) Validation.failure(errors);
 	}
 
-	default <U, V extends Validation<E, U>> V apply(
+	public <U, V extends Validation<E, U>> V apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
@@ -155,31 +157,31 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	default Either<List<E>, T> toEither() {
+	public Either<List<E>, T> toEither() {
 		return isValid() ? Either.right(value()) : Either.left(errors());
 	}
 
-	default <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
+	public <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
 		return new Combining2<>(this, validation);
 	}
 
-	static <E, T> Validation<E, T> fromEither(Either<List<E>, T> either) {
+	public static <E, T> Validation<E, T> fromEither(Either<List<E>, T> either) {
 		return either.fold(Validation::failure, Validation::success);
 	}
 
-	static <E, T> Validation<E, T> success(T value) {
+	public static <E, T> Validation<E, T> success(T value) {
 		return new Success<>(value);
 	}
 
-	static <E, T> Validation<E, T> failure(List<E> errors) {
+	public static <E, T> Validation<E, T> failure(List<E> errors) {
 		return new Failure<>(errors);
 	}
 
-	static <E, T> Validation<E, T> failure(E... errors) {
+	public static <E, T> Validation<E, T> failure(E... errors) {
 		return new Failure<>(Arrays.asList(errors));
 	}
 
-	class Success<E, T> implements Validation<E, T> {
+	public static class Success<E, T> extends Validation<E, T> {
 		private static final long serialVersionUID = 1L;
 
 		public final T value;
@@ -223,7 +225,7 @@ public interface Validation<E, T> extends Serializable {
 		}
 	}
 
-	class Failure<E, T> implements Validation<E, T> {
+	public static class Failure<E, T> extends Validation<E, T> {
 		private static final long serialVersionUID = 1L;
 
 		private final List<E> errors;

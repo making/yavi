@@ -10,7 +10,7 @@ import am.ik.yavi.fn.Validation;
  * @param <T> value type in the case of success
  * @since 0.6.0
  */
-public class Validated<T> implements Validation<ConstraintViolation, T> {
+public class Validated<T> extends Validation<ConstraintViolation, T> {
 	private final Validation<ConstraintViolation, T> delegate;
 
 	public static <T> Validated<T> of(Validation<ConstraintViolation, T> delegate) {
