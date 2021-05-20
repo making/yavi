@@ -38,13 +38,13 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(U value) {
+	protected <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(U value) {
 		return (V) Validated.of(Validation.success(value));
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(
+	protected <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(
 			List<ConstraintViolation> errors) {
 		return (V) Validated.of(Validation.failure(errors));
 	}
