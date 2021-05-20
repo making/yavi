@@ -313,7 +313,7 @@ HttpStatus status = either.fold(v -> HttpStatus.BAD_REQUEST, u -> HttpStatus.OK)
 ```java
 // Either -> Validation
 Either<ConstraintViolations, User> either = ...
-Validation<ConstraintViolation, User> validation = Validation.from(either);
+Validation<ConstraintViolation, User> validation = Validation.fromEither(either);
 
 // Validation -> Either
 Either<List<ConstraintViolation>, User> either = validation.toEither();
