@@ -262,8 +262,12 @@ It will be helpful when you wanto combine validations of multiple value objects 
 `Validated<T>` is a shortcut of `Validation<ConstraintViolation, T>` which is specialized for `Validator`'s usage. 
 
 ```java
-Validator<Email> emailValidator = ...;
-Validator<PhoneNumber> phoneNumberValidator = ...;
+Validator<Email> emailValidator = ValidatorBuilder.<Email> of()
+            .constraint(Email::value, "value", c -> c.notBlank().email())
+            .build();
+Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<Email> of()
+            .constraint(PhoneNumber::value, "value", c -> c.notBlank().pattern("[0-9\-]+"))
+            .build();
 
 Validated<Email> emailValidated = emailValidator.applicative().validate(email);
 Validated<PhoneNumber> phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);
@@ -274,8 +278,12 @@ Validated<ContactInfo> contactInfoValidated = emailValidated.combine(phoneNumber
 Validated<ContactInfo> contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidation)
 		.apply((em, ph) -> new ContactInfo(em, ph));
 
-// output
-boolean isValid = contactInfoValidated.isValid();
+//
+if (contactInfoValidated.isValid()) {
+    ContactInfo contactInfo = contactInfoValidated.value();	
+} else {
+    ConstraintViolations violations = contactInfoValidated.errors();
+}
 
 ContactInfo contactInfo = contactInfoValidated
         		.orElseThrow(violations -> new ConstraintViolationsException(violation));
