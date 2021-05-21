@@ -265,7 +265,7 @@ It will be helpful when you wanto combine validations of multiple value objects 
 Validator<Email> emailValidator = ValidatorBuilder.<Email> of()
             .constraint(Email::value, "value", c -> c.notBlank().email())
             .build();
-Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<Email> of()
+Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<PhoneNumber> of()
             .constraint(PhoneNumber::value, "value", c -> c.notBlank().pattern("[0-9\-]+"))
             .build();
 
