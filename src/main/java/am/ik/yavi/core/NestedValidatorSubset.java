@@ -30,6 +30,7 @@ public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 		this.validator = prefixedValidatorIfNeeded(validator, prefix);
 	}
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private ValidatorSubset<N> prefixedValidatorIfNeeded(ValidatorSubset<N> validator,
 			String prefix) {
 		if (validator instanceof NestedValidatorSubset) {
