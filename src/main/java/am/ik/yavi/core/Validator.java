@@ -343,7 +343,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private ConstraintViolation recreateViolationWithNewName(
 			ConstraintViolation violation, String name) {
-		// implicit assumption that args[0] is always field name
+		// args[0] is always field name
 		Object[] args = violation.args();
 		if (args.length > 0) {
 			args[0] = name;
