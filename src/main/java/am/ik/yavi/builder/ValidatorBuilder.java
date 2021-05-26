@@ -155,7 +155,7 @@ public class ValidatorBuilder<T> {
 	 * Create a <code>BiValidator</code> instance using the given constraints.
 	 *
 	 * In case of Spring Framework's Validator integration
-	 * 
+	 *
 	 * <pre>
 	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
 	 *   .&lt;CartItem&gt;of()
@@ -763,10 +763,24 @@ public class ValidatorBuilder<T> {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
+			ValidatorSubset<N> validatorSubset = conditionalValidator.second();
+
+			String nestedPrefix = toNestedPrefix(name, validatorSubset);
+
 			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
-					conditionalValidator.second(), name);
+					validatorSubset, nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
+	}
+
+	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
+		if (validatorSubset instanceof NestedValidatorSubset) {
+			NestedValidatorSubset<?,?> nestedValidatorSubset = (NestedValidatorSubset<?,?>) validatorSubset;
+
+			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
+		}
+
+		return name + this.messageKeySeparator;
 	}
 
 	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(
