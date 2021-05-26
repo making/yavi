@@ -327,8 +327,8 @@ public class Validator<T> implements ValidatorSubset<T> {
 			ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
 				ValidatorSubset<T> validator = pair.second();
-				ConstraintViolations constraintViolations = validator.validate(target, locale,
-						constraintGroup);
+				ConstraintViolations constraintViolations = validator.validate(target,
+						locale, constraintGroup);
 
 				constraintViolations.forEach(violation -> {
 					String name = this.prefix
@@ -341,13 +341,16 @@ public class Validator<T> implements ValidatorSubset<T> {
 		return violations;
 	}
 
-	private ConstraintViolation recreateViolationWithNewName(ConstraintViolation violation, String name) {
-		//implicit assumption that args[0] is always field name
+	private ConstraintViolation recreateViolationWithNewName(
+			ConstraintViolation violation, String name) {
+		// implicit assumption that args[0] is always field name
 		Object[] args = violation.args();
 		if (args.length > 0) {
 			args[0] = name;
 		}
-		
-		return new ConstraintViolation(name, violation.messageKey(), violation.defaultMessageFormat(), args, this.messageFormatter, violation.locale());
+
+		return new ConstraintViolation(name, violation.messageKey(),
+				violation.defaultMessageFormat(), args, this.messageFormatter,
+				violation.locale());
 	}
 }

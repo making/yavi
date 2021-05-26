@@ -775,7 +775,7 @@ public class ValidatorBuilder<T> {
 
 	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
 		if (validatorSubset instanceof NestedValidatorSubset) {
-			NestedValidatorSubset<?,?> nestedValidatorSubset = (NestedValidatorSubset<?,?>) validatorSubset;
+			NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
 
 			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
 		}

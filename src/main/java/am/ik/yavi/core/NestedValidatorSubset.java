@@ -30,9 +30,12 @@ public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 		this.validator = prefixedValidatorIfNeeded(validator, prefix);
 	}
 
-	private ValidatorSubset<N> prefixedValidatorIfNeeded(ValidatorSubset<N> validator, String prefix) {
+	private ValidatorSubset<N> prefixedValidatorIfNeeded(ValidatorSubset<N> validator,
+			String prefix) {
 		if (validator instanceof NestedValidatorSubset) {
-			return new NestedValidatorSubset(((NestedValidatorSubset<?,N>) validator).nested, ((NestedValidatorSubset<?, N>) validator).validator, prefix);
+			return new NestedValidatorSubset(
+					((NestedValidatorSubset<?, N>) validator).nested,
+					((NestedValidatorSubset<?, N>) validator).validator, prefix);
 		}
 
 		return (validator instanceof Validator)
