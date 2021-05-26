@@ -84,8 +84,7 @@ public class Gh127Test {
 	private static class Container3 {
 
 		private static final Validator<Container3> VALIDATOR = ValidatorBuilder
-				.of(Container3.class)
-				.nest(Container3::getContainer2, "container2",
+				.of(Container3.class).nest(Container3::getContainer2, "container2",
 						Container2.VALIDATOR_WITH_CONDITION)
 				.build();
 
