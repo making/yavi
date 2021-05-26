@@ -273,7 +273,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		return pad;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConstraintViolations validate(T target, String collectionName, int index,
 			Locale locale, ConstraintGroup constraintGroup) {
 		if (target == null) {
@@ -329,12 +329,10 @@ public class Validator<T> implements ValidatorSubset<T> {
 				ValidatorSubset<T> validator = pair.second();
 				ConstraintViolations constraintViolations = validator.validate(target,
 						locale, constraintGroup);
-
 				constraintViolations.forEach(violation -> {
 					String name = this.prefix
 							+ this.indexedName(violation.name(), collectionName, index);
-
-					violations.add(recreateViolationWithNewName(violation, name));
+					violations.add(this.recreateViolationWithNewName(violation, name));
 				});
 			}
 		});
@@ -348,7 +346,6 @@ public class Validator<T> implements ValidatorSubset<T> {
 		if (args.length > 0) {
 			args[0] = name;
 		}
-
 		return new ConstraintViolation(name, violation.messageKey(),
 				violation.defaultMessageFormat(), args, this.messageFormatter,
 				violation.locale());

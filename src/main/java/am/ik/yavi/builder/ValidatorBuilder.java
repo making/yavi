@@ -740,7 +740,7 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested,
 			ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
@@ -761,10 +761,8 @@ public class ValidatorBuilder<T> {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
-			ValidatorSubset<N> validatorSubset = conditionalValidator.second();
-
-			String nestedPrefix = toNestedPrefix(name, validatorSubset);
-
+			final ValidatorSubset<N> validatorSubset = conditionalValidator.second();
+			final String nestedPrefix = toNestedPrefix(name, validatorSubset);
 			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
 					validatorSubset, nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
@@ -773,14 +771,13 @@ public class ValidatorBuilder<T> {
 
 	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
 		if (validatorSubset instanceof NestedValidatorSubset) {
-			NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
-
+			final NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
 			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
 		}
 		return name + this.messageKeySeparator;
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(
 			Function<T, N> nested, String name) {
 		return collectionValidator -> {

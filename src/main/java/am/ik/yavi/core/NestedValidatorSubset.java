@@ -20,7 +20,9 @@ import java.util.function.Function;
 
 public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 	private final Function<T, N> nested;
+
 	private final ValidatorSubset<N> validator;
+
 	private final String prefix;
 
 	public NestedValidatorSubset(Function<T, N> nested, ValidatorSubset<N> validator,
@@ -30,15 +32,14 @@ public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 		this.validator = prefixedValidatorIfNeeded(validator, prefix);
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private ValidatorSubset<N> prefixedValidatorIfNeeded(ValidatorSubset<N> validator,
 			String prefix) {
 		if (validator instanceof NestedValidatorSubset) {
-			return new NestedValidatorSubset(
-					((NestedValidatorSubset<?, N>) validator).nested,
-					((NestedValidatorSubset<?, N>) validator).validator, prefix);
+			final NestedValidatorSubset<?, N> nestedValidatorSubset = (NestedValidatorSubset<?, N>) validator;
+			return new NestedValidatorSubset(nestedValidatorSubset.nested,
+					nestedValidatorSubset.validator, prefix);
 		}
-
 		return (validator instanceof Validator)
 				? ((Validator<N>) validator).prefixed(prefix)
 				: validator;
