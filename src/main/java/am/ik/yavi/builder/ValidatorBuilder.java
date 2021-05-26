@@ -155,7 +155,7 @@ public class ValidatorBuilder<T> {
 	 * Create a <code>BiValidator</code> instance using the given constraints.
 	 *
 	 * In case of Spring Framework's Validator integration
-	 * 
+	 *
 	 * <pre>
 	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
 	 *   .&lt;CartItem&gt;of()
@@ -701,7 +701,6 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
 			ValidatorBuilderConverter<N> converter, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
@@ -729,7 +728,7 @@ public class ValidatorBuilder<T> {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(
 			Function<T, N> nested, String name) {
 		return predicates -> {
@@ -741,6 +740,7 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested,
 			ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
@@ -749,12 +749,10 @@ public class ValidatorBuilder<T> {
 				if (nestedValue == null) {
 					return null;
 				}
-
 				return (N) ((NestedConstraintPredicates) predicates)
 						.nestedValue(nestedValue);
 			};
 		}
-
 		return nested;
 	}
 
@@ -763,15 +761,25 @@ public class ValidatorBuilder<T> {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
+			final ValidatorSubset<N> validatorSubset = conditionalValidator.second();
+			final String nestedPrefix = toNestedPrefix(name, validatorSubset);
 			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
-					conditionalValidator.second(), name);
+					validatorSubset, nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
 
+	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
+		if (validatorSubset instanceof NestedValidatorSubset) {
+			final NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
+			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
+		}
+		return name + this.messageKeySeparator;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(
 			Function<T, N> nested, String name) {
-
 		return collectionValidator -> {
 			String nestedName = name + this.messageKeySeparator
 					+ collectionValidator.name();

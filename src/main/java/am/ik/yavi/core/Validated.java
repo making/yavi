@@ -4,9 +4,9 @@ import java.util.List;
 
 import am.ik.yavi.fn.Validation;
 
-
 /**
- * a specialized {@code Validation} type that regards {@code List<E>} as {@code ConstraintViolations}
+ * a specialized {@code Validation} type that regards {@code List<E>} as
+ * {@code ConstraintViolations}
  * @param <T> value type in the case of success
  * @since 0.6.0
  */

@@ -15,16 +15,16 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.fn.Either;
+import am.ik.yavi.fn.Pair;
+import am.ik.yavi.message.MessageFormatter;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import am.ik.yavi.fn.Either;
-import am.ik.yavi.fn.Pair;
-import am.ik.yavi.message.MessageFormatter;
 
 /**
  * Validates the target instances.
@@ -273,7 +273,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		return pad;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConstraintViolations validate(T target, String collectionName, int index,
 			Locale locale, ConstraintGroup constraintGroup) {
 		if (target == null) {
@@ -327,11 +327,27 @@ public class Validator<T> implements ValidatorSubset<T> {
 			ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
 				ValidatorSubset<T> validator = pair.second();
-				ConstraintViolations v = validator.validate(target, locale,
-						constraintGroup);
-				violations.addAll(v);
+				ConstraintViolations constraintViolations = validator.validate(target,
+						locale, constraintGroup);
+				constraintViolations.forEach(violation -> {
+					String name = this.prefix
+							+ this.indexedName(violation.name(), collectionName, index);
+					violations.add(this.recreateViolationWithNewName(violation, name));
+				});
 			}
 		});
 		return violations;
+	}
+
+	private ConstraintViolation recreateViolationWithNewName(
+			ConstraintViolation violation, String name) {
+		// args[0] is always field name
+		Object[] args = violation.args();
+		if (args.length > 0) {
+			args[0] = name;
+		}
+		return new ConstraintViolation(name, violation.messageKey(),
+				violation.defaultMessageFormat(), args, this.messageFormatter,
+				violation.locale());
 	}
 }
