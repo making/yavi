@@ -204,12 +204,47 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 		this.mapper = mapper;
 	}
 
+	public Validated<X> validate(${args}) {
+		return this.validator.applicative()
+				.validate(Arguments.of(${as}), Locale.getDefault(), ConstraintGroup.DEFAULT)
+				.map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(${args},
+			ConstraintGroup constraintGroup) {
+		return this.validator.applicative()
+		        .validate(Arguments.of(${as}), Locale.getDefault(), constraintGroup)
+		        .map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(${args},
+			Locale locale) {
+		return this.validator.applicative()
+		    .validate(Arguments.of(${as}), locale, ConstraintGroup.DEFAULT)
+				.map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(${args},
+			Locale locale, ConstraintGroup constraintGroup) {
+		return this.validator.applicative()
+		    .validate(Arguments.of(${as}), locale, constraintGroup)
+				.map(values -> values.map(this.mapper));
+	}
+
+	/**
+	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
+	 */
+  @Deprecated
 	public Validated<X> validateArgs(${args}) {
 		return this.validator.applicative()
 				.validate(Arguments.of(${as}), Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
+	 */
+  @Deprecated
 	public Validated<X> validateArgs(${args},
 			ConstraintGroup constraintGroup) {
 		return this.validator.applicative()
@@ -217,6 +252,10 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 		        .map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale)} instead
+	 */
+  @Deprecated
 	public Validated<X> validateArgs(${args},
 			Locale locale) {
 		return this.validator.applicative()
@@ -224,6 +263,10 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 				.map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale, ConstraintGroup)} instead
+	 */
+  @Deprecated
 	public Validated<X> validateArgs(${args},
 			Locale locale, ConstraintGroup constraintGroup) {
 		return this.validator.applicative()
@@ -242,24 +285,24 @@ public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";
 	}
 
 	public X validated(${args}) throws ConstraintViolationsException {
-		return this.validateArgs(${as})
+		return this.validate(${as})
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 	
 	public X validated(${args}, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
-		return this.validateArgs(${as}, constraintGroup)
+		return this.validate(${as}, constraintGroup)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}, Locale locale) throws ConstraintViolationsException {
-		return this.validateArgs(${as}, locale)
+		return this.validate(${as}, locale)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(${args}, Locale locale, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
-		return this.validateArgs(${as}, locale, constraintGroup)
+		return this.validate(${as}, locale, constraintGroup)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 }

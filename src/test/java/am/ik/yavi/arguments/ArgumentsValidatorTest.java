@@ -104,7 +104,7 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_allInvalid() {
-		final Validated<User> either = arguments3Validator.validateArgs("", "example.com",
+		final Validated<User> either = arguments3Validator.validate("", "example.com",
 				300);
 		assertThat(either.isValid()).isFalse();
 		final ConstraintViolations violations = either.errors();
@@ -124,7 +124,7 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testArg3_either_valid() {
-		final Validated<User> either = arguments3Validator.validateArgs("foo",
+		final Validated<User> either = arguments3Validator.validate("foo",
 				"foo@example.com", 30);
 		assertThat(either.isValid()).isTrue();
 		final User user = either.value();

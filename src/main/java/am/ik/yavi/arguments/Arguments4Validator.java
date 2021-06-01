@@ -38,12 +38,46 @@ public final class Arguments4Validator<A1, A2, A3, A4, X> {
 		this.mapper = mapper;
 	}
 
+	public Validated<X> validate(A1 a1, A2 a2, A3 a3, A4 a4) {
+		return this.validator.applicative().validate(Arguments.of(a1, a2, a3, a4),
+				Locale.getDefault(), ConstraintGroup.DEFAULT)
+				.map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(A1 a1, A2 a2, A3 a3, A4 a4,
+			ConstraintGroup constraintGroup) {
+		return this.validator.applicative().validate(Arguments.of(a1, a2, a3, a4),
+				Locale.getDefault(), constraintGroup)
+				.map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale) {
+		return this.validator.applicative()
+				.validate(Arguments.of(a1, a2, a3, a4), locale, ConstraintGroup.DEFAULT)
+				.map(values -> values.map(this.mapper));
+	}
+
+	public Validated<X> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
+			ConstraintGroup constraintGroup) {
+		return this.validator.applicative()
+				.validate(Arguments.of(a1, a2, a3, a4), locale, constraintGroup)
+				.map(values -> values.map(this.mapper));
+	}
+
+	/**
+	 * Use {@link #validate(Object, Object, Object, Object)} instead
+	 */
+	@Deprecated
 	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4) {
 		return this.validator.applicative().validate(Arguments.of(a1, a2, a3, a4),
 				Locale.getDefault(), ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate(Object, Object, Object, Object, ConstraintGroup)} instead
+	 */
+	@Deprecated
 	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4,
 			ConstraintGroup constraintGroup) {
 		return this.validator.applicative().validate(Arguments.of(a1, a2, a3, a4),
@@ -51,12 +85,21 @@ public final class Arguments4Validator<A1, A2, A3, A4, X> {
 				.map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate(Object, Object, Object, Object, Locale)} instead
+	 */
+	@Deprecated
 	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale) {
 		return this.validator.applicative()
 				.validate(Arguments.of(a1, a2, a3, a4), locale, ConstraintGroup.DEFAULT)
 				.map(values -> values.map(this.mapper));
 	}
 
+	/**
+	 * Use {@link #validate(Object, Object, Object, Object, Locale, ConstraintGroup)}
+	 * instead
+	 */
+	@Deprecated
 	public Validated<X> validateArgs(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.validator.applicative()
@@ -76,25 +119,25 @@ public final class Arguments4Validator<A1, A2, A3, A4, X> {
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4) throws ConstraintViolationsException {
-		return this.validateArgs(a1, a2, a3, a4)
+		return this.validate(a1, a2, a3, a4)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, ConstraintGroup constraintGroup)
 			throws ConstraintViolationsException {
-		return this.validateArgs(a1, a2, a3, a4, constraintGroup)
+		return this.validate(a1, a2, a3, a4, constraintGroup)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale)
 			throws ConstraintViolationsException {
-		return this.validateArgs(a1, a2, a3, a4, locale)
+		return this.validate(a1, a2, a3, a4, locale)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 	public X validated(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
 			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
-		return this.validateArgs(a1, a2, a3, a4, locale, constraintGroup)
+		return this.validate(a1, a2, a3, a4, locale, constraintGroup)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 }
