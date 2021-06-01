@@ -75,82 +75,83 @@ import java.util.function.Function;
  * @since 0.3.0
  */
 public final class ArgumentsValidatorBuilder {
-	public static <A1, X> Arguments1ValidatorBuilder<A1, X> of(Function1<A1, X> mapper) {
+	public static <A1, X> Arguments1ValidatorBuilder<A1, X> of(
+			Function1<? super A1, ? extends X> mapper) {
 		return new Arguments1ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, X> Arguments2ValidatorBuilder<A1, A2, X> of(
-			Function2<A1, A2, X> mapper) {
+			Function2<? super A1, ? super A2, ? extends X> mapper) {
 		return new Arguments2ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, X> Arguments3ValidatorBuilder<A1, A2, A3, X> of(
-			Function3<A1, A2, A3, X> mapper) {
+			Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper) {
 		return new Arguments3ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, X> Arguments4ValidatorBuilder<A1, A2, A3, A4, X> of(
-			Function4<A1, A2, A3, A4, X> mapper) {
+			Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
 		return new Arguments4ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, X> Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> of(
-			Function5<A1, A2, A3, A4, A5, X> mapper) {
+			Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper) {
 		return new Arguments5ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, X> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> of(
-			Function6<A1, A2, A3, A4, A5, A6, X> mapper) {
+			Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper) {
 		return new Arguments6ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, X> Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> of(
-			Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+			Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper) {
 		return new Arguments7ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, X> Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> of(
-			Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
+			Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper) {
 		return new Arguments8ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X> Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> of(
-			Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
+			Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper) {
 		return new Arguments9ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> of(
-			Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
+			Function10<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends X> mapper) {
 		return new Arguments10ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> of(
-			Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
+			Function11<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends X> mapper) {
 		return new Arguments11ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> of(
-			Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
+			Function12<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends X> mapper) {
 		return new Arguments12ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> of(
-			Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+			Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper) {
 		return new Arguments13ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> of(
-			Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
+			Function14<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends X> mapper) {
 		return new Arguments14ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> of(
-			Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
+			Function15<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends X> mapper) {
 		return new Arguments15ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> of(
-			Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
+			Function16<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends X> mapper) {
 		return new Arguments16ValidatorBuilder<>(mapper);
 	}
 
@@ -158,15 +159,15 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments1ValidatorBuilder<A1, X> {
-		private final Function1<A1, X> mapper;
+		private final Function1<? super A1, ? extends X> mapper;
 		private ValidatorBuilder<Arguments1<A1>> builder;
 
-		public Arguments1ValidatorBuilder(Function1<A1, X> mapper) {
+		public Arguments1ValidatorBuilder(Function1<? super A1, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments1ValidatorBuilder<A1, X> builder(
-				Function<ValidatorBuilder<Arguments1<A1>>, ValidatorBuilder<Arguments1<A1>>> definition) {
+				Function<? super ValidatorBuilder<Arguments1<A1>>, ? extends ValidatorBuilder<Arguments1<A1>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -188,15 +189,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments2ValidatorBuilder<A1, A2, X> {
-		private final Function2<A1, A2, X> mapper;
+		private final Function2<? super A1, ? super A2, ? extends X> mapper;
 		private ValidatorBuilder<Arguments2<A1, A2>> builder;
 
-		public Arguments2ValidatorBuilder(Function2<A1, A2, X> mapper) {
+		public Arguments2ValidatorBuilder(
+				Function2<? super A1, ? super A2, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments2ValidatorBuilder<A1, A2, X> builder(
-				Function<ValidatorBuilder<Arguments2<A1, A2>>, ValidatorBuilder<Arguments2<A1, A2>>> definition) {
+				Function<? super ValidatorBuilder<Arguments2<A1, A2>>, ? extends ValidatorBuilder<Arguments2<A1, A2>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -218,15 +220,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments3ValidatorBuilder<A1, A2, A3, X> {
-		private final Function3<A1, A2, A3, X> mapper;
+		private final Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper;
 		private ValidatorBuilder<Arguments3<A1, A2, A3>> builder;
 
-		public Arguments3ValidatorBuilder(Function3<A1, A2, A3, X> mapper) {
+		public Arguments3ValidatorBuilder(
+				Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments3ValidatorBuilder<A1, A2, A3, X> builder(
-				Function<ValidatorBuilder<Arguments3<A1, A2, A3>>, ValidatorBuilder<Arguments3<A1, A2, A3>>> definition) {
+				Function<? super ValidatorBuilder<Arguments3<A1, A2, A3>>, ? extends ValidatorBuilder<Arguments3<A1, A2, A3>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -248,15 +251,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments4ValidatorBuilder<A1, A2, A3, A4, X> {
-		private final Function4<A1, A2, A3, A4, X> mapper;
+		private final Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper;
 		private ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder;
 
-		public Arguments4ValidatorBuilder(Function4<A1, A2, A3, A4, X> mapper) {
+		public Arguments4ValidatorBuilder(
+				Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments4ValidatorBuilder<A1, A2, A3, A4, X> builder(
-				Function<ValidatorBuilder<Arguments4<A1, A2, A3, A4>>, ValidatorBuilder<Arguments4<A1, A2, A3, A4>>> definition) {
+				Function<? super ValidatorBuilder<Arguments4<A1, A2, A3, A4>>, ? extends ValidatorBuilder<Arguments4<A1, A2, A3, A4>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -278,15 +282,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> {
-		private final Function5<A1, A2, A3, A4, A5, X> mapper;
+		private final Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper;
 		private ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder;
 
-		public Arguments5ValidatorBuilder(Function5<A1, A2, A3, A4, A5, X> mapper) {
+		public Arguments5ValidatorBuilder(
+				Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> builder(
-				Function<ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>, ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>> definition) {
+				Function<? super ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>, ? extends ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -308,15 +313,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> {
-		private final Function6<A1, A2, A3, A4, A5, A6, X> mapper;
+		private final Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper;
 		private ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder;
 
-		public Arguments6ValidatorBuilder(Function6<A1, A2, A3, A4, A5, A6, X> mapper) {
+		public Arguments6ValidatorBuilder(
+				Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> builder(
-				Function<ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>, ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>> definition) {
+				Function<? super ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>, ? extends ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -338,16 +344,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> {
-		private final Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper;
+		private final Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper;
 		private ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder;
 
 		public Arguments7ValidatorBuilder(
-				Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+				Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> builder(
-				Function<ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>, ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>> definition) {
+				Function<? super ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>, ? extends ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -369,16 +375,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> {
-		private final Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper;
+		private final Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper;
 		private ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder;
 
 		public Arguments8ValidatorBuilder(
-				Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
+				Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> builder(
-				Function<ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>, ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>> definition) {
+				Function<? super ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>, ? extends ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -400,16 +406,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
-		private final Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper;
+		private final Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper;
 		private ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder;
 
 		public Arguments9ValidatorBuilder(
-				Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
+				Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> builder(
-				Function<ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>, ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>> definition) {
+				Function<? super ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>, ? extends ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -431,16 +437,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> {
-		private final Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper;
+		private final Function10<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends X> mapper;
 		private ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
 
 		public Arguments10ValidatorBuilder(
-				Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
+				Function10<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> builder(
-				Function<ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>, ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>> definition) {
+				Function<? super ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>, ? extends ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -462,16 +468,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> {
-		private final Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper;
+		private final Function11<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends X> mapper;
 		private ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
 
 		public Arguments11ValidatorBuilder(
-				Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
+				Function11<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> builder(
-				Function<ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>, ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>> definition) {
+				Function<? super ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>, ? extends ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -493,16 +499,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> {
-		private final Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper;
+		private final Function12<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends X> mapper;
 		private ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
 
 		public Arguments12ValidatorBuilder(
-				Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
+				Function12<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> builder(
-				Function<ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>, ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>> definition) {
+				Function<? super ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>, ? extends ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -524,16 +530,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> {
-		private final Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
+		private final Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper;
 		private ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
 
 		public Arguments13ValidatorBuilder(
-				Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+				Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> builder(
-				Function<ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>, ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>> definition) {
+				Function<? super ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>, ? extends ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -555,16 +561,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> {
-		private final Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper;
+		private final Function14<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends X> mapper;
 		private ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
 
 		public Arguments14ValidatorBuilder(
-				Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
+				Function14<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> builder(
-				Function<ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>, ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>> definition) {
+				Function<? super ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>, ? extends ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -586,16 +592,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> {
-		private final Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper;
+		private final Function15<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends X> mapper;
 		private ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
 
 		public Arguments15ValidatorBuilder(
-				Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
+				Function15<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> builder(
-				Function<ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>, ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>> definition) {
+				Function<? super ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>, ? extends ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -617,16 +623,16 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> {
-		private final Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper;
+		private final Function16<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends X> mapper;
 		private ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
 
 		public Arguments16ValidatorBuilder(
-				Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
+				Function16<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> builder(
-				Function<ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>, ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>> definition) {
+				Function<? super ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>, ? extends ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}

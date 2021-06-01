@@ -43,7 +43,7 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 		return this.arg${i};
 	}
 
-	public final <X> X map(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper) {
+	public final <X> X map(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		return mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "arg${j}, ";done) | sed 's/,$//'));
 	}
 }
@@ -122,7 +122,7 @@ import java.util.function.Function;
 public final class ArgumentsValidatorBuilder {
 $(for i in `seq 1 ${n}`;do
   cat <<EOJ
-	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> Arguments${i}ValidatorBuilder<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> of(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper) {
+	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> Arguments${i}ValidatorBuilder<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> of(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		return new Arguments${i}ValidatorBuilder<>(mapper);
 	}
 EOJ
@@ -136,15 +136,15 @@ $(for i in `seq 1 ${n}`;do
 	 * @since 0.3.0
 	 */
 	public static final class ${arguments} {
-		private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper;
+		private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
 		private ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>> builder;
 
-		public ${class}(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper) {
+		public ${class}(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
 		public ${arguments} builder(
-				Function<ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>, ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>> definition) {
+				Function<? super ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>, ? extends ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
@@ -214,13 +214,13 @@ import am.ik.yavi.message.MessageFormatter;
  */
 public final class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>
 		extends Validator<${arguments}> {
-	private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper;
+	private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
 
 	public ${class}(String messageKeySeparator,
 			List<ConstraintPredicates<${arguments}, ?>> constraintPredicates,
 			List<CollectionValidator<${arguments}, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<${arguments}>, ValidatorSubset<${arguments}>>> conditionalValidators,
-			MessageFormatter messageFormatter, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> mapper) {
+			MessageFormatter messageFormatter, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;

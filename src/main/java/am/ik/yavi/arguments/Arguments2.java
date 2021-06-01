@@ -35,7 +35,7 @@ public class Arguments2<A1, A2> extends Arguments1<A1> {
 		return this.arg2;
 	}
 
-	public final <X> X map(Function2<A1, A2, X> mapper) {
+	public final <X> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2);
 	}
 }

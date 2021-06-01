@@ -38,14 +38,14 @@ import am.ik.yavi.message.MessageFormatter;
 public final class Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X>
 		extends
 		Validator<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> {
-	private final Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
+	private final Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper;
 
 	public Arguments13Validator(String messageKeySeparator,
 			List<ConstraintPredicates<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>, ValidatorSubset<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>>>> conditionalValidators,
 			MessageFormatter messageFormatter,
-			Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+			Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;

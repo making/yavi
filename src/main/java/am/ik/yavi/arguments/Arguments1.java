@@ -34,7 +34,7 @@ public class Arguments1<A1> {
 		return this.arg1;
 	}
 
-	public final <X> X map(Function1<A1, X> mapper) {
+	public final <X> X map(Function1<? super A1, ? extends X> mapper) {
 		return mapper.apply(arg1);
 	}
 }

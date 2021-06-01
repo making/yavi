@@ -37,14 +37,14 @@ import am.ik.yavi.message.MessageFormatter;
  */
 public final class Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X>
 		extends Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> {
-	private final Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper;
+	private final Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper;
 
 	public Arguments9Validator(String messageKeySeparator,
 			List<ConstraintPredicates<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>, ValidatorSubset<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>>>> conditionalValidators,
 			MessageFormatter messageFormatter,
-			Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
+			Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;

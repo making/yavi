@@ -37,13 +37,14 @@ import am.ik.yavi.message.MessageFormatter;
  */
 public final class Arguments3Validator<A1, A2, A3, X>
 		extends Validator<Arguments3<A1, A2, A3>> {
-	private final Function3<A1, A2, A3, X> mapper;
+	private final Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper;
 
 	public Arguments3Validator(String messageKeySeparator,
 			List<ConstraintPredicates<Arguments3<A1, A2, A3>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments3<A1, A2, A3>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments3<A1, A2, A3>>, ValidatorSubset<Arguments3<A1, A2, A3>>>> conditionalValidators,
-			MessageFormatter messageFormatter, Function3<A1, A2, A3, X> mapper) {
+			MessageFormatter messageFormatter,
+			Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;

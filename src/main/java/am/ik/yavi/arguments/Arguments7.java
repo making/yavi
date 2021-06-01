@@ -36,7 +36,8 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7>
 		return this.arg7;
 	}
 
-	public final <X> X map(Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+	public final <X> X map(
+			Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	}
 }
