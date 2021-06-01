@@ -63,8 +63,6 @@ import am.ik.yavi.fn.Function13;
 import am.ik.yavi.fn.Function14;
 import am.ik.yavi.fn.Function15;
 import am.ik.yavi.fn.Function16;
-import am.ik.yavi.message.MessageFormatter;
-import am.ik.yavi.message.SimpleMessageFormatter;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -173,15 +171,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments1Validator<A1, X> build() {
-			final ValidatorBuilder<Arguments1<A1>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments1Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments1Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -204,15 +194,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments2Validator<A1, A2, X> build() {
-			final ValidatorBuilder<Arguments2<A1, A2>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments2Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments2Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -235,15 +217,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments3Validator<A1, A2, A3, X> build() {
-			final ValidatorBuilder<Arguments3<A1, A2, A3>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments3Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments3Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -266,15 +240,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments4Validator<A1, A2, A3, A4, X> build() {
-			final ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments4Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments4Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -297,15 +263,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments5Validator<A1, A2, A3, A4, A5, X> build() {
-			final ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments5Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments5Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -328,15 +286,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments6Validator<A1, A2, A3, A4, A5, A6, X> build() {
-			final ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments6Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments6Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -359,15 +309,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> build() {
-			final ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments7Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments7Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -390,15 +332,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> build() {
-			final ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments8Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments8Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -421,15 +355,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> build() {
-			final ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments9Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments9Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -452,15 +378,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> build() {
-			final ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments10Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments10Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -483,15 +401,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> build() {
-			final ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments11Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments11Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -514,15 +424,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> build() {
-			final ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments12Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments12Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -545,15 +447,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> build() {
-			final ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments13Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments13Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -576,15 +470,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> build() {
-			final ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments14Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments14Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -607,15 +493,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> build() {
-			final ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments15Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments15Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -638,15 +516,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> build() {
-			final ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder = this.builder != null
-					? this.builder
-					: ValidatorBuilder.of();
-			final MessageFormatter messageFormatter = builder.messageFormatter == null
-					? new SimpleMessageFormatter()
-					: builder.messageFormatter;
-			return new Arguments16Validator<>(builder.messageKeySeparator,
-					builder.predicatesList, builder.collectionValidators,
-					builder.conditionalValidators, messageFormatter, mapper);
+			return new Arguments16Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 }
