@@ -47,6 +47,22 @@ import am.ik.yavi.arguments.Arguments15;
 import am.ik.yavi.arguments.Arguments15Validator;
 import am.ik.yavi.arguments.Arguments16;
 import am.ik.yavi.arguments.Arguments16Validator;
+import am.ik.yavi.fn.Function1;
+import am.ik.yavi.fn.Function2;
+import am.ik.yavi.fn.Function3;
+import am.ik.yavi.fn.Function4;
+import am.ik.yavi.fn.Function5;
+import am.ik.yavi.fn.Function6;
+import am.ik.yavi.fn.Function7;
+import am.ik.yavi.fn.Function8;
+import am.ik.yavi.fn.Function9;
+import am.ik.yavi.fn.Function10;
+import am.ik.yavi.fn.Function11;
+import am.ik.yavi.fn.Function12;
+import am.ik.yavi.fn.Function13;
+import am.ik.yavi.fn.Function14;
+import am.ik.yavi.fn.Function15;
+import am.ik.yavi.fn.Function16;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 
@@ -59,83 +75,82 @@ import java.util.function.Function;
  * @since 0.3.0
  */
 public final class ArgumentsValidatorBuilder {
-	public static <A1, X> Arguments1ValidatorBuilder<A1, X> of(
-			Arguments1.Mapper<A1, X> mapper) {
+	public static <A1, X> Arguments1ValidatorBuilder<A1, X> of(Function1<A1, X> mapper) {
 		return new Arguments1ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, X> Arguments2ValidatorBuilder<A1, A2, X> of(
-			Arguments2.Mapper<A1, A2, X> mapper) {
+			Function2<A1, A2, X> mapper) {
 		return new Arguments2ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, X> Arguments3ValidatorBuilder<A1, A2, A3, X> of(
-			Arguments3.Mapper<A1, A2, A3, X> mapper) {
+			Function3<A1, A2, A3, X> mapper) {
 		return new Arguments3ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, X> Arguments4ValidatorBuilder<A1, A2, A3, A4, X> of(
-			Arguments4.Mapper<A1, A2, A3, A4, X> mapper) {
+			Function4<A1, A2, A3, A4, X> mapper) {
 		return new Arguments4ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, X> Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> of(
-			Arguments5.Mapper<A1, A2, A3, A4, A5, X> mapper) {
+			Function5<A1, A2, A3, A4, A5, X> mapper) {
 		return new Arguments5ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, X> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> of(
-			Arguments6.Mapper<A1, A2, A3, A4, A5, A6, X> mapper) {
+			Function6<A1, A2, A3, A4, A5, A6, X> mapper) {
 		return new Arguments6ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, X> Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> of(
-			Arguments7.Mapper<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+			Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
 		return new Arguments7ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, X> Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> of(
-			Arguments8.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
+			Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
 		return new Arguments8ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X> Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> of(
-			Arguments9.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
+			Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
 		return new Arguments9ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> of(
-			Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
+			Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
 		return new Arguments10ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> of(
-			Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
+			Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
 		return new Arguments11ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> of(
-			Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
+			Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
 		return new Arguments12ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> of(
-			Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+			Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
 		return new Arguments13ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> of(
-			Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
+			Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
 		return new Arguments14ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> of(
-			Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
+			Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
 		return new Arguments15ValidatorBuilder<>(mapper);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> of(
-			Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
+			Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
 		return new Arguments16ValidatorBuilder<>(mapper);
 	}
 
@@ -143,10 +158,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments1ValidatorBuilder<A1, X> {
-		private final Arguments1.Mapper<A1, X> mapper;
+		private final Function1<A1, X> mapper;
 		private ValidatorBuilder<Arguments1<A1>> builder;
 
-		public Arguments1ValidatorBuilder(Arguments1.Mapper<A1, X> mapper) {
+		public Arguments1ValidatorBuilder(Function1<A1, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -173,10 +188,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments2ValidatorBuilder<A1, A2, X> {
-		private final Arguments2.Mapper<A1, A2, X> mapper;
+		private final Function2<A1, A2, X> mapper;
 		private ValidatorBuilder<Arguments2<A1, A2>> builder;
 
-		public Arguments2ValidatorBuilder(Arguments2.Mapper<A1, A2, X> mapper) {
+		public Arguments2ValidatorBuilder(Function2<A1, A2, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -203,10 +218,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments3ValidatorBuilder<A1, A2, A3, X> {
-		private final Arguments3.Mapper<A1, A2, A3, X> mapper;
+		private final Function3<A1, A2, A3, X> mapper;
 		private ValidatorBuilder<Arguments3<A1, A2, A3>> builder;
 
-		public Arguments3ValidatorBuilder(Arguments3.Mapper<A1, A2, A3, X> mapper) {
+		public Arguments3ValidatorBuilder(Function3<A1, A2, A3, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -233,10 +248,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments4ValidatorBuilder<A1, A2, A3, A4, X> {
-		private final Arguments4.Mapper<A1, A2, A3, A4, X> mapper;
+		private final Function4<A1, A2, A3, A4, X> mapper;
 		private ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder;
 
-		public Arguments4ValidatorBuilder(Arguments4.Mapper<A1, A2, A3, A4, X> mapper) {
+		public Arguments4ValidatorBuilder(Function4<A1, A2, A3, A4, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -263,11 +278,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, X> {
-		private final Arguments5.Mapper<A1, A2, A3, A4, A5, X> mapper;
+		private final Function5<A1, A2, A3, A4, A5, X> mapper;
 		private ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder;
 
-		public Arguments5ValidatorBuilder(
-				Arguments5.Mapper<A1, A2, A3, A4, A5, X> mapper) {
+		public Arguments5ValidatorBuilder(Function5<A1, A2, A3, A4, A5, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -294,11 +308,10 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, X> {
-		private final Arguments6.Mapper<A1, A2, A3, A4, A5, A6, X> mapper;
+		private final Function6<A1, A2, A3, A4, A5, A6, X> mapper;
 		private ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder;
 
-		public Arguments6ValidatorBuilder(
-				Arguments6.Mapper<A1, A2, A3, A4, A5, A6, X> mapper) {
+		public Arguments6ValidatorBuilder(Function6<A1, A2, A3, A4, A5, A6, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -325,11 +338,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, X> {
-		private final Arguments7.Mapper<A1, A2, A3, A4, A5, A6, A7, X> mapper;
+		private final Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper;
 		private ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder;
 
 		public Arguments7ValidatorBuilder(
-				Arguments7.Mapper<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
+				Function7<A1, A2, A3, A4, A5, A6, A7, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -356,11 +369,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, X> {
-		private final Arguments8.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper;
+		private final Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper;
 		private ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder;
 
 		public Arguments8ValidatorBuilder(
-				Arguments8.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
+				Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -387,11 +400,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
-		private final Arguments9.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper;
+		private final Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper;
 		private ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder;
 
 		public Arguments9ValidatorBuilder(
-				Arguments9.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
+				Function9<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -418,11 +431,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> {
-		private final Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper;
+		private final Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper;
 		private ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
 
 		public Arguments10ValidatorBuilder(
-				Arguments10.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
+				Function10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -449,11 +462,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> {
-		private final Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper;
+		private final Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper;
 		private ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
 
 		public Arguments11ValidatorBuilder(
-				Arguments11.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
+				Function11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -480,11 +493,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> {
-		private final Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper;
+		private final Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper;
 		private ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
 
 		public Arguments12ValidatorBuilder(
-				Arguments12.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
+				Function12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -511,11 +524,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> {
-		private final Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
+		private final Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper;
 		private ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
 
 		public Arguments13ValidatorBuilder(
-				Arguments13.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
+				Function13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -542,11 +555,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> {
-		private final Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper;
+		private final Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper;
 		private ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
 
 		public Arguments14ValidatorBuilder(
-				Arguments14.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
+				Function14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -573,11 +586,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments15ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> {
-		private final Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper;
+		private final Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper;
 		private ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
 
 		public Arguments15ValidatorBuilder(
-				Arguments15.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
+				Function15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
@@ -604,11 +617,11 @@ public final class ArgumentsValidatorBuilder {
 	 * @since 0.3.0
 	 */
 	public static final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> {
-		private final Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper;
+		private final Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper;
 		private ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
 
 		public Arguments16ValidatorBuilder(
-				Arguments16.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
+				Function16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 

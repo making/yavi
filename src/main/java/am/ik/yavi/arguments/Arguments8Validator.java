@@ -27,6 +27,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.fn.Pair;
+import am.ik.yavi.fn.Function8;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -36,14 +37,14 @@ import am.ik.yavi.message.MessageFormatter;
  */
 public final class Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>
 		extends Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> {
-	private final Arguments8.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper;
+	private final Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper;
 
 	public Arguments8Validator(String messageKeySeparator,
 			List<ConstraintPredicates<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, ?>> constraintPredicates,
 			List<CollectionValidator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>, ValidatorSubset<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>>>> conditionalValidators,
 			MessageFormatter messageFormatter,
-			Arguments8.Mapper<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
+			Function8<A1, A2, A3, A4, A5, A6, A7, A8, X> mapper) {
 		super(messageKeySeparator, constraintPredicates, collectionValidators,
 				conditionalValidators, messageFormatter);
 		this.mapper = mapper;
