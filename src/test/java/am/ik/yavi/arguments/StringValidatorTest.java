@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import am.ik.yavi.Country;
@@ -67,6 +69,34 @@ class StringValidatorTest {
 				.hasMessageContaining("\"country\" must not be blank")
 				.hasMessageContaining(
 						"The size of \"country\" must be greater than or equal to 2. The given size is 1");
+	}
+
+	@ParameterizedTest
+	@MethodSource("validators")
+	void contramapValid(StringValidator<Country> countryValidator) {
+		final Map<String, String> params = Collections.singletonMap("country", "JP");
+		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
+				.contramap(map -> map.get("country"));
+		final Validated<Country> countryValidated = mapValidator.validate(params);
+		assertThat(countryValidated.isValid()).isTrue();
+		assertThat(countryValidated.value().name()).isEqualTo("JP");
+	}
+
+	@ParameterizedTest
+	@MethodSource("validators")
+	void contramapInvalid(StringValidator<Country> countryValidator) {
+		final Map<String, String> params = Collections.singletonMap("country", " ");
+		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
+				.contramap(map -> map.get("country"));
+		final Validated<Country> countryValidated = mapValidator.validate(params);
+		assertThat(countryValidated.isValid()).isFalse();
+		final ConstraintViolations violations = countryValidated.errors();
+		assertThat(violations).hasSize(2);
+		assertThat(violations.get(0).name()).isEqualTo("country");
+		assertThat(violations.get(0).messageKey()).isEqualTo("charSequence.notBlank");
+		assertThat(violations.get(1).name()).isEqualTo("country");
+		assertThat(violations.get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
 	}
 
 	static Stream<StringValidator<Country>> validators() {

@@ -210,6 +210,18 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 		return (${as}, locale, constraintGroup) -> ${class}.this
 				.validate(${as}, locale, constraintGroup).map(mapper);
 	}
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+	/**
+	 * @since 0.7.0
+	 */
+	default <A> ${class}<A, X> contramap(
+			Function<? super A, ? extends A1> mapper) {
+		return (a, locale, constraintGroup) -> ${class}.this
+				.validate(mapper.apply(a), locale, constraintGroup);
+	}
+EOD
+fi)
 
 	default Validated<X> validate(${args}) {
 		return this.validate(${as}, Locale.getDefault(), ConstraintGroup.DEFAULT);
