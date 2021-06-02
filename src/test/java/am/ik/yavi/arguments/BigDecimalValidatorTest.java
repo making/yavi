@@ -71,11 +71,11 @@ class BigDecimalValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(BigDecimalValidator<Price> priceValidator) {
+	void composeValid(BigDecimalValidator<Price> priceValidator) {
 		final Map<String, BigDecimal> params = Collections.singletonMap("price",
 				BigDecimal.valueOf(100));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigDecimal.valueOf(100));
@@ -83,11 +83,11 @@ class BigDecimalValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(BigDecimalValidator<Price> priceValidator) {
+	void composeInvalid(BigDecimalValidator<Price> priceValidator) {
 		final Map<String, BigDecimal> params = Collections.singletonMap("price",
 				BigDecimal.valueOf(-1));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -108,7 +108,7 @@ class BigDecimalValidatorTest {
 						.of("price",
 								c -> c.notNull()
 										.greaterThanOrEqual(BigDecimal.valueOf(0)))
-						.build().map(Price::new));
+						.build().andThen(Price::new));
 	}
 
 	public static class Price {

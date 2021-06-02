@@ -36,7 +36,7 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> map(
+	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, a4, locale, constraintGroup) -> Arguments4Validator.this
 				.validate(a1, a2, a3, a4, locale, constraintGroup).map(mapper);
@@ -45,7 +45,7 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <A> Arguments1Validator<A, X> contramap(
+	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments4<A1, A2, A3, A4>> mapper) {
 		return (a, locale, constraintGroup) -> {
 			final Arguments4<A1, A2, A3, A4> args = mapper.apply(a);

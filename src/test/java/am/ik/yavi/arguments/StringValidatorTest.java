@@ -73,10 +73,10 @@ class StringValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(StringValidator<Country> countryValidator) {
+	void composeValid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", "JP");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-				.contramap(map -> map.get("country"));
+				.compose(map -> map.get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value().name()).isEqualTo("JP");
@@ -84,10 +84,10 @@ class StringValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(StringValidator<Country> countryValidator) {
+	void composeInvalid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", " ");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-				.contramap(map -> map.get("country"));
+				.compose(map -> map.get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();
@@ -106,6 +106,6 @@ class StringValidatorTest {
 						.build(Country::new),
 				StringValidatorBuilder
 						.of("country", c -> c.notBlank().greaterThanOrEqual(2)).build()
-						.map(Country::new));
+						.andThen(Country::new));
 	}
 }

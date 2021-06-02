@@ -68,10 +68,10 @@ class ShortValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(ShortValidator<Price> priceValidator) {
+	void composeValid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) 100);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo((short) 100);
@@ -79,10 +79,10 @@ class ShortValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(ShortValidator<Price> priceValidator) {
+	void composeInvalid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) -1);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -99,7 +99,7 @@ class ShortValidatorTest {
 						.build(Price::new),
 				ShortValidatorBuilder
 						.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
-						.build().map(Price::new));
+						.build().andThen(Price::new));
 	}
 
 	public static class Price {

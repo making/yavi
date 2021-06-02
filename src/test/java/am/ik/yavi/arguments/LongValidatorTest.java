@@ -68,10 +68,10 @@ class LongValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(LongValidator<Price> priceValidator) {
+	void composeValid(LongValidator<Price> priceValidator) {
 		final Map<String, Long> params = Collections.singletonMap("price", (long) 100);
 		final Arguments1Validator<Map<String, Long>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(100);
@@ -79,10 +79,10 @@ class LongValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(LongValidator<Price> priceValidator) {
+	void composeInvalid(LongValidator<Price> priceValidator) {
 		final Map<String, Long> params = Collections.singletonMap("price", (long) -1);
 		final Arguments1Validator<Map<String, Long>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -99,7 +99,7 @@ class LongValidatorTest {
 						.build(Price::new),
 				LongValidatorBuilder
 						.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
-						.build().map(Price::new));
+						.build().andThen(Price::new));
 	}
 
 	public static class Price {

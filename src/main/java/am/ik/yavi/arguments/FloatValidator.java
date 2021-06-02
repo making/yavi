@@ -26,7 +26,7 @@ import am.ik.yavi.fn.Function1;
 public class FloatValidator<T> extends DefaultArguments1Validator<Float, T> {
 
 	@Override
-	public <T2> FloatValidator<T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2> FloatValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
 		return new FloatValidator<>(super.validator,
 				s -> mapper.apply(super.mapper.apply(s)));
 	}

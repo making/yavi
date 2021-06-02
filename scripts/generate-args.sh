@@ -206,7 +206,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	/**
 	 * @since 0.7.0
 	 */
-	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
 		return (${as}, locale, constraintGroup) -> ${class}.this
 				.validate(${as}, locale, constraintGroup).map(mapper);
 	}
@@ -216,7 +216,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	 */
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-	default <A> ${class}<A, X> contramap(
+	default <A> ${class}<A, X> compose(
 			Function<? super A, ? extends A1> mapper) {
 		return (a, locale, constraintGroup) -> ${class}.this
 				.validate(mapper.apply(a), locale, constraintGroup);
@@ -224,7 +224,7 @@ cat <<EOD
 EOD
 else
 cat <<EOD
-	default <A> Arguments1Validator<A, X> contramap(
+	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends ${arguments}> mapper) {
 		return (a, locale, constraintGroup) -> {
 			final ${arguments} args = mapper.apply(a);

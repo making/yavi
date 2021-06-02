@@ -36,7 +36,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <X2> Arguments3Validator<A1, A2, A3, X2> map(
+	default <X2> Arguments3Validator<A1, A2, A3, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, locale, constraintGroup) -> Arguments3Validator.this
 				.validate(a1, a2, a3, locale, constraintGroup).map(mapper);
@@ -45,7 +45,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <A> Arguments1Validator<A, X> contramap(
+	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments3<A1, A2, A3>> mapper) {
 		return (a, locale, constraintGroup) -> {
 			final Arguments3<A1, A2, A3> args = mapper.apply(a);

@@ -67,10 +67,10 @@ class BooleanValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(BooleanValidator<Checked> checkedValidator) {
+	void composeValid(BooleanValidator<Checked> checkedValidator) {
 		final Map<String, Boolean> params = Collections.singletonMap("checked", true);
 		final Arguments1Validator<Map<String, Boolean>, Checked> mapValidator = checkedValidator
-				.contramap(map -> map.get("checked"));
+				.compose(map -> map.get("checked"));
 		final Validated<Checked> checkedValidated = mapValidator.validate(params);
 		assertThat(checkedValidated.isValid()).isTrue();
 		assertThat(checkedValidated.value().isChecked()).isTrue();
@@ -78,10 +78,10 @@ class BooleanValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(BooleanValidator<Checked> checkedValidator) {
+	void composeInvalid(BooleanValidator<Checked> checkedValidator) {
 		final Map<String, Boolean> params = Collections.singletonMap("checked", false);
 		final Arguments1Validator<Map<String, Boolean>, Checked> mapValidator = checkedValidator
-				.contramap(map -> map.get("checked"));
+				.compose(map -> map.get("checked"));
 		final Validated<Checked> checkedValidated = mapValidator.validate(params);
 		assertThat(checkedValidated.isValid()).isFalse();
 		final ConstraintViolations violations = checkedValidated.errors();
@@ -95,7 +95,7 @@ class BooleanValidatorTest {
 				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue())
 						.build(Checked::new),
 				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build()
-						.map(Checked::new));
+						.andThen(Checked::new));
 	}
 
 	public static class Checked {

@@ -36,7 +36,7 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> map(
+	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, a4, a5, a6, a7, locale,
 				constraintGroup) -> Arguments7Validator.this
@@ -47,7 +47,7 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <A> Arguments1Validator<A, X> contramap(
+	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments7<A1, A2, A3, A4, A5, A6, A7>> mapper) {
 		return (a, locale, constraintGroup) -> {
 			final Arguments7<A1, A2, A3, A4, A5, A6, A7> args = mapper.apply(a);

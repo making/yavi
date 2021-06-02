@@ -68,10 +68,10 @@ class IntegerValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapValid(IntegerValidator<Price> priceValidator) {
+	void composeValid(IntegerValidator<Price> priceValidator) {
 		final Map<String, Integer> params = Collections.singletonMap("price", 100);
 		final Arguments1Validator<Map<String, Integer>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(100);
@@ -79,10 +79,10 @@ class IntegerValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void contramapInvalid(IntegerValidator<Price> priceValidator) {
+	void composeInvalid(IntegerValidator<Price> priceValidator) {
 		final Map<String, Integer> params = Collections.singletonMap("price", -1);
 		final Arguments1Validator<Map<String, Integer>, Price> mapValidator = priceValidator
-				.contramap(map -> map.get("price"));
+				.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -97,7 +97,7 @@ class IntegerValidatorTest {
 				.of("price", c -> c.notNull().greaterThanOrEqual(0)).build(Price::new),
 				IntegerValidatorBuilder
 						.of("price", c -> c.notNull().greaterThanOrEqual(0)).build()
-						.map(Price::new));
+						.andThen(Price::new));
 	}
 
 	public static class Price {

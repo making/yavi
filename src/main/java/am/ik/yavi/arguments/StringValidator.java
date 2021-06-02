@@ -23,7 +23,7 @@ import am.ik.yavi.fn.Function1;
 public class StringValidator<T> extends DefaultArguments1Validator<String, T> {
 
 	@Override
-	public <T2> StringValidator<T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2> StringValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
 		return new StringValidator<>(super.validator,
 				s -> mapper.apply(super.mapper.apply(s)));
 	}

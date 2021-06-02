@@ -26,7 +26,7 @@ import am.ik.yavi.fn.Function1;
 public class DoubleValidator<T> extends DefaultArguments1Validator<Double, T> {
 
 	@Override
-	public <T2> DoubleValidator<T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2> DoubleValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
 		return new DoubleValidator<>(super.validator,
 				s -> mapper.apply(super.mapper.apply(s)));
 	}
