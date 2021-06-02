@@ -42,6 +42,18 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 				.validate(a1, a2, a3, locale, constraintGroup).map(mapper);
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
+	default <A> Arguments1Validator<A, X> contramap(
+			Function<? super A, ? extends Arguments3<A1, A2, A3>> mapper) {
+		return (a, locale, constraintGroup) -> {
+			final Arguments3<A1, A2, A3> args = mapper.apply(a);
+			return Arguments3Validator.this.validate(args.arg1(), args.arg2(),
+					args.arg3(), locale, constraintGroup);
+		};
+	}
+
 	default Validated<X> validate(A1 a1, A2 a2, A3 a3) {
 		return this.validate(a1, a2, a3, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}

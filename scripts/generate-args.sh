@@ -210,15 +210,26 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 		return (${as}, locale, constraintGroup) -> ${class}.this
 				.validate(${as}, locale, constraintGroup).map(mapper);
 	}
-$(if [ "${i}" == "1" ];then
-cat <<EOD
+
 	/**
 	 * @since 0.7.0
 	 */
+$(if [ "${i}" == "1" ];then
+cat <<EOD
 	default <A> ${class}<A, X> contramap(
 			Function<? super A, ? extends A1> mapper) {
 		return (a, locale, constraintGroup) -> ${class}.this
 				.validate(mapper.apply(a), locale, constraintGroup);
+	}
+EOD
+else
+cat <<EOD
+	default <A> Arguments1Validator<A, X> contramap(
+			Function<? super A, ? extends ${arguments}> mapper) {
+		return (a, locale, constraintGroup) -> {
+			final ${arguments} args = mapper.apply(a);
+			return ${class}.this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "args.arg${j}(), ";done) | sed 's/,$//'), locale, constraintGroup);
+		};
 	}
 EOD
 fi)

@@ -44,6 +44,19 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 						.map(mapper);
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
+	default <A> Arguments1Validator<A, X> contramap(
+			Function<? super A, ? extends Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> mapper) {
+		return (a, locale, constraintGroup) -> {
+			final Arguments8<A1, A2, A3, A4, A5, A6, A7, A8> args = mapper.apply(a);
+			return Arguments8Validator.this.validate(args.arg1(), args.arg2(),
+					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),
+					args.arg8(), locale, constraintGroup);
+		};
+	}
+
 	default Validated<X> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7,
 			A8 a8) {
 		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, Locale.getDefault(),

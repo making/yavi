@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import am.ik.yavi.Country;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
@@ -59,6 +62,9 @@ public class ArgumentsValidatorTest {
 					._integer(Arguments3::arg3, "age",
 							c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200)))
 			.build();
+
+	final Arguments1Validator<Map<String, Object>, User> mapValidator = arguments3Validator
+			.contramap(m -> Arguments.of((String) m.get("name"), (String) m.get("email"), (Integer) m.get("age")));
 
 	@Test
 	void testArg2_allInvalid() {
@@ -171,5 +177,42 @@ public class ArgumentsValidatorTest {
 										+ "* \"name\" must not be empty"
 										+ System.lineSeparator()
 										+ "* \"price\" must be greater than 0"));
+	}
+
+	@Test
+	void contramap_allInvalid() {
+		final Map<String, Object> map = new HashMap<>();
+		map.put("name", "");
+		map.put("email", "example.com");
+		map.put("age", 300);
+		final Validated<User> validated = mapValidator.validate(map);
+		assertThat(validated.isValid()).isFalse();
+		final ConstraintViolations violations = validated.errors();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(3);
+		assertThat(violations.get(0).message()).isEqualTo(
+				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
+		assertThat(violations.get(0).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(1).message())
+				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
+		assertThat(violations.get(2).message())
+				.isEqualTo("\"age\" must be less than or equal to 200");
+		assertThat(violations.get(2).messageKey()).isEqualTo("numeric.lessThanOrEqual");
+	}
+
+	@Test
+	void contramap_valid() {
+		final Map<String, Object> map = new HashMap<>();
+		map.put("name", "foo");
+		map.put("email", "foo@example.com");
+		map.put("age", 30);
+		final Validated<User> validated = mapValidator.validate(map);
+		assertThat(validated.isValid()).isTrue();
+		final User user = validated.value();
+		assertThat(user.getName()).isEqualTo("foo");
+		assertThat(user.getEmail()).isEqualTo("foo@example.com");
+		assertThat(user.getAge()).isEqualTo(30);
 	}
 }
