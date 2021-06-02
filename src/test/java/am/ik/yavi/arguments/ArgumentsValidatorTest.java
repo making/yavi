@@ -64,7 +64,8 @@ public class ArgumentsValidatorTest {
 			.build();
 
 	final Arguments1Validator<Map<String, Object>, User> mapValidator = arguments3Validator
-			.contramap(m -> Arguments.of((String) m.get("name"), (String) m.get("email"), (Integer) m.get("age")));
+			.contramap(m -> Arguments.of((String) m.get("name"), (String) m.get("email"),
+					(Integer) m.get("age")));
 
 	@Test
 	void testArg2_allInvalid() {
