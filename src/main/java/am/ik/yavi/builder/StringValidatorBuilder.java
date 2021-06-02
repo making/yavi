@@ -21,7 +21,6 @@ import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.fn.Function1;
 
 /**
  * @since 0.7.0
@@ -36,17 +35,17 @@ public class StringValidatorBuilder {
 		return new StringValidatorBuilder(name, constraints);
 	}
 
-	private StringValidatorBuilder(String name,
+	StringValidatorBuilder(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		this.name = name;
 		this.constraints = constraints;
 	}
 
-	public <T> StringValidator<T> build(Function1<String, T> mapper) {
+	public <T> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
 		final Validator<Arguments1<String>> validator = ValidatorBuilder
 				.<Arguments1<String>> of().constraint(Arguments1::arg1, name, constraints)
 				.build();
-		return new StringValidator<>(validator, mapper);
+		return new StringValidator<>(validator, mapper::apply);
 	}
 
 	public StringValidator<String> build() {

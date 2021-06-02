@@ -1,5 +1,7 @@
 package am.ik.yavi.arguments;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import am.ik.yavi.Address;
@@ -8,6 +10,7 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validated;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -24,6 +27,40 @@ class ArgumentsValidatorsTest {
 			.of("phoneNumber",
 					c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
 			.build(PhoneNumber::new);
+
+	static final StringValidator<String> v1 = StringValidatorBuilder
+			.of("s1", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v2 = StringValidatorBuilder
+			.of("s2", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v3 = StringValidatorBuilder
+			.of("s3", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v4 = StringValidatorBuilder
+			.of("s4", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v5 = StringValidatorBuilder
+			.of("s5", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v6 = StringValidatorBuilder
+			.of("s6", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v7 = StringValidatorBuilder
+			.of("s7", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v8 = StringValidatorBuilder
+			.of("s8", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v9 = StringValidatorBuilder
+			.of("s9", c -> c.notBlank()).build();
+
+	static final StringValidator<String> v10 = StringValidatorBuilder
+			.of("s10", c -> c.notBlank()).build();
+
+	static final Arguments10Validator<String, String, String, String, String, String, String, String, String, String, List<String>> arguments10Validator = v1
+			.combine(v2).combine(v3).combine(v4).combine(v5).combine(v6).combine(v7)
+			.combine(v8).combine(v9).combine(v10).apply(Arrays::asList);
 
 	@ParameterizedTest
 	@MethodSource("validators")
@@ -54,6 +91,21 @@ class ArgumentsValidatorsTest {
 				.isEqualTo("container.greaterThanOrEqual");
 	}
 
+	@Test
+	void arguments10Valid() {
+		final Validated<List<String>> validated = arguments10Validator.validate("1", "2",
+				"3", "4", "5", "6", "7", "8", "9", "10");
+		assertThat(validated.isValid()).isTrue();
+		final List<String> list = validated.value();
+		assertThat(list).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9",
+				"10");
+	}
+
+	@Test
+	void arguments10Invalid() {
+
+	}
+
 	static Stream<Arguments3Validator<String, String, String, Address>> validators() {
 		return Stream.of(
 				ArgumentsValidators.apply(Address::new, countryValidator, streetValidator,
@@ -61,9 +113,7 @@ class ArgumentsValidatorsTest {
 				ArgumentsValidators
 						.combine(countryValidator, streetValidator, phoneNumberValidator)
 						.apply(Address::new),
-				countryValidator
-						.combine(streetValidator)
-						.combine(phoneNumberValidator)
+				countryValidator.combine(streetValidator).combine(phoneNumberValidator)
 						.apply(Address::new));
 	}
 }
