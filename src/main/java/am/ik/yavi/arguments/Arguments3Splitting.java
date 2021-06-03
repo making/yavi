@@ -23,30 +23,30 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments3Splitting<A1, A2, A3, X1, X2, X3> {
-	protected final Arguments1Validator<A1, X1> v1;
+public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
+	protected final Arguments1Validator<A1, R1> v1;
 
-	protected final Arguments1Validator<A2, X2> v2;
+	protected final Arguments1Validator<A2, R2> v2;
 
-	protected final Arguments1Validator<A3, X3> v3;
+	protected final Arguments1Validator<A3, R3> v3;
 
-	public Arguments3Splitting(Arguments1Validator<A1, X1> v1,
-			Arguments1Validator<A2, X2> v2, Arguments1Validator<A3, X3> v3) {
+	public Arguments3Splitting(Arguments1Validator<A1, R1> v1,
+			Arguments1Validator<A2, R2> v2, Arguments1Validator<A3, R3> v3) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
 	}
 
 	public <X> Arguments3Validator<A1, A2, A3, X> apply(
-			Function3<? super X1, ? super X2, ? super X3, ? extends X> f) {
+			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
 		return (a1, a2, a3, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a1, locale, constraintGroup),
 				this.v2.validate(a2, locale, constraintGroup),
 				this.v3.validate(a3, locale, constraintGroup));
 	}
 
-	public <A4, X4> Arguments4Splitting<A1, A2, A3, A4, X1, X2, X3, X4> split4(
-			Arguments1Validator<A4, X4> v4) {
+	public <A4, R4> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split4(
+			Arguments1Validator<A4, R4> v4) {
 		return new Arguments4Splitting<>(v1, v2, v3, v4);
 	}
 }

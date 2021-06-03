@@ -23,23 +23,23 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments6Splitting<A1, A2, A3, A4, A5, A6, X1, X2, X3, X4, X5, X6> {
-	protected final Arguments1Validator<A1, X1> v1;
+public class Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> {
+	protected final Arguments1Validator<A1, R1> v1;
 
-	protected final Arguments1Validator<A2, X2> v2;
+	protected final Arguments1Validator<A2, R2> v2;
 
-	protected final Arguments1Validator<A3, X3> v3;
+	protected final Arguments1Validator<A3, R3> v3;
 
-	protected final Arguments1Validator<A4, X4> v4;
+	protected final Arguments1Validator<A4, R4> v4;
 
-	protected final Arguments1Validator<A5, X5> v5;
+	protected final Arguments1Validator<A5, R5> v5;
 
-	protected final Arguments1Validator<A6, X6> v6;
+	protected final Arguments1Validator<A6, R6> v6;
 
-	public Arguments6Splitting(Arguments1Validator<A1, X1> v1,
-			Arguments1Validator<A2, X2> v2, Arguments1Validator<A3, X3> v3,
-			Arguments1Validator<A4, X4> v4, Arguments1Validator<A5, X5> v5,
-			Arguments1Validator<A6, X6> v6) {
+	public Arguments6Splitting(Arguments1Validator<A1, R1> v1,
+			Arguments1Validator<A2, R2> v2, Arguments1Validator<A3, R3> v3,
+			Arguments1Validator<A4, R4> v4, Arguments1Validator<A5, R5> v5,
+			Arguments1Validator<A6, R6> v6) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -49,7 +49,7 @@ public class Arguments6Splitting<A1, A2, A3, A4, A5, A6, X1, X2, X3, X4, X5, X6>
 	}
 
 	public <X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> apply(
-			Function6<? super X1, ? super X2, ? super X3, ? super X4, ? super X5, ? super X6, ? extends X> f) {
+			Function6<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? extends X> f) {
 		return (a1, a2, a3, a4, a5, a6, locale, constraintGroup) -> Validations.apply(
 				f::apply, this.v1.validate(a1, locale, constraintGroup),
 				this.v2.validate(a2, locale, constraintGroup),
@@ -59,8 +59,8 @@ public class Arguments6Splitting<A1, A2, A3, A4, A5, A6, X1, X2, X3, X4, X5, X6>
 				this.v6.validate(a6, locale, constraintGroup));
 	}
 
-	public <A7, X7> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, X1, X2, X3, X4, X5, X6, X7> split7(
-			Arguments1Validator<A7, X7> v7) {
+	public <A7, R7> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> split7(
+			Arguments1Validator<A7, R7> v7) {
 		return new Arguments7Splitting<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 }

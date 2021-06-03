@@ -433,17 +433,17 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "X${j}, ";done) | sed 's/,$//')> {
-$(for j in `seq 1 ${i}`;do echo "	protected final Arguments1Validator<A${j}, X${j}> v${j};";echo;done)
+public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
+$(for j in `seq 1 ${i}`;do echo "	protected final Arguments1Validator<A${j}, R${j}> v${j};";echo;done)
 
-	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A${j}, X${j}> v${j}, ";done) | sed 's/,$//')) {
+	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
-	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super X${j}, ";done) | sed 's/,$//'), ? extends X> f) {
+	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a${j}, locale, constraintGroup), ";done) | sed 's/,$//'));
 	}
-$(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), X$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "X${j}, ";done) | sed 's/,$//')> split$((${i} + 1))(Arguments1Validator<A$((${i} + 1)), X$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split$((${i} + 1))(Arguments1Validator<A$((${i} + 1)), R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
 EOF
 done
