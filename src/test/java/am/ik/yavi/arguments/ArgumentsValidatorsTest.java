@@ -108,8 +108,9 @@ class ArgumentsValidatorsTest {
 
 	static Stream<Arguments3Validator<String, String, String, Address>> validators() {
 		return Stream.of(
-				ArgumentsValidators.split(countryValidator, streetValidator,
-						phoneNumberValidator, Address::new),
+				ArgumentsValidators
+						.split(countryValidator, streetValidator, phoneNumberValidator)
+						.apply(Address::new),
 				countryValidator.split(streetValidator).split(phoneNumberValidator)
 						.apply(Address::new));
 	}
