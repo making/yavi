@@ -59,9 +59,9 @@ public class Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, X1, X2, X3,
 	}
 
 	public <X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> apply(
-			Function9<X1, X2, X3, X4, X5, X6, X7, X8, X9, X> f) {
+			Function9<? super X1, ? super X2, ? super X3, ? super X4, ? super X5, ? super X6, ? super X7, ? super X8, ? super X9, ? extends X> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale,
-				constraintGroup) -> Validations.apply(f,
+				constraintGroup) -> Validations.apply(f::apply,
 						this.v1.validate(a1, locale, constraintGroup),
 						this.v2.validate(a2, locale, constraintGroup),
 						this.v3.validate(a3, locale, constraintGroup),

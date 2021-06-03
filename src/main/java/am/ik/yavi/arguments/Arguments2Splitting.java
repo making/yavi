@@ -34,8 +34,9 @@ public class Arguments2Splitting<A1, A2, X1, X2> {
 		this.v2 = v2;
 	}
 
-	public <X> Arguments2Validator<A1, A2, X> apply(Function2<X1, X2, X> f) {
-		return (a1, a2, locale, constraintGroup) -> Validations.apply(f,
+	public <X> Arguments2Validator<A1, A2, X> apply(
+			Function2<? super X1, ? super X2, ? extends X> f) {
+		return (a1, a2, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a1, locale, constraintGroup),
 				this.v2.validate(a2, locale, constraintGroup));
 	}

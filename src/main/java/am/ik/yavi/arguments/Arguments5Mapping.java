@@ -44,8 +44,9 @@ public class Arguments5Mapping<A, R1, R2, R3, R4, R5> {
 		this.v5 = v5;
 	}
 
-	public <X> Arguments1Validator<A, X> apply(Function5<R1, R2, R3, R4, R5, X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f,
+	public <X> Arguments1Validator<A, X> apply(
+			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends X> f) {
+		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
 				this.v3.validate(a, locale, constraintGroup),

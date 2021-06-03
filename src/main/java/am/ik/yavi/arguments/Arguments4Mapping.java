@@ -40,8 +40,9 @@ public class Arguments4Mapping<A, R1, R2, R3, R4> {
 		this.v4 = v4;
 	}
 
-	public <X> Arguments1Validator<A, X> apply(Function4<R1, R2, R3, R4, X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f,
+	public <X> Arguments1Validator<A, X> apply(
+			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
+		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
 				this.v3.validate(a, locale, constraintGroup),

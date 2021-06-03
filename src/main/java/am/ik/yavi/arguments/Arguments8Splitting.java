@@ -56,9 +56,9 @@ public class Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, X1, X2, X3, X4,
 	}
 
 	public <X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> apply(
-			Function8<X1, X2, X3, X4, X5, X6, X7, X8, X> f) {
+			Function8<? super X1, ? super X2, ? super X3, ? super X4, ? super X5, ? super X6, ? super X7, ? super X8, ? extends X> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintGroup) -> Validations
-				.apply(f, this.v1.validate(a1, locale, constraintGroup),
+				.apply(f::apply, this.v1.validate(a1, locale, constraintGroup),
 						this.v2.validate(a2, locale, constraintGroup),
 						this.v3.validate(a3, locale, constraintGroup),
 						this.v4.validate(a4, locale, constraintGroup),

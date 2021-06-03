@@ -63,8 +63,8 @@ public class Arguments10Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> {
 	}
 
 	public <X> Arguments1Validator<A, X> apply(
-			Function10<R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f,
+			Function10<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? extends X> f) {
+		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
 				this.v3.validate(a, locale, constraintGroup),
