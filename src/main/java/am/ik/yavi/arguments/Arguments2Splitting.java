@@ -41,7 +41,7 @@ public class Arguments2Splitting<A1, A2, R1, R2> {
 				this.v2.validate(a2, locale, constraintGroup));
 	}
 
-	public <A3, R3> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split3(
+	public <A3, R3> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(
 			Arguments1Validator<A3, R3> v3) {
 		return new Arguments3Splitting<>(v1, v2, v3);
 	}

@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.fn.Function6;
+import am.ik.yavi.fn.Function7;
 import am.ik.yavi.fn.Validations;
 
 /**
@@ -23,7 +23,7 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments6Mapping<A, R1, R2, R3, R4, R5, R6> {
+public class Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> {
 	protected final Arguments1Validator<A, R1> v1;
 
 	protected final Arguments1Validator<A, R2> v2;
@@ -36,30 +36,35 @@ public class Arguments6Mapping<A, R1, R2, R3, R4, R5, R6> {
 
 	protected final Arguments1Validator<A, R6> v6;
 
-	public Arguments6Mapping(Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
-			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
-			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6) {
+	protected final Arguments1Validator<A, R7> v7;
+
+	public Arguments7Combining(Arguments1Validator<A, R1> v1,
+			Arguments1Validator<A, R2> v2, Arguments1Validator<A, R3> v3,
+			Arguments1Validator<A, R4> v4, Arguments1Validator<A, R5> v5,
+			Arguments1Validator<A, R6> v6, Arguments1Validator<A, R7> v7) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
 		this.v4 = v4;
 		this.v5 = v5;
 		this.v6 = v6;
+		this.v7 = v7;
 	}
 
 	public <X> Arguments1Validator<A, X> apply(
-			Function6<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? extends X> f) {
+			Function7<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
 				this.v3.validate(a, locale, constraintGroup),
 				this.v4.validate(a, locale, constraintGroup),
 				this.v5.validate(a, locale, constraintGroup),
-				this.v6.validate(a, locale, constraintGroup));
+				this.v6.validate(a, locale, constraintGroup),
+				this.v7.validate(a, locale, constraintGroup));
 	}
 
-	public <R7> Arguments7Mapping<A, R1, R2, R3, R4, R5, R6, R7> map7(
-			Arguments1Validator<A, R7> v7) {
-		return new Arguments7Mapping<>(v1, v2, v3, v4, v5, v6, v7);
+	public <R8> Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> combine(
+			Arguments1Validator<A, R8> v8) {
+		return new Arguments8Combining<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}
 }

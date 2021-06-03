@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.fn.Function3;
+import am.ik.yavi.fn.Function2;
 import am.ik.yavi.fn.Validations;
 
 /**
@@ -23,29 +23,26 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments3Mapping<A, R1, R2, R3> {
+public class Arguments2Combining<A, R1, R2> {
 	protected final Arguments1Validator<A, R1> v1;
 
 	protected final Arguments1Validator<A, R2> v2;
 
-	protected final Arguments1Validator<A, R3> v3;
-
-	public Arguments3Mapping(Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
-			Arguments1Validator<A, R3> v3) {
+	public Arguments2Combining(Arguments1Validator<A, R1> v1,
+			Arguments1Validator<A, R2> v2) {
 		this.v1 = v1;
 		this.v2 = v2;
-		this.v3 = v3;
 	}
 
 	public <X> Arguments1Validator<A, X> apply(
-			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
+			Function2<? super R1, ? super R2, ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
-				this.v2.validate(a, locale, constraintGroup),
-				this.v3.validate(a, locale, constraintGroup));
+				this.v2.validate(a, locale, constraintGroup));
 	}
 
-	public <R4> Arguments4Mapping<A, R1, R2, R3, R4> map4(Arguments1Validator<A, R4> v4) {
-		return new Arguments4Mapping<>(v1, v2, v3, v4);
+	public <R3> Arguments3Combining<A, R1, R2, R3> combine(
+			Arguments1Validator<A, R3> v3) {
+		return new Arguments3Combining<>(v1, v2, v3);
 	}
 }

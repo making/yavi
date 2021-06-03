@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.fn.Function5;
+import am.ik.yavi.fn.Function4;
 import am.ik.yavi.fn.Validations;
 
 /**
@@ -23,7 +23,7 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments5Mapping<A, R1, R2, R3, R4, R5> {
+public class Arguments4Combining<A, R1, R2, R3, R4> {
 	protected final Arguments1Validator<A, R1> v1;
 
 	protected final Arguments1Validator<A, R2> v2;
@@ -32,30 +32,26 @@ public class Arguments5Mapping<A, R1, R2, R3, R4, R5> {
 
 	protected final Arguments1Validator<A, R4> v4;
 
-	protected final Arguments1Validator<A, R5> v5;
-
-	public Arguments5Mapping(Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
-			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
-			Arguments1Validator<A, R5> v5) {
+	public Arguments4Combining(Arguments1Validator<A, R1> v1,
+			Arguments1Validator<A, R2> v2, Arguments1Validator<A, R3> v3,
+			Arguments1Validator<A, R4> v4) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
 		this.v4 = v4;
-		this.v5 = v5;
 	}
 
 	public <X> Arguments1Validator<A, X> apply(
-			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends X> f) {
+			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
 				this.v3.validate(a, locale, constraintGroup),
-				this.v4.validate(a, locale, constraintGroup),
-				this.v5.validate(a, locale, constraintGroup));
+				this.v4.validate(a, locale, constraintGroup));
 	}
 
-	public <R6> Arguments6Mapping<A, R1, R2, R3, R4, R5, R6> map6(
-			Arguments1Validator<A, R6> v6) {
-		return new Arguments6Mapping<>(v1, v2, v3, v4, v5, v6);
+	public <R5> Arguments5Combining<A, R1, R2, R3, R4, R5> combine(
+			Arguments1Validator<A, R5> v5) {
+		return new Arguments5Combining<>(v1, v2, v3, v4, v5);
 	}
 }

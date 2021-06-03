@@ -271,15 +271,15 @@ cat <<EOD
 	/**
 	 * @since 0.7.0
 	 */
-	default <A$((${i} + 1)), Y> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), X, Y> split$((${i} + 1))(Arguments1Validator<A$((${i} + 1)), Y> validator) {
+	default <A$((${i} + 1)), Y> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), X, Y> split(Arguments1Validator<A$((${i} + 1)), Y> validator) {
 		return new Arguments$((${i} + 1))Splitting<>(this, validator);
 	}
 
 	/**
 	 * @since 0.7.0
 	 */
-	default <Y> Arguments$((${i} + 1))Mapping<A${i}, X, Y> map$((${i} + 1))(Arguments1Validator<A${i}, Y> validator) {
-		return new Arguments$((${i} + 1))Mapping<>(this, validator);
+	default <Y> Arguments$((${i} + 1))Combining<A${i}, X, Y> combine(Arguments1Validator<A${i}, Y> validator) {
+		return new Arguments$((${i} + 1))Combining<>(this, validator);
 	}
 EOD
 fi)
@@ -443,13 +443,13 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a${j}, locale, constraintGroup), ";done) | sed 's/,$//'));
 	}
-$(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split$((${i} + 1))(Arguments1Validator<A$((${i} + 1)), R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split(Arguments1Validator<A$((${i} + 1)), R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
 EOF
 done
 
 for i in `seq 2 ${nn}`;do
-  class="Arguments${i}Mapping"
+  class="Arguments${i}Combining"
   file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
   echo $file
   cat <<EOF > ${file}
@@ -489,7 +489,7 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	public <X> Arguments1Validator<A, X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a, locale, constraintGroup), ";done) | sed 's/,$//'));
 	}
-$(if [ ${i} -lt ${nn} ];then echo;echo "	public <R$((${i} + 1))> Arguments$((${i} + 1))Mapping<A, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> map$((${i} + 1))(Arguments1Validator<A, R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Mapping<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${nn} ];then echo;echo "	public <R$((${i} + 1))> Arguments$((${i} + 1))Combining<A, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> combine(Arguments1Validator<A, R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Combining<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
 EOF
 done
@@ -529,14 +529,14 @@ import am.ik.yavi.fn.Validations;
 public class ${class} {
 
 $(for i in `seq 2 ${nn}`;do cat <<EOD
-	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//'), X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> split${i}($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//'), Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
+	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//'), X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> split($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//'), Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintGroup), ";done) | sed 's/,$//'));
 	}
 EOD
 done)
 
 $(for i in `seq 2 ${nn}`;do cat <<EOD
-	public static <A, $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//'), X> Arguments1Validator<A, X> map${i}($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A, R${j}> v${j}, ";done) | sed 's/,$//'), Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
+	public static <A, $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//'), X> Arguments1Validator<A, X> combine($(echo $(for j in `seq 1 ${i}`;do echo -n "Arguments1Validator<A, R${j}> v${j}, ";done) | sed 's/,$//'), Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a, locale, constraintGroup), ";done) | sed 's/,$//'));
 	}
 EOD

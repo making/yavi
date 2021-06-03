@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.fn.Function9;
+import am.ik.yavi.fn.Function8;
 import am.ik.yavi.fn.Validations;
 
 /**
@@ -23,7 +23,7 @@ import am.ik.yavi.fn.Validations;
  *
  * @since 0.7.0
  */
-public class Arguments9Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
+public class Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> {
 	protected final Arguments1Validator<A, R1> v1;
 
 	protected final Arguments1Validator<A, R2> v2;
@@ -40,13 +40,11 @@ public class Arguments9Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
 
 	protected final Arguments1Validator<A, R8> v8;
 
-	protected final Arguments1Validator<A, R9> v9;
-
-	public Arguments9Mapping(Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
-			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
-			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,
-			Arguments1Validator<A, R7> v7, Arguments1Validator<A, R8> v8,
-			Arguments1Validator<A, R9> v9) {
+	public Arguments8Combining(Arguments1Validator<A, R1> v1,
+			Arguments1Validator<A, R2> v2, Arguments1Validator<A, R3> v3,
+			Arguments1Validator<A, R4> v4, Arguments1Validator<A, R5> v5,
+			Arguments1Validator<A, R6> v6, Arguments1Validator<A, R7> v7,
+			Arguments1Validator<A, R8> v8) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -55,11 +53,10 @@ public class Arguments9Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
 		this.v6 = v6;
 		this.v7 = v7;
 		this.v8 = v8;
-		this.v9 = v9;
 	}
 
 	public <X> Arguments1Validator<A, X> apply(
-			Function9<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? extends X> f) {
+			Function8<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
 				this.v1.validate(a, locale, constraintGroup),
 				this.v2.validate(a, locale, constraintGroup),
@@ -68,12 +65,11 @@ public class Arguments9Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
 				this.v5.validate(a, locale, constraintGroup),
 				this.v6.validate(a, locale, constraintGroup),
 				this.v7.validate(a, locale, constraintGroup),
-				this.v8.validate(a, locale, constraintGroup),
-				this.v9.validate(a, locale, constraintGroup));
+				this.v8.validate(a, locale, constraintGroup));
 	}
 
-	public <R10> Arguments10Mapping<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> map10(
-			Arguments1Validator<A, R10> v10) {
-		return new Arguments10Mapping<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+	public <R9> Arguments9Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> combine(
+			Arguments1Validator<A, R9> v9) {
+		return new Arguments9Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 }

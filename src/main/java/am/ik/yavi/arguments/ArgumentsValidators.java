@@ -33,7 +33,7 @@ import am.ik.yavi.fn.Validations;
  */
 public class ArgumentsValidators {
 
-	public static <A1, A2, R1, R2, X> Arguments2Validator<A1, A2, X> split2(
+	public static <A1, A2, R1, R2, X> Arguments2Validator<A1, A2, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Function2<? super R1, ? super R2, ? extends X> f) {
 		return (a1, a2, locale, constraintGroup) -> Validations.apply(f::apply,
@@ -41,7 +41,7 @@ public class ArgumentsValidators {
 				v2.validate(a2, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, R1, R2, R3, X> Arguments3Validator<A1, A2, A3, X> split3(
+	public static <A1, A2, A3, R1, R2, R3, X> Arguments3Validator<A1, A2, A3, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3,
 			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
@@ -51,7 +51,7 @@ public class ArgumentsValidators {
 				v3.validate(a3, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, R1, R2, R3, R4, X> Arguments4Validator<A1, A2, A3, A4, X> split4(
+	public static <A1, A2, A3, A4, R1, R2, R3, R4, X> Arguments4Validator<A1, A2, A3, A4, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
@@ -62,7 +62,7 @@ public class ArgumentsValidators {
 				v4.validate(a4, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, R1, R2, R3, R4, R5, X> Arguments5Validator<A1, A2, A3, A4, A5, X> split5(
+	public static <A1, A2, A3, A4, A5, R1, R2, R3, R4, R5, X> Arguments5Validator<A1, A2, A3, A4, A5, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5,
@@ -75,7 +75,7 @@ public class ArgumentsValidators {
 				v5.validate(a5, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6, X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> split6(
+	public static <A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6, X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5, Arguments1Validator<A6, R6> v6,
@@ -89,7 +89,7 @@ public class ArgumentsValidators {
 				v6.validate(a6, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7, X> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> split7(
+	public static <A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7, X> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5, Arguments1Validator<A6, R6> v6,
@@ -105,7 +105,7 @@ public class ArgumentsValidators {
 				v7.validate(a7, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8, X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> split8(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8, X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5, Arguments1Validator<A6, R6> v6,
@@ -122,7 +122,7 @@ public class ArgumentsValidators {
 						v8.validate(a8, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9, X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> split9(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9, X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5, Arguments1Validator<A6, R6> v6,
@@ -142,7 +142,7 @@ public class ArgumentsValidators {
 						v9.validate(a9, locale, constraintGroup));
 	}
 
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> split10(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> split(
 			Arguments1Validator<A1, R1> v1, Arguments1Validator<A2, R2> v2,
 			Arguments1Validator<A3, R3> v3, Arguments1Validator<A4, R4> v4,
 			Arguments1Validator<A5, R5> v5, Arguments1Validator<A6, R6> v6,
@@ -163,7 +163,7 @@ public class ArgumentsValidators {
 						v10.validate(a10, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, X> Arguments1Validator<A, X> map2(
+	public static <A, R1, R2, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Function2<? super R1, ? super R2, ? extends X> f) {
 		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
@@ -171,7 +171,7 @@ public class ArgumentsValidators {
 				v2.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, X> Arguments1Validator<A, X> map3(
+	public static <A, R1, R2, R3, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3,
 			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
@@ -181,7 +181,7 @@ public class ArgumentsValidators {
 				v3.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, X> Arguments1Validator<A, X> map4(
+	public static <A, R1, R2, R3, R4, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
@@ -192,7 +192,7 @@ public class ArgumentsValidators {
 				v4.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, X> Arguments1Validator<A, X> map5(
+	public static <A, R1, R2, R3, R4, R5, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5,
@@ -205,7 +205,7 @@ public class ArgumentsValidators {
 				v5.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, R6, X> Arguments1Validator<A, X> map6(
+	public static <A, R1, R2, R3, R4, R5, R6, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,
@@ -219,7 +219,7 @@ public class ArgumentsValidators {
 				v6.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, R6, R7, X> Arguments1Validator<A, X> map7(
+	public static <A, R1, R2, R3, R4, R5, R6, R7, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,
@@ -235,7 +235,7 @@ public class ArgumentsValidators {
 				v7.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, X> Arguments1Validator<A, X> map8(
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,
@@ -252,7 +252,7 @@ public class ArgumentsValidators {
 				v8.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, X> Arguments1Validator<A, X> map9(
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,
@@ -271,7 +271,7 @@ public class ArgumentsValidators {
 				v9.validate(a, locale, constraintGroup));
 	}
 
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X> Arguments1Validator<A, X> map10(
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X> Arguments1Validator<A, X> combine(
 			Arguments1Validator<A, R1> v1, Arguments1Validator<A, R2> v2,
 			Arguments1Validator<A, R3> v3, Arguments1Validator<A, R4> v4,
 			Arguments1Validator<A, R5> v5, Arguments1Validator<A, R6> v6,

@@ -59,8 +59,8 @@ class ArgumentsValidatorsTest {
 			.of("s10", c -> c.notBlank()).build();
 
 	static final Arguments10Validator<String, String, String, String, String, String, String, String, String, String, List<String>> arguments10Validator = v1
-			.split2(v2).split3(v3).split4(v4).split5(v5).split6(v6).split7(v7).split8(v8)
-			.split9(v9).split10(v10).apply(Arrays::asList);
+			.split(v2).split(v3).split(v4).split(v5).split(v6).split(v7).split(v8)
+			.split(v9).split(v10).apply(Arrays::asList);
 
 	@ParameterizedTest
 	@MethodSource("validators")
@@ -108,9 +108,9 @@ class ArgumentsValidatorsTest {
 
 	static Stream<Arguments3Validator<String, String, String, Address>> validators() {
 		return Stream.of(
-				ArgumentsValidators.split3(countryValidator, streetValidator,
+				ArgumentsValidators.split(countryValidator, streetValidator,
 						phoneNumberValidator, Address::new),
-				countryValidator.split2(streetValidator).split3(phoneNumberValidator)
+				countryValidator.split(streetValidator).split(phoneNumberValidator)
 						.apply(Address::new));
 	}
 }

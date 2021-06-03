@@ -54,7 +54,7 @@ public class Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> {
 				this.v5.validate(a5, locale, constraintGroup));
 	}
 
-	public <A6, R6> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split6(
+	public <A6, R6> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split(
 			Arguments1Validator<A6, R6> v6) {
 		return new Arguments6Splitting<>(v1, v2, v3, v4, v5, v6);
 	}
