@@ -85,9 +85,16 @@ public interface Arguments1Validator<A1, X> {
 	/**
 	 * @since 0.7.0
 	 */
-	default <A2, Y> Arguments2Combining<A1, A2, X, Y> combine(
+	default <A2, Y> Arguments2Splitting<A1, A2, X, Y> split2(
 			Arguments1Validator<A2, Y> validator) {
-		return new Arguments2Combining<>(this, validator);
+		return new Arguments2Splitting<>(this, validator);
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	default <Y> Arguments2Mapping<A1, X, Y> map2(Arguments1Validator<A1, Y> validator) {
+		return new Arguments2Mapping<>(this, validator);
 	}
 
 	/**
