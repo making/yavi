@@ -50,9 +50,9 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 * @since 0.7.0
 	 */
 	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> mapper) {
+			Function<? super A, ? extends Arguments15<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15>> mapper) {
 		return (a, locale, constraintGroup) -> {
-			final Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15> args = mapper
+			final Arguments15<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15> args = mapper
 					.apply(a);
 			return Arguments15Validator.this.validate(args.arg1(), args.arg2(),
 					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),

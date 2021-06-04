@@ -24,12 +24,12 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments2Combining<A, R1, R2> {
-	protected final Arguments1Validator<A, R1> v1;
+	protected final Arguments1Validator<? super A, ? extends R1> v1;
 
-	protected final Arguments1Validator<A, R2> v2;
+	protected final Arguments1Validator<? super A, ? extends R2> v2;
 
-	public Arguments2Combining(Arguments1Validator<A, R1> v1,
-			Arguments1Validator<A, R2> v2) {
+	public Arguments2Combining(Arguments1Validator<? super A, ? extends R1> v1,
+			Arguments1Validator<? super A, ? extends R2> v2) {
 		this.v1 = v1;
 		this.v2 = v2;
 	}
@@ -42,7 +42,7 @@ public class Arguments2Combining<A, R1, R2> {
 	}
 
 	public <R3> Arguments3Combining<A, R1, R2, R3> combine(
-			Arguments1Validator<A, R3> v3) {
+			Arguments1Validator<? super A, ? extends R3> v3) {
 		return new Arguments3Combining<>(v1, v2, v3);
 	}
 }

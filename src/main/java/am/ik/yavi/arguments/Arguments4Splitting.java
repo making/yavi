@@ -24,17 +24,18 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
-	protected final Arguments1Validator<A1, R1> v1;
+	protected final Arguments1Validator<? super A1, ? extends R1> v1;
 
-	protected final Arguments1Validator<A2, R2> v2;
+	protected final Arguments1Validator<? super A2, ? extends R2> v2;
 
-	protected final Arguments1Validator<A3, R3> v3;
+	protected final Arguments1Validator<? super A3, ? extends R3> v3;
 
-	protected final Arguments1Validator<A4, R4> v4;
+	protected final Arguments1Validator<? super A4, ? extends R4> v4;
 
-	public Arguments4Splitting(Arguments1Validator<A1, R1> v1,
-			Arguments1Validator<A2, R2> v2, Arguments1Validator<A3, R3> v3,
-			Arguments1Validator<A4, R4> v4) {
+	public Arguments4Splitting(Arguments1Validator<? super A1, ? extends R1> v1,
+			Arguments1Validator<? super A2, ? extends R2> v2,
+			Arguments1Validator<? super A3, ? extends R3> v3,
+			Arguments1Validator<? super A4, ? extends R4> v4) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -51,7 +52,7 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 	}
 
 	public <A5, R5> Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> split(
-			Arguments1Validator<A5, R5> v5) {
+			Arguments1Validator<? super A5, ? extends R5> v5) {
 		return new Arguments5Splitting<>(v1, v2, v3, v4, v5);
 	}
 }

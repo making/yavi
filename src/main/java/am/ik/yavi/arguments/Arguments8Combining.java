@@ -24,27 +24,30 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> {
-	protected final Arguments1Validator<A, R1> v1;
+	protected final Arguments1Validator<? super A, ? extends R1> v1;
 
-	protected final Arguments1Validator<A, R2> v2;
+	protected final Arguments1Validator<? super A, ? extends R2> v2;
 
-	protected final Arguments1Validator<A, R3> v3;
+	protected final Arguments1Validator<? super A, ? extends R3> v3;
 
-	protected final Arguments1Validator<A, R4> v4;
+	protected final Arguments1Validator<? super A, ? extends R4> v4;
 
-	protected final Arguments1Validator<A, R5> v5;
+	protected final Arguments1Validator<? super A, ? extends R5> v5;
 
-	protected final Arguments1Validator<A, R6> v6;
+	protected final Arguments1Validator<? super A, ? extends R6> v6;
 
-	protected final Arguments1Validator<A, R7> v7;
+	protected final Arguments1Validator<? super A, ? extends R7> v7;
 
-	protected final Arguments1Validator<A, R8> v8;
+	protected final Arguments1Validator<? super A, ? extends R8> v8;
 
-	public Arguments8Combining(Arguments1Validator<A, R1> v1,
-			Arguments1Validator<A, R2> v2, Arguments1Validator<A, R3> v3,
-			Arguments1Validator<A, R4> v4, Arguments1Validator<A, R5> v5,
-			Arguments1Validator<A, R6> v6, Arguments1Validator<A, R7> v7,
-			Arguments1Validator<A, R8> v8) {
+	public Arguments8Combining(Arguments1Validator<? super A, ? extends R1> v1,
+			Arguments1Validator<? super A, ? extends R2> v2,
+			Arguments1Validator<? super A, ? extends R3> v3,
+			Arguments1Validator<? super A, ? extends R4> v4,
+			Arguments1Validator<? super A, ? extends R5> v5,
+			Arguments1Validator<? super A, ? extends R6> v6,
+			Arguments1Validator<? super A, ? extends R7> v7,
+			Arguments1Validator<? super A, ? extends R8> v8) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -69,7 +72,7 @@ public class Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> {
 	}
 
 	public <R9> Arguments9Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> combine(
-			Arguments1Validator<A, R9> v9) {
+			Arguments1Validator<? super A, ? extends R9> v9) {
 		return new Arguments9Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 }

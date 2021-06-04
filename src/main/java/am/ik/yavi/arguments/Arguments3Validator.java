@@ -46,9 +46,10 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 * @since 0.7.0
 	 */
 	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends Arguments3<A1, A2, A3>> mapper) {
+			Function<? super A, ? extends Arguments3<? extends A1, ? extends A2, ? extends A3>> mapper) {
 		return (a, locale, constraintGroup) -> {
-			final Arguments3<A1, A2, A3> args = mapper.apply(a);
+			final Arguments3<? extends A1, ? extends A2, ? extends A3> args = mapper
+					.apply(a);
 			return Arguments3Validator.this.validate(args.arg1(), args.arg2(),
 					args.arg3(), locale, constraintGroup);
 		};

@@ -24,14 +24,15 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
-	protected final Arguments1Validator<A1, R1> v1;
+	protected final Arguments1Validator<? super A1, ? extends R1> v1;
 
-	protected final Arguments1Validator<A2, R2> v2;
+	protected final Arguments1Validator<? super A2, ? extends R2> v2;
 
-	protected final Arguments1Validator<A3, R3> v3;
+	protected final Arguments1Validator<? super A3, ? extends R3> v3;
 
-	public Arguments3Splitting(Arguments1Validator<A1, R1> v1,
-			Arguments1Validator<A2, R2> v2, Arguments1Validator<A3, R3> v3) {
+	public Arguments3Splitting(Arguments1Validator<? super A1, ? extends R1> v1,
+			Arguments1Validator<? super A2, ? extends R2> v2,
+			Arguments1Validator<? super A3, ? extends R3> v3) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -46,7 +47,7 @@ public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
 	}
 
 	public <A4, R4> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split(
-			Arguments1Validator<A4, R4> v4) {
+			Arguments1Validator<? super A4, ? extends R4> v4) {
 		return new Arguments4Splitting<>(v1, v2, v3, v4);
 	}
 }

@@ -24,19 +24,21 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments5Combining<A, R1, R2, R3, R4, R5> {
-	protected final Arguments1Validator<A, R1> v1;
+	protected final Arguments1Validator<? super A, ? extends R1> v1;
 
-	protected final Arguments1Validator<A, R2> v2;
+	protected final Arguments1Validator<? super A, ? extends R2> v2;
 
-	protected final Arguments1Validator<A, R3> v3;
+	protected final Arguments1Validator<? super A, ? extends R3> v3;
 
-	protected final Arguments1Validator<A, R4> v4;
+	protected final Arguments1Validator<? super A, ? extends R4> v4;
 
-	protected final Arguments1Validator<A, R5> v5;
+	protected final Arguments1Validator<? super A, ? extends R5> v5;
 
-	public Arguments5Combining(Arguments1Validator<A, R1> v1,
-			Arguments1Validator<A, R2> v2, Arguments1Validator<A, R3> v3,
-			Arguments1Validator<A, R4> v4, Arguments1Validator<A, R5> v5) {
+	public Arguments5Combining(Arguments1Validator<? super A, ? extends R1> v1,
+			Arguments1Validator<? super A, ? extends R2> v2,
+			Arguments1Validator<? super A, ? extends R3> v3,
+			Arguments1Validator<? super A, ? extends R4> v4,
+			Arguments1Validator<? super A, ? extends R5> v5) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -55,7 +57,7 @@ public class Arguments5Combining<A, R1, R2, R3, R4, R5> {
 	}
 
 	public <R6> Arguments6Combining<A, R1, R2, R3, R4, R5, R6> combine(
-			Arguments1Validator<A, R6> v6) {
+			Arguments1Validator<? super A, ? extends R6> v6) {
 		return new Arguments6Combining<>(v1, v2, v3, v4, v5, v6);
 	}
 }
