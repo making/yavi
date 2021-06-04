@@ -47,6 +47,22 @@ import am.ik.yavi.arguments.Arguments15;
 import am.ik.yavi.arguments.Arguments15Validator;
 import am.ik.yavi.arguments.Arguments16;
 import am.ik.yavi.arguments.Arguments16Validator;
+import am.ik.yavi.arguments.DefaultArguments1Validator;
+import am.ik.yavi.arguments.DefaultArguments2Validator;
+import am.ik.yavi.arguments.DefaultArguments3Validator;
+import am.ik.yavi.arguments.DefaultArguments4Validator;
+import am.ik.yavi.arguments.DefaultArguments5Validator;
+import am.ik.yavi.arguments.DefaultArguments6Validator;
+import am.ik.yavi.arguments.DefaultArguments7Validator;
+import am.ik.yavi.arguments.DefaultArguments8Validator;
+import am.ik.yavi.arguments.DefaultArguments9Validator;
+import am.ik.yavi.arguments.DefaultArguments10Validator;
+import am.ik.yavi.arguments.DefaultArguments11Validator;
+import am.ik.yavi.arguments.DefaultArguments12Validator;
+import am.ik.yavi.arguments.DefaultArguments13Validator;
+import am.ik.yavi.arguments.DefaultArguments14Validator;
+import am.ik.yavi.arguments.DefaultArguments15Validator;
+import am.ik.yavi.arguments.DefaultArguments16Validator;
 import am.ik.yavi.fn.Function1;
 import am.ik.yavi.fn.Function2;
 import am.ik.yavi.fn.Function3;
@@ -171,7 +187,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments1Validator<A1, X> build() {
-			return new Arguments1Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments1Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -194,7 +210,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments2Validator<A1, A2, X> build() {
-			return new Arguments2Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments2Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -217,7 +233,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments3Validator<A1, A2, A3, X> build() {
-			return new Arguments3Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments3Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -240,7 +256,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments4Validator<A1, A2, A3, A4, X> build() {
-			return new Arguments4Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments4Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -263,7 +279,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments5Validator<A1, A2, A3, A4, A5, X> build() {
-			return new Arguments5Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments5Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -286,7 +302,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments6Validator<A1, A2, A3, A4, A5, A6, X> build() {
-			return new Arguments6Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments6Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -309,7 +325,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> build() {
-			return new Arguments7Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments7Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -332,7 +348,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> build() {
-			return new Arguments8Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments8Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -355,7 +371,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> build() {
-			return new Arguments9Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments9Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -378,7 +394,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> build() {
-			return new Arguments10Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments10Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -401,7 +417,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> build() {
-			return new Arguments11Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments11Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -424,7 +440,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> build() {
-			return new Arguments12Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments12Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -447,7 +463,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> build() {
-			return new Arguments13Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments13Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -470,7 +486,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> build() {
-			return new Arguments14Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments14Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -493,7 +509,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> build() {
-			return new Arguments15Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments15Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 
@@ -516,7 +532,7 @@ public final class ArgumentsValidatorBuilder {
 		}
 
 		public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> build() {
-			return new Arguments16Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments16Validator<>(this.builder.build(), this.mapper);
 		}
 	}
 }
