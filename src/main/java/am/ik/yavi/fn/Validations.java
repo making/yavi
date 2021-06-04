@@ -158,23 +158,18 @@ public class Validations {
 	}
 
 	public static <E, T> Validation<E, List<T>> sequence(
-			Iterable<Validation<E, T>> validations) {
+			Iterable<? extends Validation<? extends E, ? extends T>> validations) {
 		final List<E> errors = new ArrayList<>();
 		final List<T> values = new ArrayList<>();
-		for (Validation<E, T> validation : validations) {
-			if (!validation.isValid()) {
-				errors.addAll(validation.errors());
-			}
-			else if (errors.isEmpty()) {
-				values.add(validation.value());
-			}
-		}
+		validations.forEach(v -> v.fold(errors::addAll, values::add));
 		return errors.isEmpty() ? Validation.success(values) : Validation.failure(errors);
 	}
 
 	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
-			Function<T, Validation<E, U>> mapper) {
-		return sequence(StreamSupport.stream(values.spliterator(), false).map(mapper)
+			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
+		return sequence(StreamSupport.stream(values.spliterator(), false)
+				.<Validation<? extends E, ? extends U>>map(mapper)
 				.collect(Collectors.toList()));
 	}
+
 }
