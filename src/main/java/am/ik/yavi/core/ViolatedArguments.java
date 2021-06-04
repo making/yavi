@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+@FunctionalInterface
 public interface ViolatedArguments {
 
 	/**
@@ -23,7 +24,7 @@ public interface ViolatedArguments {
 	 * Note that <code>{0}</code> is reserved for the property name and the last index in
 	 * reserved for the actual value.<br>
 	 * The implementer don't need to include the property name and the actual value.
-	 * 
+	 *
 	 * @return the array of arguments
 	 */
 	Object[] arguments();
