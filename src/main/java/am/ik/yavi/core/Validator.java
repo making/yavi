@@ -49,7 +49,8 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final EitherValidator<T> eitherValidator = EitherValidator.of(this);
 
-	private final ApplicativeValidator<T> applicativeValidator = ApplicativeValidator.of(this);
+	private final ApplicativeValidator<T> applicativeValidator = ApplicativeValidator
+			.of(this);
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
@@ -73,7 +74,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.messageFormatter = messageFormatter;
 		this.prefix = (prefix == null || prefix.isEmpty()
 				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
-				: prefix + this.messageKeySeparator;
+						: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {
