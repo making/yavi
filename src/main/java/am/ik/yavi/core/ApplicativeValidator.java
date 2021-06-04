@@ -24,34 +24,32 @@ import am.ik.yavi.fn.Validation;
  * @param <T> Target class
  * @since 0.6.0
  */
-public final class ApplicativeValidator<T> {
-	private final Validator<T> validator;
+@FunctionalInterface
+public interface ApplicativeValidator<T> {
+	Validated<T> validate(T target, Locale locale, ConstraintGroup constraintGroup);
 
-	ApplicativeValidator(Validator<T> validator) {
-		this.validator = validator;
-	}
-
-	public Validated<T> validate(T target) {
+	default Validated<T> validate(T target) {
 		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
-	public Validated<T> validate(T target, ConstraintGroup constraintGroup) {
+	default Validated<T> validate(T target, ConstraintGroup constraintGroup) {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
 	}
 
-	public Validated<T> validate(T target, Locale locale) {
+	default Validated<T> validate(T target, Locale locale) {
 		return this.validate(target, locale, ConstraintGroup.DEFAULT);
 	}
 
-	public Validated<T> validate(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
-		final ConstraintViolations violations = this.validator.validate(target, locale,
-				constraintGroup);
-		if (violations.isValid()) {
-			return Validated.of(Validation.success(target));
-		}
-		else {
-			return Validated.of(Validation.failure(violations));
-		}
+	static <T> ApplicativeValidator<T> of(ValidatorSubset<T> validator) {
+		return (target, locale, constraintGroup) -> {
+			final ConstraintViolations violations = validator.validate(target, locale,
+					constraintGroup);
+			if (violations.isValid()) {
+				return Validated.of(Validation.success(target));
+			}
+			else {
+				return Validated.of(Validation.failure(violations));
+			}
+		};
 	}
 }

@@ -24,12 +24,19 @@ import am.ik.yavi.fn.Either;
  * @param <T> Target class
  * @since 0.6.0
  */
-public final class EitherValidator<T> {
-	private final Validator<T> validator;
-
-	EitherValidator(Validator<T> validator) {
-		this.validator = validator;
-	}
+@FunctionalInterface
+public interface EitherValidator<T> {
+	/**
+	 * Validates all constraints on {@code target} and returns {@code Either} object that
+	 * has constraint violations on the left or validated object on the right. <br>
+	 *
+	 * @param target target to validate
+	 * @return either object that has constraint violations on the left or validated
+	 * object on the right
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	Either<ConstraintViolations, T> validate(T target, Locale locale,
+			ConstraintGroup constraintGroup);
 
 	/**
 	 * Validates all constraints on {@code target} and returns {@code Either} object that
@@ -42,7 +49,7 @@ public final class EitherValidator<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	public Either<ConstraintViolations, T> validate(T target) {
+	default Either<ConstraintViolations, T> validate(T target) {
 		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
@@ -57,7 +64,7 @@ public final class EitherValidator<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	public Either<ConstraintViolations, T> validate(T target,
+	default Either<ConstraintViolations, T> validate(T target,
 			ConstraintGroup constraintGroup) {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
 	}
@@ -73,28 +80,20 @@ public final class EitherValidator<T> {
 	 * object on the right
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	public Either<ConstraintViolations, T> validate(T target, Locale locale) {
+	default Either<ConstraintViolations, T> validate(T target, Locale locale) {
 		return this.validate(target, locale, ConstraintGroup.DEFAULT);
 	}
 
-	/**
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 *
-	 * @param target target to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public Either<ConstraintViolations, T> validate(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
-		ConstraintViolations violations = this.validator.validate(target, locale,
-				constraintGroup);
-		if (violations.isValid()) {
-			return Either.right(target);
-		}
-		else {
-			return Either.left(violations);
-		}
+	static <T> EitherValidator<T> of(ValidatorSubset<T> validator) {
+		return (target, locale, constraintGroup) -> {
+			final ConstraintViolations violations = validator.validate(target, locale,
+					constraintGroup);
+			if (violations.isValid()) {
+				return Either.right(target);
+			}
+			else {
+				return Either.left(violations);
+			}
+		};
 	}
 }

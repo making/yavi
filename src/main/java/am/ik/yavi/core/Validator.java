@@ -15,16 +15,16 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.fn.Either;
-import am.ik.yavi.fn.Pair;
-import am.ik.yavi.message.MessageFormatter;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
+
+import am.ik.yavi.fn.Either;
+import am.ik.yavi.fn.Pair;
+import am.ik.yavi.message.MessageFormatter;
 
 /**
  * Validates the target instances.
@@ -47,10 +47,9 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final String prefix;
 
-	private final EitherValidator<T> eitherValidator = new EitherValidator<>(this);
+	private final EitherValidator<T> eitherValidator = EitherValidator.of(this);
 
-	private final ApplicativeValidator<T> applicativeValidator = new ApplicativeValidator<>(
-			this);
+	private final ApplicativeValidator<T> applicativeValidator = ApplicativeValidator.of(this);
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
@@ -74,7 +73,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.messageFormatter = messageFormatter;
 		this.prefix = (prefix == null || prefix.isEmpty()
 				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
-						: prefix + this.messageKeySeparator;
+				: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {
