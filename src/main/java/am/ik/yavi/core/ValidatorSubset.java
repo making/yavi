@@ -17,7 +17,56 @@ package am.ik.yavi.core;
 
 import java.util.Locale;
 
+@FunctionalInterface
 public interface ValidatorSubset<T> {
+	/**
+	 * Validates all constraints on {@code target}.
+	 *
+	 * @param target target to validate
+	 * @param locale the locale targeted for the violation messages.
+	 * @param constraintGroup constraint group to validate
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
 	ConstraintViolations validate(T target, Locale locale,
 			ConstraintGroup constraintGroup);
+
+	/**
+	 * Validates all constraints on {@code target}. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 *
+	 * @param target target to validate
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	default ConstraintViolations validate(T target) {
+		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Validates all constraints on {@code target}.<br>
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 *
+	 * @param target target to validate
+	 * @param locale the locale targeted for the violation messages.
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	default ConstraintViolations validate(T target, Locale locale) {
+		return this.validate(target, locale, ConstraintGroup.DEFAULT);
+	}
+
+	/**
+	 * Validates all constraints on {@code target}. <br>
+	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 *
+	 * @param target target to validate
+	 * @param constraintGroup constraint group to validate
+	 * @return constraint violations
+	 * @throws IllegalArgumentException if target is {@code null}
+	 */
+	default ConstraintViolations validate(T target, ConstraintGroup constraintGroup) {
+		return this.validate(target, Locale.getDefault(), constraintGroup);
+	}
 }

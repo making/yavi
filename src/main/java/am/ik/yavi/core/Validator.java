@@ -112,57 +112,10 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.conditionalValidators.forEach(action);
 	}
 
-	/**
-	 * Validates all constraints on {@code target}. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 *
-	 * @param target target to validate
-	 * @param constraintGroup constraint group to validate
-	 * @return constraint violations
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public ConstraintViolations validate(T target, ConstraintGroup constraintGroup) {
-		return this.validate(target, Locale.getDefault(), constraintGroup);
-	}
-
-	/**
-	 * Validates all constraints on {@code target}.<br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @param locale the locale targeted for the violation messages.
-	 * @return constraint violations
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public ConstraintViolations validate(T target, Locale locale) {
-		return this.validate(target, locale, ConstraintGroup.DEFAULT);
-	}
-
-	/**
-	 * Validates all constraints on {@code target}.
-	 *
-	 * @param target target to validate
-	 * @param locale the locale targeted for the violation messages.
-	 * @param constraintGroup constraint group to validate
-	 * @return constraint violations
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
+	@Override
 	public ConstraintViolations validate(T target, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.validate(target, "", -1, locale, constraintGroup);
-	}
-
-	/**
-	 * Validates all constraints on {@code target}. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @return constraint violations
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	public ConstraintViolations validate(T target) {
-		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
 	/**
