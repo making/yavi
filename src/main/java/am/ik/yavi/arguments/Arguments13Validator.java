@@ -156,8 +156,8 @@ public interface Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	}
 
 	/**
-	 * Use
-	 * {@link #validated(Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
+	 * Consider using
+	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
 	 * instead
 	 */
 	@Deprecated
@@ -165,12 +165,12 @@ public interface Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 			A7 a7, A8 a8, A9 a9, A10 a10, A11 a11, A12 a12, A13 a13,
 			ConstraintGroup constraintGroup) {
 		throw new UnsupportedOperationException(
-				"validateAndThrowIfInvalid is not supported. Consider using validated method instead.");
+				"validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
 	}
 
 	/**
-	 * Use
-	 * {@link #validated(Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object)}
+	 * Consider using
+	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object)}
 	 * instead
 	 */
 	@Deprecated

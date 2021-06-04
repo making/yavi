@@ -145,20 +145,20 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
 	}
 
 	/**
-	 * Use
-	 * {@link #validated(Object, Object, Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
+	 * Consider using
+	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
 	 * instead
 	 */
 	@Deprecated
 	default void validateAndThrowIfInvalid(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6,
 			A7 a7, A8 a8, A9 a9, ConstraintGroup constraintGroup) {
 		throw new UnsupportedOperationException(
-				"validateAndThrowIfInvalid is not supported. Consider using validated method instead.");
+				"validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
 	}
 
 	/**
-	 * Use
-	 * {@link #validated(Object, Object, Object, Object, Object, Object, Object, Object, Object)}
+	 * Consider using
+	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Object, Object)}
 	 * instead
 	 */
 	@Deprecated

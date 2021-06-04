@@ -318,15 +318,15 @@ fi)
 	}
 
 	/**
-	 * Use {@link #validated($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
+	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
 	 */
 	@Deprecated
 	default void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
-		throw new UnsupportedOperationException("validateAndThrowIfInvalid is not supported. Consider using validated method instead.");
+		throw new UnsupportedOperationException("validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
 	}
 
 	/**
-	 * Use {@link #validated($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
+	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
 	 */
 	@Deprecated
 	default void validateAndThrowIfInvalid(${args}) {

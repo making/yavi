@@ -121,17 +121,17 @@ public interface Arguments2Validator<A1, A2, X> {
 	}
 
 	/**
-	 * Use {@link #validated(Object, Object, ConstraintGroup)} instead
+	 * Consider using {@link #validate(Object, Object, ConstraintGroup)} instead
 	 */
 	@Deprecated
 	default void validateAndThrowIfInvalid(A1 a1, A2 a2,
 			ConstraintGroup constraintGroup) {
 		throw new UnsupportedOperationException(
-				"validateAndThrowIfInvalid is not supported. Consider using validated method instead.");
+				"validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
 	}
 
 	/**
-	 * Use {@link #validated(Object, Object)} instead
+	 * Consider using {@link #validate(Object, Object)} instead
 	 */
 	@Deprecated
 	default void validateAndThrowIfInvalid(A1 a1, A2 a2) {
