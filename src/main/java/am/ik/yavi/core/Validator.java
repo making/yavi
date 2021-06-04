@@ -74,7 +74,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.messageFormatter = messageFormatter;
 		this.prefix = (prefix == null || prefix.isEmpty()
 				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
-						: prefix + this.messageKeySeparator;
+				: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {
@@ -118,20 +118,12 @@ public class Validator<T> implements ValidatorSubset<T> {
 		return this.validate(target, "", -1, locale, constraintGroup);
 	}
 
-	/**
-	 * Returns the corresponding either validator
-	 * @return either validator
-	 * @since 0.6.0
-	 */
+	@Override
 	public EitherValidator<T> either() {
 		return this.eitherValidator;
 	}
 
-	/**
-	 * Returns the corresponding applicative validator
-	 * @return applicative validator
-	 * @since 0.6.0
-	 */
+	@Override
 	public ApplicativeValidator<T> applicative() {
 		return this.applicativeValidator;
 	}

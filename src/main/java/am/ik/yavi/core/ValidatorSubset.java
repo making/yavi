@@ -69,4 +69,23 @@ public interface ValidatorSubset<T> {
 	default ConstraintViolations validate(T target, ConstraintGroup constraintGroup) {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
 	}
+
+
+	/**
+	 * Returns the corresponding either validator
+	 * @return either validator
+	 * @since 0.6.0
+	 */
+	default EitherValidator<T> either() {
+		return EitherValidator.of(this);
+	}
+
+	/**
+	 * Returns the corresponding applicative validator
+	 * @return applicative validator
+	 * @since 0.6.0
+	 */
+	default ApplicativeValidator<T> applicative() {
+		return ApplicativeValidator.of(this);
+	}
 }
