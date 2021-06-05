@@ -189,8 +189,7 @@ public class Validations {
 		final List<U> results = new ArrayList<>();
 		int index = 0;
 		for (T value : values) {
-			traverser.apply(value, index).fold(errors::addAll, results::add);
-			index++;
+			traverser.apply(value, index++).fold(errors::addAll, results::add);
 		}
 		return errors.isEmpty() ? Validation.success(results)
 				: Validation.failure(errors);
