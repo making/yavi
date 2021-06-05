@@ -569,8 +569,11 @@ $(for i in `seq 1 ${nn}`;do cat <<EOD
 EOD
 done)
 
-	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(Arguments1Validator<? super A1, ? extends R> validator) {
-		return (values, locale, constraintGroup) -> Validated.traverse(values, v -> validator.validate(v, locale, constraintGroup));
+	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
+			Arguments1Validator<? super A1, ? extends R> validator) {
+		return (values, locale, constraintGroup) -> Validated.traverseWithIndex(values,
+				(v, idx) -> validator.withIndex(idx).validate(v, locale,
+						constraintGroup));
 	}
 
 }
