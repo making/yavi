@@ -340,9 +340,8 @@ public class ArgumentsValidators {
 
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
 			Arguments1Validator<? super A1, ? extends R> validator) {
-		return (values, locale, constraintGroup) -> Validated.traverseWithIndex(values,
-				(v, index) -> validator.withIndex(index).validate(v, locale,
-						constraintGroup));
+		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
+				index) -> validator.indexed(index).validate(v, locale, constraintGroup));
 	}
 
 }

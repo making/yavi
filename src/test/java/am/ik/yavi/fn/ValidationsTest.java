@@ -83,4 +83,18 @@ class ValidationsTest {
 				});
 		assertThat(validation.errors()).containsExactly("e1", "e2", "e3", "e4");
 	}
+
+	@Test
+	void traverseIndexedInvalid() {
+		final Validation<String, List<Integer>> validation = Validations
+				.traverseIndexed(Arrays.asList(1, -1, 2, -2), (i, index) -> {
+					if (i > 0) {
+						return Validation.success(i);
+					}
+					else {
+						return Validation.failure("e[" + index + "]");
+					}
+				});
+		assertThat(validation.errors()).containsExactly("e[1]", "e[3]");
+	}
 }

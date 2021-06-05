@@ -92,4 +92,11 @@ public class ConstraintViolation {
 		return new ConstraintViolation(rename.apply(name), messageKey,
 				defaultMessageFormat, args, messageFormatter, locale);
 	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public ConstraintViolation indexed(int index) {
+		return this.rename(name -> name + "[" + index + "]");
+	}
 }

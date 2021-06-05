@@ -54,6 +54,13 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	/**
 	 * @since 0.7.0
 	 */
+	public Validated<T> indexed(int index) {
+		return Validated.of(this.mapErrorsF(violation -> violation.indexed(index)));
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
 	public static <T> Validated<List<T>> sequence(
 			Iterable<Validated<? extends T>> values) {
 		return Validated.of(Validations.sequence(values));
@@ -70,9 +77,9 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	/**
 	 * @since 0.7.0
 	 */
-	public static <T, U> Validated<List<U>> traverseWithIndex(Iterable<T> values,
+	public static <T, U> Validated<List<U>> traverseIndexed(Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper) {
-		return Validated.of(Validations.traverseWithIndex(values, mapper));
+		return Validated.of(Validations.traverseIndexed(values, mapper));
 	}
 
 }

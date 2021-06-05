@@ -164,7 +164,7 @@ public class Validations {
 
 	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
-		return traverseWithIndex(values, IndexedTraverser.ignoreIndex(mapper));
+		return traverseIndexed(values, IndexedTraverser.ignoreIndex(mapper));
 	}
 
 	/**
@@ -183,7 +183,7 @@ public class Validations {
 	/**
 	 * @since 0.7.0
 	 */
-	public static <E, T, U> Validation<E, List<U>> traverseWithIndex(Iterable<T> values,
+	public static <E, T, U> Validation<E, List<U>> traverseIndexed(Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
 		final List<E> errors = new ArrayList<>();
 		final List<U> results = new ArrayList<>();
