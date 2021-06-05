@@ -322,6 +322,9 @@ class ArgumentsValidatorsTest {
 
 		assertThat(actual.isValid()).isFalse();
 		assertThat(actual.errors()).hasSize(3);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
 	}
 
 }

@@ -281,6 +281,12 @@ cat <<EOD
 	default <Y> Arguments$((${i} + 1))Combining<A${i}, X, Y> combine(Arguments1Validator<A${i}, Y> validator) {
 		return new Arguments$((${i} + 1))Combining<>(this, validator);
 	}
+
+	default Arguments1Validator<A1, X> withIndex(int index) {
+		return (a1, locale, constraintGroup) -> Validated.of(Arguments1Validator.this
+			.validate(a1, locale, constraintGroup).mapErrors(errors ->
+				errors.stream().map(e -> e.rename(name -> name + "[" + index + "]")).collect(toList())));
+	}
 EOD
 fi)
 

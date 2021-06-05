@@ -2,6 +2,7 @@ package am.ik.yavi.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -62,6 +63,11 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	public static <T, U> Validated<List<U>> traverse(Iterable<T> values,
 			Function<? super T, Validated<? extends U>> mapper) {
 		return of(Validations.traverse(values, mapper));
+	}
+
+	public static <T, U> Validated<List<U>> traverseWithIndex(Iterable<T> values,
+			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper) {
+		return of(Validations.traverseWithIndex(values, mapper));
 	}
 
 }
