@@ -53,6 +53,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
@@ -247,6 +248,40 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			}
 		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
 		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> luhn() {
+		this.predicates().add(ConstraintPredicate.of(CharSequenceConstraint::luhnCheck,
+				CHAR_SEQUENCE_LUHN, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	// https://github.com/apache/commons-validator/blob/master/src/main/java/org/apache/commons/validator/CreditCardValidator.java
+	static boolean luhnCheck(CharSequence cardNumber) {
+		// number must be validated as 0..9 numeric first!!
+		final int digits = cardNumber.length();
+		final int oddOrEven = digits & 1;
+		long sum = 0;
+		for (int count = 0; count < digits; count++) {
+			int digit;
+			try {
+				digit = Integer.parseInt(cardNumber.charAt(count) + "");
+			}
+			catch (NumberFormatException e) {
+				return false;
+			}
+			if (((count & 1) ^ oddOrEven) == 0) { // not
+				digit *= 2;
+				if (digit > 9) {
+					digit -= 9;
+				}
+			}
+			sum += digit;
+		}
+		return sum != 0 && (sum % 10 == 0);
 	}
 
 	public CharSequenceConstraint<T, E> variant(

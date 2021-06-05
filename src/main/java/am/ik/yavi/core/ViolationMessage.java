@@ -62,6 +62,8 @@ public interface ViolationMessage {
 				"\"{0}\" must be a valid email address"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
+		CHAR_SEQUENCE_LUHN("charSequence.luhn",
+				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
 		CHAR_SEQUENCE_BOOLEAN("charSequence.boolean",
 				"\"{0}\" must be a valid representation of a boolean."), //
 		CHAR_SEQUENCE_BYTE("charSequence.byte",
