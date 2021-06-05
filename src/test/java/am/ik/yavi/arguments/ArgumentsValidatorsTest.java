@@ -258,38 +258,38 @@ class ArgumentsValidatorsTest {
 
 	@Test
 	void sequence1Valid() {
-		final Arguments1Validator<Map<String, String>, List<String>> sequenced =
-			ArgumentsValidators.sequence1(Arrays.asList(mapV1, mapV2, mapV3, mapV4,
-				mapV5, mapV6, mapV7, mapV8, mapV9, mapV10));
+		final Arguments1Validator<Map<String, String>, List<String>> sequenced = ArgumentsValidators
+				.sequence1(Arrays.asList(mapV1, mapV2, mapV3, mapV4, mapV5, mapV6, mapV7,
+						mapV8, mapV9, mapV10));
 
 		final Validated<List<String>> validated = sequenced
-			.validate(new HashMap<String, String>() {
-				{
-					for (int i = 1; i <= 10; i++) {
-						put("s" + i, String.valueOf(i));
+				.validate(new HashMap<String, String>() {
+					{
+						for (int i = 1; i <= 10; i++) {
+							put("s" + i, String.valueOf(i));
+						}
 					}
-				}
-			});
+				});
 		assertThat(validated.isValid()).isTrue();
 		final List<String> list = validated.value();
 		assertThat(list).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9",
-			"10");
+				"10");
 	}
 
 	@Test
 	void sequence1Invalid() {
-		final Arguments1Validator<Map<String, String>, List<String>> sequenced =
-			ArgumentsValidators.sequence1(Arrays.asList(mapV1, mapV2, mapV3, mapV4,
-				mapV5, mapV6, mapV7, mapV8, mapV9, mapV10));
+		final Arguments1Validator<Map<String, String>, List<String>> sequenced = ArgumentsValidators
+				.sequence1(Arrays.asList(mapV1, mapV2, mapV3, mapV4, mapV5, mapV6, mapV7,
+						mapV8, mapV9, mapV10));
 
 		final Validated<List<String>> validated = sequenced
-			.validate(new HashMap<String, String>() {
-				{
-					for (int i = 1; i <= 10; i++) {
-						put("s" + i, " ");
+				.validate(new HashMap<String, String>() {
+					{
+						for (int i = 1; i <= 10; i++) {
+							put("s" + i, " ");
+						}
 					}
-				}
-			});
+				});
 		assertThat(validated.isValid()).isFalse();
 		final ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(10);
@@ -301,23 +301,22 @@ class ArgumentsValidatorsTest {
 
 	@Test
 	void liftListValid() {
-		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator =
-			ArgumentsValidators.liftList(phoneNumberValidator);
-		List<String> input = Arrays.asList("012012345678", "012012348765", "012012345679");
+		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = ArgumentsValidators
+				.liftList(phoneNumberValidator);
+		List<String> input = Arrays.asList("012012345678", "012012348765",
+				"012012345679");
 		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
 
 		assertThat(actual.isValid()).isTrue();
 		assertThat(actual.value()).isEqualTo(Arrays.asList(
-			new PhoneNumber("012012345678"),
-			new PhoneNumber("012012348765"),
-			new PhoneNumber("012012345679"))
-		);
+				new PhoneNumber("012012345678"), new PhoneNumber("012012348765"),
+				new PhoneNumber("012012345679")));
 	}
 
 	@Test
 	void liftListInvalid() {
-		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator =
-			ArgumentsValidators.liftList(phoneNumberValidator);
+		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = ArgumentsValidators
+				.liftList(phoneNumberValidator);
 		List<String> input = Arrays.asList("012012345678", "", "012");
 		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
 

@@ -168,7 +168,7 @@ public class Validations {
 	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
 		return sequence(StreamSupport.stream(values.spliterator(), false)
-				.<Validation<? extends E, ? extends U>>map(mapper)
+				.<Validation<? extends E, ? extends U>> map(mapper)
 				.collect(Collectors.toList()));
 	}
 
