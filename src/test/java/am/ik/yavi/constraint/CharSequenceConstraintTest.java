@@ -357,6 +357,34 @@ class CharSequenceConstraintTest {
 		assertThat(predicate.test(value)).isFalse();
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1", "127.0.0.1", "255.255.255.255", "0.0.0.0" })
+	void validIpv4(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1.1", "255.255.255.256", "a.a.a.a" })
+	void invalidIpv4(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1" })
+	void validIpv6(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1.1", "0:0:0:0:0:0:0:Z" })
+	void invalidIpv6(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
 	private static Predicate<String> retrievePredicate(
 			Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
 		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst()

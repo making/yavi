@@ -52,6 +52,8 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
@@ -66,11 +68,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
 
-	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
+	private static final String IPV4_PATTERN = "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$";
+
+	private static final String IPV6_PATTERN = "^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$";
 
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
 			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
-					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
+					+ "|" + IPV4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -231,6 +235,24 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public CharSequenceConstraint<T, E> pattern(String regex) {
 		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
 				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> ipv4() {
+		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(IPV4_PATTERN, x),
+				CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> ipv6() {
+		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(IPV6_PATTERN, x),
+				CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
 		return this;
 	}
 
