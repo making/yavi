@@ -282,6 +282,9 @@ cat <<EOD
 		return new Arguments$((${i} + 1))Combining<>(this, validator);
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
 	default Arguments1Validator<A1, X> withIndex(int index) {
 		return (a1, locale,
 				constraintGroup) -> Validated.of(Arguments1Validator.this
@@ -572,7 +575,7 @@ done)
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
 			Arguments1Validator<? super A1, ? extends R> validator) {
 		return (values, locale, constraintGroup) -> Validated.traverseWithIndex(values,
-				(v, idx) -> validator.withIndex(idx).validate(v, locale,
+				(v, index) -> validator.withIndex(index).validate(v, locale,
 						constraintGroup));
 	}
 

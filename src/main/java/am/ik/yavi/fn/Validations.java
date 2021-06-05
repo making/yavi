@@ -167,7 +167,10 @@ public class Validations {
 		return traverseWithIndex(values, IndexedTraverser.ignoreIndex(mapper));
 	}
 
-	public static interface IndexedTraverser<A, R> {
+	/**
+	 * @since 0.7.0
+	 */
+	public interface IndexedTraverser<A, R> {
 		R apply(A a, int index);
 
 		static <A, R> IndexedTraverser<A, R> ignoreIndex(
@@ -176,6 +179,9 @@ public class Validations {
 		}
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
 	public static <E, T, U> Validation<E, List<U>> traverseWithIndex(Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
 		final List<E> errors = new ArrayList<>();

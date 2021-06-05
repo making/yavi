@@ -85,6 +85,9 @@ public abstract class Validation<E, T> implements Serializable {
 				: Validation.failure(errorsMapper.apply(errors()));
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
 	@SuppressWarnings("unchecked")
 	public <E2> Validation<E2, T> mapErrorsF(
 			Function<? super E, ? extends E2> errorMapper) {

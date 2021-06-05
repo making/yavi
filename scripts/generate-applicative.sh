@@ -105,13 +105,19 @@ $(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 
 		return traverseWithIndex(values, IndexedTraverser.ignoreIndex(mapper));
 	}
 
-	public static interface IndexedTraverser<A, R> {
+	/**
+	 * @since 0.7.0
+	 */
+	public interface IndexedTraverser<A, R> {
 		R apply(A a, int index);
 		static <A, R> IndexedTraverser<A, R> ignoreIndex(Function<? super A, ? extends R> f) {
 			return (a, idx) -> f.apply(a);
 		}
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
 	public static <E, T, U> Validation<E, List<U>> traverseWithIndex(Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
 		final List<E> errors = new ArrayList<>();

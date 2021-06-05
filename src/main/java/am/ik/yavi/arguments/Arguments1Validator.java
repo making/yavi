@@ -154,5 +154,4 @@ public interface Arguments1Validator<A1, X> {
 	default void validateAndThrowIfInvalid(A1 a1) {
 		this.validateAndThrowIfInvalid(a1, ConstraintGroup.DEFAULT);
 	}
-
 }

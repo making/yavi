@@ -85,6 +85,9 @@ public class ConstraintViolation {
 		return this.args[this.args.length - 1];
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
 	public ConstraintViolation rename(Function<? super String, String> rename) {
 		return new ConstraintViolation(rename.apply(name), messageKey,
 				defaultMessageFormat, args, messageFormatter, locale);
