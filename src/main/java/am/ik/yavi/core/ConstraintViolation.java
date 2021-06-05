@@ -17,6 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.function.Function;
 
 import am.ik.yavi.message.MessageFormatter;
 
@@ -82,5 +83,10 @@ public class ConstraintViolation {
 
 	public Object violatedValue() {
 		return this.args[this.args.length - 1];
+	}
+
+	public ConstraintViolation rename(Function<? super String, String> rename) {
+		return new ConstraintViolation(rename.apply(name), messageKey,
+				defaultMessageFormat, args, messageFormatter, locale);
 	}
 }

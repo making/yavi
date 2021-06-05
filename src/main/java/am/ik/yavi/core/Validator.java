@@ -74,7 +74,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 		this.messageFormatter = messageFormatter;
 		this.prefix = (prefix == null || prefix.isEmpty()
 				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
-				: prefix + this.messageKeySeparator;
+						: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {

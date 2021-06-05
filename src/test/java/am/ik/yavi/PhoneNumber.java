@@ -20,6 +20,8 @@ import am.ik.yavi.core.ApplicativeValidator;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 
+import java.util.Objects;
+
 public class PhoneNumber {
 	private final String value;
 
@@ -43,5 +45,20 @@ public class PhoneNumber {
 
 	public static Validated<PhoneNumber> of(String value) {
 		return applicativeValidator.validate(new PhoneNumber(value));
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		PhoneNumber that = (PhoneNumber) o;
+		return value.equals(that.value);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
 	}
 }

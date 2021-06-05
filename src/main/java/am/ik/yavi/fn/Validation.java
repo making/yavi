@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * An implementation similar to Vavr's
  * <a href="https://docs.vavr.io/#_validation">Validation</a> control.<br>
@@ -81,6 +83,14 @@ public abstract class Validation<E, T> implements Serializable {
 			Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation.failure(errorsMapper.apply(errors()));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E2> Validation<E2, T> mapErrorsF(
+			Function<? super E, ? extends E2> errorMapper) {
+		return isValid() ? (Validation<E2, T>) this
+				: Validation
+						.failure(errors().stream().map(errorMapper).collect(toList()));
 	}
 
 	public <E2, T2> Validation<E2, T2> bimap(

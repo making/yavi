@@ -70,7 +70,6 @@ public interface ValidatorSubset<T> {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
 	}
 
-
 	/**
 	 * Returns the corresponding either validator
 	 * @return either validator

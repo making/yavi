@@ -98,6 +98,13 @@ public interface Arguments1Validator<A1, X> {
 		return new Arguments2Combining<>(this, validator);
 	}
 
+	default Arguments1Validator<A1, X> withIndex(int index) {
+		return (a1, locale,
+				constraintGroup) -> Validated.of(Arguments1Validator.this
+						.validate(a1, locale, constraintGroup)
+						.mapErrorsF(e -> e.rename(name -> name + "[" + index + "]")));
+	}
+
 	/**
 	 * Use {@link #validate(Object)} instead
 	 */
@@ -147,4 +154,5 @@ public interface Arguments1Validator<A1, X> {
 	default void validateAndThrowIfInvalid(A1 a1) {
 		this.validateAndThrowIfInvalid(a1, ConstraintGroup.DEFAULT);
 	}
+
 }
