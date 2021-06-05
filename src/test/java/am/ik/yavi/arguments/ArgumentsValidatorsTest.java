@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import am.ik.yavi.Address;
@@ -323,8 +322,14 @@ class ArgumentsValidatorsTest {
 		assertThat(actual.isValid()).isFalse();
 		assertThat(actual.errors()).hasSize(3);
 		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
 		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
+		assertThat(actual.errors().get(2).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
 	}
 
 }
