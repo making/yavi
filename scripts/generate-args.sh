@@ -283,9 +283,10 @@ cat <<EOD
 	}
 
 	default Arguments1Validator<A1, X> withIndex(int index) {
-		return (a1, locale, constraintGroup) -> Validated.of(Arguments1Validator.this
-			.validate(a1, locale, constraintGroup).mapErrors(errors ->
-				errors.stream().map(e -> e.rename(name -> name + "[" + index + "]")).collect(toList())));
+		return (a1, locale,
+				constraintGroup) -> Validated.of(Arguments1Validator.this
+						.validate(a1, locale, constraintGroup)
+						.mapErrorsF(e -> e.rename(name -> name + "[" + index + "]")));
 	}
 EOD
 fi)
