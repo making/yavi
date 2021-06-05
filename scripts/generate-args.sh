@@ -544,7 +544,7 @@ $(for i in `seq 2 ${nn}`;do cat <<EOD
 EOD
 done)
 
-$(for i in `seq 2 ${nn}`;do cat <<EOD
+$(for i in `seq 1 ${nn}`;do cat <<EOD
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R, T> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), List<R>> traverse${i}(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends R>> f) {
@@ -554,7 +554,7 @@ $(for i in `seq 2 ${nn}`;do cat <<EOD
 EOD
 done)
 
-$(for i in `seq 2 ${nn}`;do cat <<EOD
+$(for i in `seq 1 ${nn}`;do cat <<EOD
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), List<R>> sequence${i}(
 		Iterable<? extends Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends R>> values) {
 		return traverse${i}(values, identity());

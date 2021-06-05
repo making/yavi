@@ -209,6 +209,13 @@ public class ArgumentsValidators {
 		return new Arguments10Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
+	public static <A1, R, T> Arguments1Validator<A1, List<R>> traverse1(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments1Validator<? super A1, ? extends R>> f) {
+		return (a1, locale, constraintGroup) -> Validated.traverse(values,
+				f.andThen(validator -> validator.validate(a1, locale, constraintGroup)));
+	}
+
 	public static <A1, A2, R, T> Arguments2Validator<A1, A2, List<R>> traverse2(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments2Validator<? super A1, ? super A2, ? extends R>> f) {
@@ -279,6 +286,11 @@ public class ArgumentsValidators {
 				constraintGroup) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
 								a7, a8, a9, a10, locale, constraintGroup)));
+	}
+
+	public static <A1, R> Arguments1Validator<A1, List<R>> sequence1(
+			Iterable<? extends Arguments1Validator<? super A1, ? extends R>> values) {
+		return traverse1(values, identity());
 	}
 
 	public static <A1, A2, R> Arguments2Validator<A1, A2, List<R>> sequence2(
