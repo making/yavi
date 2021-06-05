@@ -170,12 +170,13 @@ public class Validations {
 	/**
 	 * @since 0.7.0
 	 */
+	@FunctionalInterface
 	public interface IndexedTraverser<A, R> {
 		R apply(A a, int index);
 
 		static <A, R> IndexedTraverser<A, R> ignoreIndex(
 				Function<? super A, ? extends R> f) {
-			return (a, idx) -> f.apply(a);
+			return (a, index) -> f.apply(a);
 		}
 	}
 

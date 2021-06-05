@@ -108,10 +108,11 @@ $(for i in `seq 1 ${n}`;do echo "	public static <R, E, $(echo $(for j in `seq 1 
 	/**
 	 * @since 0.7.0
 	 */
+	@FunctionalInterface
 	public interface IndexedTraverser<A, R> {
 		R apply(A a, int index);
 		static <A, R> IndexedTraverser<A, R> ignoreIndex(Function<? super A, ? extends R> f) {
-			return (a, idx) -> f.apply(a);
+			return (a, index) -> f.apply(a);
 		}
 	}
 
