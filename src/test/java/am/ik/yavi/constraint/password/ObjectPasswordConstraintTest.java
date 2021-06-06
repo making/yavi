@@ -27,7 +27,7 @@ public class ObjectPasswordConstraintTest {
 			account -> !account.password().toUpperCase()
 					.contains(account.username().toUpperCase()));
 
-	Validator<Account> validator = ValidatorBuilder.<Account>of()
+	Validator<Account> validator = ValidatorBuilder.<Account> of()
 			.constraint(Account::username, "username", c -> c.notBlank())
 			.constraint(Account::password, "password",
 					c -> c.greaterThanOrEqual(8).password(policy -> policy.strong()))

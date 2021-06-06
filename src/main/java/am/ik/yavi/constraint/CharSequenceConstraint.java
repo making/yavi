@@ -39,6 +39,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
+import am.ik.yavi.constraint.inetaddress.InetAddressUtils;
 import am.ik.yavi.constraint.password.CharSequencePasswordPoliciesBuilder;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
@@ -69,13 +70,11 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
 
-	private static final String IPV4_PATTERN = "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$";
-
-	private static final String IPV6_PATTERN = "^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$";
-
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
-			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
-					+ "|" + IPV4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
+			.compile(
+					"^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
+							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
+					Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -255,7 +254,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv4() {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> Pattern.matches(IPV4_PATTERN, x),
+				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv4(x.toString()),
 						CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
 		return this;
 	}
@@ -265,7 +264,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv6() {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> Pattern.matches(IPV6_PATTERN, x),
+				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv6(x.toString()),
 						CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
 		return this;
 	}

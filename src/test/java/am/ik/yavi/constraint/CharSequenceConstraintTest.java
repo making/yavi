@@ -373,7 +373,10 @@ class CharSequenceConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0",
-			"0:0:0:0:0:0:0:1" })
+			"0:0:0:0:0:0:0:1", "::1", "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee",
+			"2001:db8:20:3:1000:100:20:3", "2001:db8::1234:0:0:9abc", "2001:db8::9abc",
+			"::ffff:192.0.2.1", "fe80::0123:4567:89ab:cdef%4",
+			"fe80::0123:4567:89ab:cdef%fxp0" })
 	void validIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
 		assertThat(predicate.test(value)).isTrue();
