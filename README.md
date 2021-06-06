@@ -514,7 +514,7 @@ Arguments1Validator<Iterable<String>, List<Email>> emailsValidator = ArgumentsVa
 Validated<List<Email>> validatedEmails = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
 ```
 
-##### Small Validator combination
+##### Small Validator combinators
 
 Since YAVI 0.7.0, small arguments validators (for String, Integer, Value Object etc) can be composed to create a large (Object) validator.
 
