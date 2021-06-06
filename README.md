@@ -551,7 +551,7 @@ Arguments1Validator<HttpServletRequest, Person> requestPersonValidator = request
     .apply(Person::new);
 
 HttpServletRequest request = ...;
-Validated<Person> personValidated = personValidator.validate("Jone Doe", "jdoe@example.com", 30);
+Validated<Person> personValidated = requestPersonValidator.validate(request);
 ```
 Alternatively, you can create it like this:
 
