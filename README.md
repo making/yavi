@@ -407,7 +407,7 @@ Validated<Person> validatedPerson  = ArgumentsValidatorBuilder
         ._integer(Arguments3::arg3, "age",
             c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
     .build()
-    .validateArgs("John", "Doe", 35);
+    .validate("John", "Doe", 35);
 ```
 
 Kotlin version
