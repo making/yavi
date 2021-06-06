@@ -507,10 +507,18 @@ Validated<Email> emailValidated = requestEmailValidator.validate(request);
 Validated<Age> ageValidated = requestAgeValidator.validate(request);
 ```
 
+You can also validate against a List like bellow:
+
+```java
+Arguments1Validator<Iterable<String>, List<Email>> emailsValidator = ArgumentsValidators.liftList(emailValidator);
+Validated<List<Email>> validatedEmails = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
+```
 
 ##### Small Validator combination
 
 Since YAVI 0.7.0, small arguments validators (for String, Integer, Value Object etc) can be composed to create a large (Object) validator.
+
+You can use `split` method to split the constructor and the arguments of the factory method for creating a large Object into smaller validators and combine them.
 
 ```java
 public class Person {
@@ -522,7 +530,7 @@ Arguments3Validator<String, String, Integer, Person> personValidator = Arguments
     .split(nameValidator, emailValidator, ageValidator)
     .apply(Person::new);
 // or
-Arguments3Validator<String, String, Integer, Person> personValidator = nameValidator.
+Arguments3Validator<String, String, Integer, Person> personValidator = nameValidator
     .split(emailValidator)
     .split(ageValidator)
     .apply(Person::new);
