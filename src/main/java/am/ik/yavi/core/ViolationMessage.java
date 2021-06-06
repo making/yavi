@@ -60,8 +60,16 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_CONTAINS("charSequence.contains", "\"{0}\" must contain {1}"), //
 		CHAR_SEQUENCE_EMAIL("charSequence.email",
 				"\"{0}\" must be a valid email address"), //
+		CHAR_SEQUENCE_IPV4("charSequence.ipv4", "\"{0}\" must be a valid IPv4"), //
+		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
+		CHAR_SEQUENCE_PASSWORD_REQUIRED("charSequence.passwordRequired",
+				"\"{0}\" must contain {1} policy"), //
+		CHAR_SEQUENCE_PASSWORD_OPTIONAL("charSequence.passwordOptional",
+				"\"{0}\" must contain at least {1} policies from {2}"), //
+		CHAR_SEQUENCE_LUHN("charSequence.luhn",
+				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
 		CHAR_SEQUENCE_BOOLEAN("charSequence.boolean",
 				"\"{0}\" must be a valid representation of a boolean."), //
 		CHAR_SEQUENCE_BYTE("charSequence.byte",

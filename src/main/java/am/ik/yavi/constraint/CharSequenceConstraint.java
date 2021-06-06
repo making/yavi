@@ -39,6 +39,8 @@ import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
+import am.ik.yavi.constraint.inetaddress.InetAddressUtils;
+import am.ik.yavi.constraint.password.CharSequencePasswordPoliciesBuilder;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
 
@@ -52,7 +54,10 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
@@ -65,11 +70,11 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
 
-	private static final String IPv4_PATTERN = "\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\]";
-
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
-			.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
-					+ "|" + IPv4_PATTERN + ")$", Pattern.CASE_INSENSITIVE);
+			.compile(
+					"^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
+							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
+					Pattern.CASE_INSENSITIVE);
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -132,6 +137,17 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			}
 			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
 		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> password(
+			Function<CharSequencePasswordPoliciesBuilder<T, E>, List<ConstraintPredicate<E>>> builder) {
+		final List<ConstraintPredicate<E>> predicates = builder
+				.apply(new CharSequencePasswordPoliciesBuilder<>());
+		this.predicates().addAll(predicates);
 		return this;
 	}
 
@@ -233,6 +249,26 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> ipv4() {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv4(x.toString()),
+						CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> ipv6() {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv6(x.toString()),
+						CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
+		return this;
+	}
+
 	public CharSequenceConstraint<T, E> url() {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			if (size().applyAsInt(x) == 0) {
@@ -247,6 +283,40 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			}
 		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
 		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> luhn() {
+		this.predicates().add(ConstraintPredicate.of(CharSequenceConstraint::luhnCheck,
+				CHAR_SEQUENCE_LUHN, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	// https://github.com/apache/commons-validator/blob/master/src/main/java/org/apache/commons/validator/CreditCardValidator.java
+	static boolean luhnCheck(CharSequence cardNumber) {
+		// number must be validated as 0..9 numeric first!!
+		final int digits = cardNumber.length();
+		final int oddOrEven = digits & 1;
+		long sum = 0;
+		for (int count = 0; count < digits; count++) {
+			int digit;
+			try {
+				digit = Integer.parseInt(cardNumber.charAt(count) + "");
+			}
+			catch (NumberFormatException e) {
+				return false;
+			}
+			if (((count & 1) ^ oddOrEven) == 0) { // not
+				digit *= 2;
+				if (digit > 9) {
+					digit -= 9;
+				}
+			}
+			sum += digit;
+		}
+		return sum != 0 && (sum % 10 == 0);
 	}
 
 	public CharSequenceConstraint<T, E> variant(

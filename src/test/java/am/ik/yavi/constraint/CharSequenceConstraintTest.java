@@ -341,6 +341,54 @@ class CharSequenceConstraintTest {
 		assertThat(predicate.test(value)).isFalse();
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "4111111111111111", "4242424242424242", "4012888888881881",
+			"5555555555554444", "5105105105105100", "378282246310005", "371449635398431",
+			"30569309025904", "38520000023237", "3530111333300000", "3566002020360505" })
+	void validLuhn(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.luhn());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "4111111111111112", "4242424242424243", "401288888888188a" })
+	void invalidLuhn(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.luhn());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1", "127.0.0.1", "255.255.255.255", "0.0.0.0" })
+	void validIpv4(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1.1", "255.255.255.256", "a.a.a.a" })
+	void invalidIpv4(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0",
+			"0:0:0:0:0:0:0:1", "::1", "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee",
+			"2001:db8:20:3:1000:100:20:3", "2001:db8::1234:0:0:9abc", "2001:db8::9abc",
+			"::ffff:192.0.2.1", "fe80::0123:4567:89ab:cdef%4",
+			"fe80::0123:4567:89ab:cdef%fxp0" })
+	void validIpv6(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1.1.1.1.1", "0:0:0:0:0:0:0:Z" })
+	void invalidIpv6(String value) {
+		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
 	private static Predicate<String> retrievePredicate(
 			Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
 		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst()
