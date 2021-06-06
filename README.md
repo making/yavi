@@ -377,7 +377,7 @@ Since YAVI 0.3.0, you can validate arguments of a constructor or factory method 
 
 ##### Validating Constructor Arguments
 
-You can get the object only if the arguments passe the validation.
+You can get the object only if the arguments pass the validation.
 Up to 16 arguments are supported.
 
 ```java
@@ -425,32 +425,132 @@ val person = ArgumentsValidatorBuilder
         }
     }
     .build()
-    .validated("John", "Doe", 20)
-```
-
-If you want to validate arguments in the constructor, use `validateAndThrowIfInvalid` so that the constructor cannot be called recursively in the constructor.
-
-```java
-static final Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidatorBuilder
-    .of(Person::new)
-    .builder(b -> b
-        ._string(Arguments1::arg1, "firstName",
-            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
-        ._string(Arguments2::arg2, "lastName",
-            c -> c.greaterThanOrEqual(1).lessThanOrEqual(50))
-        ._integer(Arguments3::arg3, "age",
-            c -> c.greaterThanOrEqual(20).lessThanOrEqual(99)))
-    .build();
-
-public Perrson(String firstName, String lastName, int age) {
-    validator.validateAndThrowIfInvalid(firstName, lastName, age);
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.age = age;
-}
+    .validate("John", "Doe", 20)
 ```
 
 Does specifying `"fieldName"`s look redundant? Try [Annotation Processor](docs/AnnotationProcessor.md#constraintarguments).
+
+##### Convenient wrappers for single argument validators
+
+For single argument constructors or methods, convenient wrappers are supported since 0.7.0
+
+```java
+StringValidator<String> nameValidator = StringValidatorBuilder
+    .of("name", c -> c.notBlank())
+    .build();  // -> StringValidator<String> extends Arguments1Validator<String, String>
+
+StringValidator<String> emailValidator = StringValidatorBuilder
+    .of("email", c -> c.notBlank().email())
+    .build();  // -> StringValidator<String> extends Arguments1Validator<String, String>
+
+IntegerValidator<Age> ageValidator = IntegerValidatorBuilder
+    .of("age", c -> c.greaterThanOrEqual(0))
+    .build(); // -> IntegerValidator<Integer> extends Arguments1Validator<Integer, Integer>
+
+Validated<String> nameValidated = nameValidator.validate("Jone Doe");
+Validated<String> emailValidated = nameValidator.validate("jdoe@example.com");
+Validated<Integer> ageValidated = nameValidator.validate(30);
+```
+
+These validators can use `andThen` method to create another object with the validated values.
+
+```java
+public class Name {
+    public Name(String value) { /* ... */ }
+    // ...
+}
+
+public class Email {
+    public Email(String value) { /* ... */ }
+    // ...
+}
+
+public class Age {
+    public Age(Integer value) { /* ... */ }
+    // ...
+}
+
+StringValidator<Name> nameValidator = StringValidatorBuilder
+    .of("name", c -> c.notBlank())
+    .build()
+    .andThen(Name::new); // -> StringValidator<Name> extends Arguments1Validator<String, Name>
+
+StringValidator<Email> emailValidator = StringValidatorBuilder
+    .of("email", c -> c.notBlank().email())
+    .build()
+    .andThen(Email::new); // -> StringValidator<Email> extends Arguments1Validator<String, Email>
+
+IntegerValidator<Age> ageValidator = IntegerValidatorBuilder
+    .of("age", c -> c.greaterThanOrEqual(0))
+    .build()
+    .andThen(Age::new) // -> IntegerValidator<Age> extends Arguments1Validator<Integer, Age>
+
+Validated<Name> nameValidated = nameValidator.validate("Jone Doe");
+Validated<Email> emailValidated = nameValidator.validate("jdoe@example.com");
+Validated<Age> ageValidated = nameValidator.validate(30);
+```
+
+You can use `compose` method to produce a validator that gets a value from the object from which a String or Integer is derived.
+
+```java
+// name, email and age are derived from HttpServletRequest
+Argument1Validator<HttpServletRequest, Name> requestNameValidator = nameValidator
+    .compose(req -> req.getParameter("name"));
+Argument1Validator<HttpServletRequest, Email> requestEmailValidator = emailValidator
+    .compose(req -> req.getParameter("email"));
+Argument1Validator<HttpServletRequest, Age> requestAgeValidator = ageValidator
+    .compose(req -> Integer.valueOf(req.getParameter("age")));
+
+HttpServletRequest request = ...;
+Validated<Name> nameValidated = requestNameValidator.validate(request);
+Validated<Email> emailValidated = requestEmailValidator.validate(request);
+Validated<Age> ageValidated = requestAgeValidator.validate(request);
+```
+
+
+##### Small Validator combination
+
+Since YAVI 0.7.0, small arguments validators (for String, Integer, Value Object etc) can be composed to create a large (Object) validator.
+
+```java
+public class Person {
+    public Person(Name name, Email email, Age age) { /* ... */ }
+    // ...
+}
+
+Arguments3Validator<String, String, Integer, Person> personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator<String, String, Integer, Person> personValidator = nameValidator.
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);
+
+Validated<Person> personValidated = personValidator.validate("Jone Doe", "jdoe@example.com", 30);
+```
+
+You can use `combine` method to produce a validator for an object created by combining objects created from the same source object.
+
+```java
+Arguments1Validator<HttpServletRequest, Person> requestPersonValidator = ArgumentsValidators
+    .combine(requestNameValidator, requestEmailValidator, requestAgeValidator)
+    .apply(Person::new);
+// or
+Arguments1Validator<HttpServletRequest, Person> requestPersonValidator = requestNameValidator
+    .combine(requestEmailValidator)
+    .combine(requestAgeValidator)
+    .apply(Person::new);
+
+HttpServletRequest request = ...;
+Validated<Person> personValidated = personValidator.validate("Jone Doe", "jdoe@example.com", 30);
+```
+Alternatively, you can create it like this:
+
+```java
+Arguments1Validator<HttpServletRequest, Person> requestPersonValidator = personValidator
+    .compose(req -> Arguments.of(req.getParameter("name"), req.getParameter("email"), Integer.valueOf(req.getParameter("age")));)
+```
 
 ##### Validating Method Arguments
 
@@ -459,10 +559,9 @@ Arguments Validator can be used for validating method arguments as well.
 ```java
 // From https://beanvalidation.org/
 public class UserService {
-
   public User createUser(/* @Email */ String email,
                          /* @NotNull */ String name) {
-    ...
+    // ...
   }
 }
 ```
@@ -477,7 +576,7 @@ static final Arguments3Validator<UserService, String, String, User> validator = 
         .build();
 
 UserService userService = new UserService();
-User user = validator.validated(userService, "jd@example.com", "John Doe");
+Validated<User> userValidated = validator.validate(userService, "jdoe@example.com", "John Doe");
 ```
 
 Note that `void` cannot be used as return type while `java.lang.Void` is available.
