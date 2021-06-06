@@ -39,6 +39,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
+import am.ik.yavi.constraint.password.CharSequencePasswordPoliciesBuilder;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
 
@@ -137,6 +138,17 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			}
 			return VALID_EMAIL_ADDRESS_REGEX.matcher(x).matches();
 		}, CHAR_SEQUENCE_EMAIL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.7.0
+	 */
+	public CharSequenceConstraint<T, E> password(
+			Function<CharSequencePasswordPoliciesBuilder<T, E>, List<ConstraintPredicate<E>>> builder) {
+		final List<ConstraintPredicate<E>> predicates = builder
+				.apply(new CharSequencePasswordPoliciesBuilder<>());
+		this.predicates().addAll(predicates);
 		return this;
 	}
 
@@ -242,8 +254,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.7.0
 	 */
 	public CharSequenceConstraint<T, E> ipv4() {
-		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(IPV4_PATTERN, x),
-				CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Pattern.matches(IPV4_PATTERN, x),
+						CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -251,8 +264,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.7.0
 	 */
 	public CharSequenceConstraint<T, E> ipv6() {
-		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(IPV6_PATTERN, x),
-				CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> Pattern.matches(IPV6_PATTERN, x),
+						CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
 		return this;
 	}
 

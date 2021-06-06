@@ -372,7 +372,8 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1" })
+	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0",
+			"0:0:0:0:0:0:0:1" })
 	void validIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
 		assertThat(predicate.test(value)).isTrue();

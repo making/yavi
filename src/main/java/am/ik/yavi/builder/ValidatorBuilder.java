@@ -559,6 +559,14 @@ public class ValidatorBuilder<T> {
 				customConstraint);
 	}
 
+	/**
+	 * @since 0.7.0
+	 */
+	public ValidatorBuilder<T> constraintOnTarget(String name,
+			Function<ObjectConstraint<T, T>, ObjectConstraint<T, T>> c) {
+		return this.constraint(Function.identity(), name, c, ObjectConstraint::new);
+	}
+
 	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
 			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
 		return this.forEach(toCollection, name, validator, NullAs.INVALID);
