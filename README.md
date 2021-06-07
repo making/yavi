@@ -263,20 +263,20 @@ It will be helpful when you wanto combine validations of multiple value objects 
 
 ```java
 Validator<Email> emailValidator = ValidatorBuilder.<Email> of()
-            .constraint(Email::value, "value", c -> c.notBlank().email())
-            .build();
+    .constraint(Email::value, "value", c -> c.notBlank().email())
+    .build();
 Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<PhoneNumber> of()
-            .constraint(PhoneNumber::value, "value", c -> c.notBlank().pattern("[0-9\-]+"))
-            .build();
+    .constraint(PhoneNumber::value, "value", c -> c.notBlank().pattern("[0-9\-]+"))
+    .build();
 
 Validated<Email> emailValidated = emailValidator.applicative().validate(email);
 Validated<PhoneNumber> phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);
 
 Validated<ContactInfo> contactInfoValidated = emailValidated.combine(phoneNumberValidated)
-            .apply((em, ph) -> new ContactInfo(em, ph));
+    .apply((em, ph) -> new ContactInfo(em, ph));
 // or
 Validated<ContactInfo> contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidation)
-		.apply((em, ph) -> new ContactInfo(em, ph));
+    .apply((em, ph) -> new ContactInfo(em, ph));
 
 //
 if (contactInfoValidated.isValid()) {
@@ -286,10 +286,10 @@ if (contactInfoValidated.isValid()) {
 }
 
 ContactInfo contactInfo = contactInfoValidated
-        		.orElseThrow(violations -> new ConstraintViolationsException(violation));
+    .orElseThrow(violations -> new ConstraintViolationsException(violation));
 
 HttpStatus status = contactInfoValidated
-        		.fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
+    .fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
 ```
 
 if you want to add a prefix to the name of `ContraintViolation` (e.g. `email.value` rather than `value`), you can use `prefixed()` of `Validator` as follows.
@@ -511,7 +511,7 @@ You can also validate against a List like bellow:
 
 ```java
 Arguments1Validator<Iterable<String>, List<Email>> emailsValidator = ArgumentsValidators.liftList(emailValidator);
-Validated<List<Email>> validatedEmails = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
+Validated<List<Email>> emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
 ```
 
 ##### Small Validator combinators
@@ -633,18 +633,15 @@ YAVI will be a great fit for [Spring WebFlux.fn](https://docs.spring.io/spring/d
 
 ```java
 static RouterFunction<ServerResponse> routes() {
-  return route()
-      .POST("/", req -> req.bodyToMono(User.class) //
-        .flatMap(body -> validator.either().validate(body) //
-          .leftMap(violations -> {
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("message", "Invalid request body");
-            error.put("details", violations.details());
-            return error;
-          })
-          .fold(error -> badRequest().bodyValue(error), //
-              user -> ok().bodyValue(user))))
-      .build();
+    return route()
+        .POST("/", req -> req.bodyToMono(User.class)
+                .flatMap(body -> validator.either().validate(body)
+                    .leftMap(violations -> 
+                                Map.of("message", "Invalid request body", 
+                                        "details", violations.details()))
+                    .fold(error -> badRequest().bodyValue(error), 
+                            user -> ok().bodyValue(user))))
+        .build();
 }
 ```
 
@@ -655,13 +652,13 @@ static RouterFunction<ServerResponse> routes() {
 ```java
 @PostMapping("users")
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-  ConstraintViolations violations = validator.validate(userForm);
-  if (!violations.isValid()) {
-    violations.apply(BindingResult::rejectValue);
-    return "userForm";
-  }
-  // ...
-  return "redirect:/";
+    ConstraintViolations violations = validator.validate(userForm);
+    if (!violations.isValid()) {
+        violations.apply(BindingResult::rejectValue);
+        return "userForm";
+    }
+    // ...
+    return "redirect:/";
 }
 ```
 
@@ -670,14 +667,14 @@ or
 ```java
 @PostMapping("users")
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-  return validator.either().validate(userForm)
-    .fold(violations -> {
-      violations.apply(BindingResult::rejectValue);
-      return "userForm";
-    }, form -> {
-      // ...
-      return "redirect:/";
-    });
+    return validator.either().validate(userForm)
+        .fold(violations -> {
+            violations.apply(BindingResult::rejectValue);
+            return "userForm";
+        }, form -> {
+            // ...
+            return "redirect:/";
+        });
 }
 ```
 
@@ -690,8 +687,8 @@ If you want to customize `ValidatorBuilder` and manage it with an IoC Container 
 ```java
 @Bean
 public ValidatorFactory yaviValidatorFactory(MessageSource messageSource) {
-  MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
-  return new ValidatorFactory(null, messageFormatter);
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new ValidatorFactory(null, messageFormatter);
 }
 ```
 
@@ -700,11 +697,11 @@ The usage of a `Validator` would look like following:
 ```java
 @RestController
 public class OrderController {
-  private final Validator<CartItem> validator;
+    private final Validator<CartItem> validator;
 
-  public OrderController(ValidatorFactory factory) {
-    this.validator = factory.validator(builder -> builder.constraint(...));
-  }
+    public OrderController(ValidatorFactory factory) {
+        this.validator = factory.validator(builder -> builder.constraint(...));
+    }
 }
 ```
 
@@ -718,8 +715,8 @@ This class is helpful for libraries or apps to adapt both YAVI and other validat
 
 ```java
 BiValidator<CartItem, Errors> validator = ValidatorBuilder.<CartItem>of()
-	     .constraint(...)
-	     .build(Errors::rejectValue);
+    .constraint(...)
+    .build(Errors::rejectValue);
 ```
 
 There is a factory for `BiValidator` as well
@@ -727,7 +724,7 @@ There is a factory for `BiValidator` as well
 ```java
 @Bean
 public BiValidatorFactory<Errors> biValidatorFactory() {
-  return new BiValidatorFactory<>(Errors::rejectValues);
+    return new BiValidatorFactory<>(Errors::rejectValues);
 }
 ```
 or, if you want to customize the builder
@@ -735,8 +732,8 @@ or, if you want to customize the builder
 ```java
 @Bean
 public BiValidatorFactory<Errors> biValidatorFactory(MessageSource messageSource) {
-  MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
-  return new BiValidatorFactory<>(null, messageFormatter, Errors::rejectValues);
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new BiValidatorFactory<>(null, messageFormatter, Errors::rejectValues);
 }
 ```
 
@@ -745,11 +742,11 @@ The usage of a `BiValidator` would look like following:
 ```java
 @RestController
 public class OrderController {
-  private final BiValidator<CartItem, Errors> validator;
+    private final BiValidator<CartItem, Errors> validator;
 
-  public OrderController(BiValidatorFactory<Errors> factory) {
-    this.validator = factory.validator(builder -> builder.constraint(...));
-  }
+    public OrderController(BiValidatorFactory<Errors> factory) {
+        this.validator = factory.validator(builder -> builder.constraint(...));
+    }
 }
 ```
 
