@@ -1,8 +1,11 @@
 package am.ik.yavi.core;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
@@ -96,6 +99,18 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	public static <T, U> Validated<List<U>> traverseIndexed(Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseIndexed(values, mapper));
+	}
+
+	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(
+			Iterable<T> values,
+			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper,
+			Supplier<C> factory) {
+		return Validated.of(Validations.traverseIndexed(values, mapper, factory));
+	}
+
+	public static <T, U> Validated<Optional<U>> traverseOptional(Optional<T> value,
+			Function<? super T, ? extends Validated<? extends U>> mapper) {
+		return Validated.of(Validations.traverseOptional(value, mapper));
 	}
 
 }

@@ -15,8 +15,13 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.Validated;
@@ -97,6 +102,23 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	default Arguments1Validator<A1, X> indexed(int index) {
 		return (a1, locale, constraintGroup) -> Arguments1Validator.this
 				.validate(a1, locale, constraintGroup).indexed(index);
+	}
+
+	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+			Supplier<C> factory) {
+		return ArgumentsValidators.liftCollection(this, factory);
+	}
+
+	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
+		return ArgumentsValidators.liftList(this);
+	}
+
+	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
+		return ArgumentsValidators.liftSet(this);
+	}
+
+	default Arguments1Validator<Optional<A1>, Optional<X>> listOptional() {
+		return ArgumentsValidators.liftOptional(this);
 	}
 
 	/**

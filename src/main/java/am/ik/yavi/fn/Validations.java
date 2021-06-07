@@ -16,8 +16,11 @@
 package am.ik.yavi.fn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.function.Function.identity;
 
@@ -185,14 +188,29 @@ public class Validations {
 	 */
 	public static <E, T, U> Validation<E, List<U>> traverseIndexed(Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
+		return traverseIndexed(values, traverser, ArrayList::new);
+	}
+
+	public static <E, T, U, C extends Collection<U>> Validation<E, C> traverseIndexed(
+			Iterable<T> values,
+			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser,
+			Supplier<C> factory) {
 		final List<E> errors = new ArrayList<>();
-		final List<U> results = new ArrayList<>();
+		final C results = factory.get();
 		int index = 0;
 		for (T value : values) {
 			traverser.apply(value, index++).fold(errors::addAll, results::add);
 		}
 		return errors.isEmpty() ? Validation.success(results)
 				: Validation.failure(errors);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(Optional<T> value,
+			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
+		return value.map(
+				t -> mapper.apply(t).bimap(es -> (List<E>) es, u -> Optional.of((U) u))) //
+				.orElse(Validation.success(Optional.empty()));
 	}
 
 }
