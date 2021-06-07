@@ -443,7 +443,7 @@ StringValidator<String> emailValidator = StringValidatorBuilder
     .of("email", c -> c.notBlank().email())
     .build();  // -> StringValidator<String> extends Arguments1Validator<String, String>
 
-IntegerValidator<Age> ageValidator = IntegerValidatorBuilder
+IntegerValidator<Integer> ageValidator = IntegerValidatorBuilder
     .of("age", c -> c.greaterThanOrEqual(0))
     .build(); // -> IntegerValidator<Integer> extends Arguments1Validator<Integer, Integer>
 
