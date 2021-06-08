@@ -286,7 +286,7 @@ if (contactInfoValidated.isValid()) {
 }
 
 ContactInfo contactInfo = contactInfoValidated
-    .orElseThrow(violations -> new ConstraintViolationsException(violation));
+    .orElseThrow(violations -> new ConstraintViolationsException(violations));
 
 HttpStatus status = contactInfoValidated
     .fold(violations -> HttpStatus.BAD_REQUEST, contactInfo -> HttpStatus.OK);
