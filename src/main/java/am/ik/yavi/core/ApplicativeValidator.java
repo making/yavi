@@ -15,8 +15,6 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.fn.Validation;
-
 /**
  * Applicative validator class
  * @param <T> Target class
@@ -24,16 +22,4 @@ import am.ik.yavi.fn.Validation;
  */
 @FunctionalInterface
 public interface ApplicativeValidator<T> extends ValueValidator<T, T> {
-	static <T> ApplicativeValidator<T> of(ValidatorSubset<T> validator) {
-		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = validator.validate(target, locale,
-					constraintGroup);
-			if (violations.isValid()) {
-				return Validated.of(Validation.success(target));
-			}
-			else {
-				return Validated.of(Validation.failure(violations));
-			}
-		};
-	}
 }

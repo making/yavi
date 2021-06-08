@@ -47,10 +47,9 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final String prefix;
 
-	private final EitherValidator<T> eitherValidator = EitherValidator.of(this);
+	private final EitherValidator<T> eitherValidator = ValidatorSubset.super.either();
 
-	private final ApplicativeValidator<T> applicativeValidator = ApplicativeValidator
-			.of(this);
+	private final ApplicativeValidator<T> applicativeValidator = ValidatorSubset.super.applicative();
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,

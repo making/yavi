@@ -83,17 +83,4 @@ public interface EitherValidator<T> {
 	default Either<ConstraintViolations, T> validate(T target, Locale locale) {
 		return this.validate(target, locale, ConstraintGroup.DEFAULT);
 	}
-
-	static <T> EitherValidator<T> of(ValidatorSubset<T> validator) {
-		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = validator.validate(target, locale,
-					constraintGroup);
-			if (violations.isValid()) {
-				return Either.right(target);
-			}
-			else {
-				return Either.left(violations);
-			}
-		};
-	}
 }
