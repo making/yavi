@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function6;
 import am.ik.yavi.fn.Validations;
 
@@ -24,24 +25,24 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
-	protected final Arguments1Validator<? super A, ? extends R1> v1;
+	protected final ValueValidator<? super A, ? extends R1> v1;
 
-	protected final Arguments1Validator<? super A, ? extends R2> v2;
+	protected final ValueValidator<? super A, ? extends R2> v2;
 
-	protected final Arguments1Validator<? super A, ? extends R3> v3;
+	protected final ValueValidator<? super A, ? extends R3> v3;
 
-	protected final Arguments1Validator<? super A, ? extends R4> v4;
+	protected final ValueValidator<? super A, ? extends R4> v4;
 
-	protected final Arguments1Validator<? super A, ? extends R5> v5;
+	protected final ValueValidator<? super A, ? extends R5> v5;
 
-	protected final Arguments1Validator<? super A, ? extends R6> v6;
+	protected final ValueValidator<? super A, ? extends R6> v6;
 
-	public Arguments6Combining(Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6) {
+	public Arguments6Combining(ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -62,7 +63,7 @@ public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
 	}
 
 	public <R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
-			Arguments1Validator<? super A, ? extends R7> v7) {
+			ValueValidator<? super A, ? extends R7> v7) {
 		return new Arguments7Combining<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 }

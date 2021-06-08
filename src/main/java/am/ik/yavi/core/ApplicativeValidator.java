@@ -15,8 +15,6 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Locale;
-
 import am.ik.yavi.fn.Validation;
 
 /**
@@ -25,21 +23,7 @@ import am.ik.yavi.fn.Validation;
  * @since 0.6.0
  */
 @FunctionalInterface
-public interface ApplicativeValidator<T> {
-	Validated<T> validate(T target, Locale locale, ConstraintGroup constraintGroup);
-
-	default Validated<T> validate(T target) {
-		return this.validate(target, Locale.getDefault(), ConstraintGroup.DEFAULT);
-	}
-
-	default Validated<T> validate(T target, ConstraintGroup constraintGroup) {
-		return this.validate(target, Locale.getDefault(), constraintGroup);
-	}
-
-	default Validated<T> validate(T target, Locale locale) {
-		return this.validate(target, locale, ConstraintGroup.DEFAULT);
-	}
-
+public interface ApplicativeValidator<T> extends ValueValidator<T, T> {
 	static <T> ApplicativeValidator<T> of(ValidatorSubset<T> validator) {
 		return (target, locale, constraintGroup) -> {
 			final ConstraintViolations violations = validator.validate(target, locale,

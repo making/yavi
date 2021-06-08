@@ -16,6 +16,7 @@
 package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueValidator;
 
 import java.util.List;
 import java.util.function.Function;
@@ -30,182 +31,182 @@ import static java.util.function.Function.identity;
 public class ArgumentsValidators {
 
 	public static <A1, A2, R1, R2> Arguments2Splitting<A1, A2, R1, R2> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2) {
 		return new Arguments2Splitting<>(v1, v2);
 	}
 
 	public static <A1, A2, A3, R1, R2, R3> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3) {
 		return new Arguments3Splitting<>(v1, v2, v3);
 	}
 
 	public static <A1, A2, A3, A4, R1, R2, R3, R4> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4) {
 		return new Arguments4Splitting<>(v1, v2, v3, v4);
 	}
 
 	public static <A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5) {
 		return new Arguments5Splitting<>(v1, v2, v3, v4, v5);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6) {
 		return new Arguments6Splitting<>(v1, v2, v3, v4, v5, v6);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6,
-			Arguments1Validator<? super A7, ? extends R7> v7) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7) {
 		return new Arguments7Splitting<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6,
-			Arguments1Validator<? super A7, ? extends R7> v7,
-			Arguments1Validator<? super A8, ? extends R8> v8) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8) {
 		return new Arguments8Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6,
-			Arguments1Validator<? super A7, ? extends R7> v7,
-			Arguments1Validator<? super A8, ? extends R8> v8,
-			Arguments1Validator<? super A9, ? extends R9> v9) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9) {
 		return new Arguments9Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> split(
-			Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6,
-			Arguments1Validator<? super A7, ? extends R7> v7,
-			Arguments1Validator<? super A8, ? extends R8> v8,
-			Arguments1Validator<? super A9, ? extends R9> v9,
-			Arguments1Validator<? super A10, ? extends R10> v10) {
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10) {
 		return new Arguments10Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
 	public static <A, R1, R2> Arguments2Combining<A, R1, R2> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2) {
 		return new Arguments2Combining<>(v1, v2);
 	}
 
 	public static <A, R1, R2, R3> Arguments3Combining<A, R1, R2, R3> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3) {
 		return new Arguments3Combining<>(v1, v2, v3);
 	}
 
 	public static <A, R1, R2, R3, R4> Arguments4Combining<A, R1, R2, R3, R4> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4) {
 		return new Arguments4Combining<>(v1, v2, v3, v4);
 	}
 
 	public static <A, R1, R2, R3, R4, R5> Arguments5Combining<A, R1, R2, R3, R4, R5> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5) {
 		return new Arguments5Combining<>(v1, v2, v3, v4, v5);
 	}
 
 	public static <A, R1, R2, R3, R4, R5, R6> Arguments6Combining<A, R1, R2, R3, R4, R5, R6> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6) {
 		return new Arguments6Combining<>(v1, v2, v3, v4, v5, v6);
 	}
 
 	public static <A, R1, R2, R3, R4, R5, R6, R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6,
-			Arguments1Validator<? super A, ? extends R7> v7) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7) {
 		return new Arguments7Combining<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 
 	public static <A, R1, R2, R3, R4, R5, R6, R7, R8> Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6,
-			Arguments1Validator<? super A, ? extends R7> v7,
-			Arguments1Validator<? super A, ? extends R8> v8) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8) {
 		return new Arguments8Combining<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}
 
 	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9> Arguments9Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6,
-			Arguments1Validator<? super A, ? extends R7> v7,
-			Arguments1Validator<? super A, ? extends R8> v8,
-			Arguments1Validator<? super A, ? extends R9> v9) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9) {
 		return new Arguments9Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 
 	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> Arguments10Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> combine(
-			Arguments1Validator<? super A, ? extends R1> v1,
-			Arguments1Validator<? super A, ? extends R2> v2,
-			Arguments1Validator<? super A, ? extends R3> v3,
-			Arguments1Validator<? super A, ? extends R4> v4,
-			Arguments1Validator<? super A, ? extends R5> v5,
-			Arguments1Validator<? super A, ? extends R6> v6,
-			Arguments1Validator<? super A, ? extends R7> v7,
-			Arguments1Validator<? super A, ? extends R8> v8,
-			Arguments1Validator<? super A, ? extends R9> v9,
-			Arguments1Validator<? super A, ? extends R10> v10) {
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10) {
 		return new Arguments10Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
@@ -339,7 +340,7 @@ public class ArgumentsValidators {
 	}
 
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
-			Arguments1Validator<? super A1, ? extends R> validator) {
+			ValueValidator<? super A1, ? extends R> validator) {
 		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
 				index) -> validator.indexed(index).validate(v, locale, constraintGroup));
 	}

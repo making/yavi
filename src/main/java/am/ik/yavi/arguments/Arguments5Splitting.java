@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function5;
 import am.ik.yavi.fn.Validations;
 
@@ -24,21 +25,21 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> {
-	protected final Arguments1Validator<? super A1, ? extends R1> v1;
+	protected final ValueValidator<? super A1, ? extends R1> v1;
 
-	protected final Arguments1Validator<? super A2, ? extends R2> v2;
+	protected final ValueValidator<? super A2, ? extends R2> v2;
 
-	protected final Arguments1Validator<? super A3, ? extends R3> v3;
+	protected final ValueValidator<? super A3, ? extends R3> v3;
 
-	protected final Arguments1Validator<? super A4, ? extends R4> v4;
+	protected final ValueValidator<? super A4, ? extends R4> v4;
 
-	protected final Arguments1Validator<? super A5, ? extends R5> v5;
+	protected final ValueValidator<? super A5, ? extends R5> v5;
 
-	public Arguments5Splitting(Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5) {
+	public Arguments5Splitting(ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -57,7 +58,7 @@ public class Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> {
 	}
 
 	public <A6, R6> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split(
-			Arguments1Validator<? super A6, ? extends R6> v6) {
+			ValueValidator<? super A6, ? extends R6> v6) {
 		return new Arguments6Splitting<>(v1, v2, v3, v4, v5, v6);
 	}
 }
