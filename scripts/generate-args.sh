@@ -196,6 +196,7 @@ EOD
 fi)import am.ik.yavi.core.Validated;
 $(if [ "${i}" == "1" ];then
 cat <<EOD
+import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 EOD
 fi)
@@ -209,6 +210,30 @@ fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> extends ValueValidator<A1, X> {
+
+	/**
+	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 *
+	 * @param validator core validator
+	 * @param <X> target class
+	 * @return arguments1 validator
+	 * @since 0.8.0
+	 */
+	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+		return Arguments1Validator.from(validator.applicative());
+	}
+
+	/**
+	 * Convert {@link ValueValidator} instance into {@link Arguments1Validator}
+	 *
+	 * @param valueValidator value validator
+	 * @param <X> target class
+	 * @return arguments1 validator
+	 * @since 0.8.0
+	 */
+	static <X> Arguments1Validator<X, X> from(ValueValidator<X, X> valueValidator) {
+		return valueValidator::validate;
+	}
 EOD
 else
 cat <<EOD

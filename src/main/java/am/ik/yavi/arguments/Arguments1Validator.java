@@ -20,6 +20,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 
 /**
@@ -29,6 +30,30 @@ import am.ik.yavi.core.ValueValidator;
  */
 @FunctionalInterface
 public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
+
+	/**
+	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 *
+	 * @param validator core validator
+	 * @param <X> target class
+	 * @return arguments1 validator
+	 * @since 0.8.0
+	 */
+	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+		return Arguments1Validator.from(validator.applicative());
+	}
+
+	/**
+	 * Convert {@link ValueValidator} instance into {@link Arguments1Validator}
+	 *
+	 * @param valueValidator value validator
+	 * @param <X> target class
+	 * @return arguments1 validator
+	 * @since 0.8.0
+	 */
+	static <X> Arguments1Validator<X, X> from(ValueValidator<X, X> valueValidator) {
+		return valueValidator::validate;
+	}
 
 	/**
 	 * @since 0.7.0

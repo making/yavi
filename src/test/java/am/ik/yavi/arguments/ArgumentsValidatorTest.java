@@ -216,4 +216,42 @@ public class ArgumentsValidatorTest {
 		assertThat(user.getEmail()).isEqualTo("foo@example.com");
 		assertThat(user.getAge()).isEqualTo(30);
 	}
+
+	@Test
+	void fromValidatorSubset_valid() {
+		final Arguments1Validator<Country, Country> countryValidator = Arguments1Validator.from(Country.validator().prefixed("country"));
+		final Validated<Country> countryValidated = countryValidator.validate(new Country("JP"));
+		assertThat(countryValidated.isValid()).isTrue();
+		assertThat(countryValidated.value().name()).isEqualTo("JP");
+	}
+
+	@Test
+	void fromValidatorSubset_invalid() {
+		final Arguments1Validator<Country, Country> countryValidator = Arguments1Validator.from(Country.validator().prefixed("country"));
+		final Validated<Country> countryValidated = countryValidator.validate(new Country("J"));
+		assertThat(countryValidated.isValid()).isFalse();
+		final ConstraintViolations violations = countryValidated.errors();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(0).name()).isEqualTo("country.name");
+	}
+
+	@Test
+	void fromValueValidator_valid() {
+		final Arguments1Validator<Country, Country> countryValidator = Arguments1Validator.from(Country.validator().prefixed("country").applicative());
+		final Validated<Country> countryValidated = countryValidator.validate(new Country("JP"));
+		assertThat(countryValidated.isValid()).isTrue();
+		assertThat(countryValidated.value().name()).isEqualTo("JP");
+	}
+
+	@Test
+	void fromValueValidator_invalid() {
+		final Arguments1Validator<Country, Country> countryValidator = Arguments1Validator.from(Country.validator().prefixed("country").applicative());
+		final Validated<Country> countryValidated = countryValidator.validate(new Country("J"));
+		assertThat(countryValidated.isValid()).isFalse();
+		final ConstraintViolations violations = countryValidated.errors();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(0).name()).isEqualTo("country.name");
+	}
 }
