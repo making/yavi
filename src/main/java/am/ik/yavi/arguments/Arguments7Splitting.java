@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function7;
 import am.ik.yavi.fn.Validations;
 
@@ -24,27 +25,27 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> {
-	protected final Arguments1Validator<? super A1, ? extends R1> v1;
+	protected final ValueValidator<? super A1, ? extends R1> v1;
 
-	protected final Arguments1Validator<? super A2, ? extends R2> v2;
+	protected final ValueValidator<? super A2, ? extends R2> v2;
 
-	protected final Arguments1Validator<? super A3, ? extends R3> v3;
+	protected final ValueValidator<? super A3, ? extends R3> v3;
 
-	protected final Arguments1Validator<? super A4, ? extends R4> v4;
+	protected final ValueValidator<? super A4, ? extends R4> v4;
 
-	protected final Arguments1Validator<? super A5, ? extends R5> v5;
+	protected final ValueValidator<? super A5, ? extends R5> v5;
 
-	protected final Arguments1Validator<? super A6, ? extends R6> v6;
+	protected final ValueValidator<? super A6, ? extends R6> v6;
 
-	protected final Arguments1Validator<? super A7, ? extends R7> v7;
+	protected final ValueValidator<? super A7, ? extends R7> v7;
 
-	public Arguments7Splitting(Arguments1Validator<? super A1, ? extends R1> v1,
-			Arguments1Validator<? super A2, ? extends R2> v2,
-			Arguments1Validator<? super A3, ? extends R3> v3,
-			Arguments1Validator<? super A4, ? extends R4> v4,
-			Arguments1Validator<? super A5, ? extends R5> v5,
-			Arguments1Validator<? super A6, ? extends R6> v6,
-			Arguments1Validator<? super A7, ? extends R7> v7) {
+	public Arguments7Splitting(ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -67,7 +68,7 @@ public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5,
 	}
 
 	public <A8, R8> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
-			Arguments1Validator<? super A8, ? extends R8> v8) {
+			ValueValidator<? super A8, ? extends R8> v8) {
 		return new Arguments8Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}
 }
