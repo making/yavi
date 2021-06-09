@@ -74,7 +74,7 @@ public interface ViolationMessage {
 				"\"{0}\" must be a valid representation of a boolean."), //
 		CHAR_SEQUENCE_BYTE("charSequence.byte",
 				"\"{0}\" must be a valid representation of a byte."), //
-		CHAR_SEQUENCE_SHORT("charSequence.integer",
+		CHAR_SEQUENCE_SHORT("charSequence.short",
 				"\"{0}\" must be a valid representation of a short."), //
 		CHAR_SEQUENCE_INTEGER("charSequence.integer",
 				"\"{0}\" must be a valid representation of an integer."), //
