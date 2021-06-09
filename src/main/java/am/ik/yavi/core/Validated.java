@@ -13,13 +13,14 @@ import am.ik.yavi.fn.Validations;
  * @since 0.6.0
  */
 public class Validated<T> extends Validation<ConstraintViolation, T> {
-	private final Validation<ConstraintViolation, T> delegate;
+	private final Validation<ConstraintViolation, ? extends T> delegate;
 
-	public static <T> Validated<T> of(Validation<ConstraintViolation, T> delegate) {
+	public static <T> Validated<T> of(
+			Validation<ConstraintViolation, ? extends T> delegate) {
 		return new Validated<>(delegate);
 	}
 
-	Validated(Validation<ConstraintViolation, T> delegate) {
+	Validated(Validation<ConstraintViolation, ? extends T> delegate) {
 		this.delegate = delegate;
 	}
 
