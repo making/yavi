@@ -17,12 +17,21 @@ package am.ik.yavi.core;
 
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @since 0.8.0
  */
 @FunctionalInterface
 public interface ValueValidator<T, X> {
+
+	static <X> ValueValidator<X, X> from(Validated<X> validated) {
+		return (x, locale, constraintGroup) -> validated;
+	}
+
+	static <X> ValueValidator<X, X> from(Supplier<Validated<X>> validatedSupplier) {
+		return (x, locale, constraintGroup) -> validatedSupplier.get();
+	}
 
 	Validated<X> validate(T t, Locale locale, ConstraintGroup constraintGroup);
 
