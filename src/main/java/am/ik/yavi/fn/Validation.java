@@ -66,8 +66,8 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T2> Validation<E, T2> flatMap(Function<? super T, Validation<E, T2>> mapper) {
-		return isValid() ? mapper.apply(value()) : (Validation<E, T2>) this;
+	public <T2, V extends Validation<E, T2>> V flatMap(Function<? super T, V> mapper) {
+		return isValid() ? mapper.apply(value()) : (V) this;
 	}
 
 	public Validation<E, T> peek(Consumer<? super T> consumer) {

@@ -1,6 +1,7 @@
 package am.ik.yavi.core;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import am.ik.yavi.fn.Validation;
@@ -15,8 +16,12 @@ import am.ik.yavi.fn.Validations;
 public class Validated<T> extends Validation<ConstraintViolation, T> {
 	private final Validation<ConstraintViolation, ? extends T> delegate;
 
+	@SuppressWarnings("unchecked")
 	public static <T> Validated<T> of(
 			Validation<ConstraintViolation, ? extends T> delegate) {
+		if (delegate instanceof Validated) {
+			return ((Validated<T>) delegate);
+		}
 		return new Validated<>(delegate);
 	}
 
@@ -50,6 +55,16 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	protected <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(
 			List<ConstraintViolation> errors) {
 		return (V) Validated.of(Validation.failure(errors));
+	}
+
+	@Override
+	public Validated<T> peek(Consumer<? super T> consumer) {
+		return Validated.of(super.peek(consumer));
+	}
+
+	@Override
+	public Validated<T> peekErrors(Consumer<? super List<ConstraintViolation>> consumer) {
+		return Validated.of(super.peekErrors(consumer));
 	}
 
 	/**
