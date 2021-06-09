@@ -34,7 +34,7 @@ public interface ValueValidator<T, X> {
 	 * @param <X> target class
 	 * @return value validator that always successes without validation
 	 */
-	static <X> ValueValidator<X, X> passThough() {
+	static <X> ValueValidator<X, X> passThrough() {
 		return (x, locale, constraintGroup) -> Validated.of(Validation.success(x));
 	}
 

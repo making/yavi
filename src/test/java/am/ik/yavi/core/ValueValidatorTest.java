@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ValueValidatorTest {
 
 	@Test
-	void passThough() {
-		final ValueValidator<String, String> validator = ValueValidator.passThough();
+	void passThrough() {
+		final ValueValidator<String, String> validator = ValueValidator.passThrough();
 		final Validated<String> validated = validator.validate("hello");
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value()).isEqualTo("hello");
