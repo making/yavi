@@ -66,8 +66,7 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T2> Validation<? super E, ? extends T2> flatMap(
-			Function<? super T, Validation<E, T2>> mapper) {
+	public <T2> Validation<E, T2> flatMap(Function<? super T, Validation<E, T2>> mapper) {
 		return isValid() ? mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
@@ -93,7 +92,7 @@ public abstract class Validation<E, T> implements Serializable {
 			Function<? super E, ? extends E2> errorMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation
-				.failure(errors().stream().map(errorMapper).collect(toList()));
+						.failure(errors().stream().map(errorMapper).collect(toList()));
 	}
 
 	public <E2, T2> Validation<E2, T2> bimap(
