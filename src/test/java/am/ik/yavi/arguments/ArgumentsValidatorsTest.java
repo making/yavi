@@ -324,12 +324,15 @@ class ArgumentsValidatorsTest {
 		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
 		assertThat(actual.errors().get(0).messageKey())
 				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber[1]");
 		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
 		assertThat(actual.errors().get(1).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber[1]");
 		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
 		assertThat(actual.errors().get(2).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(2).args()[0]).isEqualTo("phoneNumber[2]");
 	}
 
 }
