@@ -18,6 +18,8 @@ package am.ik.yavi.core;
 import java.util.Locale;
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Validation;
+
 /**
  * @since 0.8.0
  */
@@ -25,6 +27,16 @@ import java.util.function.Function;
 public interface ValueValidator<T, X> {
 
 	Validated<X> validate(T t, Locale locale, ConstraintGroup constraintGroup);
+
+	/**
+	 * Return {@link ValueValidator} instance that always successes without validation.
+	 *
+	 * @param <X> target class
+	 * @return value validator that always successes without validation
+	 */
+	static <X> ValueValidator<X, X> passThough() {
+		return (x, locale, constraintGroup) -> Validated.of(Validation.success(x));
+	}
 
 	default <X2> ValueValidator<T, X2> andThen(Function<? super X, ? extends X2> mapper) {
 		return (t, locale, constraintGroup) -> ValueValidator.this
