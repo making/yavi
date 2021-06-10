@@ -63,7 +63,7 @@ public class Car {
 
     private final int seatCount;
 
-    public static Validator<Car> validator = ValidatorBuilder.<Car>of()
+    public static final Validator<Car> validator = ValidatorBuilder.<Car>of()
             .constraint(Car::getManufacturer, "manufacturer", c -> c.notNull())
             .constraint(Car::getLicensePlate, "licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
             .constraint(Car::getSeatCount, "seatCount", c -> c.greaterThanOrEqual(2))
