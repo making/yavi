@@ -23,10 +23,6 @@ If you are not a fan of [Bean Validation](https://beanvalidation.org/), YAVI wil
 
 For the migration from Bean Validation, refer [the doc](docs/FromBeanValidationToYAVI.md).
 
-### Getting Started
-
-See the [Getting Started guide](docs/GettingStarted.md).
-
 ### Usage
 
 Add the following dependency in your `pom.xml`
@@ -51,6 +47,11 @@ If you want to try a snapshot version, add the following repository:
     </snapshots>
 </repository>
 ```
+
+### Getting Started
+
+See the [Getting Started guide](docs/GettingStarted.md).
+
 ### Example
 
 #### Simple
