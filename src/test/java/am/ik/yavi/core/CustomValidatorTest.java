@@ -18,19 +18,18 @@ package am.ik.yavi.core;
 import java.time.Instant;
 import java.util.Objects;
 
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import am.ik.yavi.Book;
 import am.ik.yavi.Range;
 import am.ik.yavi.builder.ValidatorBuilder;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomValidatorTest {
 
 	@Test
 	public void predicate() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(CustomValidatorTest::isISBN13, //
 								ViolationMessage.of("custom.isbn13",
@@ -62,7 +61,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateCustom() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(IsbnConstraint.SINGLETON))
 				.build();
@@ -92,7 +91,7 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicateNullable() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
 				.constraint(
 						Book::isbn, "isbn", c -> c
 								.predicateNullable(v -> v != null && isISBN13(v), //
@@ -124,12 +123,12 @@ public class CustomValidatorTest {
 
 	@Test
 	public void range() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
 				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicate(r -> {
 							Range range = Range.class.cast(r);
 							return range.getFrom() < range.getTo();
-						}, ViolationMessage.of("custom.range",
+						}, ViolationMessage.of("range.cross",
 								"\"from\" must be less than \"to\"")))
 				.build();
 		{
@@ -144,13 +143,13 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
-			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
 	@Test
 	public void rangeConstraintOnTarget() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
 				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
 				.build();
 		{
@@ -165,13 +164,13 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
-			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
 	@Test
 	public void rangeCustom() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
 				.constraintOnObject(r -> r, "range", c -> c.notNull() //
 						.predicateNullable(RangeConstraint.SINGLETON))
 				.build();
@@ -187,7 +186,7 @@ public class CustomValidatorTest {
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message())
 					.isEqualTo("\"from\" must be less than \"to\"");
-			assertThat(violations.get(0).messageKey()).isEqualTo("custom.range");
+			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
@@ -205,7 +204,7 @@ public class CustomValidatorTest {
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message()).isEqualTo(
 				"Instant value \"instant\" must be between \"2020-01-15T00:00:00Z\" and \"2020-01-16T00:00:00Z\".");
-		assertThat(violations.get(0).messageKey()).isEqualTo("custom.instant");
+		assertThat(violations.get(0).messageKey()).isEqualTo("string.instant");
 	}
 
 	// This logic is written in
@@ -259,7 +258,7 @@ public class CustomValidatorTest {
 
 		@Override
 		public String messageKey() {
-			return "custom.range";
+			return "range.cross";
 		}
 
 		@Override
@@ -294,7 +293,7 @@ public class CustomValidatorTest {
 
 		@Override
 		public String messageKey() {
-			return "custom.instant";
+			return "string.instant";
 		}
 
 		@Override

@@ -224,7 +224,7 @@ public enum IsbnConstraint implements CustomConstraint<String> {
 
     @Override
     public String messageKey() {
-        return "custom.isbn13";
+        return "string.isbn13";
     }
 
     @Override
