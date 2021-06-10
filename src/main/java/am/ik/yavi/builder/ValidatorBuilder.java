@@ -98,6 +98,8 @@ public class ValidatorBuilder<T> {
 
 	MessageFormatter messageFormatter;
 
+	boolean failFast = false;
+
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
 	}
@@ -123,6 +125,7 @@ public class ValidatorBuilder<T> {
 		builder.conditionalValidators.addAll(this.conditionalValidators);
 		builder.predicatesList.addAll(this.predicatesList);
 		builder.messageFormatter = this.messageFormatter;
+		builder.failFast = this.failFast;
 		return builder;
 	}
 
@@ -148,7 +151,8 @@ public class ValidatorBuilder<T> {
 		return new Validator<>(messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter == null ? new SimpleMessageFormatter()
-						: this.messageFormatter);
+						: this.messageFormatter,
+				this.failFast);
 	}
 
 	/**
@@ -635,6 +639,18 @@ public class ValidatorBuilder<T> {
 
 	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
 		this.messageFormatter = messageFormatter;
+		return this;
+	}
+
+	/**
+	 * Set whether to enable fail fast mode. If enabled, Validator returns from the
+	 * current validation as soon as the first constraint violation occurs.
+	 *
+	 * @param failFast whether to enable fail fast mode
+	 * @since 0.8.0
+	 */
+	public ValidatorBuilder<T> failFast(boolean failFast) {
+		this.failFast = failFast;
 		return this;
 	}
 

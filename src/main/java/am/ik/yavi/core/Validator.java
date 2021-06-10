@@ -47,6 +47,8 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final String prefix;
 
+	private final boolean failFast;
+
 	private final EitherValidator<T> eitherValidator = ValidatorSubset.super.either();
 
 	private final ApplicativeValidator<T> applicativeValidator = ValidatorSubset.super.applicative();
@@ -56,21 +58,33 @@ public class Validator<T> implements ValidatorSubset<T> {
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
-		this(messageKeySeparator, Collections.unmodifiableList(predicatesList),
-				Collections.unmodifiableList(collectionValidators), conditionalValidators,
-				messageFormatter, "");
+		this(messageKeySeparator, predicatesList, collectionValidators,
+				conditionalValidators, messageFormatter, false);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	public Validator(String messageKeySeparator,
+			List<ConstraintPredicates<T, ?>> predicatesList,
+			List<CollectionValidator<T, ?, ?>> collectionValidators,
+			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			MessageFormatter messageFormatter, boolean failFast) {
+		this(messageKeySeparator, predicatesList, collectionValidators,
+				conditionalValidators, messageFormatter, failFast, "");
 	}
 
 	private Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
-			MessageFormatter messageFormatter, String prefix) {
+			MessageFormatter messageFormatter, boolean failFast, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
-		this.predicatesList = predicatesList;
-		this.collectionValidators = collectionValidators;
-		this.conditionalValidators = conditionalValidators;
+		this.predicatesList = Collections.unmodifiableList(predicatesList);
+		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
+		this.conditionalValidators = Collections.unmodifiableList(conditionalValidators);
 		this.messageFormatter = messageFormatter;
+		this.failFast = failFast;
 		this.prefix = (prefix == null || prefix.isEmpty()
 				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
 						: prefix + this.messageKeySeparator;
@@ -79,7 +93,20 @@ public class Validator<T> implements ValidatorSubset<T> {
 	public Validator<T> prefixed(String prefix) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter, prefix);
+				this.messageFormatter, this.failFast, prefix);
+	}
+
+	/**
+	 * Set whether to enable fail fast mode. If enabled, Validator returns from the
+	 * current validation as soon as the first constraint violation occurs.
+	 *
+	 * @param failFast whether to enable fail fast mode
+	 * @since 0.8.0
+	 */
+	public Validator<T> failFast(boolean failFast) {
+		return new Validator<>(this.messageKeySeparator, this.predicatesList,
+				this.collectionValidators, this.conditionalValidators,
+				this.messageFormatter, failFast, this.prefix);
 	}
 
 	/**
@@ -223,75 +250,76 @@ public class Validator<T> implements ValidatorSubset<T> {
 		if (target == null) {
 			throw new IllegalArgumentException("target must not be null");
 		}
-		ConstraintViolations violations = new ConstraintViolations();
+		final ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
 			if (predicates instanceof NestedConstraintPredicates) {
-				NestedConstraintPredicates<T, ?, ?> nested = (NestedConstraintPredicates<T, ?, ?>) predicates;
-				Object nestedValue = nested.nestedValue(target);
+				final NestedConstraintPredicates<T, ?, ?> nested = (NestedConstraintPredicates<T, ?, ?>) predicates;
+				final Object nestedValue = nested.nestedValue(target);
 				if (nestedValue == null) {
 					continue;
 				}
 			}
 			for (ConstraintPredicate<?> constraintPredicate : predicates.predicates()) {
-				Object v = predicates.toValue().apply(target);
+				final Object v = predicates.toValue().apply(target);
 				if (v == null && constraintPredicate.nullValidity().skipNull()) {
 					continue;
 				}
-				Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
+				final Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
 						.violatedValue(v);
-				violated.ifPresent(violatedValue -> {
-					String name = this.prefix
+				if (violated.isPresent()) {
+					final ViolatedValue violatedValue = violated.get();
+					final String name = this.prefix
 							+ this.indexedName(predicates.name(), collectionName, index);
-					Object[] args = constraintPredicate.args().get();
+					final Object[] args = constraintPredicate.args().get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
 							constraintPredicate.defaultMessageFormat(),
 							pad(name, args, violatedValue), this.messageFormatter,
 							locale));
-				});
-			}
-		}
-		this.collectionValidators.forEach(collectionValidator -> {
-			Collection collection = collectionValidator.toCollection().apply(target);
-			if (collection != null) {
-				Validator validator = collectionValidator.validator();
-				int i = 0;
-				for (Object element : collection) {
-					if (element != null) {
-						String nestedName = this.indexedName(collectionValidator.name(),
-								collectionName, index);
-						ConstraintViolations v = validator.validate(element, nestedName,
-								i++, locale, constraintGroup);
-						violations.addAll(v);
+					if (this.failFast) {
+						return violations;
 					}
 				}
 			}
-		});
-		this.conditionalValidators.forEach(pair -> {
-			ConstraintCondition<T> condition = pair.first();
-			if (condition.test(target, constraintGroup)) {
-				ValidatorSubset<T> validator = pair.second();
-				ConstraintViolations constraintViolations = validator.validate(target,
-						locale, constraintGroup);
-				constraintViolations.forEach(violation -> {
-					String name = this.prefix
-							+ this.indexedName(violation.name(), collectionName, index);
-					violations.add(this.recreateViolationWithNewName(violation, name));
-				});
-			}
-		});
-		return violations;
-	}
-
-	private ConstraintViolation recreateViolationWithNewName(
-			ConstraintViolation violation, String name) {
-		// args[0] is always field name
-		Object[] args = violation.args();
-		if (args.length > 0) {
-			args[0] = name;
 		}
-		return new ConstraintViolation(name, violation.messageKey(),
-				violation.defaultMessageFormat(), args, this.messageFormatter,
-				violation.locale());
+		for (CollectionValidator<T, ?, ?> collectionValidator : this.collectionValidators) {
+			final Collection collection = collectionValidator.toCollection()
+					.apply(target);
+			if (collection != null) {
+				final Validator validator = collectionValidator.validator()
+						.failFast(this.failFast);
+				int i = 0;
+				for (Object element : collection) {
+					if (element != null) {
+						final String nestedName = this.indexedName(
+								collectionValidator.name(), collectionName, index);
+						final ConstraintViolations v = validator.validate(element,
+								nestedName, i++, locale, constraintGroup);
+						violations.addAll(v);
+						if (this.failFast) {
+							return violations;
+						}
+					}
+				}
+			}
+		}
+		for (Pair<ConstraintCondition<T>, ValidatorSubset<T>> pair : this.conditionalValidators) {
+			final ConstraintCondition<T> condition = pair.first();
+			if (condition.test(target, constraintGroup)) {
+				final ValidatorSubset<T> validator = pair.second();
+				final ConstraintViolations constraintViolations = validator
+						.validate(target, locale, constraintGroup);
+				for (ConstraintViolation violation : constraintViolations) {
+					final ConstraintViolation renamed = violation
+							.rename(name -> this.prefix
+									+ this.indexedName(name, collectionName, index));
+					violations.add(renamed);
+					if (this.failFast) {
+						return violations;
+					}
+				}
+			}
+		}
+		return violations;
 	}
 }
