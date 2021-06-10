@@ -20,9 +20,9 @@ your `pom.xml`:
 ```xml
 
 <dependency>
-	<groupId>am.ik.yavi</groupId>
-	<artifactId>yavi</artifactId>
-	<version>0.7.0</version>
+    <groupId>am.ik.yavi</groupId>
+    <artifactId>yavi</artifactId>
+    <version>0.7.0</version>
 </dependency>
 ```
 
@@ -31,16 +31,16 @@ This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed
 ```xml
 
 <dependency>
-	<groupId>org.junit.jupiter</groupId>
-	<artifactId>junit-jupiter-api</artifactId>
-	<version>5.7.2</version>
-	<scope>test</scope>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.7.2</version>
+    <scope>test</scope>
 </dependency>
 <dependency>
-<groupId>org.assertj</groupId>
-<artifactId>assertj-core</artifactId>
-<version>3.18.1</version>
-<scope>test</scope>
+    <groupId>org.assertj</groupId>
+    <artifactId>assertj-core</artifactId>
+    <version>3.18.1</version>
+    <scope>test</scope>
 </dependency>
 ```
 
@@ -57,35 +57,35 @@ import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.Validator;
 
 public class Car {
-	private final String manufacturer;
+    private final String manufacturer;
 
-	private final String licensePlate;
+    private final String licensePlate;
 
-	private final int seatCount;
+    private final int seatCount;
 
-	public static Validator<Car> validator = ValidatorBuilder.<Car>of()
-			.constraint(Car::getManufacturer, "manufacturer", c -> c.notNull())
-			.constraint(Car::getLicensePlate, "licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
-			.constraint(Car::getSeatCount, "seatCount", c -> c.greaterThanOrEqual(2))
-			.build();
+    public static Validator<Car> validator = ValidatorBuilder.<Car>of()
+            .constraint(Car::getManufacturer, "manufacturer", c -> c.notNull())
+            .constraint(Car::getLicensePlate, "licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::getSeatCount, "seatCount", c -> c.greaterThanOrEqual(2))
+            .build();
 
-	public Car(String manufacturer, String licencePlate, int seatCount) {
-		this.manufacturer = manufacturer;
-		this.licensePlate = licencePlate;
-		this.seatCount = seatCount;
-	}
+    public Car(String manufacturer, String licencePlate, int seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licencePlate;
+        this.seatCount = seatCount;
+    }
 
-	public String getManufacturer() {
-		return manufacturer;
-	}
+    public String getManufacturer() {
+        return manufacturer;
+    }
 
-	public String getLicensePlate() {
-		return licensePlate;
-	}
+    public String getLicensePlate() {
+        return licensePlate;
+    }
 
-	public int getSeatCount() {
-		return seatCount;
-	}
+    public int getSeatCount() {
+        return seatCount;
+    }
 }
 ```
 
@@ -115,44 +115,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CarTest {
 
-	@Test
-	void manufacturerIsNull() {
-		final Car car = new Car(null, "DD-AB-123", 4);
-		final ConstraintViolations violations = Car.validator.validate(car);
+    @Test
+    void manufacturerIsNull() {
+        final Car car = new Car(null, "DD-AB-123", 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
 
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
-	}
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
+    }
 
-	@Test
-	void licensePlateTooShort() {
-		final Car car = new Car("Morris", "D", 4);
-		final ConstraintViolations violations = Car.validator.validate(car);
+    @Test
+    void licensePlateTooShort() {
+        final Car car = new Car("Morris", "D", 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
 
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
-	}
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+    }
 
-	@Test
-	void seatCountTooLow() {
-		final Car car = new Car("Morris", "DD-AB-123", 1);
-		final ConstraintViolations violations = Car.validator.validate(car);
+    @Test
+    void seatCountTooLow() {
+        final Car car = new Car("Morris", "DD-AB-123", 1);
+        final ConstraintViolations violations = Car.validator.validate(car);
 
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
-	}
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
+    }
 
-	@Test
-	void carIsValid() {
-		final Car car = new Car("Morris", "DD-AB-123", 2);
-		final ConstraintViolations violations = Car.validator.validate(car);
+    @Test
+    void carIsValid() {
+        final Car car = new Car("Morris", "DD-AB-123", 2);
+        final ConstraintViolations violations = Car.validator.validate(car);
 
-		assertThat(violations.isValid()).isTrue();
-		assertThat(violations).hasSize(0);
-	}
+        assertThat(violations.isValid()).isTrue();
+        assertThat(violations).hasSize(0);
+    }
 }
 ```
 
