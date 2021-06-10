@@ -53,20 +53,20 @@ class ObjectValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void validateValid(ObjectValidator<Instant, Date> dataValidator) {
-		final Validated<Date> dataValidated = dataValidator
+	void validateValid(ObjectValidator<Instant, Date> dateValidator) {
+		final Validated<Date> dateValidated = dateValidator
 				.validate(Instant.ofEpochMilli(1000L));
-		assertThat(dataValidated.isValid()).isTrue();
-		assertThat(dataValidated.value().getTime()).isEqualTo(1000L);
+		assertThat(dateValidated.isValid()).isTrue();
+		assertThat(dateValidated.value().getTime()).isEqualTo(1000L);
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void validateInvalid(ObjectValidator<Instant, Date> dataValidator) {
-		final Validated<Date> dataValidated = dataValidator
+	void validateInvalid(ObjectValidator<Instant, Date> dateValidator) {
+		final Validated<Date> dateValidated = dateValidator
 				.validate(Instant.now().plusSeconds(1));
-		assertThat(dataValidated.isValid()).isFalse();
-		final ConstraintViolations violations = dataValidated.errors();
+		assertThat(dateValidated.isValid()).isFalse();
+		final ConstraintViolations violations = dateValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("createdAt");
 		assertThat(violations.get(0).messageKey()).isEqualTo("instant.past");
@@ -74,41 +74,41 @@ class ObjectValidatorTest {
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void validatedValid(ObjectValidator<Instant, Date> dataValidator) {
-		final Date date = dataValidator.validated(Instant.ofEpochMilli(1000L));
+	void validatedValid(ObjectValidator<Instant, Date> dateValidator) {
+		final Date date = dateValidator.validated(Instant.ofEpochMilli(1000L));
 		assertThat(date.getTime()).isEqualTo(1000L);
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void validatedInvalid(ObjectValidator<Instant, Date> dataValidator) {
-		assertThatThrownBy(() -> dataValidator.validated(Instant.now().plusSeconds(1)))
+	void validatedInvalid(ObjectValidator<Instant, Date> dateValidator) {
+		assertThatThrownBy(() -> dateValidator.validated(Instant.now().plusSeconds(1)))
 				.isInstanceOf(ConstraintViolationsException.class)
 				.hasMessageContaining("\"createdAt\" must be past");
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void composeValid(ObjectValidator<Instant, Date> dataValidator) {
+	void composeValid(ObjectValidator<Instant, Date> dateValidator) {
 		final Map<String, Instant> params = Collections.singletonMap("createdAt",
 				Instant.ofEpochMilli(1000L));
-		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dataValidator
+		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
 				.compose(map -> map.get("createdAt"));
-		final Validated<Date> dataValidated = mapValidator.validate(params);
-		assertThat(dataValidated.isValid()).isTrue();
-		assertThat(dataValidated.value().getTime()).isEqualTo(1000L);
+		final Validated<Date> dateValidated = mapValidator.validate(params);
+		assertThat(dateValidated.isValid()).isTrue();
+		assertThat(dateValidated.value().getTime()).isEqualTo(1000L);
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
-	void composeInvalid(ObjectValidator<Instant, Date> dataValidator) {
+	void composeInvalid(ObjectValidator<Instant, Date> dateValidator) {
 		final Map<String, Instant> params = Collections.singletonMap("createdAt",
 				Instant.now().plusSeconds(1));
-		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dataValidator
+		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
 				.compose(map -> map.get("createdAt"));
-		final Validated<Date> dataValidated = mapValidator.validate(params);
-		assertThat(dataValidated.isValid()).isFalse();
-		final ConstraintViolations violations = dataValidated.errors();
+		final Validated<Date> dateValidated = mapValidator.validate(params);
+		assertThat(dateValidated.isValid()).isFalse();
+		final ConstraintViolations violations = dateValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("createdAt");
 		assertThat(violations.get(0).messageKey()).isEqualTo("instant.past");
