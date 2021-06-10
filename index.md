@@ -1,8 +1,5 @@
 # YAVI (*Y*et *A*nother *V*al*I*dation)
 
-[![Apache 2.0](https://img.shields.io/github/license/making/yavi.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/am.ik.yavi/yavi/badge.svg)](https://maven-badges.herokuapp.com/maven-central/am.ik.yavi/yavi) [![Javadocs](https://www.javadoc.io/badge/am.ik.yavi/yavi.svg)](https://www.javadoc.io/doc/am.ik.yavi/yavi) [![Actions Status](https://github.com/making/yavi/workflows/CI/badge.svg)](https://github.com/making/yavi/actions) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4232a408001840e994e707ff6a7d4e04)](https://app.codacy.com/manual/making/yavi?utm_source=github.com&utm_medium=referral&utm_content=making/yavi&utm_campaign=Badge_Grade_Dashboard) [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/8ae26f1168ad479ebea8f1f6e6329ac5)](https://www.codacy.com/manual/making/yavi?utm_source=github.com&utm_medium=referral&utm_content=making/yavi&utm_campaign=Badge_Coverage)
-
-
 ![YAVI Logo](https://user-images.githubusercontent.com/106908/120071055-66770380-c0c8-11eb-83f1-d7eff04bad54.png)
 
 YAVI (pronounced jɑ-vάɪ) 
