@@ -489,7 +489,7 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _doubleArrray(ToDoubleArray<T> f, String name,
+	public ValidatorBuilder<T> _doubleArray(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
