@@ -240,7 +240,7 @@ Validator<Book> book = ValidatorBuilder.<Book> of() //
 
 [sample code](src/test/java/am/ik/yavi/core/CustomValidatorTest.java)
 
-#### Multi-fields validation
+#### Cross-field validation
 
 ```java
 Validator<Range> validator = ValidatorBuilder.<Range> of() //
