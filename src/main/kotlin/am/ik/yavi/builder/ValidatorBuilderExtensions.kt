@@ -83,7 +83,7 @@ fun <T, E> ValidatorBuilder<T>.forEachIfPresent(prop: KProperty1<T, Array<E>?>, 
         this.forEachIfPresent(prop, prop.name) { it.apply(block) }
 
 @JvmName("konstraintOnCharSequence")
-fun <T, E : CharSequence?> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, E?>, block: CharSequenceConstraint<T, E?>.() -> Unit): ValidatorBuilder<T> =
+fun <T> ValidatorBuilder<T>.konstraint(prop: KProperty1<T, String?>, block: CharSequenceConstraint<T, String?>.() -> Unit): ValidatorBuilder<T> =
         this.constraint(prop, prop.name) { it.apply(block) }
 
 @JvmName("konstraintOnBoolean")

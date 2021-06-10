@@ -176,9 +176,8 @@ public class ValidatorBuilder<T> {
 		return new BiValidator<>(validator, errorHandler);
 	}
 
-	public <E extends CharSequence> ValidatorBuilder<T> constraint(ToCharSequence<T, E> f,
-			String name,
-			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
+	public ValidatorBuilder<T> constraint(ToCharSequence<T, String> f, String name,
+			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
