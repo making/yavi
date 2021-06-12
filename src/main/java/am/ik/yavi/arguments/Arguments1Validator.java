@@ -104,19 +104,31 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 				.validate(a1, locale, constraintGroup).indexed(index);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
 			Supplier<C> factory) {
 		return ArgumentsValidators.liftCollection(this, factory);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
 		return ArgumentsValidators.liftList(this);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
 		return ArgumentsValidators.liftSet(this);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	default Arguments1Validator<Optional<A1>, Optional<X>> listOptional() {
 		return ArgumentsValidators.liftOptional(this);
 	}

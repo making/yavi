@@ -101,6 +101,9 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 		return Validated.of(Validations.traverseIndexed(values, mapper));
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(
 			Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper,
@@ -108,6 +111,9 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 		return Validated.of(Validations.traverseIndexed(values, mapper, factory));
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <T, U> Validated<Optional<U>> traverseOptional(Optional<T> value,
 			Function<? super T, ? extends Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseOptional(value, mapper));

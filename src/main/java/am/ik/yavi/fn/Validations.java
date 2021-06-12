@@ -191,6 +191,9 @@ public class Validations {
 		return traverseIndexed(values, traverser, ArrayList::new);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <E, T, U, C extends Collection<U>> Validation<E, C> traverseIndexed(
 			Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser,
@@ -205,6 +208,9 @@ public class Validations {
 				: Validation.failure(errors);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	@SuppressWarnings("unchecked")
 	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(Optional<T> value,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {

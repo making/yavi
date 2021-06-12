@@ -345,6 +345,9 @@ public class ArgumentsValidators {
 		return traverse10(values, identity());
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
@@ -357,6 +360,9 @@ public class ArgumentsValidators {
 		return liftCollection(validator, ArrayList::new);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
 			ValueValidator<? super A1, ? extends R> validator) {
 		// Since Index is attached to the name of ConstraintViolation,
@@ -364,6 +370,9 @@ public class ArgumentsValidators {
 		return liftCollection(validator, LinkedHashSet::new);
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
 	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return (value, locale, constraintGroup) -> Validated.traverseOptional(value,
