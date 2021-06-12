@@ -394,7 +394,7 @@ ConstraintViolations violations = validator.validate(new Email(null)); // Invali
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .constraints(Email::getValue, "email", c -&gt; c.notEmpty())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -410,7 +410,7 @@ ConstraintViolations violations = validator.validate(new Email("")); // Invalid 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .constraints(Email::getValue, "email", c -&gt; c.notBlank())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -652,7 +652,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-12 13:56:12 UTC
+Last updated 2021-06-12 14:02:53 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
