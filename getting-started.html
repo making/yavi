@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Getting Started</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body class="book">
+<div id="header">
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="getting-started">Getting Started</h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This content is derived from <a href="https://hibernate.org/validator/documentation/getting-started/" class="bare">https://hibernate.org/validator/documentation/getting-started/</a>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Welcome to YAVI.</p>
+</div>
+<div class="paragraph">
+<p>The following paragraphs will guide you through the initial steps required to integrate YAVI into your application.</p>
+</div>
+<div class="sect2">
+<h3 id="_prerequisites">Prerequisites</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://www.oracle.com/technetwork/java/index.html">Java Runtime</a> &gt;= 8</p>
+</li>
+<li>
+<p><a href="http://maven.apache.org/">Apache Maven</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_project_set_up">Project set up</h3>
+<div class="paragraph">
+<p>In order to use YAVI within a Maven project, simply add the following dependency to your <code>pom.xml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
+    &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+    &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+    &lt;version&gt;0.7.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This tutorial uses JUnit 5 and AssertJ.
+Add the following dependencies as needed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
+    &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+    &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
+    &lt;version&gt;5.7.2&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.assertj&lt;/groupId&gt;
+    &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
+    &lt;version&gt;3.18.1&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_applying_constraints">Applying constraints</h3>
+<div class="paragraph">
+<p>Let&#8217;s dive into an example to see how to apply constraints:</p>
+</div>
+<div class="paragraph">
+<p>Create <code>src/main/java/com/example/Car.java</code> and write the following code.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.Validator;
+
+public class Car {
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final int seatCount;
+
+    public static final Validator&lt;Car&gt; validator = ValidatorBuilder.&lt;Car&gt;of()
+            .constraint(Car::getManufacturer, "manufacturer", c -&gt; c.notNull())
+            .constraint(Car::getLicensePlate, "licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::getSeatCount, "seatCount", c -&gt; c.greaterThanOrEqual(2))
+            .build();
+
+    public Car(String manufacturer, String licencePlate, int seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licencePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public int getSeatCount() {
+        return seatCount;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>ValidatorBuilder.constraint</code> is used to declare the constraints which should be applied to the return values of getter for the <code>Car</code> instance:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>manufacturer</code> must never be null</p>
+</li>
+<li>
+<p><code>licensePlate</code> must never be null and must be between 2 and 14 characters long</p>
+</li>
+<li>
+<p><code>seatCount</code> must be at least 2</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+You can find <a href="https://github.com/making/gs-yavi">the complete source code</a> on GitHub.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_validating_constraints">Validating constraints</h3>
+<div class="paragraph">
+<p>To perform a validation of these constraints, you use a <code>Validator</code> instance.
+To demonstrate this, let&#8217;s have a look at a simple unit test:</p>
+</div>
+<div class="paragraph">
+<p>Create <code>src/test/java/com/example/CarTest.java</code> and write the following code.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.core.ConstraintViolations;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CarTest {
+
+    @Test
+    void manufacturerIsNull() {
+        final Car car = new Car(null, "DD-AB-123", 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
+    }
+
+    @Test
+    void licensePlateTooShort() {
+        final Car car = new Car("Morris", "D", 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+    }
+
+    @Test
+    void seatCountTooLow() {
+        final Car car = new Car("Morris", "DD-AB-123", 1);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
+    }
+
+    @Test
+    void carIsValid() {
+        final Car car = new Car("Morris", "DD-AB-123", 2);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isTrue();
+        assertThat(violations).hasSize(0);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Validator</code> instances are thread-safe and may be reused multiple times.</p>
+</div>
+<div class="paragraph">
+<p>The <code>validate()</code> method returns a <code>ConstraintViolations</code> instance, which you can iterate in order to see which validation errors occurred.
+The first three test methods show some expected constraint violations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>notNull()</code> constraint on <code>manufacturer</code> is violated in <code>manufacturerIsNull()</code></p>
+</li>
+<li>
+<p>The <code>greaterThanOrEqual(int)</code> constraint on <code>licensePlate</code> is violated in <code>licensePlateTooShort()</code></p>
+</li>
+<li>
+<p>The <code>greaterThanOrEqual(int)</code> constraint on <code>seatCount</code> is violated in <code>seatCountTooLow()</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the object validates successfully, <code>validate()</code> returns an empty <code>ConstraintViolations</code> as you can see in <code>carIsValid()</code>.
+You can also check if the validation was successful with the <code>ConstraintViolations.isValid</code> method.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_where_to_go_next">Where to go next?</h3>
+<div class="paragraph">
+<p>That concludes the 5 minutes tour through the world of YAVI.
+If you want a more complete introduction, it is recommended to read <a href="https://github.com/making/yavi/blob/develop/README.md">the YAVI&#8217;s README</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2021-06-12 06:09:22 UTC
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/github.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
