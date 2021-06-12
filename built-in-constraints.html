@@ -16,13 +16,282 @@
 <div class="sect1">
 <h2 id="built-in-constraints">Built-in Constraints</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>YAVI includes many commonly used built-in constraints for various types.</p>
+</div>
+<div class="sect2">
+<h3 id="_string">String</h3>
+<div class="sect3">
+<h4 id="_notnull"><code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .build();
 
+ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid ("email" must not be null")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_notempty"><code>notEmpty()</code></h4>
+<div class="paragraph">
+<p>Checks whether the target value is not <code>null</code> nor empty</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .build();
+
+ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email("")); // Invalid ("email" must not be empty")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_notblank"><code>notBlank()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code>, and the trimmed length is greater than <code>0</code>. The difference to <code>notEmpty()</code> is that trailing white-spaces are ignored.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .build();
+
+ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid ("email" must not be blank")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fixedsizeint"><code>fixedSize(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.fixedSize(7))
+        .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Invalid (The size of "zipCode" must be 7. The given size is 8")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanint"><code>greaterThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+        .constraints(Country::getValue, "country", c -&gt; c.greaterThan(2))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
+ConstraintViolations violations = validator.validate(new Country("J")); // Invalid (The size of "country" must be greater than 2. The given size is 1")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanorequalint"><code>greaterThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+        .constraints(Country::getValue, "country", c -&gt; c.greaterThanOrEqual(2))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
+ConstraintViolations violations = validator.validate(new Country("J")); // Invalid (The size of "country" must be greater than or equal to 2. The given size is 1")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_lessthanint"><code>lessThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+        .constraints(Country::getValue, "country", c -&gt; c.lessThan(4))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than 4. The given size is 5")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_lessthanorequalint"><code>lessThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+        .constraints(Country::getValue, "country", c -&gt; c.lessThanOrEqual(4))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to to 4. The given size is 5")</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_containscharsequence"><code>contains(CharSequence)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains the specified sequence of char values</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_patternstring"><code>pattern(String)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value matches the specified regular expression</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_email"><code>email()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is a valid email address</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_password"><code>password(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Check if the target value meets the specified password policy</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ipv4"><code>ipv4()</code></h4>
+<div class="paragraph">
+<p>Check if the target value is a valid IPv4 address</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ipv6"><code>ipv6()</code></h4>
+<div class="paragraph">
+<p>Check if the target value is a valid IPv6 address</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_url"><code>url()</code></h4>
+<div class="paragraph">
+<p>Check if the target value is a valid URL</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_luhn"><code>luhn()</code></h4>
+<div class="paragraph">
+<p>Checks if the digits within the target value pass the Luhn checksum algorithm (see also <a href="http://en.wikipedia.org/wiki/Luhn_algorithm">Luhn algorithm</a>).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isbyte"><code>isByte()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>Byte</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isshort"><code>isShort()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>Short</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isinteger"><code>isInteger()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as an <code>Integer</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_islong"><code>isLong()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>Long</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isfloat"><code>isFloat()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>Float</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isdouble"><code>isDouble()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>Double</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isbiginteger"><code>isBigInteger()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>BigInteger</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_isbigdecimal"><code>isBigDecimal()</code></h4>
+<div class="paragraph">
+<p>Check if the target value can be parsed as a <code>BigDecimal</code> value</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_codepoints"><code>codePoints(&#8230;&#8203;)</code></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_normalizernormalizer_form"><code>normalizer(Normalizer.Form)</code></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_variant"><code>variant(&#8230;&#8203;)</code></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_asbytearray"><code>asByteArray()</code></h4>
+
+</div>
+<div class="sect3">
+<h4 id="_emoji"><code>emoji()</code></h4>
+
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integershortlongcharactorbytefloatlong">Integer/Short/Long/Charactor/Byte/Float/Long</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_bigintegerbigdecimal">BigInteger/BigDecimal</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_boolean">Boolean</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_object">Object</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_listarraymap">List/Array/Map</h3>
+
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-12 06:09:22 UTC
+Last updated 2021-06-12 13:56:12 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
