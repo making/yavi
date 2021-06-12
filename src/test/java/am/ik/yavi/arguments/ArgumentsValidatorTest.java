@@ -15,19 +15,27 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import am.ik.yavi.Country;
+import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
+import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ViolationMessage;
 import org.junit.jupiter.api.Test;
 
+import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -66,6 +74,11 @@ public class ArgumentsValidatorTest {
 	final Arguments1Validator<Map<String, Object>, User> mapValidator = arguments3Validator
 			.compose(m -> Arguments.of((String) m.get("name"), (String) m.get("email"),
 					(Integer) m.get("age")));
+
+	static final Arguments1Validator<String, PhoneNumber> phoneNumberValidator = StringValidatorBuilder
+			.of("phoneNumber",
+					c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
+			.build(PhoneNumber::new).compose(identity());
 
 	@Test
 	void testArg2_allInvalid() {
@@ -264,4 +277,115 @@ public class ArgumentsValidatorTest {
 				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
 	}
+
+	@Test
+	void liftListValid() {
+		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = phoneNumberValidator
+				.liftList();
+		List<String> input = Arrays.asList("012012345678", "012012348765",
+				"012012345679");
+		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
+
+		assertThat(actual.isValid()).isTrue();
+		assertThat(actual.value()).isEqualTo(Arrays.asList(
+				new PhoneNumber("012012345678"), new PhoneNumber("012012348765"),
+				new PhoneNumber("012012345679")));
+	}
+
+	@Test
+	void liftListInvalid() {
+		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = phoneNumberValidator
+				.liftList();
+		List<String> input = Arrays.asList("012012345678", "", "012");
+		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
+
+		assertThat(actual.isValid()).isFalse();
+		assertThat(actual.errors()).hasSize(3);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
+		assertThat(actual.errors().get(2).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(2).args()[0]).isEqualTo("phoneNumber[2]");
+	}
+
+	@Test
+	void liftSetValid() {
+		Arguments1Validator<Iterable<String>, Set<PhoneNumber>> phoneNumberSetValidator = phoneNumberValidator
+				.liftSet();
+		List<String> input = Arrays.asList("012012345678", "012012348765",
+				"012012345679", "012012345678");
+		Validated<Set<PhoneNumber>> actual = phoneNumberSetValidator.validate(input);
+
+		assertThat(actual.isValid()).isTrue();
+		assertThat(new ArrayList<>(actual.value())).isEqualTo(Arrays.asList(
+				new PhoneNumber("012012345678"), new PhoneNumber("012012348765"),
+				new PhoneNumber("012012345679")));
+	}
+
+	@Test
+	void liftSetInvalid() {
+		Arguments1Validator<Iterable<String>, Set<PhoneNumber>> phoneNumberSetValidator = phoneNumberValidator
+				.liftSet();
+		List<String> input = Arrays.asList("012012345678", "", "012", "012012345678");
+		Validated<Set<PhoneNumber>> actual = phoneNumberSetValidator.validate(input);
+
+		assertThat(actual.isValid()).isFalse();
+		assertThat(actual.errors()).hasSize(3);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
+		assertThat(actual.errors().get(2).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(2).args()[0]).isEqualTo("phoneNumber[2]");
+	}
+
+	@Test
+	void liftOptionalValid() {
+		Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
+				.liftOptional();
+
+		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator
+				.validate(Optional.of("012012345678"));
+		assertThat(actual.isValid()).isTrue();
+		assertThat(actual.value())
+				.isEqualTo(Optional.of(new PhoneNumber("012012345678")));
+
+		Validated<Optional<PhoneNumber>> actual2 = phoneNumberOptionalValidator
+				.validate(Optional.empty());
+		assertThat(actual2.isValid()).isTrue();
+		assertThat(actual2.value()).isEqualTo(Optional.empty());
+	}
+
+	@Test
+	void liftOptionalInvalid() {
+		Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
+				.liftOptional();
+
+		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator
+				.validate(Optional.of(""));
+		assertThat(actual.isValid()).isFalse();
+		assertThat(actual.errors()).hasSize(2);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber");
+	}
+
 }

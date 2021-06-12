@@ -129,7 +129,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	/**
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Optional<A1>, Optional<X>> listOptional() {
+	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
 		return ArgumentsValidators.liftOptional(this);
 	}
 
