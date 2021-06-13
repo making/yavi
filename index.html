@@ -494,7 +494,7 @@ ConstraintViolations violations = validator.validate(new Email("")); // Invalid 
 <div class="sect3">
 <h4 id="notblank"><a class="anchor" href="#notblank"></a>3.1.3. <code>notBlank()</code></h4>
 <div class="paragraph">
-<p>Checks that the target value is not <code>null</code>, and the trimmed length is greater than <code>0</code>.
+<p>Checks that the target value is not <code>null</code>, and the trimmed userId is greater than <code>0</code>.
 The difference to <code>notEmpty()</code> is that trailing white-spaces are ignored.</p>
 </div>
 <div class="listingblock">
@@ -1268,13 +1268,13 @@ ConstraintViolations violations = validator.validate(new Url("4111111111111112")
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isByte())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isByte())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("127")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a byte.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("127")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a byte.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1315,13 +1315,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isShort())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isShort())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("32767")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a short.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("32767")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a short.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1362,13 +1362,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isInteger())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isInteger())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("2147483647")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of an integer.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("2147483647")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of an integer.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1409,13 +1409,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isLong())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isLong())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("9223372036854775807")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a long.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("9223372036854775807")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a long.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1456,13 +1456,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isFloat())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isFloat())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("0.1")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a float.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a float.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1503,13 +1503,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isDouble())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isDouble())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("0.1")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a double.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a double.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1550,13 +1550,13 @@ ConstraintViolations violations = validator.validate(Length.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
-        .constraints(Length::value, "length", c -&gt; c.isBigInteger())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+        .constraints(UserId::value, "userId", c -&gt; c.isBigInteger())
         .build();
 
-ConstraintViolations violations = validator.validate(Length.valueOf("127")); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a big integer.)</code></pre>
+ConstraintViolations violations = validator.validate(UserId.valueOf("127")); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a big integer.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1696,7 +1696,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 09:39:18 UTC
+Last updated 2021-06-13 11:47:42 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
