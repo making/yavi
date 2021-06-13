@@ -71,25 +71,25 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_LUHN("charSequence.luhn",
 				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
 		CHAR_SEQUENCE_BOOLEAN("charSequence.boolean",
-				"\"{0}\" must be a valid representation of a boolean."), //
+				"\"{0}\" must be a valid representation of a boolean"), //
 		CHAR_SEQUENCE_BYTE("charSequence.byte",
-				"\"{0}\" must be a valid representation of a byte."), //
+				"\"{0}\" must be a valid representation of a byte"), //
 		CHAR_SEQUENCE_SHORT("charSequence.short",
-				"\"{0}\" must be a valid representation of a short."), //
+				"\"{0}\" must be a valid representation of a short"), //
 		CHAR_SEQUENCE_INTEGER("charSequence.integer",
-				"\"{0}\" must be a valid representation of an integer."), //
+				"\"{0}\" must be a valid representation of an integer"), //
 		CHAR_SEQUENCE_LONG("charSequence.long",
-				"\"{0}\" must be a valid representation of a long."), //
+				"\"{0}\" must be a valid representation of a long"), //
 		CHAR_SEQUENCE_FLOAT("charSequence.float",
-				"\"{0}\" must be a valid representation of a float."), //
+				"\"{0}\" must be a valid representation of a float"), //
 		CHAR_SEQUENCE_DOUBLE("charSequence.double",
-				"\"{0}\" must be a valid representation of a double."), //
+				"\"{0}\" must be a valid representation of a double"), //
 		CHAR_SEQUENCE_BIGINTEGER("charSequence.biginteger",
-				"\"{0}\" must be a valid representation of a big integer."), //
+				"\"{0}\" must be a valid representation of a big integer"), //
 		CHAR_SEQUENCE_BIGDECIMAL("charSequence.bigdecimal",
-				"\"{0}\" must be a valid representation of a big decimal."), //
+				"\"{0}\" must be a valid representation of a big decimal"), //
 		BYTE_SIZE_LESS_THAN("byteSize.lessThan",
-				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
+				"The byte size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		BYTE_SIZE_LESS_THAN_OR_EQUAL("byteSize.lessThanOrEqual",
 				"The byte size of \"{0}\" must be less than or equal to {1}. The given size is {2}"), //
 		BYTE_SIZE_GREATER_THAN("byteSize.greaterThan",
