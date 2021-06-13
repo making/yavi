@@ -57,10 +57,15 @@
 <li><a href="#isbiginteger">3.1.23. <code>isBigInteger()</code></a></li>
 <li><a href="#isbigdecimal">3.1.24. <code>isBigDecimal()</code></a></li>
 <li><a href="#codepoints">3.1.25. <code>codePoints(&#8230;&#8203;)</code></a></li>
-<li><a href="#normalizernormalizer-form">3.1.26. <code>normalizer(Normalizer.Form)</code></a></li>
-<li><a href="#variant">3.1.27. <code>variant(&#8230;&#8203;)</code></a></li>
-<li><a href="#asbytearray">3.1.28. <code>asByteArray()</code></a></li>
-<li><a href="#emoji">3.1.29. <code>emoji()</code></a></li>
+<li><a href="#advanced-character-length-check">3.1.26. Advanced character length check</a></li>
+<li><a href="#surrogate-pair">3.1.27. Surrogate pair</a></li>
+<li><a href="#combining-character">3.1.28. Combining character</a></li>
+<li><a href="#variation-selector">3.1.29. Variation Selector</a></li>
+<li><a href="#emoji">3.1.30. Emoji</a>
+<ul class="sectlevel4">
+<li><a href="#asbytearray"><code>asByteArray()</code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#integershortlongcharactorbytefloatlong">3.2. Integer/Short/Long/Charactor/Byte/Float/Long</a></li>
@@ -1644,7 +1649,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 Code points can be specified as allowed characters (whitelist) or prohibited characters (blacklist).</p>
 </div>
 <div class="paragraph">
-<p>A set of code points is represented by <code>am.ik.yavi.constraint.charsequence.CodePoints</code> interface, and there is <code>CodePointsSet</code> interface that represents the set using <code>java.util.Set</code> and <code>CodePointsRanges</code> interface that represents a list of code point ranges.</p>
+<p>A set of code points is represented by <code>am.ik.yavi.constraint.charsequence.CodePoints</code> interface, and there is <code>am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet</code> interface that represents the set using <code>java.util.Set</code> and <code>am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges</code> interface that represents a list of code point ranges.</p>
 </div>
 <div class="paragraph">
 <p>For example, a code point set consisting of "A, B, C, D, a, b, c, d" is expressed as follows:</p>
@@ -1768,20 +1773,151 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 </div>
 </div>
 <div class="sect3">
-<h4 id="normalizernormalizer-form"><a class="anchor" href="#normalizernormalizer-form"></a>3.1.26. <code>normalizer(Normalizer.Form)</code></h4>
-
+<h4 id="advanced-character-length-check"><a class="anchor" href="#advanced-character-length-check"></a>3.1.26. Advanced character length check</h4>
+<div class="paragraph">
+<p>YAVI counts the entered characters as the number of characters as it looks in the constraints on the number of characters. Recently, as a result of defining various characters on Unicode, the apparent size and the return value of <code>String#length</code> method are quite different.</p>
+</div>
+<div class="paragraph">
+<p>YAVI supports the following character types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Surrogate pair</p>
+</li>
+<li>
+<p>Combining character</p>
+</li>
+<li>
+<p>Variation Selector</p>
+<div class="ulist">
+<ul>
+<li>
+<p>IVS (Ideographic Variation Sequence)</p>
+</li>
+<li>
+<p>SVS (Standardized Variation Sequence)</p>
+</li>
+<li>
+<p>FVS (Mongolian Free Variation Selector)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Emoji</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>YAVI will perform a constraint check on surrogate pairs and combining characters with the number of characters as they look. (For Emoji, IVS, SVS and FVS, the size is not checked as it looks by default due to the performance.)</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at a typical example.</p>
+</div>
 </div>
 <div class="sect3">
-<h4 id="variant"><a class="anchor" href="#variant"></a>3.1.27. <code>variant(&#8230;&#8203;)</code></h4>
+<h4 id="surrogate-pair"><a class="anchor" href="#surrogate-pair"></a>3.1.27. Surrogate pair</h4>
+<div class="paragraph">
+<p><code>𠮷野屋</code> is an example of a surrogate pair. It looks like 3 characters, but the result of <code>length</code> method is 4 (<code>\uD842\uDFB7野屋</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">System.out.println("𠮷野屋".length()); // 4 (\uD842\uDFB7野屋)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since YAVI treats the character length as the code point length, this character string is regarded as 3 characters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+        .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(3))
+        .build();
 
+validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
-<h4 id="asbytearray"><a class="anchor" href="#asbytearray"></a>3.1.28. <code>asByteArray()</code></h4>
+<h4 id="combining-character"><a class="anchor" href="#combining-character"></a>3.1.28. Combining character</h4>
+<div class="paragraph">
+<p><code>モジ</code> is an example of a combining character. Although it looks like 2 characters, <code>シ</code> and dakuten(<code>゙</code>) are combined, and the result of <code>length()</code> is 3 (<code>モシ\u3099</code>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">System.out.println("モジ".length()); // 3 (モシ\u3099)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>YAVI considers this string to be 2 characters by default.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+        .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(2))
+        .build();
 
+validator.validate(new Message("モジ")); // Valid</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>YAVI uses <code>java.text.Normalizer</code> and normalizes with <code>java.text.Normalizer.Form#NFC</code> by default. This behavior can be changed as follows: (If <code>null</code> is set, it will not be normalized)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+        .constraint(Message::getText, "text", c -&gt; c.normalizer(normalizerForm)
+                .lessThanOrEqual(2))
+        .build();</code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
-<h4 id="emoji"><a class="anchor" href="#emoji"></a>3.1.29. <code>emoji()</code></h4>
+<h4 id="variation-selector"><a class="anchor" href="#variation-selector"></a>3.1.29. Variation Selector</h4>
+<div class="paragraph">
+<p><code>𠮟󠄀</code> is an example of an Ideographic Variation Sequence. Variant selectors cannot be normalized with <code>Normalizer</code>.
+It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 DD00", so the result of <code>length()</code> is 4.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">System.out.println("𠮟󠄀".length()); // 4 (\uD842\uDF9F\uDB40\uDD00󠄀)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>YAVI does <strong>not</strong> consider this character as a single character by default to prevent performance degradation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+        .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(1))
+        .build();
+validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can ignore (delete) the code point of <code>0xE0100</code>-<code>0xE01EF</code>, which is the range of IVS from the target string, as follows.
+This way you can regard this string as just a surrogate pair.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+        .constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
+                .lessThanOrEqual(1))
+        .build();
+validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>SVS and FVS can be handled in the same way.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="emoji"><a class="anchor" href="#emoji"></a>3.1.30. Emoji</h4>
+<div class="sect4">
+<h5 id="asbytearray"><a class="anchor" href="#asbytearray"></a><code>asByteArray()</code></h5>
 
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1822,7 +1958,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 13:00:58 UTC
+Last updated 2021-06-13 14:16:17 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
