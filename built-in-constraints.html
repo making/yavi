@@ -1463,9 +1463,8 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 <div class="paragraph">
 <p>Let&#8217;s look at a typical example.</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_surrogate_pair">Surrogate pair</h4>
+<div class="sect4">
+<h5 id="_surrogate_pair">Surrogate pair</h5>
 <div class="paragraph">
 <p><code>𠮷野屋</code> is an example of a surrogate pair. It looks like 3 characters, but the result of <code>length</code> method is 4 (<code>\uD842\uDFB7野屋</code>).</p>
 </div>
@@ -1479,7 +1478,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(3))
         .build();
 
@@ -1487,8 +1486,8 @@ validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_combining_character">Combining character</h4>
+<div class="sect4">
+<h5 id="_combining_character">Combining character</h5>
 <div class="paragraph">
 <p><code>モジ</code> is an example of a combining character. Although it looks like 2 characters, <code>シ</code> and dakuten(<code>゙</code>) are combined, and the result of <code>length()</code> is 3 (<code>モシ\u3099</code>).</p>
 </div>
@@ -1502,7 +1501,7 @@ validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(2))
         .build();
 
@@ -1514,15 +1513,15 @@ validator.validate(new Message("モジ")); // Valid</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.normalizer(normalizerForm)
 				.lessThanOrEqual(2))
         .build();</code></pre>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_variation_selector">Variation Selector</h4>
+<div class="sect4">
+<h5 id="_variation_selector">Variation Selector</h5>
 <div class="paragraph">
 <p><code>𠮟󠄀</code> is an example of an Ideographic Variation Sequence. Variant selectors cannot be normalized with <code>Normalizer</code>.
 It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 DD00", so the result of <code>length()</code> is 4.</p>
@@ -1537,7 +1536,7 @@ It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 D
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
 		.constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(1))
 		.build();
 validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
@@ -1549,7 +1548,7 @@ This way you can regard this string as just a surrogate pair.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
 		.constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
 				.lessThanOrEqual(1))
 		.build();
@@ -1560,12 +1559,14 @@ validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
 <p>SVS and FVS can be handled in the same way.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_emoji">Emoji</h4>
 <div class="sect4">
-<h5 id="_asbytearray"><code>asByteArray()</code></h5>
+<h5 id="_emoji">Emoji</h5>
 
 </div>
+</div>
+<div class="sect3">
+<h4 id="_asbytearray"><code>asByteArray()</code></h4>
+
 </div>
 </div>
 <div class="sect2">
@@ -1593,7 +1594,7 @@ validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-13 14:16:17 UTC
+Last updated 2021-06-13 14:18:39 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
