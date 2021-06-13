@@ -1456,13 +1456,13 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isFloat())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+        .constraints(Money::value, "money", c -&gt; c.isFloat())
         .build();
 
-ConstraintViolations violations = validator.validate(UserId.valueOf("0.1")); // Valid
-ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a float.)</code></pre>
+ConstraintViolations violations = validator.validate(Money.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Invalid ("money" must be a valid representation of a float.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1503,13 +1503,13 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isDouble())
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+        .constraints(Money::value, "money", c -&gt; c.isDouble())
         .build();
 
-ConstraintViolations violations = validator.validate(UserId.valueOf("0.1")); // Valid
-ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
-ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // Invalid ("userId" must be a valid representation of a double.)</code></pre>
+ConstraintViolations violations = validator.validate(Money.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Invalid ("money" must be a valid representation of a double.)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1696,7 +1696,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 11:47:42 UTC
+Last updated 2021-06-13 11:49:10 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
