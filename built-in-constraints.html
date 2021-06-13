@@ -878,9 +878,9 @@ ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // 
         .constraints(CreditCard::number, "creditCardNumber", c -&gt; c.luhn())
         .build();
 
-ConstraintViolations violations = validator.validate(new Url("4111111111111111")); // Valid
-ConstraintViolations violations = validator.validate(new Url(null)); // Valid
-ConstraintViolations violations = validator.validate(new Url("4111111111111112")); // Invalid (the check digit for "creditCardNumber" is invalid, Luhn checksum failed)</code></pre>
+ConstraintViolations violations = validator.validate(new CreditCard("4111111111111111")); // Valid
+ConstraintViolations violations = validator.validate(new CreditCard(null)); // Valid
+ConstraintViolations violations = validator.validate(new CreditCard("4111111111111112")); // Invalid (the check digit for "creditCardNumber" is invalid, Luhn checksum failed)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1292,7 +1292,133 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </div>
 <div class="sect3">
 <h4 id="_codepoints"><code>codePoints(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is in the specified set of code points.
+Code points can be specified as allowed characters (whitelist) or prohibited characters (blacklist).</p>
+</div>
+<div class="paragraph">
+<p>A set of code points is represented by <code>am.ik.yavi.constraint.charsequence.CodePoints</code> interface, and there is <code>CodePointsSet</code> interface that represents the set using <code>java.util.Set</code> and <code>CodePointsRanges</code> interface that represents a list of code point ranges.</p>
+</div>
+<div class="paragraph">
+<p>For example, a code point set consisting of "A, B, C, D, a, b, c, d" is expressed as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">CodePointsSet&lt;String&gt; codePoints = () -&gt; new HashSet&lt;&gt;(
+        Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */, 0x0044 /* D */,
+                0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">CodePointsRanges&lt;String&gt; codePoints = () -&gt; Arrays.asList(
+        Range.of(0x0041/* A */, 0x0044 /* D */),
+        Range.of(0x0061/* a */, 0x0064 /* d */));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For consecutive code points, the latter is overwhelmingly more memory efficient.</p>
+</div>
+<div class="paragraph">
+<p>If you want to regard the code point set as a white list (allowed characters), specify as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+        .constraint(Message::getText, "text", c -&gt; c.codePoints(codePoints).asWhiteList())
+        .build();
 
+ConstraintViolations violations = validator.validate(new Message("aBCd")); // Valid
+ConstraintViolations violations = validator.validate(new Message(null)); // Valid
+ConstraintViolations violations = validator.validate(new Message("aBCe")); // Invalid ("[e]" is/are not allowed for "text")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to regard the code point set as a blacklist (prohibited characters), specify as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+        .constraint(Message::getText, "text", c -&gt; c.codePoints(codePoints).asBlackList())
+        .build();
+
+ConstraintViolations violations = validator.validate(new Message("hello")); // Valid
+ConstraintViolations violations = validator.validate(new Message(null)); // Valid
+ConstraintViolations violations = validator.validate(new Message("hallo")); // Invalid ("[a]" is/are not allowed for "text")</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>codePoints.asWhiteList</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{1}" is/are not allowed for "{0}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the violated value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>codePoints.asBlackList</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{1}" is/are not allowed for "{0}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the violated value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The following is a set of built-in code points.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#ASCII_PRINTABLE_CHARS</code> &#8230;&#8203; ASCII printable characters</p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#ASCII_CONTROL_CHARS</code> &#8230;&#8203; ASCII control characters</p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#CRLF</code> &#8230;&#8203; <code>0x000A</code> (LINE FEED) and <code>0x000D</code> (CARRIAGE RETURN)</p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints#HIRAGANA</code> &#8230;&#8203; <a href="https://www.unicode.org/charts/nameslist/c_3040.html">Hiragana</a> defined in Unicode (different from JIS X 0208 definition)</p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints#KATAKANA</code> &#8230;&#8203; <a href="https://www.unicode.org/charts/nameslist/c_30A0.html">Katakana</a> and <a href="https://www.unicode.org/charts/nameslist/c_31F0.html">Katakana Phonetic Extensions</a> defined in Unicode (different from JIS X 0208 definition)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can also represent the union of multiple code point sets with <code>am.ik.yavi.constraint.charsequence.codepoints.CompositeCodePoints</code> class.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_normalizernormalizer_form"><code>normalizer(Normalizer.Form)</code></h4>
@@ -1336,7 +1462,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-13 11:49:10 UTC
+Last updated 2021-06-13 13:00:58 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
