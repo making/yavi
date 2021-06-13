@@ -376,7 +376,7 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.notNull())
+        .constraints(Email::value, "email", c -&gt; c.notNull())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -422,7 +422,7 @@ ConstraintViolations violations = validator.validate(new Email(null)); // Invali
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.notEmpty())
+        .constraints(Email::value, "email", c -&gt; c.notEmpty())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -470,7 +470,7 @@ The difference to <code>notEmpty()</code> is that trailing white-spaces are igno
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.notBlank())
+        .constraints(Email::value, "email", c -&gt; c.notBlank())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -517,7 +517,7 @@ ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.fixedSize(7))
+        .constraints(ZipCode::value, "zipCode", c -&gt; c.fixedSize(7))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Valid
@@ -570,7 +570,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); /
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::getValue, "country", c -&gt; c.greaterThan(2))
+        .constraints(Country::value, "country", c -&gt; c.greaterThan(2))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
@@ -623,7 +623,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::getValue, "country", c -&gt; c.greaterThanOrEqual(2))
+        .constraints(Country::value, "country", c -&gt; c.greaterThanOrEqual(2))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
@@ -676,7 +676,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::getValue, "country", c -&gt; c.lessThan(4))
+        .constraints(Country::value, "country", c -&gt; c.lessThan(4))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
@@ -729,7 +729,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::getValue, "country", c -&gt; c.lessThanOrEqual(4))
+        .constraints(Country::value, "country", c -&gt; c.lessThanOrEqual(4))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
@@ -782,7 +782,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.contains("-"))
+        .constraints(ZipCode::value, "zipCode", c -&gt; c.contains("-"))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
@@ -832,7 +832,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
+        .constraints(ZipCode::value, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
@@ -882,7 +882,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::getValue, "email", c -&gt; c.email())
+        .constraints(Email::value, "email", c -&gt; c.email())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -905,7 +905,7 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.pattern</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.email</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must match {1}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -913,10 +913,7 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 <p><code>{0}</code> &#8230;&#8203; field name</p>
 </li>
 <li>
-<p><code>{1}</code> &#8230;&#8203; the specified regular expression</p>
-</li>
-<li>
-<p><code>{2}</code> &#8230;&#8203; the given value</p>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
 </li>
 </ul>
 </div></div></td>
@@ -932,7 +929,7 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
-        .constraint(Password::getValue, "password", c -&gt; c.password(policy -&gt; policy
+        .constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
                 .uppercase()
                 .lowercase()
                 // or .required(PasswordPolicy.UPPERCASE, PasswordPolicy.LOWERCASE)
@@ -1001,7 +998,26 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 </tbody>
 </table>
 <div class="paragraph">
-<p>You can define a custom password policy as follows:</p>
+<p>Buit-in password policies are following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#UPPERCASE</code></p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#LOWERCASE</code></p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#NUMBERS</code></p>
+</li>
+<li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#SYMBOLS</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can define a custom password policy as bellow:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1019,7 +1035,7 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 
 
 Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
-        .constraint(Password::getValue, "password", c -&gt; c.password(policy -&gt; policy
+        .constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
                 .required(passwordPolicy)
                 // ...
                 .build()))
@@ -1032,12 +1048,94 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
 <div class="paragraph">
 <p>Check if the target value is a valid IPv4 address</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
+        .constraints(IpAddress::value, "ipAddress", c -&gt; c.ipv4())
+        .build();
+
+ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress("example.com")); // Invalid ("ipAddress" must not be a valid IPv4)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.ipv4</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid IPv4</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="ipv6"><a class="anchor" href="#ipv6"></a>3.1.14. <code>ipv6()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid IPv6 address</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
+        .constraints(IpAddress::value, "ipAddress", c -&gt; c.ipv6())
+        .build();
+
+ConstraintViolations violations = validator.validate(new IpAddress("2001:0db8:bd05:01d2:288a:1fc0:0001:10ee")); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must not be a valid IPv4)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.ipv6</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid IPv6</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="url"><a class="anchor" href="#url"></a>3.1.15. <code>url()</code></h4>
@@ -1158,7 +1256,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 04:26:04 UTC
+Last updated 2021-06-13 04:35:48 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
