@@ -68,7 +68,15 @@
 <li><a href="#asbytearray">3.1.27. <code>asByteArray()</code></a></li>
 </ul>
 </li>
-<li><a href="#integershortlongcharactorbytefloatlong">3.2. Integer/Short/Long/Charactor/Byte/Float/Long</a></li>
+<li><a href="#integershortlongcharacterbytefloatlong">3.2. Integer/Short/Long/Character/Byte/Float/Long</a>
+<ul class="sectlevel3">
+<li><a href="#notnull-2">3.2.1. <code>notNull()</code></a></li>
+<li><a href="#greaterthanint-2">3.2.2. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint-2">3.2.3. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint-2">3.2.4. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint-2">3.2.5. <code>lessThanOrEqual(int)</code></a></li>
+</ul>
+</li>
 <li><a href="#bigintegerbigdecimal">3.3. BigInteger/BigDecimal</a></li>
 <li><a href="#boolean">3.4. Boolean</a></li>
 <li><a href="#object">3.5. Object</a></li>
@@ -2114,8 +2122,276 @@ validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byt
 </div>
 </div>
 <div class="sect2">
-<h3 id="integershortlongcharactorbytefloatlong"><a class="anchor" href="#integershortlongcharactorbytefloatlong"></a>3.2. Integer/Short/Long/Charactor/Byte/Float/Long</h3>
+<h3 id="integershortlongcharacterbytefloatlong"><a class="anchor" href="#integershortlongcharacterbytefloatlong"></a>3.2. Integer/Short/Long/Character/Byte/Float/Long</h3>
+<div class="paragraph">
+<p>Apply the constraints on the <code>Integer</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraints(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_string</code> instead of <code>constraints</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._integer(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The same goes for <code>Short</code>/<code>Long</code>/<code>Character</code>/<code>Byte</code>/<code>Float</code>/<code>Long</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="notnull-2"><a class="anchor" href="#notnull-2"></a>3.2.1. <code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+        .constraints(Age::value, "age", c -&gt; c.notNull())
+        .build();
 
+ConstraintViolations violations = validator.validate(new Age(30)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Invalid ("age" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="greaterthanint-2"><a class="anchor" href="#greaterthanint-2"></a>3.2.2. <code>greaterThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is greater than the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+        .constraints(Age::value, "age", c -&gt; c.greaterThan(20))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Age(21)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("age" must be greater than 20</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be greater than {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="greaterthanorequalint-2"><a class="anchor" href="#greaterthanorequalint-2"></a>3.2.3. <code>greaterThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is greater than or equals to the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+        .constraints(Age::value, "age", c -&gt; c.greaterThanOrEqual(20))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Age(20)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("age" must be greater than or equal to 10</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be greater than or equal to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="lessthanint-2"><a class="anchor" href="#lessthanint-2"></a>3.2.4. <code>lessThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is less than the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+        .constraints(Age::value, "age", c -&gt; c.lessThan(20))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Age(19)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("age" must be less than 20</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be less than {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="lessthanorequalint-2"><a class="anchor" href="#lessthanorequalint-2"></a>3.2.5. <code>lessThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is less than or equals to the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+        .constraints(Age::value, "age", c -&gt; c.lessThanOrEqual(20))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Age(19)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("age" must be less than or equal to 10</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be less than or equal to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="bigintegerbigdecimal"><a class="anchor" href="#bigintegerbigdecimal"></a>3.3. BigInteger/BigDecimal</h3>
@@ -2151,7 +2427,7 @@ validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byt
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 15:47:10 UTC
+Last updated 2021-06-13 15:58:42 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
