@@ -368,6 +368,36 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 </div>
 <div class="sect2">
 <h3 id="string"><a class="anchor" href="#string"></a>3.1. String</h3>
+<div class="paragraph">
+<p>Apply the constraints on the <code>String</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraints(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_string</code> instead of <code>constraints</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._string(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to apply constraints to the more generic <code>CharSequence</code>, use <code>_charSequence</code> method.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._charSequence(/* Function from TargetClass to CharSequence  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
 <div class="sect3">
 <h4 id="notnull"><a class="anchor" href="#notnull"></a>3.1.1. <code>notNull()</code></h4>
 <div class="paragraph">
@@ -1103,7 +1133,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 
 ConstraintViolations violations = validator.validate(new IpAddress("2001:0db8:bd05:01d2:288a:1fc0:0001:10ee")); // Valid
 ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
-ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must not be a valid IPv4)</code></pre>
+ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must not be a valid IPv6)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1236,48 +1266,376 @@ ConstraintViolations violations = validator.validate(new Url("4111111111111112")
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Byte</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isByte())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("127")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a byte.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.byte</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a byte.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isshort"><a class="anchor" href="#isshort"></a>3.1.18. <code>isShort()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Short</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isShort())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("32767")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a short.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.short</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a short.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isinteger"><a class="anchor" href="#isinteger"></a>3.1.19. <code>isInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as an <code>Integer</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isInteger())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("2147483647")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of an integer.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.integer</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of an integer.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="islong"><a class="anchor" href="#islong"></a>3.1.20. <code>isLong()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Long</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isLong())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("9223372036854775807")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a long.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.long</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a long.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isfloat"><a class="anchor" href="#isfloat"></a>3.1.21. <code>isFloat()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Float</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isFloat())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a float.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.float</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a float.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isdouble"><a class="anchor" href="#isdouble"></a>3.1.22. <code>isDouble()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Double</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isDouble())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("0.1")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a double.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.double</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a double.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isbiginteger"><a class="anchor" href="#isbiginteger"></a>3.1.23. <code>isBigInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigInteger</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Length&gt; validator = ValidatorBuilder.&lt;Length&gt; of()
+        .constraints(Length::value, "length", c -&gt; c.isBigInteger())
+        .build();
+
+ConstraintViolations violations = validator.validate(Length.valueOf("127")); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Length.valueOf("a")); // Invalid ("length" must be a valid representation of a big integer.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigInteger</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big integer.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="isbigdecimal"><a class="anchor" href="#isbigdecimal"></a>3.1.24. <code>isBigDecimal()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigDecimal</code> value</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+        .constraints(Money::value, "money", c -&gt; c.isBigDecimal())
+        .build();
+
+ConstraintViolations violations = validator.validate(Money.valueOf("50.0")); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Invalid ("money" must be a valid representation of a big decimal.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigDecimal</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big decimal.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="codepoints"><a class="anchor" href="#codepoints"></a>3.1.25. <code>codePoints(&#8230;&#8203;)</code></h4>
@@ -1338,7 +1696,7 @@ ConstraintViolations violations = validator.validate(new Url("4111111111111112")
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 08:55:35 UTC
+Last updated 2021-06-13 09:39:18 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
