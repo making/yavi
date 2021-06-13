@@ -21,11 +21,11 @@
 <li><a href="#introduction">1. Introduction</a></li>
 <li><a href="#getting-started">2. Getting Started</a>
 <ul class="sectlevel2">
-<li><a href="#prerequisites">2.1. Prerequisites</a></li>
-<li><a href="#project-set-up">2.2. Project set up</a></li>
-<li><a href="#applying-constraints">2.3. Applying constraints</a></li>
-<li><a href="#validating-constraints">2.4. Validating constraints</a></li>
-<li><a href="#where-to-go-next">2.5. Where to go next?</a></li>
+<li><a href="#gs-prerequisites">2.1. Prerequisites</a></li>
+<li><a href="#gs-project-setup">2.2. Project set up</a></li>
+<li><a href="#gs-applying-constraints">2.3. Applying constraints</a></li>
+<li><a href="#gs-validating-constraints">2.4. Validating constraints</a></li>
+<li><a href="#gs-where-to-go-next">2.5. Where to go next?</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">3. Built-in Constraints</a>
@@ -78,11 +78,6 @@
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="imageblock">
-<div class="content">
-<img src="https://user-images.githubusercontent.com/106908/120071055-66770380-c0c8-11eb-83f1-d7eff04bad54.png" alt="YAVI Logo">
-</div>
-</div>
 <div class="paragraph">
 <p>YAVI (pronounced jɑ-vάɪ)  is a lambda based type safe validation for Java.</p>
 </div>
@@ -146,7 +141,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <p>The following paragraphs will guide you through the initial steps required to integrate YAVI into your application.</p>
 </div>
 <div class="sect2">
-<h3 id="prerequisites"><a class="anchor" href="#prerequisites"></a>2.1. Prerequisites</h3>
+<h3 id="gs-prerequisites"><a class="anchor" href="#gs-prerequisites"></a>2.1. Prerequisites</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -159,7 +154,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 </div>
 </div>
 <div class="sect2">
-<h3 id="project-set-up"><a class="anchor" href="#project-set-up"></a>2.2. Project set up</h3>
+<h3 id="gs-project-setup"><a class="anchor" href="#gs-project-setup"></a>2.2. Project set up</h3>
 <div class="paragraph">
 <p>In order to use YAVI within a Maven project, simply add the following dependency to your <code>pom.xml</code>:</p>
 </div>
@@ -194,7 +189,7 @@ Add the following dependencies as needed:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="applying-constraints"><a class="anchor" href="#applying-constraints"></a>2.3. Applying constraints</h3>
+<h3 id="gs-applying-constraints"><a class="anchor" href="#gs-applying-constraints"></a>2.3. Applying constraints</h3>
 <div class="paragraph">
 <p>Let&#8217;s dive into an example to see how to apply constraints:</p>
 </div>
@@ -271,7 +266,7 @@ You can find <a href="https://github.com/making/gs-yavi">the complete source cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="validating-constraints"><a class="anchor" href="#validating-constraints"></a>2.4. Validating constraints</h3>
+<h3 id="gs-validating-constraints"><a class="anchor" href="#gs-validating-constraints"></a>2.4. Validating constraints</h3>
 <div class="paragraph">
 <p>To perform a validation of these constraints, you use a <code>Validator</code> instance.
 To demonstrate this, let&#8217;s have a look at a simple unit test:</p>
@@ -357,7 +352,7 @@ You can also check if the validation was successful with the <code>ConstraintVio
 </div>
 </div>
 <div class="sect2">
-<h3 id="where-to-go-next"><a class="anchor" href="#where-to-go-next"></a>2.5. Where to go next?</h3>
+<h3 id="gs-where-to-go-next"><a class="anchor" href="#gs-where-to-go-next"></a>2.5. Where to go next?</h3>
 <div class="paragraph">
 <p>That concludes the 5 minutes tour through the world of YAVI.
 If you want a more complete introduction, it is recommended to read <a href="https://github.com/making/yavi/blob/develop/README.md">the YAVI&#8217;s README</a>.</p>
@@ -388,6 +383,36 @@ ConstraintViolations violations = validator.validate(new Email("yavi@example.com
 ConstraintViolations violations = validator.validate(new Email(null)); // Invalid ("email" must not be null)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="notempty"><a class="anchor" href="#notempty"></a>3.1.2. <code>notEmpty()</code></h4>
@@ -401,14 +426,46 @@ ConstraintViolations violations = validator.validate(new Email(null)); // Invali
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid ("email" must not be empty)
 ConstraintViolations violations = validator.validate(new Email("")); // Invalid ("email" must not be empty)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.notEmpty</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be empty</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="notblank"><a class="anchor" href="#notblank"></a>3.1.3. <code>notBlank()</code></h4>
 <div class="paragraph">
-<p>Checks that the target value is not <code>null</code>, and the trimmed length is greater than <code>0</code>. The difference to <code>notEmpty()</code> is that trailing white-spaces are ignored.</p>
+<p>Checks that the target value is not <code>null</code>, and the trimmed length is greater than <code>0</code>.
+The difference to <code>notEmpty()</code> is that trailing white-spaces are ignored.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -417,9 +474,40 @@ ConstraintViolations violations = validator.validate(new Email("")); // Invalid 
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid ("email" must not be blank)
 ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid ("email" must not be blank)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.notBlank</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be blank</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="fixedsizeint"><a class="anchor" href="#fixedsizeint"></a>3.1.4. <code>fixedSize(int)</code></h4>
@@ -433,9 +521,46 @@ ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Invalid (The size of "zipCode" must be 7. The given size is 8)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.fixedSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="greaterthanint"><a class="anchor" href="#greaterthanint"></a>3.1.5. <code>greaterThan(int)</code></h4>
@@ -449,9 +574,46 @@ ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); /
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
 ConstraintViolations violations = validator.validate(new Country("J")); // Invalid (The size of "country" must be greater than 2. The given size is 1)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="greaterthanorequalint"><a class="anchor" href="#greaterthanorequalint"></a>3.1.6. <code>greaterThanOrEqual(int)</code></h4>
@@ -465,9 +627,46 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
 ConstraintViolations violations = validator.validate(new Country("J")); // Invalid (The size of "country" must be greater than or equal to 2. The given size is 1)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="lessthanint"><a class="anchor" href="#lessthanint"></a>3.1.7. <code>lessThan(int)</code></h4>
@@ -481,9 +680,46 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than 4. The given size is 5)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="lessthanorequalint"><a class="anchor" href="#lessthanorequalint"></a>3.1.8. <code>lessThanOrEqual(int)</code></h4>
@@ -497,9 +733,46 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to to 4. The given size is 5)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="containscharsequence"><a class="anchor" href="#containscharsequence"></a>3.1.9. <code>contains(CharSequence)</code></h4>
@@ -513,9 +786,43 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
 ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Invalid ("zipCode" must contain -)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.contains</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified char sequence</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="patternstring"><a class="anchor" href="#patternstring"></a>3.1.10. <code>pattern(String)</code></h4>
@@ -525,13 +832,47 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.pattern("[0-9]+-[0-9]+"))
+        .constraints(ZipCode::getValue, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
-ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Invalid ("zipCode" must match [0-9]+-[0-9]+)</code></pre>
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Invalid ("zipCode" must match [0-9]{3}-[0-9]{4})</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.pattern</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must match {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified regular expression</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="email"><a class="anchor" href="#email"></a>3.1.11. <code>email()</code></h4>
@@ -545,14 +886,145 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Valid
 ConstraintViolations violations = validator.validate(new Email("example.com")); // Invalid ("email" must not be a valid email address)</code></pre>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.pattern</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must match {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified regular expression</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="password"><a class="anchor" href="#password"></a>3.1.12. <code>password(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Check if the target value meets the specified password policy</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
+        .constraint(Password::getValue, "password", c -&gt; c.password(policy -&gt; policy
+                .uppercase()
+                .lowercase()
+                // or .required(PasswordPolicy.UPPERCASE, PasswordPolicy.LOWERCASE)
+                .optional(1, PasswordPolicy.NUMBERS, PasswordPolicy.SYMBOLS)
+                .build()))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Password("Yavi123")); // Valid
+ConstraintViolations violations = validator.validate(new Password(null)); // Valid
+ConstraintViolations violations = validator.validate(new Password("yavi123")); // Invalid ("password" must contain Uppercase policy)
+ConstraintViolations violations = validator.validate(new Password("yavi")); // Invalid ("password" must contain Uppercase policy, "password" must contain at least 1 policies from [Numbers, Symbols])
+ConstraintViolations violations = validator.validate(new Password("")); // Invalid ("password" must contain Uppercase policy, "password" must contain Lowercase policy, "password" must contain at least 1 policies from [Numbers, Symbols])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.passwordRequired</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1} policy</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified policy name</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.passwordOptional</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain at least {1} policies from {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; minimum requirement</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the specified policy names</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>You can define a custom password policy as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">PasswordPolicy&lt;String&gt; passwordPolicy = new PasswordPolicy&lt;&gt;() {
+    @Override
+    public String name() {
+        return "DoNotIncludePassword";
+    }
+
+    @Override
+    public boolean test(String s) {
+        return !s.equalsIgnoreCase("password");
+    }
+};
+
+
+Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
+        .constraint(Password::getValue, "password", c -&gt; c.password(policy -&gt; policy
+                .required(passwordPolicy)
+                // ...
+                .build()))
+        .build();</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -686,11 +1158,13 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-12 14:12:24 UTC
+Last updated 2021-06-13 04:26:04 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
 <script src="js/highlight/highlight.min.js"></script>
 <script>hljs.initHighlighting()</script>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
 </body>
 </html>
