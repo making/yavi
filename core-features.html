@@ -16,13 +16,65 @@
 <div class="sect1">
 <h2 id="core-features">Core Features</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_define_and_obtain_a_core_validator_instance">Define and obtain a core <code>Validator</code> instance</h3>
+<div class="paragraph">
+<p>The core validator <code>am.ik.yavi.core.Validator</code> can be defined and obtained via <code>am.ik.yavi.builder.ValidatorBuilder</code>.
+Here is an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+    .constraint(User::getName, "name", c -&gt; c.notNull()
+        .lessThanOrEqual(20))
+    .constraint(User::getEmail, "email", c -&gt; c.notNull()
+        .greaterThanOrEqual(5)
+        .lessThanOrEqual(50)
+        .email())
+    .constraint(User::getAge, "age", c -&gt; c.notNull()
+        .greaterThanOrEqual(0)
+        .lessThanOrEqual(200))
+    .build();
 
+ConstraintViolations violations = validator.validate(user);
+violations.isValid(); // true or false
+violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_kotlin_support">Kotlin Support</h4>
+<div class="paragraph">
+<p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator: Validator&lt;User&gt; = ValidatorBuilder.of&lt;User&gt;()
+    .konstraint(User::name) {
+        notNull()
+            .lessThanOrEqual(20)
+    }
+    .konstraint(User::email) {
+        notNull()
+            .greaterThanOrEqual(5)
+            .lessThanOrEqual(50)
+            .email()
+    }
+    .konstraint(User::age) {
+        notNull()
+            .greaterThanOrEqual(0)
+            .lessThanOrEqual(200)
+    }
+    .build()</code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 11:36:35 UTC
+Last updated 2021-06-14 15:02:42 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

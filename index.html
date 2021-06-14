@@ -28,36 +28,45 @@
 <li><a href="#gs-where-to-go-next">2.5. Where to go next?</a></li>
 </ul>
 </li>
-<li><a href="#built-in-constraints">3. Built-in Constraints</a>
+<li><a href="#core-features">3. Core Features</a>
 <ul class="sectlevel2">
-<li><a href="#string">3.1. String</a>
+<li><a href="#define-and-obtain-a-core-validator-instance">3.1. Define and obtain a core <code>Validator</code> instance</a>
 <ul class="sectlevel3">
-<li><a href="#notnull">3.1.1. <code>notNull()</code></a></li>
-<li><a href="#notempty">3.1.2. <code>notEmpty()</code></a></li>
-<li><a href="#notblank">3.1.3. <code>notBlank()</code></a></li>
-<li><a href="#fixedsizeint">3.1.4. <code>fixedSize(int)</code></a></li>
-<li><a href="#greaterthanint">3.1.5. <code>greaterThan(int)</code></a></li>
-<li><a href="#greaterthanorequalint">3.1.6. <code>greaterThanOrEqual(int)</code></a></li>
-<li><a href="#lessthanint">3.1.7. <code>lessThan(int)</code></a></li>
-<li><a href="#lessthanorequalint">3.1.8. <code>lessThanOrEqual(int)</code></a></li>
-<li><a href="#containscharsequence">3.1.9. <code>contains(CharSequence)</code></a></li>
-<li><a href="#patternstring">3.1.10. <code>pattern(String)</code></a></li>
-<li><a href="#email">3.1.11. <code>email()</code></a></li>
-<li><a href="#password">3.1.12. <code>password(&#8230;&#8203;)</code></a></li>
-<li><a href="#ipv4">3.1.13. <code>ipv4()</code></a></li>
-<li><a href="#ipv6">3.1.14. <code>ipv6()</code></a></li>
-<li><a href="#url">3.1.15. <code>url()</code></a></li>
-<li><a href="#luhn">3.1.16. <code>luhn()</code></a></li>
-<li><a href="#isbyte">3.1.17. <code>isByte()</code></a></li>
-<li><a href="#isshort">3.1.18. <code>isShort()</code></a></li>
-<li><a href="#isinteger">3.1.19. <code>isInteger()</code></a></li>
-<li><a href="#islong">3.1.20. <code>isLong()</code></a></li>
-<li><a href="#isfloat">3.1.21. <code>isFloat()</code></a></li>
-<li><a href="#isdouble">3.1.22. <code>isDouble()</code></a></li>
-<li><a href="#isbiginteger">3.1.23. <code>isBigInteger()</code></a></li>
-<li><a href="#isbigdecimal">3.1.24. <code>isBigDecimal()</code></a></li>
-<li><a href="#codepoints">3.1.25. <code>codePoints(&#8230;&#8203;)</code></a></li>
-<li><a href="#advanced-character-length-check">3.1.26. Advanced character length check</a>
+<li><a href="#kotlin-support">3.1.1. Kotlin Support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#built-in-constraints">4. Built-in Constraints</a>
+<ul class="sectlevel2">
+<li><a href="#string">4.1. String</a>
+<ul class="sectlevel3">
+<li><a href="#notnull">4.1.1. <code>notNull()</code></a></li>
+<li><a href="#notempty">4.1.2. <code>notEmpty()</code></a></li>
+<li><a href="#notblank">4.1.3. <code>notBlank()</code></a></li>
+<li><a href="#fixedsizeint">4.1.4. <code>fixedSize(int)</code></a></li>
+<li><a href="#greaterthanint">4.1.5. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint">4.1.6. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint">4.1.7. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint">4.1.8. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#containscharsequence">4.1.9. <code>contains(CharSequence)</code></a></li>
+<li><a href="#patternstring">4.1.10. <code>pattern(String)</code></a></li>
+<li><a href="#email">4.1.11. <code>email()</code></a></li>
+<li><a href="#password">4.1.12. <code>password(&#8230;&#8203;)</code></a></li>
+<li><a href="#ipv4">4.1.13. <code>ipv4()</code></a></li>
+<li><a href="#ipv6">4.1.14. <code>ipv6()</code></a></li>
+<li><a href="#url">4.1.15. <code>url()</code></a></li>
+<li><a href="#luhn">4.1.16. <code>luhn()</code></a></li>
+<li><a href="#isbyte">4.1.17. <code>isByte()</code></a></li>
+<li><a href="#isshort">4.1.18. <code>isShort()</code></a></li>
+<li><a href="#isinteger">4.1.19. <code>isInteger()</code></a></li>
+<li><a href="#islong">4.1.20. <code>isLong()</code></a></li>
+<li><a href="#isfloat">4.1.21. <code>isFloat()</code></a></li>
+<li><a href="#isdouble">4.1.22. <code>isDouble()</code></a></li>
+<li><a href="#isbiginteger">4.1.23. <code>isBigInteger()</code></a></li>
+<li><a href="#isbigdecimal">4.1.24. <code>isBigDecimal()</code></a></li>
+<li><a href="#codepoints">4.1.25. <code>codePoints(&#8230;&#8203;)</code></a></li>
+<li><a href="#advanced-character-length-check">4.1.26. Advanced character length check</a>
 <ul class="sectlevel4">
 <li><a href="#surrogate-pair">Surrogate pair</a></li>
 <li><a href="#combining-character">Combining character</a></li>
@@ -65,59 +74,58 @@
 <li><a href="#emoji">Emoji</a></li>
 </ul>
 </li>
-<li><a href="#asbytearray">3.1.27. <code>asByteArray()</code></a></li>
+<li><a href="#asbytearray">4.1.27. <code>asByteArray()</code></a></li>
 </ul>
 </li>
-<li><a href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal">3.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</a>
+<li><a href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal">4.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-2">3.2.1. <code>notNull()</code></a></li>
-<li><a href="#greaterthan">3.2.2. <code>greaterThan(&#8230;&#8203;)</code></a></li>
-<li><a href="#greaterthanorequal">3.2.3. <code>greaterThanOrEqual(&#8230;&#8203;)</code></a></li>
-<li><a href="#lessthan">3.2.4. <code>lessThan(&#8230;&#8203;)</code></a></li>
-<li><a href="#lessthanorequal">3.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></a></li>
+<li><a href="#notnull-2">4.2.1. <code>notNull()</code></a></li>
+<li><a href="#greaterthan">4.2.2. <code>greaterThan(&#8230;&#8203;)</code></a></li>
+<li><a href="#greaterthanorequal">4.2.3. <code>greaterThanOrEqual(&#8230;&#8203;)</code></a></li>
+<li><a href="#lessthan">4.2.4. <code>lessThan(&#8230;&#8203;)</code></a></li>
+<li><a href="#lessthanorequal">4.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#boolean">3.3. Boolean</a>
+<li><a href="#boolean">4.3. Boolean</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-3">3.3.1. <code>notNull()</code></a></li>
-<li><a href="#istrue">3.3.2. <code>isTrue()</code></a></li>
-<li><a href="#isfalse">3.3.3. <code>isFalse()</code></a></li>
+<li><a href="#notnull-3">4.3.1. <code>notNull()</code></a></li>
+<li><a href="#istrue">4.3.2. <code>isTrue()</code></a></li>
+<li><a href="#isfalse">4.3.3. <code>isFalse()</code></a></li>
 </ul>
 </li>
-<li><a href="#collection">3.4. Collection</a>
+<li><a href="#collection">4.4. Collection</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-4">3.4.1. <code>notNull()</code></a></li>
-<li><a href="#notempty-2">3.4.2. <code>notEmpty()</code></a></li>
-<li><a href="#fixedsizeint-2">3.4.3. <code>fixedSize(int)</code></a></li>
-<li><a href="#greaterthanint-2">3.4.4. <code>greaterThan(int)</code></a></li>
-<li><a href="#greaterthanorequalint-2">3.4.5. <code>greaterThanOrEqual(int)</code></a></li>
-<li><a href="#lessthanint-2">3.4.6. <code>lessThan(int)</code></a></li>
-<li><a href="#lessthanorequalint-2">3.4.7. <code>lessThanOrEqual(int)</code></a></li>
-<li><a href="#contains">3.4.8. <code>contains(&#8230;&#8203;)</code></a></li>
+<li><a href="#notnull-4">4.4.1. <code>notNull()</code></a></li>
+<li><a href="#notempty-2">4.4.2. <code>notEmpty()</code></a></li>
+<li><a href="#fixedsizeint-2">4.4.3. <code>fixedSize(int)</code></a></li>
+<li><a href="#greaterthanint-2">4.4.4. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint-2">4.4.5. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint-2">4.4.6. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint-2">4.4.7. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#contains">4.4.8. <code>contains(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#map">3.5. Map</a>
+<li><a href="#map">4.5. Map</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-5">3.5.1. <code>notNull()</code></a></li>
-<li><a href="#notempty-3">3.5.2. <code>notEmpty()</code></a></li>
-<li><a href="#fixedsizeint-3">3.5.3. <code>fixedSize(int)</code></a></li>
-<li><a href="#greaterthanint-3">3.5.4. <code>greaterThan(int)</code></a></li>
-<li><a href="#greaterthanorequalint-3">3.5.5. <code>greaterThanOrEqual(int)</code></a></li>
-<li><a href="#lessthanint-3">3.5.6. <code>lessThan(int)</code></a></li>
-<li><a href="#lessthanorequalint-3">3.5.7. <code>lessThanOrEqual(int)</code></a></li>
-<li><a href="#containskey">3.5.8. <code>containsKey(&#8230;&#8203;)</code></a></li>
-<li><a href="#containsvalue">3.5.9. <code>containsValue(&#8230;&#8203;)</code></a></li>
+<li><a href="#notnull-5">4.5.1. <code>notNull()</code></a></li>
+<li><a href="#notempty-3">4.5.2. <code>notEmpty()</code></a></li>
+<li><a href="#fixedsizeint-3">4.5.3. <code>fixedSize(int)</code></a></li>
+<li><a href="#greaterthanint-3">4.5.4. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint-3">4.5.5. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint-3">4.5.6. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint-3">4.5.7. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#containskey">4.5.8. <code>containsKey(&#8230;&#8203;)</code></a></li>
+<li><a href="#containsvalue">4.5.9. <code>containsValue(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#object">3.6. Object</a>
+<li><a href="#object">4.6. Object</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-6">3.6.1. <code>notNull()</code></a></li>
-<li><a href="#password-2">3.6.2. <code>password()</code></a></li>
+<li><a href="#notnull-6">4.6.1. <code>notNull()</code></a></li>
+<li><a href="#password-2">4.6.2. <code>password()</code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#core-features">4. Core Features</a></li>
 <li><a href="#integrations">5. Integrations</a></li>
 </ul>
 </div>
@@ -440,13 +448,71 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 </div>
 </div>
 <div class="sect1">
-<h2 id="built-in-constraints"><a class="anchor" href="#built-in-constraints"></a>3. Built-in Constraints</h2>
+<h2 id="core-features"><a class="anchor" href="#core-features"></a>3. Core Features</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="define-and-obtain-a-core-validator-instance"><a class="anchor" href="#define-and-obtain-a-core-validator-instance"></a>3.1. Define and obtain a core <code>Validator</code> instance</h3>
+<div class="paragraph">
+<p>The core validator <code>am.ik.yavi.core.Validator</code> can be defined and obtained via <code>am.ik.yavi.builder.ValidatorBuilder</code>.
+Here is an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+    .constraint(User::getName, "name", c -&gt; c.notNull()
+        .lessThanOrEqual(20))
+    .constraint(User::getEmail, "email", c -&gt; c.notNull()
+        .greaterThanOrEqual(5)
+        .lessThanOrEqual(50)
+        .email())
+    .constraint(User::getAge, "age", c -&gt; c.notNull()
+        .greaterThanOrEqual(0)
+        .lessThanOrEqual(200))
+    .build();
+
+ConstraintViolations violations = validator.validate(user);
+violations.isValid(); // true or false
+violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.1.1. Kotlin Support</h4>
+<div class="paragraph">
+<p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator: Validator&lt;User&gt; = ValidatorBuilder.of&lt;User&gt;()
+    .konstraint(User::name) {
+        notNull()
+            .lessThanOrEqual(20)
+    }
+    .konstraint(User::email) {
+        notNull()
+            .greaterThanOrEqual(5)
+            .lessThanOrEqual(50)
+            .email()
+    }
+    .konstraint(User::age) {
+        notNull()
+            .greaterThanOrEqual(0)
+            .lessThanOrEqual(200)
+    }
+    .build()</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="built-in-constraints"><a class="anchor" href="#built-in-constraints"></a>4. Built-in Constraints</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>YAVI includes many commonly used built-in constraints for various types.</p>
 </div>
 <div class="sect2">
-<h3 id="string"><a class="anchor" href="#string"></a>3.1. String</h3>
+<h3 id="string"><a class="anchor" href="#string"></a>4.1. String</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>String</code> as follows:</p>
 </div>
@@ -478,7 +544,7 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull"><a class="anchor" href="#notnull"></a>3.1.1. <code>notNull()</code></h4>
+<h4 id="notnull"><a class="anchor" href="#notnull"></a>4.1.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -524,7 +590,7 @@ ConstraintViolations violations = validator.validate(new Email(null)); // Invali
 </table>
 </div>
 <div class="sect3">
-<h4 id="notempty"><a class="anchor" href="#notempty"></a>3.1.2. <code>notEmpty()</code></h4>
+<h4 id="notempty"><a class="anchor" href="#notempty"></a>4.1.2. <code>notEmpty()</code></h4>
 <div class="paragraph">
 <p>Checks whether the target value is not <code>null</code> nor empty</p>
 </div>
@@ -571,7 +637,7 @@ ConstraintViolations violations = validator.validate(new Email("")); // Invalid 
 </table>
 </div>
 <div class="sect3">
-<h4 id="notblank"><a class="anchor" href="#notblank"></a>3.1.3. <code>notBlank()</code></h4>
+<h4 id="notblank"><a class="anchor" href="#notblank"></a>4.1.3. <code>notBlank()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code>, and the trimmed userId is greater than <code>0</code>.
 The difference to <code>notEmpty()</code> is that trailing white-spaces are ignored.</p>
@@ -619,7 +685,7 @@ ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid
 </table>
 </div>
 <div class="sect3">
-<h4 id="fixedsizeint"><a class="anchor" href="#fixedsizeint"></a>3.1.4. <code>fixedSize(int)</code></h4>
+<h4 id="fixedsizeint"><a class="anchor" href="#fixedsizeint"></a>4.1.4. <code>fixedSize(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is the specified size</p>
 </div>
@@ -672,7 +738,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); /
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanint"><a class="anchor" href="#greaterthanint"></a>3.1.5. <code>greaterThan(int)</code></h4>
+<h4 id="greaterthanint"><a class="anchor" href="#greaterthanint"></a>4.1.5. <code>greaterThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than the specified size</p>
 </div>
@@ -725,7 +791,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequalint"><a class="anchor" href="#greaterthanorequalint"></a>3.1.6. <code>greaterThanOrEqual(int)</code></h4>
+<h4 id="greaterthanorequalint"><a class="anchor" href="#greaterthanorequalint"></a>4.1.6. <code>greaterThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
 </div>
@@ -778,7 +844,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanint"><a class="anchor" href="#lessthanint"></a>3.1.7. <code>lessThan(int)</code></h4>
+<h4 id="lessthanint"><a class="anchor" href="#lessthanint"></a>4.1.7. <code>lessThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than the specified size</p>
 </div>
@@ -831,7 +897,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequalint"><a class="anchor" href="#lessthanorequalint"></a>3.1.8. <code>lessThanOrEqual(int)</code></h4>
+<h4 id="lessthanorequalint"><a class="anchor" href="#lessthanorequalint"></a>4.1.8. <code>lessThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
 </div>
@@ -884,7 +950,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 </table>
 </div>
 <div class="sect3">
-<h4 id="containscharsequence"><a class="anchor" href="#containscharsequence"></a>3.1.9. <code>contains(CharSequence)</code></h4>
+<h4 id="containscharsequence"><a class="anchor" href="#containscharsequence"></a>4.1.9. <code>contains(CharSequence)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified sequence of char values</p>
 </div>
@@ -934,7 +1000,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="patternstring"><a class="anchor" href="#patternstring"></a>3.1.10. <code>pattern(String)</code></h4>
+<h4 id="patternstring"><a class="anchor" href="#patternstring"></a>4.1.10. <code>pattern(String)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value matches the specified regular expression</p>
 </div>
@@ -984,7 +1050,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="email"><a class="anchor" href="#email"></a>3.1.11. <code>email()</code></h4>
+<h4 id="email"><a class="anchor" href="#email"></a>4.1.11. <code>email()</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is a valid email address</p>
 </div>
@@ -1031,7 +1097,7 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 </table>
 </div>
 <div class="sect3">
-<h4 id="password"><a class="anchor" href="#password"></a>3.1.12. <code>password(&#8230;&#8203;)</code></h4>
+<h4 id="password"><a class="anchor" href="#password"></a>4.1.12. <code>password(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Check if the target value meets the specified password policy</p>
 </div>
@@ -1153,7 +1219,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 </div>
 </div>
 <div class="sect3">
-<h4 id="ipv4"><a class="anchor" href="#ipv4"></a>3.1.13. <code>ipv4()</code></h4>
+<h4 id="ipv4"><a class="anchor" href="#ipv4"></a>4.1.13. <code>ipv4()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid IPv4 address</p>
 </div>
@@ -1200,7 +1266,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 </table>
 </div>
 <div class="sect3">
-<h4 id="ipv6"><a class="anchor" href="#ipv6"></a>3.1.14. <code>ipv6()</code></h4>
+<h4 id="ipv6"><a class="anchor" href="#ipv6"></a>4.1.14. <code>ipv6()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid IPv6 address</p>
 </div>
@@ -1247,7 +1313,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 </table>
 </div>
 <div class="sect3">
-<h4 id="url"><a class="anchor" href="#url"></a>3.1.15. <code>url()</code></h4>
+<h4 id="url"><a class="anchor" href="#url"></a>4.1.15. <code>url()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid URL</p>
 </div>
@@ -1294,7 +1360,7 @@ ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="luhn"><a class="anchor" href="#luhn"></a>3.1.16. <code>luhn()</code></h4>
+<h4 id="luhn"><a class="anchor" href="#luhn"></a>4.1.16. <code>luhn()</code></h4>
 <div class="paragraph">
 <p>Checks if the digits within the target value pass the Luhn checksum algorithm (see also <a href="http://en.wikipedia.org/wiki/Luhn_algorithm">Luhn algorithm</a>).</p>
 </div>
@@ -1341,7 +1407,7 @@ ConstraintViolations violations = validator.validate(new CreditCard("41111111111
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbyte"><a class="anchor" href="#isbyte"></a>3.1.17. <code>isByte()</code></h4>
+<h4 id="isbyte"><a class="anchor" href="#isbyte"></a>4.1.17. <code>isByte()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Byte</code> value</p>
 </div>
@@ -1388,7 +1454,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isshort"><a class="anchor" href="#isshort"></a>3.1.18. <code>isShort()</code></h4>
+<h4 id="isshort"><a class="anchor" href="#isshort"></a>4.1.18. <code>isShort()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Short</code> value</p>
 </div>
@@ -1435,7 +1501,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isinteger"><a class="anchor" href="#isinteger"></a>3.1.19. <code>isInteger()</code></h4>
+<h4 id="isinteger"><a class="anchor" href="#isinteger"></a>4.1.19. <code>isInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as an <code>Integer</code> value</p>
 </div>
@@ -1482,7 +1548,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="islong"><a class="anchor" href="#islong"></a>3.1.20. <code>isLong()</code></h4>
+<h4 id="islong"><a class="anchor" href="#islong"></a>4.1.20. <code>isLong()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Long</code> value</p>
 </div>
@@ -1529,7 +1595,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isfloat"><a class="anchor" href="#isfloat"></a>3.1.21. <code>isFloat()</code></h4>
+<h4 id="isfloat"><a class="anchor" href="#isfloat"></a>4.1.21. <code>isFloat()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Float</code> value</p>
 </div>
@@ -1576,7 +1642,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="isdouble"><a class="anchor" href="#isdouble"></a>3.1.22. <code>isDouble()</code></h4>
+<h4 id="isdouble"><a class="anchor" href="#isdouble"></a>4.1.22. <code>isDouble()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Double</code> value</p>
 </div>
@@ -1623,7 +1689,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbiginteger"><a class="anchor" href="#isbiginteger"></a>3.1.23. <code>isBigInteger()</code></h4>
+<h4 id="isbiginteger"><a class="anchor" href="#isbiginteger"></a>4.1.23. <code>isBigInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigInteger</code> value</p>
 </div>
@@ -1670,7 +1736,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbigdecimal"><a class="anchor" href="#isbigdecimal"></a>3.1.24. <code>isBigDecimal()</code></h4>
+<h4 id="isbigdecimal"><a class="anchor" href="#isbigdecimal"></a>4.1.24. <code>isBigDecimal()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigDecimal</code> value</p>
 </div>
@@ -1717,7 +1783,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="codepoints"><a class="anchor" href="#codepoints"></a>3.1.25. <code>codePoints(&#8230;&#8203;)</code></h4>
+<h4 id="codepoints"><a class="anchor" href="#codepoints"></a>4.1.25. <code>codePoints(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is in the specified set of code points.
 Code points can be specified as allowed characters (whitelist) or prohibited characters (blacklist).</p>
@@ -1847,7 +1913,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 </div>
 </div>
 <div class="sect3">
-<h4 id="advanced-character-length-check"><a class="anchor" href="#advanced-character-length-check"></a>3.1.26. Advanced character length check</h4>
+<h4 id="advanced-character-length-check"><a class="anchor" href="#advanced-character-length-check"></a>4.1.26. Advanced character length check</h4>
 <div class="paragraph">
 <p>YAVI counts the input characters as the number of characters as it looks in the constraints on the number of characters. Recently, as a result of defining various characters on Unicode, the visual size and the return value of <code>String#length</code> method are quite different.</p>
 </div>
@@ -2023,7 +2089,7 @@ ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧�
 </div>
 </div>
 <div class="sect3">
-<h4 id="asbytearray"><a class="anchor" href="#asbytearray"></a>3.1.27. <code>asByteArray()</code></h4>
+<h4 id="asbytearray"><a class="anchor" href="#asbytearray"></a>4.1.27. <code>asByteArray()</code></h4>
 <div class="paragraph">
 <p>If there is a discrepancy between the apparent character length and the actual code point length, the appearance restrictions are OK, but the size stored in the database may be exceeded. In YAVI, you can check the byte length in addition to the visual size.</p>
 </div>
@@ -2157,7 +2223,7 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 </div>
 </div>
 <div class="sect2">
-<h3 id="integershortlongcharacterbytefloatlongbigintegerbigdecimal"><a class="anchor" href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal"></a>3.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</h3>
+<h3 id="integershortlongcharacterbytefloatlongbigintegerbigdecimal"><a class="anchor" href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal"></a>4.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Integer</code> as follows:</p>
 </div>
@@ -2182,7 +2248,7 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 <p>The same goes for <code>Short</code>/<code>Long</code>/<code>Character</code>/<code>Byte</code>/<code>Float</code>/<code>Long</code> / <code>BigInteger</code> / <code>BigDecimal</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="notnull-2"><a class="anchor" href="#notnull-2"></a>3.2.1. <code>notNull()</code></h4>
+<h4 id="notnull-2"><a class="anchor" href="#notnull-2"></a>4.2.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -2228,7 +2294,7 @@ ConstraintViolations violations = validator.validate(new Age(null)); // Invalid 
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthan"><a class="anchor" href="#greaterthan"></a>3.2.2. <code>greaterThan(&#8230;&#8203;)</code></h4>
+<h4 id="greaterthan"><a class="anchor" href="#greaterthan"></a>4.2.2. <code>greaterThan(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is greater than the specified value</p>
 </div>
@@ -2278,7 +2344,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequal"><a class="anchor" href="#greaterthanorequal"></a>3.2.3. <code>greaterThanOrEqual(&#8230;&#8203;)</code></h4>
+<h4 id="greaterthanorequal"><a class="anchor" href="#greaterthanorequal"></a>4.2.3. <code>greaterThanOrEqual(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is greater than or equals to the specified value</p>
 </div>
@@ -2328,7 +2394,7 @@ ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthan"><a class="anchor" href="#lessthan"></a>3.2.4. <code>lessThan(&#8230;&#8203;)</code></h4>
+<h4 id="lessthan"><a class="anchor" href="#lessthan"></a>4.2.4. <code>lessThan(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is less than the specified value</p>
 </div>
@@ -2378,7 +2444,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequal"><a class="anchor" href="#lessthanorequal"></a>3.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></h4>
+<h4 id="lessthanorequal"><a class="anchor" href="#lessthanorequal"></a>4.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is less than or equals to the specified value</p>
 </div>
@@ -2429,7 +2495,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </div>
 </div>
 <div class="sect2">
-<h3 id="boolean"><a class="anchor" href="#boolean"></a>3.3. Boolean</h3>
+<h3 id="boolean"><a class="anchor" href="#boolean"></a>4.3. Boolean</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Boolean</code> as follows:</p>
 </div>
@@ -2451,7 +2517,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>3.3.1. <code>notNull()</code></h4>
+<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>4.3.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -2497,7 +2563,7 @@ ConstraintViolations violations = validator.validate(new Confirmation(null)); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="istrue"><a class="anchor" href="#istrue"></a>3.3.2. <code>isTrue()</code></h4>
+<h4 id="istrue"><a class="anchor" href="#istrue"></a>4.3.2. <code>isTrue()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>true</code></p>
 </div>
@@ -2544,7 +2610,7 @@ ConstraintViolations violations = validator.validate(new Confirmation(false)); /
 </table>
 </div>
 <div class="sect3">
-<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>3.3.3. <code>isFalse()</code></h4>
+<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>4.3.3. <code>isFalse()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>false</code></p>
 </div>
@@ -2592,7 +2658,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect2">
-<h3 id="collection"><a class="anchor" href="#collection"></a>3.4. Collection</h3>
+<h3 id="collection"><a class="anchor" href="#collection"></a>4.4. Collection</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Collection</code> as follows:</p>
 </div>
@@ -2614,7 +2680,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-4"><a class="anchor" href="#notnull-4"></a>3.4.1. <code>notNull()</code></h4>
+<h4 id="notnull-4"><a class="anchor" href="#notnull-4"></a>4.4.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -2660,7 +2726,7 @@ ConstraintViolations violations = validator.validate(new Histories(null)); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="notempty-2"><a class="anchor" href="#notempty-2"></a>3.4.2. <code>notEmpty()</code></h4>
+<h4 id="notempty-2"><a class="anchor" href="#notempty-2"></a>4.4.2. <code>notEmpty()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not empty</p>
 </div>
@@ -2707,7 +2773,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of())); 
 </table>
 </div>
 <div class="sect3">
-<h4 id="fixedsizeint-2"><a class="anchor" href="#fixedsizeint-2"></a>3.4.3. <code>fixedSize(int)</code></h4>
+<h4 id="fixedsizeint-2"><a class="anchor" href="#fixedsizeint-2"></a>4.4.3. <code>fixedSize(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is the specified size</p>
 </div>
@@ -2760,7 +2826,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanint-2"><a class="anchor" href="#greaterthanint-2"></a>3.4.4. <code>greaterThan(int)</code></h4>
+<h4 id="greaterthanint-2"><a class="anchor" href="#greaterthanint-2"></a>4.4.4. <code>greaterThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than the specified size</p>
 </div>
@@ -2813,7 +2879,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequalint-2"><a class="anchor" href="#greaterthanorequalint-2"></a>3.4.5. <code>greaterThanOrEqual(int)</code></h4>
+<h4 id="greaterthanorequalint-2"><a class="anchor" href="#greaterthanorequalint-2"></a>4.4.5. <code>greaterThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
 </div>
@@ -2866,7 +2932,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanint-2"><a class="anchor" href="#lessthanint-2"></a>3.4.6. <code>lessThan(int)</code></h4>
+<h4 id="lessthanint-2"><a class="anchor" href="#lessthanint-2"></a>4.4.6. <code>lessThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than the specified size</p>
 </div>
@@ -2919,7 +2985,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequalint-2"><a class="anchor" href="#lessthanorequalint-2"></a>3.4.7. <code>lessThanOrEqual(int)</code></h4>
+<h4 id="lessthanorequalint-2"><a class="anchor" href="#lessthanorequalint-2"></a>4.4.7. <code>lessThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
 </div>
@@ -2972,7 +3038,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="contains"><a class="anchor" href="#contains"></a>3.4.8. <code>contains(&#8230;&#8203;)</code></h4>
+<h4 id="contains"><a class="anchor" href="#contains"></a>4.4.8. <code>contains(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified value</p>
 </div>
@@ -3023,7 +3089,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 </div>
 <div class="sect2">
-<h3 id="map"><a class="anchor" href="#map"></a>3.5. Map</h3>
+<h3 id="map"><a class="anchor" href="#map"></a>4.5. Map</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Map</code> as follows:</p>
 </div>
@@ -3045,7 +3111,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-5"><a class="anchor" href="#notnull-5"></a>3.5.1. <code>notNull()</code></h4>
+<h4 id="notnull-5"><a class="anchor" href="#notnull-5"></a>4.5.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -3091,7 +3157,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(null)); // Inva
 </table>
 </div>
 <div class="sect3">
-<h4 id="notempty-3"><a class="anchor" href="#notempty-3"></a>3.5.2. <code>notEmpty()</code></h4>
+<h4 id="notempty-3"><a class="anchor" href="#notempty-3"></a>4.5.2. <code>notEmpty()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not empty</p>
 </div>
@@ -3138,7 +3204,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="fixedsizeint-3"><a class="anchor" href="#fixedsizeint-3"></a>3.5.3. <code>fixedSize(int)</code></h4>
+<h4 id="fixedsizeint-3"><a class="anchor" href="#fixedsizeint-3"></a>4.5.3. <code>fixedSize(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is the specified size</p>
 </div>
@@ -3191,7 +3257,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanint-3"><a class="anchor" href="#greaterthanint-3"></a>3.5.4. <code>greaterThan(int)</code></h4>
+<h4 id="greaterthanint-3"><a class="anchor" href="#greaterthanint-3"></a>4.5.4. <code>greaterThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than the specified size</p>
 </div>
@@ -3244,7 +3310,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequalint-3"><a class="anchor" href="#greaterthanorequalint-3"></a>3.5.5. <code>greaterThanOrEqual(int)</code></h4>
+<h4 id="greaterthanorequalint-3"><a class="anchor" href="#greaterthanorequalint-3"></a>4.5.5. <code>greaterThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
 </div>
@@ -3297,7 +3363,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanint-3"><a class="anchor" href="#lessthanint-3"></a>3.5.6. <code>lessThan(int)</code></h4>
+<h4 id="lessthanint-3"><a class="anchor" href="#lessthanint-3"></a>4.5.6. <code>lessThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than the specified size</p>
 </div>
@@ -3350,7 +3416,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequalint-3"><a class="anchor" href="#lessthanorequalint-3"></a>3.5.7. <code>lessThanOrEqual(int)</code></h4>
+<h4 id="lessthanorequalint-3"><a class="anchor" href="#lessthanorequalint-3"></a>4.5.7. <code>lessThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
 </div>
@@ -3403,7 +3469,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="containskey"><a class="anchor" href="#containskey"></a>3.5.8. <code>containsKey(&#8230;&#8203;)</code></h4>
+<h4 id="containskey"><a class="anchor" href="#containskey"></a>4.5.8. <code>containsKey(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified key</p>
 </div>
@@ -3453,7 +3519,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </table>
 </div>
 <div class="sect3">
-<h4 id="containsvalue"><a class="anchor" href="#containsvalue"></a>3.5.9. <code>containsValue(&#8230;&#8203;)</code></h4>
+<h4 id="containsvalue"><a class="anchor" href="#containsvalue"></a>4.5.9. <code>containsValue(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified value</p>
 </div>
@@ -3504,7 +3570,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="sect2">
-<h3 id="object"><a class="anchor" href="#object"></a>3.6. Object</h3>
+<h3 id="object"><a class="anchor" href="#object"></a>4.6. Object</h3>
 <div class="paragraph">
 <p>Apply the constraints on any <code>Object</code> as follows:</p>
 </div>
@@ -3546,7 +3612,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-6"><a class="anchor" href="#notnull-6"></a>3.6.1. <code>notNull()</code></h4>
+<h4 id="notnull-6"><a class="anchor" href="#notnull-6"></a>4.6.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -3592,7 +3658,7 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="password-2"><a class="anchor" href="#password-2"></a>3.6.2. <code>password()</code></h4>
+<h4 id="password-2"><a class="anchor" href="#password-2"></a>4.6.2. <code>password()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -3676,12 +3742,6 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 </div>
 <div class="sect1">
-<h2 id="core-features"><a class="anchor" href="#core-features"></a>4. Core Features</h2>
-<div class="sectionbody">
-
-</div>
-</div>
-<div class="sect1">
 <h2 id="integrations"><a class="anchor" href="#integrations"></a>5. Integrations</h2>
 <div class="sectionbody">
 
@@ -3691,7 +3751,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 11:36:35 UTC
+Last updated 2021-06-14 15:02:42 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
