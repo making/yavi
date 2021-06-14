@@ -51,7 +51,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 <p>The first argument of the <code>constraint</code> method does not have to be a "Getter" as long as it is a <code>java.util.function.Function</code>.</p>
 </div>
 <div class="paragraph">
-<p>For example,　If you want to create a <code>Validator</code> for <a href="https://openjdk.java.net/jeps/395">Records</a>, you can implement it straightforwardly like bellow:</p>
+<p>For example, If you want to create a <code>Validator</code> for <a href="https://openjdk.java.net/jeps/395">Records</a>, you can implement it straightforwardly like bellow:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -60,7 +60,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 
 Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
     .constraint(User::name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
-    // ...
+    // Omits others
     .build();</code></pre>
 </div>
 </div>
@@ -79,7 +79,6 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or Valid
     public User(String name) {
         this.name = name;
     }
-
     // Omits others
 }</code></pre>
 </div>
@@ -242,7 +241,7 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 16:13:00 UTC
+Last updated 2021-06-14 16:14:23 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
