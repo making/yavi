@@ -2575,7 +2575,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraintsOnObject(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+        .constraint(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
         .build();</code></pre>
 </div>
 </div>
@@ -2714,7 +2714,7 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 05:02:46 UTC
+Last updated 2021-06-14 05:38:25 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
