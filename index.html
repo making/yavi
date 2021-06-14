@@ -5,13 +5,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<title>YAVI (Yet Another ValIdation) Documentation</title>
+<title>YAVI (Yet Another ValIdation) Reference Documentation</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body class="book toc2 toc-left">
 <div id="header">
-<h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Documentation</h1>
+<h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Reference Documentation</h1>
 <div class="details">
 <span id="revnumber">version 0.8.0-SNAPSHOT</span>
 </div>
@@ -33,7 +33,8 @@
 <li><a href="#constraints-on-nested-objects">3.2. Constraints on nested objects</a></li>
 <li><a href="#overriding-violation-messages">3.3. Overriding violation messages</a></li>
 <li><a href="#creating-a-custom-constraint">3.4. Creating a custom constraint</a></li>
-<li><a href="#kotlin-support">3.5. Kotlin Support</a></li>
+<li><a href="#cross-filed-validation">3.5. Cross-field validation</a></li>
+<li><a href="#kotlin-support">3.6. Kotlin Support</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">4. Built-in Constraints</a>
@@ -622,9 +623,66 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
     .build();</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The first argument of the violation message is the field name. Also, the last argument is the violated value.</p>
+</div>
+<div class="paragraph">
+<p>If you want to use other arguments, override <code>arguments</code> method as bellow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class InstantRangeConstraint implements CustomConstraint&lt;Instant&gt; {
+
+    private final Instant end;
+
+    private final Instant start;
+
+    InstantRangeConstraint(Instant start, Instant end) {
+        this.start = Objects.requireNonNull(start);
+        this.end = Objects.requireNonNull(end);
+    }
+
+    @Override
+    public Object[] arguments() {
+        return new Object[] { this.start /* {1} */, this.end /* {2} */};
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return "Instant value \"{0}\" must be between \"{1}\" and \"{2}\".";
+    }
+
+    @Override
+    public String messageKey() {
+        return "instant.range";
+    }
+
+    @Override
+    public boolean test(Instant instant) {
+        return instant.isAfter(this.start) &amp;&amp; instant.isBefore(this.end);
+    }
+}</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.5. Kotlin Support</h3>
+<h3 id="cross-filed-validation"><a class="anchor" href="#cross-filed-validation"></a>3.5. Cross-field validation</h3>
+<div class="paragraph">
+<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code>.
+It can be used when you want to apply cross-field constraints as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
+    .constraint(range::getFrom, "from", c -&gt; c.greaterThan(0))
+    .constraint(range::getTo, "to", c -&gt; c.greaterThan(0))
+    .constraintOnTarget(range -&gt; range.to &gt; range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".")
+    .build();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.6. Kotlin Support</h3>
 <div class="paragraph">
 <p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
 </div>
@@ -3751,7 +3809,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="paragraph">
-<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code> as follows:</p>
+<p>If you want to apply constraints on target class itself (e.g. <a href="#cross-filed-validation">Cross-field validation</a>), you can use <code>constraintOnTarget</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3910,7 +3968,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 16:16:13 UTC
+Last updated 2021-06-14 16:27:04 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
