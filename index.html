@@ -99,6 +99,7 @@
 <li><a href="#greaterthanorequalint-2">3.5.5. <code>greaterThanOrEqual(int)</code></a></li>
 <li><a href="#lessthanint-2">3.5.6. <code>lessThan(int)</code></a></li>
 <li><a href="#lessthanorequalint-2">3.5.7. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#contains">3.5.8. <code>contains(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
 <li><a href="#map">3.6. Map</a></li>
@@ -2750,6 +2751,26 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 <div class="sect2">
 <h3 id="collection"><a class="anchor" href="#collection"></a>3.5. Collection</h3>
+<div class="paragraph">
+<p>Apply the constraints on the <code>Collection</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraint(/* Function from TargetClass to Collection  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_collection</code> instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._collection(/* Function from TargetClass to Collection  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
 <div class="sect3">
 <h4 id="notnull-5"><a class="anchor" href="#notnull-5"></a>3.5.1. <code>notNull()</code></h4>
 <div class="paragraph">
@@ -3108,6 +3129,56 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </tbody>
 </table>
 </div>
+<div class="sect3">
+<h4 id="contains"><a class="anchor" href="#contains"></a>3.5.8. <code>contains(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+        .constraint(Histories::asList, "histories", c -&gt; c.contains(new History(2)))
+        .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(3), new History(4), new History(5)))); // Invalid ("histories" must contain History{revision=2})</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>collection.contains</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="map"><a class="anchor" href="#map"></a>3.6. Map</h3>
@@ -3131,7 +3202,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 09:52:23 UTC
+Last updated 2021-06-14 10:05:53 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
