@@ -3051,7 +3051,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.notNull())
         .build();
 
@@ -3097,7 +3097,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(null)); // Inva
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.notNull())
         .build();
 
@@ -3144,7 +3144,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.fixedSize(2))
         .build();
 
@@ -3196,7 +3196,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.greaterThan(1))
         .build();
 
@@ -3248,7 +3248,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.greaterThanOrEqual(2))
         .build();
 
@@ -3300,7 +3300,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.lessThan(3))
         .build();
 
@@ -3352,7 +3352,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.lessThanOrEqual(2))
         .build();
 
@@ -3404,7 +3404,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.containsKey("b"))
         .build();
 
@@ -3453,7 +3453,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
         .constraint(CodeMap::asMap, "codeMap", c -&gt; c.containsValue("B"))
         .build();
 
@@ -3684,7 +3684,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 11:32:46 UTC
+Last updated 2021-06-14 11:33:40 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
