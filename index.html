@@ -68,7 +68,7 @@
 <li><a href="#asbytearray">3.1.27. <code>asByteArray()</code></a></li>
 </ul>
 </li>
-<li><a href="#integershortlongcharacterbytefloatlong">3.2. Integer/Short/Long/Character/Byte/Float/Long</a>
+<li><a href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal">3.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</a>
 <ul class="sectlevel3">
 <li><a href="#notnull-2">3.2.1. <code>notNull()</code></a></li>
 <li><a href="#greaterthan">3.2.2. <code>greaterThan(&#8230;&#8203;)</code></a></li>
@@ -77,10 +77,9 @@
 <li><a href="#lessthanorequal">3.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#bigintegerbigdecimal">3.3. BigInteger/BigDecimal</a></li>
-<li><a href="#boolean">3.4. Boolean</a></li>
-<li><a href="#object">3.5. Object</a></li>
-<li><a href="#listarraymap">3.6. List/Array/Map</a></li>
+<li><a href="#boolean">3.3. Boolean</a></li>
+<li><a href="#object">3.4. Object</a></li>
+<li><a href="#listarraymap">3.5. List/Array/Map</a></li>
 </ul>
 </li>
 <li><a href="#core-features">4. Core Features</a></li>
@@ -2123,7 +2122,7 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 </div>
 </div>
 <div class="sect2">
-<h3 id="integershortlongcharacterbytefloatlong"><a class="anchor" href="#integershortlongcharacterbytefloatlong"></a>3.2. Integer/Short/Long/Character/Byte/Float/Long</h3>
+<h3 id="integershortlongcharacterbytefloatlongbigintegerbigdecimal"><a class="anchor" href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal"></a>3.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Integer</code> as follows:</p>
 </div>
@@ -2145,7 +2144,7 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 </div>
 </div>
 <div class="paragraph">
-<p>The same goes for <code>Short</code>/<code>Long</code>/<code>Character</code>/<code>Byte</code>/<code>Float</code>/<code>Long</code>.</p>
+<p>The same goes for <code>Short</code>/<code>Long</code>/<code>Character</code>/<code>Byte</code>/<code>Float</code>/<code>Long</code> / <code>BigInteger</code> / <code>BigDecimal</code>.</p>
 </div>
 <div class="sect3">
 <h4 id="notnull-2"><a class="anchor" href="#notnull-2"></a>3.2.1. <code>notNull()</code></h4>
@@ -2395,19 +2394,15 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </div>
 </div>
 <div class="sect2">
-<h3 id="bigintegerbigdecimal"><a class="anchor" href="#bigintegerbigdecimal"></a>3.3. BigInteger/BigDecimal</h3>
+<h3 id="boolean"><a class="anchor" href="#boolean"></a>3.3. Boolean</h3>
 
 </div>
 <div class="sect2">
-<h3 id="boolean"><a class="anchor" href="#boolean"></a>3.4. Boolean</h3>
+<h3 id="object"><a class="anchor" href="#object"></a>3.4. Object</h3>
 
 </div>
 <div class="sect2">
-<h3 id="object"><a class="anchor" href="#object"></a>3.5. Object</h3>
-
-</div>
-<div class="sect2">
-<h3 id="listarraymap"><a class="anchor" href="#listarraymap"></a>3.6. List/Array/Map</h3>
+<h3 id="listarraymap"><a class="anchor" href="#listarraymap"></a>3.5. List/Array/Map</h3>
 
 </div>
 </div>
@@ -2428,7 +2423,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 02:05:27 UTC
+Last updated 2021-06-14 02:14:19 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
