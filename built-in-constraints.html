@@ -611,7 +611,7 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 		.constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
 				.uppercase()
 				.lowercase()
@@ -717,7 +717,7 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 };
 
 
-Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
+Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 		.constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
 				.required(passwordPolicy)
 				// ...
@@ -2269,7 +2269,7 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 			}
 			return !password.toUpperCase().contains(username.toUpperCase());
 		});
-Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt;of()
+Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
 		.constraintOnTarget("password", c -&gt; c.password(policy -&gt; policy
 				.required(passwordPolicy)
 				.build()))
@@ -2344,7 +2344,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
 		.constraint(Histories::asList, "histories", c -&gt; c.notNull())
 		.build();
 
@@ -2390,7 +2390,7 @@ ConstraintViolations violations = validator.validate(new Histories(null)); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
 		.constraint(Histories::asList, "histories", c -&gt; c.notEmpty())
 		.build();
 
@@ -2429,6 +2429,266 @@ ConstraintViolations violations = validator.validate(new Histories(List.of()); /
 </tbody>
 </table>
 </div>
+<div class="sect3">
+<h4 id="_fixedsizeint_2"><code>fixedSize(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, "histories", c -&gt; c.fixedSize(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be 2. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.fixedSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanint_2"><code>greaterThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, "histories", c -&gt; c.greaterThan(1))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be greater than 1. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanorequalint_2"><code>greaterThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, "histories", c -&gt; c.greaterThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be greater than or equal to 2. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_lessthanint_2"><code>lessThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, "histories", c -&gt; c.lessThan(3))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of "histories" must be less than 3. The given size is 3)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_lessthanorequalint_2"><code>lessThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, "histories", c -&gt; c.lessThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of "histories" must be less than or equal to 2. The given size is 3)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_map">Map</h3>
@@ -2439,7 +2699,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of()); /
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 09:31:29 UTC
+Last updated 2021-06-14 09:43:32 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
