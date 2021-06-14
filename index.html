@@ -31,7 +31,8 @@
 <li><a href="#core-features">3. Core Features</a>
 <ul class="sectlevel2">
 <li><a href="#define-and-obtain-a-core-validator-instance">3.1. Define and obtain a core <code>Validator</code> instance</a></li>
-<li><a href="#kotlin-support">3.2. Kotlin Support</a></li>
+<li><a href="#constraints-on-nested-objects">3.2. Constraints on nested objects</a></li>
+<li><a href="#kotlin-support">3.3. Kotlin Support</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">4. Built-in Constraints</a>
@@ -474,7 +475,48 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.2. Kotlin Support</h3>
+<h3 id="constraints-on-nested-objects"><a class="anchor" href="#constraints-on-nested-objects"></a>3.2. Constraints on nested objects</h3>
+<div class="paragraph">
+<p>You can use <code>nested</code> method to apply constraints to the nested fields.
+You can delegate to the <code>Validator</code> for the nested field, or you can also define a set of constraints on the nested field inside.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Address {
+    private Country country;
+    private City city;
+    // Omits other fields and getters
+}
+
+Validator&lt;Country&gt; countryValidator = ValidatorBuilder.&lt;Country&gt; of()
+    .nest(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20))
+    .build();
+Validator&lt;City&gt; cityValidator = ValidatorBuilder.&lt;City&gt; of()
+    .nest(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build();
+
+Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+    .nest(Address::getCountry, "country", countryValidator)
+    .nest(Address::getCity, "city", cityValidator)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+      .nest(Address::getCountry, "country",
+            b -&gt; b.constraint(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20)))
+      .nest(Address::getCity, "city",
+            b -&gt; b.constraint(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100)))
+      .build();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.3. Kotlin Support</h3>
 <div class="paragraph">
 <p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
 </div>
@@ -3760,7 +3802,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 15:08:02 UTC
+Last updated 2021-06-14 15:17:06 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
