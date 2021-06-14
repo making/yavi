@@ -77,12 +77,17 @@
 <li><a href="#lessthanorequal">3.2.5. <code>lessThanOrEqual(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#boolean">3.3. Boolean</a></li>
+<li><a href="#boolean">3.3. Boolean</a>
+<ul class="sectlevel3">
+<li><a href="#notnull-3">3.3.1. <code>notNull()</code></a></li>
+<li><a href="#istrue">3.3.2. <code>isTrue()</code></a></li>
+<li><a href="#isfalse">3.3.3. <code>isFalse()</code></a></li>
+</ul>
+</li>
 <li><a href="#object">3.4. Object</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-3">3.4.1. <code>notNull()</code></a></li>
-<li><a href="#istrue">3.4.2. <code>isTrue()</code></a></li>
-<li><a href="#isfalse">3.4.3. <code>isFalse()</code></a></li>
+<li><a href="#notnull-4">3.4.1. <code>notNull()</code></a></li>
+<li><a href="#password-2">3.4.2. <code>password()</code></a></li>
 </ul>
 </li>
 <li><a href="#listarraymap">3.5. List/Array/Map</a></li>
@@ -424,12 +429,12 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraints(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
+        .constraint(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
         .build();</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>To avoid ambiguous type inferences, you can use explicit <code>_string</code> instead of <code>constraints</code> as follows:</p>
+<p>To avoid ambiguous type inferences, you can use explicit <code>_string</code> instead of <code>constraint</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -456,7 +461,7 @@ If you want a more complete introduction, it is recommended to read <a href="htt
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::value, "email", c -&gt; c.notNull())
+        .constraint(Email::value, "email", c -&gt; c.notNull())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -502,7 +507,7 @@ ConstraintViolations violations = validator.validate(new Email(null)); // Invali
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::value, "email", c -&gt; c.notEmpty())
+        .constraint(Email::value, "email", c -&gt; c.notEmpty())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -550,7 +555,7 @@ The difference to <code>notEmpty()</code> is that trailing white-spaces are igno
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::value, "email", c -&gt; c.notBlank())
+        .constraint(Email::value, "email", c -&gt; c.notBlank())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -597,7 +602,7 @@ ConstraintViolations violations = validator.validate(new Email(" ")); // Invalid
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::value, "zipCode", c -&gt; c.fixedSize(7))
+        .constraint(ZipCode::value, "zipCode", c -&gt; c.fixedSize(7))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Valid
@@ -650,7 +655,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); /
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::value, "country", c -&gt; c.greaterThan(2))
+        .constraint(Country::value, "country", c -&gt; c.greaterThan(2))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
@@ -703,7 +708,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::value, "country", c -&gt; c.greaterThanOrEqual(2))
+        .constraint(Country::value, "country", c -&gt; c.greaterThanOrEqual(2))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("Japan")); // Valid
@@ -756,7 +761,7 @@ ConstraintViolations violations = validator.validate(new Country("J")); // Inval
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::value, "country", c -&gt; c.lessThan(4))
+        .constraint(Country::value, "country", c -&gt; c.lessThan(4))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
@@ -809,7 +814,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
-        .constraints(Country::value, "country", c -&gt; c.lessThanOrEqual(4))
+        .constraint(Country::value, "country", c -&gt; c.lessThanOrEqual(4))
         .build();
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
@@ -862,7 +867,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::value, "zipCode", c -&gt; c.contains("-"))
+        .constraint(ZipCode::value, "zipCode", c -&gt; c.contains("-"))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
@@ -912,7 +917,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
-        .constraints(ZipCode::value, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
+        .constraint(ZipCode::value, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
         .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
@@ -962,7 +967,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
-        .constraints(Email::value, "email", c -&gt; c.email())
+        .constraint(Email::value, "email", c -&gt; c.email())
         .build();
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
@@ -1131,7 +1136,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt;of()
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
-        .constraints(IpAddress::value, "ipAddress", c -&gt; c.ipv4())
+        .constraint(IpAddress::value, "ipAddress", c -&gt; c.ipv4())
         .build();
 
 ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Valid
@@ -1178,7 +1183,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
-        .constraints(IpAddress::value, "ipAddress", c -&gt; c.ipv6())
+        .constraint(IpAddress::value, "ipAddress", c -&gt; c.ipv6())
         .build();
 
 ConstraintViolations violations = validator.validate(new IpAddress("2001:0db8:bd05:01d2:288a:1fc0:0001:10ee")); // Valid
@@ -1225,7 +1230,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Url&gt; validator = ValidatorBuilder.&lt;Url&gt; of()
-        .constraints(Url::value, "url", c -&gt; c.url())
+        .constraint(Url::value, "url", c -&gt; c.url())
         .build();
 
 ConstraintViolations violations = validator.validate(new Url("https://yavi.ik.am")); // Valid
@@ -1272,7 +1277,7 @@ ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreditCard&gt; validator = ValidatorBuilder.&lt;CreditCard&gt; of()
-        .constraints(CreditCard::number, "creditCardNumber", c -&gt; c.luhn())
+        .constraint(CreditCard::number, "creditCardNumber", c -&gt; c.luhn())
         .build();
 
 ConstraintViolations violations = validator.validate(new CreditCard("4111111111111111")); // Valid
@@ -1319,7 +1324,7 @@ ConstraintViolations violations = validator.validate(new CreditCard("41111111111
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isByte())
+        .constraint(UserId::value, "userId", c -&gt; c.isByte())
         .build();
 
 ConstraintViolations violations = validator.validate(UserId.valueOf("127")); // Valid
@@ -1366,7 +1371,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isShort())
+        .constraint(UserId::value, "userId", c -&gt; c.isShort())
         .build();
 
 ConstraintViolations violations = validator.validate(UserId.valueOf("32767")); // Valid
@@ -1413,7 +1418,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isInteger())
+        .constraint(UserId::value, "userId", c -&gt; c.isInteger())
         .build();
 
 ConstraintViolations violations = validator.validate(UserId.valueOf("2147483647")); // Valid
@@ -1460,7 +1465,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isLong())
+        .constraint(UserId::value, "userId", c -&gt; c.isLong())
         .build();
 
 ConstraintViolations violations = validator.validate(UserId.valueOf("9223372036854775807")); // Valid
@@ -1507,7 +1512,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
-        .constraints(Money::value, "money", c -&gt; c.isFloat())
+        .constraint(Money::value, "money", c -&gt; c.isFloat())
         .build();
 
 ConstraintViolations violations = validator.validate(Money.valueOf("0.1")); // Valid
@@ -1554,7 +1559,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
-        .constraints(Money::value, "money", c -&gt; c.isDouble())
+        .constraint(Money::value, "money", c -&gt; c.isDouble())
         .build();
 
 ConstraintViolations violations = validator.validate(Money.valueOf("0.1")); // Valid
@@ -1601,7 +1606,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
-        .constraints(UserId::value, "userId", c -&gt; c.isBigInteger())
+        .constraint(UserId::value, "userId", c -&gt; c.isBigInteger())
         .build();
 
 ConstraintViolations violations = validator.validate(UserId.valueOf("127")); // Valid
@@ -1648,7 +1653,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
-        .constraints(Money::value, "money", c -&gt; c.isBigDecimal())
+        .constraint(Money::value, "money", c -&gt; c.isBigDecimal())
         .build();
 
 ConstraintViolations violations = validator.validate(Money.valueOf("50.0")); // Valid
@@ -2135,12 +2140,12 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraints(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
+        .constraint(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
         .build();</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>To avoid ambiguous type inferences, you can use explicit <code>_integer</code> instead of <code>constraints</code> as follows:</p>
+<p>To avoid ambiguous type inferences, you can use explicit <code>_integer</code> instead of <code>constraint</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2160,7 +2165,7 @@ ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️"
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
-        .constraints(Age::value, "age", c -&gt; c.notNull())
+        .constraint(Age::value, "age", c -&gt; c.notNull())
         .build();
 
 ConstraintViolations violations = validator.validate(new Age(30)); // Valid
@@ -2206,7 +2211,7 @@ ConstraintViolations violations = validator.validate(new Age(null)); // Invalid 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
-        .constraints(Age::value, "age", c -&gt; c.greaterThan(20))
+        .constraint(Age::value, "age", c -&gt; c.greaterThan(20))
         .build();
 
 ConstraintViolations violations = validator.validate(new Age(21)); // Valid
@@ -2256,7 +2261,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
-        .constraints(Age::value, "age", c -&gt; c.greaterThanOrEqual(20))
+        .constraint(Age::value, "age", c -&gt; c.greaterThanOrEqual(20))
         .build();
 
 ConstraintViolations violations = validator.validate(new Age(20)); // Valid
@@ -2306,7 +2311,7 @@ ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
-        .constraints(Age::value, "age", c -&gt; c.lessThan(20))
+        .constraint(Age::value, "age", c -&gt; c.lessThan(20))
         .build();
 
 ConstraintViolations violations = validator.validate(new Age(19)); // Valid
@@ -2356,7 +2361,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
-        .constraints(Age::value, "age", c -&gt; c.lessThanOrEqual(20))
+        .constraint(Age::value, "age", c -&gt; c.lessThanOrEqual(20))
         .build();
 
 ConstraintViolations violations = validator.validate(new Age(19)); // Valid
@@ -2407,12 +2412,12 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraints(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
+        .constraint(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
         .build();</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>To avoid ambiguous type inferences, you can use explicit <code>_boolean</code> instead of <code>constraints</code> as follows:</p>
+<p>To avoid ambiguous type inferences, you can use explicit <code>_boolean</code> instead of <code>constraint</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2421,18 +2426,15 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
         .build();</code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="object"><a class="anchor" href="#object"></a>3.4. Object</h3>
 <div class="sect3">
-<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>3.4.1. <code>notNull()</code></h4>
+<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>3.3.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
-        .constraints(Confirmation::isConfirmed, "confirmed", c -&gt; c.notNull())
+        .constraint(Confirmation::isConfirmed, "confirmed", c -&gt; c.notNull())
         .build();
 
 ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
@@ -2471,14 +2473,14 @@ ConstraintViolations violations = validator.validate(new Confirmation(null)); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="istrue"><a class="anchor" href="#istrue"></a>3.4.2. <code>isTrue()</code></h4>
+<h4 id="istrue"><a class="anchor" href="#istrue"></a>3.3.2. <code>isTrue()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>true</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
-        .constraints(Confirmation::isConfirmed, "confirmed", c -&gt; c.isTrue())
+        .constraint(Confirmation::isConfirmed, "confirmed", c -&gt; c.isTrue())
         .build();
 
 ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
@@ -2518,14 +2520,14 @@ ConstraintViolations violations = validator.validate(new Confirmation(false)); /
 </table>
 </div>
 <div class="sect3">
-<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>3.4.3. <code>isFalse()</code></h4>
+<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>3.3.3. <code>isFalse()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>false</code></p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Rented&gt; validator = ValidatorBuilder.&lt;Rented&gt; of()
-        .constraints(Rented::isRented, "rented", c -&gt; c.isFalse())
+        .constraint(Rented::isRented, "rented", c -&gt; c.isFalse())
         .build();
 
 ConstraintViolations violations = validator.validate(new Rented(false)); // Valid
@@ -2566,6 +2568,131 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect2">
+<h3 id="object"><a class="anchor" href="#object"></a>3.4. Object</h3>
+<div class="paragraph">
+<p>Apply the constraints on any <code>Object</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraintsOnObject(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_object</code> instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._object(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraintOnTarget(/* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="notnull-4"><a class="anchor" href="#notnull-4"></a>3.4.1. <code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
+        .constraint(CreatedAt::asInstant, "createdAt", c -&gt; c.notNull())
+        .build();
+
+ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
+ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid ("createdAt" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="password-2"><a class="anchor" href="#password-2"></a>3.4.2. <code>password()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
+        .constraint(CreatedAt::asInstant, "createdAt", c -&gt; c.notNull())
+        .build();
+
+ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
+ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid ("createdAt" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
 <h3 id="listarraymap"><a class="anchor" href="#listarraymap"></a>3.5. List/Array/Map</h3>
 
 </div>
@@ -2587,7 +2714,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 02:41:07 UTC
+Last updated 2021-06-14 05:02:46 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
