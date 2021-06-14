@@ -78,7 +78,13 @@
 </ul>
 </li>
 <li><a href="#boolean">3.3. Boolean</a></li>
-<li><a href="#object">3.4. Object</a></li>
+<li><a href="#object">3.4. Object</a>
+<ul class="sectlevel3">
+<li><a href="#notnull-3">3.4.1. <code>notNull()</code></a></li>
+<li><a href="#istrue">3.4.2. <code>isTrue()</code></a></li>
+<li><a href="#isfalse">3.4.3. <code>isFalse()</code></a></li>
+</ul>
+</li>
 <li><a href="#listarraymap">3.5. List/Array/Map</a></li>
 </ul>
 </li>
@@ -2395,11 +2401,169 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </div>
 <div class="sect2">
 <h3 id="boolean"><a class="anchor" href="#boolean"></a>3.3. Boolean</h3>
-
+<div class="paragraph">
+<p>Apply the constraints on the <code>Boolean</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraints(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_boolean</code> instead of <code>constraints</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._boolean(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="object"><a class="anchor" href="#object"></a>3.4. Object</h3>
+<div class="sect3">
+<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>3.4.1. <code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
+        .constraints(Confirmation::isConfirmed, "confirmed", c -&gt; c.notNull())
+        .build();
 
+ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(null)); // Invalid ("confirmed" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="istrue"><a class="anchor" href="#istrue"></a>3.4.2. <code>isTrue()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is <code>true</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
+        .constraints(Confirmation::isConfirmed, "confirmed", c -&gt; c.isTrue())
+        .build();
+
+ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(null)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(false)); // Invalid ("confirmed" must be true)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean.isTrue</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be true</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>3.4.3. <code>isFalse()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is <code>false</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Rented&gt; validator = ValidatorBuilder.&lt;Rented&gt; of()
+        .constraints(Rented::isRented, "rented", c -&gt; c.isFalse())
+        .build();
+
+ConstraintViolations violations = validator.validate(new Rented(false)); // Valid
+ConstraintViolations violations = validator.validate(new Rented(null)); // Valid
+ConstraintViolations violations = validator.validate(new Rented(true)); // Invalid ("rented" must be false)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean.isFalse</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be false</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="listarraymap"><a class="anchor" href="#listarraymap"></a>3.5. List/Array/Map</h3>
@@ -2423,7 +2587,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 02:14:19 UTC
+Last updated 2021-06-14 02:41:07 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
