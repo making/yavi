@@ -50,8 +50,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Uppercase");
 	}
@@ -73,8 +72,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Lowercase");
 	}
@@ -96,8 +94,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Numbers");
 	}
@@ -121,8 +118,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Symbols");
 	}
@@ -143,16 +139,13 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("abc");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(3);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Uppercase");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(1).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(1).args()).hasSize(3);
 		assertThat(violations.get(1).args()[1]).isEqualTo("Numbers");
-		assertThat(violations.get(2).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(2).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(2).args()).hasSize(3);
 		assertThat(violations.get(2).args()[1]).isEqualTo("Symbols");
 	}
@@ -164,12 +157,10 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("abC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(2);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Numbers");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(1).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(1).args()).hasSize(3);
 		assertThat(violations.get(1).args()[1]).isEqualTo("Symbols");
 	}
@@ -181,8 +172,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("abC#!");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Numbers");
 	}
@@ -194,8 +184,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("123abC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Symbols");
 	}
@@ -220,8 +209,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordOptional");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.optional");
 		assertThat(violations.get(0).args()).hasSize(4);
 		assertThat(violations.get(0).args()[1]).isEqualTo(3);
 		assertThat((List<String>) violations.get(0).args()[2])
@@ -247,12 +235,10 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("ABC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(2);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Lowercase");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("charSequence.passwordOptional");
+		assertThat(violations.get(1).messageKey()).isEqualTo("password.optional");
 		assertThat(violations.get(1).args()).hasSize(4);
 		assertThat(violations.get(1).args()[1]).isEqualTo(1);
 		assertThat((List<String>) violations.get(1).args()[2]).containsExactly("Numbers",
@@ -267,8 +253,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("ABC1!");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Lowercase");
 	}
@@ -282,8 +267,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate("abC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordOptional");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.optional");
 		assertThat(violations.get(0).args()).hasSize(4);
 		assertThat(violations.get(0).args()[1]).isEqualTo(1);
 		assertThat((List<String>) violations.get(0).args()[2]).containsExactly("Numbers",
@@ -309,8 +293,7 @@ public class CharSequencePasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("PredictableWords");
 	}

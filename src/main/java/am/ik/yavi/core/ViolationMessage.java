@@ -64,10 +64,6 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
-		CHAR_SEQUENCE_PASSWORD_REQUIRED("charSequence.passwordRequired",
-				"\"{0}\" must contain {1} policy"), //
-		CHAR_SEQUENCE_PASSWORD_OPTIONAL("charSequence.passwordOptional",
-				"\"{0}\" must contain at least {1} policies from {2}"), //
 		CHAR_SEQUENCE_LUHN("charSequence.luhn",
 				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
 		CHAR_SEQUENCE_BOOLEAN("charSequence.boolean",
@@ -105,7 +101,11 @@ public interface ViolationMessage {
 		CODE_POINTS_ALL_INCLUDED("codePoints.asWhiteList",
 				"\"{1}\" is/are not allowed for \"{0}\""), //
 		CODE_POINTS_NOT_INCLUDED("codePoints.asBlackList",
-				"\"{1}\" is/are not allowed for \"{0}\"");
+				"\"{1}\" is/are not allowed for \"{0}\""), PASSWORD_REQUIRED(
+						"password.required", "\"{0}\" must meet {1} policy"), //
+		PASSWORD_OPTIONAL("password.optional",
+				"\"{0}\" must meet at least {1} policies from {2}") //
+		;
 
 		private final String defaultMessageFormat;
 

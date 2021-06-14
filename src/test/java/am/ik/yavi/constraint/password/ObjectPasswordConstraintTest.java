@@ -48,8 +48,7 @@ public class ObjectPasswordConstraintTest {
 		final ConstraintViolations violations = validator.validate(account);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("charSequence.passwordRequired");
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("UsernameNotIncluded");
 	}
