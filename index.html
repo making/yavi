@@ -1873,7 +1873,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(3))
         .build();
 
-validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
+ConstraintViolations = validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
 </div>
 </div>
 </div>
@@ -1896,7 +1896,7 @@ validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(2))
         .build();
 
-validator.validate(new Message("モジ")); // Valid</code></pre>
+ConstraintViolations = validator.validate(new Message("モジ")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1930,7 +1930,7 @@ It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 D
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(1))
         .build();
-validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
+ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1943,7 +1943,7 @@ This way you can regard this string as just a surrogate pair.</p>
         .constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
                 .lessThanOrEqual(1))
         .build();
-validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
+ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1978,11 +1978,11 @@ System.out.println("🏴󠁧󠁢󠁥󠁮󠁧󠁿".length()); // 14 (WTH!)</code>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.emoji().lessThanOrEqual(1))
         .build();
-validator.validate(new Message("❤️")); // Valid
-validator.validate(new Message("🤴🏻")); // Valid
-validator.validate(new Message("👨‍👦")); // Valid
-validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
-validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
+ConstraintViolations = validator.validate(new Message("❤️")); // Valid
+ConstraintViolations = validator.validate(new Message("🤴🏻")); // Valid
+ConstraintViolations = validator.validate(new Message("👨‍👦")); // Valid
+ConstraintViolations = validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
+ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
 </div>
 </div>
 </div>
@@ -1999,8 +1999,8 @@ validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code>
                 .asByteArray().lessThanOrEqual(16))
         .build();
 
-validator.validate(new Message("I❤️☕️️")); // Valid
-validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
+ConstraintViolations = validator.validate(new Message("I❤️☕️️")); // Valid
+ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2427,7 +2427,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-13 16:02:19 UTC
+Last updated 2021-06-14 01:22:32 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
