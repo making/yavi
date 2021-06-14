@@ -70,17 +70,17 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or Valid
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class User {
-	private final String name;
+    private final String name;
 
-	public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt;of()
-			._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
-			.build();
+    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt;of()
+        ._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+        .build();
 
-	public User(String name) {
-		this.name = name;
-	}
+    public User(String name) {
+        this.name = name;
+    }
 
-	// Omits others
+    // Omits others
 }</code></pre>
 </div>
 </div>
@@ -242,7 +242,7 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 16:12:09 UTC
+Last updated 2021-06-14 16:13:00 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

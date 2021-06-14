@@ -499,8 +499,8 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or Valid
     private final String name;
 
     public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt;of()
-            ._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
-            .build();
+        ._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+        .build();
 
     public User(String name) {
         this.name = name;
@@ -3911,7 +3911,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 16:12:09 UTC
+Last updated 2021-06-14 16:13:00 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
