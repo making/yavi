@@ -1304,9 +1304,9 @@ Code points can be specified as allowed characters (whitelist) or prohibited cha
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">CodePointsSet&lt;String&gt; codePoints = () -&gt; new HashSet&lt;&gt;(
-        List.of(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */, 0x0044 /* D */,
-                0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */));</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">CodePointsSet&lt;String&gt; codePoints = () -&gt; Set.of(
+		0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */, 0x0044 /* D */,
+        0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2705,7 +2705,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 09:47:06 UTC
+Last updated 2021-06-14 09:52:23 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
