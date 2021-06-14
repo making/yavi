@@ -642,7 +642,7 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>.password.required</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.required</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2197,6 +2197,16 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
         .build();</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>It is equivalent to bellow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._object(Function.identity(), /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
 <div class="sect3">
 <h4 id="_notnull_4"><code>notNull()</code></h4>
 <div class="paragraph">
@@ -2285,7 +2295,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>.password.required</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.required</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2334,7 +2344,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 08:48:55 UTC
+Last updated 2021-06-14 09:09:53 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
