@@ -451,20 +451,63 @@ Here is an example:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
-    .constraint(User::getName, "name", c -&gt; c.notNull()
-        .lessThanOrEqual(20))
-    .constraint(User::getEmail, "email", c -&gt; c.notNull()
-        .greaterThanOrEqual(5)
-        .lessThanOrEqual(50)
-        .email())
-    .constraint(User::getAge, "age", c -&gt; c.notNull()
-        .greaterThanOrEqual(0)
-        .lessThanOrEqual(200))
+    .constraint(User::getName, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
     .build();
 
 ConstraintViolations violations = validator.validate(user);
 violations.isValid(); // true or false
 violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to avoid ambiguous type inferences, you can use explicit <code>_&lt;type&gt;</code> method per type instead of constraint as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    ._string(User::getName, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+    ._string(User::getEmail, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    ._integer(User::getAge, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first argument of the <code>constraint</code> method does not have to be a "Getter" as long as it is a <code>java.util.function.Function</code>.</p>
+</div>
+<div class="paragraph">
+<p>For example,　If you want to create a <code>Validator</code> for <a href="https://openjdk.java.net/jeps/395">Records</a>, you can implement it straightforwardly like bellow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public record User(String name, String email, int age) {
+}
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+    .constraint(User::name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+    // ...
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or if you don&#8217;t want your method to expose the target field, you can define it like follwing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class User {
+    private final String name;
+
+    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt;of()
+            ._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+            .build();
+
+    public User(String name) {
+        this.name = name;
+    }
+
+    // Omits others
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3868,7 +3911,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 15:59:56 UTC
+Last updated 2021-06-14 16:12:09 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
