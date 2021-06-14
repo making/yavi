@@ -2808,7 +2808,8 @@ ConstraintViolations violations = validator.validate(new Histories(null)); // In
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
-ConstraintViolations violations = validator.validate(new Histories(List.of()); // Invalid ("histories" must not be empty)</code></pre>
+ConstraintViolations violations = validator.validate(new Histories(null)); // Invalid ("histories" must not be empty)
+ConstraintViolations violations = validator.validate(new Histories(List.of())); // Invalid ("histories" must not be empty)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2854,6 +2855,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of()); /
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be 2. The given size is 1)</code></pre>
 </div>
 </div>
@@ -2906,6 +2908,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be greater than 1. The given size is 1)</code></pre>
 </div>
 </div>
@@ -2958,6 +2961,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of "histories" must be greater than or equal to 2. The given size is 1)</code></pre>
 </div>
 </div>
@@ -3010,6 +3014,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of "histories" must be less than 3. The given size is 3)</code></pre>
 </div>
 </div>
@@ -3062,6 +3067,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
         .build();
 
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
 ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of "histories" must be less than or equal to 2. The given size is 3)</code></pre>
 </div>
 </div>
@@ -3125,7 +3131,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-14 09:43:32 UTC
+Last updated 2021-06-14 09:47:06 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
