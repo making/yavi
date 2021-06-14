@@ -622,9 +622,9 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 
 ConstraintViolations violations = validator.validate(new Password("Yavi123")); // Valid
 ConstraintViolations violations = validator.validate(new Password(null)); // Valid
-ConstraintViolations violations = validator.validate(new Password("yavi123")); // Invalid ("password" must contain Uppercase policy)
-ConstraintViolations violations = validator.validate(new Password("yavi")); // Invalid ("password" must contain Uppercase policy, "password" must contain at least 1 policies from [Numbers, Symbols])
-ConstraintViolations violations = validator.validate(new Password("")); // Invalid ("password" must contain Uppercase policy, "password" must contain Lowercase policy, "password" must contain at least 1 policies from [Numbers, Symbols])</code></pre>
+ConstraintViolations violations = validator.validate(new Password("yavi123")); // Invalid ("password" must meet Uppercase policy)
+ConstraintViolations violations = validator.validate(new Password("yavi")); // Invalid ("password" must meet Uppercase policy, "password" must meet at least 1 policies from [Numbers, Symbols])
+ConstraintViolations violations = validator.validate(new Password("")); // Invalid ("password" must meet Uppercase policy, "password" must meet Lowercase policy, "password" must meet at least 1 policies from [Numbers, Symbols])</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -642,8 +642,8 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.passwordRequired</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1} policy</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>.password.required</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
 <li>
@@ -659,8 +659,8 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 </div></div></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.passwordOptional</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain at least {1} policies from {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.optional</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet at least {1} policies from {2}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
 <li>
@@ -2250,12 +2250,24 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
-        .constraint(CreatedAt::asInstant, "createdAt", c -&gt; c.notNull())
-        .build();
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">PasswordPolicy&lt;Account&gt; passwordPolicy = PasswordPolicy.of("DoNotIncludeUsername",
+		account -&gt; {
+			String username = account.getUsername();
+			String password = account.getPassword();
+			if (username == null || password == null) {
+				return true;
+			}
+			return !password.toUpperCase().contains(username.toUpperCase());
+		});
+Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt;of()
+		.constraintOnTarget("password", c -&gt; c.password(policy -&gt; policy
+				.required(passwordPolicy)
+				.build()))
+		.build();
 
-ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
-ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid ("createdAt" must not be null)</code></pre>
+ConstraintViolations violations = validator.validate(new Account("foo", "Bar1234")); // Valid
+ConstraintViolations violations = validator.validate(new Account(null, null)); // Valid
+ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234")); // Invalid ("password" must meet DoNotIncludeUsername policy)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2273,15 +2285,38 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>.password.required</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
 <li>
 <p><code>{0}</code> &#8230;&#8203; field name</p>
 </li>
 <li>
-<p><code>{1}</code> &#8230;&#8203; the given value</p>
+<p><code>{1}</code> &#8230;&#8203; the specified policy name</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.optional</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet at least {1} policies from {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; minimum requirement</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the specified policy names</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
 </li>
 </ul>
 </div></div></td>
@@ -2299,7 +2334,7 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 05:38:25 UTC
+Last updated 2021-06-14 08:48:55 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
