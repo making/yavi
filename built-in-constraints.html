@@ -2166,176 +2166,6 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect2">
-<h3 id="_object">Object</h3>
-<div class="paragraph">
-<p>Apply the constraints on any <code>Object</code> as follows:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraint(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
-        .build();</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>To avoid ambiguous type inferences, you can use explicit <code>_object</code> instead of <code>constraint</code> as follows:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        ._object(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
-        .build();</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code> as follows:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        .constraintOnTarget(/* Field Name */, /* Constraints */)
-        .build();</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>It is equivalent to bellow:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
-        ._object(Function.identity(), /* Field Name */, /* Constraints */)
-        .build();</code></pre>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_notnull_4"><code>notNull()</code></h4>
-<div class="paragraph">
-<p>Checks that the target value is not <code>null</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
-        .constraint(CreatedAt::asInstant, "createdAt", c -&gt; c.notNull())
-        .build();
-
-ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
-ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid ("createdAt" must not be null)</code></pre>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Message Key</th>
-<th class="tableblock halign-left valign-top">Default Message Format</th>
-<th class="tableblock halign-left valign-top">Args</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
-<ul>
-<li>
-<p><code>{0}</code> &#8230;&#8203; field name</p>
-</li>
-<li>
-<p><code>{1}</code> &#8230;&#8203; the given value</p>
-</li>
-</ul>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect3">
-<h4 id="_password_2"><code>password()</code></h4>
-<div class="paragraph">
-<p>Checks that the target value is not <code>null</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">PasswordPolicy&lt;Account&gt; passwordPolicy = PasswordPolicy.of("DoNotIncludeUsername",
-		account -&gt; {
-			String username = account.getUsername();
-			String password = account.getPassword();
-			if (username == null || password == null) {
-				return true;
-			}
-			return !password.toUpperCase().contains(username.toUpperCase());
-		});
-Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
-		.constraintOnTarget("password", c -&gt; c.password(policy -&gt; policy
-				.required(passwordPolicy)
-				.build()))
-		.build();
-
-ConstraintViolations violations = validator.validate(new Account("foo", "Bar1234")); // Valid
-ConstraintViolations violations = validator.validate(new Account(null, null)); // Valid
-ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234")); // Invalid ("password" must meet DoNotIncludeUsername policy)</code></pre>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Message Key</th>
-<th class="tableblock halign-left valign-top">Default Message Format</th>
-<th class="tableblock halign-left valign-top">Args</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.required</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
-<ul>
-<li>
-<p><code>{0}</code> &#8230;&#8203; field name</p>
-</li>
-<li>
-<p><code>{1}</code> &#8230;&#8203; the specified policy name</p>
-</li>
-<li>
-<p><code>{2}</code> &#8230;&#8203; the given value</p>
-</li>
-</ul>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.optional</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet at least {1} policies from {2}</code></p></td>
-<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
-<ul>
-<li>
-<p><code>{0}</code> &#8230;&#8203; field name</p>
-</li>
-<li>
-<p><code>{1}</code> &#8230;&#8203; minimum requirement</p>
-</li>
-<li>
-<p><code>{2}</code> &#8230;&#8203; the specified policy names</p>
-</li>
-<li>
-<p><code>{3}</code> &#8230;&#8203; the given value</p>
-</li>
-</ul>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
 <h3 id="_collection">Collection</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Collection</code> as follows:</p>
@@ -2358,7 +2188,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 </div>
 <div class="sect3">
-<h4 id="_notnull_5"><code>notNull()</code></h4>
+<h4 id="_notnull_4"><code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -2768,14 +2598,654 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 <div class="sect2">
 <h3 id="_map">Map</h3>
+<div class="paragraph">
+<p>Apply the constraints on the <code>Map</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraint(/* Function from TargetClass to Map  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_map</code> instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._map(/* Function from TargetClass to Map  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_notnull_5"><code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.notNull())
+		.build();
 
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Invalid ("codeMap" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_notempty_3"><code>notEmpty()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not empty</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.notNull())
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Invalid ("codeMap" must not be empty)
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // Invalid ("codeMap" must not be empty)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.notEmpty</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be empty</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_fixedsizeint_3"><code>fixedSize(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.fixedSize(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // Invalid (The size of "codeMap" must be 2. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.fixedSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanint_3"><code>greaterThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.greaterThan(1))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"))); // Invalid (The size of "codeMap" must be greater than 1. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_greaterthanorequalint_3"><code>greaterThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.greaterThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"))); // Invalid (The size of "codeMap" must be greater than or equal to 2. The given size is 1)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.greaterThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be greater than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_lessthanint_3"><code>lessThan(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.lessThan(3))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B", "c", "C"))); // Invalid (The size of "histories" must be less than 3. The given size is 3)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_lessthanorequalint_3"><code>lessThanOrEqual(int)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.lessThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B")));
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B", "c", "C"))); // Invalid (The size of "histories" must be less than or equal to 2. The given size is 3)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>container.lessThanOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The size of "{0}" must be less than or equal to {1}. The given size is {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given size</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_containskey"><code>containsKey(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains the specified key</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.containsKey("b"))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B"))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"))); // Invalid ("codMap" must contain key b)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>map.containsKey</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain key {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified key</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_containsvalue"><code>containsValue(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt;of()
+		.constraint(CodeMap::asMap, "codeMap", c -&gt; c.containsValue("B"))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A", "b", "B"))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"))); // Invalid ("codMap" must contain value B)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>map.containsValue</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain value {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_object">Object</h3>
+<div class="paragraph">
+<p>Apply the constraints on any <code>Object</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraint(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To avoid ambiguous type inferences, you can use explicit <code>_object</code> instead of <code>constraint</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._object(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        .constraintOnTarget(/* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is equivalent to bellow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+        ._object(Function.identity(), /* Field Name */, /* Constraints */)
+        .build();</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_notnull_6"><code>notNull()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
+        .constraint(CreatedAt::asInstant, "createdAt", c -&gt; c.notNull())
+        .build();
+
+ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
+ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid ("createdAt" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_password_2"><code>password()</code></h4>
+<div class="paragraph">
+<p>Checks that the target value is not <code>null</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">PasswordPolicy&lt;Account&gt; passwordPolicy = PasswordPolicy.of("DoNotIncludeUsername",
+		account -&gt; {
+			String username = account.getUsername();
+			String password = account.getPassword();
+			if (username == null || password == null) {
+				return true;
+			}
+			return !password.toUpperCase().contains(username.toUpperCase());
+		});
+Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
+		.constraintOnTarget("password", c -&gt; c.password(policy -&gt; policy
+				.required(passwordPolicy)
+				.build()))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Account("foo", "Bar1234")); // Valid
+ConstraintViolations violations = validator.validate(new Account(null, null)); // Valid
+ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234")); // Invalid ("password" must meet DoNotIncludeUsername policy)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.required</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet {1} policy</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified policy name</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>password.optional</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must meet at least {1} policies from {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; minimum requirement</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the specified policy names</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-14 10:05:53 UTC
+Last updated 2021-06-14 11:26:14 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
