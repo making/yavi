@@ -70,8 +70,7 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 
 	private List<ConstraintPredicate<E>> requiredConstraintPredicates() {
 		return this.requiredPolicies.stream()
-				.map(policy -> ConstraintPredicate.of(policy,
-						Default.CHAR_SEQUENCE_PASSWORD_REQUIRED,
+				.map(policy -> ConstraintPredicate.of(policy, Default.PASSWORD_REQUIRED,
 						() -> new Object[] { policy.name() }, NullAs.VALID))
 				.collect(Collectors.toList());
 	}
@@ -86,7 +85,7 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 			}
 			return matched >= this.minimumOptionalPoliciesRequirement;
 		};
-		return ConstraintPredicate.of(predicate, Default.CHAR_SEQUENCE_PASSWORD_OPTIONAL,
+		return ConstraintPredicate.of(predicate, Default.PASSWORD_OPTIONAL,
 				() -> new Object[] { this.minimumOptionalPoliciesRequirement,
 						this.optionalPolicies.stream().map(PasswordPolicy::name)
 								.collect(Collectors.toList()) },
