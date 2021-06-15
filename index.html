@@ -5834,8 +5834,10 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 <div class="sect2">
 <h3 id="converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"><a class="anchor" href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"></a>9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</h3>
 <div class="paragraph">
-<p><code>ConstraintViolation</code> is not suitable for serializing with a serializer like Jackson. Instead, you can use <code>ConstraintViolation#detail</code> method to convert it to a <code>ViolationDetail</code> object that is easy to serialize.
-The <code>ConstraintViolations#details</code> method translates all <code>ConstraintViolation</code> s and returns <code>List&lt;ViolationDetail&gt;</code>.</p>
+<p><code>ConstraintViolation</code> is not suitable for serializing with a serializer like Jackson. Instead, you can use <code>ConstraintViolation#detail</code> method to convert it to a <code>ViolationDetail</code> object that is easy to serialize.</p>
+</div>
+<div class="paragraph">
+<p>The <code>ConstraintViolations#details</code> method translates all <code>ConstraintViolation</code> s and returns <code>List&lt;ViolationDetail&gt;</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5927,7 +5929,7 @@ YAVI was originally developed as a validator naturally fit with Spring WebFlux.f
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:05:03 UTC
+Last updated 2021-06-15 15:06:05 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
