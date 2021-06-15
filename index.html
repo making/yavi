@@ -45,8 +45,7 @@
 <ul class="sectlevel2">
 <li><a href="#validating-with-applicative-functor">4.1. Validating with Applicative Functor</a></li>
 <li><a href="#combining-validation-validated-objects">4.2. Combining <code>Validation</code> / <code>Validated</code> objects</a></li>
-<li><a href="#converting-the-target-object-after-the-validation">4.3. Converting the target object after the validation</a></li>
-<li><a href="#validating-the-source-object-before-creating-a-target-object">4.4. Validating the source object before creating a target object</a></li>
+<li><a href="#validation-validated-api">4.3. <code>Validation</code> / <code>Validated</code> API</a></li>
 </ul>
 </li>
 <li><a href="#validating-arguments">5. Validating arguments</a></li>
@@ -1050,17 +1049,15 @@ ApplicativeValidator&lt;User&gt; applicativeValidator = validator.applicative();
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ApplicativeValidator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
     .constraint(Email::value, "email", c -&gt; c.notBlank().email())
-    .build()
-    .applicative();
-ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
     .constraint(PhoneNumber::value, "phoneNumber", c -&gt; c.notBlank().pattern("[0-9\\-]+"))
-    .build()
-    .applicative();
+    .build();
 
-Validated&lt;Email&gt; emailValidated = emailValidator.validate(email);
-Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.validate(phoneNumber);</code></pre>
+Validated&lt;Email&gt; emailValidated = emailValidator.applicative().validate(email);
+Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1105,7 +1102,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 <p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are aggregated without shortcuts in the middle.</p>
 </div>
 <div class="paragraph">
-<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail and you will get the following three <code>ContraintViolation</code> s:</p>
+<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ContraintViolation</code> s:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1114,13 +1111,48 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 * "phoneNumber" must match [0-9\-]+</pre>
 </div>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Validation for <code>ContactInfo</code> in the above example can be achieved by using <code>nest</code> method as follows:</p>
 </div>
-<div class="sect2">
-<h3 id="converting-the-target-object-after-the-validation"><a class="anchor" href="#converting-the-target-object-after-the-validation"></a>4.3. Converting the target object after the validation</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::value, "value", c -&gt; c.notBlank().email())
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .constraint(PhoneNumber::value, "value", c -&gt; c.notBlank().pattern("[0-9\\-]+"))
+    .build();
 
+Validator&lt;ContactInfo&gt; validator = ValidatorBuilder.&lt;ContactInfo&gt; of()
+    .nest(ContactInfo::email, "email", emailValidator)
+    .nest(ContactInfo::phoneNumber, "phoneNumber", phoneNumberValidator)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can combine <code>ApplicativeValidator&lt;Email&gt;</code> and <code>ApplicativeValidator&lt;PhoneNumber&gt;</code> as introduced in <a href="#combining-validators">Combining validators</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; validator = ArgumentsValidators
+    .split(emailValidator.applicative(), phoneNumberValidator.applicative())
+    .apply(ContactInfo::new);</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
-<h3 id="validating-the-source-object-before-creating-a-target-object"><a class="anchor" href="#validating-the-source-object-before-creating-a-target-object"></a>4.4. Validating the source object before creating a target object</h3>
+<h3 id="validation-validated-api"><a class="anchor" href="#validation-validated-api"></a>4.3. <code>Validation</code> / <code>Validated</code> API</h3>
 
 </div>
 </div>
@@ -4666,7 +4698,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 06:14:15 UTC
+Last updated 2021-06-15 06:34:42 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
