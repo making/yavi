@@ -138,9 +138,11 @@ Validator&lt;ContactInfo&gt; validator = ValidatorBuilder.&lt;ContactInfo&gt; of
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; validator = ArgumentsValidators
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
     .split(emailValidator.applicative(), phoneNumberValidator.applicative())
-    .apply(ContactInfo::new);</code></pre>
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email("yavi@example.com"), new PhoneNumber("090-123-4567"));</code></pre>
 </div>
 </div>
 </td>
@@ -157,7 +159,7 @@ Validator&lt;ContactInfo&gt; validator = ValidatorBuilder.&lt;ContactInfo&gt; of
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 06:39:26 UTC
+Last updated 2021-06-15 07:07:31 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
