@@ -179,12 +179,9 @@
 <li><a href="#integration-with-bindingresult-in-spring-mvc">9.1. Integration with <code>BindingResult</code> in Spring MVC</a></li>
 <li><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</a></li>
 <li><a href="#integration-with-spring-webflux-fn">9.3. Integration with Spring WebFlux.fn</a></li>
-<li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a>
-<ul class="sectlevel3">
-<li><a href="#managing-validatorbuilder-in-an-ioc-container">9.4.1. Managing <code>ValidatorBuilder</code> in an IoC Container</a></li>
-<li><a href="#obtaining-a-bivalidator">9.4.2. Obtaining a <code>BiValidator</code></a></li>
-</ul>
-</li>
+<li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a></li>
+<li><a href="#managing-validatorbuilder-in-an-ioc-container">9.5. Managing <code>ValidatorBuilder</code> in an IoC Container</a></li>
+<li><a href="#obtaining-a-bivalidator">9.6. Obtaining a <code>BiValidator</code></a></li>
 </ul>
 </li>
 </ul>
@@ -5954,8 +5951,9 @@ public class OrderController {
 }</code></pre>
 </div>
 </div>
-<div class="sect3">
-<h4 id="managing-validatorbuilder-in-an-ioc-container"><a class="anchor" href="#managing-validatorbuilder-in-an-ioc-container"></a>9.4.1. Managing <code>ValidatorBuilder</code> in an IoC Container</h4>
+</div>
+<div class="sect2">
+<h3 id="managing-validatorbuilder-in-an-ioc-container"><a class="anchor" href="#managing-validatorbuilder-in-an-ioc-container"></a>9.5. Managing <code>ValidatorBuilder</code> in an IoC Container</h3>
 <div class="paragraph">
 <p>If you want to customize <code>ValidatorBuilder</code> and manage it with an IoC Container like Spring Framework, you can use <code>am.ik.yavi.factory.ValidatorFactory</code>.</p>
 </div>
@@ -5987,8 +5985,8 @@ public class OrderController {
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="obtaining-a-bivalidator"><a class="anchor" href="#obtaining-a-bivalidator"></a>9.4.2. Obtaining a <code>BiValidator</code></h4>
+<div class="sect2">
+<h3 id="obtaining-a-bivalidator"><a class="anchor" href="#obtaining-a-bivalidator"></a>9.6. Obtaining a <code>BiValidator</code></h3>
 <div class="paragraph">
 <p><code>BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
 <code>T</code> is the type of target object as usual and <code>E</code> is the type of errors object.</p>
@@ -6048,11 +6046,10 @@ public class OrderController {
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:27:13 UTC
+Last updated 2021-06-15 15:34:30 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
