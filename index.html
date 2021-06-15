@@ -1471,8 +1471,8 @@ Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nam
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ApplicativeValidator&lt;Email&gt; emailValidator = ...;
-ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = ...;
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ApplicativeValidator&lt;Email&gt; emailValidator = /* see examples above */;
+ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = /* see examples above */;
 
 Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
     .split(emailValidator, phoneNumberValidator)
@@ -1495,9 +1495,12 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Argument1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator.compose(req -&gt; req.getParameter("name"));
-Argument1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator.compose(req -&gt; req.getParameter("email"));
-Argument1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator.compose(req -&gt; Integer.valueOf(req.getParameter("age")));
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Argument1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
+    .compose(req -&gt; req.getParameter("name"));
+Argument1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
+    .compose(req -&gt; req.getParameter("email"));
+Argument1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
+    .compose(req -&gt; Integer.valueOf(req.getParameter("age")));
 
 HttpServletRequest request = ...;
 Validated&lt;Name&gt; nameValidated = requestNameValidator.validate(request);
@@ -1528,7 +1531,8 @@ Validated&lt;Person&gt; personValidated = requestPersonValidator.validate(reques
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = personValidator
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = /* see examples above */;
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = personValidator
     .compose(req -&gt; Arguments.of(req.getParameter("name"), req.getParameter("email"), Integer.valueOf(req.getParameter("age"))));</code></pre>
 </div>
 </div>
@@ -5067,7 +5071,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 09:27:51 UTC
+Last updated 2021-06-15 11:17:46 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
