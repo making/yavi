@@ -545,15 +545,9 @@ This can be useful for the validation of large object graphs where you are only 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
-    .constraint(User::getName, "name", c -&gt; c.notNull()
-        .lessThanOrEqual(20))
-    .constraint(User::getEmail, "email", c -&gt; c.notNull()
-        .greaterThanOrEqual(5)
-        .lessThanOrEqual(50)
-        .email())
-    .constraint(User::getAge, "age", c -&gt; c.notNull()
-        .greaterThanOrEqual(0)
-        .lessThanOrEqual(200))
+    .constraint(User::getName, "name", c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
     .failFast(true) // &lt;-- Enable the fail fast mode
     .build();</code></pre>
 </div>
@@ -611,7 +605,7 @@ This can be useful for the validation of large object graphs where you are only 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 07:30:52 UTC
+Last updated 2021-06-15 07:31:25 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
