@@ -55,7 +55,11 @@
 <li><a href="#define-validator-for-a-single-value">5.3. Define Validator for a single value</a></li>
 </ul>
 </li>
-<li><a href="#combining-validators">6. Combining validators</a></li>
+<li><a href="#combining-validators">6. Combining validators</a>
+<ul class="sectlevel2">
+<li><a href="#splitting-a-validator-for-an-object-into-small-pieces">6.1. Splitting a validator for an object into small pieces</a></li>
+</ul>
+</li>
 <li><a href="#built-in-constraints">7. Built-in Constraints</a>
 <ul class="sectlevel2">
 <li><a href="#string">7.1. String</a>
@@ -1381,7 +1385,100 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 <div class="sect1">
 <h2 id="combining-validators"><a class="anchor" href="#combining-validators"></a>6. Combining validators</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><code>ApplicativeValidator&lt;T&gt;</code> and <code>Arguments1Validator&lt;S, T&gt;</code> we&#8217;ve seen so far extend <code>ValueValidator&lt;S, T&gt;</code>.
+<code>T</code> is the type of the target object to be validated and <code>S</code> is the type of the source object to create the target object.
+<code>ApplicativeValidator&lt;T&gt;</code> is equivalent to <code>ValueValidator&lt;T, T&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>ValueValidator</code> can be combined to validate a larger object.</p>
+</div>
+<div class="sect2">
+<h3 id="splitting-a-validator-for-an-object-into-small-pieces"><a class="anchor" href="#splitting-a-validator-for-an-object-into-small-pieces"></a>6.1. Splitting a validator for an object into small pieces</h3>
+<div class="paragraph">
+<p>You can use <code>split</code> method to split the constructor and the arguments of the factory method for creating a large Object into small validators and combine them.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at an example.</p>
+</div>
+<div class="paragraph">
+<p>Validator for constructor <code>Person(String, String, Integer)</code> is <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code>.
+This can be divided into two <code>StringValidator&lt;String&gt;</code> and one <code>IntegerValidator&lt;Integer&gt;</code> and then combined.</p>
+</div>
+<div class="paragraph">
+<p>It can be defined as bellow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Person {
+    public Person(String name, String email, Integer age) {
+        // ...
+    }
+}
 
+StringValidator&lt;String&gt; nameValidator = ...;
+StringValidator&lt;String&gt; emailValidator = ...;
+IntegerValidator&lt;Integer&gt; ageValidator = ...;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The same goes for Validators for Value Objects.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Person {
+    public Person(Name name, Email email, Age age) {
+        // ...
+    }
+}
+
+StringValidator&lt;Name&gt; nameValidator = ...;
+StringValidator&lt;Email&gt; emailValidator = ...;
+IntegerValidator&lt;Age&gt; ageValidator = ...;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The created Validator can be used as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("Jone Doe", "jdoe@example.com", 30);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since the argument of <code>ArgumentsValidators.split</code> is <code>ValueValidator</code> rather than <code>Arguments1Validator</code>, you can also combine <code>ApplicativeValidators</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ApplicativeValidator&lt;Email&gt; emailValidator = ...;
+ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = ...;
+
+Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
+    .split(emailValidator, phoneNumberValidator)
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email("yavi@example.com"), new PhoneNumber("090-123-4567"));</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -4913,7 +5010,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 08:49:09 UTC
+Last updated 2021-06-15 09:14:20 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
