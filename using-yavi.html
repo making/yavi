@@ -76,7 +76,7 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class User {
     private final String name;
 
-    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt;of()
+    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
         ._string(x -&gt; x.name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
         .build();
 
@@ -144,10 +144,10 @@ or you can also define a set of constraints on the elements inside.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
         .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
         .build();
-Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
         .forEach(Histories::asList, "histories", historyValidator)
         .build();</code></pre>
 </div>
@@ -157,7 +157,7 @@ Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
         .forEach(Histories::asList, "histories",
                 b -&gt; b.constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1)))
         .build();</code></pre>
@@ -326,7 +326,7 @@ It can be used when you want to apply cross-field constraints as follows:</p>
 }
 
 RangeConstraint range = new RangeConstraint();
-Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt;of()
+Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
         .constraintOnTarget(range, "to")
         .build();</code></pre>
 </div>
@@ -488,7 +488,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 03:31:51 UTC
+Last updated 2021-06-15 03:32:30 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
