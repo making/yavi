@@ -63,7 +63,8 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 
 Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
     .constraint(User::name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
-    // Omits others
+    .constraint(User::email, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::age, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
     .build();</code></pre>
 </div>
 </div>
@@ -439,7 +440,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 02:24:25 UTC
+Last updated 2021-06-15 02:25:59 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
