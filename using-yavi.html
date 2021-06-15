@@ -251,7 +251,7 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">validator.validate(user, Group.CREATE);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolations violations = validator.validate(user, Group.CREATE);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -574,7 +574,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 04:03:12 UTC
+Last updated 2021-06-15 04:05:37 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
