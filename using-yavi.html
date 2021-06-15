@@ -124,11 +124,11 @@ Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
-      .nest(Address::getCountry, "country",
-            b -&gt; b.constraint(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20)))
-      .nest(Address::getCity, "city",
-            b -&gt; b.constraint(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100)))
-      .build();</code></pre>
+    .nest(Address::getCountry, "country",
+        b -&gt; b.constraint(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20)))
+    .nest(Address::getCity, "city",
+        b -&gt; b.constraint(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100)))
+    .build();</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -169,12 +169,12 @@ public class Histories {
 }
 
 Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
-        .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
-        .build();
+    .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
+    .build();
 
 Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
-        .forEach(Histories::asList, "histories", historyValidator)
-        .build();</code></pre>
+    .forEach(Histories::asList, "histories", historyValidator)
+    .build();</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -183,9 +183,9 @@ Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
-        .forEach(Histories::asList, "histories",
-                b -&gt; b.constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1)))
-        .build();</code></pre>
+    .forEach(Histories::asList, "histories",
+        b -&gt; b.constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1)))
+    .build();</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -203,8 +203,8 @@ If you want to apply constraints on keys in a map, you need to convert the map t
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ToCollection&lt;CodeMap, Collection&lt;String&gt;, String&gt; toCollection = codeMap -&gt; codeMap.asMap().keySet();
 Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
-        .forEach(toCollection, "codeMap", b -&gt; b._string(String::toString, "value", c -&gt; c.notEmpty()))
-        .build();</code></pre>
+    .forEach(toCollection, "codeMap", b -&gt; b._string(String::toString, "value", c -&gt; c.notEmpty()))
+    .build();</code></pre>
 </div>
 </div>
 </td>
@@ -213,12 +213,73 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_applying_constraints_only_to_specific_groups">Applying constraints only to specific groups</h3>
-
+<h3 id="_applying_constraints_only_to_specific_conditions">Applying constraints only to specific conditions</h3>
+<div class="paragraph">
+<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, constraintGroup) -&gt; !user.getName().isEmpty(),
+        b -&gt; b.constraint(User::getEmail, "email", c -&gt; c.email().notEmpty()))
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The constraint above on email will only be activated if the name is not empty.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_applying_constraints_only_to_specific_conditions">Applying constraints only to specific conditions</h3>
+<h3 id="_applying_constraints_only_to_specific_groups">Applying constraints only to specific groups</h3>
+<div class="paragraph">
+<p>You can apply constraints only to specific groups with <code>am.ik.yavi.core.ConstraintGroup</code> as a part of <code>ConstraintCondition</code> as well:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">enum Group implements ConstraintGroup {
+    CREATE, UPDATE, DELETE
+}
 
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(Group.CREATE.toCondition(),
+        b -&gt; b.constraint(User::getId, "id", c -&gt; c.isNull()))
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The group to validate can be specified in <code>validate</code> method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">validator.validate(user, Group.CREATE);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use a shortcut <code>constraintOnGroup</code> method</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnGroup(Group.CREATE,
+        b -&gt; b.constraint(User::getId, "id", c -&gt; c.isNull()))
+    .build();</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Note that all constraints without conditions will be validated for any constraint group.
+Also, if no group is specified in the <code>validate</code> method, it will be treated as <code>DEFAULT</code> group.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_creating_a_custom_constraint">Creating a custom constraint</h3>
@@ -513,7 +574,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 03:37:20 UTC
+Last updated 2021-06-15 04:03:12 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
