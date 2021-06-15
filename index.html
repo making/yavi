@@ -29,7 +29,7 @@
 </li>
 <li><a href="#using-yavi">3. Using YAVI</a>
 <ul class="sectlevel2">
-<li><a href="#define-and-obtain-a-core-validator-instance">3.1. Define and obtain a core <code>Validator</code> instance</a></li>
+<li><a href="#defining-and-obtaining-a-core-validator-instance">3.1. Defining and obtaining a core <code>Validator</code> instance</a></li>
 <li><a href="#constraints-on-nested-objects">3.2. Constraints on nested objects</a></li>
 <li><a href="#constraints-on-elements-in-a-collection-map-array">3.3. Constraints on elements in a Collection / Map / Array</a></li>
 <li><a href="#applying-constraints-only-to-specific-conditions">3.4. Applying constraints only to specific conditions</a></li>
@@ -50,7 +50,7 @@
 </li>
 <li><a href="#validating-arguments">5. Validating arguments</a>
 <ul class="sectlevel2">
-<li><a href="#define-and-obtain-an-arguments-validator-instance">5.1. Define and obtain an Arguments Validator instance</a></li>
+<li><a href="#defining-and-obtaining-an-arguments-validator-instance">5.1. Defining and obtaining an Arguments Validator instance</a></li>
 <li><a href="#validating-method-arguments">5.2. Validating method arguments</a></li>
 <li><a href="#define-validator-for-a-single-value">5.3. Define Validator for a single value</a></li>
 </ul>
@@ -179,7 +179,12 @@
 <li><a href="#integration-with-bindingresult-in-spring-mvc">9.1. Integration with <code>BindingResult</code> in Spring MVC</a></li>
 <li><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</a></li>
 <li><a href="#integration-with-spring-webflux-fn">9.3. Integration with Spring WebFlux.fn</a></li>
-<li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a></li>
+<li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a>
+<ul class="sectlevel3">
+<li><a href="#managing-validatorbuilder-in-an-ioc-container">9.4.1. Managing <code>ValidatorBuilder</code> in an IoC Container</a></li>
+<li><a href="#obtaining-a-bivalidator">9.4.2. Obtaining a <code>BiValidator</code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -502,7 +507,7 @@ You can also check if the validation was successful with the <code>ConstraintVio
 <p>This section describes the basic usage of YAVI.</p>
 </div>
 <div class="sect2">
-<h3 id="define-and-obtain-a-core-validator-instance"><a class="anchor" href="#define-and-obtain-a-core-validator-instance"></a>3.1. Define and obtain a core <code>Validator</code> instance</h3>
+<h3 id="defining-and-obtaining-a-core-validator-instance"><a class="anchor" href="#defining-and-obtaining-a-core-validator-instance"></a>3.1. Defining and obtaining a core <code>Validator</code> instance</h3>
 <div class="paragraph">
 <p>The core validator <code>am.ik.yavi.core.Validator</code> can be defined and obtained via <code>am.ik.yavi.builder.ValidatorBuilder</code>.
 Here is an example:</p>
@@ -1261,7 +1266,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 <p>This is one of YAVI&#8217;s unique features.</p>
 </div>
 <div class="sect2">
-<h3 id="define-and-obtain-an-arguments-validator-instance"><a class="anchor" href="#define-and-obtain-an-arguments-validator-instance"></a>5.1. Define and obtain an Arguments Validator instance</h3>
+<h3 id="defining-and-obtaining-an-arguments-validator-instance"><a class="anchor" href="#defining-and-obtaining-an-arguments-validator-instance"></a>5.1. Defining and obtaining an Arguments Validator instance</h3>
 <div class="paragraph">
 <p>Arguments Validator, as the name implies, is a Validator for arguments.</p>
 </div>
@@ -5949,6 +5954,97 @@ public class OrderController {
 }</code></pre>
 </div>
 </div>
+<div class="sect3">
+<h4 id="managing-validatorbuilder-in-an-ioc-container"><a class="anchor" href="#managing-validatorbuilder-in-an-ioc-container"></a>9.4.1. Managing <code>ValidatorBuilder</code> in an IoC Container</h4>
+<div class="paragraph">
+<p>If you want to customize <code>ValidatorBuilder</code> and manage it with an IoC Container like Spring Framework, you can use <code>am.ik.yavi.factory.ValidatorFactory</code>.</p>
+</div>
+<div class="paragraph">
+<p>The following is an example of defining a <code>ValidatorFactory</code> in Spring Framework:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
+public ValidatorFactory yaviValidatorFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new ValidatorFactory("." /* Message Key Separator */, messageFormatter);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The usage of a Validator would look like following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(ValidatorFactory factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="obtaining-a-bivalidator"><a class="anchor" href="#obtaining-a-bivalidator"></a>9.4.2. Obtaining a <code>BiValidator</code></h4>
+<div class="paragraph">
+<p><code>BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
+<code>T</code> is the type of target object as usual and <code>E</code> is the type of errors object.</p>
+</div>
+<div class="paragraph">
+<p>This class is helpful for libraries or apps to adapt both YAVI and other validation framework that accepts these two arguments like Spring Framework&#8217;s <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>BiValidator</code> can be obtained as below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder.&lt;CartItem&gt;of()
+    .constraint(...)
+    .build(Errors::rejectValue);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is a factory for <code>BiValidator</code> as well</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
+public BiValidatorFactory&lt;Errors&gt; biValidatorFactory() {
+    return new BiValidatorFactory&lt;&gt;(Errors::rejectValues);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or, if you want to customize the builder</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
+public BiValidatorFactory&lt;Errors&gt; biValidatorFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new BiValidatorFactory&lt;&gt;("." /* Message Key Separator */, messageFormatter, Errors::rejectValues);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The usage of a <code>BiValidator</code> would look like following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
+public class OrderController {
+    private final BiValidator&lt;CartItem, Errors&gt; validator;
+
+    public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -5956,7 +6052,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:16:40 UTC
+Last updated 2021-06-15 15:27:13 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
