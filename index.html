@@ -58,6 +58,7 @@
 <li><a href="#combining-validators">6. Combining validators</a>
 <ul class="sectlevel2">
 <li><a href="#splitting-a-validator-for-an-object-into-small-pieces">6.1. Splitting a validator for an object into small pieces</a></li>
+<li><a href="#validating-the-source-object-before-creating-the-target-object">6.2. Validating the source object before creating the target object</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">7. Built-in Constraints</a>
@@ -1479,6 +1480,60 @@ Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator 
 
 Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email("yavi@example.com"), new PhoneNumber("090-123-4567"));</code></pre>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="validating-the-source-object-before-creating-the-target-object"><a class="anchor" href="#validating-the-source-object-before-creating-the-target-object"></a>6.2. Validating the source object before creating the target object</h3>
+<div class="paragraph">
+<p>In a web application, you often get a value from a Map, Form Object, or <code>HttpServletRequest</code> to create a Domain Object.</p>
+</div>
+<div class="paragraph">
+<p><code>Arguments1Validator</code> can validate the source object and then convert it to the target object using <code>compose</code> method.</p>
+</div>
+<div class="paragraph">
+<p>For example, in the case where <code>name</code>, <code>email</code> and <code>age</code> are obtained from <code>HttpServletRequest</code> object as HTTP request parameters in Servlet, it can be defined as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Argument1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator.compose(req -&gt; req.getParameter("name"));
+Argument1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator.compose(req -&gt; req.getParameter("email"));
+Argument1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator.compose(req -&gt; Integer.valueOf(req.getParameter("age")));
+
+HttpServletRequest request = ...;
+Validated&lt;Name&gt; nameValidated = requestNameValidator.validate(request);
+Validated&lt;Email&gt; emailValidated = requestEmailValidator.validate(request);
+Validated&lt;Age&gt; ageValidated = requestAgeValidator.validate(request);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can combine these Validators with <code>combine</code> method as follows to create a Validator for <code>Person</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = ArgumentsValidators
+    .combine(requestNameValidator, requestEmailValidator, requestAgeValidator)
+    .apply(Person::new);
+// or
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = requestNameValidator
+    .combine(requestEmailValidator)
+    .combine(requestAgeValidator)
+    .apply(Person::new);
+
+HttpServletRequest request = ...;
+Validated&lt;Person&gt; personValidated = requestPersonValidator.validate(request);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This Validator can also be converted from <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = personValidator
+    .compose(req -&gt; Arguments.of(req.getParameter("name"), req.getParameter("email"), Integer.valueOf(req.getParameter("age"))));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By combining Validators in this way, you can create various patterns of Validators. Creating a small Arguments Validator not only allows you to validate the values before creating the object, but also makes it more reusable.</p>
 </div>
 </div>
 </div>
@@ -5012,7 +5067,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 09:19:04 UTC
+Last updated 2021-06-15 09:27:51 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
