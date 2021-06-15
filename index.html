@@ -1391,10 +1391,10 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 (<code>T</code> is the type of the target object to be validated and <code>S</code> is the type of the source object to create the target object.)</p>
 </div>
 <div class="paragraph">
-<p><code>ApplicativeValidator&lt;T&gt;</code> is equivalent to <code>ValueValidator&lt;T, T&gt;</code>.</p>
+<p><code>ApplicativeValidator&lt;T&gt;</code> is a <code>ValueValidator&lt;T, T&gt;</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>ValueValidator</code> can be combined to validate a larger object.</p>
+<p>Multiple <code>ValueValidator</code> s can be combined to validate a larger object.</p>
 </div>
 <div class="sect2">
 <h3 id="splitting-a-validator-for-an-object-into-small-pieces"><a class="anchor" href="#splitting-a-validator-for-an-object-into-small-pieces"></a>6.1. Splitting a validator for an object into small pieces</h3>
@@ -1402,7 +1402,7 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 <p>You can use <code>split</code> method to split the constructor and the arguments of the factory method for creating a large object into small validators and combine them.</p>
 </div>
 <div class="paragraph">
-<p>Let&#8217;s look at an example.</p>
+<p>Let&#8217;s take a look at an example.</p>
 </div>
 <div class="paragraph">
 <p>Validator for constructor <code>Person(String, String, Integer)</code> is <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code>.
@@ -1467,7 +1467,7 @@ Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nam
 </div>
 </div>
 <div class="paragraph">
-<p>Since the argument of <code>ArgumentsValidators.split</code> is <code>ValueValidator</code> rather than <code>Arguments1Validator</code>, you can also combine <code>ApplicativeValidators</code> as follows:</p>
+<p>Since the arguments of <code>ArgumentsValidators#split</code> are <code>ValueValidator</code> s rather than <code>Arguments1Validator</code> s, you can also combine <code>ApplicativeValidator</code> s as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5071,7 +5071,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 11:19:11 UTC
+Last updated 2021-06-15 13:44:53 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
