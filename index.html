@@ -5988,7 +5988,7 @@ public class OrderController {
 <div class="sect2">
 <h3 id="obtaining-a-bivalidator"><a class="anchor" href="#obtaining-a-bivalidator"></a>9.6. Obtaining a <code>BiValidator</code></h3>
 <div class="paragraph">
-<p><code>BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
+<p><code>am.ik.yavi.core.BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
 <code>T</code> is the type of target object as usual and <code>E</code> is the type of errors object.</p>
 </div>
 <div class="paragraph">
@@ -5999,7 +5999,7 @@ public class OrderController {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder.&lt;CartItem&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
     .constraint(...)
     .build(Errors::rejectValue);</code></pre>
 </div>
@@ -6049,7 +6049,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:34:30 UTC
+Last updated 2021-06-15 15:35:48 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
