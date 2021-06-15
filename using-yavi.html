@@ -130,6 +130,21 @@ Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
       .build();</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>If the nested field is nullable, use <code>nestIfPresent</code> instead of <code>nest</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_constraints_on_elements_in_a_list_map_array">Constraints on elements in a List / Map / Array</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_applying_constraints_only_to_specific_groups">Applying constraints only to specific groups</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_applying_constraints_only_to_specific_conditions">Applying constraints only to specific conditions</h3>
+
 </div>
 <div class="sect2">
 <h3 id="_overriding_violation_messages">Overriding violation messages</h3>
@@ -310,7 +325,7 @@ A list of message keys and default message formats is given in <a href="#built-i
 <p>Include field name in error message by default</p>
 </li>
 <li>
-<p>Allows you to include values that violate error messages</p>
+<p>Allows you to include the violated values in the error message</p>
 </li>
 </ul>
 </div>
@@ -423,7 +438,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 01:59:07 UTC
+Last updated 2021-06-15 02:18:28 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
