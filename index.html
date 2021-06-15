@@ -372,7 +372,7 @@ public class Car {
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>ValidatorBuilder.constraint</code> is used to declare the constraints which should be applied to the return values of getter for the <code>Car</code> instance:</p>
+<p>The <code>ValidatorBuilder#constraint</code> is used to declare the constraints which should be applied to the return values of getter for the <code>Car</code> instance:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -5080,7 +5080,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 that implement <code>am.ik.yavi.meta.ConstraintMeta</code> for each target which is annotated with <code>am.ik.yavi.meta.ConstraintTarget</code> or <code>am.ik.yavi.meta.ConstraintArguments</code>.</p>
 </div>
 <div class="paragraph">
-<p>When you have a class like following, run <code>mvn clean compile</code>:</p>
+<p>When you have a class as following, run <code>mvn clean compile</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5137,7 +5137,7 @@ public class UserForm {
 <td class="content">
 <div class="paragraph">
 <p><code>@ConstraintTarget</code> and <code>@ConstraintArguments</code> are compile-time annotations, so they disappear at runtime.
-+ This won&#8217;t break YAVI&#8217;s "No more annotation!" concept ;)</p>
++ This won&#8217;t break YAVI&#8217;s "No annotation!" concept ;)</p>
 </div>
 </td>
 </tr>
@@ -5759,7 +5759,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 13:52:42 UTC
+Last updated 2021-06-15 13:54:18 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
