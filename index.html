@@ -5896,7 +5896,7 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
 
 public RouterFunction&lt;ServerResponse&gt; routes() {
     return route()
-        .POST("/users", req -&gt; req.bodyToMono(UserCreateRequest.class)
+        .POST("/users", request -&gt; request.bodyToMono(UserCreateRequest.class)
             .flatMap(body -&gt; validator.applicative()
                 .validate(body)
                 .map(req -&gt; userService.create(req.toUser()))
@@ -5927,7 +5927,7 @@ YAVI was originally developed as a validator naturally fit with Spring WebFlux.f
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:04:29 UTC
+Last updated 2021-06-15 15:05:03 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
