@@ -45,7 +45,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-YAVI aggregates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use <a href="#fail-fast-mode">Fail fast mode</a>.
+YAVI aggregates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use "<a href="#fail-fast-mode">Fail fast mode</a>".
 </td>
 </tr>
 </table>
@@ -100,7 +100,7 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 </div>
 </div>
 <div class="paragraph">
-<p>See <a href="#built-in-constraints">[built-in-constraints]</a> for other constraint rules.</p>
+<p>See "<a href="#built-in-constraints">[built-in-constraints]</a>" for other constraint rules.</p>
 </div>
 </div>
 <div class="sect2">
@@ -294,7 +294,7 @@ Also, if no group is specified in the <code>validate</code> method, it will be t
 <div class="sect2">
 <h3 id="_creating_a_custom_constraint">Creating a custom constraint</h3>
 <div class="paragraph">
-<p>If you want to apply constraints that are not in the <a href="#built-in-constraints">[built-in-constraints]</a>, you can create custom constraints by implementing <code>am.ik.yavi.core.CustomConstraint</code> interface as bellow:</p>
+<p>If you want to apply constraints that are not in the "<a href="#built-in-constraints">[built-in-constraints]</a>", you can create custom constraints by implementing <code>am.ik.yavi.core.CustomConstraint</code> interface as bellow:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -431,7 +431,7 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
 <div class="sect2">
 <h3 id="_overriding_violation_messages">Overriding violation messages</h3>
 <div class="paragraph">
-<p>The default violation message for each constraint is defined in <a href="#built-in-constraints">[built-in-constraints]</a>.</p>
+<p>The default violation message for each constraint is defined in "<a href="#built-in-constraints">[built-in-constraints]</a>".</p>
 </div>
 <div class="paragraph">
 <p>If you want to customize the violation message, append <code>message</code> method on the target constraint as follows:</p>
@@ -453,7 +453,7 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
 </div>
 <div class="paragraph">
 <p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormatter</code> to interpolate the message.
-A list of message keys and default message formats is given in <a href="#built-in-constraints">[built-in-constraints]</a>.</p>
+A list of message keys and default message formats is given in "<a href="#built-in-constraints">[built-in-constraints]</a>".</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -621,7 +621,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 08:29:11 UTC
+Last updated 2021-06-15 08:43:16 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
