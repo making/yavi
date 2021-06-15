@@ -1093,7 +1093,7 @@ In the bellow example, <code>ContactInfo</code> instance is created using <code>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;ContactInfo&gt; contactInfoValidated = emailValidated.combine(phoneNumberValidated)
     .apply((em, ph) -&gt; new ContactInfo(em, ph));
 // or
-Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidation)
+Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidated)
     .apply((em, ph) -&gt; new ContactInfo(em, ph));</code></pre>
 </div>
 </div>
@@ -4695,7 +4695,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 07:08:14 UTC
+Last updated 2021-06-15 07:16:43 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
