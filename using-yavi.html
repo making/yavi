@@ -294,6 +294,41 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt;of()
 <p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormatter</code> to interpolate the message.
 A list of message keys and default message formats is given in <a href="#built-in-constraints">[built-in-constraints]</a>.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>As a feature of error messages, the following are supported compared to Bean Validation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Include field name in error message by default</p>
+</li>
+<li>
+<p>Allows you to include values that violate error messages</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The first placeholder <code>{0}</code> of the message is set to the field name, and the last placeholder is set to the violation value.</p>
+</div>
+<div class="paragraph">
+<p>Especially for the second one, since it is not supported by the general Validation library, for example, even if the error message "xyz should be 100 characters or less" is returned, what characters are actually entered now? Sometimes I try to cut the letters little by little because I don&#8217;t know if they are counted. By default, the following message is displayed so that the user does not have to do this wasteful thing.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://user-images.githubusercontent.com/106908/44784067-4b010600-abc7-11e8-8878-930d017405bb.png" alt="44784067 4b010600 abc7 11e8 8878 930d017405bb">
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>If you want to customize the message interpolation, implement <code>MessageFormatter</code>.
 As an example, the implementation that reads messages in <code>messages.properties</code> is shown as follows:</p>
@@ -389,7 +424,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 01:48:25 UTC
+Last updated 2021-06-15 01:57:23 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
