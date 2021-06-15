@@ -271,9 +271,6 @@ It can be used when you want to apply cross-field constraints as follows:</p>
 
     @Override
     public boolean test(Range range) {
-        if (range == null) {
-            return true;
-        }
         return range.getTo() &gt; range.getFrom();
     }
 }
@@ -329,7 +326,7 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt;of()
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 01:31:59 UTC
+Last updated 2021-06-15 01:34:28 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
