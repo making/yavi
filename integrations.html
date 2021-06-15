@@ -91,7 +91,7 @@ The <code>ConstraintViolations#details</code> method translates all <code>Constr
 public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
     ConstraintViolations violations = validator.validate(request);
     if (violations.isValid()) {
-        User created = this.userService.create(request.toUser());
+        User created = userService.create(request.toUser());
         return ResponseEntity.ok(created);
     } else {
         return ResponseEntity.badRequest().body(violations.details());
@@ -104,16 +104,16 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserForm&gt; validator = ...;
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserCreateRequest&gt; validator = ...;
 
 @PostMapping(path = "users")
 public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
     return validator.applicative()
         .validate(request)
-        .map(req -&gt; this.userService.create(req.toUser()))
-        .mapErrors(ConstraintViolations.of(violations).details())
+        .map(req -&gt; userService.create(req.toUser()))
+        .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
         // or .mapErrorsF(ConstraintViolation::detail)
-        .fold(details -&gt; ResponseEntity.badRequest().body(details),
+        .fold(details -&gt; ResponseEntity.badRequest().body(Map.of("message", "Invalid request body", "details", details)),
             created -&gt; ResponseEntity.ok(created));
 }</code></pre>
 </div>
@@ -131,12 +131,48 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_integration_with_spring_webflux_fn">Integration with Spring WebFlux.fn</h3>
+<div class="paragraph">
+<p>YAVI will be a great fit for <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-fn">Spring WebFlux.fn</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+public RouterFunction&lt;ServerResponse&gt; routes() {
+    return route()
+        .POST("/users", req -&gt; req.bodyToMono(UserCreateRequest.class)
+            .flatMap(body -&gt; validator.applicative()
+                .validate(body)
+                .map(req -&gt; userService.create(req.toUser()))
+                .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
+                // or .mapErrorsF(ConstraintViolation::detail)
+                .fold(details -&gt; ServerResponse.badRequest().bodyValue(Map.of("message", "Invalid request body", "details", details)),
+                    created -&gt; ServerResponse.ok().bodyValue(created))))
+        .build();
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+YAVI was originally developed as a validator naturally fit with Spring WebFlux.fn.
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 14:56:15 UTC
+Last updated 2021-06-15 15:04:29 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
