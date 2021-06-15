@@ -93,11 +93,11 @@ public class UserService {
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">static final Arguments3Validator&lt;UserService, String, String, User&gt; validator = ArgumentsValidatorBuilder
-        .of(UserService::createUser) //
-        .builder(b -&gt; b //
+        .of(UserService::createUser)
+        .builder(b -&gt; b
                 ._object(Arguments1::arg1, "userService", c -&gt; c.notNull())
                 ._string(Arguments2::arg2, "email", c -&gt; c.email())
-                ._string(Arguments3::arg3, "name", c -&gt; c.notNull())) //
+                ._string(Arguments3::arg3, "name", c -&gt; c.notNull()))
         .build();
 
 UserService userService = new UserService();
@@ -122,7 +122,7 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 07:56:07 UTC
+Last updated 2021-06-15 08:04:09 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
