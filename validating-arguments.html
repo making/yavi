@@ -167,6 +167,15 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 </div>
 </div>
 <div class="paragraph">
+<p>If you want to create an <code>Arguments1Validator</code> for a <code>List</code>, you can "lift" a <code>Validator</code> for the element of the list as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators.liftList(emailValidator);
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>These "small Validators" can be very powerful parts by using the Validator combinators described in "<a href="#combining-validators">[combining-validators]</a>".</p>
 </div>
 </div>
@@ -175,7 +184,7 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 08:43:16 UTC
+Last updated 2021-06-15 08:45:56 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
