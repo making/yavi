@@ -16,13 +16,67 @@
 <div class="sect1">
 <h2 id="validating-arguments">Validating arguments</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>YAVI supports validating arguments of a constructor or factory method <strong>before creating an object</strong> with Arguments Validator.</p>
+</div>
+<div class="paragraph">
+<p>This is one of YAVI&#8217;s unique features.</p>
+</div>
+<div class="sect2">
+<h3 id="_define_and_obtain_an_arguments_validator_instance">Define and obtain an Arguments Validator instance</h3>
+<div class="paragraph">
+<p>Arguments Validator, as the name implies, is a Validator for arguments.</p>
+</div>
+<div class="paragraph">
+<p>A normal Validator, like Bean Validation, validates if the values are valid for the object to which the values are set, while the Arguments Validator validates that <strong>the arguments</strong> set to the Object are valid.</p>
+</div>
+<div class="paragraph">
+<p>Since an Object is created before validation in a normal Validator, there is a possibility of creating an Object in an incomplete state temporarily.
+For example, even if the constraint of <code>notNull()</code> is imposed on the Validator side,
+if the <code>null</code> check is implemented in the constructor, this <code>null</code> check will work before the validation by Validator is executed.</p>
+</div>
+<div class="paragraph">
+<p>The Arguments Validator creates an Object after validation, so you don&#8217;t have to worry about an incomplete Object.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Person {
+    public Person(String name, String email, Integer age) {
+        // ...
+    }
 
+    public static Arguments3Validator&lt;String, String, Integer, Person&gt; validator = ArgumentsValidatorBuilder
+        .of(Person::new)
+        .builder(b -&gt; b
+            ._string(Arguments1::arg1, "name", c -&gt; c.notBlank().lessThanOrEqual(100)) // Constrains onf the first argument of Person::new
+            ._string(Arguments2::arg2, "email", c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constrains onf the second argument of Person::new
+            ._integer(Arguments3::arg3, "age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))) // Constrains onf the third argument of Person::new
+        .build();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Arguments Validator can be used as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("Jone Doe", "jdoe@example.com", 30);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available..</p>
+</div>
+<div class="paragraph">
+<p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
+Building the Arguments Validator is simplified by <a href="#combining-validators">[combining-validators]</a>.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 07:36:06 UTC
+Last updated 2021-06-15 07:49:31 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
