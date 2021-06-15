@@ -174,7 +174,12 @@
 </li>
 </ul>
 </li>
-<li><a href="#integrations">9. Integrations</a></li>
+<li><a href="#integrations">9. Integrations</a>
+<ul class="sectlevel2">
+<li><a href="#integration-with-bindingresult-in-spring-mvc">9.1. Integration with <code>BindingResult</code> in Spring MVC</a></li>
+<li><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -5764,14 +5769,128 @@ public class _UserServiceCreateUserArgumentsMeta {
 <div class="sect1">
 <h2 id="integrations"><a class="anchor" href="#integrations"></a>9. Integrations</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>Although YAVI doesn&#8217;t depend on anything, it has interfaces that magically fit into Framework.</p>
+</div>
+<div class="sect2">
+<h3 id="integration-with-bindingresult-in-spring-mvc"><a class="anchor" href="#integration-with-bindingresult-in-spring-mvc"></a>9.1. Integration with <code>BindingResult</code> in Spring MVC</h3>
+<div class="paragraph">
+<p><code>ConstraintViolations#apply</code> accepts the Function Interface with the same arguments as Spring Framework&#8217;s <code>BindingResult#rejectValue</code> method and passes the violation messages.</p>
+</div>
+<div class="paragraph">
+<p>To reflect validation results by YAVI in a Controller of Spring MVC, you can write the following code.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserForm&gt; validator = ...;
 
+@PostMapping(path = "users")
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    ConstraintViolations violations = validator.validate(userForm);
+    if (!violations.isValid()) {
+        violations.apply(BindingResult::rejectValue);
+        return "userForm";
+    }
+    // ...
+    return "redirect:/";
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you like the functional way, you can also write:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = "users")
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    return validator.applicative()
+        .validate(userForm)
+        .fold(violations -&gt; {
+            ConstraintViolations.of(violations).apply(BindingResult::rejectValue);
+            return "userForm";
+        }, form -&gt; {
+            // ...
+            return "redirect:/";
+        });
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<code>List&lt;ContraintViolation&gt;</code> is passed to the function of the first argument of <code>Validated#fold</code> instead of <code>ConstraintViolations</code>. You can convert the <code>List&lt;ContraintViolation&gt;</code> to <code>ConstraintViolations</code> by using the <code>ConstraintViolations#of</code> method.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"><a class="anchor" href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"></a>9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</h3>
+<div class="paragraph">
+<p><code>ConstraintViolation</code> is not suitable for serializing with a serializer like Jackson. Instead, you can use <code>ConstraintViolation#detail</code> method to convert it to a <code>ViolationDetail</code> object that is easy to serialize.
+The <code>ConstraintViolations#details</code> method translates all <code>ConstraintViolation</code> s and returns <code>List&lt;ViolationDetail&gt;</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+@PostMapping(path = "users")
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    ConstraintViolations violations = validator.validate(request);
+    if (violations.isValid()) {
+        User created = this.userService.create(request.toUser());
+        return ResponseEntity.ok(created);
+    } else {
+        return ResponseEntity.badRequest().body(violations.details());
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you like the functional way, you can also write:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = "users")
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    return validator.applicative()
+        .validate(request)
+        .map(req -&gt; this.userService.create(req.toUser()))
+        .mapErrors(ConstraintViolations.of(violations).details())
+        // or .mapErrorsF(ConstraintViolation::detail)
+        .fold(details -&gt; ResponseEntity.badRequest().body(details),
+            created -&gt; ResponseEntity.ok(created));
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<code>ViolationDetail</code> works with GraalVM native image out of the box.
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 14:14:42 UTC
+Last updated 2021-06-15 14:56:15 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
