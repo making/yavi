@@ -144,9 +144,34 @@ or you can also define a set of constraints on the elements inside.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class History {
+	private final int revision;
+
+	public History(int revision) {
+		this.revision = revision;
+	}
+
+	public int getRevision() {
+		return revision;
+	}
+}
+
+public class Histories {
+	private final List&lt;History&gt; value;
+
+	public Histories(List&lt;History&gt; value) {
+		this.value = value;
+	}
+
+	public List&lt;History&gt; asList() {
+		return value;
+	}
+}
+
+Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
         .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
         .build();
+
 Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
         .forEach(Histories::asList, "histories", historyValidator)
         .build();</code></pre>
@@ -488,7 +513,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 03:33:16 UTC
+Last updated 2021-06-15 03:37:20 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
