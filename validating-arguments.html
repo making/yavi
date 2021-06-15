@@ -68,7 +68,7 @@ if the <code>null</code> check is implemented in the constructor, this <code>nul
 </div>
 <div class="paragraph">
 <p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
-Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Define Validator for a single value</a>" and "<a href="#combining-validators">[combining-validators]</a>".</p>
+Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Defining a Validator for a single value</a>" and "<a href="#combining-validators">[combining-validators]</a>".</p>
 </div>
 </div>
 <div class="sect2">
@@ -118,7 +118,7 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 </div>
 </div>
 <div class="sect2">
-<h3 id="define-validator-for-a-single-value">Define Validator for a single value</h3>
+<h3 id="define-validator-for-a-single-value">Defining a Validator for a single value</h3>
 <div class="paragraph">
 <p>If you just want to define <code>Arguments1Validator</code> for a single <code>String</code> or <code>Integer</code> etc, you can write:</p>
 </div>
@@ -184,7 +184,7 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 15:57:43 UTC
+Last updated 2021-06-15 16:05:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

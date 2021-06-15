@@ -52,7 +52,7 @@
 <ul class="sectlevel2">
 <li><a href="#defining-and-obtaining-an-arguments-validator-instance">5.1. Defining and obtaining an Arguments Validator instance</a></li>
 <li><a href="#validating-method-arguments">5.2. Validating method arguments</a></li>
-<li><a href="#define-validator-for-a-single-value">5.3. Define Validator for a single value</a></li>
+<li><a href="#define-validator-for-a-single-value">5.3. Defining a Validator for a single value</a></li>
 </ul>
 </li>
 <li><a href="#combining-validators">6. Combining validators</a>
@@ -1311,7 +1311,7 @@ if the <code>null</code> check is implemented in the constructor, this <code>nul
 </div>
 <div class="paragraph">
 <p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
-Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Define Validator for a single value</a>" and "<a href="#combining-validators">Combining validators</a>".</p>
+Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Defining a Validator for a single value</a>" and "<a href="#combining-validators">Combining validators</a>".</p>
 </div>
 </div>
 <div class="sect2">
@@ -1361,7 +1361,7 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 </div>
 </div>
 <div class="sect2">
-<h3 id="define-validator-for-a-single-value"><a class="anchor" href="#define-validator-for-a-single-value"></a>5.3. Define Validator for a single value</h3>
+<h3 id="define-validator-for-a-single-value"><a class="anchor" href="#define-validator-for-a-single-value"></a>5.3. Defining a Validator for a single value</h3>
 <div class="paragraph">
 <p>If you just want to define <code>Arguments1Validator</code> for a single <code>String</code> or <code>Integer</code> etc, you can write:</p>
 </div>
@@ -6052,7 +6052,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:57:43 UTC
+Last updated 2021-06-15 16:05:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
