@@ -34,7 +34,8 @@
 <li><a href="#overriding-violation-messages">3.3. Overriding violation messages</a></li>
 <li><a href="#creating-a-custom-constraint">3.4. Creating a custom constraint</a></li>
 <li><a href="#cross-field-validation">3.5. Cross-field validation</a></li>
-<li><a href="#kotlin-support">3.6. Kotlin Support</a></li>
+<li><a href="#message-formatter">3.6. Message Formatter</a></li>
+<li><a href="#kotlin-support">3.7. Kotlin Support</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">4. Built-in Constraints</a>
@@ -713,7 +714,67 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt;of()
 </div>
 </div>
 <div class="sect2">
-<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.6. Kotlin Support</h3>
+<h3 id="message-formatter"><a class="anchor" href="#message-formatter"></a>3.6. Message Formatter</h3>
+<div class="paragraph">
+<p>YAVI provides <code>am.ik.yavi.message.MessageFormatter</code> interface for constructing violation messages.</p>
+</div>
+<div class="paragraph">
+<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormatter</code> to interpolate the message.
+A list of message keys and default message formats is given in <a href="#built-in-constraints">Built-in Constraints</a>.</p>
+</div>
+<div class="paragraph">
+<p>If you want to customize the message interpolation, implement <code>MessageFormatter</code>.
+As an example, the implementation that reads messages in <code>messages.properties</code> is shown as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import am.ik.yavi.constraint.ViolationMessage;
+import am.ik.yavi.message.MessageFormatter;
+
+public enum ResourceBundleMessageFormatter implements MessageFormatter {
+    SINGLETON;
+
+    @Override
+    public String format(String messageKey, String defaultMessageFormat, Object[] args,
+            Locale locale) {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("messages", locale);
+        String format;
+        try {
+            format = resourceBundle.getString(messageKey);
+        }
+        catch (MissingResourceException e) {
+            format = defaultMessageFormat;
+        }
+        try {
+            String target = resourceBundle.getString((String) args[0] /* field name */);
+            args[0] = target;
+        }
+        catch (MissingResourceException e) {
+        }
+        return new MessageFormat(format, locale).format(args);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you want to replace the <code>MessageFormatter</code>, you can set it as follows.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .messageFormatter(ResourceBundleMessageFormatter.SINGLETON)
+    // ...
+    .build();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.7. Kotlin Support</h3>
 <div class="paragraph">
 <p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
 </div>
@@ -3999,7 +4060,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 01:35:58 UTC
+Last updated 2021-06-15 01:48:25 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
