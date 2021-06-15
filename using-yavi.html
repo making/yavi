@@ -239,7 +239,7 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
 </div>
 </div>
 <div class="sect2">
-<h3 id="cross-filed-validation">Cross-field validation</h3>
+<h3 id="cross-field-validation">Cross-field validation</h3>
 <div class="paragraph">
 <p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code>.
 It can be used when you want to apply cross-field constraints as follows:</p>
@@ -249,8 +249,39 @@ It can be used when you want to apply cross-field constraints as follows:</p>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
     .constraint(range::getFrom, "from", c -&gt; c.greaterThan(0))
     .constraint(range::getTo, "to", c -&gt; c.greaterThan(0))
-    .constraintOnTarget(range -&gt; range.to &gt; range.from, "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\".")
+    .constraintOnTarget(range -&gt; range.getTo() &gt; range.getFrom(), "to", "to.isGreaterThanFrom", "\"to\" must be greater than \"from\"")
     .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also create a custom constraint for cross-field validation as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class RangeConstraint implements CustomConstraint&lt;Range&gt; {
+    @Override
+    public String defaultMessageFormat() {
+        return "\"to\" must be greater than \"from\"";
+    }
+
+    @Override
+    public String messageKey() {
+        return "to.isGreaterThanFrom";
+    }
+
+    @Override
+    public boolean test(Range range) {
+        if (range == null) {
+            return true;
+        }
+        return range.getTo() &gt; range.getFrom();
+    }
+}
+
+RangeConstraint range = new RangeConstraint();
+Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt;of()
+        .constraintOnTarget(range, "to")
+        .build();</code></pre>
 </div>
 </div>
 </div>
@@ -298,7 +329,7 @@ It can be used when you want to apply cross-field constraints as follows:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 01:24:30 UTC
+Last updated 2021-06-15 01:31:59 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
