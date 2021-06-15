@@ -31,7 +31,7 @@
 <ul class="sectlevel2">
 <li><a href="#define-and-obtain-a-core-validator-instance">3.1. Define and obtain a core <code>Validator</code> instance</a></li>
 <li><a href="#constraints-on-nested-objects">3.2. Constraints on nested objects</a></li>
-<li><a href="#constraints-on-elements-in-a-list-map-array">3.3. Constraints on elements in a List / Map / Array</a></li>
+<li><a href="#constraints-on-elements-in-a-collection-map-array">3.3. Constraints on elements in a Collection / Map / Array</a></li>
 <li><a href="#applying-constraints-only-to-specific-groups">3.4. Applying constraints only to specific groups</a></li>
 <li><a href="#applying-constraints-only-to-specific-conditions">3.5. Applying constraints only to specific conditions</a></li>
 <li><a href="#creating-a-custom-constraint">3.6. Creating a custom constraint</a></li>
@@ -492,7 +492,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public record User(String name, String email, int age) {
 }
 
-Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
     .constraint(User::name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
     .constraint(User::email, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
     .constraint(User::age, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
@@ -567,8 +567,56 @@ Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
 </div>
 </div>
 <div class="sect2">
-<h3 id="constraints-on-elements-in-a-list-map-array"><a class="anchor" href="#constraints-on-elements-in-a-list-map-array"></a>3.3. Constraints on elements in a List / Map / Array</h3>
-
+<h3 id="constraints-on-elements-in-a-collection-map-array"><a class="anchor" href="#constraints-on-elements-in-a-collection-map-array"></a>3.3. Constraints on elements in a Collection / Map / Array</h3>
+<div class="paragraph">
+<p>You can use <code>forEach</code> method to apply constraints to each element of Collection / Map / Array.
+Like nested fields, You can delegate to the <code>Validator</code> for validating each element,
+or you can also define a set of constraints on the elements inside.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt;of()
+        .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
+        .build();
+Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+        .forEach(Histories::asList, "histories", historyValidator)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+        .forEach(Histories::asList, "histories",
+                b -&gt; b.constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1)))
+        .build();</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For the constraints on elements in a Map, only values can be applied out of the box.
+If you want to apply constraints on key in a map, you need to convert the map to key&#8217;s <code>Set</code> and regard it as a collection as follows</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ToCollection&lt;CodeMap, Collection&lt;String&gt;, String&gt; toCollection = codeMap -&gt; codeMap.asMap().keySet();
+Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+        .forEach(toCollection, "codeMap", b -&gt; b._string(String::toString, "value", c -&gt; c.notEmpty()))
+        .build();</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="applying-constraints-only-to-specific-groups"><a class="anchor" href="#applying-constraints-only-to-specific-groups"></a>3.4. Applying constraints only to specific groups</h3>
@@ -4114,7 +4162,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 02:25:59 UTC
+Last updated 2021-06-15 03:31:51 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

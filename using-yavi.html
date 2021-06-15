@@ -61,7 +61,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public record User(String name, String email, int age) {
 }
 
-Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
     .constraint(User::name, "name", c -&gt; c.notNull().lessThanOrEqual(20))
     .constraint(User::email, "email", c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
     .constraint(User::age, "age", c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
@@ -136,8 +136,56 @@ Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_constraints_on_elements_in_a_list_map_array">Constraints on elements in a List / Map / Array</h3>
-
+<h3 id="_constraints_on_elements_in_a_collection_map_array">Constraints on elements in a Collection / Map / Array</h3>
+<div class="paragraph">
+<p>You can use <code>forEach</code> method to apply constraints to each element of Collection / Map / Array.
+Like nested fields, You can delegate to the <code>Validator</code> for validating each element,
+or you can also define a set of constraints on the elements inside.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt;of()
+        .constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1))
+        .build();
+Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+        .forEach(Histories::asList, "histories", historyValidator)
+        .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt;of()
+        .forEach(Histories::asList, "histories",
+                b -&gt; b.constraint(History::getRevision, "revision", c -&gt; c.notNull().greaterThanOrEqual(1)))
+        .build();</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For the constraints on elements in a Map, only values can be applied out of the box.
+If you want to apply constraints on key in a map, you need to convert the map to key&#8217;s <code>Set</code> and regard it as a collection as follows</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ToCollection&lt;CodeMap, Collection&lt;String&gt;, String&gt; toCollection = codeMap -&gt; codeMap.asMap().keySet();
+Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+        .forEach(toCollection, "codeMap", b -&gt; b._string(String::toString, "value", c -&gt; c.notEmpty()))
+        .build();</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_applying_constraints_only_to_specific_groups">Applying constraints only to specific groups</h3>
@@ -440,7 +488,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 02:25:59 UTC
+Last updated 2021-06-15 03:31:51 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
