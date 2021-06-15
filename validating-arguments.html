@@ -31,12 +31,12 @@
 <p>A normal Validator, like Bean Validation, validates if the values are valid for the object to which the values are set, while the Arguments Validator validates that <strong>the arguments</strong> set to the Object are valid.</p>
 </div>
 <div class="paragraph">
-<p>Since an Object is created before validation in a normal Validator, there is a possibility of creating an Object in an incomplete state temporarily.
+<p>Since an object is created before validation in a normal Validator, there is a possibility of creating an object in an incomplete state temporarily.
 For example, even if the constraint of <code>notNull()</code> is imposed on the Validator side,
 if the <code>null</code> check is implemented in the constructor, this <code>null</code> check will work before the validation by Validator is executed.</p>
 </div>
 <div class="paragraph">
-<p>The Arguments Validator creates an Object after validation, so you don&#8217;t have to worry about an incomplete Object.</p>
+<p>The Arguments Validator <strong>creates an object after validation</strong>, so you don&#8217;t have to worry about an incomplete object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -184,7 +184,7 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 08:47:27 UTC
+Last updated 2021-06-15 08:49:09 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
