@@ -51,6 +51,7 @@
 <li><a href="#validating-arguments">5. Validating arguments</a>
 <ul class="sectlevel2">
 <li><a href="#define-and-obtain-an-arguments-validator-instance">5.1. Define and obtain an Arguments Validator instance</a></li>
+<li><a href="#validating-method-arguments">5.2. Validating method arguments</a></li>
 </ul>
 </li>
 <li><a href="#combining-validators">6. Combining validators</a></li>
@@ -1259,11 +1260,57 @@ if the <code>null</code> check is implemented in the constructor, this <code>nul
 </div>
 </div>
 <div class="paragraph">
-<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available..</p>
+<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available.</p>
 </div>
 <div class="paragraph">
 <p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
 Building the Arguments Validator is simplified by <a href="#combining-validators">Combining validators</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="validating-method-arguments"><a class="anchor" href="#validating-method-arguments"></a>5.2. Validating method arguments</h3>
+<div class="paragraph">
+<p>Arguments Validator can be used for validating method arguments as well.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">// From https://beanvalidation.org/
+public class UserService {
+    public User createUser(/* @Email */ String email,
+                         /* @NotNull */ String name) {
+        // ...
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The arguments for <code>UserService.createUser</code> in the above example can be validated as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">static final Arguments3Validator&lt;UserService, String, String, User&gt; validator = ArgumentsValidatorBuilder
+        .of(UserService::createUser) //
+        .builder(b -&gt; b //
+                ._object(Arguments1::arg1, "userService", c -&gt; c.notNull())
+                ._string(Arguments2::arg2, "email", c -&gt; c.email())
+                ._string(Arguments3::arg3, "name", c -&gt; c.notNull())) //
+        .build();
+
+UserService userService = new UserService();
+Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@example.com", "John Doe");</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>void</code> cannot be used as return type while <code>java.lang.Void</code> is available.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -4803,7 +4850,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 07:51:23 UTC
+Last updated 2021-06-15 07:56:07 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
