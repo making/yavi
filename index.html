@@ -5157,7 +5157,7 @@ public class UserForm {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">final Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt;of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt; of()
     .constraint(_UserFormMeta.NAME, c -&gt; c.notEmpty())
     .constraint(_UserFormMeta.EMAIL, c -&gt; c.notEmpty().email())
     .constraint(_UserFormMeta.AGE, c -&gt; c.greaterThan(0))
@@ -5759,7 +5759,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 13:54:18 UTC
+Last updated 2021-06-15 13:55:26 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
