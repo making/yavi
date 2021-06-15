@@ -26,8 +26,10 @@ A sequence of validations are executed while accumulating the results (<code>Con
 <div class="sect2">
 <h3 id="_validating_with_applicative_functor">Validating with Applicative Functor</h3>
 <div class="paragraph">
-<p><code>am.ik.yavi.fn.Validation&lt;E, T&gt;</code> class is the implementation of Applicative Functor. <code>E</code> is the type of error and <code>T</code> is the type of target object.
-It can be obtained by <code>am.ik.yavi.core.ApplicativeValidator</code> that can be converted from <code>Validator</code> by <code>applicative()</code> method.</p>
+<p><code>am.ik.yavi.fn.Validation&lt;E, T&gt;</code> class is the implementation of Applicative Functor. <code>E</code> is the type of error and <code>T</code> is the type of target object.</p>
+</div>
+<div class="paragraph">
+<p>It can be obtained by <code>am.ik.yavi.core.ApplicativeValidator</code> that can be converted from <code>Validator</code> by <code>applicative()</code> method.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -40,19 +42,21 @@ ApplicativeValidator&lt;User&gt; applicativeValidator = validator.applicative();
 </div>
 </div>
 <div class="paragraph">
-<p><code>am.ik.yavi.core.Validated&lt;T&gt;</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code> which is specialized for `Validator&#8217;s usage.</p>
+<p><code>am.ik.yavi.core.Validated&lt;T&gt;</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code> which is specialized for <code>Validator</code> 's usage.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ApplicativeValidator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
     .constraint(Email::value, "email", c -&gt; c.notBlank().email())
-    .build();
-Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .build()
+    .applicative();
+ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
     .constraint(PhoneNumber::value, "phoneNumber", c -&gt; c.notBlank().pattern("[0-9\\-]+"))
-    .build();
+    .build()
+    .applicative();
 
-Validated&lt;Email&gt; emailValidated = emailValidator.applicative().validate(email);
-Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);</code></pre>
+Validated&lt;Email&gt; emailValidated = emailValidator.validate(email);
+Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.validate(phoneNumber);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -63,7 +67,7 @@ Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.applica
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">if (emailValidated.isValid()) {
     Email email = emailValidated.value(); // throws NoSuchElementException if it is invalid
 } else {
-    ConstraintViolations violations = emailValidated.errors(); // throws NoSuchElementException if it is invalid
+    ConstraintViolations violations = emailValidated.errors(); // throws NoSuchElementException if it is valid
 }
 // or
 Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolationsException(violations));</code></pre>
@@ -74,7 +78,7 @@ Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolatio
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, contactInfo -&gt; HttpStatus.OK);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, email -&gt; HttpStatus.OK);</code></pre>
 </div>
 </div>
 </div>
@@ -112,7 +116,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 
 </div>
 <div class="sect2">
-<h3 id="_validating_the_source_object_before_building_a_target_object">Validating the source object before building a target object</h3>
+<h3 id="_validating_the_source_object_before_creating_a_target_object">Validating the source object before creating a target object</h3>
 
 </div>
 </div>
@@ -120,7 +124,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 06:04:00 UTC
+Last updated 2021-06-15 06:14:15 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
