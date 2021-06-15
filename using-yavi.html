@@ -38,6 +38,14 @@ boolean isValid = violations.isValid();
 violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 </div>
 </div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">TIP</dt>
+<dd>
+<p>YAVI aggregates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use <a href="#fail-fast-mode">Fail fast mode</a>.</p>
+</dd>
+</dl>
+</div>
 <div class="paragraph">
 <p>In order to avoid ambiguous type inferences, you can use explicit <code>_&lt;type&gt;</code> method per type instead of constraint as follows:</p>
 </div>
@@ -529,6 +537,37 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 </div>
 <div class="sect2">
+<h3 id="fail-fast-mode">Fail fast mode</h3>
+<div class="paragraph">
+<p>Using the fail fast mode, YAVI allows to return from the current validation as soon as the first constraint violation occurs.
+This can be useful for the validation of large object graphs where you are only interested in a quick check whether there is any constraint violation at all.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, "name", c -&gt; c.notNull()
+        .lessThanOrEqual(20))
+    .constraint(User::getEmail, "email", c -&gt; c.notNull()
+        .greaterThanOrEqual(5)
+        .lessThanOrEqual(50)
+        .email())
+    .constraint(User::getAge, "age", c -&gt; c.notNull()
+        .greaterThanOrEqual(0)
+        .lessThanOrEqual(200))
+    .failFast(true) // &lt;-- Enable the fail fast mode
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can switch an existing <code>Validator</code> to the fail fast mode as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; failFastValidator = validator.failFast(true);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_kotlin_support">Kotlin Support</h3>
 <div class="paragraph">
 <p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
@@ -572,7 +611,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-15 07:16:43 UTC
+Last updated 2021-06-15 07:30:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
