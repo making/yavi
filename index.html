@@ -179,6 +179,7 @@
 <li><a href="#integration-with-bindingresult-in-spring-mvc">9.1. Integration with <code>BindingResult</code> in Spring MVC</a></li>
 <li><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">9.2. Converting <code>ConstraintViolations</code> to the format to serialize as a response body</a></li>
 <li><a href="#integration-with-spring-webflux-fn">9.3. Integration with Spring WebFlux.fn</a></li>
+<li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a></li>
 </ul>
 </li>
 </ul>
@@ -5923,13 +5924,39 @@ YAVI was originally developed as a validator naturally fit with Spring WebFlux.f
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="integration-with-messagesource-in-spring-framework"><a class="anchor" href="#integration-with-messagesource-in-spring-framework"></a>9.4. Integration with <code>MessageSource</code> in Spring Framework</h3>
+<div class="paragraph">
+<p><code>am.ik.yavi.message.MessageSourceMessageFormatter</code> accepts the Functional Interface with the same arguments as Spring Framework&#8217;s <code>MessageSource#getMessage</code>.
+This allows you to delegate control of the message format of violation messages to Spring Framework.</p>
+</div>
+<div class="paragraph">
+<p><code>MessageSourceMessageFormatter</code> can be used as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(MessageSource messageSource) {
+        MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+        this.validator = ValidatorBuilder.&lt;CartItem&gt; of()
+            .constraints(...)
+            .messageFormatter(messageFormatter)
+            .build();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-15 15:08:38 UTC
+Last updated 2021-06-15 15:16:40 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
