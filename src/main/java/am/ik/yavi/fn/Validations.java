@@ -214,9 +214,8 @@ public class Validations {
 	@SuppressWarnings("unchecked")
 	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(Optional<T> value,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
-		return value
-				.map(t -> (Validation<E, Optional<U>>) mapper.apply(t)
-						.map(u -> Optional.of((U) u)))
+		return value.map(
+				t -> mapper.apply(t).bimap(es -> (List<E>) es, u -> Optional.of((U) u))) //
 				.orElse(Validation.success(Optional.empty()));
 	}
 

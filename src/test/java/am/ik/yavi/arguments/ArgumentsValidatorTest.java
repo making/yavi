@@ -319,8 +319,8 @@ public class ArgumentsValidatorTest {
 	void liftSetValid() {
 		Arguments1Validator<Iterable<String>, Set<PhoneNumber>> phoneNumberSetValidator = phoneNumberValidator
 				.liftSet();
-		List<String> input = Arrays.asList("012012345678", "012012348765",
-				"012012345679", "012012345678");
+		List<String> input = Arrays.asList("012012345678", "012012348765", "012012345679",
+				"012012345678");
 		Validated<Set<PhoneNumber>> actual = phoneNumberSetValidator.validate(input);
 
 		assertThat(actual.isValid()).isTrue();
