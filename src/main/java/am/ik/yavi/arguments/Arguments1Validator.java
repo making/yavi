@@ -52,11 +52,12 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * Convert {@link ValueValidator} instance into {@link Arguments1Validator}
 	 *
 	 * @param valueValidator value validator
+	 * @param <A1> class of argument1
 	 * @param <X> target class
 	 * @return arguments1 validator
 	 * @since 0.8.0
 	 */
-	static <X> Arguments1Validator<X, X> from(ValueValidator<X, X> valueValidator) {
+	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
 		return valueValidator::validate;
 	}
 
@@ -109,28 +110,28 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
 			Supplier<C> factory) {
-		return ArgumentsValidators.liftCollection(this, factory);
+		return Arguments1Validator.from(ValueValidator.super.liftCollection(factory));
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
-		return ArgumentsValidators.liftList(this);
+		return Arguments1Validator.from(ValueValidator.super.liftList());
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
-		return ArgumentsValidators.liftSet(this);
+		return Arguments1Validator.from(ValueValidator.super.liftSet());
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
-		return ArgumentsValidators.liftOptional(this);
+		return Arguments1Validator.from(ValueValidator.super.liftOptional());
 	}
 
 	/**

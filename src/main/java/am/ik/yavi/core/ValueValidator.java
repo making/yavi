@@ -15,8 +15,15 @@
  */
 package am.ik.yavi.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
 
@@ -83,5 +90,27 @@ public interface ValueValidator<T, X> {
 	default ValueValidator<T, X> indexed(int index) {
 		return (t, locale, constraintGroup) -> ValueValidator.this
 				.validate(t, locale, constraintGroup).indexed(index);
+	}
+
+	default <C extends Collection<X>> ValueValidator<Iterable<T>, C> liftCollection(
+			Supplier<C> factory) {
+		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values,
+				(v, index) -> this.indexed(index).validate(v, locale, constraintGroup),
+				factory);
+	}
+
+	default ValueValidator<Iterable<T>, List<X>> liftList() {
+		return this.liftCollection(ArrayList::new);
+	}
+
+	default ValueValidator<Iterable<T>, Set<X>> liftSet() {
+		// Since Index is attached to the name of ConstraintViolation,
+		// we need a consistent order. This is why we use LinkedHashSet.
+		return this.liftCollection(LinkedHashSet::new);
+	}
+
+	default ValueValidator<Optional<T>, Optional<X>> liftOptional() {
+		return (value, locale, constraintGroup) -> Validated.traverseOptional(value,
+				v -> this.validate(v, locale, constraintGroup));
 	}
 }
