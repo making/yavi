@@ -31,6 +31,10 @@ public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 	@Override
 	public boolean test(T t, ConstraintGroup constraintGroup) {
 		final N n = this.nested.apply(t);
+		if (n == null) {
+			return false;
+		}
+
 		return this.constraintCondition.test(n, constraintGroup);
 	}
 }
