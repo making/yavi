@@ -185,17 +185,28 @@ for i in `seq 1 ${n}`;do
  */
 package am.ik.yavi.arguments;
 
+$(if [ "${i}" != "1" ];then
+cat <<EOD
 import java.util.Locale;
 import java.util.function.Function;
 
 import am.ik.yavi.core.ConstraintGroup;
-$(if [ "${i}" != "1" ];then
-cat <<EOD
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validated;
 EOD
-fi)import am.ik.yavi.core.Validated;
+fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import am.ik.yavi.core.ConstraintGroup;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 EOD
@@ -337,6 +348,35 @@ cat <<EOD
 	default Arguments1Validator<A1, X> indexed(int index) {
 		return (a1, locale, constraintGroup) -> Arguments1Validator.this
 				.validate(a1, locale, constraintGroup).indexed(index);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+			Supplier<C> factory) {
+		return ArgumentsValidators.liftCollection(this, factory);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
+		return ArgumentsValidators.liftList(this);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
+		return ArgumentsValidators.liftSet(this);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
+		return ArgumentsValidators.liftOptional(this);
 	}
 EOD
 fi)
@@ -577,8 +617,14 @@ package am.ik.yavi.arguments;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.function.Function.identity;
 
@@ -622,11 +668,38 @@ $(for i in `seq 1 ${nn}`;do cat <<EOD
 EOD
 done)
 
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
+		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
+				index) -> validator.indexed(index).validate(v, locale, constraintGroup),
+				factory);
+	}
+
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
-		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values,
-				(v, index) -> validator.indexed(index).validate(v, locale,
-						constraintGroup));
+		return liftCollection(validator, ArrayList::new);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
+			ValueValidator<? super A1, ? extends R> validator) {
+		// Since Index is attached to the name of ConstraintViolation,
+		// we need a consistent order. This is why we use LinkedHashSet.
+		return liftCollection(validator, LinkedHashSet::new);
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
+			ValueValidator<? super A1, ? extends R> validator) {
+		return (value, locale, constraintGroup) -> Validated.traverseOptional(value,
+				v -> validator.validate(v, locale, constraintGroup));
 	}
 
 }

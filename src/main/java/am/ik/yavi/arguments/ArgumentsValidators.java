@@ -15,11 +15,15 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-
-import java.util.List;
-import java.util.function.Function;
 
 import static java.util.function.Function.identity;
 
@@ -339,10 +343,33 @@ public class ArgumentsValidators {
 		return traverse10(values, identity());
 	}
 
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+			ValueValidator<A1, R> validator, Supplier<C> factory) {
+		return Arguments1Validator.from(validator.liftCollection(factory));
+	}
+
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
-			ValueValidator<? super A1, ? extends R> validator) {
-		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
-				index) -> validator.indexed(index).validate(v, locale, constraintGroup));
+			ValueValidator<A1, R> validator) {
+		return Arguments1Validator.from(validator.liftList());
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
+			ValueValidator<A1, R> validator) {
+		return Arguments1Validator.from(validator.liftSet());
+	}
+
+	/**
+	 * @since 0.8.0
+	 */
+	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
+			ValueValidator<A1, R> validator) {
+		return Arguments1Validator.from(validator.liftOptional());
 	}
 
 }

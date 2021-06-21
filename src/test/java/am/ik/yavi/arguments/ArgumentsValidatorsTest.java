@@ -1,9 +1,12 @@
 package am.ik.yavi.arguments;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import am.ik.yavi.Address;
@@ -298,10 +301,15 @@ class ArgumentsValidatorsTest {
 		}
 	}
 
-	@Test
-	void liftListValid() {
-		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = ArgumentsValidators
-				.liftList(phoneNumberValidator);
+	static Stream<Arguments1Validator<Iterable<String>, List<PhoneNumber>>> phoneNumberListValidators() {
+		return Stream.of(ArgumentsValidators.liftList(phoneNumberValidator),
+				phoneNumberValidator.liftList());
+	}
+
+	@ParameterizedTest
+	@MethodSource("phoneNumberListValidators")
+	void liftListValid(
+			Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator) {
 		List<String> input = Arrays.asList("012012345678", "012012348765",
 				"012012345679");
 		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
@@ -312,10 +320,10 @@ class ArgumentsValidatorsTest {
 				new PhoneNumber("012012345679")));
 	}
 
-	@Test
-	void liftListInvalid() {
-		Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator = ArgumentsValidators
-				.liftList(phoneNumberValidator);
+	@ParameterizedTest
+	@MethodSource("phoneNumberListValidators")
+	void liftListInvalid(
+			Arguments1Validator<Iterable<String>, List<PhoneNumber>> phoneNumberListValidator) {
 		List<String> input = Arrays.asList("012012345678", "", "012");
 		Validated<List<PhoneNumber>> actual = phoneNumberListValidator.validate(input);
 
@@ -333,6 +341,87 @@ class ArgumentsValidatorsTest {
 		assertThat(actual.errors().get(2).messageKey())
 				.isEqualTo("container.greaterThanOrEqual");
 		assertThat(actual.errors().get(2).args()[0]).isEqualTo("phoneNumber[2]");
+	}
+
+	static Stream<Arguments1Validator<Iterable<String>, Set<PhoneNumber>>> phoneNumberSetValidators() {
+		return Stream.of(ArgumentsValidators.liftSet(phoneNumberValidator),
+				phoneNumberValidator.liftSet());
+	}
+
+	@ParameterizedTest
+	@MethodSource("phoneNumberSetValidators")
+	void liftSetValid(
+			Arguments1Validator<Iterable<String>, Set<PhoneNumber>> phoneNumberSetValidator) {
+		List<String> input = Arrays.asList("012012345678", "012012348765", "012012345679",
+				"012012345678");
+		Validated<Set<PhoneNumber>> actual = phoneNumberSetValidator.validate(input);
+
+		assertThat(actual.isValid()).isTrue();
+		assertThat(new ArrayList<>(actual.value())).isEqualTo(Arrays.asList(
+				new PhoneNumber("012012345678"), new PhoneNumber("012012348765"),
+				new PhoneNumber("012012345679")));
+	}
+
+	@ParameterizedTest
+	@MethodSource("phoneNumberSetValidators")
+	void liftSetInvalid(
+			Arguments1Validator<Iterable<String>, Set<PhoneNumber>> phoneNumberSetValidator) {
+		List<String> input = Arrays.asList("012012345678", "", "012", "012012345678");
+		Validated<Set<PhoneNumber>> actual = phoneNumberSetValidator.validate(input);
+
+		assertThat(actual.isValid()).isFalse();
+		assertThat(actual.errors()).hasSize(3);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber[1]");
+		assertThat(actual.errors().get(2).name()).isEqualTo("phoneNumber[2]");
+		assertThat(actual.errors().get(2).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(2).args()[0]).isEqualTo("phoneNumber[2]");
+	}
+
+	static Stream<Arguments1Validator<Optional<String>, Optional<PhoneNumber>>> phoneNumberOptionalValidators() {
+		return Stream.of(ArgumentsValidators.liftOptional(phoneNumberValidator),
+				phoneNumberValidator.liftOptional());
+	}
+
+	@ParameterizedTest
+	@MethodSource("phoneNumberOptionalValidators")
+	void liftOptionalValid(
+			Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator) {
+		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator
+				.validate(Optional.of("012012345678"));
+		assertThat(actual.isValid()).isTrue();
+		assertThat(actual.value())
+				.isEqualTo(Optional.of(new PhoneNumber("012012345678")));
+
+		Validated<Optional<PhoneNumber>> actual2 = phoneNumberOptionalValidator
+				.validate(Optional.empty());
+		assertThat(actual2.isValid()).isTrue();
+		assertThat(actual2.value()).isEqualTo(Optional.empty());
+	}
+
+	@ParameterizedTest
+	@MethodSource("phoneNumberOptionalValidators")
+	void liftOptionalInvalid(
+			Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator) {
+		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator
+				.validate(Optional.of(""));
+		assertThat(actual.isValid()).isFalse();
+		assertThat(actual.errors()).hasSize(2);
+		assertThat(actual.errors().get(0).name()).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(0).messageKey())
+				.isEqualTo("charSequence.notBlank");
+		assertThat(actual.errors().get(0).args()[0]).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(1).name()).isEqualTo("phoneNumber");
+		assertThat(actual.errors().get(1).messageKey())
+				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber");
 	}
 
 }
