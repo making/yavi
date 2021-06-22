@@ -100,17 +100,52 @@ public interface ValueValidator<T, X> {
 	}
 
 	default ValueValidator<Iterable<T>, List<X>> liftList() {
-		return this.liftCollection(ArrayList::new);
+		return ValueValidator.liftList(this);
 	}
 
 	default ValueValidator<Iterable<T>, Set<X>> liftSet() {
-		// Since Index is attached to the name of ConstraintViolation,
-		// we need a consistent order. This is why we use LinkedHashSet.
-		return this.liftCollection(LinkedHashSet::new);
+		return ValueValidator.liftSet(this);
 	}
 
 	default ValueValidator<Optional<T>, Optional<X>> liftOptional() {
+		return ValueValidator.liftOptional(this);
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	static <A1, R, C extends Collection<R>> ValueValidator<Iterable<A1>, C> liftCollection(
+			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
+		return (values, locale, constraintGroup) -> Validated.traverseIndexed(values, (v,
+				index) -> validator.indexed(index).validate(v, locale, constraintGroup),
+				factory);
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	static <A1, R> ValueValidator<Iterable<A1>, List<R>> liftList(
+			ValueValidator<? super A1, ? extends R> validator) {
+		return ValueValidator.liftCollection(validator, ArrayList::new);
+
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	static <A1, R> ValueValidator<Iterable<A1>, Set<R>> liftSet(
+			ValueValidator<? super A1, ? extends R> validator) {
+		// Since Index is attached to the name of ConstraintViolation,
+		// we need a consistent order. This is why we use LinkedHashSet.
+		return ValueValidator.liftCollection(validator, LinkedHashSet::new);
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	static <A1, R> ValueValidator<Optional<A1>, Optional<R>> liftOptional(
+			ValueValidator<? super A1, ? extends R> validator) {
 		return (value, locale, constraintGroup) -> Validated.traverseOptional(value,
-				v -> this.validate(v, locale, constraintGroup));
+				v -> validator.validate(v, locale, constraintGroup));
 	}
 }

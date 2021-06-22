@@ -347,29 +347,30 @@ public class ArgumentsValidators {
 	 * @since 0.8.0
 	 */
 	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
-			ValueValidator<A1, R> validator, Supplier<C> factory) {
-		return Arguments1Validator.from(validator.liftCollection(factory));
+			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
+		return Arguments1Validator
+				.from(ValueValidator.liftCollection(validator, factory));
 	}
 
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
-			ValueValidator<A1, R> validator) {
-		return Arguments1Validator.from(validator.liftList());
+			ValueValidator<? super A1, ? extends R> validator) {
+		return Arguments1Validator.from(ValueValidator.liftList(validator));
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
 	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
-			ValueValidator<A1, R> validator) {
-		return Arguments1Validator.from(validator.liftSet());
+			ValueValidator<? super A1, ? extends R> validator) {
+		return Arguments1Validator.from(ValueValidator.liftSet(validator));
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
 	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
-			ValueValidator<A1, R> validator) {
-		return Arguments1Validator.from(validator.liftOptional());
+			ValueValidator<? super A1, ? extends R> validator) {
+		return Arguments1Validator.from(ValueValidator.liftOptional(validator));
 	}
 
 }
