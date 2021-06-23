@@ -96,7 +96,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 </div>
 </div>
 <div class="paragraph">
-<p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are aggregated without shortcuts in the middle.</p>
+<p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are accumulated without shortcuts in the middle.</p>
 </div>
 <div class="paragraph">
 <p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ContraintViolation</code> s:</p>
@@ -155,7 +155,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-22 02:38:15 UTC
+Last updated 2021-06-23 12:14:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

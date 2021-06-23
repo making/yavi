@@ -13,7 +13,7 @@
 <div id="header">
 <h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Reference Documentation</h1>
 <div class="details">
-<span id="revnumber">version 0.8.0-SNAPSHOT</span>
+<span id="revnumber">version 0.8.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -529,7 +529,7 @@ violations.forEach(x -&gt; System.out.println(x.message()));</code></pre>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-YAVI aggregates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use "<a href="#fail-fast-mode">Fail fast mode</a>".
+YAVI accumulates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use "<a href="#fail-fast-mode">Fail fast mode</a>".
 </td>
 </tr>
 </table>
@@ -1200,7 +1200,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 </div>
 </div>
 <div class="paragraph">
-<p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are aggregated without shortcuts in the middle.</p>
+<p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are accumulated without shortcuts in the middle.</p>
 </div>
 <div class="paragraph">
 <p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ContraintViolation</code> s:</p>
@@ -5795,7 +5795,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
     ConstraintViolations violations = validator.validate(userForm);
     if (!violations.isValid()) {
-        violations.apply(BindingResult::rejectValue);
+        violations.apply(bindingResult::rejectValue);
         return "userForm";
     }
     // ...
@@ -6051,8 +6051,8 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.8.0-SNAPSHOT<br>
-Last updated 2021-06-22 02:38:15 UTC
+Version 0.8.0<br>
+Last updated 2021-06-23 12:14:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
