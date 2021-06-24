@@ -55,7 +55,7 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
     return validator.applicative()
         .validate(userForm)
         .fold(violations -&gt; {
-            ConstraintViolations.of(violations).apply(BindingResult::rejectValue);
+            ConstraintViolations.of(violations).apply(bindingResult::rejectValue);
             return "userForm";
         }, form -&gt; {
             // ...
@@ -72,6 +72,18 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 </td>
 <td class="content">
 <code>List&lt;ContraintViolation&gt;</code> is passed to the function of the first argument of <code>Validated#fold</code> instead of <code>ConstraintViolations</code>. You can convert the <code>List&lt;ContraintViolation&gt;</code> to <code>ConstraintViolations</code> by using the <code>ConstraintViolations#of</code> method.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<a href="https://github.com/making/demo-spring-mvc-yavi">https://github.com/making/demo-spring-mvc-yavi</a> is a full example.
 </td>
 </tr>
 </table>
@@ -291,7 +303,7 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-24 04:31:26 UTC
+Last updated 2021-06-24 07:10:24 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
