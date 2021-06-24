@@ -30,24 +30,67 @@ public final class CharSequencePasswordPoliciesBuilder<T, E extends CharSequence
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public CharSequencePasswordPoliciesBuilder<T, E> uppercase() {
-		return super.required((PasswordPolicy<E>) PasswordPolicy.UPPERCASE);
+		return this.uppercase(1);
 	}
 
+	/**
+	 * @since 0.8.1
+	 */
 	@SuppressWarnings("unchecked")
+	public CharSequencePasswordPoliciesBuilder<T, E> uppercase(int count) {
+		return super.required((PasswordPolicy<E>) PasswordPolicy.UPPERCASE.count(count));
+	}
+
 	public CharSequencePasswordPoliciesBuilder<T, E> lowercase() {
-		return super.required((PasswordPolicy<E>) PasswordPolicy.LOWERCASE);
+		return this.lowercase(1);
 	}
 
+	/**
+	 * @since 0.8.1
+	 */
 	@SuppressWarnings("unchecked")
+	public CharSequencePasswordPoliciesBuilder<T, E> lowercase(int count) {
+		return super.required((PasswordPolicy<E>) PasswordPolicy.LOWERCASE.count(count));
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	public CharSequencePasswordPoliciesBuilder<T, E> alphabets() {
+		return this.alphabets(1);
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	@SuppressWarnings("unchecked")
+	public CharSequencePasswordPoliciesBuilder<T, E> alphabets(int count) {
+		return super.required((PasswordPolicy<E>) PasswordPolicy.ALPHABETS.count(count));
+	}
+
 	public CharSequencePasswordPoliciesBuilder<T, E> numbers() {
-		return super.required((PasswordPolicy<E>) PasswordPolicy.NUMBERS);
+		return this.numbers(1);
 	}
 
+	/**
+	 * @since 0.8.1
+	 */
 	@SuppressWarnings("unchecked")
+	public CharSequencePasswordPoliciesBuilder<T, E> numbers(int count) {
+		return super.required((PasswordPolicy<E>) PasswordPolicy.NUMBERS.count(count));
+	}
+
 	public CharSequencePasswordPoliciesBuilder<T, E> symbols() {
-		return super.required((PasswordPolicy<E>) PasswordPolicy.SYMBOLS);
+		return this.symbols(1);
+	}
+
+	/**
+	 * @since 0.8.1
+	 */
+	@SuppressWarnings("unchecked")
+	public CharSequencePasswordPoliciesBuilder<T, E> symbols(int count) {
+		return super.required((PasswordPolicy<E>) PasswordPolicy.SYMBOLS.count(count));
 	}
 
 	public List<ConstraintPredicate<E>> strong() {

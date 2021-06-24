@@ -56,6 +56,19 @@ public class CharSequencePasswordConstraintTest {
 	}
 
 	@ParameterizedTest
+	@ValueSource(strings = { "abc", "ab1", "ab1!" })
+	void invalidPassword_uppercase_rename(String input) {
+		final Validator<String> validator = buildValidator(c -> c
+				.password(policies -> policies.required(UPPERCASE.name("大文字")).build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
+		assertThat(violations.get(0).args()).hasSize(3);
+		assertThat(violations.get(0).args()[1]).isEqualTo("大文字");
+	}
+
+	@ParameterizedTest
 	@ValueSource(strings = { "abcd", "A12b", "Ab12#!" })
 	void validPassword_lowercase(String input) {
 		final Validator<String> validator = buildValidator(
@@ -75,6 +88,28 @@ public class CharSequencePasswordConstraintTest {
 		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("Lowercase");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "abcd", "A12b", "Ab12#!", "ABC", "AB1", "AB1!" })
+	void validPassword_alphabet(String input) {
+		final Validator<String> validator = buildValidator(
+				c -> c.password(policies -> policies.alphabets().build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "123!", "123", "@!" })
+	void invalidPassword_alphabet(String input) {
+		final Validator<String> validator = buildValidator(
+				c -> c.password(policies -> policies.alphabets().build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
+		assertThat(violations.get(0).args()).hasSize(3);
+		assertThat(violations.get(0).args()[1]).isEqualTo("Alphabets");
 	}
 
 	@ParameterizedTest
@@ -296,6 +331,41 @@ public class CharSequencePasswordConstraintTest {
 		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
 		assertThat(violations.get(0).args()).hasSize(3);
 		assertThat(violations.get(0).args()[1]).isEqualTo("PredictableWords");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "12abc", "12ABC", "12aBc" })
+	void valid_count(String input) {
+		final Validator<String> validator = buildValidator(
+				c -> c.password(policies -> policies.numbers(2).alphabets(3).build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "12ab", "123aB" })
+	void invalid_alphabets_count(String input) {
+		final Validator<String> validator = buildValidator(
+				c -> c.password(policies -> policies.numbers(2).alphabets(3).build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
+		assertThat(violations.get(0).args()).hasSize(3);
+		assertThat(violations.get(0).args()[1]).isEqualTo("Alphabets");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1aBc", "abC!" })
+	void invalid_numbers_count(String input) {
+		final Validator<String> validator = buildValidator(
+				c -> c.password(policies -> policies.numbers(2).alphabets(3).build()));
+		final ConstraintViolations violations = validator.validate(input);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).messageKey()).isEqualTo("password.required");
+		assertThat(violations.get(0).args()).hasSize(3);
+		assertThat(violations.get(0).args()[1]).isEqualTo("Numbers");
 	}
 
 	static class PredictableWordsPasswordPolicy implements PasswordPolicy<String> {
