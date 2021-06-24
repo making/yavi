@@ -172,8 +172,13 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators.liftList(emailValidator);
-Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
+// or
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p><code>liftSet()</code>, <code>listCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
 </div>
 <div class="paragraph">
 <p>These "small Validators" can be very powerful parts by using the Validator combinators described in "<a href="#combining-validators">[combining-validators]</a>".</p>
@@ -184,7 +189,7 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(Li
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-23 12:14:52 UTC
+Last updated 2021-06-24 04:31:26 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

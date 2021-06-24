@@ -738,12 +738,29 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#LOWERCASE</code></p>
 </li>
 <li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#ALPHABETS</code></p>
+</li>
+<li>
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#NUMBERS</code></p>
 </li>
 <li>
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#SYMBOLS</code></p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>You can specify the count of the pattern as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
+		.constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
+				.uppercase(2) // at least 2 upper case characters are required
+				.lowercase(2) // at least 2 lower case characters are required
+				// or .required(PasswordPolicy.UPPERCASE.count(2), PasswordPolicy.LOWERCASE.count(2))
+				.build()))
+		.build();</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>You can define a custom password policy as bellow:</p>
@@ -3529,7 +3546,7 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-23 12:14:52 UTC
+Last updated 2021-06-24 04:31:26 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

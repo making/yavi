@@ -13,7 +13,7 @@
 <div id="header">
 <h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Reference Documentation</h1>
 <div class="details">
-<span id="revnumber">version 0.8.0</span>
+<span id="revnumber">version 0.8.1</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -307,7 +307,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
     &lt;artifactId&gt;yavi&lt;/artifactId&gt;
-    &lt;version&gt;0.8.0&lt;/version&gt;
+    &lt;version&gt;0.8.1&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -1415,8 +1415,13 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators.liftList(emailValidator);
-Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
+// or
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p><code>liftSet()</code>, <code>listCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
 </div>
 <div class="paragraph">
 <p>These "small Validators" can be very powerful parts by using the Validator combinators described in "<a href="#combining-validators">Combining validators</a>".</p>
@@ -2308,12 +2313,29 @@ ConstraintViolations violations = validator.validate(new Password("")); // Inval
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#LOWERCASE</code></p>
 </li>
 <li>
+<p><code>am.ik.yavi.constraint.password.PasswordPolicy#ALPHABETS</code></p>
+</li>
+<li>
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#NUMBERS</code></p>
 </li>
 <li>
 <p><code>am.ik.yavi.constraint.password.PasswordPolicy#SYMBOLS</code></p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>You can specify the count of the pattern as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
+        .constraint(Password::value, "password", c -&gt; c.password(policy -&gt; policy
+                .uppercase(2) // at least 2 upper case characters are required
+                .lowercase(2) // at least 2 lower case characters are required
+                // or .required(PasswordPolicy.UPPERCASE.count(2), PasswordPolicy.LOWERCASE.count(2))
+                .build()))
+        .build();</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>You can define a custom password policy as bellow:</p>
@@ -6051,8 +6073,8 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.8.0<br>
-Last updated 2021-06-23 12:14:52 UTC
+Version 0.8.1<br>
+Last updated 2021-06-24 04:31:26 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
