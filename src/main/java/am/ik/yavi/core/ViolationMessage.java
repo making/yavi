@@ -102,8 +102,7 @@ public interface ViolationMessage {
 				"\"{1}\" is/are not allowed for \"{0}\""), //
 		CODE_POINTS_NOT_INCLUDED("codePoints.asBlackList",
 				"\"{1}\" is/are not allowed for \"{0}\""), //
-		PASSWORD_REQUIRED("password.required", 
-				"\"{0}\" must meet {1} policy"), //
+		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy"), //
 		PASSWORD_OPTIONAL("password.optional",
 				"\"{0}\" must meet at least {1} policies from {2}") //
 		;
