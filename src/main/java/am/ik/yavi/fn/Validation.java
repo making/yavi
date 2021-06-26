@@ -85,10 +85,20 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	/**
+	 * Deprecated in favor of {@link #mapError(Function)}
 	 * @since 0.7.0
 	 */
-	@SuppressWarnings("unchecked")
+	@Deprecated
 	public <E2> Validation<E2, T> mapErrorsF(
+			Function<? super E, ? extends E2> errorMapper) {
+		return this.mapError(errorMapper);
+	}
+
+	/**
+	 * @since 0.8.2
+	 */
+	@SuppressWarnings("unchecked")
+	public <E2> Validation<E2, T> mapError(
 			Function<? super E, ? extends E2> errorMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation

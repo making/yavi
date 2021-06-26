@@ -74,7 +74,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @since 0.7.0
 	 */
 	public Validated<T> indexed(int index) {
-		return Validated.of(this.mapErrorsF(violation -> violation.indexed(index)));
+		return Validated.of(this.mapError(violation -> violation.indexed(index)));
 	}
 
 	/**
