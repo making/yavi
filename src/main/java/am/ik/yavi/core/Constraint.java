@@ -62,6 +62,15 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 		return this.cast();
 	}
 
+	/**
+	 * @since 0.8.2
+	 */
+	default C predicate(Predicate<V> predicate, String messageKey,
+			String defaultMessageFormat) {
+		return this.predicate(predicate,
+				ViolationMessage.of(messageKey, defaultMessageFormat));
+	}
+
 	default C predicate(CustomConstraint<V> constraint) {
 		return this.predicate(constraint, constraint);
 	}
@@ -71,6 +80,15 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				() -> new Object[] {}, NullAs.INVALID));
 		return this.cast();
+	}
+
+	/**
+	 * @since 0.8.2
+	 */
+	default C predicateNullable(Predicate<V> predicate, String messageKey,
+			String defaultMessageFormat) {
+		return this.predicateNullable(predicate,
+				ViolationMessage.of(messageKey, defaultMessageFormat));
 	}
 
 	default C predicateNullable(CustomConstraint<V> constraint) {

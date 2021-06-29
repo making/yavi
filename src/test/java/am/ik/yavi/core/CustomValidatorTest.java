@@ -32,8 +32,7 @@ public class CustomValidatorTest {
 		Validator<Book> validator = ValidatorBuilder.<Book> of() //
 				.constraint(Book::isbn, "isbn", c -> c.notNull() //
 						.predicate(CustomValidatorTest::isISBN13, //
-								ViolationMessage.of("custom.isbn13",
-										"\"{0}\" must be ISBN13 format")))
+								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
 				.build();
 		{
 			ConstraintViolations violations = validator
@@ -92,11 +91,9 @@ public class CustomValidatorTest {
 	@Test
 	public void predicateNullable() {
 		Validator<Book> validator = ValidatorBuilder.<Book> of() //
-				.constraint(
-						Book::isbn, "isbn", c -> c
-								.predicateNullable(v -> v != null && isISBN13(v), //
-										ViolationMessage.of("custom.isbn13",
-												"\"{0}\" must be ISBN13 format")))
+				.constraint(Book::isbn, "isbn",
+						c -> c.predicateNullable(v -> v != null && isISBN13(v), //
+								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
 				.build();
 		{
 			ConstraintViolations violations = validator
@@ -128,8 +125,7 @@ public class CustomValidatorTest {
 						.predicate(r -> {
 							Range range = Range.class.cast(r);
 							return range.getFrom() < range.getTo();
-						}, ViolationMessage.of("range.cross",
-								"\"from\" must be less than \"to\"")))
+						}, "range.cross", "\"from\" must be less than \"to\""))
 				.build();
 		{
 			Range range = new Range(0, 10);
