@@ -269,6 +269,7 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 
 Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
     .constraintOnCondition(Group.CREATE.toCondition(), b -&gt; b.constraint(User::getId, "id", c -&gt; c.isNull()))
+    .constraintOnCondition(Group.UPDATE.toCondition(), b -&gt; b.constraint(User::getId, "id", c -&gt; c.notNull()))
     .build();</code></pre>
 </div>
 </div>
@@ -287,6 +288,7 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
     .constraintOnGroup(Group.CREATE, b -&gt; b.constraint(User::getId, "id", c -&gt; c.isNull()))
+    .constraintOnGroup(Group.UPDATE, b -&gt; b.constraint(User::getId, "id", c -&gt; c.notNull()))
     .build();</code></pre>
 </div>
 </div>
@@ -636,7 +638,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-24 07:10:24 UTC
+Last updated 2021-06-29 14:18:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
