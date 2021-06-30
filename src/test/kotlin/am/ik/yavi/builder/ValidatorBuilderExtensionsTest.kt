@@ -55,7 +55,7 @@ data class DemoForEachArray(val x: Array<DemoString>)
 data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
 
 class ValidatorBuilderExtensionsTest {
-    private val demoStringValidator = ValidatorKt<DemoString> {
+    private val demoStringValidator = validator<DemoString> {
         DemoString::x {
             greaterThan(1)
             lessThan(5)
@@ -64,7 +64,7 @@ class ValidatorBuilderExtensionsTest {
 
     @Test
     fun konstraintOnCharSequence() {
-        val validator = ValidatorKt<DemoString> {
+        val validator = validator<DemoString> {
             DemoString::x {
                 notEmpty()
                 lessThan(5)

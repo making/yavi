@@ -19,12 +19,7 @@ import am.ik.yavi.constraint.*
 import am.ik.yavi.constraint.array.*
 import am.ik.yavi.core.ConstraintCondition
 import am.ik.yavi.core.ConstraintGroup
-import am.ik.yavi.core.ConstraintPredicates
-import am.ik.yavi.core.CollectionValidator
-import am.ik.yavi.core.ValidatorSubset
 import am.ik.yavi.core.Validator
-import am.ik.yavi.fn.Pair
-import am.ik.yavi.message.MessageFormatter
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.reflect.KProperty1
@@ -184,43 +179,12 @@ fun <T> ValidatorBuilder<T>.konstraintOnCondition(condition: ConstraintCondition
 fun <T> ValidatorBuilder<T>.konstraintOnGroup(group: ConstraintGroup, block: ValidatorBuilder<T>.() -> Unit): ValidatorBuilder<T> =
         this.constraintOnCondition(group.toCondition(), ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
 
-/**
- * Note: unfortunately it seems impossible to add an extension function for the companion object for a Java class.
- * So the only way is to extend the Java class with a custom Kotlin class (or alternatively migrate the Java class
- * to Kotlin..?)
- *  `operator fun <T> Validator<T>.Companion.invoke(init: ValidatorBuilder<T>.() -> Unit): Validator<T>`
- * see
- * - https://riptutorial.com/kotlin/example/6427/extension-functions-to-companion-objects--appearance-of-static-functions-
- * - https://youtrack.jetbrains.com/issue/KT-11968
- */
-class ValidatorKt<T> : Validator<T> {
-        constructor(
-                messageKeySeparator: String,
-                predicatesList: MutableList<ConstraintPredicates<T, *>>,
-                collectionValidators: MutableList<CollectionValidator<T, *, *>>,
-                conditionalValidators: MutableList<Pair<ConstraintCondition<T>, ValidatorSubset<T>>>,
-                messageFormatter: MessageFormatter,
-                failFast: Boolean,
-        ) : super(
-                messageKeySeparator,
-                predicatesList,
-                collectionValidators,
-                conditionalValidators,
-                messageFormatter,
-                failFast
-        )
-
-        companion object {
-                operator fun <T> invoke(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
-                        val builder = ValidatorBuilderKt<T>()
-                        return builder.apply(init).build()
-                }
-        }
+inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
+        val builder = ValidatorBuilderKt<T>()
+        return builder.apply(init).build()
 }
 
-class ValidatorBuilderKt<T> : ValidatorBuilder<T> {
-        constructor() : super()
-
+class ValidatorBuilderKt<T> : ValidatorBuilder<T>() {
         operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String?>.() -> Unit) {
                 constraint(this, this.name) { it.apply(block) }
         }
