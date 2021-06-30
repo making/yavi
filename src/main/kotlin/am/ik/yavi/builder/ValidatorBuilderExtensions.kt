@@ -185,7 +185,24 @@ inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
 }
 
 class ValidatorBuilderKt<T> : ValidatorBuilder<T>() {
-        operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String?>.() -> Unit) {
+
+        /** Q: this will be required for each type, right? */
+        operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String?>.() -> Unit) =
                 constraint(this, this.name) { it.apply(block) }
+
+        /** Q: this will be required for each type, right? */
+        infix fun KProperty1<T, String?>.required(block: CharSequenceConstraint<T, String?>.() -> Unit) =
+                constraint(this, this.name) { it.notNull().apply(block) }
+
+        infix fun <L: Collection<E>?, E> KProperty1<T, L?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) {
+                TODO()
+                /** can't get following to work due to cumbersome inheritance setup of ValidatorBuilderKt :-( */
+                // forEach(this, this.name) { it.apply(block) }
+        }
+
+        infix fun <N> KProperty1<T, N?>.nest(block: ValidatorBuilderKt<N>.() -> Unit) {
+                // TODO()
+                /** also not possible to cast... :-(( */
+                // nest(this, this.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
         }
 }

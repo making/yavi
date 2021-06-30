@@ -25,6 +25,7 @@ import java.math.BigInteger
 
 
 data class DemoString(var x: String?)
+data class DemoStringNotNullable(var x: String)
 data class DemoBoolean(var x: Boolean?)
 data class DemoInt(var x: Int?)
 data class DemoChar(val x: Char?)
@@ -75,15 +76,118 @@ class ValidatorBuilderExtensionsTest {
         var violations = validator.validate(demo)
         Assertions.assertThat(violations.isValid).isTrue()
 
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
         demo = DemoString("foofoo")
         violations = validator.validate(demo)
         Assertions.assertThat(violations.isValid).isFalse()
         Assertions.assertThat(violations.size).isEqualTo(1)
-        val violation = violations[0]
+        violation = violations[0]
         Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
         Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
     }
 
+    @Test
+    fun konstraintOnCharSequenceIfPresent() {
+        val validator = validator<DemoString> {
+            DemoString::x {
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoString("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
+    fun konstraintOnCharSequenceNotNullable() {
+        val validator = validator<DemoStringNotNullable> {
+            DemoStringNotNullable::x {
+                notEmpty()
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoStringNotNullable("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoStringNotNullable("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoStringNotNullable("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
+    fun konstraintOnCharSequenceRequired() {
+        val validator = validator<DemoString> {
+            DemoString::x required {
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoString("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be null""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("object.notNull")
+
+        demo = DemoString("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
 
     @Test
     fun konstraintOnBoolean() {
@@ -467,11 +571,11 @@ class ValidatorBuilderExtensionsTest {
 
     @Test
     fun konstraintNested() {
-        val validator = ValidatorBuilder.of<DemoNested>()
-                .nest(DemoNested::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+        val validator = validator<DemoNested> {
+            DemoNested::x nest {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoNested(DemoString("foo"))
         var violations = validator.validate(demo)
@@ -555,11 +659,14 @@ class ValidatorBuilderExtensionsTest {
 
     @Test
     fun konstraintForEachCollection() {
-        val validator = ValidatorBuilder.of<DemoForEachCollection>()
-                .forEach(DemoForEachCollection::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
+        val validator = validator<DemoForEachCollection> {
+            DemoForEachCollection::x forEach {
+                DemoString::x {
+                    greaterThan(1)
+                    lessThan(5)
                 }
-                .build()
+            }
+        }
 
         var demo = DemoForEachCollection(listOf(DemoString("foo")))
         var violations = validator.validate(demo)
