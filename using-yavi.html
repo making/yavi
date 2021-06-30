@@ -130,10 +130,10 @@ You can delegate to the <code>Validator</code> for the nested field, or you can 
 }
 
 Validator&lt;Country&gt; countryValidator = ValidatorBuilder.&lt;Country&gt; of()
-    .nest(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20))
+    .constraint(Country::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(20))
     .build();
 Validator&lt;City&gt; cityValidator = ValidatorBuilder.&lt;City&gt; of()
-    .nest(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100))
+    .constraint(City::getName, "name", c -&gt; c.notBlank().lessThanOrEqual(100))
     .build();
 
 Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
@@ -638,7 +638,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-29 14:18:52 UTC
+Last updated 2021-06-30 01:34:19 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
