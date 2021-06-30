@@ -592,9 +592,9 @@ class ValidatorBuilderExtensionsTest {
 
     @Test
     fun konstraintNestedValidator() {
-        val validator = ValidatorBuilder.of<DemoNested>()
-                .nest(DemoNested::x, demoStringValidator)
-                .build()
+        val validator = validator<DemoNested> {
+            DemoNested::x nest demoStringValidator
+        }
 
         var demo = DemoNested(DemoString("foo"))
         var violations = validator.validate(demo)

@@ -205,4 +205,6 @@ class ValidatorBuilderKt<T> : ValidatorBuilder<T>() {
                 /** also not possible to cast... :-(( */
                 // nest(this, this.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
         }
+
+        infix fun <N> KProperty1<T, N?>.nest(validator: Validator<N>): ValidatorBuilder<T> = TODO()
 }
