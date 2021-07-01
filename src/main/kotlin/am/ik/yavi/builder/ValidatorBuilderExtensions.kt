@@ -180,31 +180,30 @@ fun <T> ValidatorBuilder<T>.konstraintOnGroup(group: ConstraintGroup, block: Val
         this.constraintOnCondition(group.toCondition(), ValidatorBuilder.ValidatorBuilderConverter { it.apply(block) })
 
 inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
-        val builder = ValidatorBuilderKt<T>()
+        val builder = ValidatorBuilderKt<T>(ValidatorBuilder())
         return builder.apply(init).build()
 }
 
-class ValidatorBuilderKt<T> : ValidatorBuilder<T>() {
+class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
+
+        fun build(): Validator<T> {
+                return validatorBuilder.build()
+        }
 
         /** Q: this will be required for each type, right? */
         operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String?>.() -> Unit) =
-                constraint(this, this.name) { it.apply(block) }
+                validatorBuilder.constraint(this, this.name) { it.apply(block) }
 
         /** Q: this will be required for each type, right? */
         infix fun KProperty1<T, String?>.required(block: CharSequenceConstraint<T, String?>.() -> Unit) =
-                constraint(this, this.name) { it.notNull().apply(block) }
+                validatorBuilder.constraint(this, this.name) { it.notNull().apply(block) }
 
-        infix fun <L: Collection<E>?, E> KProperty1<T, L?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) {
-                TODO()
-                /** can't get following to work due to cumbersome inheritance setup of ValidatorBuilderKt :-( */
-                // forEach(this, this.name) { it.apply(block) }
-        }
+        infix fun <L: Collection<E>?, E> KProperty1<T, L?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) =
+                validatorBuilder.forEach(this, this.name) { ValidatorBuilderKt(it).apply(block).validatorBuilder }
 
-        infix fun <N> KProperty1<T, N?>.nest(block: ValidatorBuilderKt<N>.() -> Unit) {
-                // TODO()
-                /** also not possible to cast... :-(( */
-                // nest(this, this.name) { it.apply(block as ValidatorBuilder<N?>.() -> Unit) }
-        }
+        infix fun <N> KProperty1<T, N>.nest(block: ValidatorBuilderKt<N>.() -> Unit) =
+                validatorBuilder.nest(this, this.name) { ValidatorBuilderKt(it).apply(block).validatorBuilder }
 
-        infix fun <N> KProperty1<T, N?>.nest(validator: Validator<N>): ValidatorBuilder<T> = TODO()
+        infix fun <N> KProperty1<T, N?>.nest(validator: Validator<N>) =
+                validatorBuilder.nest(this, this.name, validator)
 }
