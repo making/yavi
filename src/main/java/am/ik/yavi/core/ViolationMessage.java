@@ -95,7 +95,8 @@ public interface ViolationMessage {
 		BYTE_SIZE_FIXED_SIZE("byteSize.fixedSize",
 				"The byte size of \"{0}\" must be {1}. The given size is {2}"), //
 		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}"), //
-		COLLECTION_UNIQUE("collection.unique", "\"{0}\" must be unique. {1} is/are duplicated."), //
+		COLLECTION_UNIQUE("collection.unique",
+				"\"{0}\" must be unique. {1} is/are duplicated."), //
 		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
 		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //
 		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}"), //

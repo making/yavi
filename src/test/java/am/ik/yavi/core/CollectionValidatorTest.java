@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CollectionValidatorTest extends AbstractCollectionValidatorTest {
-	Validator<Address> addressValidator = ValidatorBuilder.<Address>of()
+	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
@@ -104,8 +104,7 @@ class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	void unique() throws Exception {
 		Foo foo = new Foo(Arrays.asList("a", "b", "c", "d", "e"));
 		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
-				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique())
-				.build();
+				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique()).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isTrue();
 	}
@@ -114,12 +113,12 @@ class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	void notUnique() throws Exception {
 		Foo foo = new Foo(Arrays.asList("a", "b", "c", "b", "c"));
 		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
-				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique())
-				.build();
+				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique()).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"texts\" must be unique. [b, c] is/are duplicated.");
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"texts\" must be unique. [b, c] is/are duplicated.");
 	}
 
 	@Override

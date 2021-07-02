@@ -49,26 +49,24 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	 * @since 0.8.3
 	 */
 	public CollectionConstraint<T, L, E> unique() {
-		this.predicates().add(ConstraintPredicate.withViolatedValue(
-				collection -> {
-					final List<E> duplicates = new ArrayList<>();
-					Set<E> uniqElements = new HashSet<>(collection.size());
-					for (E element : collection) {
-						if (uniqElements.contains(element)) {
-							duplicates.add(element);
-						}
-						else {
-							uniqElements.add(element);
-						}
-					}
-					if (duplicates.isEmpty()) {
-						return Optional.empty();
-					}
-					else {
-						return Optional.of(new ViolatedValue(duplicates));
-					}
-				},
-				COLLECTION_UNIQUE, () -> new Object[] {}, VALID));
+		this.predicates().add(ConstraintPredicate.withViolatedValue(collection -> {
+			final List<E> duplicates = new ArrayList<>();
+			final Set<E> uniqElements = new HashSet<>(collection.size());
+			for (E element : collection) {
+				if (uniqElements.contains(element)) {
+					duplicates.add(element);
+				}
+				else {
+					uniqElements.add(element);
+				}
+			}
+			if (duplicates.isEmpty()) {
+				return Optional.empty();
+			}
+			else {
+				return Optional.of(new ViolatedValue(duplicates));
+			}
+		}, COLLECTION_UNIQUE, () -> new Object[] {}, VALID));
 		return this;
 	}
 
