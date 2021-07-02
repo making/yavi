@@ -17,7 +17,7 @@ package am.ik.yavi.constraint;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -51,7 +51,7 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	public CollectionConstraint<T, L, E> unique() {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(collection -> {
 			final List<E> duplicates = new ArrayList<>();
-			final Set<E> uniqElements = new HashSet<>(collection.size());
+			final Set<E> uniqElements = new LinkedHashSet<>(collection.size());
 			for (E element : collection) {
 				if (uniqElements.contains(element)) {
 					duplicates.add(element);
