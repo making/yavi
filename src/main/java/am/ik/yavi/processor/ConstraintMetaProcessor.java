@@ -37,7 +37,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 
@@ -47,14 +46,6 @@ import static java.util.stream.Collectors.toList;
 import static javax.lang.model.element.ElementKind.CLASS;
 import static javax.lang.model.element.ElementKind.METHOD;
 import static javax.lang.model.element.ElementKind.PARAMETER;
-import static javax.lang.model.type.TypeKind.BOOLEAN;
-import static javax.lang.model.type.TypeKind.BYTE;
-import static javax.lang.model.type.TypeKind.CHAR;
-import static javax.lang.model.type.TypeKind.DOUBLE;
-import static javax.lang.model.type.TypeKind.FLOAT;
-import static javax.lang.model.type.TypeKind.INT;
-import static javax.lang.model.type.TypeKind.LONG;
-import static javax.lang.model.type.TypeKind.SHORT;
 
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.meta.ConstraintArguments;
@@ -124,12 +115,13 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			String className = element.getEnclosingElement().toString();
 			if (element.getKind() == METHOD) {
 				parameters.add(0, element.getEnclosingElement());
-				className = className
-						+ beanUpperCamel(element.getSimpleName().toString());
+				className = className + ProcessorUtils
+						.beanUpperCamel(element.getSimpleName().toString());
 			}
 			final String argumentsClass = "am.ik.yavi.arguments.Arguments"
-					+ parameters.size() + "<" + parameters.stream()
-							.map(x -> type(x.asType())).collect(Collectors.joining(", "))
+					+ parameters.size() + "<"
+					+ parameters.stream().map(x -> ProcessorUtils.type(x.asType()))
+							.collect(Collectors.joining(", "))
 					+ ">";
 			final List<Pair<Element, Integer>> pairs = parameters.stream()
 					.map(x -> new Pair<>(x, parameters.indexOf(x))).collect(toList());
@@ -148,19 +140,22 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			final String name = element.getSimpleName().toString();
 			if (kind == METHOD) {
 				final TypeMirror type = ((ExecutableElement) element).getReturnType();
-				final String target = beanLowerCamel(constraintTarget.getter()
-						? name.replaceFirst("^" + getterPrefix(type), "")
-						: name);
-				metas.put(target, template(className, type(type), target, name,
-						constraintTarget.field()));
+				final String target = ProcessorUtils
+						.beanLowerCamel(constraintTarget.getter()
+								? name.replaceFirst(
+										"^" + ProcessorUtils.getterPrefix(type), "")
+								: name);
+				metas.put(target, template(className, ProcessorUtils.type(type), target,
+						name, constraintTarget.field()));
 			}
 			else if (kind == PARAMETER) {
 				final TypeMirror type = element.asType();
 				final String method = (constraintTarget.getter()
-						? getterPrefix(type) + beanUpperCamel(name)
+						? ProcessorUtils.getterPrefix(type)
+								+ ProcessorUtils.beanUpperCamel(name)
 						: name);
-				metas.put(name, template(className, type(type), name, method,
-						constraintTarget.field()));
+				metas.put(name, template(className, ProcessorUtils.type(type), name,
+						method, constraintTarget.field()));
 			}
 		});
 	}
@@ -173,15 +168,18 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			final int position = pair.second() + 1;
 			final String name = element.getSimpleName().toString();
 			metas.put(name,
-					ConstraintMetaTemplate.templateArgument(argumentsClass, type(type),
-							element.getKind() == CLASS ? beanLowerCamel(name) : name,
+					ConstraintMetaTemplate.templateArgument(argumentsClass,
+							ProcessorUtils.type(type),
+							element.getKind() == CLASS
+									? ProcessorUtils.beanLowerCamel(name)
+									: name,
 							position));
 		});
 	}
 
 	private void writeMetaFile(String className, List<Pair<Element, Integer>> elements,
 			BiConsumer<Pair<Element, Integer>, Map<String, String>> processElement) {
-		final Pair<String, String> pair = splitClassName(className);
+		final Pair<String, String> pair = ProcessorUtils.splitClassName(className);
 		final String packageName = pair.first();
 		final String simpleClassName = pair.second();
 		final String metaSimpleClassName = "_" + simpleClassName.replace('.', '_')
@@ -217,78 +215,4 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		}
 	}
 
-	static Pair<String, String> splitClassName(String className) {
-		String packageName = "";
-		final int p = firstUpperPosition(className);
-		if (p > 0) {
-			packageName = className.substring(0, p - 1);
-		}
-		final String simpleClassName = className.substring(p);
-		return new Pair<>(packageName, simpleClassName);
-	}
-
-	static int firstUpperPosition(String s) {
-		final String lower = s.toLowerCase();
-		for (int i = 0; i < s.length(); i++) {
-			if (s.charAt(i) != lower.charAt(i)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	static String getterPrefix(TypeMirror type) {
-		return type.getKind() == BOOLEAN ? "is" : "get";
-	}
-
-	static String type(final TypeMirror typeMirror) {
-		final TypeKind kind = typeMirror.getKind();
-		if (kind.isPrimitive()) {
-			if (kind == BOOLEAN) {
-				return Boolean.class.getName();
-			}
-			else if (kind == BYTE) {
-				return Byte.class.getName();
-			}
-			else if (kind == SHORT) {
-				return Short.class.getName();
-			}
-			else if (kind == INT) {
-				return Integer.class.getName();
-			}
-			else if (kind == LONG) {
-				return Long.class.getName();
-			}
-			else if (kind == CHAR) {
-				return Character.class.getName();
-			}
-			else if (kind == FLOAT) {
-				return Float.class.getName();
-			}
-			else if (kind == DOUBLE) {
-				return Double.class.getName();
-			}
-		}
-		return typeMirror.toString();
-	}
-
-	static String beanLowerCamel(String s) {
-		if (s.length() >= 2) {
-			final String firstTwo = s.substring(0, 2);
-			if (firstTwo.equals(firstTwo.toUpperCase())) {
-				return s;
-			}
-		}
-		return s.substring(0, 1).toLowerCase() + s.substring(1);
-	}
-
-	static String beanUpperCamel(String s) {
-		if (s.length() >= 2) {
-			final String firstTwo = s.substring(0, 2);
-			if (firstTwo.equals(firstTwo.toUpperCase())) {
-				return s;
-			}
-		}
-		return s.substring(0, 1).toUpperCase() + s.substring(1);
-	}
 }

@@ -101,22 +101,16 @@ class ConstraintMetaProcessorTest {
 
 	@Test
 	void testBeanLowerCamel() {
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("Name"))
-				.isEqualTo("name");
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAme"))
-				.isEqualTo("NAme");
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAME"))
-				.isEqualTo("NAME");
+		Assertions.assertThat(ProcessorUtils.beanLowerCamel("Name")).isEqualTo("name");
+		Assertions.assertThat(ProcessorUtils.beanLowerCamel("NAme")).isEqualTo("NAme");
+		Assertions.assertThat(ProcessorUtils.beanLowerCamel("NAME")).isEqualTo("NAME");
 	}
 
 	@Test
 	void testBeanUpperCamel() {
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("name"))
-				.isEqualTo("Name");
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAme"))
-				.isEqualTo("NAme");
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAME"))
-				.isEqualTo("NAME");
+		Assertions.assertThat(ProcessorUtils.beanUpperCamel("name")).isEqualTo("Name");
+		Assertions.assertThat(ProcessorUtils.beanUpperCamel("NAme")).isEqualTo("NAme");
+		Assertions.assertThat(ProcessorUtils.beanUpperCamel("NAME")).isEqualTo("NAME");
 	}
 
 }
