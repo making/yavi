@@ -5855,7 +5855,7 @@ public String createUser(Model model, UserForm userForm, BindingResult bindingRe
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-<code>List&lt;ContraintViolation&gt;</code> is passed to the function of the first argument of <code>Validated#fold</code> instead of <code>ConstraintViolations</code>. You can convert the <code>List&lt;ContraintViolation&gt;</code> to <code>ConstraintViolations</code> by using the <code>ConstraintViolations#of</code> method.
+<code>List&lt;ConstraintViolation&gt;</code> is passed to the function of the first argument of <code>Validated#fold</code> instead of <code>ConstraintViolations</code>. You can convert the <code>List&lt;ContraintViolation&gt;</code> to <code>ConstraintViolations</code> by using the <code>ConstraintViolations#of</code> method.
 </td>
 </tr>
 </table>
@@ -5911,7 +5911,7 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
         .map(req -&gt; userService.create(req.toUser()))
         .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
         // or .mapError(ConstraintViolation::detail)
-        .fold(details -&gt; ResponseEntity.badRequest().body(Map.of("message", "Invalid request body", "details", details)),
+        .fold(details -&gt; ResponseEntity.badRequest().body(details),
             created -&gt; ResponseEntity.ok(created));
 }</code></pre>
 </div>
@@ -5946,7 +5946,7 @@ public RouterFunction&lt;ServerResponse&gt; routes() {
                 .map(req -&gt; userService.create(req.toUser()))
                 .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
                 // or .mapError(ConstraintViolation::detail)
-                .fold(details -&gt; ServerResponse.badRequest().bodyValue(Map.of("message", "Invalid request body", "details", details)),
+                .fold(details -&gt; ServerResponse.badRequest().bodyValue(details),
                     created -&gt; ServerResponse.ok().bodyValue(created))))
         .build();
 }</code></pre>
@@ -6088,7 +6088,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.2<br>
-Last updated 2021-07-02 03:12:24 UTC
+Last updated 2021-07-02 03:13:46 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
