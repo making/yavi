@@ -18,25 +18,24 @@ package am.ik.yavi.core;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
+import org.junit.jupiter.api.Test;
 
-public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
-	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CollectionValidatorTest extends AbstractCollectionValidatorTest {
+	Validator<Address> addressValidator = ValidatorBuilder.<Address>of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
 			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
 			.build();
 
 	@Test
-	public void nullCollectionValid() throws Exception {
+	void nullCollectionValid() throws Exception {
 		Validator<FormWithCollection> validator = ValidatorBuilder
 				.of(FormWithCollection.class) //
 				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
@@ -48,7 +47,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void stringListAllInValid() throws Exception {
+	void stringListAllInValid() throws Exception {
 		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
 		Validator<String> stringValidator = ValidatorBuilder.of(String.class).constraint(
 				String::toString, "value", c -> c.notNull().lessThanOrEqual(2)).build();
@@ -69,7 +68,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void stringListAllInValidEmptyNestedName() throws Exception {
+	void stringListAllInValidEmptyNestedName() throws Exception {
 		Foo foo = new Foo(Arrays.asList("abc", "def", "ghi"));
 		Validator<String> stringValidator = ValidatorBuilder.of(String.class)
 				.constraint(String::toString, "", c -> c.notNull().lessThanOrEqual(2))
@@ -91,7 +90,7 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void stringListAllValid() throws Exception {
+	void stringListAllValid() throws Exception {
 		Foo foo = new Foo(Arrays.asList("ab", "cd", "ef"));
 		Validator<String> stringValidator = ValidatorBuilder.of(String.class).constraint(
 				String::toString, "value", c -> c.notNull().lessThanOrEqual(2)).build();
@@ -99,6 +98,28 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 				.forEach(Foo::getTexts, "texts", stringValidator).build();
 		ConstraintViolations violations = validator.validate(foo);
 		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void unique() throws Exception {
+		Foo foo = new Foo(Arrays.asList("a", "b", "c", "d", "e"));
+		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
+				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique())
+				.build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void notUnique() throws Exception {
+		Foo foo = new Foo(Arrays.asList("a", "b", "c", "b", "c"));
+		Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
+				.constraint(Foo::getTexts, "texts", c -> c.notEmpty().unique())
+				.build();
+		ConstraintViolations violations = validator.validate(foo);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).message()).isEqualTo("\"texts\" must be unique. [b, c] is/are duplicated.");
 	}
 
 	@Override
@@ -111,11 +132,11 @@ public class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 	static class Foo {
 		List<String> texts;
 
-		public Foo(List<String> texts) {
+		Foo(List<String> texts) {
 			this.texts = texts;
 		}
 
-		public List<String> getTexts() {
+		List<String> getTexts() {
 			return texts;
 		}
 	}

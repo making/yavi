@@ -15,13 +15,13 @@
  */
 package am.ik.yavi.constraint;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -78,6 +78,13 @@ class CollectionConstraintTest {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.notEmpty());
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Collections.emptyList())).isFalse();
+	}
+
+	@Test
+	void unique() {
+		Predicate<List<String>> predicate = retrievePredicate(c -> c.unique());
+		assertThat(predicate.test(Arrays.asList("a", "b", "c", "d"))).isTrue();
+		assertThat(predicate.test(Arrays.asList("a", "b", "c", "b"))).isFalse();
 	}
 
 	private static Predicate<List<String>> retrievePredicate(

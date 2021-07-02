@@ -15,14 +15,21 @@
  */
 package am.ik.yavi.constraint;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.ToIntFunction;
-
-import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ViolatedValue;
+
+import static am.ik.yavi.core.NullAs.VALID;
+import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
+import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
 
 public class CollectionConstraint<T, L extends Collection<E>, E>
 		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
@@ -35,6 +42,33 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	public CollectionConstraint<T, L, E> contains(E s) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.contains(s),
 				COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.8.3
+	 */
+	public CollectionConstraint<T, L, E> unique() {
+		this.predicates().add(ConstraintPredicate.withViolatedValue(
+				collection -> {
+					final List<E> duplicates = new ArrayList<>();
+					Set<E> uniqElements = new HashSet<>(collection.size());
+					for (E element : collection) {
+						if (uniqElements.contains(element)) {
+							duplicates.add(element);
+						}
+						else {
+							uniqElements.add(element);
+						}
+					}
+					if (duplicates.isEmpty()) {
+						return Optional.empty();
+					}
+					else {
+						return Optional.of(new ViolatedValue(duplicates));
+					}
+				},
+				COLLECTION_UNIQUE, () -> new Object[] {}, VALID));
 		return this;
 	}
 
