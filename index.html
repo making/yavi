@@ -307,7 +307,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
     &lt;artifactId&gt;yavi&lt;/artifactId&gt;
-    &lt;version&gt;0.8.1&lt;/version&gt;
+    &lt;version&gt;0.8.2&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -839,7 +839,7 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
     .constraint(Book::getTitle, "title", c -&gt; c.notBlank().lessThanOrEqual(64))
     .constraint(Book::getIsbn, "isbn", c -&gt; c.notBlank()
-        .predicate(s -&gt; ISBNValidator.isISBN13(s), ViolationMessage.of("string.isbn13", "\"{0}\" must be ISBN13 format")))
+        .predicate(s -&gt; ISBNValidator.isISBN13(s), "string.isbn13", "\"{0}\" must be ISBN13 format"))
     .build();</code></pre>
 </div>
 </div>
@@ -5910,7 +5910,7 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
         .validate(request)
         .map(req -&gt; userService.create(req.toUser()))
         .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
-        // or .mapErrorsF(ConstraintViolation::detail)
+        // or .mapError(ConstraintViolation::detail)
         .fold(details -&gt; ResponseEntity.badRequest().body(Map.of("message", "Invalid request body", "details", details)),
             created -&gt; ResponseEntity.ok(created));
 }</code></pre>
@@ -5945,7 +5945,7 @@ public RouterFunction&lt;ServerResponse&gt; routes() {
                 .validate(body)
                 .map(req -&gt; userService.create(req.toUser()))
                 .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
-                // or .mapErrorsF(ConstraintViolation::detail)
+                // or .mapError(ConstraintViolation::detail)
                 .fold(details -&gt; ServerResponse.badRequest().bodyValue(Map.of("message", "Invalid request body", "details", details)),
                     created -&gt; ServerResponse.ok().bodyValue(created))))
         .build();
@@ -6088,7 +6088,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.1<br>
-Last updated 2021-06-30 01:34:19 UTC
+Last updated 2021-07-02 02:47:31 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

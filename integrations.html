@@ -126,7 +126,7 @@ public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request
         .validate(request)
         .map(req -&gt; userService.create(req.toUser()))
         .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
-        // or .mapErrorsF(ConstraintViolation::detail)
+        // or .mapError(ConstraintViolation::detail)
         .fold(details -&gt; ResponseEntity.badRequest().body(Map.of("message", "Invalid request body", "details", details)),
             created -&gt; ResponseEntity.ok(created));
 }</code></pre>
@@ -161,7 +161,7 @@ public RouterFunction&lt;ServerResponse&gt; routes() {
                 .validate(body)
                 .map(req -&gt; userService.create(req.toUser()))
                 .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
-                // or .mapErrorsF(ConstraintViolation::detail)
+                // or .mapError(ConstraintViolation::detail)
                 .fold(details -&gt; ServerResponse.badRequest().bodyValue(Map.of("message", "Invalid request body", "details", details)),
                     created -&gt; ServerResponse.ok().bodyValue(created))))
         .build();
@@ -303,7 +303,7 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-30 01:34:19 UTC
+Last updated 2021-07-02 02:47:31 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
