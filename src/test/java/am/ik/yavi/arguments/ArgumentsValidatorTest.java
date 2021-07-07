@@ -388,4 +388,29 @@ public class ArgumentsValidatorTest {
 		assertThat(actual.errors().get(1).args()[0]).isEqualTo("phoneNumber");
 	}
 
+	@Test
+	void nullArgValid() {
+		final Arguments1Validator<String, Country> validator = ArgumentsValidatorBuilder
+				.of(Country::new).builder(b -> b._string(Arguments1::arg1, "country",
+						c -> c.greaterThan(1)))
+				.build();
+		final Validated<Country> validated = validator.validate(null);
+		assertThat(validated.isValid()).isTrue();
+		assertThat(validated.value()).isNotNull();
+		assertThat(validated.value().name()).isNull();
+	}
+
+	@Test
+	void nullArgInValid() {
+		final Arguments1Validator<String, Country> validator = ArgumentsValidatorBuilder
+				.of(Country::new).builder(b -> b._string(Arguments1::arg1, "country",
+						c -> c.notNull().greaterThan(1)))
+				.build();
+		final Validated<Country> validated = validator.validate(null);
+		assertThat(validated.isValid()).isFalse();
+		assertThat(validated.errors()).hasSize(1);
+		assertThat(validated.errors().get(0).name()).isEqualTo("country");
+		assertThat(validated.errors().get(0).messageKey()).isEqualTo("object.notNull");
+		assertThat(validated.errors().get(0).args()[0]).isEqualTo("country");
+	}
 }

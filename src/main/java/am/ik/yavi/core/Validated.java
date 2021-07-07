@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
+import am.ik.yavi.jsr305.Nullable;
 
 /**
  * a specialized {@code Validation} type that regards {@code List<E>} as
@@ -43,13 +44,19 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	}
 
 	@Override
+	public T valueNullable() {
+		return this.delegate.valueNullable();
+	}
+
+	@Override
 	public ConstraintViolations errors() {
 		return ConstraintViolations.of(this.delegate.errors());
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(U value) {
+	protected <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(
+			@Nullable U value) {
 		return (V) Validated.of(Validation.success(value));
 	}
 

@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import am.ik.yavi.jsr305.Nullable;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -46,9 +48,20 @@ public abstract class Validation<E, T> implements Serializable {
 	 * this is an {@code Failure}.
 	 *
 	 * @return The value of this {@code Validation}
-	 * @throws NoSuchElementException if this is an {@code Failure}
+	 * @throws NoSuchElementException if this is an {@code Failure} or the value is
+	 *     {@code null}
 	 */
 	public abstract T value();
+
+	/**
+	 * Returns the value of this {@code Validation} if is a {@code Success} or throws if
+	 * this is an {@code Failure}. {@code null} can be returned.
+	 *
+	 * @return The value of this {@code Validation}
+	 * @throws NoSuchElementException if this is an {@code Failure}.
+	 */
+	@Nullable
+	public abstract T valueNullable();
 
 	/**
 	 * Returns the errors of this {@code Validation} if it is an {@code Failure} or throws
@@ -144,7 +157,7 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<E, U>> V yieldSuccess(U value) {
+	protected <U, V extends Validation<E, U>> V yieldSuccess(@Nullable U value) {
 		return (V) Validation.success(value);
 	}
 
@@ -157,8 +170,8 @@ public abstract class Validation<E, T> implements Serializable {
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
-				final Function1<? super T, ? extends U> f = validation.value();
-				final U u = f.apply(this.value());
+				final Function1<? super T, ? extends U> f = validation.valueNullable();
+				final U u = f == null ? null : f.apply(this.valueNullable());
 				return this.yieldSuccess(u);
 			}
 			else {
@@ -191,7 +204,7 @@ public abstract class Validation<E, T> implements Serializable {
 		return either.fold(Validation::failure, Validation::success);
 	}
 
-	public static <E, T> Validation<E, T> success(T value) {
+	public static <E, T> Validation<E, T> success(@Nullable T value) {
 		return new Success<>(value);
 	}
 
@@ -208,10 +221,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 		public final T value;
 
-		Success(T value) {
-			if (value == null) {
-				throw new IllegalArgumentException("'value' must not be null.");
-			}
+		Success(@Nullable T value) {
 			this.value = value;
 		}
 
@@ -222,6 +232,14 @@ public abstract class Validation<E, T> implements Serializable {
 
 		@Override
 		public T value() {
+			if (this.value == null) {
+				throw new NoSuchElementException("'value' is null.");
+			}
+			return this.value;
+		}
+
+		@Override
+		public T valueNullable() {
 			return this.value;
 		}
 
@@ -238,7 +256,7 @@ public abstract class Validation<E, T> implements Serializable {
 			if (o == null || getClass() != o.getClass())
 				return false;
 			Success<?, ?> success = (Success<?, ?>) o;
-			return value.equals(success.value);
+			return Objects.equals(value, success.value);
 		}
 
 		@Override
@@ -271,6 +289,11 @@ public abstract class Validation<E, T> implements Serializable {
 		public T value() {
 			throw new NoSuchElementException(
 					"value of 'Failure' Validation does not exists. Errors=" + errors);
+		}
+
+		@Override
+		public T valueNullable() {
+			return this.value();
 		}
 
 		@Override
