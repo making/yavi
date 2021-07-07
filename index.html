@@ -940,9 +940,9 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
-    .constraint(User::getName, "name", c -&gt; c.notNull().message("name is required!")
-        .greaterThanOrEqual(1).message("name is too small!")
-        .lessThanOrEqual(20).message("name is too large!"))
+    .constraint(User::getName, "name", c -&gt; c.notNull().message("{0} is required!")
+        .greaterThanOrEqual(1).message("{0} is too small!")
+        .lessThanOrEqual(20).message("{0} is too large!"))
     .build()</code></pre>
 </div>
 </div>
@@ -6088,7 +6088,7 @@ public class OrderController {
 <div id="footer">
 <div id="footer-text">
 Version 0.8.2<br>
-Last updated 2021-07-02 03:13:46 UTC
+Last updated 2021-07-07 14:32:44 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
