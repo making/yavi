@@ -102,6 +102,44 @@ class ValidatorBuilderKtDslTest {
     }
 
     @Test
+    fun constraintOnCharSequenceNamed() {
+        val validator = validator<DemoString> {
+            (DemoString::x)("named") {
+                notEmpty()
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoString("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""named" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""named" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "named" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
     fun constraintOnCharSequenceIfPresent() {
         val validator = validator<DemoString> {
             DemoString::x {
