@@ -17,7 +17,6 @@ package am.ik.yavi.builder
 
 import am.ik.yavi.core.ConstraintGroup
 import am.ik.yavi.core.Group
-import am.ik.yavi.core.Validator
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.math.BigDecimal
@@ -190,35 +189,6 @@ class ValidatorBuilderKtDslTest {
         Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
 
         demo = DemoStringNotNullable("foofoo")
-        violations = validator.validate(demo)
-        Assertions.assertThat(violations.isValid).isFalse()
-        Assertions.assertThat(violations.size).isEqualTo(1)
-        violation = violations[0]
-        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
-        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
-    }
-
-    @Test
-    fun constraintOnCharSequenceRequired() {
-        val validator = validator<DemoString> {
-            DemoString::x required {
-                lessThan(5)
-            }
-        }
-
-        var demo = DemoString("foo")
-        var violations = validator.validate(demo)
-        Assertions.assertThat(violations.isValid).isTrue()
-
-        demo = DemoString(null)
-        violations = validator.validate(demo)
-        Assertions.assertThat(violations.isValid).isFalse()
-        Assertions.assertThat(violations.size).isEqualTo(1)
-        var violation = violations[0]
-        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be null""")
-        Assertions.assertThat(violation.messageKey()).isEqualTo("object.notNull")
-
-        demo = DemoString("foofoo")
         violations = validator.validate(demo)
         Assertions.assertThat(violations.isValid).isFalse()
         Assertions.assertThat(violations.size).isEqualTo(1)

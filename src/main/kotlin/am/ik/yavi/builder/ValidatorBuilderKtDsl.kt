@@ -108,10 +108,6 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
     operator fun KProperty1<T, BigDecimal?>.invoke(name: String, block: BigDecimalConstraint<T>.() -> Unit) =
         validatorBuilder.constraint(this, name) { it.apply(block) }
 
-    /** Q: this will be required for each type, right? */
-    infix fun KProperty1<T, String?>.required(block: CharSequenceConstraint<T, String?>.() -> Unit) =
-        validatorBuilder.constraint(this, this.name) { it.notNull().apply(block) }
-
     infix fun <N> KProperty1<T, N?>.nest(validator: Validator<N>) =
         validatorBuilder.nest(this, this.name, validator)
 
