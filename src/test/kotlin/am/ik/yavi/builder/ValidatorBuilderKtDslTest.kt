@@ -17,43 +17,191 @@ package am.ik.yavi.builder
 
 import am.ik.yavi.core.ConstraintGroup
 import am.ik.yavi.core.Group
-import am.ik.yavi.core.Validator
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.math.BigDecimal
 import java.math.BigInteger
 
 
-@Deprecated("Deprecated in favour of new Kotlin DSL -> am.ik.yavi.builder.ValidatorBuilderKtDslTest")
-class ValidatorBuilderExtensionsTest {
-    private val demoStringValidator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
-            .konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-            .build()
+data class DemoString(var x: String?)
+data class DemoStringNotNullable(var x: String)
+data class DemoBoolean(var x: Boolean?)
+data class DemoInt(var x: Int?)
+data class DemoChar(val x: Char?)
+data class DemoByte(val x: Byte?)
+data class DemoShort(val x: Short?)
+data class DemoLong(val x: Long?)
+data class DemoFloat(val x: Float?)
+data class DemoBigInteger(val x: BigInteger?)
+data class DemoBigDecimal(val x: BigDecimal?)
+data class DemoCollection(val x: Collection<String>?)
+data class DemoMap(val x: Map<String, String>?)
+data class DemoArray(val x: Array<String>?)
+data class DemoBooleanArray(val x: BooleanArray?)
+data class DemoCharArray(val x: CharArray?)
+data class DemoByteArray(val x: ByteArray?)
+data class DemoShortArray(val x: ShortArray?)
+data class DemoIntArray(val x: IntArray?)
+data class DemoLongArray(val x: LongArray?)
+data class DemoFloatArray(val x: FloatArray?)
+data class DemoDoubleArray(val x: DoubleArray?)
+data class DemoNested(val x: DemoString)
+data class DemoNestedIfPresent(val x: DemoString?)
+data class DemoForEachCollection(val x: Collection<DemoString>)
+data class DemoForEachIfPresentCollection(val x: Collection<DemoString>?)
+data class DemoForEachMap(val x: Map<String, DemoString>)
+data class DemoForEachIfPresentMap(val x: Map<String, DemoString>?)
+data class DemoForEachArray(val x: Array<DemoString>)
+data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
+
+class ValidatorBuilderKtDslTest {
+    private val demoStringValidator = validator<DemoString> {
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
+    }
 
     @Test
-    fun konstraintOnCharSequence() {
-        val validator = ValidatorBuilder.of<DemoString>()
-                .konstraint(DemoString::x) { notEmpty().lessThan(5) }
-                .build()
+    fun constraintOnCharSequence() {
+        val validator = validator<DemoString> {
+            DemoString::x {
+                notEmpty()
+                lessThan(5)
+            }
+        }
 
         var demo = DemoString("foo")
         var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
+    fun constraintOnCharSequenceNamed() {
+        val validator = validator<DemoString> {
+            (DemoString::x)("named") {
+                notEmpty()
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoString("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""named" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""named" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoString("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "named" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
+    fun constraintOnCharSequenceIfPresent() {
+        val validator = validator<DemoString> {
+            DemoString::x {
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoString("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString(null)
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoString("")
+        violations = validator.validate(demo)
         Assertions.assertThat(violations.isValid).isTrue()
 
         demo = DemoString("foofoo")
         violations = validator.validate(demo)
         Assertions.assertThat(violations.isValid).isFalse()
         Assertions.assertThat(violations.size).isEqualTo(1)
-        val violation = violations[0]
+        var violation = violations[0]
         Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
         Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
     }
 
     @Test
-    fun konstraintOnBoolean() {
-        val validator = ValidatorBuilder.of<DemoBoolean>()
-                .konstraint(DemoBoolean::x) { isTrue }
-                .build()
+    fun constraintOnCharSequenceNotNullable() {
+        val validator = validator<DemoStringNotNullable> {
+            DemoStringNotNullable::x {
+                notEmpty()
+                lessThan(5)
+            }
+        }
+
+        var demo = DemoStringNotNullable("foo")
+        var violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isTrue()
+
+        demo = DemoStringNotNullable("")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        var violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be empty""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.notEmpty")
+
+        demo = DemoStringNotNullable("foofoo")
+        violations = validator.validate(demo)
+        Assertions.assertThat(violations.isValid).isFalse()
+        Assertions.assertThat(violations.size).isEqualTo(1)
+        violation = violations[0]
+        Assertions.assertThat(violation.message()).isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
+        Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+    }
+
+    @Test
+    fun constraintOnBoolean() {
+        val validator = validator<DemoBoolean> {
+            DemoBoolean::x { isTrue }
+        }
 
         var demo = DemoBoolean(true)
         var violations = validator.validate(demo)
@@ -69,10 +217,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnInteger() {
-        val validator = ValidatorBuilder.of<DemoInt>()
-                .konstraint(DemoInt::x) { greaterThan(1).lessThan(10) }
-                .build()
+    fun constraintOnInteger() {
+        val validator = validator<DemoInt> {
+            DemoInt::x { greaterThan(1).lessThan(10) }
+        }
 
         var demo = DemoInt(5)
         var violations = validator.validate(demo)
@@ -88,10 +236,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnChar() {
-        val validator = ValidatorBuilder.of<DemoChar>()
-                .konstraint(DemoChar::x) { greaterThan('a').lessThan('z') }
-                .build()
+    fun constraintOnChar() {
+        val validator = validator<DemoChar> {
+            DemoChar::x { greaterThan('a').lessThan('z') }
+        }
 
         var demo = DemoChar('c')
         var violations = validator.validate(demo)
@@ -107,10 +255,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnByte() {
-        val validator = ValidatorBuilder.of<DemoByte>()
-                .konstraint(DemoByte::x) { greaterThan(0x0).lessThan(0xf) }
-                .build()
+    fun constraintOnByte() {
+        val validator = validator<DemoByte> {
+            DemoByte::x { greaterThan(0x0).lessThan(0xf) }
+        }
 
         var demo = DemoByte(0x5)
         var violations = validator.validate(demo)
@@ -126,10 +274,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnShort() {
-        val validator = ValidatorBuilder.of<DemoShort>()
-                .konstraint(DemoShort::x) { greaterThan(1).lessThan(10) }
-                .build()
+    fun constraintOnShort() {
+        val validator = validator<DemoShort> {
+            DemoShort::x { greaterThan(1).lessThan(10) }
+        }
 
         var demo = DemoShort(5)
         var violations = validator.validate(demo)
@@ -145,10 +293,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnLong() {
-        val validator = ValidatorBuilder.of<DemoLong>()
-                .konstraint(DemoLong::x) { greaterThan(1).lessThan(10) }
-                .build()
+    fun constraintOnLong() {
+        val validator = validator<DemoLong> {
+            DemoLong::x { greaterThan(1).lessThan(10) }
+        }
 
         var demo = DemoLong(5)
         var violations = validator.validate(demo)
@@ -164,10 +312,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnFloat() {
-        val validator = ValidatorBuilder.of<DemoFloat>()
-                .konstraint(DemoFloat::x) { greaterThan(0.0f).lessThan(10.0f) }
-                .build()
+    fun constraintOnFloat() {
+        val validator = validator<DemoFloat> {
+            DemoFloat::x { greaterThan(0.0f).lessThan(10.0f) }
+        }
 
         var demo = DemoFloat(5.0f)
         var violations = validator.validate(demo)
@@ -183,10 +331,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnBigInteger() {
-        val validator = ValidatorBuilder.of<DemoBigInteger>()
-                .konstraint(DemoBigInteger::x) { greaterThan(BigInteger.ZERO).lessThan(BigInteger.TEN) }
-                .build()
+    fun constraintOnBigInteger() {
+        val validator = validator<DemoBigInteger> {
+            DemoBigInteger::x { greaterThan(BigInteger.ZERO).lessThan(BigInteger.TEN) }
+        }
 
         var demo = DemoBigInteger(BigInteger.valueOf(5))
         var violations = validator.validate(demo)
@@ -202,10 +350,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnBigDecimal() {
-        val validator = ValidatorBuilder.of<DemoBigDecimal>()
-                .konstraint(DemoBigDecimal::x) { greaterThan(BigDecimal.ZERO).lessThan(BigDecimal.TEN) }
-                .build()
+    fun constraintOnBigDecimal() {
+        val validator = validator<DemoBigDecimal> {
+            DemoBigDecimal::x { greaterThan(BigDecimal.ZERO).lessThan(BigDecimal.TEN) }
+        }
 
         var demo = DemoBigDecimal(BigDecimal.valueOf(5))
         var violations = validator.validate(demo)
@@ -221,10 +369,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnCollection() {
-        val validator = ValidatorBuilder.of<DemoCollection>()
-                .konstraint(DemoCollection::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnCollection() {
+        val validator = validator<DemoCollection> {
+            DemoCollection::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoCollection(listOf("a", "b"))
         var violations = validator.validate(demo)
@@ -240,10 +388,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnMap() {
-        val validator = ValidatorBuilder.of<DemoMap>()
-                .konstraint(DemoMap::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnMap() {
+        val validator = validator<DemoMap> {
+            DemoMap::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoMap(mapOf("1" to "a", "2" to "a"))
         var violations = validator.validate(demo)
@@ -259,10 +407,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnArray() {
-        val validator = ValidatorBuilder.of<DemoArray>()
-                .konstraint(DemoArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnArray() {
+        val validator = validator<DemoArray> {
+            DemoArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoArray(arrayOf("a", "b"))
         var violations = validator.validate(demo)
@@ -278,10 +426,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnBooleanArray() {
-        val validator = ValidatorBuilder.of<DemoBooleanArray>()
-                .konstraint(DemoBooleanArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnBooleanArray() {
+        val validator = validator<DemoBooleanArray> {
+            DemoBooleanArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoBooleanArray(booleanArrayOf(true, true))
         var violations = validator.validate(demo)
@@ -297,10 +445,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnCharArray() {
-        val validator = ValidatorBuilder.of<DemoCharArray>()
-                .konstraint(DemoCharArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnCharArray() {
+        val validator = validator<DemoCharArray> {
+            DemoCharArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoCharArray(charArrayOf('1', '2'))
         var violations = validator.validate(demo)
@@ -316,10 +464,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnByteArray() {
-        val validator = ValidatorBuilder.of<DemoByteArray>()
-                .konstraint(DemoByteArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnByteArray() {
+        val validator = validator<DemoByteArray> {
+            DemoByteArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoByteArray(byteArrayOf(1, 2))
         var violations = validator.validate(demo)
@@ -335,10 +483,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnShortArray() {
-        val validator = ValidatorBuilder.of<DemoShortArray>()
-                .konstraint(DemoShortArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnShortArray() {
+        val validator = validator<DemoShortArray> {
+            DemoShortArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoShortArray(shortArrayOf(1, 2))
         var violations = validator.validate(demo)
@@ -354,10 +502,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnIntArray() {
-        val validator = ValidatorBuilder.of<DemoIntArray>()
-                .konstraint(DemoIntArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnIntArray() {
+        val validator = validator<DemoIntArray> {
+            DemoIntArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoIntArray(intArrayOf(1, 2))
         var violations = validator.validate(demo)
@@ -373,10 +521,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnLongArray() {
-        val validator = ValidatorBuilder.of<DemoLongArray>()
-                .konstraint(DemoLongArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnLongArray() {
+        val validator = validator<DemoLongArray> {
+            DemoLongArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoLongArray(longArrayOf(1, 2))
         var violations = validator.validate(demo)
@@ -392,10 +540,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnFloatArray() {
-        val validator = ValidatorBuilder.of<DemoFloatArray>()
-                .konstraint(DemoFloatArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnFloatArray() {
+        val validator = validator<DemoFloatArray> {
+            DemoFloatArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoFloatArray(floatArrayOf(1f, 2f))
         var violations = validator.validate(demo)
@@ -411,10 +559,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintOnDoubleArray() {
-        val validator = ValidatorBuilder.of<DemoDoubleArray>()
-                .konstraint(DemoDoubleArray::x) { greaterThan(1).lessThan(3) }
-                .build()
+    fun constraintOnDoubleArray() {
+        val validator = validator<DemoDoubleArray> {
+            DemoDoubleArray::x { greaterThan(1).lessThan(3) }
+        }
 
         var demo = DemoDoubleArray(doubleArrayOf(1.0, 2.0))
         var violations = validator.validate(demo)
@@ -430,12 +578,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintNested() {
-        val validator = ValidatorBuilder.of<DemoNested>()
-                .nest(DemoNested::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintNested() {
+        val validator = validator<DemoNested> {
+            DemoNested::x nest {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoNested(DemoString("foo"))
         var violations = validator.validate(demo)
@@ -451,10 +599,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintNestedValidator() {
-        val validator = ValidatorBuilder.of<DemoNested>()
-                .nest(DemoNested::x, demoStringValidator)
-                .build()
+    fun constraintNestedValidator() {
+        val validator = validator<DemoNested> {
+            DemoNested::x nest demoStringValidator
+        }
 
         var demo = DemoNested(DemoString("foo"))
         var violations = validator.validate(demo)
@@ -470,12 +618,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintNestedIfPresent() {
-        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
-                .nestIfPresent(DemoNestedIfPresent::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintNestedIfPresent() {
+        val validator = validator<DemoNestedIfPresent> {
+            DemoNestedIfPresent::x nestIfPresent {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoNestedIfPresent(DemoString("foo"))
         var violations = validator.validate(demo)
@@ -495,10 +643,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintNestedIfPresentValidator() {
-        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
-                .nestIfPresent(DemoNestedIfPresent::x, demoStringValidator)
-                .build()
+    fun constraintNestedIfPresentValidator() {
+        val validator = validator<DemoNestedIfPresent> {
+            DemoNestedIfPresent::x nestIfPresent demoStringValidator
+        }
 
         var demo = DemoNestedIfPresent(DemoString("foo"))
         var violations = validator.validate(demo)
@@ -518,12 +666,15 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachCollection() {
-        val validator = ValidatorBuilder.of<DemoForEachCollection>()
-                .forEach(DemoForEachCollection::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
+    fun constraintForEachCollection() {
+        val validator = validator<DemoForEachCollection> {
+            DemoForEachCollection::x forEach {
+                DemoString::x {
+                    greaterThan(1)
+                    lessThan(5)
                 }
-                .build()
+            }
+        }
 
         var demo = DemoForEachCollection(listOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -539,10 +690,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachCollectionValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachCollection>()
-                .forEach(DemoForEachCollection::x, demoStringValidator)
-                .build()
+    fun constraintForEachCollectionValidator() {
+        val validator = validator<DemoForEachCollection> {
+            DemoForEachCollection::x forEach demoStringValidator
+        }
 
         var demo = DemoForEachCollection(listOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -558,12 +709,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentCollection() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentCollection>()
-                .forEachIfPresent(DemoForEachIfPresentCollection::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintForEachIfPresentCollection() {
+        val validator = validator<DemoForEachIfPresentCollection> {
+            DemoForEachIfPresentCollection::x forEachIfPresent {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoForEachIfPresentCollection(listOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -583,10 +734,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentCollectionValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentCollection>()
-                .forEachIfPresent(DemoForEachIfPresentCollection::x, demoStringValidator)
-                .build()
+    fun constraintForEachIfPresentCollectionValidator() {
+        val validator = validator<DemoForEachIfPresentCollection> {
+            DemoForEachIfPresentCollection::x forEachIfPresent demoStringValidator
+        }
 
         var demo = DemoForEachIfPresentCollection(listOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -606,12 +757,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachMap() {
-        val validator = ValidatorBuilder.of<DemoForEachMap>()
-                .forEach(DemoForEachMap::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintForEachMap() {
+        val validator = validator<DemoForEachMap> {
+            DemoForEachMap::x forEach {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoForEachMap(mapOf("a" to DemoString("foo")))
         var violations = validator.validate(demo)
@@ -627,12 +778,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentMap() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentMap>()
-                .forEachIfPresent(DemoForEachIfPresentMap::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintForEachIfPresentMap() {
+        val validator = validator<DemoForEachIfPresentMap> {
+            DemoForEachIfPresentMap::x forEachIfPresent {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoForEachIfPresentMap(mapOf("a" to DemoString("foo")))
         var violations = validator.validate(demo)
@@ -652,10 +803,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachMapValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachMap>()
-                .forEach(DemoForEachMap::x, demoStringValidator)
-                .build()
+    fun constraintForEachMapValidator() {
+        val validator = validator<DemoForEachMap> {
+            DemoForEachMap::x forEach demoStringValidator
+        }
 
         var demo = DemoForEachMap(mapOf("a" to DemoString("foo")))
         var violations = validator.validate(demo)
@@ -671,10 +822,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentMapValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentMap>()
-                .forEachIfPresent(DemoForEachIfPresentMap::x, demoStringValidator)
-                .build()
+    fun constraintForEachIfPresentMapValidator() {
+        val validator = validator<DemoForEachIfPresentMap> {
+            DemoForEachIfPresentMap::x forEachIfPresent demoStringValidator
+        }
 
         var demo = DemoForEachIfPresentMap(mapOf("a" to DemoString("foo")))
         var violations = validator.validate(demo)
@@ -694,12 +845,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachArray() {
-        val validator = ValidatorBuilder.of<DemoForEachArray>()
-                .forEach(DemoForEachArray::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintForEachArray() {
+        val validator = validator<DemoForEachArray> {
+            DemoForEachArray::x forEach {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoForEachArray(arrayOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -715,12 +866,12 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentArray() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentArray>()
-                .forEachIfPresent(DemoForEachIfPresentArray::x) {
-                    konstraint(DemoString::x) { greaterThan(1).lessThan(5) }
-                }
-                .build()
+    fun constraintForEachIfPresentArray() {
+        val validator = validator<DemoForEachIfPresentArray> {
+            DemoForEachIfPresentArray::x forEachIfPresent {
+                DemoString::x { greaterThan(1).lessThan(5) }
+            }
+        }
 
         var demo = DemoForEachIfPresentArray(arrayOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -740,10 +891,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachArrayValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachArray>()
-                .forEach(DemoForEachArray::x, demoStringValidator)
-                .build()
+    fun constraintForEachArrayValidator() {
+        val validator = validator<DemoForEachArray> {
+            DemoForEachArray::x forEach demoStringValidator
+        }
 
         var demo = DemoForEachArray(arrayOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -759,10 +910,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun konstraintForEachIfPresentArrayValidator() {
-        val validator = ValidatorBuilder.of<DemoForEachIfPresentArray>()
-                .forEachIfPresent(DemoForEachIfPresentArray::x, demoStringValidator)
-                .build()
+    fun constraintForEachIfPresentArrayValidator() {
+        val validator = validator<DemoForEachIfPresentArray> {
+            DemoForEachIfPresentArray::x forEachIfPresent demoStringValidator
+        }
 
         var demo = DemoForEachIfPresentArray(arrayOf(DemoString("foo")))
         var violations = validator.validate(demo)
@@ -782,22 +933,18 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun onCondition() {
+    fun constraintOnCondition() {
         val groupA = ConstraintGroup.of("A")
         val groupB = ConstraintGroup.of("B")
 
-        val validator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
-                .konstraintOnCondition(groupA.toCondition()) {
-                    konstraint(DemoString::x) {
-                        greaterThan(1)
-                    }
-                }
-                .konstraintOnCondition(groupB.toCondition()) {
-                    konstraint(DemoString::x) {
-                        lessThan(3)
-                    }
-                }
-                .build()
+        val validator = validator<DemoString> {
+            onCondition(groupA.toCondition()) {
+                DemoString::x { greaterThan(1) }
+            }
+            onCondition(groupB.toCondition()) {
+                DemoString::x { lessThan(3) }
+            }
+        }
 
         // valid for A and B
         var demo = DemoString("aa")
@@ -831,19 +978,15 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun onGroup() {
-        val validator: Validator<DemoString> = ValidatorBuilder.of<DemoString>()
-                .konstraintOnGroup(Group.UPDATE) {
-                    konstraint(DemoString::x) {
-                        greaterThan(1)
-                    }
-                }
-                .konstraintOnGroup(Group.DELETE) {
-                    konstraint(DemoString::x) {
-                        lessThan(3)
-                    }
-                }
-                .build()
+    fun constraintOnGroup() {
+        val validator = validator<DemoString> {
+            onGroup(Group.UPDATE) {
+                DemoString::x { greaterThan(1) }
+            }
+            onGroup(Group.DELETE) {
+                DemoString::x { lessThan(3) }
+            }
+        }
 
         // valid for UPDATE and DELETe
         var demo = DemoString("aa")
@@ -877,10 +1020,10 @@ class ValidatorBuilderExtensionsTest {
     }
 
     @Test
-    fun onObject() {
-        val validator = ValidatorBuilder.of<DemoNestedIfPresent>()
-                .konstraintOnObject(DemoNestedIfPresent::x) { notNull() }
-                .build()
+    fun constraintOnObject() {
+        val validator = validator<DemoNestedIfPresent> {
+            DemoNestedIfPresent::x onObject { notNull() }
+        }
 
         var demo = DemoNestedIfPresent(DemoString("foo"))
         var violations = validator.validate(demo)
