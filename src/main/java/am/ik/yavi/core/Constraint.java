@@ -18,6 +18,7 @@ package am.ik.yavi.core;
 import java.util.Deque;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
@@ -57,8 +58,10 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	}
 
 	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
+		final Supplier<Object[]> arguments = (predicate instanceof ViolatedArguments) ?
+				((ViolatedArguments) predicate)::arguments : () -> new Object[] {};
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
-				() -> new Object[] {}, NullAs.VALID));
+				arguments, NullAs.VALID));
 		return this.cast();
 	}
 
