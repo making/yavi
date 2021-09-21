@@ -704,13 +704,8 @@ public class ValidatorBuilder<T> {
 	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
 			ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
-		if (!nullAs.skipNull()) {
-			this.constraintOnObject(toCollection, name, Constraint::notNull);
-		}
 		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
-		this.collectionValidators
-				.add(new CollectionValidator<>(toCollection, name, builder.build()));
-		return this;
+		return this.forEach(toCollection, name, builder.build(), nullAs);
 	}
 
 	protected final <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
