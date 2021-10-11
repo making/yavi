@@ -195,8 +195,9 @@
                 <version>${jacoco-maven-plugin.version}</version>
             </plugin>
             <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>4.1</version>
                 <configuration>
                     <header>src/etc/header.txt</header>
                     <strictCheck>true</strictCheck>
