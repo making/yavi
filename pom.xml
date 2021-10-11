@@ -240,4 +240,17 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>jpms-aware</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+                <argLine>--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</argLine>
+            </properties>
+        </profile>
+    </profiles>
 </project>
