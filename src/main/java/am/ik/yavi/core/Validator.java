@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
@@ -270,7 +271,11 @@ public class Validator<T> implements ValidatorSubset<T> {
 					final ViolatedValue violatedValue = violated.get();
 					final String name = this.prefix
 							+ this.indexedName(predicates.name(), collectionName, index);
-					final Object[] args = constraintPredicate.args().get();
+					final Supplier<Object[]> argsSupplier = constraintPredicate.args();
+					final Object[] args = (argsSupplier instanceof ViolatedArguments)
+							? ((ViolatedArguments) argsSupplier)
+									.arguments(violatedValue.value())
+							: argsSupplier.get();
 					violations.add(new ConstraintViolation(name,
 							constraintPredicate.messageKey(),
 							constraintPredicate.defaultMessageFormat(),
