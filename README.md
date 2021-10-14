@@ -70,13 +70,13 @@ This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter-api</artifactId>
-    <version>0.9.0</version>
+    <version>5.8.1</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>0.9.0</version>
+    <version>3.21.0</version>
     <scope>test</scope>
 </dependency>
 ```
