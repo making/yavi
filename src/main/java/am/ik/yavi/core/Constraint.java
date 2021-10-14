@@ -58,8 +58,7 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	}
 
 	default C predicate(Predicate<V> predicate, ViolationMessage violationMessage) {
-		final Supplier<Object[]> arguments = (predicate instanceof ViolatedArguments) ?
-				((ViolatedArguments) predicate)::arguments : () -> new Object[] {};
+		final Supplier<Object[]> arguments = ViolatedArguments.supplyArguments(predicate);
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				arguments, NullAs.VALID));
 		return this.cast();
@@ -80,8 +79,7 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
 	default C predicateNullable(Predicate<V> predicate,
 			ViolationMessage violationMessage) {
-		final Supplier<Object[]> arguments = (predicate instanceof ViolatedArguments) ?
-				((ViolatedArguments) predicate)::arguments : () -> new Object[] {};
+		final Supplier<Object[]> arguments = ViolatedArguments.supplyArguments(predicate);
 		this.predicates().add(ConstraintPredicate.of(predicate, violationMessage,
 				arguments, NullAs.INVALID));
 		return this.cast();

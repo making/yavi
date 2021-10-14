@@ -278,7 +278,7 @@ public class CustomValidatorTest {
 		}
 
 		@Override
-		public Object[] arguments() {
+		public Object[] arguments(Instant violatedValue) {
 			return new Object[] { this.start, this.end };
 		}
 
