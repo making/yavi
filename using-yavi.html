@@ -601,7 +601,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator: Validator&lt;User&gt; = validator&lt;User&gt; {
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;User&gt; {
 	User::name {
 		notNull()
 		lessThanOrEqual(20)
@@ -626,7 +626,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-10-14 15:33:52 UTC
+Last updated 2021-10-14 15:34:33 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
