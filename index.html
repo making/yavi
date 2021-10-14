@@ -13,7 +13,7 @@
 <div id="header">
 <h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Reference Documentation</h1>
 <div class="details">
-<span id="revnumber">version 0.8.2</span>
+<span id="revnumber">version 0.9.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -307,7 +307,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
     &lt;artifactId&gt;yavi&lt;/artifactId&gt;
-    &lt;version&gt;0.8.2&lt;/version&gt;
+    &lt;version&gt;0.9.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -320,13 +320,13 @@ Add the following dependencies as needed:</p>
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
     &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
-    &lt;version&gt;5.7.2&lt;/version&gt;
+    &lt;version&gt;5.8.1&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.assertj&lt;/groupId&gt;
     &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
-    &lt;version&gt;3.20.2&lt;/version&gt;
+    &lt;version&gt;3.21.0&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
@@ -863,7 +863,7 @@ Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
     }
 
     @Override
-    public Object[] arguments() {
+    public Object[] arguments(Instant violatedValue) {
         return new Object[] { this.start /* {1} */, this.end /* {2} */};
     }
 
@@ -1081,40 +1081,28 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 <div class="sect2">
 <h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.11. Kotlin Support</h3>
 <div class="paragraph">
-<p>If you are using Kotlin, you can define a <code>Validator</code> a bit shorter than Java using <code>konstraint</code> method instead of <code>constraint</code> as follows:</p>
+<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator: Validator&lt;User&gt; = ValidatorBuilder.of&lt;User&gt;()
-    .konstraint(User::name) {
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator: Validator&lt;User&gt; = validator&lt;User&gt; {
+    User::name {
         notNull()
-            .lessThanOrEqual(20)
+        lessThanOrEqual(20)
     }
-    .konstraint(User::email) {
+    User::email {
         notNull()
-            .greaterThanOrEqual(5)
-            .lessThanOrEqual(50)
-            .email()
+        greaterThanOrEqual(5)
+        lessThanOrEqual(50)
+        email()
     }
-    .konstraint(User::age) {
+    User::age {
         notNull()
-            .greaterThanOrEqual(0)
-            .lessThanOrEqual(200)
+        greaterThanOrEqual(0)
+        lessThanOrEqual()
     }
-    .build()</code></pre>
+}</code></pre>
 </div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<code>konstraint</code> actually uses <code>kotlin.reflect.KProperty1</code> 🤫
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -6087,8 +6075,8 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.8.2<br>
-Last updated 2021-07-07 14:32:44 UTC
+Version 0.9.0<br>
+Last updated 2021-10-14 15:33:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
