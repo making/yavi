@@ -645,7 +645,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 </div>
 <div class="paragraph">
-<p>forEach example</p>
+<p><code>forEach</code> example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -660,19 +660,22 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 </div>
 <div class="paragraph">
-<p>nest example</p>
+<p><code>nest</code> example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;DemoNested&gt; {
     DemoNested::x nest {
-        DemoString::x { greaterThan(1).lessThan(5) }
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
     }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>nest delegate example</p>
+<p><code>nest</code> delegate example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -687,7 +690,7 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-10-14 16:21:38 UTC
+Last updated 2021-10-14 16:30:50 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
