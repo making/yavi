@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.jsr305.Nullable;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Predicate;
@@ -22,11 +24,11 @@ import java.util.function.Predicate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ObjectConstraintTest {
-	private ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
+	private final ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
 
 	@Test
 	void isNull() {
-		Predicate<String> predicate = constraint.isNull().predicates().peekFirst()
+		Predicate<String> predicate = constraint.isNull().predicates().getFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isFalse();
 		assertThat(predicate.test(null)).isTrue();
@@ -34,9 +36,41 @@ class ObjectConstraintTest {
 
 	@Test
 	void notNull() {
-		Predicate<String> predicate = constraint.notNull().predicates().peekFirst()
+		Predicate<String> predicate = constraint.notNull().predicates().getFirst()
 				.predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test(null)).isFalse();
+	}
+
+	@Nested
+	class EqualTo {
+		@Test
+		void equalObjectsSucceed() {
+			assertThat(equalToPredicate("other").test("other")).isTrue();
+		}
+
+		@Test
+		void differentObjectsFail() {
+			assertThat(equalToPredicate("other").test("this")).isFalse();
+		}
+
+		@Test
+		void nullInputFails() {
+			assertThat(equalToPredicate("other").test(null)).isFalse();
+		}
+
+		@Test
+		void equalToNullFailsWithNonNullInput() {
+			assertThat(equalToPredicate(null).test("this")).isFalse();
+		}
+
+		@Test
+		void equalToNullSucceedsWithNullInput() {
+			assertThat(equalToPredicate(null).test(null)).isTrue();
+		}
+
+		private Predicate<String> equalToPredicate(@Nullable String other) {
+			return constraint.equalTo(other).predicates().getFirst().predicate();
+		}
 	}
 }

@@ -37,6 +37,7 @@ public interface ViolationMessage {
 	enum Default implements ViolationMessage {
 		OBJECT_NOT_NULL("object.notNull", "\"{0}\" must not be null"), //
 		OBJECT_IS_NULL("object.isNull", "\"{0}\" must be null"), //
+		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan",
 				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
