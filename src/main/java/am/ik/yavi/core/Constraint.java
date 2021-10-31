@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -25,6 +26,7 @@ import am.ik.yavi.jsr305.Nullable;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_EQUAL_TO;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_ONE_OF;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
@@ -39,6 +41,12 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	default C equalTo(@Nullable V other) {
 		this.predicates().add(ConstraintPredicate.of(Predicate.isEqual(other), OBJECT_EQUAL_TO,
 				() -> new Object[] { other }, NullAs.INVALID));
+		return this.cast();
+	}
+
+	default C oneOf(Collection<V> values) {
+		this.predicates().add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
+				() -> new Object[] { values.toArray() }, NullAs.INVALID));
 		return this.cast();
 	}
 

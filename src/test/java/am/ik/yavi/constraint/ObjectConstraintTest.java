@@ -19,9 +19,12 @@ import am.ik.yavi.jsr305.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ObjectConstraintTest {
 	private final ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
@@ -71,6 +74,39 @@ class ObjectConstraintTest {
 
 		private Predicate<String> equalToPredicate(@Nullable String other) {
 			return constraint.equalTo(other).predicates().getFirst().predicate();
+		}
+	}
+
+	@Nested
+	class OneOf {
+		@Test
+		void succeedsWhenInputIsOneOfValues() {
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("this")).isTrue();
+		}
+
+		@Test
+		void failsWhenInputIsNoneOfValues() {
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("unknown")).isFalse();
+		}
+
+		@Test
+		void failsWhenInputIsNull() {
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test(null)).isFalse();
+		}
+
+		@Test
+		void succeedsWhenInputIsNullAndNullIsOneOfTheValues() {
+			assertThat(oneOfPredicate(Arrays.asList("this", null)).test(null)).isTrue();
+		}
+
+		@Test
+		void nullValuesIsNotAllowed() {
+			assertThatThrownBy(() -> oneOfPredicate(null))
+					.isExactlyInstanceOf(NullPointerException.class);
+		}
+
+		private Predicate<String> oneOfPredicate(List<String> values) {
+			return constraint.oneOf(values).predicates().getFirst().predicate();
 		}
 	}
 }
