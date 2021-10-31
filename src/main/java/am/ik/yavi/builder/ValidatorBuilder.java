@@ -535,10 +535,10 @@ public class ValidatorBuilder<T> {
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
-			ViolatedArguments violatedArguments, ViolationMessage violationMessage) {
+			ViolatedArguments<T> violatedArguments, ViolationMessage violationMessage) {
 		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
 		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
-				violatedArguments::arguments, NullAs.INVALID));
+				violatedArguments, NullAs.INVALID));
 		this.predicatesList
 				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
 		return this;
@@ -547,7 +547,7 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
 			ViolationMessage violationMessage) {
 		return this.constraintOnTarget(predicate, name,
-				() -> CustomConstraint.EMPTY_ARRAY, violationMessage);
+				violatedValue -> CustomConstraint.EMPTY_ARRAY, violationMessage);
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,

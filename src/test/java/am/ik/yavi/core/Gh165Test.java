@@ -23,18 +23,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class Gh165Test {
-
 	private final CustomConstraint<String> constraint = new CustomConstraint<String>() {
 		private final int maxCount = 4;
 
 		@Override
 		public String defaultMessageFormat() {
-			return "The tag \"{2}\" is longer than {1} bytes.";
+			return "The tag \"{3}\" is longer than {1} bytes. length is {2}";
 		}
 
 		@Override
-		public Object[] arguments() {
-			return new Object[] { this.maxCount };
+		public Object[] arguments(String violatedValue) {
+			return new Object[] { this.maxCount, violatedValue.length() };
 		}
 
 		@Override
@@ -67,6 +66,7 @@ class Gh165Test {
 				.build();
 		final ConstraintViolations violations = validator.validate(new Tag("aaaaaa"));
 		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.get(0).message()).isEqualTo("The tag \"aaaaaa\" is longer than 4 bytes.");
+		assertThat(violations.get(0).message())
+				.isEqualTo("The tag \"aaaaaa\" is longer than 4 bytes. length is 6");
 	}
 }
