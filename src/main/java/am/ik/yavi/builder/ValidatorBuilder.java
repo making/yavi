@@ -17,6 +17,9 @@ package am.ik.yavi.builder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,10 +42,13 @@ import am.ik.yavi.constraint.CollectionConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
+import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.YearConstraint;
+import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.array.BooleanArrayConstraint;
 import am.ik.yavi.constraint.array.ByteArrayConstraint;
 import am.ik.yavi.constraint.array.CharArrayConstraint;
@@ -493,6 +499,36 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
+	public ValidatorBuilder<T> constraint(ToLocalDate<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	public ValidatorBuilder<T> _localDate(ToLocalDate<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(ToYearMonth<T> f, String name,
+			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
+		return this.constraint(f, name, c, YearMonthConstraint::new);
+	}
+
+	public ValidatorBuilder<T> _yearMonth(ToYearMonth<T> f, String name,
+			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
+		return this.constraint(f, name, c, YearMonthConstraint::new);
+	}
+
+	public ValidatorBuilder<T> constraint(ToYear<T> f, String name,
+			Function<YearConstraint<T>, YearConstraint<T>> c) {
+		return this.constraint(f, name, c, YearConstraint::new);
+	}
+
+	public ValidatorBuilder<T> _year(ToYear<T> f, String name,
+			Function<YearConstraint<T>, YearConstraint<T>> c) {
+		return this.constraint(f, name, c, YearConstraint::new);
+	}
+
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			Validator<T> validator) {
 		this.conditionalValidators.add(new Pair<>(condition, validator));
@@ -916,6 +952,15 @@ public class ValidatorBuilder<T> {
 	}
 
 	public interface ToShortArray<T> extends Function<T, short[]> {
+	}
+
+	public interface ToLocalDate<T> extends Function<T, LocalDate> {
+	}
+
+	public interface ToYearMonth<T> extends Function<T, YearMonth> {
+	}
+
+	public interface ToYear<T> extends Function<T, Year> {
 	}
 
 	public interface ValidatorBuilderConverter<T>
