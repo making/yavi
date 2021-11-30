@@ -54,6 +54,10 @@ public interface ViolationMessage {
 		NUMERIC_LESS_THAN("numeric.lessThan", "\"{0}\" must be less than {1}"), //
 		NUMERIC_LESS_THAN_OR_EQUAL("numeric.lessThanOrEqual",
 				"\"{0}\" must be less than or equal to {1}"), //
+		TEMPORAL_AFTER("temporal.after", "\"{0}\" must be after {1}"), //
+		TEMPORAL_ON_OR_AFTER("temporal.onOrAfter", "\"{0}\" must be on or after {1}"), //
+		TEMPORAL_BEFORE("temporal.before", "\"{0}\" must be before {1}"), //
+		TEMPORAL_ON_OR_BEFORE("temporal.onOrBefore", "\"{0}\" must be on or before {1}"), //
 		BOOLEAN_IS_TRUE("boolean.isTrue", "\"{0}\" must be true"), //
 		BOOLEAN_IS_FALSE("boolean.isFalse", "\"{0}\" must be false"), //
 		CHAR_SEQUENCE_NOT_BLANK("charSequence.notBlank", "\"{0}\" must not be blank"), //
