@@ -31,9 +31,9 @@ class YearMonthConstraintTest {
 	class After {
 		@ParameterizedTest
 		@ValueSource(ints = {100, 1000})
-		void monthsInTheFutureAreAlwaysValid(int monthLater) {
+		void monthsInTheFutureAreAlwaysValid(int monthsLater) {
 			Predicate<YearMonth> predicate = retrievePredicate(c -> c.after(YearMonth.now()));
-			assertThat(predicate.test(YearMonth.now().plusMonths(monthLater))).isTrue();
+			assertThat(predicate.test(YearMonth.now().plusMonths(monthsLater))).isTrue();
 		}
 
 		@ParameterizedTest
@@ -55,9 +55,9 @@ class YearMonthConstraintTest {
 	class OnOrAfter {
 		@ParameterizedTest
 		@ValueSource(ints = {100, 1000})
-		void monthsInTheFutureAreAlwaysValid(int monthLater) {
+		void monthsInTheFutureAreAlwaysValid(int monthsLater) {
 			Predicate<YearMonth> predicate = retrievePredicate(c -> c.onOrAfter(YearMonth.now()));
-			assertThat(predicate.test(YearMonth.now().plusMonths(monthLater))).isTrue();
+			assertThat(predicate.test(YearMonth.now().plusMonths(monthsLater))).isTrue();
 		}
 
 		@ParameterizedTest
@@ -79,9 +79,9 @@ class YearMonthConstraintTest {
 	class Before {
 		@ParameterizedTest
 		@ValueSource(ints = {100, 1000})
-		void monthsInTheFutureAreAlwaysInvalid(int monthLater) {
+		void monthsInTheFutureAreAlwaysInvalid(int monthsLater) {
 			Predicate<YearMonth> predicate = retrievePredicate(c -> c.before(YearMonth.now()));
-			assertThat(predicate.test(YearMonth.now().plusMonths(monthLater))).isFalse();
+			assertThat(predicate.test(YearMonth.now().plusMonths(monthsLater))).isFalse();
 		}
 
 		@ParameterizedTest
@@ -103,9 +103,9 @@ class YearMonthConstraintTest {
 	class OnOrBefore {
 		@ParameterizedTest
 		@ValueSource(ints = {100, 1000})
-		void monthsInTheFutureAreAlwaysInvalid(int monthLater) {
+		void monthsInTheFutureAreAlwaysInvalid(int monthsLater) {
 			Predicate<YearMonth> predicate = retrievePredicate(c -> c.onOrBefore(YearMonth.now()));
-			assertThat(predicate.test(YearMonth.now().plusMonths(monthLater))).isFalse();
+			assertThat(predicate.test(YearMonth.now().plusMonths(monthsLater))).isFalse();
 		}
 
 		@ParameterizedTest
