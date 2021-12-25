@@ -37,7 +37,7 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 
 	private int minimumOptionalPoliciesRequirement;
 
-	abstract protected B cast();
+	protected abstract B cast();
 
 	public B required(PasswordPolicy<E> policy) {
 		this.requiredPolicies.add(policy);
