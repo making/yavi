@@ -99,6 +99,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 	/**
 	 * Deprecated in favor of {@link #mapError(Function)}
+	 * @deprecated use {@link #mapError(Function)} instead
 	 * @since 0.7.0
 	 */
 	@Deprecated
