@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.charsequence;
 import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
 import am.ik.yavi.jsr305.Nullable;
 
-public class Emoji {
+public final class Emoji {
 	private static final String COMBINING_ENCLOSING_KEYCAP = new String(
 			new int[] { 0x20E3 }, 0, 1);
 
@@ -54,11 +54,13 @@ public class Emoji {
 
 	private static final String ZERO_WIDTH_JOINER = "\u200D";
 
+	private Emoji() {}
+
 	/**
 	 * Try to return the length of the given string.<br>
 	 * This method does not grantee the exact length.
 	 * @see <a href="https://unicode.org/Public/emoji/12.0/emoji-test.txt">Emoji 12.0</a>
-	 * @param str
+	 * @param str the string to perform the best effort count on
 	 * @return the length of the given string which may be true
 	 */
 	public static int bestEffortCount(@Nullable String str) {

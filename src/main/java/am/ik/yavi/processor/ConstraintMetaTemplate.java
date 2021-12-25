@@ -23,23 +23,25 @@ import java.util.Set;
 /**
  * @since 0.4.0
  */
-class ConstraintMetaTemplate {
+final class ConstraintMetaTemplate {
 
-	private static final Set<String> supportedTypes = new HashSet<String>() {
-		{
-			add(BigDecimal.class.getName());
-			add(BigInteger.class.getName());
-			add(Boolean.class.getName());
-			add(Byte.class.getName());
-			add(Character.class.getName());
-			add(Double.class.getName());
-			add(Float.class.getName());
-			add(Integer.class.getName());
-			add(Long.class.getName());
-			add(Short.class.getName());
-			add(String.class.getName());
-		}
-	};
+  	private static final Set<String> supportedTypes = new HashSet<>();
+
+	static {
+		supportedTypes.add(BigDecimal.class.getName());
+		supportedTypes.add(BigInteger.class.getName());
+		supportedTypes.add(Boolean.class.getName());
+		supportedTypes.add(Byte.class.getName());
+		supportedTypes.add(Character.class.getName());
+		supportedTypes.add(Double.class.getName());
+		supportedTypes.add(Float.class.getName());
+		supportedTypes.add(Integer.class.getName());
+		supportedTypes.add(Long.class.getName());
+		supportedTypes.add(Short.class.getName());
+		supportedTypes.add(String.class.getName());
+	}
+
+	private ConstraintMetaTemplate() {}
 
 	static String template(String className, String type, String target, String method,
 			boolean useField) {
