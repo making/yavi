@@ -42,6 +42,7 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public ByteSizeConstraint<T, E> fixedSize(int size) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -50,6 +51,7 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public ByteSizeConstraint<T, E> greaterThan(int min) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -58,6 +60,7 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public ByteSizeConstraint<T, E> greaterThanOrEqual(int min) {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(
 				this.checkSizePredicate(x -> size(x) >= min, this::size),
@@ -65,6 +68,7 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public ByteSizeConstraint<T, E> lessThan(int max) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -73,6 +77,7 @@ public class ByteSizeConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public ByteSizeConstraint<T, E> lessThanOrEqual(int max) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
