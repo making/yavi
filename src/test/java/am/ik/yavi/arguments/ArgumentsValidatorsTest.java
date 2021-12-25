@@ -13,6 +13,7 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validated;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class ArgumentsValidatorsTest {
 			.of("country", c -> c.notBlank().greaterThanOrEqual(2)).build(Country::new);
 
 	static final StringValidator<String> streetValidator = StringValidatorBuilder
-			.of("street", c -> c.notBlank()).build();
+			.of("street", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<PhoneNumber> phoneNumberValidator = StringValidatorBuilder
 			.of("phoneNumber",
@@ -43,34 +44,34 @@ class ArgumentsValidatorsTest {
 			.compose(map -> map.get("phoneNumber"));
 
 	static final StringValidator<String> v1 = StringValidatorBuilder
-			.of("s1", c -> c.notBlank()).build();
+			.of("s1", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v2 = StringValidatorBuilder
-			.of("s2", c -> c.notBlank()).build();
+			.of("s2", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v3 = StringValidatorBuilder
-			.of("s3", c -> c.notBlank()).build();
+			.of("s3", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v4 = StringValidatorBuilder
-			.of("s4", c -> c.notBlank()).build();
+			.of("s4", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v5 = StringValidatorBuilder
-			.of("s5", c -> c.notBlank()).build();
+			.of("s5", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v6 = StringValidatorBuilder
-			.of("s6", c -> c.notBlank()).build();
+			.of("s6", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v7 = StringValidatorBuilder
-			.of("s7", c -> c.notBlank()).build();
+			.of("s7", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v8 = StringValidatorBuilder
-			.of("s8", c -> c.notBlank()).build();
+			.of("s8", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v9 = StringValidatorBuilder
-			.of("s9", c -> c.notBlank()).build();
+			.of("s9", CharSequenceConstraint::notBlank).build();
 
 	static final StringValidator<String> v10 = StringValidatorBuilder
-			.of("s10", c -> c.notBlank()).build();
+			.of("s10", CharSequenceConstraint::notBlank).build();
 
 	static final Arguments10Validator<String, String, String, String, String, String, String, String, String, String, List<String>> arguments10Validator = v1
 			.split(v2).split(v3).split(v4).split(v5).split(v6).split(v7).split(v8)
@@ -403,7 +404,7 @@ class ArgumentsValidatorsTest {
 		Validated<Optional<PhoneNumber>> actual2 = phoneNumberOptionalValidator
 				.validate(Optional.empty());
 		assertThat(actual2.isValid()).isTrue();
-		assertThat(actual2.value()).isEqualTo(Optional.empty());
+		assertThat(actual2.value()).isEmpty();
 	}
 
 	@ParameterizedTest

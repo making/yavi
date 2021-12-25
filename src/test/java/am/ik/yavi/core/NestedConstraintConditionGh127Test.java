@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class NestedConstraintConditionGh127Test {
+class NestedConstraintConditionGh127Test {
 
 	@Test
 	void shouldReturnProperViolationForOneLevelNestedObjectWithConditionalValidator() {

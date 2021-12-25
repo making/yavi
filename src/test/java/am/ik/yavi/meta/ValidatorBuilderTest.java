@@ -18,6 +18,10 @@ package am.ik.yavi.meta;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import am.ik.yavi.constraint.BooleanConstraint;
+import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
+import am.ik.yavi.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +34,7 @@ import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validator;
 
-public class ValidatorBuilderTest {
+class ValidatorBuilderTest {
 
 	@Test
 	void allTypesBeanMeta() {
@@ -39,8 +43,8 @@ public class ValidatorBuilderTest {
 						c -> c.greaterThan(BigDecimal.ZERO))
 				.constraint(_AllTypesBeanMeta.BIGINTEGERVALUE,
 						c -> c.greaterThan(BigInteger.ZERO))
-				.constraint(_AllTypesBeanMeta.BOOLEANPRIMITIVEVALUE, c -> c.isTrue())
-				.constraint(_AllTypesBeanMeta.BOOLEANVALUE, c -> c.isTrue())
+				.constraint(_AllTypesBeanMeta.BOOLEANPRIMITIVEVALUE, BooleanConstraint::isTrue)
+				.constraint(_AllTypesBeanMeta.BOOLEANVALUE, BooleanConstraint::isTrue)
 				.constraint(_AllTypesBeanMeta.BYTEPRIMITIVEVALUE,
 						c -> c.greaterThan((byte) 0))
 				.constraint(_AllTypesBeanMeta.BYTEVALUE, c -> c.greaterThan((byte) 0))
@@ -57,14 +61,14 @@ public class ValidatorBuilderTest {
 				.constraint(_AllTypesBeanMeta.INTEGERPRIMITIVEVALUE,
 						c -> c.greaterThan(0))
 				.constraint(_AllTypesBeanMeta.INTEGERVALUE, c -> c.greaterThan(0))
-				.constraint(_AllTypesBeanMeta.LOCALDATEVALUE, c -> c.notNull())
+				.constraint(_AllTypesBeanMeta.LOCALDATEVALUE, Constraint::notNull)
 				.constraint(_AllTypesBeanMeta.LONGPRIMITIVEVALUE,
 						c -> c.greaterThan((long) 0))
 				.constraint(_AllTypesBeanMeta.LONGVALUE, c -> c.greaterThan((long) 0))
 				.constraint(_AllTypesBeanMeta.SHORTPRIMITIVEVALUE,
 						c -> c.greaterThan((short) 0))
 				.constraint(_AllTypesBeanMeta.SHORTVALUE, c -> c.greaterThan((short) 0))
-				.constraint(_AllTypesBeanMeta.STRINGVALUE, c -> c.notEmpty())
+				.constraint(_AllTypesBeanMeta.STRINGVALUE, ContainerConstraintBase::notEmpty)
 				//
 				.build();
 
@@ -144,8 +148,8 @@ public class ValidatorBuilderTest {
 						c -> c.greaterThan(BigDecimal.ZERO))
 				.constraint(_AllTypesImmutableMeta.BIGINTEGERVALUE,
 						c -> c.greaterThan(BigInteger.ZERO))
-				.constraint(_AllTypesImmutableMeta.BOOLEANPRIMITIVEVALUE, c -> c.isTrue())
-				.constraint(_AllTypesImmutableMeta.BOOLEANVALUE, c -> c.isTrue())
+				.constraint(_AllTypesImmutableMeta.BOOLEANPRIMITIVEVALUE, BooleanConstraint::isTrue)
+				.constraint(_AllTypesImmutableMeta.BOOLEANVALUE, BooleanConstraint::isTrue)
 				.constraint(_AllTypesImmutableMeta.BYTEPRIMITIVEVALUE,
 						c -> c.greaterThan((byte) 0))
 				.constraint(_AllTypesImmutableMeta.BYTEVALUE,
@@ -163,7 +167,7 @@ public class ValidatorBuilderTest {
 				.constraint(_AllTypesImmutableMeta.INTEGERPRIMITIVEVALUE,
 						c -> c.greaterThan(0))
 				.constraint(_AllTypesImmutableMeta.INTEGERVALUE, c -> c.greaterThan(0))
-				.constraint(_AllTypesImmutableMeta.LOCALDATEVALUE, c -> c.notNull())
+				.constraint(_AllTypesImmutableMeta.LOCALDATEVALUE, Constraint::notNull)
 				.constraint(_AllTypesImmutableMeta.LONGPRIMITIVEVALUE,
 						c -> c.greaterThan((long) 0))
 				.constraint(_AllTypesImmutableMeta.LONGVALUE,
@@ -172,7 +176,7 @@ public class ValidatorBuilderTest {
 						c -> c.greaterThan((short) 0))
 				.constraint(_AllTypesImmutableMeta.SHORTVALUE,
 						c -> c.greaterThan((short) 0))
-				.constraint(_AllTypesImmutableMeta.STRINGVALUE, c -> c.notEmpty())
+				.constraint(_AllTypesImmutableMeta.STRINGVALUE, ContainerConstraintBase::notEmpty)
 				//
 				.build();
 
@@ -234,8 +238,8 @@ public class ValidatorBuilderTest {
 						c -> c.greaterThan(BigDecimal.ZERO))
 				.constraint(_AllTypesFieldMeta.BIGINTEGERVALUE,
 						c -> c.greaterThan(BigInteger.ZERO))
-				.constraint(_AllTypesFieldMeta.BOOLEANPRIMITIVEVALUE, c -> c.isTrue())
-				.constraint(_AllTypesFieldMeta.BOOLEANVALUE, c -> c.isTrue())
+				.constraint(_AllTypesFieldMeta.BOOLEANPRIMITIVEVALUE, BooleanConstraint::isTrue)
+				.constraint(_AllTypesFieldMeta.BOOLEANVALUE, BooleanConstraint::isTrue)
 				.constraint(_AllTypesFieldMeta.BYTEPRIMITIVEVALUE,
 						c -> c.greaterThan((byte) 0))
 				.constraint(_AllTypesFieldMeta.BYTEVALUE, c -> c.greaterThan((byte) 0))
@@ -252,14 +256,14 @@ public class ValidatorBuilderTest {
 				.constraint(_AllTypesFieldMeta.INTEGERPRIMITIVEVALUE,
 						c -> c.greaterThan(0))
 				.constraint(_AllTypesFieldMeta.INTEGERVALUE, c -> c.greaterThan(0))
-				.constraint(_AllTypesFieldMeta.LOCALDATEVALUE, c -> c.notNull())
+				.constraint(_AllTypesFieldMeta.LOCALDATEVALUE, Constraint::notNull)
 				.constraint(_AllTypesFieldMeta.LONGPRIMITIVEVALUE,
 						c -> c.greaterThan((long) 0))
 				.constraint(_AllTypesFieldMeta.LONGVALUE, c -> c.greaterThan((long) 0))
 				.constraint(_AllTypesFieldMeta.SHORTPRIMITIVEVALUE,
 						c -> c.greaterThan((short) 0))
 				.constraint(_AllTypesFieldMeta.SHORTVALUE, c -> c.greaterThan((short) 0))
-				.constraint(_AllTypesFieldMeta.STRINGVALUE, c -> c.notEmpty())
+				.constraint(_AllTypesFieldMeta.STRINGVALUE, ContainerConstraintBase::notEmpty)
 				//
 				.build();
 
@@ -347,11 +351,11 @@ public class ValidatorBuilderTest {
 				.of(UserService::createUser) //
 				.builder(b -> b //
 						.constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE,
-								c -> c.notNull())
+								Constraint::notNull)
 						.constraint(_UserServiceCreateUserArgumentsMeta.EMAIL,
-								c -> c.email())
+								CharSequenceConstraint::email)
 						.constraint(_UserServiceCreateUserArgumentsMeta.NAME,
-								c -> c.notNull()))
+								Constraint::notNull))
 				.build();
 
 		assertThatThrownBy(() -> validator.validated(userService, "jd", null)) //

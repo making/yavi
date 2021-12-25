@@ -23,9 +23,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ConstraintViolationsTest {
+class ConstraintViolationsTest {
+
 	@Test
-	public void apply() {
+	void apply() {
 		SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
 		ConstraintViolations violations = new ConstraintViolations();
 		violations.add(new ConstraintViolation("foo0", "abc0", "hello0",
@@ -35,8 +36,7 @@ public class ConstraintViolationsTest {
 
 		BindingResult bindingResult = new BindingResult();
 		violations.apply(bindingResult::rejectValue);
-		assertThat(bindingResult.toString())
-				.isEqualTo("[foo0_abc0_[1]_hello0][foo1_abc1_[1]_hello1]");
+		assertThat(bindingResult).hasToString("[foo0_abc0_[1]_hello0][foo1_abc1_[1]_hello1]");
 	}
 
 	static class BindingResult {

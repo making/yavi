@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,13 +25,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolationsException;
 
-public class MethodInvocationTest {
+class MethodInvocationTest {
 	static final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
 			.of(UserService::createUser) //
 			.builder(b -> b //
-					._object(Arguments1::arg1, "userService", c -> c.notNull())
-					._string(Arguments2::arg2, "email", c -> c.email())
-					._string(Arguments3::arg3, "name", c -> c.notNull())) //
+					._object(Arguments1::arg1, "userService", Constraint::notNull)
+					._string(Arguments2::arg2, "email", CharSequenceConstraint::email)
+					._string(Arguments3::arg3, "name", Constraint::notNull)) //
 			.build();
 	static final UserService userService = new UserService();
 

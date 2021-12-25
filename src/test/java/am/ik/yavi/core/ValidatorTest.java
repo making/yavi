@@ -24,6 +24,7 @@ import am.ik.yavi.ConstraintViolationsException;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
@@ -36,7 +37,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class ValidatorTest {
 	@Test
-	public void allInvalid() throws Exception {
+	public void allInvalid() {
 		User user = new User("", "example.com", 300);
 		user.setEnabled(false);
 		Validator<User> validator = validator();
@@ -58,7 +59,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedRange() throws Exception {
+	public void codePointsAllIncludedRange() {
 		CodePointsRanges<String> whiteList = () -> Arrays.asList(
 				CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
 				CodePoints.Range.of(0x0061/* a */, 0x007A /* z */));
@@ -77,7 +78,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedRangeBeginToEnd() throws Exception {
+	public void codePointsAllIncludedRangeBeginToEnd() {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -92,7 +93,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedRangeRange() throws Exception {
+	public void codePointsAllIncludedRangeRange() {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class).constraint(
 				User::getName, "name",
@@ -108,7 +109,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedSet() throws Exception {
+	public void codePointsAllIncludedSet() {
 		CodePointsSet<String> whiteList = () -> new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
 						0x0044 /* D */, 0x0045 /* E */, 0x0046 /* F */, 0x0047 /* G */,
@@ -139,7 +140,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedSetSet() throws Exception {
+	public void codePointsAllIncludedSetSet() {
 		Set<Integer> whiteList = new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
 						0x0044 /* D */, 0x0045 /* E */, 0x0046 /* F */, 0x0047 /* G */,
@@ -170,7 +171,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsNotIncludedRange() throws Exception {
+	public void codePointsNotIncludedRange() {
 		CodePointsRanges<String> blackList = () -> Arrays.asList(
 				CodePoints.Range.of(0x0041/* A */, 0x0042 /* B */),
 				CodePoints.Range.of(0x0061/* a */, 0x0062 /* b */));
@@ -189,7 +190,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsNotIncludedSet() throws Exception {
+	public void codePointsNotIncludedSet() {
 		CodePointsSet<String> blackList = () -> new HashSet<>(
 				Arrays.asList(0x0061 /* a */, 0x0062 /* b */));
 
@@ -207,7 +208,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void combiningCharacterByteSizeInValid() throws Exception {
+	public void combiningCharacterByteSizeInValid() {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -221,7 +222,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void combiningCharacterSizeAndByteSizeInValid() throws Exception {
+	public void combiningCharacterSizeAndByteSizeInValid() {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -237,7 +238,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void combiningCharacterValid() throws Exception {
+	public void combiningCharacterValid() {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -293,7 +294,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void customMessageFormatter() throws Exception {
+	public void customMessageFormatter() {
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.messageFormatter((messageKey, defaultMessageFormat, args,
 						locale) -> args[0].toString().toUpperCase() + "."
@@ -311,7 +312,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void details() throws Exception {
+	public void details() {
 		User user = new User("", "example.com", 300);
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
@@ -333,12 +334,11 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void emojiInValid() throws Exception {
+	public void emojiInValid() {
 		User user = new User("I❤️☕️", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name", c -> c.emoji().greaterThan(3)).build();
 		ConstraintViolations violations = validator.validate(user);
-		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message()).isEqualTo(
@@ -346,7 +346,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void emojiValid() throws Exception {
+	public void emojiValid() {
 		User user = new User("I❤️☕️", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name", c -> c.emoji().lessThanOrEqual(3))
@@ -442,7 +442,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void ivsByteSizeInValid() throws Exception {
+	public void ivsByteSizeInValid() {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -457,7 +457,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void ivsInValid() throws Exception {
+	public void ivsInValid() {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -471,7 +471,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void ivsSizeAndByteSizeInValid() throws Exception {
+	public void ivsSizeAndByteSizeInValid() {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -487,7 +487,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void ivsValid() throws Exception {
+	public void ivsValid() {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
@@ -500,7 +500,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void multipleViolationOnOneProperty() throws Exception {
+	public void multipleViolationOnOneProperty() {
 		User user = new User("foo", "aa", 200);
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
@@ -516,7 +516,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void nullValues() throws Exception {
+	public void nullValues() {
 		User user = new User(null, null, null);
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
@@ -606,7 +606,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void throwIfInValidInValid() throws Exception {
+	public void throwIfInValidInValid() {
 		User user = new User("foo", "foo@example.com", -1);
 		try {
 			validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);
@@ -624,13 +624,13 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void throwIfInValidValid() throws Exception {
+	public void throwIfInValidValid() {
 		User user = new User("foo", "foo@example.com", 30);
 		validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);
 	}
 
 	@Test
-	public void valid() throws Exception {
+	public void valid() {
 		User user = new User("foo", "foo@example.com", 30);
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
@@ -638,7 +638,7 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void validateToEitherInValid() throws Exception {
+	public void validateToEitherInValid() {
 		User user = new User("foo", "foo@example.com", -1);
 		Either<ConstraintViolations, User> either = validator().either().validate(user);
 		assertThat(either.isLeft()).isTrue();
@@ -652,11 +652,11 @@ public class ValidatorTest {
 	}
 
 	@Test
-	public void validateToEitherValid() throws Exception {
+	public void validateToEitherValid() {
 		User user = new User("foo", "foo@example.com", 30);
 		Either<ConstraintViolations, User> either = validator().either().validate(user);
 		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isSameAs(user);
+		assertThat(either.right()).containsSame(user);
 	}
 
 	@Test
@@ -704,7 +704,7 @@ public class ValidatorTest {
 				.constraint(User::getAge, "age", c -> c.notNull() //
 						.greaterThanOrEqual(0) //
 						.lessThanOrEqual(200)) //
-				.constraint(User::isEnabled, "enabled", c -> c.isTrue()) //
+				.constraint(User::isEnabled, "enabled", BooleanConstraint::isTrue) //
 				.build();
 	}
 

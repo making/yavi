@@ -21,6 +21,7 @@ import java.util.Locale;
 
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.message.SimpleMessageFormatter;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class BiValidatorTest {
 					c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
 			.constraint(User::getAge, "age",
 					c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
-			.constraint(User::isEnabled, "enabled", c -> c.isTrue())
+			.constraint(User::isEnabled, "enabled", BooleanConstraint::isTrue)
 			.build((errors, name, messageKey, args, defaultMessage) -> errors
 					.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
 							new SimpleMessageFormatter(), Locale.ENGLISH)));
@@ -47,7 +48,7 @@ public class BiValidatorTest {
 		final List<ConstraintViolation> violations = new ArrayList<>();
 
 		validator.accept(user, violations);
-		assertThat(violations.size()).isEqualTo(0);
+		assertThat(violations.size()).isZero();
 	}
 
 	@Test

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Gh127Test {
+class Gh127Test {
 
 	private static Container2 container2(String value) {
 		return new Container2(new Container1(value));

@@ -16,21 +16,22 @@
 package am.ik.yavi.constraint.password;
 
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ObjectPasswordConstraintTest {
+class ObjectPasswordConstraintTest {
 	PasswordPolicy<Account> passwordPolicy = PasswordPolicy.of("UsernameNotIncluded",
 			account -> !account.password().toUpperCase()
 					.contains(account.username().toUpperCase()));
 
 	Validator<Account> validator = ValidatorBuilder.<Account> of()
-			.constraint(Account::username, "username", c -> c.notBlank())
+			.constraint(Account::username, "username", CharSequenceConstraint::notBlank)
 			.constraint(Account::password, "password",
-					c -> c.greaterThanOrEqual(8).password(policy -> policy.strong()))
+					c -> c.greaterThanOrEqual(8).password(CharSequencePasswordPoliciesBuilder::strong))
 			.constraintOnTarget("password",
 					c -> c.password(policy -> policy.required(passwordPolicy).build()))
 			.build();

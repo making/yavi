@@ -1,15 +1,16 @@
 package am.ik.yavi.core;
 
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.CharSequenceConstraint;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Gh145Test {
+class Gh145Test {
 
 	private static final Validator<Address> ADDRESS_VALIDATOR = ValidatorBuilder
 			.of(Address.class)
-			.constraint(Address::getCity, "city", city -> city.notBlank())
+			.constraint(Address::getCity, "city", CharSequenceConstraint::notBlank)
 			.nestIfPresent(Address::getCountry, "country",
 					countryValidatorBuilder -> countryValidatorBuilder
 							.constraint(Country::getCode, "code",
@@ -18,11 +19,11 @@ public class Gh145Test {
 									(country, group) -> country.getName() != null,
 									conditionalCountryBuilder -> conditionalCountryBuilder
 											.constraint(Country::getCode, "code",
-													code -> code.notBlank())))
+													CharSequenceConstraint::notBlank)))
 			.build();
 
 	private static final Validator<Person> PERSON_VALIDATOR = ValidatorBuilder
-			.of(Person.class).constraint(Person::getName, "name", name -> name.notBlank())
+			.of(Person.class).constraint(Person::getName, "name", CharSequenceConstraint::notBlank)
 			.nestIfPresent(Person::getAddress, "address", ADDRESS_VALIDATOR).build();
 
 	@Test

@@ -64,7 +64,8 @@ class BigIntegerValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(BigIntegerValidator<Price> priceValidator) {
-		assertThatThrownBy(() -> priceValidator.validated(BigInteger.valueOf(-1)))
+		BigInteger invalidBigInteger = BigInteger.valueOf(-1);
+		assertThatThrownBy(() -> priceValidator.validated(invalidBigInteger))
 				.isInstanceOf(ConstraintViolationsException.class)
 				.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}

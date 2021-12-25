@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Gh156Test {
+class Gh156Test {
 	static class Person {
 		private final String firstName;
 
@@ -64,14 +64,14 @@ public class Gh156Test {
 		final Validated<Person> validated = personValidator.validate("John", "Michael",
 				"Doe");
 		assertThat(validated.isValid()).isTrue();
-		assertThat(validated.value().toString()).isEqualTo("John Michael Doe");
+		assertThat(validated.value()).hasToString("John Michael Doe");
 	}
 
 	@Test
 	void nullable() {
 		final Validated<Person> validated = personValidator.validate("John", null, "Doe");
 		assertThat(validated.isValid()).isTrue();
-		assertThat(validated.value().toString()).isEqualTo("John Doe");
+		assertThat(validated.value()).hasToString("John Doe");
 	}
 
 	@Test

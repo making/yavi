@@ -30,7 +30,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-public class NestedValidatorTest extends AbstractNestedValidatorTest {
+class NestedValidatorTest extends AbstractNestedValidatorTest {
 	@Override
 	protected Validator<Address> validator() {
 		return ValidatorBuilder.<Address> of()
@@ -41,22 +41,22 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 				.build();
 	}
 
-	private ConstraintCondition<IntRange> whenAllOfNumbersNotNull = (r,
-			g) -> r.small != null && r.big != null;
+	private final ConstraintCondition<IntRange> whenAllOfNumbersNotNull = (r,
+																		   g) -> r.small != null && r.big != null;
 
-	private Validator<IntRange> thenCompareNumbers = ValidatorBuilder.of(IntRange.class)
+	private final Validator<IntRange> thenCompareNumbers = ValidatorBuilder.of(IntRange.class)
 			.constraintOnTarget(r -> r.big > r.small, "big", null,
 					"[big] must be greater than [small]")
 			.build();
 
-	private Validator<IntRange> intRangeValidator = ValidatorBuilder.of(IntRange.class)
+	private final Validator<IntRange> intRangeValidator = ValidatorBuilder.of(IntRange.class)
 			.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.small, "small",
 					Constraint::notNull)
 			.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.big, "big",
 					Constraint::notNull)
 			.constraintOnCondition(whenAllOfNumbersNotNull, thenCompareNumbers).build();
 
-	private Validator<NestedObject> nestedObjectValidator = ValidatorBuilder
+	private final Validator<NestedObject> nestedObjectValidator = ValidatorBuilder
 			.<NestedObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
@@ -65,14 +65,14 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
 			.build();
 
-	private Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject> of()
+	private final Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
 			.constraintOnCondition(UPDATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
 			.nest(MainObject::getNested, "nested", nestedObjectValidator).build();
 
-	private Validator<MainObject> mainObjectIfPresentValidator = ValidatorBuilder
+	private final Validator<MainObject> mainObjectIfPresentValidator = ValidatorBuilder
 			.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
@@ -81,7 +81,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.nestIfPresent(MainObject::getNested, "nested", nestedObjectValidator)
 			.build();
 
-	private Validator<NestedObject> nestedObjectValidator_GH29 = ValidatorBuilder
+	private final Validator<NestedObject> nestedObjectValidator_GH29 = ValidatorBuilder
 			.<NestedObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
@@ -90,7 +90,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
 			.build();
 
-	private Validator<MainObject> mainObjectValidator_GH29 = ValidatorBuilder
+	private final Validator<MainObject> mainObjectValidator_GH29 = ValidatorBuilder
 			.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
@@ -103,7 +103,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 					.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
 			.build();
 
-	private Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder
+	private final Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder
 			.<NestedObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
@@ -112,7 +112,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
 			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator).build();
 
-	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder
+	private final Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder
 			.<MainObject> of()
 			.constraintOnCondition(CREATE.toCondition(),
 					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))

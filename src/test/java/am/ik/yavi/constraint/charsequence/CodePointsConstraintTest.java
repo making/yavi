@@ -40,9 +40,9 @@ public class CodePointsConstraintTest {
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
 
-		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("ABCD")).isNotPresent();
+		assertThat(predicate.violatedValue("ABcD")).isNotPresent();
+		assertThat(predicate.violatedValue("AbcD")).isNotPresent();
 		assertThat(predicate.violatedValue("AbCＤ").get().value())
 				.isEqualTo(Collections.singletonList("Ｄ"));
 		assertThat(predicate.violatedValue("AbあCＤ").get().value())
@@ -70,9 +70,9 @@ public class CodePointsConstraintTest {
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
 
-		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("ABCD")).isNotPresent();
+		assertThat(predicate.violatedValue("ABcD")).isNotPresent();
+		assertThat(predicate.violatedValue("AbcD")).isNotPresent();
 		assertThat(predicate.violatedValue("AbCＤ").get().value())
 				.isEqualTo(Collections.singletonList("Ｄ"));
 		assertThat(predicate.violatedValue("AbあCＤ").get().value())
@@ -88,8 +88,8 @@ public class CodePointsConstraintTest {
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.codePoints(blackList).asBlackList().predicates().peekFirst();
 
-		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("cd").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("CD")).isNotPresent();
+		assertThat(predicate.violatedValue("cd")).isNotPresent();
 		assertThat(predicate.violatedValue("ABCD").get().value())
 				.isEqualTo(Arrays.asList("A", "B"));
 		assertThat(predicate.violatedValue("AbCD").get().value())
@@ -104,9 +104,9 @@ public class CodePointsConstraintTest {
 		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
 				.codePoints(blackList).asBlackList().predicates().peekFirst();
 
-		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ab").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("abCD").isPresent()).isFalse();
+		assertThat(predicate.violatedValue("CD")).isNotPresent();
+		assertThat(predicate.violatedValue("ab")).isNotPresent();
+		assertThat(predicate.violatedValue("abCD")).isNotPresent();
 		assertThat(predicate.violatedValue("AbCD").get().value())
 				.isEqualTo(Collections.singletonList("A"));
 		assertThat(predicate.violatedValue("ABCD").get().value())

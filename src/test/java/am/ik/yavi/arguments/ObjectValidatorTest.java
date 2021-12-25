@@ -82,7 +82,8 @@ class ObjectValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(ObjectValidator<Instant, Date> dateValidator) {
-		assertThatThrownBy(() -> dateValidator.validated(Instant.now().plusSeconds(1)))
+		Instant invalidInstant = Instant.now().plusSeconds(1);
+		assertThatThrownBy(() -> dateValidator.validated(invalidInstant))
 				.isInstanceOf(ConstraintViolationsException.class)
 				.hasMessageContaining("\"createdAt\" must be past");
 	}

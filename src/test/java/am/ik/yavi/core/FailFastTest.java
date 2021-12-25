@@ -27,7 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FailFastTest {
+class FailFastTest {
 
 	@ParameterizedTest
 	@MethodSource("carValidator")

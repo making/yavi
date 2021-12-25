@@ -32,7 +32,7 @@ import static am.ik.yavi.constraint.password.PasswordPolicy.SYMBOLS;
 import static am.ik.yavi.constraint.password.PasswordPolicy.UPPERCASE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CharSequencePasswordConstraintTest {
+class CharSequencePasswordConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "ABCD", "A12b", "Ab12#!" })
 	void validPassword_uppercase(String input) {

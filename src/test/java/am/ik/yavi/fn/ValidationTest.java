@@ -39,9 +39,8 @@ class ValidationTest {
 				.value()).isEqualTo("test");
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).value())
 				.isEqualTo("hello test");
-		assertThat(validation).isEqualTo(Validation.success("test"));
-		assertThat(validation.hashCode())
-				.isEqualTo(Validation.success("test").hashCode());
+		assertThat(validation).isEqualTo(Validation.success("test"))
+				.hasSameHashCodeAs(Validation.success("test"));
 	}
 
 	@Test
@@ -58,9 +57,8 @@ class ValidationTest {
 				.errors()).isEqualTo(Arrays.asList("ERRORS1", "ERRORS2"));
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).errors())
 				.isEqualTo(Arrays.asList("errors1", "errors2"));
-		assertThat(validation).isEqualTo(Validation.failure("errors1", "errors2"));
-		assertThat(validation.hashCode())
-				.isEqualTo(Validation.failure("errors1", "errors2").hashCode());
+		assertThat(validation).isEqualTo(Validation.failure("errors1", "errors2"))
+				.hasSameHashCodeAs(Validation.failure("errors1", "errors2"));
 	}
 
 	@Test
@@ -106,7 +104,7 @@ class ValidationTest {
 		final Validation<String, String> validation = Validation.success("test");
 		final Either<List<String>, String> either = validation.toEither();
 		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isEqualTo("test");
+		assertThat(either.right()).contains("test");
 	}
 
 	@Test
@@ -115,7 +113,7 @@ class ValidationTest {
 				"errors2");
 		final Either<List<String>, String> either = validation.toEither();
 		assertThat(either.isLeft()).isTrue();
-		assertThat(either.left().get()).isEqualTo(Arrays.asList("errors1", "errors2"));
+		assertThat(either.left()).contains(Arrays.asList("errors1", "errors2"));
 	}
 
 	@Test

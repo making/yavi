@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class EitherTest {
+class EitherTest {
 
 	@Test
 	void bimapForLeft() {
@@ -58,7 +58,7 @@ public class EitherTest {
 		Either<String, Integer> either = Either.left("Hello");
 		assertThat(either.isLeft()).isTrue();
 		assertThat(either.isRight()).isFalse();
-		assertThat(either.left().get()).isEqualTo("Hello");
+		assertThat(either.left()).contains("Hello");
 	}
 
 	@Test
@@ -72,9 +72,9 @@ public class EitherTest {
 		Either<String, Integer> either = Either.right(100);
 		assertThatThrownBy(() -> either
 				.leftOrElseThrow(x -> new IllegalArgumentException(x.toString())))
-						.isInstanceOfSatisfying(IllegalArgumentException.class, e -> {
-							assertThat(e.getMessage()).isEqualTo("100");
-						});
+						.isInstanceOfSatisfying(IllegalArgumentException.class, e ->
+							assertThat(e.getMessage()).isEqualTo("100")
+						);
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class EitherTest {
 		Either<String, Integer> either = Either.right(100);
 		assertThat(either.isLeft()).isFalse();
 		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isEqualTo(100);
+		assertThat(either.right()).contains(100);
 	}
 
 	@Test
@@ -118,9 +118,9 @@ public class EitherTest {
 	void rightOrElseThrow() {
 		Either<String, Integer> either = Either.left("100");
 		assertThatThrownBy(() -> either.rightOrElseThrow(IllegalArgumentException::new))
-				.isInstanceOfSatisfying(IllegalArgumentException.class, e -> {
-					assertThat(e.getMessage()).isEqualTo("100");
-				});
+				.isInstanceOfSatisfying(IllegalArgumentException.class, e ->
+					assertThat(e.getMessage()).isEqualTo("100")
+				);
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class EitherTest {
 		AtomicInteger lref = new AtomicInteger(0);
 		AtomicBoolean rref = new AtomicBoolean(false);
 		Either.<Integer, Boolean> right(true).peekRight(rref::set);
-		assertThat(lref.get()).isEqualTo(0);
+		assertThat(lref.get()).isZero();
 		assertThat(rref.get()).isTrue();
 	}
 

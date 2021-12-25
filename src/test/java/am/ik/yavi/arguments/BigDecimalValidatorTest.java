@@ -64,7 +64,8 @@ class BigDecimalValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(BigDecimalValidator<Price> priceValidator) {
-		assertThatThrownBy(() -> priceValidator.validated(BigDecimal.valueOf(-1)))
+		BigDecimal invalidBigDecimal = BigDecimal.valueOf(-1);
+		assertThatThrownBy(() -> priceValidator.validated(invalidBigDecimal))
 				.isInstanceOf(ConstraintViolationsException.class)
 				.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
