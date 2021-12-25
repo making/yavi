@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 /**
  * @since 0.7.0
  */
-public class InetAddressUtils {
+public final class InetAddressUtils {
 	public static final String IPV4_REGEX = "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$";
 
 	private static final Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
@@ -39,6 +39,8 @@ public class InetAddressUtils {
 
 	// Max hex digits in each IPv6 group
 	private static final int IPV6_MAX_HEX_DIGITS_PER_GROUP = 4;
+
+	private InetAddressUtils() {}
 
 	public static boolean isIpv4(String s) {
 		return IPV4_PATTERN.matcher(s).matches();
@@ -121,7 +123,7 @@ public class InetAddressUtils {
 				if (octet.length() > IPV6_MAX_HEX_DIGITS_PER_GROUP) {
 					return false;
 				}
-				int octetInt = 0;
+				int octetInt;
 				try {
 					octetInt = Integer.parseInt(octet, BASE_16);
 				}
@@ -134,10 +136,7 @@ public class InetAddressUtils {
 			}
 			validOctets++;
 		}
-		if (validOctets > IPV6_MAX_HEX_GROUPS
-				|| (validOctets < IPV6_MAX_HEX_GROUPS && !containsCompressedZeroes)) {
-			return false;
-		}
-		return true;
+		return validOctets <= IPV6_MAX_HEX_GROUPS
+				&& (validOctets >= IPV6_MAX_HEX_GROUPS || containsCompressedZeroes);
 	}
 }
