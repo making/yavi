@@ -24,6 +24,7 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.fn.Validations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class ApplicativeValidationTest {
 
 	static final ApplicativeValidator<String> streetValidator = ValidatorBuilder
-			.of(String.class)._string(s -> s, "street", c -> c.notBlank()).build()
+			.of(String.class)._string(s -> s, "street", CharSequenceConstraint::notBlank).build()
 			.applicative();
 
 	static final ValueValidator<Map<String, String>, Country> mapCountryValidator = Country

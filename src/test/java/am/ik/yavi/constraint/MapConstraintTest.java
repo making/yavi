@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -135,7 +136,7 @@ class MapConstraintTest {
 
 	@Test
 	void notEmpty() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.notEmpty());
+		Predicate<Map<String, String>> predicate = retrievePredicate(ContainerConstraintBase::notEmpty);
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.emptyMap())).isFalse();
 	}

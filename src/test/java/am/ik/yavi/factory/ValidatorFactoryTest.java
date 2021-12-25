@@ -16,6 +16,7 @@
 package am.ik.yavi.factory;
 
 import am.ik.yavi.User;
+import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class ValidatorFactoryTest {
 						.constraint(User::getAge, "age",
 								c -> c.notNull().greaterThanOrEqual(0)
 										.lessThanOrEqual(200))
-						.constraint(User::isEnabled, "enabled", c -> c.isTrue()));
+						.constraint(User::isEnabled, "enabled", BooleanConstraint::isTrue));
 
 		final User user = new User("", "example.com", 300);
 		user.setEnabled(false);

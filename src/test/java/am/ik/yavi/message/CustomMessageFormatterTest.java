@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.message;
 
+import am.ik.yavi.core.Constraint;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,7 @@ class CustomMessageFormatterTest {
 		final Validator<User> validator = ValidatorBuilder.<User> of()
 				.messageFormatter(CustomMessageFormatter.INSTANCE)
 				.constraint(User::getName, "name", c -> c.greaterThanOrEqual(2))
-				.constraint(User::getEmail, "email", c -> c.notNull())
+				.constraint(User::getEmail, "email", Constraint::notNull)
 				.constraint(User::getAge, "age", c -> c.lessThanOrEqual(20)).build();
 
 		final ConstraintViolations violations = validator

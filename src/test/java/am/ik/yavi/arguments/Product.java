@@ -16,6 +16,7 @@
 package am.ik.yavi.arguments;
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
 
 public class Product {
 	private final String name;
@@ -24,7 +25,7 @@ public class Product {
 	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder
 			.of(Product::new) //
 			.builder(b -> b //
-					._string(Arguments1::arg1, "name", c -> c.notEmpty())
+					._string(Arguments1::arg1, "name", ContainerConstraintBase::notEmpty)
 					._integer(Arguments2::arg2, "price", c -> c.greaterThan(0)))
 			.build();
 

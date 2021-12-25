@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,14 +76,14 @@ class CollectionConstraintTest {
 
 	@Test
 	void notEmpty() {
-		Predicate<List<String>> predicate = retrievePredicate(c -> c.notEmpty());
+		Predicate<List<String>> predicate = retrievePredicate(ContainerConstraintBase::notEmpty);
 		assertThat(predicate.test(Collections.singletonList("foo"))).isTrue();
 		assertThat(predicate.test(Collections.emptyList())).isFalse();
 	}
 
 	@Test
 	void unique() {
-		Predicate<List<String>> predicate = retrievePredicate(c -> c.unique());
+		Predicate<List<String>> predicate = retrievePredicate(CollectionConstraint::unique);
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "d"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "b"))).isFalse();
 	}

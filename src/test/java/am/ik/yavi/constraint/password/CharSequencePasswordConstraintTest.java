@@ -162,7 +162,7 @@ class CharSequencePasswordConstraintTest {
 	@ValueSource(strings = { "VMware1!", "Az12#!" })
 	void validPassword_strong(String input) {
 		final Validator<String> validator = buildValidator(
-				c -> c.password(policies -> policies.strong()));
+				c -> c.password(CharSequencePasswordPoliciesBuilder::strong));
 		final ConstraintViolations violations = validator.validate(input);
 		assertThat(violations.isValid()).isTrue();
 	}
@@ -170,7 +170,7 @@ class CharSequencePasswordConstraintTest {
 	@Test
 	void invalidPassword_strong_symbols_numbers_uppercase_are_missing() {
 		final Validator<String> validator = buildValidator(
-				c -> c.password(policies -> policies.strong()));
+				c -> c.password(CharSequencePasswordPoliciesBuilder::strong));
 		final ConstraintViolations violations = validator.validate("abc");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(3);
@@ -188,7 +188,7 @@ class CharSequencePasswordConstraintTest {
 	@Test
 	void invalidPassword_strong_symbols_numbers_are_missing() {
 		final Validator<String> validator = buildValidator(
-				c -> c.password(policies -> policies.strong()));
+				c -> c.password(CharSequencePasswordPoliciesBuilder::strong));
 		final ConstraintViolations violations = validator.validate("abC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(2);
@@ -203,7 +203,7 @@ class CharSequencePasswordConstraintTest {
 	@Test
 	void invalidPassword_numbers_are_missing() {
 		final Validator<String> validator = buildValidator(
-				c -> c.password(policies -> policies.strong()));
+				c -> c.password(CharSequencePasswordPoliciesBuilder::strong));
 		final ConstraintViolations violations = validator.validate("abC#!");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
@@ -215,7 +215,7 @@ class CharSequencePasswordConstraintTest {
 	@Test
 	void invalidPassword_symbols_are_missing() {
 		final Validator<String> validator = buildValidator(
-				c -> c.password(policies -> policies.strong()));
+				c -> c.password(CharSequencePasswordPoliciesBuilder::strong));
 		final ConstraintViolations violations = validator.validate("123abC");
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);

@@ -18,6 +18,7 @@ package am.ik.yavi.constraint;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
 import org.junit.jupiter.api.Test;
@@ -46,14 +47,14 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "abc@example.com", "abc@localhost", "abc@192.168.1.10",
 			"東京@example.com", "" })
 	void validEmail(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.email());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::email);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "example.com", "abc@@example.com" })
 	void invalidEmail(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.email());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::email);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -155,27 +156,27 @@ class CharSequenceConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "foo", "漢字" })
 	void validNotBlank(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.notBlank());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::notBlank);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "", "    ", "　　　" })
 	void invalidNotBlank(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.notBlank());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::notBlank);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "foo", " " })
 	void validNotEmpty(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.notEmpty());
+		Predicate<String> predicate = retrievePredicate(ContainerConstraintBase::notEmpty);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@Test
 	void invalidNotEmpty() {
-		Predicate<String> predicate = retrievePredicate(c -> c.notEmpty());
+		Predicate<String> predicate = retrievePredicate(ContainerConstraintBase::notEmpty);
 		assertThat(predicate.test("")).isFalse();
 	}
 
@@ -218,126 +219,126 @@ class CharSequenceConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "http://example.com", "https://example.com", "" })
 	void validUrl(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::url);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "example.com", "htt://example.com" })
 	void invalidUrl(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::url);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-128", "0", "127" })
 	void validIsByte(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isByte());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isByte);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-129", "128", "a" })
 	void invalidIsByte(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isByte());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isByte);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-32768", "0", "32767" })
 	void validIsShort(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isShort());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isShort);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-32769", "32768", "a" })
 	void invalidIsShort(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isShort());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isShort);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-2147483648", "0", "2147483647" })
 	void validIsInteger(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isInteger());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isInteger);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-2147483649", "2147483648", "a" })
 	void invalidIsInteger(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isInteger());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isInteger);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-9223372036854775808", "0", "9223372036854775807" })
 	void validIsLong(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isLong());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isLong);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-9223372036854775809", "9223372036854775808", "a" })
 	void invalidIsLong(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isLong());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isLong);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
 	void validIsFloat(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isFloat());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isFloat);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "a" })
 	void invalidIsFloat(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isFloat());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isFloat);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
 	void validIsDouble(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isDouble());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isDouble);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "a" })
 	void invalidIsDouble(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isDouble());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isDouble);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-9223372036854775809", "0", "9223372036854775808" })
 	void validIsBigInteger(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isBigInteger());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isBigInteger);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "a", "0.1" })
 	void invalidIsBigInteger(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isBigInteger());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isBigInteger);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-100", "-1.0", "0", "1.0", "100" })
 	void validIsBigDecimal(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isBigDecimal());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isBigDecimal);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "a" })
 	void invalidIsBigDecimal(String value) {
-		Predicate<String> predicate = retrievePredicate(c -> c.isBigDecimal());
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isBigDecimal);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -346,28 +347,28 @@ class CharSequenceConstraintTest {
 			"5555555555554444", "5105105105105100", "378282246310005", "371449635398431",
 			"30569309025904", "38520000023237", "3530111333300000", "3566002020360505" })
 	void validLuhn(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.luhn());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::luhn);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "4111111111111112", "4242424242424243", "401288888888188a" })
 	void invalidLuhn(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.luhn());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::luhn);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "1.1.1.1", "127.0.0.1", "255.255.255.255", "0.0.0.0" })
 	void validIpv4(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::ipv4);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "1.1.1.1.1", "255.255.255.256", "a.a.a.a" })
 	void invalidIpv4(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::ipv4);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -378,14 +379,14 @@ class CharSequenceConstraintTest {
 			"::ffff:192.0.2.1", "fe80::0123:4567:89ab:cdef%4",
 			"fe80::0123:4567:89ab:cdef%fxp0" })
 	void validIpv6(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::ipv6);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "1.1.1.1.1", "0:0:0:0:0:0:0:Z" })
 	void invalidIpv6(String value) {
-		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		final Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::ipv6);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
