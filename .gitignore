@@ -2,3 +2,6 @@
 *.iml
 target
 credentials.yml
+.DS_Store
+.project
+.classpath
