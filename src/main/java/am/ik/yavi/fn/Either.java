@@ -106,7 +106,7 @@ public final class Either<L, R> {
 	}
 
 	/**
-	 * Use {@link #peekLeft(Consumer)} instead.
+	 * @deprecated Use {@link #peekLeft(Consumer)} instead.
 	 */
 	@Deprecated
 	public Either<L, R> doOnLeft(Consumer<? super L> action) {
@@ -144,7 +144,7 @@ public final class Either<L, R> {
 	}
 
 	/**
-	 * Use {@link #peekRight(Consumer)} instead.
+	 * @deprecated Use {@link #peekRight(Consumer)} instead.
 	 */
 	@Deprecated
 	public Either<L, R> doOnRight(Consumer<? super R> action) {
