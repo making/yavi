@@ -100,5 +100,5 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 		};
 	}
 
-	abstract protected ToIntFunction<V> size();
+	protected abstract ToIntFunction<V> size();
 }
