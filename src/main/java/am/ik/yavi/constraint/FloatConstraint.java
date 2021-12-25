@@ -45,4 +45,14 @@ public class FloatConstraint<T>
 	protected Predicate<Float> isLessThanOrEqual(Float max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Float zeroValue() {
+		return 0f;
+	}
+
+	@Override
+	protected Float oneValue() {
+		return 1f;
+	}
 }

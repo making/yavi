@@ -45,4 +45,14 @@ public class ShortConstraint<T>
 	protected Predicate<Short> isLessThanOrEqual(Short max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Short zeroValue() {
+		return 0;
+	}
+
+	@Override
+	protected Short oneValue() {
+		return 1;
+	}
 }

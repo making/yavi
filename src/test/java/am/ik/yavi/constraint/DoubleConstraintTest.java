@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -79,6 +80,38 @@ class DoubleConstraintTest {
 	void invalidLessThanOrEqual(double value) {
 		Predicate<Double> predicate = retrievePredicate(c -> c.lessThanOrEqual(100.0));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 101.0, 150.0 })
+	void validPositive(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101.0, -150.0, 0 })
+	void invalidPositive(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 99.0, 100.0,0.0 })
+	void invalidNegative(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -100.0, -10.0 })
+	void validNegative(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Double> retrievePredicate(

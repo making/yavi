@@ -15,9 +15,11 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.math.BigInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -81,6 +83,38 @@ class ByteConstraintTest {
 	void invalidLessThanOrEqual(byte value) {
 		Predicate<Byte> predicate = retrievePredicate(c -> c.lessThanOrEqual((byte) 100));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void validPositive(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-1", "0" })
+	void invalidPositive(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100","0" })
+	void invalidNegative(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-10" })
+	void validNegative(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Byte> retrievePredicate(

@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -88,6 +89,38 @@ class BigDecimalConstraintTest {
 		Predicate<BigDecimal> predicate = retrievePredicate(
 				c -> c.lessThanOrEqual(new BigDecimal("100")));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void validPositive(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150", "0" })
+	void invalidPositive(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100","0" })
+	void invalidNegative(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150" })
+	void validNegative(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<BigDecimal> retrievePredicate(

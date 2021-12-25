@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -79,6 +80,38 @@ class LongConstraintTest {
 	void invalidLessThanOrEqual(long value) {
 		Predicate<Long> predicate = retrievePredicate(c -> c.lessThanOrEqual(100L));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { 101L, 150L })
+	void validPositive(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -101L, -150L, 0L })
+	void invalidPositive(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { 9L, 100L, 0L })
+	void invalidNegative(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -100L, -10L })
+	void validNegative(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Long> retrievePredicate(

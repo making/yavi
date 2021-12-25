@@ -46,4 +46,14 @@ public class BigDecimalConstraint<T>
 	protected Predicate<BigDecimal> isLessThanOrEqual(BigDecimal max) {
 		return x -> x.compareTo(max) <= 0;
 	}
+
+	@Override
+	protected BigDecimal zeroValue() {
+		return BigDecimal.ZERO;
+	}
+
+	@Override
+	protected BigDecimal oneValue() {
+		return BigDecimal.ONE;
+	}
 }

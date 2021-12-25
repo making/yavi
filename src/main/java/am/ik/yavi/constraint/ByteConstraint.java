@@ -44,4 +44,14 @@ public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstr
 	protected Predicate<Byte> isLessThanOrEqual(Byte max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Byte zeroValue() {
+		return 0;
+	}
+
+	@Override
+	protected Byte oneValue() {
+		return 1;
+	}
 }

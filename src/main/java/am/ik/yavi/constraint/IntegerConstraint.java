@@ -45,4 +45,14 @@ public class IntegerConstraint<T>
 	protected Predicate<Integer> isLessThanOrEqual(Integer max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Integer zeroValue() {
+		return 0;
+	}
+
+	@Override
+	protected Integer oneValue() {
+		return 1;
+	}
 }

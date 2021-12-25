@@ -45,4 +45,14 @@ public class DoubleConstraint<T>
 	protected Predicate<Double> isLessThanOrEqual(Double max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Double zeroValue() {
+		return 0.0;
+	}
+
+	@Override
+	protected Double oneValue() {
+		return 1.0;
+	}
 }
