@@ -50,9 +50,4 @@ public class IntegerConstraint<T>
 	protected Integer zeroValue() {
 		return 0;
 	}
-
-	@Override
-	protected Integer oneValue() {
-		return 1;
-	}
 }

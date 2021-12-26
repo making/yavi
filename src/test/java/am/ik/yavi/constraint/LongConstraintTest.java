@@ -85,32 +85,60 @@ class LongConstraintTest {
 	@ParameterizedTest
 	@ValueSource(longs = { 101L, 150L })
 	void validPositive(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::positive);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::positive);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { -101L, -150L, 0L })
 	void invalidPositive(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::positive);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::positive);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { 9L, 100L, 0L })
 	void invalidNegative(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negative);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negative);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { -100L, -10L })
 	void validNegative(long value) {
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { 99, 100, 0 })
+	void validPositiveOrZero(long value) {
 		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negative);
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -101, -12 })
+	void invalidPositiveOrZero(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { 99, 100 })
+	void invalidNegativeOrZero(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -101, -120, 0 })
+	void validNegativeOrZero(long value) {
+		Predicate<Long> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

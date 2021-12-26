@@ -49,9 +49,4 @@ public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstr
 	protected Long zeroValue() {
 		return 0L;
 	}
-
-	@Override
-	protected Long oneValue() {
-		return 1L;
-	}
 }

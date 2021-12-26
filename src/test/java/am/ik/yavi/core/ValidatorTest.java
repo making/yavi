@@ -693,13 +693,12 @@ public class ValidatorTest {
 		}
 	}
 
-  	@Test
-  	public void agePositiveValidatorUserValid() {
-		User user = new User("Diego","foo@bar.com",10);
+	@Test
+	public void agePositiveValidatorUserValid() {
+		User user = new User("Diego", "foo@bar.com", 10);
 
 		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::positive)
-				.build();
+				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -707,11 +706,10 @@ public class ValidatorTest {
 
 	@Test
 	public void agePositiveValidatorUserInValid() {
-		User user = new User("Diego","foo@bar.com",-1);
+		User user = new User("Diego", "foo@bar.com", -1);
 
 		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::positive)
-				.build();
+				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -721,11 +719,10 @@ public class ValidatorTest {
 
 	@Test
 	public void ageNegativeValidatorUserValid() {
-		User user = new User("Diego","foo@bar.com",-1);
+		User user = new User("Diego", "foo@bar.com", -1);
 
 		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::negative)
-				.build();
+				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -733,11 +730,10 @@ public class ValidatorTest {
 
 	@Test
 	public void ageNegativeValidatorUserInValid() {
-		User user = new User("Diego","foo@bar.com",10);
+		User user = new User("Diego", "foo@bar.com", 10);
 
 		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::negative)
-				.build();
+				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();

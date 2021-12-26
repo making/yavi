@@ -52,13 +52,26 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 
 	public C positive() {
 		this.predicates().add(ConstraintPredicate.of(this.isGreaterThan(zeroValue()),
-				NUMERIC_POSITIVE, () -> new Object[] { }, VALID));
+				NUMERIC_POSITIVE, () -> new Object[] {}, VALID));
+		return cast();
+	}
+
+	public C positiveOrZero() {
+		this.predicates()
+				.add(ConstraintPredicate.of(this.isGreaterThanOrEqual(zeroValue()),
+						NUMERIC_POSITIVE_OR_ZERO, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
 	public C negative() {
 		this.predicates().add(ConstraintPredicate.of(this.isLessThan(zeroValue()),
-				NUMERIC_NEGATIVE, () -> new Object[] { }, VALID));
+				NUMERIC_NEGATIVE, () -> new Object[] {}, VALID));
+		return cast();
+	}
+
+	public C negaitveOrZero() {
+		this.predicates().add(ConstraintPredicate.of(this.isLessThanOrEqual(zeroValue()),
+				NUMERIC_NEGATIVE_OR_ZERO, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
@@ -71,6 +84,4 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	protected abstract Predicate<V> isLessThanOrEqual(V max);
 
 	protected abstract V zeroValue();
-
-	protected abstract V oneValue();
 }

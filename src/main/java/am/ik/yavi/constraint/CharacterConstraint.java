@@ -50,9 +50,4 @@ public class CharacterConstraint<T>
 	protected Character zeroValue() {
 		return Character.MIN_VALUE;
 	}
-
-	@Override
-	protected Character oneValue() {
-		return '1';
-	}
 }

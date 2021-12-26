@@ -89,32 +89,60 @@ class ShortConstraintTest {
 	@ParameterizedTest
 	@ValueSource(shorts = { 101, 10 })
 	void validPositive(short value) {
-		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::positive);
+		Predicate<Short> predicate = retrievePredicate(NumericConstraintBase::positive);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(shorts = { -101, -10, 0 })
 	void invalidPositive(short value) {
-		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::positive);
+		Predicate<Short> predicate = retrievePredicate(NumericConstraintBase::positive);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(shorts = { 9, 100, 0 })
 	void invalidNegative(short value) {
-		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::negative);
+		Predicate<Short> predicate = retrievePredicate(NumericConstraintBase::negative);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(shorts = { -100, -10 })
 	void validNegative(short value) {
+		Predicate<Short> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = { 99, 100, 0 })
+	void validPositiveOrZero(short value) {
 		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::negative);
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = { -101, -12 })
+	void invalidPositiveOrZero(short value) {
+		Predicate<Short> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = { 99, 100 })
+	void invalidNegativeOrZero(short value) {
+		Predicate<Short> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(shorts = { -101, -120, 0 })
+	void validNegativeOrZero(short value) {
+		Predicate<Short> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

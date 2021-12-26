@@ -50,9 +50,4 @@ public class DoubleConstraint<T>
 	protected Double zeroValue() {
 		return 0.0;
 	}
-
-	@Override
-	protected Double oneValue() {
-		return 1.0;
-	}
 }

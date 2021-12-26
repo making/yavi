@@ -109,7 +109,7 @@ class BigIntegerConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "99", "100","0" })
+	@ValueSource(strings = { "99", "100", "0" })
 	void invalidNegative(BigInteger value) {
 		Predicate<BigInteger> predicate = retrievePredicate(
 				NumericConstraintBase::negative);
@@ -121,6 +121,38 @@ class BigIntegerConstraintTest {
 	void validNegative(BigInteger value) {
 		Predicate<BigInteger> predicate = retrievePredicate(
 				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100", "0" })
+	void validPositiveOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150" })
+	void invalidPositiveOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void invalidNegativeOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150", "0" })
+	void validNegativeOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
