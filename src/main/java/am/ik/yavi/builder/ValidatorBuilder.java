@@ -85,7 +85,7 @@ import am.ik.yavi.meta.ObjectConstraintMeta;
 import am.ik.yavi.meta.ShortConstraintMeta;
 import am.ik.yavi.meta.StringConstraintMeta;
 
-public class ValidatorBuilder<T> {
+public class ValidatorBuilder<T> implements Cloneable {
 	private static final String DEFAULT_SEPARATOR = ".";
 
 	final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
@@ -108,6 +108,15 @@ public class ValidatorBuilder<T> {
 		this.messageKeySeparator = messageKeySeparator;
 	}
 
+	public ValidatorBuilder(ValidatorBuilder<T> cloningSource) {
+		this(cloningSource.messageKeySeparator);
+		this.collectionValidators.addAll(cloningSource.collectionValidators);
+		this.conditionalValidators.addAll(cloningSource.conditionalValidators);
+		this.predicatesList.addAll(cloningSource.predicatesList);
+		this.messageFormatter = cloningSource.messageFormatter;
+		this.failFast = cloningSource.failFast;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <S extends T> ValidatorBuilder<S> cast(Class<S> clazz) {
 		return (ValidatorBuilder<S>) this;
@@ -118,15 +127,14 @@ public class ValidatorBuilder<T> {
 		return (ValidatorBuilder<S>) this;
 	}
 
+	/**
+	 * @deprecated please use the copy constructor
+	 * {@link #ValidatorBuilder(ValidatorBuilder)}
+	 * @return the cloned builder
+	 */
+	@Deprecated
 	public ValidatorBuilder<T> clone() {
-		final ValidatorBuilder<T> builder = new ValidatorBuilder<>(
-				this.messageKeySeparator);
-		builder.collectionValidators.addAll(this.collectionValidators);
-		builder.conditionalValidators.addAll(this.conditionalValidators);
-		builder.predicatesList.addAll(this.predicatesList);
-		builder.messageFormatter = this.messageFormatter;
-		builder.failFast = this.failFast;
-		return builder;
+		return new ValidatorBuilder<>(this);
 	}
 
 	/**
