@@ -48,6 +48,6 @@ public class CharacterConstraint<T>
 
 	@Override
 	protected Character zeroValue() {
-		return Character.MIN_VALUE;
+		return '0';
 	}
 }
