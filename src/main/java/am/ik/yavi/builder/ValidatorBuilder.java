@@ -128,19 +128,13 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	/**
-	 * @deprecated please use the copy constructor {@link #ValidatorBuilder(ValidatorBuilder)}
+	 * @deprecated please use the copy constructor
+	 * {@link #ValidatorBuilder(ValidatorBuilder)}
 	 * @return the cloned builder
 	 */
 	@Deprecated
 	public ValidatorBuilder<T> clone() {
-		final ValidatorBuilder<T> builder = new ValidatorBuilder<>(
-				this.messageKeySeparator);
-		builder.collectionValidators.addAll(this.collectionValidators);
-		builder.conditionalValidators.addAll(this.conditionalValidators);
-		builder.predicatesList.addAll(this.predicatesList);
-		builder.messageFormatter = this.messageFormatter;
-		builder.failFast = this.failFast;
-		return builder;
+		return new ValidatorBuilder<>(this);
 	}
 
 	/**
