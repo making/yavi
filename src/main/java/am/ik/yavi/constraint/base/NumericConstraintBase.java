@@ -50,12 +50,18 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		return cast();
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
 	public C positive() {
 		this.predicates().add(ConstraintPredicate.of(this.isGreaterThan(zeroValue()),
 				NUMERIC_POSITIVE, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
 	public C positiveOrZero() {
 		this.predicates()
 				.add(ConstraintPredicate.of(this.isGreaterThanOrEqual(zeroValue()),
@@ -63,12 +69,18 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		return cast();
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
 	public C negative() {
 		this.predicates().add(ConstraintPredicate.of(this.isLessThan(zeroValue()),
 				NUMERIC_NEGATIVE, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
 	public C negaitveOrZero() {
 		this.predicates().add(ConstraintPredicate.of(this.isLessThanOrEqual(zeroValue()),
 				NUMERIC_NEGATIVE_OR_ZERO, () -> new Object[] {}, VALID));

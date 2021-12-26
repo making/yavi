@@ -108,6 +108,11 @@ public class ValidatorBuilder<T> implements Cloneable {
 		this.messageKeySeparator = messageKeySeparator;
 	}
 
+	/**
+	 * The copy constructor
+	 *
+	 * @since 0.10.0
+	 */
 	public ValidatorBuilder(ValidatorBuilder<T> cloningSource) {
 		this(cloningSource.messageKeySeparator);
 		this.collectionValidators.addAll(cloningSource.collectionValidators);
