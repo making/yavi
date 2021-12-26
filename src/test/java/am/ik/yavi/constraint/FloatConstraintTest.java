@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -79,6 +80,66 @@ class FloatConstraintTest {
 	void invalidLessThanOrEqual(float value) {
 		Predicate<Float> predicate = retrievePredicate(c -> c.lessThanOrEqual(100.0f));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { 101.0f, 150.0f })
+	void validPositive(float value) {
+		Predicate<Float> predicate = retrievePredicate(NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { -101.0f, -150.0f, 0f })
+	void invalidPositive(float value) {
+		Predicate<Float> predicate = retrievePredicate(NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { 99f, 100f, 0f })
+	void invalidNegative(float value) {
+		Predicate<Float> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { -100f, -10f })
+	void validNegative(float value) {
+		Predicate<Float> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { 99.5f, 100.5f, 0f })
+	void validPositiveOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { -101f, -12f })
+	void invalidPositiveOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { 99.0f, 100f })
+	void invalidNegativeOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { -101f, -120f, 0f })
+	void validNegativeOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Float> retrievePredicate(

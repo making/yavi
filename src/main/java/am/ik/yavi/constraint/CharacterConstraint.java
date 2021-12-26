@@ -45,4 +45,9 @@ public class CharacterConstraint<T>
 	protected Predicate<Character> isLessThanOrEqual(Character max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Character zeroValue() {
+		return Character.MIN_VALUE;
+	}
 }

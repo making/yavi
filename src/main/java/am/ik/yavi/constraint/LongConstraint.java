@@ -44,4 +44,9 @@ public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstr
 	protected Predicate<Long> isLessThanOrEqual(Long max) {
 		return x -> x <= max;
 	}
+
+	@Override
+	protected Long zeroValue() {
+		return 0L;
+	}
 }

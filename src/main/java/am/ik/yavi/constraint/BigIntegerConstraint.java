@@ -46,4 +46,9 @@ public class BigIntegerConstraint<T>
 	protected Predicate<BigInteger> isLessThanOrEqual(BigInteger max) {
 		return x -> x.compareTo(max) <= 0;
 	}
+
+	@Override
+	protected BigInteger zeroValue() {
+		return BigInteger.ZERO;
+	}
 }

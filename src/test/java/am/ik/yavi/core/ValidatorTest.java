@@ -24,6 +24,7 @@ import am.ik.yavi.ConstraintViolationsException;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
@@ -690,6 +691,54 @@ public class ValidatorTest {
 			assertThat(violations.get(1).messageKey())
 					.isEqualTo("container.lessThanOrEqual");
 		}
+	}
+
+	@Test
+	public void agePositiveValidatorUserValid() {
+		User user = new User("Diego", "foo@bar.com", 10);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void agePositiveValidatorUserInValid() {
+		User user = new User("Diego", "foo@bar.com", -1);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo("\"age\" must be positive");
+	}
+
+	@Test
+	public void ageNegativeValidatorUserValid() {
+		User user = new User("Diego", "foo@bar.com", -1);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void ageNegativeValidatorUserInValid() {
+		User user = new User("Diego", "foo@bar.com", 10);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).isEqualTo("\"age\" must be negative");
 	}
 
 	Validator<User> validator() {
