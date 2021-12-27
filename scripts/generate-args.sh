@@ -195,6 +195,7 @@ $(if [ "${i}" != "1" ];then
 cat <<EOD
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
@@ -214,8 +215,8 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 EOD
@@ -232,14 +233,14 @@ cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> extends ValueValidator<A1, X> {
 
 	/**
-	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
 	 *
 	 * @param validator core validator
 	 * @param <X> target class
 	 * @return arguments1 validator
 	 * @since 0.8.0
 	 */
-	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+	static <X> Arguments1Validator<X, X> from(Validatable<X> validator) {
 		return Arguments1Validator.from(validator.applicative());
 	}
 
@@ -282,6 +283,14 @@ fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
 		return (${as}, locale, constraintGroup) -> ${class}.this
 				.validate(${as}, locale, constraintGroup).map(mapper);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+	  // WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	/**
@@ -426,9 +435,9 @@ for i in `seq 1 ${n}`;do
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
-import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function${i};
@@ -446,6 +455,14 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 	public ${class}(Validator<${arguments}> validator, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	@Override
+	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')));
 	}
 
   @Override

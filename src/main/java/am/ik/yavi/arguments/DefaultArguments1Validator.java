@@ -16,9 +16,9 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
-import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
@@ -37,6 +37,15 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 			Function1<? super A1, ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	@Override
+	public DefaultArguments1Validator<A1, Supplier<X>> lazy() {
+		return new DefaultArguments1Validator<>(this.validator,
+				(a1) -> () -> this.mapper.apply(a1));
 	}
 
 	@Override

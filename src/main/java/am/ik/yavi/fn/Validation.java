@@ -132,6 +132,16 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
+	public <X extends Throwable> void throwIfInvalid(
+			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+		if (!isValid()) {
+			throw exceptionMapper.apply(errors());
+		}
+	}
+
 	public T orElseGet(Function<? super List<E>, ? extends T> other) {
 		if (isValid()) {
 			return value();

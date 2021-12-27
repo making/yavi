@@ -17,6 +17,7 @@ package am.ik.yavi.arguments;
 
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
@@ -44,6 +45,14 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
 				constraintGroup) -> Arguments10Validator.this.validate(a1, a2, a3, a4, a5,
 						a6, a7, a8, a9, a10, locale, constraintGroup).map(mapper);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	/**
