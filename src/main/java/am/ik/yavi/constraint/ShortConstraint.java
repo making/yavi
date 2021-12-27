@@ -50,4 +50,9 @@ public class ShortConstraint<T>
 	protected Short zeroValue() {
 		return 0;
 	}
+
+	@Override
+	protected Short oneValue() {
+		return 1;
+	}
 }

@@ -50,4 +50,9 @@ public class FloatConstraint<T>
 	protected Float zeroValue() {
 		return 0f;
 	}
+
+	@Override
+	protected Float oneValue() {
+		return 1f;
+	}
 }

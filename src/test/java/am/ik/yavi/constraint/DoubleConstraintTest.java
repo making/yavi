@@ -16,6 +16,7 @@
 package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -140,6 +141,32 @@ class DoubleConstraintTest {
 		Predicate<Double> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101.5, -120.1 })
+	void invalidZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validZero() {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(0.0)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101.5, -120.1 })
+	void invalidOne(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validOne() {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(1.0)).isTrue();
 	}
 
 	private static Predicate<Double> retrievePredicate(

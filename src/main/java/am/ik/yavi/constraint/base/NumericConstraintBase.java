@@ -51,6 +51,15 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	}
 
 	/**
+	 * Is the given value positve. Positive means it is greater than 0.
+	 *
+	 * <pre>
+	 *     0 -> false
+	 *     1 -> true
+	 *     n where n > 0 -> true
+	 *     n where n < 0 -> false
+	 * </pre>
+	 *
 	 * @since 0.10.0
 	 */
 	public C positive() {
@@ -59,9 +68,7 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		return cast();
 	}
 
-	/**
-	 * @since 0.10.0
-	 */
+	/** @since 0.10.0 */
 	public C positiveOrZero() {
 		this.predicates()
 				.add(ConstraintPredicate.of(this.isGreaterThanOrEqual(zeroValue()),
@@ -70,6 +77,16 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	}
 
 	/**
+	 * Is the given value negative. Negative means it is less than 0.
+	 *
+	 * <pre>
+	 *     0 -> false
+	 *     1 -> false
+	 *     -1 -> true
+	 *     n where n > 0 -> false
+	 *     n where n < 0 -> true
+	 * </pre>
+	 *
 	 * @since 0.10.0
 	 */
 	public C negative() {
@@ -78,13 +95,27 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 		return cast();
 	}
 
-	/**
-	 * @since 0.10.0
-	 */
+	/** @since 0.10.0 */
 	public C negaitveOrZero() {
 		this.predicates().add(ConstraintPredicate.of(this.isLessThanOrEqual(zeroValue()),
 				NUMERIC_NEGATIVE_OR_ZERO, () -> new Object[] {}, VALID));
 		return cast();
+	}
+
+	/**
+	 * Is the given value equal to the zero representation of its type. The exact
+	 * representation of <i>zero</i> can be found in {@link #zeroValue()}.
+	 */
+	public C isZero() {
+		return this.equalTo(zeroValue());
+	}
+
+	/**
+	 * Is the given value equal to the <i>one</i> representation of its type The exact
+	 * representation of <i>one</i> can be found in {@link #oneValue()}.
+	 */
+	public C isOne() {
+		return this.equalTo(oneValue());
 	}
 
 	protected abstract Predicate<V> isGreaterThan(V min);
@@ -95,5 +126,17 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 
 	protected abstract Predicate<V> isLessThanOrEqual(V max);
 
+	/**
+	 * The value that represents zero
+	 *
+	 * @return the numeric value zero
+	 */
 	protected abstract V zeroValue();
+
+	/**
+	 * The value that represents one
+	 *
+	 * @return the numeric value one
+	 */
+	protected abstract V oneValue();
 }
