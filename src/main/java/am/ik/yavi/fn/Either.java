@@ -105,14 +105,6 @@ public final class Either<L, R> {
 		return this.left().orElseThrow(() -> exceptionSupplier.apply(this.right));
 	}
 
-	/**
-	 * @deprecated Use {@link #peekLeft(Consumer)} instead.
-	 */
-	@Deprecated
-	public Either<L, R> doOnLeft(Consumer<? super L> action) {
-		return this.peekLeft(action);
-	}
-
 	public Either<L, R> peekLeft(Consumer<? super L> action) {
 		if (this.isLeft()) {
 			action.accept(this.left);
@@ -141,14 +133,6 @@ public final class Either<L, R> {
 	public <X extends Throwable> R rightOrElseThrow(
 			Function<? super L, ? extends X> exceptionSupplier) throws X {
 		return this.right().orElseThrow(() -> exceptionSupplier.apply(this.left));
-	}
-
-	/**
-	 * @deprecated Use {@link #peekRight(Consumer)} instead.
-	 */
-	@Deprecated
-	public Either<L, R> doOnRight(Consumer<? super R> action) {
-		return this.peekRight(action);
 	}
 
 	public Either<L, R> peekRight(Consumer<? super R> action) {

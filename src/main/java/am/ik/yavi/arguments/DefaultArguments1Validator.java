@@ -46,11 +46,4 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 				.validate(Arguments.of(a1), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
-
-	@Override
-	public void validateAndThrowIfInvalid(@Nullable A1 a1,
-			ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(a1), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
-	}
 }

@@ -47,11 +47,4 @@ public class DefaultArguments3Validator<A1, A2, A3, X>
 				.validate(Arguments.of(a1, a2, a3), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
-
-	@Override
-	public void validateAndThrowIfInvalid(@Nullable A1 a1, @Nullable A2 a2,
-			@Nullable A3 a3, ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(a1, a2, a3), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
-	}
 }

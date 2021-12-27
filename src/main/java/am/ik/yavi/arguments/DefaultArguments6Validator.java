@@ -49,12 +49,4 @@ public class DefaultArguments6Validator<A1, A2, A3, A4, A5, A6, X>
 				.validate(Arguments.of(a1, a2, a3, a4, a5, a6), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
-
-	@Override
-	public void validateAndThrowIfInvalid(@Nullable A1 a1, @Nullable A2 a2,
-			@Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6,
-			ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(a1, a2, a3, a4, a5, a6), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
-	}
 }

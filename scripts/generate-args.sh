@@ -395,55 +395,6 @@ cat <<EOD
 	}
 EOD
 fi)
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}) {
-		return this.validate(${as});
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, ConstraintGroup constraintGroup) {
-		return this.validate(${as}, constraintGroup);
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, Locale locale) {
-		return this.validate(${as}, locale);
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale, ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.validate(${as}, locale, constraintGroup);
-	}
-
-	/**
-	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
-		throw new UnsupportedOperationException("validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
-	}
-
-	/**
-	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(${args}) {
-		this.validateAndThrowIfInvalid(${as}, ConstraintGroup.DEFAULT);
-	}
 }
 EOF
 done
@@ -503,12 +454,6 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 		return this.validator.applicative()
 		    .validate(Arguments.of(${as}), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
-	}
-
-	@Override
-	public void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(${as}), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 }
 EOF

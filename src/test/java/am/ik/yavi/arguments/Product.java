@@ -19,6 +19,7 @@ import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 
 public class Product {
 	private final String name;
+
 	private final int price;
 
 	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder
@@ -28,10 +29,13 @@ public class Product {
 					._integer(Arguments2::arg2, "price", c -> c.greaterThan(0)))
 			.build();
 
-	public Product(String name, int price) {
-		validator.validateAndThrowIfInvalid(name, price);
+	private Product(String name, int price) {
 		this.name = name;
 		this.price = price;
+	}
+
+	public static Product of(String name, int price) {
+		return validator.validated(name, price);
 	}
 
 	@Override

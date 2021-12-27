@@ -178,13 +178,13 @@ public class ArgumentsValidatorTest {
 
 	@Test
 	void testValidateOnly_valid() {
-		final Product product = new Product("foo", 100);
+		final Product product = Product.of("foo", 100);
 		assertThat(product).isNotNull();
 	}
 
 	@Test
 	void testValidateOnly_invalid() {
-		assertThatThrownBy(() -> new Product("", 0)) //
+		assertThatThrownBy(() -> Product.of("", 0)) //
 				.isInstanceOfSatisfying(ConstraintViolationsException.class,
 						e -> assertThat(e.getMessage()).isEqualTo(
 								"Constraint violations found!" + System.lineSeparator()
