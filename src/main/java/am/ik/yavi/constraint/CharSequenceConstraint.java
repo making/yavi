@@ -77,7 +77,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
 					Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern VALID_UUID_REGEX = Pattern.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
+	private static final Pattern VALID_UUID_REGEX = Pattern
+			.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -288,6 +289,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
 	public CharSequenceConstraint<T, E> uuid() {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			if (size().applyAsInt(x) == 0) {

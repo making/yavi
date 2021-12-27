@@ -232,7 +232,6 @@ class CharSequenceConstraintTest {
 		assertThat(predicate.test(value)).isFalse();
 	}
 
-
 	@ParameterizedTest
 	@MethodSource("randomUUIDs")
 	void validUUID(String value) {
@@ -241,13 +240,12 @@ class CharSequenceConstraintTest {
 	}
 
 	private static Stream<String> randomUUIDs() {
-		return Stream.generate(UUID::randomUUID)
-				.map(UUID::toString)
-				.limit(10);
+		return Stream.generate(UUID::randomUUID).map(UUID::toString).limit(10);
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "nonsense-nonsense-nonsense", "12345678-1234-1234-1234-1234-12345678" })
+	@ValueSource(strings = { "nonsense-nonsense-nonsense",
+			"12345678-1234-1234-1234-1234-12345678" })
 	void invalidUUID(String value) {
 		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::uuid);
 		assertThat(predicate.test(value)).isFalse();

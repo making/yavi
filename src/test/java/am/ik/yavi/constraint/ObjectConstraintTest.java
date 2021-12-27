@@ -81,17 +81,20 @@ class ObjectConstraintTest {
 	class OneOf {
 		@Test
 		void succeedsWhenInputIsOneOfValues() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("this")).isTrue();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("this"))
+					.isTrue();
 		}
 
 		@Test
 		void failsWhenInputIsNoneOfValues() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("unknown")).isFalse();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("unknown"))
+					.isFalse();
 		}
 
 		@Test
 		void failsWhenInputIsNull() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test(null)).isFalse();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test(null))
+					.isFalse();
 		}
 
 		@Test
