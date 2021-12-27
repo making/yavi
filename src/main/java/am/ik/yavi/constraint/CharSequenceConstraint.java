@@ -62,6 +62,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
@@ -70,11 +71,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
 
-	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
+	private static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
 			.compile(
 					"^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
 							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
 					Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern VALID_UUID_REGEX = Pattern.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -282,6 +285,16 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 				return false;
 			}
 		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	public CharSequenceConstraint<T, E> uuid() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_UUID_REGEX.matcher(x).matches();
+		}, CHAR_SEQUENCE_UUID, () -> new Object[] {}, VALID));
 		return this;
 	}
 

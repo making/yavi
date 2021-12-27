@@ -15,13 +15,16 @@
  */
 package am.ik.yavi.constraint;
 
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -226,6 +229,27 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "example.com", "htt://example.com" })
 	void invalidUrl(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.url());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+
+	@ParameterizedTest
+	@MethodSource("randomUUIDs")
+	void validUUID(String value) {
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::uuid);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	private static Stream<String> randomUUIDs() {
+		return Stream.generate(UUID::randomUUID)
+				.map(UUID::toString)
+				.limit(10);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "nonsense-nonsense-nonsense", "12345678-1234-1234-1234-1234-12345678" })
+	void invalidUUID(String value) {
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::uuid);
 		assertThat(predicate.test(value)).isFalse();
 	}
 

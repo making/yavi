@@ -37,6 +37,8 @@ public interface ViolationMessage {
 	enum Default implements ViolationMessage {
 		OBJECT_NOT_NULL("object.notNull", "\"{0}\" must not be null"), //
 		OBJECT_IS_NULL("object.isNull", "\"{0}\" must be null"), //
+		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
+		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan",
 				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
@@ -69,6 +71,7 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_IPV4("charSequence.ipv4", "\"{0}\" must be a valid IPv4"), //
 		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
+		CHAR_SEQUENCE_UUID("charSequence.uuid", "\"{0}\" must be a valid UUID"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
 		CHAR_SEQUENCE_LUHN("charSequence.luhn",
 				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
