@@ -21,7 +21,7 @@ import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Validation;
 
 @FunctionalInterface
-public interface ValidatorSubset<T> {
+public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}.
 	 *
@@ -80,7 +80,7 @@ public interface ValidatorSubset<T> {
 	 */
 	default EitherValidator<T> either() {
 		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = ValidatorSubset.this.validate(target,
+			final ConstraintViolations violations = Validatable.this.validate(target,
 					locale, constraintGroup);
 			if (violations.isValid()) {
 				return Either.right(target);
@@ -98,7 +98,7 @@ public interface ValidatorSubset<T> {
 	 */
 	default ApplicativeValidator<T> applicative() {
 		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = ValidatorSubset.this.validate(target,
+			final ConstraintViolations violations = Validatable.this.validate(target,
 					locale, constraintGroup);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));

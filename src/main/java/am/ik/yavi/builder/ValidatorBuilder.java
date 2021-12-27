@@ -63,10 +63,10 @@ import am.ik.yavi.core.CustomConstraint;
 import am.ik.yavi.core.NestedCollectionValidator;
 import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
-import am.ik.yavi.core.NestedValidatorSubset;
+import am.ik.yavi.core.NestedValidator;
 import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ViolatedArguments;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
@@ -90,7 +90,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
 
-	final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators = new ArrayList<>();
+	final List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators = new ArrayList<>();
 
 	final String messageKeySeparator;
 
@@ -787,23 +787,23 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return nested;
 	}
 
-	private <N> Consumer<Pair<ConstraintCondition<N>, ValidatorSubset<N>>> appendNestedConditionalValidator(
+	private <N> Consumer<Pair<ConstraintCondition<N>, Validatable<N>>> appendNestedConditionalValidator(
 			Function<T, N> nested, String name) {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
-			final ValidatorSubset<N> validatorSubset = conditionalValidator.second();
-			final String nestedPrefix = toNestedPrefix(name, validatorSubset);
-			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
-					validatorSubset, nestedPrefix);
+			final Validatable<N> validator = conditionalValidator.second();
+			final String nestedPrefix = toNestedPrefix(name, validator);
+			final Validatable<T> v = new NestedValidator<>(nested, validator,
+					nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
 
-	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
-		if (validatorSubset instanceof NestedValidatorSubset) {
-			final NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
-			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
+	private <N> String toNestedPrefix(String name, Validatable<N> validator) {
+		if (validator instanceof NestedValidator) {
+			final NestedValidator<?, ?> nestedValidator = (NestedValidator<?, ?>) validator;
+			return name + this.messageKeySeparator + nestedValidator.getPrefix();
 		}
 		return name + this.messageKeySeparator;
 	}

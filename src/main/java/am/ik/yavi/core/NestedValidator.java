@@ -18,14 +18,14 @@ package am.ik.yavi.core;
 import java.util.Locale;
 import java.util.function.Function;
 
-public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
+public class NestedValidator<T, N> implements Validatable<T> {
 	private final Function<T, N> nested;
 
-	private final ValidatorSubset<N> validator;
+	private final Validatable<N> validator;
 
 	private final String prefix;
 
-	public NestedValidatorSubset(Function<T, N> nested, ValidatorSubset<N> validator,
+	public NestedValidator(Function<T, N> nested, Validatable<N> validator,
 			String prefix) {
 		this.nested = nested;
 		this.prefix = prefix;
@@ -33,12 +33,12 @@ public class NestedValidatorSubset<T, N> implements ValidatorSubset<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private ValidatorSubset<N> prefixedValidatorIfNeeded(ValidatorSubset<N> validator,
+	private Validatable<N> prefixedValidatorIfNeeded(Validatable<N> validator,
 			String prefix) {
-		if (validator instanceof NestedValidatorSubset) {
-			final NestedValidatorSubset<?, N> nestedValidatorSubset = (NestedValidatorSubset<?, N>) validator;
-			return new NestedValidatorSubset(nestedValidatorSubset.nested,
-					nestedValidatorSubset.validator, prefix);
+		if (validator instanceof NestedValidator) {
+			final NestedValidator<?, N> nestedValidator = (NestedValidator<?, N>) validator;
+			return new NestedValidator(nestedValidator.nested, nestedValidator.validator,
+					prefix);
 		}
 		return (validator instanceof Validator)
 				? ((Validator<N>) validator).prefixed(prefix)

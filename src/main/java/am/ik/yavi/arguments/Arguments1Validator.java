@@ -25,8 +25,8 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 
@@ -39,14 +39,14 @@ import am.ik.yavi.jsr305.Nullable;
 public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
-	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
 	 *
 	 * @param validator core validator
 	 * @param <X> target class
 	 * @return arguments1 validator
 	 * @since 0.8.0
 	 */
-	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+	static <X> Arguments1Validator<X, X> from(Validatable<X> validator) {
 		return Arguments1Validator.from(validator.applicative());
 	}
 
