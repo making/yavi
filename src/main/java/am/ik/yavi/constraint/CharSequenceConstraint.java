@@ -46,23 +46,7 @@ import am.ik.yavi.core.ViolationMessage;
 
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGDECIMAL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGINTEGER;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BYTE;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
+import static am.ik.yavi.core.ViolationMessage.Default.*;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
@@ -131,6 +115,29 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
 				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
+		return this;
+	}
+
+	/**
+	 * Does the given value start with the {@code prefix}
+	 * @param prefix the prefix the value has to start with
+	 */
+	public CharSequenceConstraint<T, E> startsWith(CharSequence prefix) {
+		this.predicates()
+				.add(ConstraintPredicate.of(
+						x -> x.toString().startsWith(prefix.toString()),
+						CHAR_SEQUENCE_STARTSWITH, () -> new Object[] { prefix }, VALID));
+		return this;
+	}
+
+	/**
+	 * Does the given value end with the {@code suffix}
+	 * @param suffix the suffix the value has to end with
+	 */
+	public CharSequenceConstraint<T, E> endsWith(CharSequence suffix) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.toString().endsWith(suffix.toString()),
+						CHAR_SEQUENCE_ENDSWITH, () -> new Object[] { suffix }, VALID));
 		return this;
 	}
 
