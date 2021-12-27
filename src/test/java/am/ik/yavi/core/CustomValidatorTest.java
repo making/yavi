@@ -21,7 +21,7 @@ import java.util.Objects;
 import am.ik.yavi.Book;
 import am.ik.yavi.Range;
 import am.ik.yavi.builder.ValidatorBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

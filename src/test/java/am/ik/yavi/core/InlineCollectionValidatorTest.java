@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,9 +25,9 @@ import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
-public class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
+class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Test
-	public void nullCollectionValid() throws Exception {
+	void nullCollectionValid() throws Exception {
 		Validator<FormWithCollection> validator = ValidatorBuilder
 				.of(FormWithCollection.class) //
 				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",

@@ -17,17 +17,17 @@ package am.ik.yavi.constraint.charsequence;
 
 import java.util.function.Predicate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.constraint.CharSequenceConstraint;
 
-public class ByteSizeConstraintTest {
+class ByteSizeConstraintTest {
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
 
 	@Test
-	public void fixedSize() {
+	void fixedSize() {
 		Predicate<String> predicate = constraint.asByteArray().fixedSize(4).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
@@ -38,7 +38,7 @@ public class ByteSizeConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
+	void greaterThan() {
 		Predicate<String> predicate = constraint.asByteArray().greaterThan(3).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
@@ -47,7 +47,7 @@ public class ByteSizeConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
+	void greaterThanOrEqual() {
 		Predicate<String> predicate = constraint.asByteArray().greaterThanOrEqual(3)
 				.predicates().peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
@@ -57,7 +57,7 @@ public class ByteSizeConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
+	void lessThan() {
 		Predicate<String> predicate = constraint.asByteArray().lessThan(3).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test("ab")).isTrue();
@@ -66,7 +66,7 @@ public class ByteSizeConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<String> predicate = constraint.asByteArray().lessThanOrEqual(3)
 				.predicates().peekFirst().predicate();
 		assertThat(predicate.test("ab")).isTrue();

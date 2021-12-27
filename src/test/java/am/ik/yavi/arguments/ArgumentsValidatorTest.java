@@ -39,7 +39,7 @@ import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class ArgumentsValidatorTest {
+class ArgumentsValidatorTest {
 
 	final Arguments1Validator<String, Country> arguments1Validator = ArgumentsValidatorBuilder
 			.of(Country::new) //
