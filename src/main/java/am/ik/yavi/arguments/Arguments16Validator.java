@@ -51,14 +51,6 @@ public interface Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	}
 
 	/**
-	 * @since 0.10.0
-	 */
-	default Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
-		// WARNING:: The default implementation is not really lazy!
-		return this.andThen(x -> () -> x);
-	}
-
-	/**
 	 * @since 0.7.0
 	 */
 	default <A> Arguments1Validator<A, X> compose(
@@ -72,6 +64,14 @@ public interface Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 					args.arg13(), args.arg14(), args.arg15(), args.arg16(), locale,
 					constraintGroup);
 		};
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,

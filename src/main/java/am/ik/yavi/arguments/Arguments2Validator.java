@@ -45,14 +45,6 @@ public interface Arguments2Validator<A1, A2, X> {
 	}
 
 	/**
-	 * @since 0.10.0
-	 */
-	default Arguments2Validator<A1, A2, Supplier<X>> lazy() {
-		// WARNING:: The default implementation is not really lazy!
-		return this.andThen(x -> () -> x);
-	}
-
-	/**
 	 * @since 0.7.0
 	 */
 	default <A> Arguments1Validator<A, X> compose(
@@ -62,6 +54,14 @@ public interface Arguments2Validator<A1, A2, X> {
 			return Arguments2Validator.this.validate(args.arg1(), args.arg2(), locale,
 					constraintGroup);
 		};
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments2Validator<A1, A2, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2) {

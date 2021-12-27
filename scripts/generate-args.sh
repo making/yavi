@@ -286,14 +286,6 @@ fi)
 	}
 
 	/**
-	 * @since 0.10.0
-	 */
-	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-	  // WARNING:: The default implementation is not really lazy!
-		return this.andThen(x -> () -> x);
-	}
-
-	/**
 	 * @since 0.7.0
 	 */
 $(if [ "${i}" == "1" ];then
@@ -317,6 +309,14 @@ cat <<EOD
 EOD
 fi)
 $(cat <<EOD
+	/**
+	 * @since 0.10.0
+	 */
+	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+	  // WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
+	}
+
 	default Validated<X> validate(${args}) {
 		return this.validate(${as}, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}

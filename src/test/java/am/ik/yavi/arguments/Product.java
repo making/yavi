@@ -41,4 +41,9 @@ public class Product {
 	public String toString() {
 		return "Product{" + "name='" + name + '\'' + ", price=" + price + '}';
 	}
+
+	public static void main(String[] args) {
+		System.out.println(validator.validated("foo", 100));
+		System.out.println(validator.lazy().validated("foo", 100).get());
+	}
 }

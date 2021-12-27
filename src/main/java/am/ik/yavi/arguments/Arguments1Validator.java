@@ -78,14 +78,6 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	/**
-	 * @since 0.10.0
-	 */
-	default Arguments1Validator<A1, Supplier<X>> lazy() {
-		// WARNING:: The default implementation is not really lazy!
-		return this.andThen(x -> () -> x);
-	}
-
-	/**
 	 * @since 0.7.0
 	 */
 	@Override
@@ -93,6 +85,14 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			Function<? super A, ? extends A1> mapper) {
 		return (a, locale, constraintGroup) -> Arguments1Validator.this
 				.validate(mapper.apply(a), locale, constraintGroup);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments1Validator<A1, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1) {
