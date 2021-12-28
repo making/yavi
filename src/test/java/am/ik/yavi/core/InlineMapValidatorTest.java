@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,9 +25,9 @@ import am.ik.yavi.FormWithMap;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
-public class InlineMapValidatorTest extends AbstractMapValidatorTest {
+class InlineMapValidatorTest extends AbstractMapValidatorTest {
 	@Test
-	public void nullCollectionValid() throws Exception {
+	void nullCollectionValid() throws Exception {
 		Validator<FormWithMap> validator = ValidatorBuilder.of(FormWithMap.class) //
 				.forEachIfPresent(FormWithMap::getAddresses, "addresses",
 						b -> b.constraint(Address::street, "street",

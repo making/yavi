@@ -16,14 +16,14 @@
 package am.ik.yavi.constraint.charsequence;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 
-public class RangeTest {
+class RangeTest {
 
 	@Test
-	public void ofString() {
+	void ofString() {
 		Range range = Range.of("a", "z");
 		Assertions.assertThat(range).isEqualTo(Range.of(0x0061 /* a */, 0x007a /* z */));
 	}
