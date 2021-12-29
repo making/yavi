@@ -17,7 +17,7 @@ package am.ik.yavi.builder;
 
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LocalDateTimeValidator;
-import am.ik.yavi.constraint.time.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.temporal.LocalDateTimeConstraint;
 import am.ik.yavi.core.Validator;
 
 import java.time.LocalDateTime;

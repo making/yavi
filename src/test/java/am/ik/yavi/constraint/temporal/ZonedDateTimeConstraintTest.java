@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint.time;
+package am.ik.yavi.constraint.temporal;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

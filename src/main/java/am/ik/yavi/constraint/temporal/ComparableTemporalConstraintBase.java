@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint.time;
+package am.ik.yavi.constraint.temporal;
 
 import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.Constraint;

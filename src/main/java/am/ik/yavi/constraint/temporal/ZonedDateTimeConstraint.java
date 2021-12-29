@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint.time;
+package am.ik.yavi.constraint.temporal;
 
 import java.time.ZonedDateTime;
 

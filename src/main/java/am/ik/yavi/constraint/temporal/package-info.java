@@ -3,4 +3,4 @@
  *
  * @author Diego Krupitza
  */
-package am.ik.yavi.constraint.time;
+package am.ik.yavi.constraint.temporal;
