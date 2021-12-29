@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint;
 
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -408,6 +408,93 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "1.1.1.1.1", "0:0:0:0:0:0:0:Z" })
 	void invalidIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO",
+			"DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H", "DiegoFooT7UFB7ijEU",
+			"DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
+			"DiegoFookcYOLkz00a", "DiegoFooiYBuRcAkXP" })
+	void validStartsWith(String value) {
+		String prefix = "DiegoFoo";
+		final Predicate<String> predicate = retrievePredicate(c -> c.startsWith(prefix));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO",
+			"DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H", "DiegoFooT7UFB7ijEU",
+			"DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
+			"DiegoFookcYOLkz00a", "DiegoFooiYBuRcAkXP" })
+	void validStartsWithStringBuilder(String value) {
+		StringBuilder prefixBuilder = new StringBuilder("Diego").append("Foo");
+		final Predicate<String> predicate = retrievePredicate(
+				c -> c.startsWith(prefixBuilder));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
+			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
+			"iYBuRcAkXP" })
+	void invalidStartsWith(String value) {
+		String prefix = "DiegoFoo";
+		final Predicate<String> predicate = retrievePredicate(c -> c.startsWith(prefix));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
+			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
+			"iYBuRcAkXP" })
+	void invalidStartsWithStringBuilder(String value) {
+		StringBuilder prefixBuilder = new StringBuilder("Diego").append("Foo");
+		final Predicate<String> predicate = retrievePredicate(
+				c -> c.startsWith(prefixBuilder));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgfDiego", "jQ2gFpzEmODiego", "PcMzCARdWMDiego",
+			"hdORZ6ks8HDiego", "T7UFB7ijEUDiego", "FSmlWu4XJzDiego", "fwlgMXnuvWDiego",
+			"yj4MgAQeBiDiego", "kcYOLkz00aDiego", "iYBuRcAkXPDiego" })
+	void validEndsWith(String value) {
+		String suffix = "Diego";
+		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffix));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgfDiego1", "jQ2gFpzEmODiego1", "PcMzCARdWMDiego1",
+			"hdORZ6ks8HDiego1", "T7UFB7ijEUDiego1", "FSmlWu4XJzDiego1",
+			"fwlgMXnuvWDiego1", "yj4MgAQeBiDiego1", "kcYOLkz00aDiego1",
+			"iYBuRcAkXPDiego1" })
+	void validEndsWithStringBuilder(String value) {
+		StringBuilder suffixBuilder = new StringBuilder("Diego").append(1);
+		final Predicate<String> predicate = retrievePredicate(
+				c -> c.endsWith(suffixBuilder));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
+			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
+			"iYBuRcAkXP" })
+	void invalidEndsWith(String value) {
+		String suffix = "Diego";
+		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffix));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
+			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
+			"iYBuRcAkXP" })
+	void invalidEndsWithStringBuilder(String value) {
+		StringBuilder suffixBuilder = new StringBuilder("Diego").append(1);
+		final Predicate<String> predicate = retrievePredicate(
+				c -> c.endsWith(suffixBuilder));
 		assertThat(predicate.test(value)).isFalse();
 	}
 

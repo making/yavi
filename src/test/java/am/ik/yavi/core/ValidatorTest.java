@@ -741,6 +741,56 @@ class ValidatorTest {
 		assertThat(violations.get(0).message()).isEqualTo("\"age\" must be negative");
 	}
 
+	@Test
+	public void nameStartWithValid() {
+		User user = new User("Diego Krupitza", "foo@bar.com", 22);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getName, "name", c -> c.startsWith("Diego")).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void nameStartWithInValid() {
+		User user = new User("NotDiego", "foo@bar.com", 22);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getName, "name", c -> c.startsWith("Diego")).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"name\" must start with \"Diego\"");
+	}
+
+	@Test
+	public void nameEndsWithValid() {
+		User user = new User("Diego Krupitza", "foo@bar.com", 22);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getName, "name", c -> c.endsWith("Krupitza")).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	public void nameEndsWithInValid() {
+		User user = new User("Diego Not", "foo@bar.com", 22);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getName, "name", c -> c.endsWith("Diego")).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"name\" must end with \"Diego\"");
+	}
+
 	Validator<User> validator() {
 		return ValidatorBuilder.<User> of() //
 				.constraint(User::getName, "name", c -> c.notNull() //
