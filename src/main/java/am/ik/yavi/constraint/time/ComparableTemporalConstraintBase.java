@@ -6,6 +6,7 @@ import am.ik.yavi.core.ConstraintPredicate;
 
 import java.time.temporal.Temporal;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.*;
@@ -32,6 +33,15 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	}
 
 	/**
+	 * Is the given temporal before the supplied {@code other}
+	 *
+	 * @param other the supplier providing the other temporal that is after
+	 */
+	public C before(Supplier<V> other) {
+		return this.before(other.get());
+	}
+
+	/**
 	 * Is the given temporal after {@code other}
 	 *
 	 * @param other the other temporal that is before
@@ -43,17 +53,39 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	}
 
 	/**
-	 * Is the given temporal between {@code rangeFrom} and {@code rangeTo} The range is
+	 * Is the given temporal after the supplied {@code other}
+	 *
+	 * @param other the supplier providing the other temporal that is before
+	 */
+	public C after(Supplier<V> other) {
+		return this.after(other.get());
+	}
+
+	/**
+	 * Is the given temporal between {@code rangeFrom} and {@code rangeTo}. The range is
 	 * not inclusive. This means if the dates are equal (rangeFrom = x = rangeTo) it is
 	 * invalid
 	 *
 	 * @param rangeFrom the start of the range the temporal has to be in
-	 * @param rangeTo the ned of the range the temporal has to be in
+	 * @param rangeTo the end of the range the temporal has to be in
 	 */
 	public C between(V rangeFrom, V rangeTo) {
 		this.predicates().add(ConstraintPredicate.of(this.isBetween(rangeFrom, rangeTo),
 				DATE_BETWEEN, () -> new Object[] { rangeFrom, rangeTo }, VALID));
 		return cast();
+	}
+
+	/**
+	 * Is the given temporal between the supplied {@code rangeFrom} and {@code rangeTo}.
+	 * The range is not inclusive. This means if the dates are equal (rangeFrom = x =
+	 * rangeTo) it is invalid
+	 *
+	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
+	 *     in
+	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
+	 */
+	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
+		return this.between(rangeFrom.get(), rangeTo.get());
 	}
 
 	protected abstract Predicate<V> isBetween(V rangeFrom, V rangeTo);

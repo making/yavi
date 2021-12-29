@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.time.LocalDate;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -33,6 +34,22 @@ class LocalDateConstraintTest {
 	}
 
 	@Test
+	void isBeforeSupplierValid() {
+		LocalDate now = LocalDate.now();
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.before(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isBeforeSupplierInValid() {
+		LocalDate now = LocalDate.now();
+		LocalDate past = now.minusDays(10);
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.before(() -> past));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
 	void isAfterInValid() {
 		LocalDate now = LocalDate.now();
 		LocalDate future = now.plusDays(10);
@@ -45,6 +62,22 @@ class LocalDateConstraintTest {
 		LocalDate now = LocalDate.now();
 		LocalDate past = now.minusDays(10);
 		Predicate<LocalDate> predicate = retrievePredicate(c -> c.after(past));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isAfterSuplierInValid() {
+		LocalDate now = LocalDate.now();
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.after(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isAfterSuplierValid() {
+		LocalDate now = LocalDate.now();
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.after(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -72,6 +105,35 @@ class LocalDateConstraintTest {
 
 		Predicate<LocalDate> predicate = retrievePredicate(
 				c -> c.between(rangeFrom, rangeTo));
+		assertThatThrownBy(() -> predicate.test(now))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@ParameterizedTest
+	@MethodSource("validBetweenDates")
+	void isBetweenSuplierValid(LocalDate now, LocalDate rangeFrom, LocalDate rangeTo) {
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.between(() -> rangeFrom, () -> rangeTo));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isBetweenSuplierExactInValid() {
+		LocalDate now = LocalDate.now();
+		Supplier<LocalDate> nowSupplier = () -> now;
+
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.between(nowSupplier, nowSupplier));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isBetweenSuplierInValidException() {
+		LocalDate now = LocalDate.now();
+
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.between(() -> now.plusDays(1), () -> now.minusDays(1)));
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");

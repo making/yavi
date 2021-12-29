@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -37,6 +38,22 @@ class ZonedDateTimeConstraintTest {
 	}
 
 	@Test
+	void isBeforeSupplierValid() {
+		ZonedDateTime now = ZonedDateTime.now();
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.before(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isBeforeSupplierInValid() {
+		ZonedDateTime now = ZonedDateTime.now();
+		ZonedDateTime past = now.minusDays(10);
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.before(() -> past));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
 	void isAfterInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
 		ZonedDateTime future = now.plusDays(10);
@@ -49,6 +66,22 @@ class ZonedDateTimeConstraintTest {
 		ZonedDateTime now = ZonedDateTime.now();
 		ZonedDateTime past = now.minusDays(10);
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.after(past));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isAfterSuplierInValid() {
+		ZonedDateTime now = ZonedDateTime.now();
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.after(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isAfterSuplierValid() {
+		ZonedDateTime now = ZonedDateTime.now();
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.after(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -98,6 +131,36 @@ class ZonedDateTimeConstraintTest {
 
 		Predicate<ZonedDateTime> predicate = retrievePredicate(
 				c -> c.between(rangeFrom, rangeTo));
+		assertThatThrownBy(() -> predicate.test(now))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@ParameterizedTest
+	@MethodSource("validBetweenDates")
+	void isBetweenSuplierValid(ZonedDateTime now, ZonedDateTime rangeFrom,
+			ZonedDateTime rangeTo) {
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.between(() -> rangeFrom, () -> rangeTo));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isBetweenSuplierExactInValid() {
+		ZonedDateTime now = ZonedDateTime.now();
+		Supplier<ZonedDateTime> nowSupplier = () -> now;
+
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.between(nowSupplier, nowSupplier));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isBetweenSuplierInValidException() {
+		ZonedDateTime now = ZonedDateTime.now();
+
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.between(() -> now.plusDays(1), () -> now.minusDays(1)));
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
