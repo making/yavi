@@ -17,7 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.LinkedHashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,9 +26,9 @@ import am.ik.yavi.Country;
 import am.ik.yavi.FormWithMap;
 import am.ik.yavi.PhoneNumber;
 
-public abstract class AbstractMapValidatorTest {
+abstract class AbstractMapValidatorTest {
 	@Test
-	public void allInvalid() throws Exception {
+	void allInvalid() throws Exception {
 		Validator<FormWithMap> validator = validator();
 		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
 			{
@@ -68,7 +68,7 @@ public abstract class AbstractMapValidatorTest {
 	}
 
 	@Test
-	public void inValidOne() throws Exception {
+	void inValidOne() throws Exception {
 		Validator<FormWithMap> validator = validator();
 		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
 			{
@@ -96,7 +96,7 @@ public abstract class AbstractMapValidatorTest {
 	}
 
 	@Test
-	public void nullCollectionInValid() throws Exception {
+	void nullCollectionInValid() throws Exception {
 		Validator<FormWithMap> validator = validator();
 
 		FormWithMap form = new FormWithMap(null);
@@ -109,7 +109,7 @@ public abstract class AbstractMapValidatorTest {
 	}
 
 	@Test
-	public void nullElement() throws Exception {
+	void nullElement() throws Exception {
 		Validator<FormWithMap> validator = validator();
 		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
 			{
@@ -124,7 +124,7 @@ public abstract class AbstractMapValidatorTest {
 	}
 
 	@Test
-	public void valid() throws Exception {
+	void valid() throws Exception {
 		Validator<FormWithMap> validator = validator();
 		FormWithMap form = new FormWithMap(new LinkedHashMap<String, Address>() {
 			{

@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,10 +29,10 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class CodePointsConstraintTest {
+class CodePointsConstraintTest {
 
 	@Test
-	public void allIncludedRange() {
+	void allIncludedRange() {
 		CodePointsRanges<String> whiteList = () -> Arrays.asList(
 				Range.of(0x0041/* A */, 0x005A /* Z */),
 				Range.of(0x0061/* a */, 0x007A /* z */));
@@ -50,7 +50,7 @@ public class CodePointsConstraintTest {
 	}
 
 	@Test
-	public void allIncludedSet() {
+	void allIncludedSet() {
 		CodePointsSet<String> whiteList = () -> new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */,
 						0x0044 /* D */, 0x0045 /* E */, 0x0046 /* F */, 0x0047 /* G */,
@@ -80,7 +80,7 @@ public class CodePointsConstraintTest {
 	}
 
 	@Test
-	public void notIncludedRange() {
+	void notIncludedRange() {
 		CodePointsRanges<String> blackList = () -> Arrays.asList(
 				Range.of(0x0041/* A */, 0x0042 /* B */),
 				Range.of(0x0061/* a */, 0x0062 /* b */));
@@ -97,7 +97,7 @@ public class CodePointsConstraintTest {
 	}
 
 	@Test
-	public void notIncludedSet() {
+	void notIncludedSet() {
 		CodePointsSet<String> blackList = () -> new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
 

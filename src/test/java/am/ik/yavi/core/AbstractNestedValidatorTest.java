@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,10 +23,10 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 
-public abstract class AbstractNestedValidatorTest {
+abstract class AbstractNestedValidatorTest {
 
 	@Test
-	public void invalid() {
+	void invalid() {
 		Validator<Address> addressValidator = validator();
 		Address address = new Address(new Country(null), null, new PhoneNumber(""));
 		ConstraintViolations violations = addressValidator.validate(address);
@@ -47,7 +47,7 @@ public abstract class AbstractNestedValidatorTest {
 	}
 
 	@Test
-	public void nestedValueIsNull() {
+	void nestedValueIsNull() {
 		Validator<Address> addressValidator = validator();
 		Address address = new Address(null, null, null /* nullValidity */);
 		ConstraintViolations violations = addressValidator.validate(address);
@@ -60,7 +60,7 @@ public abstract class AbstractNestedValidatorTest {
 	}
 
 	@Test
-	public void valid() {
+	void valid() {
 		Validator<Address> addressValidator = validator();
 		Address address = new Address(new Country("JP"), "tokyo",
 				new PhoneNumber("0123456789"));

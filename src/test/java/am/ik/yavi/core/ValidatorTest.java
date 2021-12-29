@@ -60,7 +60,7 @@ class ValidatorTest {
 	}
 
 	@Test
-	public void codePointsAllIncludedRange() throws Exception {
+	void codePointsAllIncludedRange() throws Exception {
 		CodePointsRanges<String> whiteList = () -> Arrays.asList(
 				CodePoints.Range.of(0x0041 /* A */, 0x005A /* Z */),
 				CodePoints.Range.of(0x0061 /* a */, 0x007A /* z */));
