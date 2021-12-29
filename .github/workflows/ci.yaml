@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 17
       - name: Cache Maven
         uses: actions/cache@v1
         with:
