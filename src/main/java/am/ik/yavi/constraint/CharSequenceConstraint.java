@@ -121,6 +121,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	/**
 	 * Does the given value start with the {@code prefix}
 	 * @param prefix the prefix the value has to start with
+	 * @since 0.10.0
 	 */
 	public CharSequenceConstraint<T, E> startsWith(CharSequence prefix) {
 		this.predicates()
@@ -133,6 +134,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	/**
 	 * Does the given value end with the {@code suffix}
 	 * @param suffix the suffix the value has to end with
+	 * @since 0.10.0
 	 */
 	public CharSequenceConstraint<T, E> endsWith(CharSequence suffix) {
 		this.predicates()
