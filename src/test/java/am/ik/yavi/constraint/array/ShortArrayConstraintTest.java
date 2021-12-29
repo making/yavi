@@ -17,15 +17,15 @@ package am.ik.yavi.constraint.array;
 
 import java.util.function.Predicate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShortArrayConstraintTest {
+class ShortArrayConstraintTest {
 	private ShortArrayConstraint<short[]> constraint = new ShortArrayConstraint<>();
 
 	@Test
-	public void contains() {
+	void contains() {
 		Predicate<short[]> predicate = constraint.contains((short) 100).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isTrue();
@@ -33,7 +33,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
+	void fixedSize() {
 		Predicate<short[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
@@ -43,7 +43,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
+	void greaterThan() {
 		Predicate<short[]> predicate = constraint.greaterThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100, (short) 101 })).isFalse();
@@ -52,7 +52,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
+	void greaterThanOrEqual() {
 		Predicate<short[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isFalse();
@@ -62,7 +62,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
+	void lessThan() {
 		Predicate<short[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
@@ -70,7 +70,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<short[]> predicate = constraint.lessThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();
@@ -80,7 +80,7 @@ public class ShortArrayConstraintTest {
 	}
 
 	@Test
-	public void notEmpty() {
+	void notEmpty() {
 		Predicate<short[]> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new short[] { (short) 100 })).isTrue();

@@ -66,6 +66,9 @@ public interface ViolationMessage {
 		BOOLEAN_IS_FALSE("boolean.isFalse", "\"{0}\" must be false"), //
 		CHAR_SEQUENCE_NOT_BLANK("charSequence.notBlank", "\"{0}\" must not be blank"), //
 		CHAR_SEQUENCE_CONTAINS("charSequence.contains", "\"{0}\" must contain {1}"), //
+		CHAR_SEQUENCE_STARTSWITH("charSequence.startsWith",
+				"\"{0}\" must start with \"{1}\""), //
+		CHAR_SEQUENCE_ENDSWITH("charSequence.endsWith", "\"{0}\" must end with \"{1}\""), //
 		CHAR_SEQUENCE_EMAIL("charSequence.email",
 				"\"{0}\" must be a valid email address"), //
 		CHAR_SEQUENCE_IPV4("charSequence.ipv4", "\"{0}\" must be a valid IPv4"), //

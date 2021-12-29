@@ -18,7 +18,7 @@ package am.ik.yavi.constraint.charsequence.codepoints;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints.HIRAGANA;
 import static am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints.KATAKANA;
@@ -27,10 +27,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 
-public class CompositeCodePointsTest {
+class CompositeCodePointsTest {
 
 	@Test
-	public void codePointRange() {
+	void codePointRange() {
 		CodePoints<String> codePoints = new CompositeCodePoints<>(HIRAGANA, KATAKANA);
 		assertThat(codePoints.allExcludedCodePoints("あ")).isEmpty();
 		assertThat(codePoints.allExcludedCodePoints("い")).isEmpty();
@@ -45,7 +45,7 @@ public class CompositeCodePointsTest {
 	}
 
 	@Test
-	public void codePointsSet() {
+	void codePointsSet() {
 		CodePointsSet<String> cp1 = () -> new LinkedHashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
 		CodePointsSet<String> cp2 = () -> new LinkedHashSet<>(
@@ -64,7 +64,7 @@ public class CompositeCodePointsTest {
 	}
 
 	@Test
-	public void mix() {
+	void mix() {
 		CodePointsSet<String> cp1 = () -> new LinkedHashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
 		CodePointsSet<String> cp2 = () -> new LinkedHashSet<>(

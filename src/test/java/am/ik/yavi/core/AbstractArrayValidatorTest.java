@@ -15,7 +15,7 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,9 +24,9 @@ import am.ik.yavi.Country;
 import am.ik.yavi.FormWithArray;
 import am.ik.yavi.PhoneNumber;
 
-public abstract class AbstractArrayValidatorTest {
+abstract class AbstractArrayValidatorTest {
 	@Test
-	public void allInvalid() throws Exception {
+	void allInvalid() throws Exception {
 		Validator<FormWithArray> validator = validator();
 		FormWithArray form = new FormWithArray(
 				new Address[] { new Address(new Country(null), null, new PhoneNumber("")),
@@ -63,7 +63,7 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
-	public void inValidOne() throws Exception {
+	void inValidOne() throws Exception {
 		Validator<FormWithArray> validator = validator();
 
 		FormWithArray form = new FormWithArray(new Address[] {
@@ -88,7 +88,7 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
-	public void nullCollectionInValid() throws Exception {
+	void nullCollectionInValid() throws Exception {
 		Validator<FormWithArray> validator = validator();
 
 		FormWithArray form = new FormWithArray(null);
@@ -101,7 +101,7 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
-	public void nullElement() throws Exception {
+	void nullElement() throws Exception {
 		Validator<FormWithArray> validator = validator();
 
 		FormWithArray form = new FormWithArray(new Address[] {
@@ -113,7 +113,7 @@ public abstract class AbstractArrayValidatorTest {
 	}
 
 	@Test
-	public void valid() throws Exception {
+	void valid() throws Exception {
 		Validator<FormWithArray> validator = validator();
 		FormWithArray form = new FormWithArray(new Address[] {
 				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),

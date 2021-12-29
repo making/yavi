@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint.array;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DoubleArrayConstraintTest {
+class DoubleArrayConstraintTest {
 	private DoubleArrayConstraint<double[]> constraint = new DoubleArrayConstraint<>();
 
 	@Test
-	public void contains() {
+	void contains() {
 		Predicate<double[]> predicate = constraint.contains(100.0).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new double[] { 100.0, 101.0 })).isTrue();
@@ -33,7 +33,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
+	void fixedSize() {
 		Predicate<double[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isFalse();
@@ -42,7 +42,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
+	void greaterThan() {
 		Predicate<double[]> predicate = constraint.greaterThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new double[] { 100.0, 101.0 })).isFalse();
@@ -50,7 +50,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
+	void greaterThanOrEqual() {
 		Predicate<double[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isFalse();
@@ -59,7 +59,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
+	void lessThan() {
 		Predicate<double[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isTrue();
@@ -67,7 +67,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<double[]> predicate = constraint.lessThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isTrue();
@@ -76,7 +76,7 @@ public class DoubleArrayConstraintTest {
 	}
 
 	@Test
-	public void notEmpty() {
+	void notEmpty() {
 		Predicate<double[]> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new double[] { 100.0 })).isTrue();
