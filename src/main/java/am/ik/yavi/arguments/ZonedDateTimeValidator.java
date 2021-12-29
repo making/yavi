@@ -21,6 +21,9 @@ import am.ik.yavi.fn.Function1;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
+/**
+ * @since 0.10.0
+ */
 public class ZonedDateTimeValidator<T>
 		extends DefaultArguments1Validator<ZonedDateTime, T> {
 

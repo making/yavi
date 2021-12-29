@@ -21,6 +21,9 @@ import am.ik.yavi.fn.Function1;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
+/**
+ * @since 0.10.0
+ */
 public class LocalDateTimeValidator<T>
 		extends DefaultArguments1Validator<LocalDateTime, T> {
 

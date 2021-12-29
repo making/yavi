@@ -23,6 +23,9 @@ import am.ik.yavi.core.Validator;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
+/**
+ * @since 0.10.0
+ */
 public class ZonedDateTimeValidatorBuilder {
 	private final String name;
 

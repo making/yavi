@@ -23,6 +23,9 @@ import am.ik.yavi.core.Validator;
 import java.time.LocalDate;
 import java.util.function.Function;
 
+/**
+ * @since 0.10.0
+ */
 public class LocalDateValidatorBuilder {
 	private final String name;
 

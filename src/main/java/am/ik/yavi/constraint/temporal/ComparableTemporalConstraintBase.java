@@ -17,6 +17,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
  * Comparable.
  *
  * @author Diego Krupitza
+ * @since 0.10.0
  */
 abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
