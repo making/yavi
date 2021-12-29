@@ -14,7 +14,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
  *
  * @author Diego Krupitza
  */
-public abstract class ChronoLocalDateConstraintBase<T, V extends ChronoLocalDate, C extends Constraint<T, V, C>>
+abstract class ChronoLocalDateConstraintBase<T, V extends ChronoLocalDate, C extends Constraint<T, V, C>>
 		extends ComparableTemporalConstraintBase<T, V, C> {
 
 	/** Is the given ChronoLocalDate a leap year */

@@ -152,8 +152,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(meta.toValue(), meta.name(), c, LocalDateConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _localDateConstraint(ToLocalDateConstraint<T> f,
-			String name, Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+	public ValidatorBuilder<T> _localDate(ToLocalDateConstraint<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
 		return this.constraint(f, name, c, LocalDateConstraint::new);
 	}
 	// endregion
@@ -170,8 +170,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 				LocalDateTimeConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _localDateTimeConstraint(ToLocalDateTimeConstraint<T> f,
-			String name,
+	public ValidatorBuilder<T> _localDateTime(ToLocalDateTimeConstraint<T> f, String name,
 			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
 		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
 	}
@@ -189,8 +188,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 				ZonedDateTimeConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _zonedDateTimeConstraint(ToZonedDateTimeConstraint<T> f,
-			String name,
+	public ValidatorBuilder<T> _zonedDateTime(ToZonedDateTimeConstraint<T> f, String name,
 			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
 		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
 	}

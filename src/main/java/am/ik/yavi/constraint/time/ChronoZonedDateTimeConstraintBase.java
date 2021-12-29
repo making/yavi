@@ -15,7 +15,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
  *
  * @author Diego Krupitza
  */
-public abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTime<?>, C extends Constraint<T, V, C>>
+abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTime<?>, C extends Constraint<T, V, C>>
 		extends ComparableTemporalConstraintBase<T, V, C> {
 
 	/**

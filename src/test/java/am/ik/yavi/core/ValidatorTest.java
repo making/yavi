@@ -22,7 +22,6 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
-import am.ik.yavi.constraint.time.ChronoLocalDateConstraintBase;
 import am.ik.yavi.fn.Either;
 import org.junit.Test;
 
@@ -883,8 +882,8 @@ public class ValidatorTest {
 				"BirthdayParty", now);
 
 		Validator<CalendarEntryLocalDate> validator = ValidatorBuilder
-				.<CalendarEntryLocalDate> of().constraint(CalendarEntryLocalDate::getDate,
-						"date", ChronoLocalDateConstraintBase::leapYear)
+				.<CalendarEntryLocalDate> of()
+				.constraint(CalendarEntryLocalDate::getDate, "date", c -> c.leapYear())
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -898,8 +897,8 @@ public class ValidatorTest {
 				"BirthdayParty", now);
 
 		Validator<CalendarEntryLocalDate> validator = ValidatorBuilder
-				.<CalendarEntryLocalDate> of().constraint(CalendarEntryLocalDate::getDate,
-						"date", ChronoLocalDateConstraintBase::leapYear)
+				.<CalendarEntryLocalDate> of()
+				.constraint(CalendarEntryLocalDate::getDate, "date", c -> c.leapYear())
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);

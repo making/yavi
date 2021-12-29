@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint.time;
 
+import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
@@ -16,8 +17,8 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
  *
  * @author Diego Krupitza
  */
-public abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
-		extends TemporalConstraintBase<T, V, C> {
+abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
+		extends ConstraintBase<T, V, C> {
 
 	/**
 	 * Is the given temporal before {@code other}

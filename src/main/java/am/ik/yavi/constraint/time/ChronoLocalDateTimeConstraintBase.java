@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  *
  * @author Diego Krupitza
  */
-public abstract class ChronoLocalDateTimeConstraintBase<T, V extends ChronoLocalDateTime<?>, C extends Constraint<T, V, C>>
+abstract class ChronoLocalDateTimeConstraintBase<T, V extends ChronoLocalDateTime<?>, C extends Constraint<T, V, C>>
 		extends ComparableTemporalConstraintBase<T, V, C> {
 
 	@Override
