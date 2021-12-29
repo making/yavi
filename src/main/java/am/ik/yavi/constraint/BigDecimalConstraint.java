@@ -51,4 +51,9 @@ public class BigDecimalConstraint<T>
 	protected BigDecimal zeroValue() {
 		return BigDecimal.ZERO;
 	}
+
+	@Override
+	protected BigDecimal oneValue() {
+		return BigDecimal.ONE;
+	}
 }

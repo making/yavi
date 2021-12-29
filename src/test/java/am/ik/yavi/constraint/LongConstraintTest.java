@@ -16,6 +16,7 @@
 package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -140,6 +141,32 @@ class LongConstraintTest {
 		Predicate<Long> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -101L, -120L })
+	void invalidZero(long value) {
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validZero() {
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(0L)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = { -101L, -120L })
+	void invalidOne(long value) {
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validOne() {
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(1L)).isTrue();
 	}
 
 	private static Predicate<Long> retrievePredicate(

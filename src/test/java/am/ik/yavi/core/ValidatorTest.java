@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 class ValidatorTest {
+
 	@Test
 	void allInvalid() throws Exception {
 		User user = new User("", "example.com", 300);
@@ -61,8 +62,8 @@ class ValidatorTest {
 	@Test
 	void codePointsAllIncludedRange() throws Exception {
 		CodePointsRanges<String> whiteList = () -> Arrays.asList(
-				CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
-				CodePoints.Range.of(0x0061/* a */, 0x007A /* z */));
+				CodePoints.Range.of(0x0041 /* A */, 0x005A /* Z */),
+				CodePoints.Range.of(0x0061 /* a */, 0x007A /* z */));
 
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
@@ -82,7 +83,7 @@ class ValidatorTest {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
 				.constraint(User::getName, "name",
-						c -> c.codePoints(0x0041/* A */, 0x007A /* z */).asWhiteList())
+						c -> c.codePoints(0x0041 /* A */, 0x007A /* z */).asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -95,10 +96,11 @@ class ValidatorTest {
 	@Test
 	void codePointsAllIncludedRangeRange() throws Exception {
 		User user = new User("abc@b.c", null, null);
-		Validator<User> validator = ValidatorBuilder.of(User.class).constraint(
-				User::getName, "name",
-				c -> c.codePoints(CodePoints.Range.of(0x0041/* A */, 0x005A /* Z */),
-						CodePoints.Range.of(0x0061/* a */, 0x007A /* z */)).asWhiteList())
+		Validator<User> validator = ValidatorBuilder.of(User.class)
+				.constraint(User::getName, "name", c -> c
+						.codePoints(CodePoints.Range.of(0x0041 /* A */, 0x005A /* Z */),
+								CodePoints.Range.of(0x0061 /* a */, 0x007A /* z */))
+						.asWhiteList())
 				.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -173,8 +175,8 @@ class ValidatorTest {
 	@Test
 	void codePointsNotIncludedRange() throws Exception {
 		CodePointsRanges<String> blackList = () -> Arrays.asList(
-				CodePoints.Range.of(0x0041/* A */, 0x0042 /* B */),
-				CodePoints.Range.of(0x0061/* a */, 0x0062 /* b */));
+				CodePoints.Range.of(0x0041 /* A */, 0x0042 /* B */),
+				CodePoints.Range.of(0x0061 /* a */, 0x0062 /* b */));
 
 		User user = new User("abcA@Bb.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
@@ -741,6 +743,36 @@ class ValidatorTest {
 		assertThat(violations.get(0).message()).isEqualTo("\"age\" must be negative");
 	}
 
+	@Test
+	void ageIsZeroAndNameDiegoValidTest() {
+		String validName = "Diego";
+		User user = new User(validName, "foo@bar.com", 0);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::isZero)
+				.constraint(User::getName, "name", c -> c.equalTo(validName)).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void ageIsZeroAndNameDiegoInValidTest() {
+		String validName = "Diego";
+		User user = new User(validName + "Invalid", "foo@bar.com", 10);
+
+		Validator<User> validator = ValidatorBuilder.<User> of()
+				.constraint(User::getAge, "age", NumericConstraintBase::isZero)
+				.constraint(User::getName, "name", c -> c.equalTo(validName)).build();
+
+		ConstraintViolations violations = validator.validate(user);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(2);
+		assertThat(violations.get(0).message()).isEqualTo("\"age\" must be equal to 0");
+		assertThat(violations.get(1).message())
+				.isEqualTo("\"name\" must be equal to Diego");
+	}
+
 	Validator<User> validator() {
 		return ValidatorBuilder.<User> of() //
 				.constraint(User::getName, "name", c -> c.notNull() //
@@ -756,5 +788,4 @@ class ValidatorTest {
 				.constraint(User::isEnabled, "enabled", c -> c.isTrue()) //
 				.build();
 	}
-
 }

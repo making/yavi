@@ -16,10 +16,10 @@
 package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.math.BigInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -143,6 +143,32 @@ class ByteConstraintTest {
 		Predicate<Byte> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(bytes = { -101, -120 })
+	void invalidZero(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validZero() {
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(Byte.valueOf("0"))).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(bytes = { -101, -120 })
+	void invalidOne(byte value) {
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validOne() {
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(Byte.valueOf("1"))).isTrue();
 	}
 
 	private static Predicate<Byte> retrievePredicate(

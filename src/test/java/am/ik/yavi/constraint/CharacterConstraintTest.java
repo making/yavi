@@ -16,6 +16,7 @@
 package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -110,6 +111,32 @@ class CharacterConstraintTest {
 		Predicate<Character> predicate = retrievePredicate(
 				NumericConstraintBase::negative);
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(chars = { 101, 120 })
+	void invalidZero(char value) {
+		Predicate<Character> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validZero() {
+		Predicate<Character> predicate = retrievePredicate(NumericConstraintBase::isZero);
+		assertThat(predicate.test(Character.MIN_VALUE)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(chars = { 101, 120 })
+	void invalidOne(char value) {
+		Predicate<Character> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@Test
+	void validOne() {
+		Predicate<Character> predicate = retrievePredicate(NumericConstraintBase::isOne);
+		assertThat(predicate.test('1')).isTrue();
 	}
 
 	private static Predicate<Character> retrievePredicate(

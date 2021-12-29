@@ -51,4 +51,9 @@ public class BigIntegerConstraint<T>
 	protected BigInteger zeroValue() {
 		return BigInteger.ZERO;
 	}
+
+	@Override
+	protected BigInteger oneValue() {
+		return BigInteger.ONE;
+	}
 }
