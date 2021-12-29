@@ -27,9 +27,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param other the other temporal that is after
 	 */
 	public C before(V other) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other) <= -1,
-				TEMPORAL_BEFORE, () -> new Object[] {}, VALID));
-		return cast();
+		return this.before(() -> other);
 	}
 
 	/**
@@ -49,9 +47,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param other the other temporal that is before
 	 */
 	public C after(V other) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other) >= 1,
-				TEMPORAL_AFTER, () -> new Object[] {}, VALID));
-		return cast();
+		return this.after(() -> other);
 	}
 
 	/**
@@ -74,9 +70,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param rangeTo the end of the range the temporal has to be in
 	 */
 	public C between(V rangeFrom, V rangeTo) {
-		this.predicates().add(ConstraintPredicate.of(this.isBetween(rangeFrom, rangeTo),
-				TEMPORAL_BETWEEN, () -> new Object[] { rangeFrom, rangeTo }, VALID));
-		return cast();
+		return this.between(() -> rangeFrom, () -> rangeTo);
 	}
 
 	/**
