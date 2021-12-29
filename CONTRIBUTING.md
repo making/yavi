@@ -20,6 +20,8 @@ In this section we will provide you with information on how to format your code 
   calling `./mvnw formatter:format` is the correct code style. Therefore, please run it before commiting.
 
 ## Commit messages
+The following section is copied from [spring-projects/spring-data-build](https://github.com/spring-projects/spring-data-build/blob/main/CONTRIBUTING.adoc) (commit: [245f448](https://github.com/spring-projects/spring-data-build/commit/245f4489bd908a62e5b456c092307ab542e47c16))
+
 The commit message should follow the following style:
 
 * First line contains the summary starting with a capital letter.
