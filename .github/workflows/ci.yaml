@@ -25,7 +25,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Check formatting
-        run: ./mvn formatter:validate
+        run: ./mvnw formatter:validate
   build:
     runs-on: ubuntu-latest
     strategy:
