@@ -20,7 +20,7 @@ abstract class ChronoLocalDateConstraintBase<T, V extends ChronoLocalDate, C ext
 	/** Is the given ChronoLocalDate a leap year */
 	public C leapYear() {
 		this.predicates().add(ConstraintPredicate.of(ChronoLocalDate::isLeapYear,
-				DATE_LEAP_YEAR, () -> new Object[] {}, VALID));
+				TEMPORAL_LEAP_YEAR, () -> new Object[] {}, VALID));
 		return cast();
 	}
 

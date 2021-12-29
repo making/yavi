@@ -25,7 +25,7 @@ abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTim
 	 */
 	public C zone(ZoneId zoneId) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.getZone().equals(zoneId),
-				ZONED_DATE_ZONE, () -> new Object[] { zoneId.toString() }, VALID));
+				TEMPORAL_DATE_ZONE, () -> new Object[] { zoneId.toString() }, VALID));
 		return cast();
 	}
 

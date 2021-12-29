@@ -28,7 +28,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 */
 	public C before(V other) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other) <= -1,
-				DATE_BEFORE, () -> new Object[] {}, VALID));
+				TEMPORAL_BEFORE, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
@@ -48,7 +48,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 */
 	public C after(V other) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other) >= 1,
-				DATE_AFTER, () -> new Object[] {}, VALID));
+				TEMPORAL_AFTER, () -> new Object[] {}, VALID));
 		return cast();
 	}
 
@@ -71,7 +71,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 */
 	public C between(V rangeFrom, V rangeTo) {
 		this.predicates().add(ConstraintPredicate.of(this.isBetween(rangeFrom, rangeTo),
-				DATE_BETWEEN, () -> new Object[] { rangeFrom, rangeTo }, VALID));
+				TEMPORAL_BETWEEN, () -> new Object[] { rangeFrom, rangeTo }, VALID));
 		return cast();
 	}
 
