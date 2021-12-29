@@ -118,7 +118,12 @@ public interface ViolationMessage {
 				"\"{1}\" is/are not allowed for \"{0}\""), //
 		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy"), //
 		PASSWORD_OPTIONAL("password.optional",
-				"\"{0}\" must meet at least {1} policies from {2}") //
+				"\"{0}\" must meet at least {1} policies from {2}"), //
+		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}"), //
+		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
+		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}"), //
+		TEMPORAL_DATE_ZONE("temporal.zone", "\"{0}\" has to be in zone {1}"), //
+		TEMPORAL_LEAP_YEAR("temporal.leapYear", "\"{0}\" has to be a leap year") //
 		;
 
 		private final String defaultMessageFormat;
