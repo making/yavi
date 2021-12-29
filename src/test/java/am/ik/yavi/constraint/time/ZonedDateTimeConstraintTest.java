@@ -85,27 +85,6 @@ class ZonedDateTimeConstraintTest {
 		assertThat(predicate.test(now)).isTrue();
 	}
 
-	@Test
-	void zoneValid() {
-		ZoneId zoneId = ZoneId.of("Europe/Paris");
-
-		ZonedDateTime now = ZonedDateTime.now(zoneId);
-
-		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.zone(zoneId));
-		assertThat(predicate.test(now)).isTrue();
-	}
-
-	@ParameterizedTest
-	@MethodSource("allZonesBesideSystemDefault")
-	void zoneInValid(ZoneId otherZoneId) {
-		ZoneId zoneId = ZoneId.systemDefault();
-		ZonedDateTime now = ZonedDateTime.now(zoneId);
-
-		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.zone(otherZoneId));
-		assertThat(predicate.test(now)).isFalse();
-		assertThat(zoneId).isNotEqualTo(otherZoneId);
-	}
-
 	@ParameterizedTest
 	@MethodSource("validBetweenDates")
 	void isBetweenValid(ZonedDateTime now, ZonedDateTime rangeFrom,

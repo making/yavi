@@ -15,8 +15,10 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.CalendarEntryLocalDateTime;
 import am.ik.yavi.ConstraintViolationsException;
-import am.ik.yavi.*;
+import am.ik.yavi.Range;
+import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
@@ -25,10 +27,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.fn.Either;
 import org.junit.Test;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -873,80 +872,6 @@ public class ValidatorTest {
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.startsWith("\"datetime\" has to be between");
-	}
-
-	@Test
-	public void calendarDateIsLeapYearValid() {
-		LocalDate now = LocalDate.of(2020, 2, 29);
-		CalendarEntryLocalDate birthdayPartyEntry = new CalendarEntryLocalDate(
-				"BirthdayParty", now);
-
-		Validator<CalendarEntryLocalDate> validator = ValidatorBuilder
-				.<CalendarEntryLocalDate> of()
-				.constraint(CalendarEntryLocalDate::getDate, "date", c -> c.leapYear())
-				.build();
-
-		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
-		assertThat(violations.isValid()).isTrue();
-	}
-
-	@Test
-	public void calendarDateIsLeapYearInValid() {
-		LocalDate now = LocalDate.of(2021, 2, 28);
-		CalendarEntryLocalDate birthdayPartyEntry = new CalendarEntryLocalDate(
-				"BirthdayParty", now);
-
-		Validator<CalendarEntryLocalDate> validator = ValidatorBuilder
-				.<CalendarEntryLocalDate> of()
-				.constraint(CalendarEntryLocalDate::getDate, "date", c -> c.leapYear())
-				.build();
-
-		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"date\" has to be a leap year");
-	}
-
-	@Test
-	public void calendarDateIsZoneValid() {
-		ZoneId zone = ZoneId.of("Europe/Paris");
-		ZonedDateTime now = ZonedDateTime.now(zone);
-
-		CalendarEntryZonedDateTime birthdayPartyEntry = new CalendarEntryZonedDateTime(
-				"BirthdayParty", now);
-
-		Validator<CalendarEntryZonedDateTime> validator = ValidatorBuilder
-				.<CalendarEntryZonedDateTime> of()
-				.constraint(CalendarEntryZonedDateTime::getDateTime, "datetime",
-						c -> c.zone(zone))
-				.build();
-
-		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
-		assertThat(violations.isValid()).isTrue();
-	}
-
-	@Test
-	public void calendarDateIsZoneInValid() {
-		ZoneId checkZone = ZoneId.of("Asia/Tokyo");
-
-		ZoneId zone = ZoneId.of("Europe/Paris");
-		ZonedDateTime now = ZonedDateTime.now(zone);
-
-		CalendarEntryZonedDateTime birthdayPartyEntry = new CalendarEntryZonedDateTime(
-				"BirthdayParty", now);
-
-		Validator<CalendarEntryZonedDateTime> validator = ValidatorBuilder
-				.<CalendarEntryZonedDateTime> of()
-				.constraint(CalendarEntryZonedDateTime::getDateTime, "datetime",
-						c -> c.zone(checkZone))
-				.build();
-
-		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"datetime\" has to be in zone Asia/Tokyo");
 	}
 
 	Validator<User> validator() {
