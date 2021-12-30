@@ -15,10 +15,8 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.CalendarEntryLocalDateTime;
+import am.ik.yavi.*;
 import am.ik.yavi.ConstraintViolationsException;
-import am.ik.yavi.Range;
-import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
@@ -28,6 +26,7 @@ import am.ik.yavi.fn.Either;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -922,6 +921,192 @@ class ValidatorTest {
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
 				.isEqualTo("\"name\" must end with \"Diego\"");
+	}
+
+	@Test
+	void timeIsBeforeNowValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.before(now.plusHours(10)))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void timeIsBeforeNowInValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.before(now.minusHours(10)))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be before");
+	}
+
+	@Test
+	void timeIsAfterNowInValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.after(now.plusHours(10)))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be after");
+	}
+
+	@Test
+	void timeIsAfterNowValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.after(now.minusHours(10)))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void timeIsBetweenNowValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		LocalTime before = now.minusHours(10);
+		LocalTime after = now.plusHours(10);
+
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.between(before, after))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void timeIsBetweenNowEqualInValid() {
+		LocalTime now = LocalTime.of(12, 30);
+
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.between(now, now))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be between");
+	}
+
+	@Test
+	void timeIsBetweenNowInValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		LocalTime before = now.plusHours(10);
+		LocalTime after = now.plusHours(10).plusMinutes(1);
+
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
+						"time", c -> c.between(before, after))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be between");
+	}
+
+	@Test
+	void timeHasHour12Valid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of()
+				.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.hour(12))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void timeHasMinute30Valid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of()
+				.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.minute(30))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void timeHasHour12InValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of()
+				.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.hour(13))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.startsWith("\"time\" must have the hour 13");
+	}
+
+	@Test
+	void timeHasMinute30InValid() {
+		LocalTime now = LocalTime.of(12, 30);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
+				"BirthdayParty", now);
+
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalTime> of()
+				.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.minute(31))
+				.build();
+
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.startsWith("\"time\" must have the minute 31");
 	}
 
 	Validator<User> validator() {

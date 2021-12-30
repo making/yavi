@@ -19,6 +19,7 @@ import am.ik.yavi.constraint.*;
 import am.ik.yavi.constraint.array.*;
 import am.ik.yavi.constraint.temporal.LocalDateConstraint;
 import am.ik.yavi.constraint.temporal.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.temporal.LocalTimeConstraint;
 import am.ik.yavi.constraint.temporal.ZonedDateTimeConstraint;
 import am.ik.yavi.core.*;
 import am.ik.yavi.fn.Pair;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -139,6 +141,30 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public <E> BiValidator<T, E> build(BiValidator.ErrorHandler<E> errorHandler) {
 		final Validator<T> validator = this.build();
 		return new BiValidator<>(validator, errorHandler);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalTimeConstraintMeta<T> meta,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localTime(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
 	}
 
 	/**
@@ -889,6 +915,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 			}
 			return Arrays.asList(array);
 		};
+	}
+
+	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
 	}
 
 	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
