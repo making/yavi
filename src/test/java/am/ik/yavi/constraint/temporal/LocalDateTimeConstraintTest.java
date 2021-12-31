@@ -1,16 +1,20 @@
 package am.ik.yavi.constraint.temporal;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import am.ik.yavi.arguments.LocalDateTimeValidator;
+import am.ik.yavi.builder.LocalDateTimeValidatorBuilder;
+import am.ik.yavi.core.Validated;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -139,6 +143,22 @@ class LocalDateTimeConstraintTest {
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@Test
+	void supplierMessage() {
+		final AtomicReference<LocalDateTime> saved = new AtomicReference<>();
+		final LocalDateTimeValidator<LocalDateTime> validator = LocalDateTimeValidatorBuilder
+				.of("now", c -> c.after(() -> {
+					final LocalDateTime now = LocalDateTime.now();
+					saved.set(now);
+					return now;
+				})).build();
+		final Validated<LocalDateTime> validated = validator
+				.validate(LocalDateTime.now());
+		assertThat(validated.isValid()).isFalse();
+		assertThat(validated.errors().get(0).message())
+				.isEqualTo("\"now\" has to be after " + saved.get());
 	}
 
 	private static Stream<Arguments> validBetweenDates() {

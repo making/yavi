@@ -1,15 +1,18 @@
 package am.ik.yavi.constraint.temporal;
 
+import java.time.temporal.Temporal;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
-import java.time.temporal.Temporal;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.*;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_AFTER;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
 
 /**
  * This is the base class for constraints on Temporal classes that can be compared with
@@ -37,8 +40,10 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param other the supplier providing the other temporal that is after
 	 */
 	public C before(Supplier<V> other) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other.get()) <= -1,
-				TEMPORAL_BEFORE, () -> new Object[] {}, VALID));
+		final Supplier<V> memoized = memoize(other);
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.compareTo(memoized.get()) <= -1,
+						TEMPORAL_BEFORE, () -> new Object[] { memoized.get() }, VALID));
 		return cast();
 	}
 
@@ -57,8 +62,10 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param other the supplier providing the other temporal that is before
 	 */
 	public C after(Supplier<V> other) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.compareTo(other.get()) >= 1,
-				TEMPORAL_AFTER, () -> new Object[] {}, VALID));
+		final Supplier<V> memoized = memoize(other);
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.compareTo(memoized.get()) >= 1,
+						TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
 		return cast();
 	}
 
@@ -84,12 +91,25 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
 	 */
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
-		this.predicates()
-				.add(ConstraintPredicate.of(
-						this.isBetween(rangeFrom.get(), rangeTo.get()), TEMPORAL_BETWEEN,
-						() -> new Object[] { rangeFrom, rangeTo }, VALID));
+		final Supplier<V> memoizedFrom = memoize(rangeFrom);
+		final Supplier<V> memoizedTo = memoize(rangeTo);
+		this.predicates().add(ConstraintPredicate.of(
+				this.isBetween(memoizedFrom.get(), memoizedTo.get()), TEMPORAL_BETWEEN,
+				() -> new Object[] { memoizedFrom.get(), memoizedTo.get() }, VALID));
 		return cast();
 	}
 
 	protected abstract Predicate<V> isBetween(V rangeFrom, V rangeTo);
+
+	static <T> Supplier<T> memoize(Supplier<T> delegate) {
+		final AtomicReference<T> supplier = new AtomicReference<>();
+		return () -> {
+			final T value = supplier.get();
+			if (value == null) {
+				return supplier
+						.updateAndGet(prev -> prev == null ? delegate.get() : prev);
+			}
+			return value;
+		};
+	}
 }

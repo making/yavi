@@ -15,8 +15,18 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import am.ik.yavi.CalendarEntryLocalDateTime;
+import am.ik.yavi.CalendarEntryLocalTime;
 import am.ik.yavi.ConstraintViolationsException;
+import am.ik.yavi.Range;
+import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
@@ -24,13 +34,6 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.fn.Either;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -786,7 +789,7 @@ class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
-				.startsWith("\"datetime\" has to be before");
+				.isEqualTo("\"datetime\" has to be before " + now.minusHours(10));
 	}
 
 	@Test
@@ -805,7 +808,7 @@ class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
-				.startsWith("\"datetime\" has to be after");
+				.isEqualTo("\"datetime\" has to be after " + now.plusHours(10));
 	}
 
 	@Test
@@ -884,7 +887,7 @@ class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
-				.startsWith("\"datetime\" has to be between");
+				.isEqualTo("\"datetime\" has to be between " + now + " and " + now);
 	}
 
 	@Test
@@ -906,7 +909,7 @@ class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
-				.startsWith("\"datetime\" has to be between");
+				.isEqualTo("\"datetime\" has to be between " + before + " and " + after);
 	}
 
 	@Test
@@ -952,7 +955,8 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).startsWith("\"time\" has to be before");
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"time\" has to be before " + now.minusHours(10));
 	}
 
 	@Test
@@ -969,7 +973,8 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).startsWith("\"time\" has to be after");
+		assertThat(violations.get(0).message())
+				.startsWith("\"time\" has to be after " + now.plusHours(10));
 	}
 
 	@Test
@@ -1020,7 +1025,8 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).startsWith("\"time\" has to be between");
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"time\" has to be between " + now + " and " + now);
 	}
 
 	@Test
@@ -1040,7 +1046,8 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).startsWith("\"time\" has to be between");
+		assertThat(violations.get(0).message())
+				.startsWith("\"time\" has to be between " + before + " and " + after);
 	}
 
 	Validator<User> validator() {
