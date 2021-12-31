@@ -121,9 +121,7 @@ public interface ViolationMessage {
 				"\"{0}\" must meet at least {1} policies from {2}"), //
 		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}"), //
 		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
-		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}"), //
-		TEMPORAL_HOUR("temporal.hour", "\"{0}\" must have the hour {1}"), //
-		TEMPORAL_MINUTE("temporal.minute", "\"{0}\" must have the minute {1}") //
+		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}") //
 		;
 
 		private final String defaultMessageFormat;
