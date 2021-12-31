@@ -4,6 +4,7 @@ import am.ik.yavi.core.ConstraintPredicate;
 
 import java.time.LocalTime;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_HOUR;
@@ -20,13 +21,24 @@ public class LocalTimeConstraint<T>
 	/**
 	 * Is the given LocalTime at the same hour as {@code other}
 	 *
+	 * @param other the supplier that provides the other localtime that wraps the hour
+	 * @since 0.10.0
+	 */
+	public LocalTimeConstraint<T> hour(Supplier<LocalTime> other) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.getHour() == other.get().getHour(),
+						TEMPORAL_HOUR, () -> new Object[] { other.get() }, VALID));
+		return cast();
+	}
+
+	/**
+	 * Is the given LocalTime at the same hour as {@code other}
+	 *
 	 * @param other the other localtime that wraps the hour
 	 * @since 0.10.0
 	 */
 	public LocalTimeConstraint<T> hour(LocalTime other) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.getHour() == other.getHour(),
-				TEMPORAL_HOUR, () -> new Object[] { other.getHour() }, VALID));
-		return cast();
+		return this.hour(() -> other);
 	}
 
 	/**
@@ -44,7 +56,22 @@ public class LocalTimeConstraint<T>
 	}
 
 	/**
-	 * Is the given LocalTime at the same minute as {@code hour}
+	 * Is the given LocalTime at the same minute as represented by the {@code quarter}
+	 * <ul>
+	 * <li>{@code quarter} = 0 -> XX:00</li>
+	 * <li>{@code quarter} = 1 -> XX:15</li>
+	 * <li>{@code quarter} = 2 -> XX:30</li>
+	 * </ul>
+	 *
+	 * @param quarter the quarter the LocalTime should have
+	 * @since 0.10.0
+	 */
+	public LocalTimeConstraint<T> quarter(Integer quarter) {
+		return this.minute(TemporalMinute.of(quarter));
+	}
+
+	/**
+	 * Is the given LocalTime at the same minute as {@code minute}
 	 *
 	 * @param minute the minute the LocalTime should have
 	 * @since 0.10.0
@@ -58,15 +85,35 @@ public class LocalTimeConstraint<T>
 	}
 
 	/**
+	 * Is the given LocalTime at the same minute as {@code hour}
+	 *
+	 * @param minute the minute the LocalTime should have
+	 * @since 0.10.0
+	 */
+	public LocalTimeConstraint<T> minute(TemporalMinute minute) {
+		return this.minute(LocalTime.of(1, minute.value()));
+	}
+
+	/**
 	 * Is the given LocalTime at the same minute as {@code other}
 	 *
 	 * @param other the other localtime that wraps the minute
 	 * @since 0.10.0
 	 */
 	public LocalTimeConstraint<T> minute(LocalTime other) {
+		return this.minute(() -> other);
+	}
+
+	/**
+	 * Is the given LocalTime at the same minute as {@code other}
+	 *
+	 * @param other the supplier that provides the other localtime that wraps the minute
+	 * @since 0.10.0
+	 */
+	public LocalTimeConstraint<T> minute(Supplier<LocalTime> other) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> x.getMinute() == other.getMinute(),
-						TEMPORAL_MINUTE, () -> new Object[] { other.getMinute() },
+				.add(ConstraintPredicate.of(x -> x.getMinute() == other.get().getMinute(),
+						TEMPORAL_MINUTE, () -> new Object[] { other.get().getMinute() },
 						VALID));
 		return cast();
 	}

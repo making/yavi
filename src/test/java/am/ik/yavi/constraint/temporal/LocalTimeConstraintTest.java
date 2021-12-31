@@ -149,6 +149,12 @@ class LocalTimeConstraintTest {
 	}
 
 	@Test
+	void hourSupplierLocalTimeValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.hour(() -> BASE_TIME));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
 	void hourIntegerInValidException() {
 		assertThatThrownBy(() -> retrievePredicate(c -> c.hour(-1)))
 				.isInstanceOf(IllegalArgumentException.class)
@@ -174,6 +180,25 @@ class LocalTimeConstraintTest {
 	}
 
 	@Test
+	void minuteTemporalMinuteValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.minute(TemporalMinute.HALF_PAST));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void minuteQuartalValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.quarter(2));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void minuteQuartalInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.quarter(3));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
 	void minuteLocalTimeValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(c -> c.minute(BASE_TIME));
 		assertThat(predicate.test(BASE_TIME)).isTrue();
@@ -182,6 +207,13 @@ class LocalTimeConstraintTest {
 	@Test
 	void minuteIntegerInValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(c -> c.minute(1));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
+	void minuteTemporalMinuteInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.minute(TemporalMinute.QUARTER_PAST));
 		assertThat(predicate.test(BASE_TIME)).isFalse();
 	}
 
