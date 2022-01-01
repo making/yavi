@@ -2,7 +2,7 @@ package am.ik.yavi.constraint.temporal;
 
 import java.time.temporal.Temporal;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import am.ik.yavi.constraint.base.ConstraintBase;
@@ -24,6 +24,15 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
  */
 abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
+	private final BiFunction<V, V, Boolean> isAfter;
+
+	private final BiFunction<V, V, Boolean> isBefore;
+
+	protected ComparableTemporalConstraintBase(BiFunction<V, V, Boolean> isAfter,
+			BiFunction<V, V, Boolean> isBefore) {
+		this.isAfter = isAfter;
+		this.isBefore = isBefore;
+	}
 
 	/**
 	 * Is the given temporal before {@code other}
@@ -93,13 +102,18 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
 		final Supplier<V> memoizedFrom = memoize(rangeFrom);
 		final Supplier<V> memoizedTo = memoize(rangeTo);
-		this.predicates().add(ConstraintPredicate.of(
-				this.isBetween(memoizedFrom.get(), memoizedTo.get()), TEMPORAL_BETWEEN,
-				() -> new Object[] { memoizedFrom.get(), memoizedTo.get() }, VALID));
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			final V from = memoizedFrom.get();
+			final V to = memoizedTo.get();
+			if (this.isAfter.apply(from, to)) {
+				throw new IllegalArgumentException(
+						"Parameter 'rangeFrom' has to be before 'rangeTo'");
+			}
+			return this.isBefore.apply(from, x) && this.isAfter.apply(to, x);
+		}, TEMPORAL_BETWEEN, () -> new Object[] { memoizedFrom.get(), memoizedTo.get() },
+				VALID));
 		return cast();
 	}
-
-	protected abstract Predicate<V> isBetween(V rangeFrom, V rangeTo);
 
 	static <T> Supplier<T> memoize(Supplier<T> delegate) {
 		final AtomicReference<T> supplier = new AtomicReference<>();
