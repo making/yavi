@@ -24,29 +24,13 @@ class OffsetDateTimeConstraintTest {
 	@Test
 	void isBeforeValid() {
 		OffsetDateTime now = OffsetDateTime.now();
-		OffsetDateTime future = now.plusDays(10);
-		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.before(future));
-		assertThat(predicate.test(now)).isTrue();
-	}
-
-	@Test
-	void isBeforeInValid() {
-		OffsetDateTime now = OffsetDateTime.now();
-		OffsetDateTime past = now.minusDays(10);
-		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.before(past));
-		assertThat(predicate.test(now)).isFalse();
-	}
-
-	@Test
-	void isBeforeSupplierValid() {
-		OffsetDateTime now = OffsetDateTime.now();
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
 				c -> c.before(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
-	void isBeforeSupplierInValid() {
+	void isBeforeInValid() {
 		OffsetDateTime now = OffsetDateTime.now();
 		OffsetDateTime past = now.minusDays(10);
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
@@ -57,29 +41,13 @@ class OffsetDateTimeConstraintTest {
 	@Test
 	void isAfterInValid() {
 		OffsetDateTime now = OffsetDateTime.now();
-		OffsetDateTime future = now.plusDays(10);
-		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.after(future));
-		assertThat(predicate.test(now)).isFalse();
-	}
-
-	@Test
-	void isAfterValid() {
-		OffsetDateTime now = OffsetDateTime.now();
-		OffsetDateTime past = now.minusDays(10);
-		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.after(past));
-		assertThat(predicate.test(now)).isTrue();
-	}
-
-	@Test
-	void isAfterSuplierInValid() {
-		OffsetDateTime now = OffsetDateTime.now();
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
 				c -> c.after(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
-	void isAfterSuplierValid() {
+	void isAfterValid() {
 		OffsetDateTime now = OffsetDateTime.now();
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
 				c -> c.after(() -> now.minusDays(10)));
@@ -91,42 +59,12 @@ class OffsetDateTimeConstraintTest {
 	void isBetweenValid(OffsetDateTime now, OffsetDateTime rangeFrom,
 			OffsetDateTime rangeTo) {
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
-				c -> c.between(rangeFrom, rangeTo));
-		assertThat(predicate.test(now)).isTrue();
-	}
-
-	@Test
-	void isBetweenExactInValid() {
-		OffsetDateTime now = OffsetDateTime.now();
-
-		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.between(now, now));
-		assertThat(predicate.test(now)).isFalse();
-	}
-
-	@Test
-	void isBetweenInValidException() {
-		OffsetDateTime now = OffsetDateTime.now();
-		OffsetDateTime rangeTo = now.minusDays(1);
-		OffsetDateTime rangeFrom = now.plusDays(1);
-
-		Predicate<OffsetDateTime> predicate = retrievePredicate(
-				c -> c.between(rangeFrom, rangeTo));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
-	}
-
-	@ParameterizedTest
-	@MethodSource("validBetweenDates")
-	void isBetweenSuplierValid(OffsetDateTime now, OffsetDateTime rangeFrom,
-			OffsetDateTime rangeTo) {
-		Predicate<OffsetDateTime> predicate = retrievePredicate(
 				c -> c.between(() -> rangeFrom, () -> rangeTo));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
-	void isBetweenSuplierExactInValid() {
+	void isBetweenExactInValid() {
 		OffsetDateTime now = OffsetDateTime.now();
 		Supplier<OffsetDateTime> nowSupplier = () -> now;
 
@@ -136,7 +74,7 @@ class OffsetDateTimeConstraintTest {
 	}
 
 	@Test
-	void isBetweenSuplierInValidException() {
+	void isBetweenInValidException() {
 		OffsetDateTime now = OffsetDateTime.now();
 
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
@@ -156,12 +94,6 @@ class OffsetDateTimeConstraintTest {
 						.collect(Collectors.toList()))
 				.flatMap(List::stream).collect(Collectors.toList());
 		return validBetweenZones.stream();
-	}
-
-	private static Stream<Arguments> allZonesBesideSystemDefault() {
-		return ZoneId.SHORT_IDS.values().stream().map(ZoneId::of)
-				.filter(zone -> !Objects.equals(zone, ZoneId.systemDefault()))
-				.map(Arguments::of);
 	}
 
 	private static Predicate<OffsetDateTime> retrievePredicate(

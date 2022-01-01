@@ -21,27 +21,13 @@ class LocalTimeConstraintTest {
 
 	@Test
 	void isBeforeValid() {
-		LocalTime future = BASE_TIME.plusHours(10);
-		Predicate<LocalTime> predicate = retrievePredicate(c -> c.before(future));
-		assertThat(predicate.test(BASE_TIME)).isTrue();
-	}
-
-	@Test
-	void isBeforeInValid() {
-		LocalTime past = BASE_TIME.minusHours(10);
-		Predicate<LocalTime> predicate = retrievePredicate(c -> c.before(past));
-		assertThat(predicate.test(BASE_TIME)).isFalse();
-	}
-
-	@Test
-	void isBeforeSupplierValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.before(() -> BASE_TIME.plusHours(10)));
 		assertThat(predicate.test(BASE_TIME)).isTrue();
 	}
 
 	@Test
-	void isBeforeSupplierInValid() {
+	void isBeforeInValid() {
 		LocalTime past = BASE_TIME.minusHours(10);
 		Predicate<LocalTime> predicate = retrievePredicate(c -> c.before(() -> past));
 		assertThat(predicate.test(BASE_TIME)).isFalse();
@@ -49,27 +35,13 @@ class LocalTimeConstraintTest {
 
 	@Test
 	void isAfterInValid() {
-		LocalTime future = BASE_TIME.plusHours(10);
-		Predicate<LocalTime> predicate = retrievePredicate(c -> c.after(future));
-		assertThat(predicate.test(BASE_TIME)).isFalse();
-	}
-
-	@Test
-	void isAfterValid() {
-		LocalTime past = BASE_TIME.minusHours(10);
-		Predicate<LocalTime> predicate = retrievePredicate(c -> c.after(past));
-		assertThat(predicate.test(BASE_TIME)).isTrue();
-	}
-
-	@Test
-	void isAfterSupplierInValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.after(() -> BASE_TIME.plusHours(10)));
 		assertThat(predicate.test(BASE_TIME)).isFalse();
 	}
 
 	@Test
-	void isAfterSupplierValid() {
+	void isAfterValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.after(() -> BASE_TIME.minusHours(10)));
 		assertThat(predicate.test(BASE_TIME)).isTrue();
@@ -77,42 +49,14 @@ class LocalTimeConstraintTest {
 
 	@ParameterizedTest
 	@MethodSource("validBetweenDates")
-	void isBetweenValid(LocalTime BASE_TIME, LocalTime rangeFrom, LocalTime rangeTo) {
-		Predicate<LocalTime> predicate = retrievePredicate(
-				c -> c.between(rangeFrom, rangeTo));
-		assertThat(predicate.test(LocalTimeConstraintTest.BASE_TIME)).isTrue();
-	}
-
-	@Test
-	void isBetweenExactInValid() {
-
-		Predicate<LocalTime> predicate = retrievePredicate(
-				c -> c.between(BASE_TIME, BASE_TIME));
-		assertThat(predicate.test(BASE_TIME)).isFalse();
-	}
-
-	@Test
-	void isBetweenInValidException() {
-		LocalTime rangeTo = BASE_TIME.minusHours(1);
-		LocalTime rangeFrom = BASE_TIME.plusHours(1);
-
-		Predicate<LocalTime> predicate = retrievePredicate(
-				c -> c.between(rangeFrom, rangeTo));
-		assertThatThrownBy(() -> predicate.test(BASE_TIME))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
-	}
-
-	@ParameterizedTest
-	@MethodSource("validBetweenDates")
-	void isBetweenSupplierValid(LocalTime now, LocalTime rangeFrom, LocalTime rangeTo) {
+	void isBetweenValid(LocalTime now, LocalTime rangeFrom, LocalTime rangeTo) {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.between(() -> rangeFrom, () -> rangeTo));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
-	void isBetweenSupplierExactInValid() {
+	void isBetweenExactInValid() {
 		Supplier<LocalTime> nowSupplier = () -> BASE_TIME;
 
 		Predicate<LocalTime> predicate = retrievePredicate(
@@ -121,7 +65,7 @@ class LocalTimeConstraintTest {
 	}
 
 	@Test
-	void isBetweenSupplierInValidException() {
+	void isBetweenInValidException() {
 		Predicate<LocalTime> predicate = retrievePredicate(c -> c
 				.between(() -> BASE_TIME.plusHours(1), () -> BASE_TIME.minusHours(1)));
 		assertThatThrownBy(() -> predicate.test(BASE_TIME))

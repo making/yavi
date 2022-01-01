@@ -4,7 +4,6 @@ import java.time.temporal.Temporal;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import am.ik.yavi.constraint.base.ConstraintBase;
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
@@ -27,15 +26,6 @@ public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Co
 	abstract protected boolean isBefore(V a, V b);
 
 	/**
-	 * Is the given temporal before {@code other}
-	 *
-	 * @param other the other temporal that is after
-	 */
-	public C before(V other) {
-		return this.before(() -> other);
-	}
-
-	/**
 	 * Is the given temporal before the supplied {@code other}
 	 *
 	 * @param other the supplier providing the other temporal that is after
@@ -49,15 +39,6 @@ public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Co
 	}
 
 	/**
-	 * Is the given temporal after {@code other}
-	 *
-	 * @param other the other temporal that is before
-	 */
-	public C after(V other) {
-		return this.after(() -> other);
-	}
-
-	/**
 	 * Is the given temporal after the supplied {@code other}
 	 *
 	 * @param other the supplier providing the other temporal that is before
@@ -67,18 +48,6 @@ public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Co
 		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, memoized.get()),
 				TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
 		return cast();
-	}
-
-	/**
-	 * Is the given temporal between {@code rangeFrom} and {@code rangeTo}. The range is
-	 * not inclusive. This means if the dates are equal (rangeFrom = x = rangeTo) it is
-	 * invalid
-	 *
-	 * @param rangeFrom the start of the range the temporal has to be in
-	 * @param rangeTo the end of the range the temporal has to be in
-	 */
-	public C between(V rangeFrom, V rangeTo) {
-		return this.between(() -> rangeFrom, () -> rangeTo);
 	}
 
 	/**
