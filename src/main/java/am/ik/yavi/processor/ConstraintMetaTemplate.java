@@ -17,6 +17,12 @@ package am.ik.yavi.processor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +44,12 @@ class ConstraintMetaTemplate {
 			add(Long.class.getName());
 			add(Short.class.getName());
 			add(String.class.getName());
+			add(LocalDate.class.getName());
+			add(LocalTime.class.getName());
+			add(LocalDateTime.class.getName());
+			add(OffsetDateTime.class.getName());
+			add(ZonedDateTime.class.getName());
+			add(Instant.class.getName());
 		}
 	};
 

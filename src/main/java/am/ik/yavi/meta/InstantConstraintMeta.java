@@ -15,11 +15,11 @@
  */
 package am.ik.yavi.meta;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 /**
  * @since 0.10.0
  */
-public interface ZonedDateTimeConstraintMeta<T> extends ConstraintMeta<T, ZonedDateTime> {
+public interface InstantConstraintMeta<T> extends ConstraintMeta<T, Instant> {
 
 }

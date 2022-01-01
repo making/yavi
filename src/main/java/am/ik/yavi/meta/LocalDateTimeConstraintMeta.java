@@ -17,6 +17,9 @@ package am.ik.yavi.meta;
 
 import java.time.LocalDateTime;
 
+/**
+ * @since 0.10.0
+ */
 public interface LocalDateTimeConstraintMeta<T> extends ConstraintMeta<T, LocalDateTime> {
 
 }

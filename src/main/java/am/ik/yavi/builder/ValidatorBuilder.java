@@ -15,29 +15,93 @@
  */
 package am.ik.yavi.builder;
 
-import am.ik.yavi.constraint.*;
-import am.ik.yavi.constraint.array.*;
-import am.ik.yavi.constraint.temporal.LocalDateConstraint;
-import am.ik.yavi.constraint.temporal.LocalDateTimeConstraint;
-import am.ik.yavi.constraint.temporal.LocalTimeConstraint;
-import am.ik.yavi.constraint.temporal.ZonedDateTimeConstraint;
-import am.ik.yavi.core.*;
-import am.ik.yavi.fn.Pair;
-import am.ik.yavi.message.MessageFormatter;
-import am.ik.yavi.message.SimpleMessageFormatter;
-import am.ik.yavi.meta.*;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import am.ik.yavi.constraint.BigDecimalConstraint;
+import am.ik.yavi.constraint.BigIntegerConstraint;
+import am.ik.yavi.constraint.BooleanConstraint;
+import am.ik.yavi.constraint.ByteConstraint;
+import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.CharacterConstraint;
+import am.ik.yavi.constraint.CollectionConstraint;
+import am.ik.yavi.constraint.DoubleConstraint;
+import am.ik.yavi.constraint.FloatConstraint;
+import am.ik.yavi.constraint.IntegerConstraint;
+import am.ik.yavi.constraint.LongConstraint;
+import am.ik.yavi.constraint.MapConstraint;
+import am.ik.yavi.constraint.ObjectConstraint;
+import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.array.BooleanArrayConstraint;
+import am.ik.yavi.constraint.array.ByteArrayConstraint;
+import am.ik.yavi.constraint.array.CharArrayConstraint;
+import am.ik.yavi.constraint.array.DoubleArrayConstraint;
+import am.ik.yavi.constraint.array.FloatArrayConstraint;
+import am.ik.yavi.constraint.array.IntArrayConstraint;
+import am.ik.yavi.constraint.array.LongArrayConstraint;
+import am.ik.yavi.constraint.array.ObjectArrayConstraint;
+import am.ik.yavi.constraint.array.ShortArrayConstraint;
+import am.ik.yavi.constraint.temporal.InstantConstraint;
+import am.ik.yavi.constraint.temporal.LocalDateConstraint;
+import am.ik.yavi.constraint.temporal.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.temporal.LocalTimeConstraint;
+import am.ik.yavi.constraint.temporal.OffsetDateTimeConstraint;
+import am.ik.yavi.constraint.temporal.ZonedDateTimeConstraint;
+import am.ik.yavi.core.BiValidator;
+import am.ik.yavi.core.CollectionValidator;
+import am.ik.yavi.core.Constraint;
+import am.ik.yavi.core.ConstraintCondition;
+import am.ik.yavi.core.ConstraintGroup;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ConstraintPredicates;
+import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.NestedCollectionValidator;
+import am.ik.yavi.core.NestedConstraintCondition;
+import am.ik.yavi.core.NestedConstraintPredicates;
+import am.ik.yavi.core.NestedValidator;
+import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.Validatable;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ViolatedArguments;
+import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.fn.Pair;
+import am.ik.yavi.message.MessageFormatter;
+import am.ik.yavi.message.SimpleMessageFormatter;
+import am.ik.yavi.meta.BigDecimalConstraintMeta;
+import am.ik.yavi.meta.BigIntegerConstraintMeta;
+import am.ik.yavi.meta.BooleanConstraintMeta;
+import am.ik.yavi.meta.ByteConstraintMeta;
+import am.ik.yavi.meta.CharacterConstraintMeta;
+import am.ik.yavi.meta.DoubleConstraintMeta;
+import am.ik.yavi.meta.FloatConstraintMeta;
+import am.ik.yavi.meta.InstantConstraintMeta;
+import am.ik.yavi.meta.IntegerConstraintMeta;
+import am.ik.yavi.meta.LocalDateConstraintMeta;
+import am.ik.yavi.meta.LocalDateTimeConstraintMeta;
+import am.ik.yavi.meta.LocalTimeConstraintMeta;
+import am.ik.yavi.meta.LongConstraintMeta;
+import am.ik.yavi.meta.ObjectConstraintMeta;
+import am.ik.yavi.meta.OffsetDateTimeConstraintMeta;
+import am.ik.yavi.meta.ShortConstraintMeta;
+import am.ik.yavi.meta.StringConstraintMeta;
+import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
 
 public class ValidatorBuilder<T> implements Cloneable {
 	private static final String DEFAULT_SEPARATOR = ".";
@@ -239,6 +303,56 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> _zonedDateTime(ToZonedDateTimeConstraint<T> f, String name,
 			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
 		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToOffsetDateTimeConstraint<T> f, String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(OffsetDateTimeConstraintMeta<T> meta,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f,
+			String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(InstantConstraintMeta<T> meta,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _instant(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
 	}
 
 	public ValidatorBuilder<T> constraint(ToCharSequence<T, String> f, String name,
@@ -917,18 +1031,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 		};
 	}
 
-	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
-	}
-
-	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
-	}
-
-	public interface ToLocalDateTimeConstraint<T> extends Function<T, LocalDateTime> {
-	}
-
-	public interface ToLocalDateConstraint<T> extends Function<T, LocalDate> {
-	}
-
 	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
 	}
 
@@ -993,6 +1095,24 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public interface ToShortArray<T> extends Function<T, short[]> {
+	}
+
+	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
+	}
+
+	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
+	}
+
+	public interface ToOffsetDateTimeConstraint<T> extends Function<T, OffsetDateTime> {
+	}
+
+	public interface ToLocalDateTimeConstraint<T> extends Function<T, LocalDateTime> {
+	}
+
+	public interface ToLocalDateConstraint<T> extends Function<T, LocalDate> {
+	}
+
+	public interface ToInstantConstraint<T> extends Function<T, Instant> {
 	}
 
 	public interface ValidatorBuilderConverter<T>
