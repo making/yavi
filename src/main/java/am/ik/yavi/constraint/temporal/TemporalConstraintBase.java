@@ -14,14 +14,13 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
 
 /**
- * This is the base class for constraints on Temporal classes that can be compared with
- * others. Methods in the class require the {@link V} to extend Temporal and implement
- * Comparable.
+ * This is the base class for constraints on Temporal classes. Methods in the class
+ * require the {@link V} to extend Temporal.
  *
  * @author Diego Krupitza
  * @since 0.10.0
  */
-abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
+abstract class TemporalConstraintBase<T, V extends Temporal, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 	abstract protected boolean isAfter(V a, V b);
 
@@ -44,7 +43,7 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	public C before(Supplier<V> other) {
 		final Supplier<V> memoized = memoize(other);
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> x.compareTo(memoized.get()) <= -1,
+				.add(ConstraintPredicate.of(x -> this.isBefore(x, memoized.get()),
 						TEMPORAL_BEFORE, () -> new Object[] { memoized.get() }, VALID));
 		return cast();
 	}
@@ -65,9 +64,8 @@ abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparab
 	 */
 	public C after(Supplier<V> other) {
 		final Supplier<V> memoized = memoize(other);
-		this.predicates()
-				.add(ConstraintPredicate.of(x -> x.compareTo(memoized.get()) >= 1,
-						TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
+		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, memoized.get()),
+				TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
 		return cast();
 	}
 

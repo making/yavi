@@ -7,7 +7,7 @@ import java.time.Instant;
  * @since 0.10.0
  */
 public class InstantConstraint<T>
-		extends ComparableTemporalConstraintBase<T, Instant, InstantConstraint<T>> {
+		extends TemporalConstraintBase<T, Instant, InstantConstraint<T>> {
 	@Override
 	protected boolean isAfter(Instant a, Instant b) {
 		return a.isAfter(b);

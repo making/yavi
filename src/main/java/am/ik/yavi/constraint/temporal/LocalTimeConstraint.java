@@ -9,7 +9,7 @@ import java.time.LocalTime;
  * @since 0.10.0
  */
 public class LocalTimeConstraint<T>
-		extends ComparableTemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
+		extends TemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
 	@Override
 	protected boolean isAfter(LocalTime a, LocalTime b) {
 		return a.isAfter(b);
