@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint.temporal;
+package am.ik.yavi.constraint;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;

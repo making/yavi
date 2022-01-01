@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.OffsetDateTimeValidator;
-import am.ik.yavi.constraint.temporal.OffsetDateTimeConstraint;
+import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.core.Validator;
 
 /**

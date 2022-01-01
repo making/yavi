@@ -1,6 +1,8 @@
-package am.ik.yavi.constraint.temporal;
+package am.ik.yavi.constraint;
 
 import java.time.ZonedDateTime;
+
+import am.ik.yavi.constraint.base.ChronoZonedDateTimeConstraintBase;
 
 /**
  * This is the actual class for constraints on ZonedDateTime.

@@ -1,16 +1,16 @@
-package am.ik.yavi.constraint.temporal;
+package am.ik.yavi.constraint.base;
 
-import java.time.chrono.ChronoLocalDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 
 import am.ik.yavi.core.Constraint;
 
 /**
- * This is the base class for constraints on ChronoLocalDateTime.
+ * This is the base class for constraints on ChronoZonedDateTime.
  *
  * @author Diego Krupitza
  * @since 0.10.0
  */
-abstract class ChronoLocalDateTimeConstraintBase<T, V extends ChronoLocalDateTime<?>, C extends Constraint<T, V, C>>
+public abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTime<?>, C extends Constraint<T, V, C>>
 		extends TemporalConstraintBase<T, V, C> {
 	@Override
 	protected boolean isAfter(V a, V b) {

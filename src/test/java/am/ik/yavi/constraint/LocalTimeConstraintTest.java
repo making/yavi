@@ -1,4 +1,4 @@
-package am.ik.yavi.constraint.temporal;
+package am.ik.yavi.constraint;
 
 import java.time.LocalTime;
 import java.util.function.Function;

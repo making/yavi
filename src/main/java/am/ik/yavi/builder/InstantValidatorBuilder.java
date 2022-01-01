@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.InstantValidator;
-import am.ik.yavi.constraint.temporal.InstantConstraint;
+import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.core.Validator;
 
 /**

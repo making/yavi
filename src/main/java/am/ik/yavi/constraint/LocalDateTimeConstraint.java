@@ -1,6 +1,8 @@
-package am.ik.yavi.constraint.temporal;
+package am.ik.yavi.constraint;
 
 import java.time.LocalDateTime;
+
+import am.ik.yavi.constraint.base.ChronoLocalDateTimeConstraintBase;
 
 /**
  * This is the actual class for constraints on LocalDateTime.
