@@ -6,6 +6,7 @@ import java.time.LocalTime;
  * This is the actual class for constraints on LocalTime.
  *
  * @author Diego Krupitza
+ * @since 0.10.0
  */
 public class LocalTimeConstraint<T>
 		extends ComparableTemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
