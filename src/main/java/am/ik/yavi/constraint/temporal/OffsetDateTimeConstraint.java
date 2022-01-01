@@ -8,8 +8,14 @@ import java.time.OffsetDateTime;
  */
 public class OffsetDateTimeConstraint<T> extends
 		ComparableTemporalConstraintBase<T, OffsetDateTime, OffsetDateTimeConstraint<T>> {
-	public OffsetDateTimeConstraint() {
-		super(OffsetDateTime::isAfter, OffsetDateTime::isBefore);
+	@Override
+	protected boolean isAfter(OffsetDateTime a, OffsetDateTime b) {
+		return a.isAfter(b);
+	}
+
+	@Override
+	protected boolean isBefore(OffsetDateTime a, OffsetDateTime b) {
+		return a.isBefore(b);
 	}
 
 	@Override

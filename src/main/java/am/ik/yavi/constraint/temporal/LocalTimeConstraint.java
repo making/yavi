@@ -10,8 +10,14 @@ import java.time.LocalTime;
  */
 public class LocalTimeConstraint<T>
 		extends ComparableTemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
-	public LocalTimeConstraint() {
-		super(LocalTime::isAfter, LocalTime::isBefore);
+	@Override
+	protected boolean isAfter(LocalTime a, LocalTime b) {
+		return a.isAfter(b);
+	}
+
+	@Override
+	protected boolean isBefore(LocalTime a, LocalTime b) {
+		return a.isBefore(b);
 	}
 
 	@Override

@@ -12,7 +12,13 @@ import am.ik.yavi.core.Constraint;
  */
 abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTime<?>, C extends Constraint<T, V, C>>
 		extends ComparableTemporalConstraintBase<T, V, C> {
-	public ChronoZonedDateTimeConstraintBase() {
-		super(ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isBefore);
+	@Override
+	protected boolean isAfter(V a, V b) {
+		return a.isAfter(b);
+	}
+
+	@Override
+	protected boolean isBefore(V a, V b) {
+		return a.isBefore(b);
 	}
 }

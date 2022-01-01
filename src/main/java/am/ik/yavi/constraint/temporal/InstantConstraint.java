@@ -8,8 +8,14 @@ import java.time.Instant;
  */
 public class InstantConstraint<T>
 		extends ComparableTemporalConstraintBase<T, Instant, InstantConstraint<T>> {
-	public InstantConstraint() {
-		super(Instant::isAfter, Instant::isBefore);
+	@Override
+	protected boolean isAfter(Instant a, Instant b) {
+		return a.isAfter(b);
+	}
+
+	@Override
+	protected boolean isBefore(Instant a, Instant b) {
+		return a.isBefore(b);
 	}
 
 	@Override
