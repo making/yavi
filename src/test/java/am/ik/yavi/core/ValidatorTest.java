@@ -755,7 +755,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.before(now.plusHours(10)))
+						c -> c.before(() -> now.plusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -782,7 +782,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.before(now.minusHours(10)))
+						c -> c.before(() -> now.minusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -801,7 +801,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.after(now.plusHours(10)))
+						c -> c.after(() -> now.plusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -820,7 +820,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.after(now.minusHours(10)))
+						c -> c.after(() -> now.minusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -838,7 +838,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(before, after))
+						c -> c.between(() -> before, () -> after))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -880,7 +880,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(now, now))
+						c -> c.between(() -> now, () -> now))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -902,7 +902,7 @@ class ValidatorTest {
 		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalDateTime> of()
 				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(before, after))
+						c -> c.between(() -> before, () -> after))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -934,7 +934,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.before(now.plusHours(10)))
+						"time", c -> c.before(() -> now.plusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -949,7 +949,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.before(now.minusHours(10)))
+						"time", c -> c.before(() -> now.minusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -967,7 +967,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.after(now.plusHours(10)))
+						"time", c -> c.after(() -> now.plusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -985,7 +985,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.after(now.minusHours(10)))
+						"time", c -> c.after(() -> now.minusHours(10)))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -1003,7 +1003,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(before, after))
+						"time", c -> c.between(() -> before, () -> after))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -1019,7 +1019,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(now, now))
+						"time", c -> c.between(() -> now, () -> now))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
@@ -1040,7 +1040,7 @@ class ValidatorTest {
 
 		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
 				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(before, after))
+						"time", c -> c.between(() -> before, () -> after))
 				.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
