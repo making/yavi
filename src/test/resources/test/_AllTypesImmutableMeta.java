@@ -264,7 +264,7 @@ public class _AllTypesImmutableMeta {
 		}
 	};
 
-	public static final am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesImmutable, java.time.LocalDate> LOCALDATEVALUE = new am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesImmutable, java.time.LocalDate>() {
+	public static final am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesImmutable> LOCALDATEVALUE = new am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesImmutable>() {
 
 		@Override
 		public String name() {

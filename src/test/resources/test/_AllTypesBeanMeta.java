@@ -264,7 +264,7 @@ public class _AllTypesBeanMeta {
 		}
 	};
 
-	public static final am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesBean, java.time.LocalDate> LOCALDATEVALUE = new am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesBean, java.time.LocalDate>() {
+	public static final am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesBean> LOCALDATEVALUE = new am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesBean>() {
 
 		@Override
 		public String name() {

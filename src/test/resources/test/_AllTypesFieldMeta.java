@@ -264,7 +264,7 @@ public class _AllTypesFieldMeta {
 		}
 	};
 
-	public static final am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesField, java.time.LocalDate> LOCALDATEVALUE = new am.ik.yavi.meta.ObjectConstraintMeta<test.AllTypesField, java.time.LocalDate>() {
+	public static final am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesField> LOCALDATEVALUE = new am.ik.yavi.meta.LocalDateConstraintMeta<test.AllTypesField>() {
 
 		@Override
 		public String name() {
