@@ -24,13 +24,12 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
  */
 abstract class ComparableTemporalConstraintBase<T, V extends Temporal & Comparable, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
-	private final BiFunction<? super V, ? super V, ? extends Boolean> isAfter;
+	private final BiFunction<V, V, Boolean> isAfter;
 
-	private final BiFunction<? super V, ? super V, ? extends Boolean> isBefore;
+	private final BiFunction<V, V, Boolean> isBefore;
 
-	protected ComparableTemporalConstraintBase(
-			BiFunction<? super V, ? super V, ? extends Boolean> isAfter,
-			BiFunction<? super V, ? super V, ? extends Boolean> isBefore) {
+	protected ComparableTemporalConstraintBase(BiFunction<V, V, Boolean> isAfter,
+			BiFunction<V, V, Boolean> isBefore) {
 		this.isAfter = isAfter;
 		this.isBefore = isBefore;
 	}
