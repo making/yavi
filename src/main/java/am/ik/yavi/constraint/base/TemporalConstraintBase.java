@@ -1,7 +1,6 @@
 package am.ik.yavi.constraint.base;
 
 import java.time.Clock;
-import java.time.temporal.Temporal;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -27,7 +26,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
  * @author Toshiaki Maki
  * @since 0.10.0
  */
-public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Constraint<T, V, C>>
+public abstract class TemporalConstraintBase<T, V, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 	abstract protected boolean isAfter(V a, V b);
 
