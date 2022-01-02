@@ -1,7 +1,10 @@
 package am.ik.yavi.constraint.base;
 
 import java.time.Clock;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongPredicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.Constraint;
@@ -13,6 +16,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_AFTER_OR_EQUAL;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE_OR_EQUAL;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_FIELD;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_FUTURE;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_FUTURE_OR_PRESENT;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST;
@@ -26,7 +30,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
  * @author Toshiaki Maki
  * @since 0.10.0
  */
-public abstract class TemporalConstraintBase<T, V, C extends Constraint<T, V, C>>
+public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 	abstract protected boolean isAfter(V a, V b);
 
@@ -133,6 +137,13 @@ public abstract class TemporalConstraintBase<T, V, C extends Constraint<T, V, C>
 			return this.isBefore(from, x) && this.isAfter(to, x);
 		}, TEMPORAL_BETWEEN, () -> new Object[] { memoizedFrom.get(), memoizedTo.get() },
 				VALID));
+		return cast();
+	}
+
+	public C fieldPredicate(TemporalField field, LongPredicate predicate) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> predicate.test(x.getLong(field)),
+						TEMPORAL_FIELD, () -> new Object[] { field }, VALID));
 		return cast();
 	}
 

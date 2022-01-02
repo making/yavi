@@ -16,6 +16,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.temporal.ChronoField.DAY_OF_WEEK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -218,6 +220,22 @@ class LocalDateConstraintTest {
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@Test
+	void temporalFieldValid() {
+		LocalDate value = LocalDate.of(2022, 1, 1);
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@Test
+	void temporalFieldInValid() {
+		LocalDate value = LocalDate.of(2022, 1, 2);
+		Predicate<LocalDate> predicate = retrievePredicate(
+				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
 	private static Stream<Arguments> validBetweenDates() {

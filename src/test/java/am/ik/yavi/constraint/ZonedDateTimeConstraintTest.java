@@ -3,6 +3,7 @@ package am.ik.yavi.constraint;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -18,6 +19,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.temporal.ChronoField.DAY_OF_WEEK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -231,6 +234,24 @@ class ZonedDateTimeConstraintTest {
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@Test
+	void temporalFieldValid() {
+		ZonedDateTime value = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 0,
+				ZoneOffset.ofHours(9));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@Test
+	void temporalFieldInValid() {
+		ZonedDateTime value = ZonedDateTime.of(2022, 1, 2, 0, 0, 0, 0,
+				ZoneOffset.ofHours(9));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(
+				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
 	private static Stream<Arguments> validBetweenDates() {

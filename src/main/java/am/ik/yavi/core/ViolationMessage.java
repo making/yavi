@@ -131,7 +131,8 @@ public interface ViolationMessage {
 		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
 		TEMPORAL_AFTER_OR_EQUAL("temporal.afterOrEqual",
 				"\"{0}\" has to be after or equals to {1}"), //
-		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}") //
+		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}"), //
+		TEMPORAL_FIELD("temporal.field", "The {1} of \"{0}\" is invalid") //
 		;
 
 		private final String defaultMessageFormat;

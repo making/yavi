@@ -16,6 +16,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import static java.time.temporal.ChronoField.INSTANT_SECONDS;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -213,6 +215,22 @@ class LocalTimeConstraintTest {
 		assertThatThrownBy(() -> predicate.test(BASE_TIME))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@Test
+	void temporalFieldValid() {
+		LocalTime value = LocalTime.of(10, 30, 0);
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.fieldPredicate(MINUTE_OF_HOUR, s -> s % 15 == 0));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@Test
+	void temporalFieldInValid() {
+		LocalTime value = LocalTime.of(10, 40, 0);
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.fieldPredicate(MINUTE_OF_HOUR, s -> s % 15 == 0));
+		assertThat(predicate.test(value)).isFalse();
 	}
 
 	private static Stream<Arguments> validBetweenDates() {

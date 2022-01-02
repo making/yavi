@@ -2,7 +2,9 @@ package am.ik.yavi.constraint;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -10,6 +12,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
+import static java.time.temporal.ChronoField.INSTANT_SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -203,6 +206,24 @@ class InstantConstraintTest {
 		assertThatThrownBy(() -> predicate.test(now))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+	}
+
+	@Test
+	void temporalFieldValid() {
+		OffsetDateTime value = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0,
+				ZoneOffset.ofHours(0));
+		Predicate<Instant> predicate = retrievePredicate(
+				c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
+		assertThat(predicate.test(value.toInstant())).isTrue();
+	}
+
+	@Test
+	void temporalFieldInValid() {
+		OffsetDateTime value = OffsetDateTime.of(1969, 12, 31, 23, 59, 59, 0,
+				ZoneOffset.ofHours(0));
+		Predicate<Instant> predicate = retrievePredicate(
+				c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
+		assertThat(predicate.test(value.toInstant())).isFalse();
 	}
 
 	private static Predicate<Instant> retrievePredicate(
