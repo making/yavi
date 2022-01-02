@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.LocalTime;
 
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
@@ -20,6 +21,11 @@ public class LocalTimeConstraint<T>
 	@Override
 	protected boolean isBefore(LocalTime a, LocalTime b) {
 		return a.isBefore(b);
+	}
+
+	@Override
+	protected LocalTime getNow(Clock clock) {
+		return LocalTime.now(clock);
 	}
 
 	@Override

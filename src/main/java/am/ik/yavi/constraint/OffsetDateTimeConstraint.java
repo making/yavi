@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
 
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
@@ -18,6 +19,11 @@ public class OffsetDateTimeConstraint<T>
 	@Override
 	protected boolean isBefore(OffsetDateTime a, OffsetDateTime b) {
 		return a.isBefore(b);
+	}
+
+	@Override
+	protected OffsetDateTime getNow(Clock clock) {
+		return OffsetDateTime.now(clock);
 	}
 
 	@Override

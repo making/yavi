@@ -1,6 +1,10 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,6 +24,88 @@ class LocalTimeConstraintTest {
 	private static final LocalTime BASE_TIME = LocalTime.of(12, 30);
 
 	@Test
+	void isPastValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.past());
+		assertThat(predicate.test(LocalTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isPastInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.past());
+		assertThat(predicate.test(LocalTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isPastExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.past(clock));
+		assertThat(predicate.test(LocalTime.now(clock))).isFalse();
+	}
+
+	@Test
+	void isPastOrPresentValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.pastOrPresent());
+		assertThat(predicate.test(LocalTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isPastOrPresentInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.pastOrPresent());
+		assertThat(predicate.test(LocalTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isPastOrPresentExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.pastOrPresent(clock));
+		assertThat(predicate.test(LocalTime.now(clock))).isTrue();
+	}
+
+	@Test
+	void isFutureValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.future());
+		assertThat(predicate.test(LocalTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
+	}
+
+	@Test
+	void isFutureInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.future());
+		assertThat(predicate.test(LocalTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isFutureExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.future(clock));
+		assertThat(predicate.test(LocalTime.now(clock))).isFalse();
+	}
+
+	@Test
+	void isFutureOrPresentValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.futureOrPresent());
+		assertThat(predicate.test(LocalTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
+	}
+
+	@Test
+	void isFutureOrPresentInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.futureOrPresent());
+		assertThat(predicate.test(LocalTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isFutureOrPresentExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.futureOrPresent(clock));
+		assertThat(predicate.test(LocalTime.now(clock))).isTrue();
+	}
+
+	@Test
 	void isBeforeValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.before(() -> BASE_TIME.plusHours(10)));
@@ -34,6 +120,13 @@ class LocalTimeConstraintTest {
 	}
 
 	@Test
+	void isBeforeExactInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.before(() -> BASE_TIME));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
 	void isAfterInValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.after(() -> BASE_TIME.plusHours(10)));
@@ -44,6 +137,55 @@ class LocalTimeConstraintTest {
 	void isAfterValid() {
 		Predicate<LocalTime> predicate = retrievePredicate(
 				c -> c.after(() -> BASE_TIME.minusHours(10)));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void isAfterExactInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(c -> c.after(() -> BASE_TIME));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
+	void isBeforeOrEqualValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> BASE_TIME.plusHours(10)));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void isBeforeOrEqualInValid() {
+		LocalTime past = BASE_TIME.minusHours(10);
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> past));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
+	void isBeforeOrEqualExactInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> BASE_TIME));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void isAfterOrEqualInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> BASE_TIME.plusHours(10)));
+		assertThat(predicate.test(BASE_TIME)).isFalse();
+	}
+
+	@Test
+	void isAfterOrEqualValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> BASE_TIME.minusHours(10)));
+		assertThat(predicate.test(BASE_TIME)).isTrue();
+	}
+
+	@Test
+	void isAfterOrEqualExactInValid() {
+		Predicate<LocalTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> BASE_TIME));
 		assertThat(predicate.test(BASE_TIME)).isTrue();
 	}
 

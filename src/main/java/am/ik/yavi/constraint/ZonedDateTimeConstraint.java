@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.ZonedDateTime;
 
 import am.ik.yavi.constraint.base.ChronoZonedDateTimeConstraintBase;
@@ -12,6 +13,11 @@ import am.ik.yavi.constraint.base.ChronoZonedDateTimeConstraintBase;
  */
 public class ZonedDateTimeConstraint<T> extends
 		ChronoZonedDateTimeConstraintBase<T, ZonedDateTime, ZonedDateTimeConstraint<T>> {
+
+	@Override
+	protected ZonedDateTime getNow(Clock clock) {
+		return ZonedDateTime.now(clock);
+	}
 
 	@Override
 	public ZonedDateTimeConstraint<T> cast() {

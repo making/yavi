@@ -119,8 +119,18 @@ public interface ViolationMessage {
 		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy"), //
 		PASSWORD_OPTIONAL("password.optional",
 				"\"{0}\" must meet at least {1} policies from {2}"), //
+		TEMPORAL_PAST("temporal.past", "\"{0}\" must be a past date"), //
+		TEMPORAL_PAST_OR_PRESENT("temporal.pastOrPresent",
+				"\"{0}\" must be a date in the past or in the present"), //
+		TEMPORAL_FUTURE("temporal.future", "\"{0}\" must be a future date"), //
+		TEMPORAL_FUTURE_OR_PRESENT("temporal.futureOrPresent",
+				"\"{0}\" must be a date in the present or in the future"), //
 		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}"), //
+		TEMPORAL_BEFORE_OR_EQUAL("temporal.beforeOrEqual",
+				"\"{0}\" has to be before or equals to {1}"), //
 		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
+		TEMPORAL_AFTER_OR_EQUAL("temporal.afterOrEqual",
+				"\"{0}\" has to be after or equals to {1}"), //
 		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}") //
 		;
 

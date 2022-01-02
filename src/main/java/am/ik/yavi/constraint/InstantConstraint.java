@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.Instant;
 
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
@@ -18,6 +19,11 @@ public class InstantConstraint<T>
 	@Override
 	protected boolean isBefore(Instant a, Instant b) {
 		return a.isBefore(b);
+	}
+
+	@Override
+	protected Instant getNow(Clock clock) {
+		return Instant.now(clock);
 	}
 
 	@Override

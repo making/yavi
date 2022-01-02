@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 import am.ik.yavi.constraint.base.ChronoLocalDateTimeConstraintBase;
@@ -16,5 +17,10 @@ public class LocalDateTimeConstraint<T> extends
 	@Override
 	public LocalDateTimeConstraint<T> cast() {
 		return this;
+	}
+
+	@Override
+	protected LocalDateTime getNow(Clock clock) {
+		return LocalDateTime.now(clock);
 	}
 }

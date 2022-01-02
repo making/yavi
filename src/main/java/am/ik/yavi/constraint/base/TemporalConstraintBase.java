@@ -1,5 +1,6 @@
 package am.ik.yavi.constraint.base;
 
+import java.time.Clock;
 import java.time.temporal.Temporal;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -9,14 +10,21 @@ import am.ik.yavi.core.ConstraintPredicate;
 
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_AFTER;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_AFTER_OR_EQUAL;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BEFORE_OR_EQUAL;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_BETWEEN;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_FUTURE;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_FUTURE_OR_PRESENT;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST;
+import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
 
 /**
  * This is the base class for constraints on Temporal classes. Methods in the class
  * require the {@link V} to extend Temporal.
  *
  * @author Diego Krupitza
+ * @author Toshiaki Maki
  * @since 0.10.0
  */
 public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Constraint<T, V, C>>
@@ -25,16 +33,61 @@ public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Co
 
 	abstract protected boolean isBefore(V a, V b);
 
+	abstract protected V getNow(Clock clock);
+
+	public C past() {
+		return this.past(Clock.systemDefaultZone());
+	}
+
+	public C past(Clock clock) {
+		return this.before(() -> this.getNow(clock)).message(TEMPORAL_PAST);
+	}
+
+	public C pastOrPresent() {
+		return this.pastOrPresent(Clock.systemDefaultZone());
+	}
+
+	public C pastOrPresent(Clock clock) {
+		return this.beforeOrEqual(() -> this.getNow(clock))
+				.message(TEMPORAL_PAST_OR_PRESENT);
+	}
+
+	public C future() {
+		return this.future(Clock.systemDefaultZone());
+	}
+
+	public C future(Clock clock) {
+		return this.after(() -> this.getNow(clock)).message(TEMPORAL_FUTURE);
+	}
+
+	public C futureOrPresent() {
+		return this.futureOrPresent(Clock.systemDefaultZone());
+	}
+
+	public C futureOrPresent(Clock clock) {
+		return this.afterOrEqual(() -> this.getNow(clock))
+				.message(TEMPORAL_FUTURE_OR_PRESENT);
+	}
+
 	/**
 	 * Is the given temporal before the supplied {@code other}
 	 *
-	 * @param other the supplier providing the other temporal that is after
+	 * @param other the supplier providing the other temporal that is before
 	 */
 	public C before(Supplier<V> other) {
 		final Supplier<V> memoized = memoize(other);
 		this.predicates()
 				.add(ConstraintPredicate.of(x -> this.isBefore(x, memoized.get()),
 						TEMPORAL_BEFORE, () -> new Object[] { memoized.get() }, VALID));
+		return cast();
+	}
+
+	public C beforeOrEqual(Supplier<V> other) {
+		final Supplier<V> memoized = memoize(other);
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> !this.isAfter(x, memoized.get()),
+						TEMPORAL_BEFORE_OR_EQUAL, () -> new Object[] { memoized.get() },
+						VALID));
 		return cast();
 	}
 
@@ -47,6 +100,15 @@ public abstract class TemporalConstraintBase<T, V extends Temporal, C extends Co
 		final Supplier<V> memoized = memoize(other);
 		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, memoized.get()),
 				TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
+		return cast();
+	}
+
+	public C afterOrEqual(Supplier<V> other) {
+		final Supplier<V> memoized = memoize(other);
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> !this.isBefore(x, memoized.get()),
+						TEMPORAL_AFTER_OR_EQUAL, () -> new Object[] { memoized.get() },
+						VALID));
 		return cast();
 	}
 

@@ -1050,6 +1050,64 @@ class ValidatorTest {
 				.startsWith("\"time\" has to be between " + before + " and " + after);
 	}
 
+	@Test
+	void futureValid() {
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
+				"BirthdayParty", LocalDateTime.now().plusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalDateTime> of()
+				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
+						c -> c.future())
+				.build();
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void futureInValid() {
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
+				"BirthdayParty", LocalDateTime.now().minusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalDateTime> of()
+				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
+						c -> c.future())
+				.build();
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.startsWith("\"dateTime\" must be a future date");
+	}
+
+	@Test
+	void pastValid() {
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
+				"BirthdayParty", LocalDateTime.now().minusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalDateTime> of()
+				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
+						c -> c.past())
+				.build();
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isTrue();
+	}
+
+	@Test
+	void pastInValid() {
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
+				"BirthdayParty", LocalDateTime.now().plusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
+				.<CalendarEntryLocalDateTime> of()
+				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
+						c -> c.past())
+				.build();
+		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.startsWith("\"dateTime\" must be a past date");
+	}
+
 	Validator<User> validator() {
 		return ValidatorBuilder.<User> of() //
 				.constraint(User::getName, "name", c -> c.notNull() //

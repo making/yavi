@@ -1,9 +1,11 @@
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,6 +22,91 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class OffsetDateTimeConstraintTest {
+	@Test
+	void isPastValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.past());
+		assertThat(predicate.test(OffsetDateTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isPastInValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.past());
+		assertThat(predicate.test(OffsetDateTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isPastExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.past(clock));
+		assertThat(predicate.test(OffsetDateTime.now(clock))).isFalse();
+	}
+
+	@Test
+	void isPastOrPresentValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
+		assertThat(predicate.test(OffsetDateTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isPastOrPresentInValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
+		assertThat(predicate.test(OffsetDateTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isPastOrPresentExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.pastOrPresent(clock));
+		assertThat(predicate.test(OffsetDateTime.now(clock))).isTrue();
+	}
+
+	@Test
+	void isFutureValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.future());
+		assertThat(predicate.test(OffsetDateTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isFutureInValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.future());
+		assertThat(predicate.test(OffsetDateTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isFutureExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.future(clock));
+		assertThat(predicate.test(OffsetDateTime.now(clock))).isFalse();
+	}
+
+	@Test
+	void isFutureOrPresentValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
+		assertThat(predicate.test(OffsetDateTime.now().plus(60, ChronoUnit.SECONDS)))
+				.isTrue();
+	}
+
+	@Test
+	void isFutureOrPresentInValid() {
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
+		assertThat(predicate.test(OffsetDateTime.now().minus(60, ChronoUnit.SECONDS)))
+				.isFalse();
+	}
+
+	@Test
+	void isFutureOrPresentExactInValid() {
+		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.futureOrPresent(clock));
+		assertThat(predicate.test(OffsetDateTime.now(clock))).isTrue();
+	}
 
 	@Test
 	void isBeforeValid() {
@@ -39,6 +126,13 @@ class OffsetDateTimeConstraintTest {
 	}
 
 	@Test
+	void isBeforeExactInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.before(() -> now));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
 	void isAfterInValid() {
 		OffsetDateTime now = OffsetDateTime.now();
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
@@ -51,6 +145,62 @@ class OffsetDateTimeConstraintTest {
 		OffsetDateTime now = OffsetDateTime.now();
 		Predicate<OffsetDateTime> predicate = retrievePredicate(
 				c -> c.after(() -> now.minusDays(10)));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isAfterExactInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(c -> c.after(() -> now));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isBeforeOrEqualValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isBeforeOrEqualInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		OffsetDateTime past = now.minusDays(10);
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> past));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isBeforeOrEqualExactInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.beforeOrEqual(() -> now));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isAfterOrEqualInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> now.plusDays(10)));
+		assertThat(predicate.test(now)).isFalse();
+	}
+
+	@Test
+	void isAfterOrEqualValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> now.minusDays(10)));
+		assertThat(predicate.test(now)).isTrue();
+	}
+
+	@Test
+	void isAfterOrEqualExactInValid() {
+		OffsetDateTime now = OffsetDateTime.now();
+		Predicate<OffsetDateTime> predicate = retrievePredicate(
+				c -> c.afterOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
