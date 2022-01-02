@@ -207,154 +207,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return new BiValidator<>(validator, errorHandler);
 	}
 
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToLocalTimeConstraint<T> f, String name,
-			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(LocalTimeConstraintMeta<T> meta,
-			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c, LocalTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _localTime(ToLocalTimeConstraint<T> f, String name,
-			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToLocalDateConstraint<T> f, String name,
-			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(LocalDateConstraintMeta<T> meta,
-			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c, LocalDateConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _localDate(ToLocalDateConstraint<T> f, String name,
-			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToLocalDateTimeConstraint<T> f, String name,
-			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(LocalDateTimeConstraintMeta<T> meta,
-			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				LocalDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _localDateTime(ToLocalDateTimeConstraint<T> f, String name,
-			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToZonedDateTimeConstraint<T> f, String name,
-			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ZonedDateTimeConstraintMeta<T> meta,
-			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				ZonedDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _zonedDateTime(ToZonedDateTimeConstraint<T> f, String name,
-			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToOffsetDateTimeConstraint<T> f, String name,
-			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(OffsetDateTimeConstraintMeta<T> meta,
-			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				OffsetDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f,
-			String name,
-			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
-		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(ToInstantConstraint<T> f, String name,
-			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
-		return this.constraint(f, name, c, InstantConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> constraint(InstantConstraintMeta<T> meta,
-			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c, InstantConstraint::new);
-	}
-
-	/**
-	 * @since 0.10.0
-	 */
-	public ValidatorBuilder<T> _instant(ToInstantConstraint<T> f, String name,
-			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
-		return this.constraint(f, name, c, InstantConstraint::new);
-	}
-
 	public ValidatorBuilder<T> constraint(ToCharSequence<T, String> f, String name,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
@@ -558,6 +410,154 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> _bigDecimal(ToBigDecimal<T> f, String name,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalTimeConstraintMeta<T> meta,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localTime(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalDateConstraint<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalDateConstraintMeta<T> meta,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localDate(ToLocalDateConstraint<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalDateTimeConstraint<T> f, String name,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalDateTimeConstraintMeta<T> meta,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localDateTime(ToLocalDateTimeConstraint<T> f, String name,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToZonedDateTimeConstraint<T> f, String name,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ZonedDateTimeConstraintMeta<T> meta,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _zonedDateTime(ToZonedDateTimeConstraint<T> f, String name,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToOffsetDateTimeConstraint<T> f, String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(OffsetDateTimeConstraintMeta<T> meta,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f,
+			String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(InstantConstraintMeta<T> meta,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _instant(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
 	}
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraint(
