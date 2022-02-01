@@ -476,7 +476,7 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 EOF
 done
 
-nn=10
+nn=16
 for i in `seq 2 ${nn}`;do
   class="Arguments${i}Splitting"
   file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
