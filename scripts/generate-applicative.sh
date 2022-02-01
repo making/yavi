@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-n=10
+n=16
 
 for i in `seq 1 ${n}`;do
   class="Combining${i}"
