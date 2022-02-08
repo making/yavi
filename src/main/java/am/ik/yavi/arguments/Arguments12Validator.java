@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
@@ -46,6 +47,18 @@ public interface Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 				constraintGroup) -> Arguments12Validator.this.validate(a1, a2, a3, a4, a5,
 						a6, a7, a8, a9, a10, a11, a12, locale, constraintGroup)
 						.map(mapper);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	default <X2> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X2> andThen(
+			ValueValidator<? super X, X2> validator) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale,
+				constraintGroup) -> Arguments12Validator.this
+						.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12,
+								locale, constraintGroup)
+						.flatMap(v -> validator.validate(v, locale, constraintGroup));
 	}
 
 	/**
