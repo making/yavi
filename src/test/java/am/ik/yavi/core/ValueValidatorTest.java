@@ -38,26 +38,39 @@ class ValueValidatorTest {
 
 	@Test
 	void andThenChainsValidators() {
-		ValueValidator<String, Country> countryValidator = Country.validator().applicative().compose(Country::new);
+		ValueValidator<String, Country> countryValidator = Country.validator()
+				.applicative().compose(Country::new);
 		ValueValidator<String, String> streetValidator = ValueValidator.passThrough();
-		ValueValidator<String, PhoneNumber> phoneValidator = PhoneNumber.validator().applicative().compose(PhoneNumber::new);
+		ValueValidator<String, PhoneNumber> phoneValidator = PhoneNumber.validator()
+				.applicative().compose(PhoneNumber::new);
 
-		Arguments3Validator<String, String, String, Address> addressValidator = Arguments1Validator.from(countryValidator)
-				.split(streetValidator)
-				.split(phoneValidator)
+		Arguments3Validator<String, String, String, Address> addressValidator = Arguments1Validator
+				.from(countryValidator).split(streetValidator).split(phoneValidator)
 				.apply(Address::new);
 
-		ValueValidator<Address, Address> foreignAddressValidator = ValidatorBuilder.<Address>of()
+		ValueValidator<Address, Address> foreignAddressValidator = ValidatorBuilder
+				.<Address> of()
 				.constraintOnCondition(
-						(address, group) -> !"JP".equalsIgnoreCase(address.country().name()),
-						ValidatorBuilder.<Address>of()._string(a -> a.phoneNumber().value(), "PhoneNumber", c -> c.startsWith("+")).build())
+						(address,
+								group) -> !"JP"
+										.equalsIgnoreCase(address.country().name()),
+						ValidatorBuilder.<Address> of()
+								._string(a -> a.phoneNumber().value(), "PhoneNumber",
+										c -> c.startsWith("+"))
+								.build())
 				.build().applicative();
 
-		assertThat(addressValidator.validate("JP", "tokyo", "0123456789").isValid()).isTrue();
-		assertThat(addressValidator.andThen(foreignAddressValidator).validate("JP", "tokyo", "0123456789").isValid()).isTrue();
-		assertThat(addressValidator.validate("BE", "brussels", "9876543210").isValid()).isTrue();
-		assertThat(addressValidator.andThen(foreignAddressValidator).validate("BE", "brussels", "9876543210").isValid()).isFalse();
-		assertThat(addressValidator.validate("J", "tokyo", "0123456789").isValid()).isFalse();
-		assertThat(addressValidator.andThen(foreignAddressValidator).validate("J", "tokyo", "+0123456789").isValid()).isFalse();
+		assertThat(addressValidator.validate("JP", "tokyo", "0123456789").isValid())
+				.isTrue();
+		assertThat(addressValidator.andThen(foreignAddressValidator)
+				.validate("JP", "tokyo", "0123456789").isValid()).isTrue();
+		assertThat(addressValidator.validate("BE", "brussels", "9876543210").isValid())
+				.isTrue();
+		assertThat(addressValidator.andThen(foreignAddressValidator)
+				.validate("BE", "brussels", "9876543210").isValid()).isFalse();
+		assertThat(addressValidator.validate("J", "tokyo", "0123456789").isValid())
+				.isFalse();
+		assertThat(addressValidator.andThen(foreignAddressValidator)
+				.validate("J", "tokyo", "+0123456789").isValid()).isFalse();
 	}
 }
