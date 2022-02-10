@@ -15,6 +15,13 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.Address;
+import am.ik.yavi.Country;
+import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.arguments.Arguments1Validator;
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.builder.ObjectValidatorBuilder;
+import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,5 +34,30 @@ class ValueValidatorTest {
 		final Validated<String> validated = validator.validate("hello");
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value()).isEqualTo("hello");
+	}
+
+	@Test
+	void andThenChainsValidators() {
+		ValueValidator<String, Country> countryValidator = Country.validator().applicative().compose(Country::new);
+		ValueValidator<String, String> streetValidator = ValueValidator.passThrough();
+		ValueValidator<String, PhoneNumber> phoneValidator = PhoneNumber.validator().applicative().compose(PhoneNumber::new);
+
+		Arguments3Validator<String, String, String, Address> addressValidator = Arguments1Validator.from(countryValidator)
+				.split(streetValidator)
+				.split(phoneValidator)
+				.apply(Address::new);
+
+		ValueValidator<Address, Address> foreignAddressValidator = ValidatorBuilder.<Address>of()
+				.constraintOnCondition(
+						(address, group) -> !"JP".equalsIgnoreCase(address.country().name()),
+						ValidatorBuilder.<Address>of()._string(a -> a.phoneNumber().value(), "PhoneNumber", c -> c.startsWith("+")).build())
+				.build().applicative();
+
+		assertThat(addressValidator.validate("JP", "tokyo", "0123456789").isValid()).isTrue();
+		assertThat(addressValidator.andThen(foreignAddressValidator).validate("JP", "tokyo", "0123456789").isValid()).isTrue();
+		assertThat(addressValidator.validate("BE", "brussels", "9876543210").isValid()).isTrue();
+		assertThat(addressValidator.andThen(foreignAddressValidator).validate("BE", "brussels", "9876543210").isValid()).isFalse();
+		assertThat(addressValidator.validate("J", "tokyo", "0123456789").isValid()).isFalse();
+		assertThat(addressValidator.andThen(foreignAddressValidator).validate("J", "tokyo", "+0123456789").isValid()).isFalse();
 	}
 }
