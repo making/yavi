@@ -122,7 +122,6 @@ class ObjectConstraintTest {
 					.build();
 			final ConstraintViolations violations = validator
 					.validate(new Message("c", Color.GREEN));
-			violations.forEach(v -> System.out.println(v.message()));
 			assertThat(violations).extracting(ConstraintViolation::message)
 					.containsExactlyInAnyOrder(
 							"\"text\" must be one of the following values: [a, b]",
