@@ -15,13 +15,20 @@
  */
 package am.ik.yavi.constraint;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Predicate;
+
+import am.ik.yavi.Color;
+import am.ik.yavi.Message;
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
 import am.ik.yavi.jsr305.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -106,6 +113,22 @@ class ObjectConstraintTest {
 		void nullValuesIsNotAllowed() {
 			assertThatThrownBy(() -> oneOfPredicate(null))
 					.isExactlyInstanceOf(NullPointerException.class);
+		}
+
+		@Test
+		void violatedOneOfArgumentsAreRenderedCorrectly() {
+			final Validator<Message> validator = ValidatorBuilder.<Message> of()
+					.constraint(Message::getText, "text",
+							c -> c.oneOf(Arrays.asList("a", "b")))
+					._object(Message::getColor, "color",
+							c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE)))
+					.build();
+			final ConstraintViolations violations = validator
+					.validate(new Message("c", Color.GREEN));
+			assertThat(violations).extracting(ConstraintViolation::message)
+					.containsExactlyInAnyOrder(
+							"\"text\" must be one of the following values: [a, b]",
+							"\"color\" must be one of the following values: [RED, BLUE]");
 		}
 
 		private Predicate<String> oneOfPredicate(List<String> values) {
