@@ -51,10 +51,8 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 * @since 0.10.0
 	 */
 	default C oneOf(Collection<V> values) {
-		this.predicates()
-				.add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
-						() -> new Object[] { new ArrayArgument(values.toArray()) },
-						NullAs.INVALID));
+		this.predicates().add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
+				() -> new Object[] { values }, NullAs.INVALID));
 		return this.cast();
 	}
 

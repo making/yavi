@@ -16,9 +16,12 @@
 package am.ik.yavi.constraint;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 
+import am.ik.yavi.Color;
+import am.ik.yavi.Message;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
@@ -118,7 +121,7 @@ class ObjectConstraintTest {
 					.constraint(Message::getText, "text",
 							c -> c.oneOf(Arrays.asList("a", "b")))
 					._object(Message::getColor, "color",
-							c -> c.oneOf(Arrays.asList(Color.RED, Color.BLUE)))
+							c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE)))
 					.build();
 			final ConstraintViolations violations = validator
 					.validate(new Message("c", Color.GREEN));
@@ -131,27 +134,5 @@ class ObjectConstraintTest {
 		private Predicate<String> oneOfPredicate(List<String> values) {
 			return constraint.oneOf(values).predicates().getFirst().predicate();
 		}
-	}
-
-	static class Message {
-		private final String text;
-		private final Color color;
-
-		Message(String text, Color color) {
-			this.text = text;
-			this.color = color;
-		}
-
-		public String getText() {
-			return text;
-		}
-
-		public Color getColor() {
-			return color;
-		}
-	}
-
-	enum Color {
-		RED, BLUE, GREEN
 	}
 }
