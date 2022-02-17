@@ -200,6 +200,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 EOD
 fi)
@@ -283,6 +284,15 @@ fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
 		return (${as}, locale, constraintGroup) -> ${class}.this
 				.validate(${as}, locale, constraintGroup).map(mapper);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
+	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
+		return (${as}, locale, constraintGroup) -> ${class}.this
+				.validate(${as}, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
 	}
 
 	/**

@@ -78,6 +78,17 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	/**
+	 * @since 0.11.0
+	 */
+	@Override
+	default <X2> Arguments1Validator<A1, X2> andThen(
+			ValueValidator<? super X, X2> validator) {
+		return (a1, locale, constraintGroup) -> Arguments1Validator.this
+				.validate(a1, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+	}
+
+	/**
 	 * @since 0.7.0
 	 */
 	@Override

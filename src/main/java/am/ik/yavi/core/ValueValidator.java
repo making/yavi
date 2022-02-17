@@ -50,6 +50,15 @@ public interface ValueValidator<T, X> {
 				.validate(t, locale, constraintGroup).map(mapper);
 	}
 
+	/**
+	 * @since 0.11.0
+	 */
+	default <X2> ValueValidator<T, X2> andThen(ValueValidator<? super X, X2> validator) {
+		return (t, locale, constraintGroup) -> ValueValidator.this
+				.validate(t, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+	}
+
 	default <A> ValueValidator<A, X> compose(Function<? super A, ? extends T> mapper) {
 		return (a, locale, constraintGroup) -> ValueValidator.this
 				.validate(mapper.apply(a), locale, constraintGroup);
