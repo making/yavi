@@ -17,7 +17,6 @@ package am.ik.yavi.core;
 
 import java.util.Locale;
 
-import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Validation;
 
 @FunctionalInterface
@@ -71,24 +70,6 @@ public interface Validatable<T> {
 	 */
 	default ConstraintViolations validate(T target, ConstraintGroup constraintGroup) {
 		return this.validate(target, Locale.getDefault(), constraintGroup);
-	}
-
-	/**
-	 * Returns the corresponding either validator
-	 * @return either validator
-	 * @since 0.6.0
-	 */
-	default EitherValidator<T> either() {
-		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = Validatable.this.validate(target,
-					locale, constraintGroup);
-			if (violations.isValid()) {
-				return Either.right(target);
-			}
-			else {
-				return Either.left(violations);
-			}
-		};
 	}
 
 	/**

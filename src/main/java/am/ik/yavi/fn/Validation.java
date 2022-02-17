@@ -192,16 +192,8 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 	}
 
-	public Either<List<E>, T> toEither() {
-		return isValid() ? Either.right(value()) : Either.left(errors());
-	}
-
 	public <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
 		return new Combining2<>(this, validation);
-	}
-
-	public static <E, T> Validation<E, T> fromEither(Either<List<E>, T> either) {
-		return either.fold(Validation::failure, Validation::success);
 	}
 
 	public static <E, T> Validation<E, T> success(@Nullable T value) {
