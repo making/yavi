@@ -15,8 +15,8 @@ git push origin ${VERSION}
 ./set-next-patch-version.sh
 # or
 ./set-next-minor-version.sh
-NEW_VERSION=$(./get-release-version.sh)
-sed -i."" "s/${VERSION}/${NEW_VERSION}/g" README.md
+# Update REAMD
+git add README.md
 git commit -m "Update README"
 git push origin develop
 ```
