@@ -82,3 +82,24 @@ jobs:
         if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
           ./mvnw -V deploy -s settings.xml -DskipTests=true -DserverId=sonatype-snapshots
         fi
+    - name: Deploy to sonatype-releases
+      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      env:
+        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+      run: |
+        set -e
+        docker run \
+          --rm \
+          -e SONATYPE_USERNAME=${SONATYPE_USERNAME} \
+          -e SONATYPE_PASSWORD=${SONATYPE_PASSWORD} \
+          -e GPG_KEYNAME=${GPG_KEYNAME} \
+          -e GPG_PASSPHRASE=${GPG_PASSPHRASE} \
+          -e ENCRYPTION_PASSWORD=${ENCRYPTION_PASSWORD} \
+          -v ~/.m2:/root/.m2 \
+          -v "$PWD":/workspace \
+          -w /workspace \
+          making/deploy-sonatype
