@@ -28,11 +28,11 @@ resource_types:
     tag: latest
 
 resources:
-- name: repo-master
+- name: repo-main
   type: git
   source:
     uri: git@github.com:making/yavi.git
-    branch: master
+    branch: main
     private_key: ((github-private-key))
 - name: repo-develop
   type: git
@@ -52,7 +52,7 @@ resources:
   type: git
   source:
     uri: https://github.com/maki-home/encrypted-gpg
-    branch: master
+    branch: main
 - name: sonatype-snapshots
   type: maven
   source:
@@ -145,7 +145,7 @@ jobs:
           <<: *SLACK_FAILURE
 
 ### Prod
-- name: merge-develop-to-master
+- name: merge-develop-to-main
   plan:
   - in_parallel:
     - get: repo-src
@@ -153,8 +153,8 @@ jobs:
       passed:
       - upload-to-nexus-snapshots
     - get: repo-dest
-      resource: repo-master
-  - task: merge-develop-to-master
+      resource: repo-main
+  - task: merge-develop-to-main
     params:
       <<: *GIT_PARAMS
       SRC_BRANCH: develop
@@ -187,20 +187,20 @@ jobs:
       put: slack-alert
       params:
         <<: *SLACK_FAILURE
-  - put: repo-master
+  - put: repo-main
     params:
       repository: merged
     on_failure:
       put: slack-alert
       params:
         <<: *SLACK_FAILURE
-- name: unit-test-master
+- name: unit-test-main
   plan:
   - get: repo
-    resource: repo-master
+    resource: repo-main
     trigger: true
     passed:
-    - merge-develop-to-master
+    - merge-develop-to-main
   - task: mvn-test
     params:
       <<: *JAVA_OPS
@@ -210,14 +210,14 @@ jobs:
       put: slack-alert
       params:
         <<: *SLACK_FAILURE
-- name: tag-master
+- name: tag-main
   plan:
   - in_parallel:
     - get: repo
-      resource: repo-master
+      resource: repo-main
       trigger: true
       passed:
-      - unit-test-master
+      - unit-test-main
     - get: repo-version
   - task: mvn-versions-set
     params:
@@ -261,7 +261,7 @@ jobs:
       put: slack-alert
       params:
         <<: *SLACK_FAILURE
-  - put: repo-master
+  - put: repo-main
     params:
       repository: output
       tag: repo-version/number
@@ -273,9 +273,9 @@ jobs:
   plan:
   - in_parallel:
     - get: repo
-      resource: repo-master
+      resource: repo-main
       passed:
-      - tag-master
+      - tag-main
       trigger: true
     - get: gpg
   - task: mvn-deploy
@@ -348,7 +348,7 @@ jobs:
   plan:
   - in_parallel:
     - get: repo-src
-      resource: repo-master
+      resource: repo-main
       passed:
       - upload-to-sonatype-releases
       trigger: true
@@ -357,10 +357,10 @@ jobs:
     - get: repo-version
       params:
         bump: patch
-  - task: merge-master-to-develop
+  - task: merge-main-to-develop
     params:
       <<: *GIT_PARAMS
-      SRC_BRANCH: master
+      SRC_BRANCH: main
     config:
       <<: *MERGE_SRC_TO_DEST
     on_failure:
