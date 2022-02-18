@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
@@ -65,7 +66,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	@Override
 	Validated<X> validate(@Nullable A1 a1, Locale locale,
-			ConstraintGroup constraintGroup);
+			ConstraintContext constraintContext);
 
 	/**
 	 * @since 0.7.0
@@ -73,8 +74,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	@Override
 	default <X2> Arguments1Validator<A1, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
-		return (a1, locale, constraintGroup) -> Arguments1Validator.this
-				.validate(a1, locale, constraintGroup).map(mapper);
+		return (a1, locale, constraintContext) -> Arguments1Validator.this
+				.validate(a1, locale, constraintContext).map(mapper);
 	}
 
 	/**
@@ -83,9 +84,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	@Override
 	default <X2> Arguments1Validator<A1, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
-		return (a1, locale, constraintGroup) -> Arguments1Validator.this
-				.validate(a1, locale, constraintGroup)
-				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+		return (a1, locale, constraintContext) -> Arguments1Validator.this
+				.validate(a1, locale, constraintContext)
+				.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -94,8 +95,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	@Override
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends A1> mapper) {
-		return (a, locale, constraintGroup) -> Arguments1Validator.this
-				.validate(mapper.apply(a), locale, constraintGroup);
+		return (a, locale, constraintContext) -> Arguments1Validator.this
+				.validate(mapper.apply(a), locale, constraintContext);
 	}
 
 	/**
@@ -110,8 +111,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 		return this.validate(a1, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
-	default Validated<X> validate(@Nullable A1 a1, ConstraintGroup constraintGroup) {
-		return this.validate(a1, Locale.getDefault(), constraintGroup);
+	default Validated<X> validate(@Nullable A1 a1, ConstraintContext constraintContext) {
+		return this.validate(a1, Locale.getDefault(), constraintContext);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, Locale locale) {
@@ -122,9 +123,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 		return this.validate(a1).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, ConstraintGroup constraintGroup)
+	default X validated(@Nullable A1 a1, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(a1, constraintGroup)
+		return this.validate(a1, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -133,9 +134,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 		return this.validate(a1, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, Locale locale, ConstraintGroup constraintGroup)
-			throws ConstraintViolationsException {
-		return this.validate(a1, locale, constraintGroup)
+	default X validated(@Nullable A1 a1, Locale locale,
+			ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(a1, locale, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -159,8 +160,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	@Override
 	default Arguments1Validator<A1, X> indexed(int index) {
-		return (a1, locale, constraintGroup) -> Arguments1Validator.this
-				.validate(a1, locale, constraintGroup).indexed(index);
+		return (a1, locale, constraintContext) -> Arguments1Validator.this
+				.validate(a1, locale, constraintContext).indexed(index);
 	}
 
 	/**

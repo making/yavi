@@ -18,7 +18,7 @@ package am.ik.yavi.core;
 import java.util.Objects;
 
 @FunctionalInterface
-public interface ConstraintGroup {
+public interface ConstraintGroup extends ConstraintContext {
 	ConstraintGroup DEFAULT = ConstraintGroup.of("DEFAULT");
 
 	static ConstraintGroup of(String name) {
@@ -44,7 +44,10 @@ public interface ConstraintGroup {
 		};
 	}
 
-	String name();
+	@Override
+	default Object attribute(String key) {
+		return null;
+	}
 
 	default <T> ConstraintCondition<T> toCondition() {
 		return (target, group) -> Objects.equals(name(), group.name());

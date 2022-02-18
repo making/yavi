@@ -18,5 +18,5 @@ package am.ik.yavi.core;
 import java.util.function.BiPredicate;
 
 @FunctionalInterface
-public interface ConstraintCondition<T> extends BiPredicate<T, ConstraintGroup> {
+public interface ConstraintCondition<T> extends BiPredicate<T, ConstraintContext> {
 }

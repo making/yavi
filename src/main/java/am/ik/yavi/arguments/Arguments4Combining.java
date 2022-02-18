@@ -45,11 +45,11 @@ public class Arguments4Combining<A, R1, R2, R3, R4> {
 
 	public <X> Arguments1Validator<A, X> apply(
 			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
-				this.v1.validate(a, locale, constraintGroup),
-				this.v2.validate(a, locale, constraintGroup),
-				this.v3.validate(a, locale, constraintGroup),
-				this.v4.validate(a, locale, constraintGroup));
+		return (a, locale, constraintContext) -> Validations.apply(f::apply,
+				this.v1.validate(a, locale, constraintContext),
+				this.v2.validate(a, locale, constraintContext),
+				this.v3.validate(a, locale, constraintContext),
+				this.v4.validate(a, locale, constraintContext));
 	}
 
 	public <R5> Arguments5Combining<A, R1, R2, R3, R4, R5> combine(

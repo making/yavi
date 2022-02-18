@@ -18,6 +18,7 @@ package am.ik.yavi.arguments;
 import java.util.Locale;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
@@ -55,10 +56,10 @@ public class DefaultArguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X>
 	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
 			@Nullable A8 a8, @Nullable A9 a9, Locale locale,
-			ConstraintGroup constraintGroup) {
+			ConstraintContext constraintContext) {
 		return this.validator.applicative()
 				.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9), locale,
-						constraintGroup)
+						constraintContext)
 				.map(values -> values.map(this.mapper));
 	}
 }

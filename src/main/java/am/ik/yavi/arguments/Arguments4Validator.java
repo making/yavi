@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
@@ -34,15 +35,15 @@ import am.ik.yavi.jsr305.Nullable;
 public interface Arguments4Validator<A1, A2, A3, A4, X> {
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, Locale locale, ConstraintGroup constraintGroup);
+			@Nullable A4 a4, Locale locale, ConstraintContext constraintContext);
 
 	/**
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, a4, locale, constraintGroup) -> Arguments4Validator.this
-				.validate(a1, a2, a3, a4, locale, constraintGroup).map(mapper);
+		return (a1, a2, a3, a4, locale, constraintContext) -> Arguments4Validator.this
+				.validate(a1, a2, a3, a4, locale, constraintContext).map(mapper);
 	}
 
 	/**
@@ -50,9 +51,9 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
-		return (a1, a2, a3, a4, locale, constraintGroup) -> Arguments4Validator.this
-				.validate(a1, a2, a3, a4, locale, constraintGroup)
-				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+		return (a1, a2, a3, a4, locale, constraintContext) -> Arguments4Validator.this
+				.validate(a1, a2, a3, a4, locale, constraintContext)
+				.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -60,11 +61,11 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4>> mapper) {
-		return (a, locale, constraintGroup) -> {
+		return (a, locale, constraintContext) -> {
 			final Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4> args = mapper
 					.apply(a);
 			return Arguments4Validator.this.validate(args.arg1(), args.arg2(),
-					args.arg3(), args.arg4(), locale, constraintGroup);
+					args.arg3(), args.arg4(), locale, constraintContext);
 		};
 	}
 
@@ -83,8 +84,8 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, ConstraintGroup constraintGroup) {
-		return this.validate(a1, a2, a3, a4, Locale.getDefault(), constraintGroup);
+			@Nullable A4 a4, ConstraintContext constraintContext) {
+		return this.validate(a1, a2, a3, a4, Locale.getDefault(), constraintContext);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
@@ -99,9 +100,9 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	}
 
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, ConstraintGroup constraintGroup)
+			@Nullable A4 a4, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, constraintGroup)
+		return this.validate(a1, a2, a3, a4, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -112,9 +113,9 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	}
 
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, Locale locale, ConstraintGroup constraintGroup)
+			@Nullable A4 a4, Locale locale, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, locale, constraintGroup)
+		return this.validate(a1, a2, a3, a4, locale, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
