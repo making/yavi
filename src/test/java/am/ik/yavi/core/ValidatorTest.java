@@ -32,7 +32,6 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
-import am.ik.yavi.fn.Either;
 import org.junit.jupiter.api.Test;
 
 import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
@@ -641,28 +640,6 @@ class ValidatorTest {
 		Validator<User> validator = validator();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
-	}
-
-	@Test
-	void validateToEitherInValid() throws Exception {
-		User user = new User("foo", "foo@example.com", -1);
-		Either<ConstraintViolations, User> either = validator().either().validate(user);
-		assertThat(either.isLeft()).isTrue();
-		ConstraintViolations violations = either.left().get();
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"age\" must be greater than or equal to 0");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
-	}
-
-	@Test
-	void validateToEitherValid() throws Exception {
-		User user = new User("foo", "foo@example.com", 30);
-		Either<ConstraintViolations, User> either = validator().either().validate(user);
-		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isSameAs(user);
 	}
 
 	@Test

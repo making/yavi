@@ -102,40 +102,6 @@ class ValidationTest {
 	}
 
 	@Test
-	void successToEither() {
-		final Validation<String, String> validation = Validation.success("test");
-		final Either<List<String>, String> either = validation.toEither();
-		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isEqualTo("test");
-	}
-
-	@Test
-	void failureToEither() {
-		final Validation<String, String> validation = Validation.failure("errors1",
-				"errors2");
-		final Either<List<String>, String> either = validation.toEither();
-		assertThat(either.isLeft()).isTrue();
-		assertThat(either.left().get()).isEqualTo(Arrays.asList("errors1", "errors2"));
-	}
-
-	@Test
-	void successFromEither() {
-		final Either<List<String>, String> either = Either.right("test");
-		final Validation<String, String> validation = Validation.fromEither(either);
-		assertThat(validation.isValid()).isTrue();
-		assertThat(validation.value()).isEqualTo("test");
-	}
-
-	@Test
-	void failureFromEither() {
-		final Either<List<String>, String> either = Either
-				.left(Arrays.asList("errors1", "errors2"));
-		final Validation<String, String> validation = Validation.fromEither(either);
-		assertThat(validation.isValid()).isFalse();
-		assertThat(validation.errors()).isEqualTo(Arrays.asList("errors1", "errors2"));
-	}
-
-	@Test
 	void combine_all_valid() {
 		final Validation<String, String> v1 = Validation.success("s1");
 		final Validation<String, String> v2 = Validation.success("s2");

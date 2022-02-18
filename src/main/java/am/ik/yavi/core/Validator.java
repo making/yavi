@@ -49,8 +49,6 @@ public class Validator<T> implements Validatable<T> {
 
 	private final boolean failFast;
 
-	private final EitherValidator<T> eitherValidator = Validatable.super.either();
-
 	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
 
 	public Validator(String messageKeySeparator,
@@ -142,11 +140,6 @@ public class Validator<T> implements Validatable<T> {
 	public ConstraintViolations validate(T target, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.validate(target, "", -1, locale, constraintGroup);
-	}
-
-	@Override
-	public EitherValidator<T> either() {
-		return this.eitherValidator;
 	}
 
 	@Override
