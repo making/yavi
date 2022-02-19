@@ -19,4 +19,10 @@ import java.util.function.BiPredicate;
 
 @FunctionalInterface
 public interface ConstraintCondition<T> extends BiPredicate<T, ConstraintContext> {
+	/**
+	 * @since 0.11.0
+	 */
+	static <T> ConstraintCondition<T> hasAttributeWithValue(String key, Object value) {
+		return (t, context) -> context.attribute(key).isEqualTo(value);
+	}
 }

@@ -3,6 +3,7 @@ package am.ik.yavi.core;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
+import static am.ik.yavi.core.ConstraintCondition.hasAttributeWithValue;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -95,13 +96,11 @@ public class Gh213Test {
 
 		static final Validator<User> VALIDATOR = ValidatorBuilder.<User> of()
 				.constraint(User::getFirstName, "firstName", Constraint::notNull)
-				.constraintOnCondition(
-						(user, context) -> context.attribute("country").isEqualTo("IT"),
+				.constraintOnCondition(hasAttributeWithValue("country", "IT"),
 						b -> b.constraint(User::getLastName, "lastName",
 								Constraint::notNull))
 				.constraintOnCondition(
-						(user, context) -> context
-								.attribute("enableValidationInvoiceCode").isEqualTo(true),
+						hasAttributeWithValue("enableValidationInvoiceCode", true),
 						b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
 				.build();
 
