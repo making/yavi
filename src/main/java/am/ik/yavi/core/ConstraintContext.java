@@ -88,13 +88,8 @@ public interface ConstraintContext {
 		 * @return value
 		 */
 		@Nullable
-		@SuppressWarnings("unchecked")
 		default <T> T value(Class<T> clazz) {
-			final Object attribute = this.value();
-			if (attribute == null && clazz == Boolean.class) {
-				return (T) Boolean.valueOf(null);
-			}
-			return clazz.cast(attribute);
+			return clazz.cast(this.value());
 		}
 
 		/**

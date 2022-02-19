@@ -1,6 +1,5 @@
 package am.ik.yavi.core;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -28,16 +27,5 @@ class ConstraintContextTest {
 		assertThat(country).isEqualTo("IT");
 		final String typedCountry = context.attribute("country").value(String.class);
 		assertThat(typedCountry).isEqualTo("IT");
-	}
-
-	@Test
-	void booleanAttribute() {
-		final Map<String, Boolean> attributes = new HashMap<>();
-		attributes.put("a", true);
-		attributes.put("b", false);
-		final ConstraintContext context = ConstraintContext.from(attributes);
-		assertThat(context.attribute("a").value(Boolean.class)).isTrue();
-		assertThat(context.attribute("b").value(Boolean.class)).isFalse();
-		assertThat(context.attribute("c").value(Boolean.class)).isFalse();
 	}
 }

@@ -99,8 +99,9 @@ public class Gh213Test {
 						(user, context) -> context.attribute("country").isEqualTo("IT"),
 						b -> b.constraint(User::getLastName, "lastName",
 								Constraint::notNull))
-				.constraintOnCondition((user, context) -> context
-						.attribute("enableValidationInvoiceCode").value(Boolean.class),
+				.constraintOnCondition(
+						(user, context) -> context
+								.attribute("enableValidationInvoiceCode").isEqualTo(true),
 						b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
 				.build();
 
