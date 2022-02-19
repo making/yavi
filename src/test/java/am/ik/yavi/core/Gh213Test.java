@@ -96,12 +96,11 @@ public class Gh213Test {
 		static final Validator<User> VALIDATOR = ValidatorBuilder.<User> of()
 				.constraint(User::getFirstName, "firstName", Constraint::notNull)
 				.constraintOnCondition(
-						(user, context) -> "IT".equals(context.attribute("country")),
+						(user, context) -> context.attribute("country").isEqualTo("IT"),
 						b -> b.constraint(User::getLastName, "lastName",
 								Constraint::notNull))
-				.constraintOnCondition(
-						(user, context) -> context
-								.attribute("enableValidationInvoiceCode", Boolean.class),
+				.constraintOnCondition((user, context) -> context
+						.attribute("enableValidationInvoiceCode").value(Boolean.class),
 						b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
 				.build();
 

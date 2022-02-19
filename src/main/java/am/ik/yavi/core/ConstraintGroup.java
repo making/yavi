@@ -49,8 +49,8 @@ public interface ConstraintGroup extends ConstraintContext {
 	}
 
 	@Override
-	default Object attribute(String key) {
-		return null;
+	default Attribute attribute(String key) {
+		return () -> null;
 	}
 
 	default <T> ConstraintCondition<T> toCondition() {

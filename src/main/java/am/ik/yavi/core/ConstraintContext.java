@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import am.ik.yavi.jsr305.Nullable;
@@ -27,28 +28,11 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public interface ConstraintContext {
 	/**
-	 * Returns the attribute value for the given key. <code>null</code> is returned if the
-	 * key does not exit.
+	 * Returns the attribute for the given key.
 	 * @param key key
-	 * @return value
+	 * @return the attribute
 	 */
-	@Nullable
-	Object attribute(String key);
-
-	/**
-	 * Returns the typed attribute value for the given key
-	 * @param key key
-	 * @return value
-	 */
-	@Nullable
-	@SuppressWarnings("unchecked")
-	default <T> T attribute(String key, Class<T> clazz) {
-		final Object attribute = attribute(key);
-		if (attribute == null && clazz == Boolean.class) {
-			return (T) Boolean.valueOf(null);
-		}
-		return clazz.cast(attribute);
-	}
+	Attribute attribute(String key);
 
 	/**
 	 * Returns the context name.<br>
@@ -63,8 +47,8 @@ public interface ConstraintContext {
 	static ConstraintContext from(Map<String, ?> map) {
 		return new ConstraintContext() {
 			@Override
-			public Object attribute(String key) {
-				return map.get(key);
+			public Attribute attribute(String key) {
+				return () -> map.get(key);
 			}
 
 			@Override
@@ -77,8 +61,8 @@ public interface ConstraintContext {
 	static ConstraintContext from(Function<String, ?> function) {
 		return new ConstraintContext() {
 			@Override
-			public Object attribute(String key) {
-				return function.apply(key);
+			public Attribute attribute(String key) {
+				return () -> function.apply(key);
 			}
 
 			@Override
@@ -86,5 +70,48 @@ public interface ConstraintContext {
 				return "ConstraintContextFromFunction";
 			}
 		};
+	}
+
+	@FunctionalInterface
+	interface Attribute {
+		/**
+		 * Returns the attribute value. <code>null</code> is returned if the attribute
+		 * does not exit.
+		 * @return value
+		 */
+		@Nullable
+		Object value();
+
+		/**
+		 * Returns the typed attribute value
+		 * @param clazz the type of the attribute value
+		 * @return value
+		 */
+		@Nullable
+		@SuppressWarnings("unchecked")
+		default <T> T value(Class<T> clazz) {
+			final Object attribute = this.value();
+			if (attribute == null && clazz == Boolean.class) {
+				return (T) Boolean.valueOf(null);
+			}
+			return clazz.cast(attribute);
+		}
+
+		/**
+		 * Returns whether the attribute value exists
+		 * @return whether the attribute value exists
+		 */
+		default boolean exists() {
+			return this.value() != null;
+		}
+
+		/**
+		 * Return whether the attribute value is equal to the given value.
+		 * @param value value
+		 * @return whether the attribute value is equal to the given value.
+		 */
+		default boolean isEqualTo(Object value) {
+			return Objects.equals(this.value(), value);
+		}
 	}
 }
