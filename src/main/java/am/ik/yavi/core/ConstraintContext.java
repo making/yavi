@@ -76,7 +76,7 @@ public interface ConstraintContext {
 	interface Attribute {
 		/**
 		 * Returns the attribute value. <code>null</code> is returned if the attribute
-		 * does not exit.
+		 * does not exist.
 		 * @return value
 		 */
 		@Nullable
