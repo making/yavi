@@ -21,7 +21,7 @@ import java.util.function.Function;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
- * Constraint Context
+ * Constraint Context that contains the name and attributes.
  *
  * @since 0.11.0
  */

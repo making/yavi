@@ -17,6 +17,10 @@ package am.ik.yavi.core;
 
 import java.util.Objects;
 
+/**
+ * <code>ConstraintGroup</code> is a specialized <code>ConstraintContext</code> with only
+ * the name, attributes is empty.
+ */
 @FunctionalInterface
 public interface ConstraintGroup extends ConstraintContext {
 	ConstraintGroup DEFAULT = ConstraintGroup.of("DEFAULT");

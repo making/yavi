@@ -26,7 +26,7 @@ public interface Validatable<T> {
 	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
-	 * @param constraintContext constraint group to validate
+	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
@@ -36,7 +36,7 @@ public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 * {@code ConstraintContext.DEFAULT} is used as a constraint group.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
 	 *
 	 * @param target target to validate
 	 * @return constraint violations
@@ -48,7 +48,7 @@ public interface Validatable<T> {
 
 	/**
 	 * Validates all constraints on {@code target}.<br>
-	 * {@code ConstraintContext.DEFAULT} is used as a constraint group.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
 	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
@@ -64,7 +64,7 @@ public interface Validatable<T> {
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
 	 *
 	 * @param target target to validate
-	 * @param constraintContext constraint group to validate
+	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
