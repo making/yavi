@@ -23,26 +23,29 @@ import am.ik.yavi.arguments.YearValidator;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.core.Validator;
 
+/**
+ * @since 0.11.0
+ */
 public class YearValidatorBuilder {
 	private final String name;
 
 	private final Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints;
 
 	public static YearValidatorBuilder of(String name,
-	                                      Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
+			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return new YearValidatorBuilder(name, constraints);
 	}
 
 	YearValidatorBuilder(String name,
-	                     Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
+			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		this.name = name;
 		this.constraints = constraints;
 	}
 
 	public <T> YearValidator<T> build(Function<? super Year, ? extends T> mapper) {
 		final Validator<Arguments1<Year>> validator = ValidatorBuilder
-				.<Arguments1<Year>>of()
-				.constraint(Arguments1::arg1, name, constraints).build();
+				.<Arguments1<Year>> of().constraint(Arguments1::arg1, name, constraints)
+				.build();
 		return new YearValidator<>(validator, mapper::apply);
 	}
 

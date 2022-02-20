@@ -15,35 +15,35 @@
  */
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.Year;
-import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
+/**
+ * This is the actual class for constraints on Year.
+ *
+ * @since 0.11.0
+ */
 public class YearConstraint<T>
 		extends TemporalConstraintBase<T, Year, YearConstraint<T>> {
 	@Override
+	protected boolean isAfter(Year a, Year b) {
+		return a.isAfter(b);
+	}
+
+	@Override
+	protected boolean isBefore(Year a, Year b) {
+		return a.isBefore(b);
+	}
+
+	@Override
+	protected Year getNow(Clock clock) {
+		return Year.now(clock);
+	}
+
+	@Override
 	public YearConstraint<T> cast() {
 		return this;
-	}
-
-	@Override
-	protected Predicate<Year> isAfter(Year min) {
-		return x -> x.isAfter(min);
-	}
-
-	@Override
-	protected Predicate<Year> isOnOrAfter(Year min) {
-		return x -> x.getValue() >= min.getValue();
-	}
-
-	@Override
-	protected Predicate<Year> isBefore(Year max) {
-		return x -> x.isBefore(max);
-	}
-
-	@Override
-	protected Predicate<Year> isOnOrBefore(Year max) {
-		return x -> x.getValue() <= max.getValue();
 	}
 }

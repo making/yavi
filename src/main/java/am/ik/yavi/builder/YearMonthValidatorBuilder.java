@@ -29,19 +29,20 @@ public class YearMonthValidatorBuilder {
 	private final Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints;
 
 	public static YearMonthValidatorBuilder of(String name,
-	                                           Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
+			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return new YearMonthValidatorBuilder(name, constraints);
 	}
 
 	YearMonthValidatorBuilder(String name,
-	                          Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
+			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		this.name = name;
 		this.constraints = constraints;
 	}
 
-	public <T> YearMonthValidator<T> build(Function<? super YearMonth, ? extends T> mapper) {
+	public <T> YearMonthValidator<T> build(
+			Function<? super YearMonth, ? extends T> mapper) {
 		final Validator<Arguments1<YearMonth>> validator = ValidatorBuilder
-				.<Arguments1<YearMonth>>of()
+				.<Arguments1<YearMonth>> of()
 				.constraint(Arguments1::arg1, name, constraints).build();
 		return new YearMonthValidator<>(validator, mapper::apply);
 	}
