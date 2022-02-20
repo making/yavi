@@ -72,20 +72,4 @@ class ValueValidatorTest {
 		assertThat(addressValidator.andThen(foreignAddressValidator)
 				.validate("J", "tokyo", "+0123456789").isValid()).isFalse();
 	}
-
-	@Test
-	void validatable() {
-		ConstraintGroup group = ConstraintGroup.of("JP");
-		ValueValidator<String, String> passThrough = ValueValidator.passThrough();
-		ValueValidator<String, String> validator = ValidatorBuilder.<String> of()
-				.constraintOnCondition(
-						(String address,
-								ConstraintGroup g) -> !"JP".equalsIgnoreCase(g.name()),
-						passThrough)
-				.constraintOnGroup(group,
-						PhoneNumber.validator().applicative().compose(PhoneNumber::new))
-				.build().applicative();
-		assertThat(validator.validate("1234", group).isValid()).isFalse();
-		assertThat(validator.validate("1234").isValid()).isTrue();
-	}
 }
