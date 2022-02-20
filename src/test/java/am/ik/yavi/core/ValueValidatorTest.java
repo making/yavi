@@ -20,7 +20,6 @@ import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.arguments.Arguments3Validator;
-import am.ik.yavi.builder.ObjectValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -72,5 +71,21 @@ class ValueValidatorTest {
 				.isFalse();
 		assertThat(addressValidator.andThen(foreignAddressValidator)
 				.validate("J", "tokyo", "+0123456789").isValid()).isFalse();
+	}
+
+	@Test
+	void validatable() {
+		ConstraintGroup group = ConstraintGroup.of("JP");
+		ValueValidator<String, String> passThrough = ValueValidator.passThrough();
+		ValueValidator<String, String> validator = ValidatorBuilder.<String> of()
+				.constraintOnCondition(
+						(String address,
+								ConstraintGroup g) -> !"JP".equalsIgnoreCase(g.name()),
+						passThrough)
+				.constraintOnGroup(group,
+						PhoneNumber.validator().applicative().compose(PhoneNumber::new))
+				.build().applicative();
+		assertThat(validator.validate("1234", group).isValid()).isFalse();
+		assertThat(validator.validate("1234").isValid()).isTrue();
 	}
 }

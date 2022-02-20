@@ -79,6 +79,7 @@ import am.ik.yavi.core.NestedValidator;
 import am.ik.yavi.core.NullAs;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolatedArguments;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
@@ -672,6 +673,12 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
 	}
 
+	public <R> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
+			ValueValidator<T, R> applicative) {
+		this.conditionalValidators.add(new Pair<>(condition, applicative.validatable()));
+		return this;
+	}
+
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			Validator<T> validator) {
 		this.conditionalValidators.add(new Pair<>(condition, validator));
@@ -683,6 +690,11 @@ public class ValidatorBuilder<T> implements Cloneable {
 		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
 		Validator<T> validator = builder.build();
 		return this.constraintOnCondition(condition, validator);
+	}
+
+	public <R> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
+			ValueValidator<T, R> applicative) {
+		return this.constraintOnCondition(group.toCondition(), applicative);
 	}
 
 	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
