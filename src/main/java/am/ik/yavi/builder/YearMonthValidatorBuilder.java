@@ -23,6 +23,9 @@ import am.ik.yavi.arguments.YearMonthValidator;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.core.Validator;
 
+/**
+ * @since 0.11.0
+ */
 public class YearMonthValidatorBuilder {
 	private final String name;
 

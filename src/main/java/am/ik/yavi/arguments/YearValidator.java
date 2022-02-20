@@ -21,6 +21,9 @@ import java.util.function.Function;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 
+/**
+ * @since 0.11.0
+ */
 public class YearValidator<T> extends DefaultArguments1Validator<Year, T> {
 
 	@Override
