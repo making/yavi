@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -79,6 +80,66 @@ class DoubleConstraintTest {
 	void invalidLessThanOrEqual(double value) {
 		Predicate<Double> predicate = retrievePredicate(c -> c.lessThanOrEqual(100.0));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 101.0, 150.0 })
+	void validPositive(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101.0, -150.0, 0 })
+	void invalidPositive(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 99.0, 100.0, 0.0 })
+	void invalidNegative(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -100.0, -10.0 })
+	void validNegative(double value) {
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 99.5, 100.5, 0 })
+	void validPositiveOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101, -12 })
+	void invalidPositiveOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 99.0, 100 })
+	void invalidNegativeOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101, -120, 0 })
+	void validNegativeOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Double> retrievePredicate(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@ package am.ik.yavi.builder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Year;
-import java.time.YearMonth;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,14 +44,17 @@ import am.ik.yavi.constraint.CharacterConstraint;
 import am.ik.yavi.constraint.CollectionConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
+import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
 import am.ik.yavi.constraint.LocalDateConstraint;
+import am.ik.yavi.constraint.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.LocalTimeConstraint;
 import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
+import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
-import am.ik.yavi.constraint.YearConstraint;
-import am.ik.yavi.constraint.YearMonthConstraint;
+import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.constraint.array.BooleanArrayConstraint;
 import am.ik.yavi.constraint.array.ByteArrayConstraint;
 import am.ik.yavi.constraint.array.CharArrayConstraint;
@@ -69,10 +75,10 @@ import am.ik.yavi.core.CustomConstraint;
 import am.ik.yavi.core.NestedCollectionValidator;
 import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
-import am.ik.yavi.core.NestedValidatorSubset;
+import am.ik.yavi.core.NestedValidator;
 import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ViolatedArguments;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
@@ -85,18 +91,24 @@ import am.ik.yavi.meta.ByteConstraintMeta;
 import am.ik.yavi.meta.CharacterConstraintMeta;
 import am.ik.yavi.meta.DoubleConstraintMeta;
 import am.ik.yavi.meta.FloatConstraintMeta;
+import am.ik.yavi.meta.InstantConstraintMeta;
 import am.ik.yavi.meta.IntegerConstraintMeta;
+import am.ik.yavi.meta.LocalDateConstraintMeta;
+import am.ik.yavi.meta.LocalDateTimeConstraintMeta;
+import am.ik.yavi.meta.LocalTimeConstraintMeta;
 import am.ik.yavi.meta.LongConstraintMeta;
 import am.ik.yavi.meta.ObjectConstraintMeta;
+import am.ik.yavi.meta.OffsetDateTimeConstraintMeta;
 import am.ik.yavi.meta.ShortConstraintMeta;
 import am.ik.yavi.meta.StringConstraintMeta;
+import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
 
-public class ValidatorBuilder<T> {
+public class ValidatorBuilder<T> implements Cloneable {
 	private static final String DEFAULT_SEPARATOR = ".";
 
 	final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
 
-	final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators = new ArrayList<>();
+	final List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators = new ArrayList<>();
 
 	final String messageKeySeparator;
 
@@ -114,6 +126,20 @@ public class ValidatorBuilder<T> {
 		this.messageKeySeparator = messageKeySeparator;
 	}
 
+	/**
+	 * The copy constructor
+	 *
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder(ValidatorBuilder<T> cloningSource) {
+		this(cloningSource.messageKeySeparator);
+		this.collectionValidators.addAll(cloningSource.collectionValidators);
+		this.conditionalValidators.addAll(cloningSource.conditionalValidators);
+		this.predicatesList.addAll(cloningSource.predicatesList);
+		this.messageFormatter = cloningSource.messageFormatter;
+		this.failFast = cloningSource.failFast;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <S extends T> ValidatorBuilder<S> cast(Class<S> clazz) {
 		return (ValidatorBuilder<S>) this;
@@ -124,15 +150,14 @@ public class ValidatorBuilder<T> {
 		return (ValidatorBuilder<S>) this;
 	}
 
+	/**
+	 * @deprecated please use the copy constructor
+	 * {@link #ValidatorBuilder(ValidatorBuilder)}
+	 * @return the cloned builder
+	 */
+	@Deprecated
 	public ValidatorBuilder<T> clone() {
-		final ValidatorBuilder<T> builder = new ValidatorBuilder<>(
-				this.messageKeySeparator);
-		builder.collectionValidators.addAll(this.collectionValidators);
-		builder.conditionalValidators.addAll(this.conditionalValidators);
-		builder.predicatesList.addAll(this.predicatesList);
-		builder.messageFormatter = this.messageFormatter;
-		builder.failFast = this.failFast;
-		return builder;
+		return new ValidatorBuilder<>(this);
 	}
 
 	/**
@@ -387,6 +412,154 @@ public class ValidatorBuilder<T> {
 		return this.constraint(f, name, c, BigDecimalConstraint::new);
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalTimeConstraintMeta<T> meta,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localTime(ToLocalTimeConstraint<T> f, String name,
+			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalDateConstraint<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalDateConstraintMeta<T> meta,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localDate(ToLocalDateConstraint<T> f, String name,
+			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToLocalDateTimeConstraint<T> f, String name,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(LocalDateTimeConstraintMeta<T> meta,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _localDateTime(ToLocalDateTimeConstraint<T> f, String name,
+			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, LocalDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToZonedDateTimeConstraint<T> f, String name,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ZonedDateTimeConstraintMeta<T> meta,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _zonedDateTime(ToZonedDateTimeConstraint<T> f, String name,
+			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, ZonedDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToOffsetDateTimeConstraint<T> f, String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(OffsetDateTimeConstraintMeta<T> meta,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c,
+				OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f,
+			String name,
+			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
+		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> constraint(InstantConstraintMeta<T> meta,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public ValidatorBuilder<T> _instant(ToInstantConstraint<T> f, String name,
+			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
+		return this.constraint(f, name, c, InstantConstraint::new);
+	}
+
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraint(
 			ToCollection<T, L, E> f, String name,
 			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
@@ -497,36 +670,6 @@ public class ValidatorBuilder<T> {
 	public ValidatorBuilder<T> _doubleArray(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
-	}
-
-	public ValidatorBuilder<T> constraint(ToLocalDate<T> f, String name,
-			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateConstraint::new);
-	}
-
-	public ValidatorBuilder<T> _localDate(ToLocalDate<T> f, String name,
-			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
-		return this.constraint(f, name, c, LocalDateConstraint::new);
-	}
-
-	public ValidatorBuilder<T> constraint(ToYearMonth<T> f, String name,
-			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
-		return this.constraint(f, name, c, YearMonthConstraint::new);
-	}
-
-	public ValidatorBuilder<T> _yearMonth(ToYearMonth<T> f, String name,
-			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
-		return this.constraint(f, name, c, YearMonthConstraint::new);
-	}
-
-	public ValidatorBuilder<T> constraint(ToYear<T> f, String name,
-			Function<YearConstraint<T>, YearConstraint<T>> c) {
-		return this.constraint(f, name, c, YearConstraint::new);
-	}
-
-	public ValidatorBuilder<T> _year(ToYear<T> f, String name,
-			Function<YearConstraint<T>, YearConstraint<T>> c) {
-		return this.constraint(f, name, c, YearConstraint::new);
 	}
 
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
@@ -810,23 +953,23 @@ public class ValidatorBuilder<T> {
 		return nested;
 	}
 
-	private <N> Consumer<Pair<ConstraintCondition<N>, ValidatorSubset<N>>> appendNestedConditionalValidator(
+	private <N> Consumer<Pair<ConstraintCondition<N>, Validatable<N>>> appendNestedConditionalValidator(
 			Function<T, N> nested, String name) {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
 					nested, conditionalValidator.first());
-			final ValidatorSubset<N> validatorSubset = conditionalValidator.second();
-			final String nestedPrefix = toNestedPrefix(name, validatorSubset);
-			final ValidatorSubset<T> v = new NestedValidatorSubset<>(nested,
-					validatorSubset, nestedPrefix);
+			final Validatable<N> validator = conditionalValidator.second();
+			final String nestedPrefix = toNestedPrefix(name, validator);
+			final Validatable<T> v = new NestedValidator<>(nested, validator,
+					nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
 
-	private <N> String toNestedPrefix(String name, ValidatorSubset<N> validatorSubset) {
-		if (validatorSubset instanceof NestedValidatorSubset) {
-			final NestedValidatorSubset<?, ?> nestedValidatorSubset = (NestedValidatorSubset<?, ?>) validatorSubset;
-			return name + this.messageKeySeparator + nestedValidatorSubset.getPrefix();
+	private <N> String toNestedPrefix(String name, Validatable<N> validator) {
+		if (validator instanceof NestedValidator) {
+			final NestedValidator<?, ?> nestedValidator = (NestedValidator<?, ?>) validator;
+			return name + this.messageKeySeparator + nestedValidator.getPrefix();
 		}
 		return name + this.messageKeySeparator;
 	}
@@ -954,13 +1097,22 @@ public class ValidatorBuilder<T> {
 	public interface ToShortArray<T> extends Function<T, short[]> {
 	}
 
-	public interface ToLocalDate<T> extends Function<T, LocalDate> {
+	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
 	}
 
-	public interface ToYearMonth<T> extends Function<T, YearMonth> {
+	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
 	}
 
-	public interface ToYear<T> extends Function<T, Year> {
+	public interface ToOffsetDateTimeConstraint<T> extends Function<T, OffsetDateTime> {
+	}
+
+	public interface ToLocalDateTimeConstraint<T> extends Function<T, LocalDateTime> {
+	}
+
+	public interface ToLocalDateConstraint<T> extends Function<T, LocalDate> {
+	}
+
+	public interface ToInstantConstraint<T> extends Function<T, Instant> {
 	}
 
 	public interface ValidatorBuilderConverter<T>

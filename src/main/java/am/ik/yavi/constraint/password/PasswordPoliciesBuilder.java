@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 
 	private int minimumOptionalPoliciesRequirement;
 
-	abstract protected B cast();
+	protected abstract B cast();
 
 	public B required(PasswordPolicy<E> policy) {
 		this.requiredPolicies.add(policy);

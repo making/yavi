@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import am.ik.yavi.builder.ValidatorBuilder;
 
-public class CastTest {
+class CastTest {
 	@Test
-	public void anotherClonedValidatorShouldAlsoWork_GH23() {
+	void anotherClonedValidatorShouldAlsoWork_GH23() {
 		final Student student = new Student();
 		final ConstraintViolations result = Student.validator.validate(student);
 		assertThat(result.isValid()).isFalse();
@@ -33,7 +33,7 @@ public class CastTest {
 	}
 
 	@Test
-	public void castShouldWork_GH23() {
+	void castShouldWork_GH23() {
 		final Employee employee = new Employee();
 		final ConstraintViolations result = Employee.validator.validate(employee);
 		assertThat(result.isValid()).isFalse();
@@ -43,7 +43,7 @@ public class CastTest {
 	}
 
 	@Test
-	public void originalValidatorShouldAlsoWork_GH23() {
+	void originalValidatorShouldAlsoWork_GH23() {
 		final Person person = new Person();
 		final ConstraintViolations result = Person.validator.validate(person);
 		assertThat(result.isValid()).isFalse();
@@ -51,53 +51,53 @@ public class CastTest {
 		assertThat(result.get(0).name()).isEqualTo("name");
 	}
 
-	public static class Employee extends Person {
-		public static final Validator<Employee> validator = Person.validatorBuilder
-				.clone().cast(Employee.class)
+	static class Employee extends Person {
+		static final Validator<Employee> validator = Person.validatorBuilder.clone()
+				.cast(Employee.class)
 				.constraint(Employee::getServiceId, "service", Constraint::notNull)
 				.build();
 
 		private String serviceId;
 
-		public String getServiceId() {
+		String getServiceId() {
 			return serviceId;
 		}
 
-		public void setServiceId(String serviceId) {
+		void setServiceId(String serviceId) {
 			this.serviceId = serviceId;
 		}
 	}
 
-	public static class Person {
+	static class Person {
 		static ValidatorBuilder<Person> validatorBuilder = ValidatorBuilder
 				.of(Person.class)
 				.constraint(Person::getName, "name", Constraint::notNull);
 
-		public static final Validator<Person> validator = validatorBuilder.build();
+		static final Validator<Person> validator = validatorBuilder.build();
 
 		private String name;
 
-		public String getName() {
+		String getName() {
 			return name;
 		}
 
-		public void setName(String name) {
+		void setName(String name) {
 			this.name = name;
 		}
 	}
 
-	public static class Student extends Person {
-		public static final Validator<Student> validator = Person.validatorBuilder.clone()
+	static class Student extends Person {
+		static final Validator<Student> validator = Person.validatorBuilder.clone()
 				.cast(Student.class).constraint(Student::getId, "id", Constraint::notNull)
 				.build();
 
 		private String id;
 
-		public String getId() {
+		String getId() {
 			return id;
 		}
 
-		public void setId(String id) {
+		void setId(String id) {
 			this.id = id;
 		}
 	}

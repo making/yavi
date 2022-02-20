@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,21 @@
  */
 package am.ik.yavi.core;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ConstraintGroupTest {
+class ConstraintGroupTest {
 
 	@Test
-	public void name() {
+	void name() {
 		ConstraintGroup cg = ConstraintGroup.of("foo");
 		assertThat(cg.name()).isEqualTo("foo");
 		assertThat(cg.name()).isNotEqualTo("Foo");
 	}
 
 	@Test
-	public void testEnum() {
+	void testEnum() {
 		ConstraintCondition<?> condition = CustomGroup.FOO.toCondition();
 		assertThat(condition.test(null, CustomGroup.FOO)).isTrue();
 		assertThat(condition.test(null, CustomGroup.BAR)).isFalse();
@@ -37,7 +37,7 @@ public class ConstraintGroupTest {
 	}
 
 	@Test
-	public void toCondition() {
+	void toCondition() {
 		ConstraintGroup cg = ConstraintGroup.of("foo");
 		ConstraintCondition<?> condition = cg.toCondition();
 		assertThat(condition.test(null, ConstraintGroup.of("foo"))).isTrue();

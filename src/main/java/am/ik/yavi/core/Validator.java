@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 
@@ -35,10 +34,10 @@ import am.ik.yavi.message.MessageFormatter;
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
  */
-public class Validator<T> implements ValidatorSubset<T> {
+public class Validator<T> implements Validatable<T> {
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 
-	private final List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators;
+	private final List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators;
 
 	private final MessageFormatter messageFormatter;
 
@@ -50,14 +49,12 @@ public class Validator<T> implements ValidatorSubset<T> {
 
 	private final boolean failFast;
 
-	private final EitherValidator<T> eitherValidator = ValidatorSubset.super.either();
-
-	private final ApplicativeValidator<T> applicativeValidator = ValidatorSubset.super.applicative();
+	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
 		this(messageKeySeparator, predicatesList, collectionValidators,
 				conditionalValidators, messageFormatter, false);
@@ -69,7 +66,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
 			MessageFormatter messageFormatter, boolean failFast) {
 		this(messageKeySeparator, predicatesList, collectionValidators,
 				conditionalValidators, messageFormatter, failFast, "");
@@ -78,7 +75,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 	private Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> conditionalValidators,
+			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
 			MessageFormatter messageFormatter, boolean failFast, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
@@ -135,7 +132,7 @@ public class Validator<T> implements ValidatorSubset<T> {
 	 * @param action callback per <code>Pair<ConstraintCondition<T>, Validator<T>></code>.
 	 */
 	public void forEachConditionalValidator(
-			Consumer<Pair<ConstraintCondition<T>, ValidatorSubset<T>>> action) {
+			Consumer<Pair<ConstraintCondition<T>, Validatable<T>>> action) {
 		this.conditionalValidators.forEach(action);
 	}
 
@@ -146,85 +143,8 @@ public class Validator<T> implements ValidatorSubset<T> {
 	}
 
 	@Override
-	public EitherValidator<T> either() {
-		return this.eitherValidator;
-	}
-
-	@Override
 	public ApplicativeValidator<T> applicative() {
 		return this.applicativeValidator;
-	}
-
-	/**
-	 * Deprecated in favor of {@code either().validate(target)}
-	 *
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.<br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	@Deprecated
-	public Either<ConstraintViolations, T> validateToEither(T target) {
-		return this.eitherValidator.validate(target);
-	}
-
-	/**
-	 * Deprecated in favor of {@code either().validate(target, constraintGroup)}
-	 *
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 *
-	 * @param target target to validate
-	 * @param constraintGroup constraint group to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	@Deprecated
-	public Either<ConstraintViolations, T> validateToEither(T target,
-			ConstraintGroup constraintGroup) {
-		return this.eitherValidator.validate(target, constraintGroup);
-	}
-
-	/**
-	 * Deprecated in favor of {@code either().validate(target, locale)}
-	 *
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
-	 *
-	 * @param target target to validate
-	 * @param locale the locale targeted for the violation messages.
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	@Deprecated
-	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale) {
-		return this.either().validate(target, locale);
-	}
-
-	/**
-	 * Deprecated in favor of {@code either().validate(target, locale, constraintGroup)}
-	 *
-	 * Validates all constraints on {@code target} and returns {@code Either} object that
-	 * has constraint violations on the left or validated object on the right. <br>
-	 *
-	 * @param target target to validate
-	 * @return either object that has constraint violations on the left or validated
-	 * object on the right
-	 * @throws IllegalArgumentException if target is {@code null}
-	 */
-	@Deprecated
-	public Either<ConstraintViolations, T> validateToEither(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.either().validate(target, locale, constraintGroup);
 	}
 
 	private String indexedName(String name, String collectionName, int index) {
@@ -308,10 +228,10 @@ public class Validator<T> implements ValidatorSubset<T> {
 				}
 			}
 		}
-		for (Pair<ConstraintCondition<T>, ValidatorSubset<T>> pair : this.conditionalValidators) {
+		for (Pair<ConstraintCondition<T>, Validatable<T>> pair : this.conditionalValidators) {
 			final ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintGroup)) {
-				final ValidatorSubset<T> validator = pair.second();
+				final Validatable<T> validator = pair.second();
 				final ConstraintViolations constraintViolations = validator
 						.validate(target, locale, constraintGroup);
 				for (ConstraintViolation violation : constraintViolations) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -88,6 +90,70 @@ class BigIntegerConstraintTest {
 		Predicate<BigInteger> predicate = retrievePredicate(
 				c -> c.lessThanOrEqual(new BigInteger("100")));
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void validPositive(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150", "0" })
+	void invalidPositive(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100", "0" })
+	void invalidNegative(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150" })
+	void validNegative(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100", "0" })
+	void validPositiveOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150" })
+	void invalidPositiveOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::positiveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void invalidNegativeOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150", "0" })
+	void validNegativeOrZero(BigInteger value) {
+		Predicate<BigInteger> predicate = retrievePredicate(
+				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<BigInteger> retrievePredicate(

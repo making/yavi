@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,52 +19,52 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EmojiTest {
+class EmojiTest {
 
 	@Test
-	public void elf() {
+	void elf() {
 		String emoji = "🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿";
 		assertThat(emoji.length()).isEqualTo(22);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
-	public void emoji() {
+	void emoji() {
 		String emoji = "I am 👱🏿";
 		assertThat(emoji.length()).isEqualTo(9);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
-	public void emoji11All() throws Exception {
+	void emoji11All() throws Exception {
 		verifyEmojiAll("emoji-test-11.txt");
 	}
 
 	@Test
-	public void emoji12All() throws Exception {
+	void emoji12All() throws Exception {
 		verifyEmojiAll("emoji-test-12.txt");
 	}
 
 	@Test
-	public void family() {
+	void family() {
 		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
 		assertThat(emoji.length()).isEqualTo(42);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
-	public void heart() {
+	void heart() {
 		String emoji = "❤️💙💚💛🧡💜🖤";
 		assertThat(emoji.length()).isEqualTo(14);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(7);
 	}
 
 	@Test
-	public void subdivisionFlags() {
+	void subdivisionFlags() {
 		String emoji = "🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢󠁷󠁬󠁳󠁿";
 		assertThat(emoji.length()).isEqualTo(42);
 		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(3);

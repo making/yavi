@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package am.ik.yavi.arguments;
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolationsException;
 
 public class Product {
 	private final String name;
+
 	private final int price;
 
 	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder
@@ -29,7 +31,8 @@ public class Product {
 			.build();
 
 	public Product(String name, int price) {
-		validator.validateAndThrowIfInvalid(name, price);
+		validator.lazy().validate(name, price)
+				.throwIfInvalid(ConstraintViolationsException::new);
 		this.name = name;
 		this.price = price;
 	}

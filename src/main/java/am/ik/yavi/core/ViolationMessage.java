@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ public interface ViolationMessage {
 	enum Default implements ViolationMessage {
 		OBJECT_NOT_NULL("object.notNull", "\"{0}\" must not be null"), //
 		OBJECT_IS_NULL("object.isNull", "\"{0}\" must be null"), //
+		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
+		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan",
 				"The size of \"{0}\" must be less than {1}. The given size is {2}"), //
@@ -54,19 +56,25 @@ public interface ViolationMessage {
 		NUMERIC_LESS_THAN("numeric.lessThan", "\"{0}\" must be less than {1}"), //
 		NUMERIC_LESS_THAN_OR_EQUAL("numeric.lessThanOrEqual",
 				"\"{0}\" must be less than or equal to {1}"), //
-		TEMPORAL_AFTER("temporal.after", "\"{0}\" must be after {1}"), //
-		TEMPORAL_ON_OR_AFTER("temporal.onOrAfter", "\"{0}\" must be on or after {1}"), //
-		TEMPORAL_BEFORE("temporal.before", "\"{0}\" must be before {1}"), //
-		TEMPORAL_ON_OR_BEFORE("temporal.onOrBefore", "\"{0}\" must be on or before {1}"), //
+		NUMERIC_POSITIVE("numeric.positive", "\"{0}\" must be positive"), //
+		NUMERIC_POSITIVE_OR_ZERO("numeric.positiveOrZero",
+				"\"{0}\" must be positive or zero"), //
+		NUMERIC_NEGATIVE("numeric.negative", "\"{0}\" must be negative"), //
+		NUMERIC_NEGATIVE_OR_ZERO("numeric.negativeOrZero",
+				"\"{0}\" must be negative or zero"), //
 		BOOLEAN_IS_TRUE("boolean.isTrue", "\"{0}\" must be true"), //
 		BOOLEAN_IS_FALSE("boolean.isFalse", "\"{0}\" must be false"), //
 		CHAR_SEQUENCE_NOT_BLANK("charSequence.notBlank", "\"{0}\" must not be blank"), //
 		CHAR_SEQUENCE_CONTAINS("charSequence.contains", "\"{0}\" must contain {1}"), //
+		CHAR_SEQUENCE_STARTSWITH("charSequence.startsWith",
+				"\"{0}\" must start with \"{1}\""), //
+		CHAR_SEQUENCE_ENDSWITH("charSequence.endsWith", "\"{0}\" must end with \"{1}\""), //
 		CHAR_SEQUENCE_EMAIL("charSequence.email",
 				"\"{0}\" must be a valid email address"), //
 		CHAR_SEQUENCE_IPV4("charSequence.ipv4", "\"{0}\" must be a valid IPv4"), //
 		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
+		CHAR_SEQUENCE_UUID("charSequence.uuid", "\"{0}\" must be a valid UUID"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
 		CHAR_SEQUENCE_LUHN("charSequence.luhn",
 				"the check digit for \"{0}\" is invalid, Luhn checksum failed"), //
@@ -110,7 +118,21 @@ public interface ViolationMessage {
 				"\"{1}\" is/are not allowed for \"{0}\""), //
 		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy"), //
 		PASSWORD_OPTIONAL("password.optional",
-				"\"{0}\" must meet at least {1} policies from {2}") //
+				"\"{0}\" must meet at least {1} policies from {2}"), //
+		TEMPORAL_PAST("temporal.past", "\"{0}\" must be a past date"), //
+		TEMPORAL_PAST_OR_PRESENT("temporal.pastOrPresent",
+				"\"{0}\" must be a date in the past or in the present"), //
+		TEMPORAL_FUTURE("temporal.future", "\"{0}\" must be a future date"), //
+		TEMPORAL_FUTURE_OR_PRESENT("temporal.futureOrPresent",
+				"\"{0}\" must be a date in the present or in the future"), //
+		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}"), //
+		TEMPORAL_BEFORE_OR_EQUAL("temporal.beforeOrEqual",
+				"\"{0}\" has to be before or equals to {1}"), //
+		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
+		TEMPORAL_AFTER_OR_EQUAL("temporal.afterOrEqual",
+				"\"{0}\" has to be after or equals to {1}"), //
+		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}"), //
+		TEMPORAL_FIELD("temporal.field", "The {1} of \"{0}\" is invalid") //
 		;
 
 		private final String defaultMessageFormat;

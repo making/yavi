@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint.array;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CharArrayConstraintTest {
+class CharArrayConstraintTest {
 	private CharArrayConstraint<char[]> constraint = new CharArrayConstraint<>();
 
 	@Test
-	public void contains() {
+	void contains() {
 		Predicate<char[]> predicate = constraint.contains((char) 100).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isTrue();
@@ -33,7 +33,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
+	void fixedSize() {
 		Predicate<char[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isFalse();
@@ -43,7 +43,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
+	void greaterThan() {
 		Predicate<char[]> predicate = constraint.greaterThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100, (char) 101 })).isFalse();
@@ -52,7 +52,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
+	void greaterThanOrEqual() {
 		Predicate<char[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isFalse();
@@ -62,7 +62,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
+	void lessThan() {
 		Predicate<char[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
@@ -70,7 +70,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<char[]> predicate = constraint.lessThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();
@@ -80,7 +80,7 @@ public class CharArrayConstraintTest {
 	}
 
 	@Test
-	public void notEmpty() {
+	void notEmpty() {
 		Predicate<char[]> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new char[] { (char) 100 })).isTrue();

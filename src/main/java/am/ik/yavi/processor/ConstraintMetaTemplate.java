@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@ package am.ik.yavi.processor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +44,12 @@ class ConstraintMetaTemplate {
 			add(Long.class.getName());
 			add(Short.class.getName());
 			add(String.class.getName());
+			add(LocalDate.class.getName());
+			add(LocalTime.class.getName());
+			add(LocalDateTime.class.getName());
+			add(OffsetDateTime.class.getName());
+			add(ZonedDateTime.class.getName());
+			add(Instant.class.getName());
 		}
 	};
 

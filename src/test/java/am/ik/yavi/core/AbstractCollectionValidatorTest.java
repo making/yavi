@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,9 +26,9 @@ import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 
-public abstract class AbstractCollectionValidatorTest {
+abstract class AbstractCollectionValidatorTest {
 	@Test
-	public void allInvalid() throws Exception {
+	void allInvalid() throws Exception {
 		Validator<FormWithCollection> validator = validator();
 		FormWithCollection form = new FormWithCollection(
 				Arrays.asList(new Address(new Country(null), null, new PhoneNumber("")),
@@ -65,7 +65,7 @@ public abstract class AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void inValidOne() throws Exception {
+	void inValidOne() throws Exception {
 		Validator<FormWithCollection> validator = validator();
 
 		FormWithCollection form = new FormWithCollection(Arrays.asList(
@@ -90,7 +90,7 @@ public abstract class AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void nullCollectionInValid() throws Exception {
+	void nullCollectionInValid() throws Exception {
 		Validator<FormWithCollection> validator = validator();
 
 		FormWithCollection form = new FormWithCollection(null);
@@ -103,7 +103,7 @@ public abstract class AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void nullElement() throws Exception {
+	void nullElement() throws Exception {
 		Validator<FormWithCollection> validator = validator();
 
 		FormWithCollection form = new FormWithCollection(Arrays.asList(
@@ -115,7 +115,7 @@ public abstract class AbstractCollectionValidatorTest {
 	}
 
 	@Test
-	public void valid() throws Exception {
+	void valid() throws Exception {
 		Validator<FormWithCollection> validator = validator();
 		FormWithCollection form = new FormWithCollection(Arrays.asList(
 				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),

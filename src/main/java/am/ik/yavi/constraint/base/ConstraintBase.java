@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import am.ik.yavi.core.ConstraintPredicate;
 public abstract class ConstraintBase<T, V, C extends Constraint<T, V, C>>
 		implements Constraint<T, V, C> {
 	private final Deque<ConstraintPredicate<V>> predicates = new LinkedList<>();
-
-	@Override
-	public abstract C cast();
 
 	@Override
 	public Deque<ConstraintPredicate<V>> predicates() {

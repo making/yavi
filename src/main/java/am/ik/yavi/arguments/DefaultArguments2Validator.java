@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
-import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function2;
@@ -40,18 +40,20 @@ public class DefaultArguments2Validator<A1, A2, X>
 		this.mapper = mapper;
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
+	@Override
+	public DefaultArguments2Validator<A1, A2, Supplier<X>> lazy() {
+		return new DefaultArguments2Validator<>(this.validator,
+				(a1, a2) -> () -> this.mapper.apply(a1, a2));
+	}
+
 	@Override
 	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale,
 			ConstraintGroup constraintGroup) {
 		return this.validator.applicative()
 				.validate(Arguments.of(a1, a2), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
-	}
-
-	@Override
-	public void validateAndThrowIfInvalid(@Nullable A1 a1, @Nullable A2 a2,
-			ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(a1, a2), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
 	}
 }

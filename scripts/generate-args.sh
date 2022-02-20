@@ -8,7 +8,7 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ done
 
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/arguments/Arguments.java
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ EOF
 
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/builder/ArgumentsValidatorBuilder.java
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,10 +195,12 @@ $(if [ "${i}" != "1" ];then
 cat <<EOD
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 EOD
 fi)
@@ -214,8 +216,8 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 EOD
@@ -232,14 +234,14 @@ cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> extends ValueValidator<A1, X> {
 
 	/**
-	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
 	 *
 	 * @param validator core validator
 	 * @param <X> target class
 	 * @return arguments1 validator
 	 * @since 0.8.0
 	 */
-	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+	static <X> Arguments1Validator<X, X> from(Validatable<X> validator) {
 		return Arguments1Validator.from(validator.applicative());
 	}
 
@@ -285,6 +287,15 @@ fi)
 	}
 
 	/**
+	 * @since 0.11.0
+	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
+	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
+		return (${as}, locale, constraintGroup) -> ${class}.this
+				.validate(${as}, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+	}
+
+	/**
 	 * @since 0.7.0
 	 */
 $(if [ "${i}" == "1" ];then
@@ -308,6 +319,14 @@ cat <<EOD
 EOD
 fi)
 $(cat <<EOD
+	/**
+	 * @since 0.10.0
+	 */
+	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+	  // WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
+	}
+
 	default Validated<X> validate(${args}) {
 		return this.validate(${as}, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
@@ -395,55 +414,6 @@ cat <<EOD
 	}
 EOD
 fi)
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}) {
-		return this.validate(${as});
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, ConstraintGroup constraintGroup) {
-		return this.validate(${as}, constraintGroup);
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, Locale locale) {
-		return this.validate(${as}, locale);
-	}
-
-	/**
-	 * Use {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), Locale, ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(${args}, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.validate(${as}, locale, constraintGroup);
-	}
-
-	/**
-	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'), ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
-		throw new UnsupportedOperationException("validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
-	}
-
-	/**
-	 * Consider using {@link #validate($(echo $(for j in `seq 1 ${i}`;do echo -n "Object, ";done) | sed 's/,$//'))} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(${args}) {
-		this.validateAndThrowIfInvalid(${as}, ConstraintGroup.DEFAULT);
-	}
 }
 EOF
 done
@@ -458,7 +428,7 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -475,9 +445,9 @@ for i in `seq 1 ${n}`;do
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
-import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function${i};
@@ -497,6 +467,14 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 		this.mapper = mapper;
 	}
 
+	/**
+	 * @since 0.10.0
+	 */
+	@Override
+	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')));
+	}
+
   @Override
 	public Validated<X> validate(${args},
 			Locale locale, ConstraintGroup constraintGroup) {
@@ -504,24 +482,18 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 		    .validate(Arguments.of(${as}), locale, constraintGroup)
 				.map(values -> values.map(this.mapper));
 	}
-
-	@Override
-	public void validateAndThrowIfInvalid(${args}, ConstraintGroup constraintGroup) {
-		this.validator.validate(Arguments.of(${as}), constraintGroup)
-				.throwIfInvalid(ConstraintViolationsException::new);
-	}
 }
 EOF
 done
 
-nn=10
+nn=16
 for i in `seq 2 ${nn}`;do
   class="Arguments${i}Splitting"
   file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -568,7 +540,7 @@ for i in `seq 2 ${nn}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -614,7 +586,7 @@ file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
 echo $file
 cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

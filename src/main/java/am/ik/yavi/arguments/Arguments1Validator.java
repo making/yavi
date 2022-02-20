@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
-import am.ik.yavi.core.ValidatorSubset;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 
@@ -39,14 +39,14 @@ import am.ik.yavi.jsr305.Nullable;
 public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
-	 * Convert {@link ValidatorSubset} instance into {@link Arguments1Validator}
+	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
 	 *
 	 * @param validator core validator
 	 * @param <X> target class
 	 * @return arguments1 validator
 	 * @since 0.8.0
 	 */
-	static <X> Arguments1Validator<X, X> from(ValidatorSubset<X> validator) {
+	static <X> Arguments1Validator<X, X> from(Validatable<X> validator) {
 		return Arguments1Validator.from(validator.applicative());
 	}
 
@@ -78,6 +78,17 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	/**
+	 * @since 0.11.0
+	 */
+	@Override
+	default <X2> Arguments1Validator<A1, X2> andThen(
+			ValueValidator<? super X, X2> validator) {
+		return (a1, locale, constraintGroup) -> Arguments1Validator.this
+				.validate(a1, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+	}
+
+	/**
 	 * @since 0.7.0
 	 */
 	@Override
@@ -85,6 +96,14 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			Function<? super A, ? extends A1> mapper) {
 		return (a, locale, constraintGroup) -> Arguments1Validator.this
 				.validate(mapper.apply(a), locale, constraintGroup);
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments1Validator<A1, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1) {
@@ -171,56 +190,5 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
 		return Arguments1Validator.from(ValueValidator.super.liftOptional());
-	}
-
-	/**
-	 * Use {@link #validate(Object)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1) {
-		return this.validate(a1);
-	}
-
-	/**
-	 * Use {@link #validate(Object, ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, ConstraintGroup constraintGroup) {
-		return this.validate(a1, constraintGroup);
-	}
-
-	/**
-	 * Use {@link #validate(Object, Locale)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, Locale locale) {
-		return this.validate(a1, locale);
-	}
-
-	/**
-	 * Use {@link #validate(Object, Locale, ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.validate(a1, locale, constraintGroup);
-	}
-
-	/**
-	 * Consider using {@link #validate(Object, ConstraintGroup)} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(@Nullable A1 a1,
-			ConstraintGroup constraintGroup) {
-		throw new UnsupportedOperationException(
-				"validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
-	}
-
-	/**
-	 * Consider using {@link #validate(Object)} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(@Nullable A1 a1) {
-		this.validateAndThrowIfInvalid(a1, ConstraintGroup.DEFAULT);
 	}
 }

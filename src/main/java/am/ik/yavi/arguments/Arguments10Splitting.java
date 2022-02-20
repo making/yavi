@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,4 +83,8 @@ public class Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R
 						this.v10.validate(a10, locale, constraintGroup));
 	}
 
+	public <A11, R11> Arguments11Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> split(
+			ValueValidator<? super A11, ? extends R11> v11) {
+		return new Arguments11Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+	}
 }

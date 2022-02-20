@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,5 +100,5 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 		};
 	}
 
-	abstract protected ToIntFunction<V> size();
+	protected abstract ToIntFunction<V> size();
 }

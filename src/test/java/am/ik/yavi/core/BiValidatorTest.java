@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.util.Locale;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.message.SimpleMessageFormatter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BiValidatorTest {
+class BiValidatorTest {
 	final BiValidator<User, List<ConstraintViolation>> validator = ValidatorBuilder
 			.of(User.class)
 			.constraint(User::getName, "name",
@@ -41,7 +41,7 @@ public class BiValidatorTest {
 							new SimpleMessageFormatter(), Locale.ENGLISH)));
 
 	@Test
-	public void allValid() throws Exception {
+	void allValid() throws Exception {
 		User user = new User("Demo", "demo@example.com", 100);
 		user.setEnabled(true);
 		final List<ConstraintViolation> violations = new ArrayList<>();
@@ -51,7 +51,7 @@ public class BiValidatorTest {
 	}
 
 	@Test
-	public void allInvalid() throws Exception {
+	void allInvalid() throws Exception {
 		User user = new User("", "example.com", 300);
 		user.setEnabled(false);
 		final List<ConstraintViolation> violations = new ArrayList<>();

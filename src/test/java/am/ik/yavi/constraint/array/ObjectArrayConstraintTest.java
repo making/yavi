@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 package am.ik.yavi.constraint.array;
 
-import java.util.function.Predicate;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ObjectArrayConstraintTest {
+class ObjectArrayConstraintTest {
 	private ObjectArrayConstraint<String[], String> constraint = new ObjectArrayConstraint<>();
 
 	@Test
-	public void contains() {
+	void contains() {
 		Predicate<String[]> predicate = constraint.contains("foo").predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isTrue();
@@ -33,7 +33,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void fixedSize() {
+	void fixedSize() {
 		Predicate<String[]> predicate = constraint.fixedSize(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isFalse();
@@ -42,7 +42,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThan() {
+	void greaterThan() {
 		Predicate<String[]> predicate = constraint.greaterThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo", "bar" })).isFalse();
@@ -50,7 +50,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void greaterThanOrEqual() {
+	void greaterThanOrEqual() {
 		Predicate<String[]> predicate = constraint.greaterThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isFalse();
@@ -59,7 +59,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThan() {
+	void lessThan() {
 		Predicate<String[]> predicate = constraint.lessThan(2).predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
@@ -67,7 +67,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void lessThanOrEqual() {
+	void lessThanOrEqual() {
 		Predicate<String[]> predicate = constraint.lessThanOrEqual(2).predicates()
 				.peekFirst().predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();
@@ -76,7 +76,7 @@ public class ObjectArrayConstraintTest {
 	}
 
 	@Test
-	public void notEmpty() {
+	void notEmpty() {
 		Predicate<String[]> predicate = constraint.notEmpty().predicates().peekFirst()
 				.predicate();
 		assertThat(predicate.test(new String[] { "foo" })).isTrue();

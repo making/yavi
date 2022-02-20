@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package am.ik.yavi.core;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +28,7 @@ import am.ik.yavi.NestedFormWithCollection;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
-public class MultiNestedCollectionValidatorTest {
+class MultiNestedCollectionValidatorTest {
 	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
 			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
 			.nest(Address::country, "country", Country.validator())
@@ -44,7 +44,7 @@ public class MultiNestedCollectionValidatorTest {
 			.forEach(NestedFormWithCollection::getForms, "forms", formValidator).build();
 
 	@Test
-	public void invalid() {
+	void invalid() {
 		NestedFormWithCollection form = new NestedFormWithCollection(
 				Arrays.asList(new FormWithCollection(Arrays.asList(
 						new Address(new Country("JP"), "tokyo",
@@ -64,7 +64,7 @@ public class MultiNestedCollectionValidatorTest {
 	}
 
 	@Test
-	public void valid() {
+	void valid() {
 		NestedFormWithCollection form = new NestedFormWithCollection(
 				Arrays.asList(new FormWithCollection(Arrays.asList(
 						new Address(new Country("JP"), "tokyo",

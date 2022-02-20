@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,4 +82,8 @@ public class Arguments10Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> {
 				this.v10.validate(a, locale, constraintGroup));
 	}
 
+	public <R11> Arguments11Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> combine(
+			ValueValidator<? super A, ? extends R11> v11) {
+		return new Arguments11Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+	}
 }

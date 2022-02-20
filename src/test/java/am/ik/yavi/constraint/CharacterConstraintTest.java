@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -84,6 +85,30 @@ class CharacterConstraintTest {
 	void invalidLessThanOrEqual(char value) {
 		Predicate<Character> predicate = retrievePredicate(
 				c -> c.lessThanOrEqual((char) 100));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(chars = { 99, 100 })
+	void validPositive(char value) {
+		Predicate<Character> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(chars = { 0 })
+	void invalidPositive(char value) {
+		Predicate<Character> predicate = retrievePredicate(
+				NumericConstraintBase::positive);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(chars = { 99, 100 })
+	void validNegative(char value) {
+		Predicate<Character> predicate = retrievePredicate(
+				NumericConstraintBase::negative);
 		assertThat(predicate.test(value)).isFalse();
 	}
 

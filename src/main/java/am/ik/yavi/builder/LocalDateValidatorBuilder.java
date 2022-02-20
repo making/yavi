@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,25 +23,29 @@ import am.ik.yavi.arguments.LocalDateValidator;
 import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.core.Validator;
 
+/**
+ * @since 0.10.0
+ */
 public class LocalDateValidatorBuilder {
 	private final String name;
 
 	private final Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints;
 
 	public static LocalDateValidatorBuilder of(String name,
-	                                           Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
+			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return new LocalDateValidatorBuilder(name, constraints);
 	}
 
 	LocalDateValidatorBuilder(String name,
-	                          Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
+			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		this.name = name;
 		this.constraints = constraints;
 	}
 
-	public <T> LocalDateValidator<T> build(Function<? super LocalDate, ? extends T> mapper) {
+	public <T> LocalDateValidator<T> build(
+			Function<? super LocalDate, ? extends T> mapper) {
 		final Validator<Arguments1<LocalDate>> validator = ValidatorBuilder
-				.<Arguments1<LocalDate>>of()
+				.<Arguments1<LocalDate>> of()
 				.constraint(Arguments1::arg1, name, constraints).build();
 		return new LocalDateValidator<>(validator, mapper::apply);
 	}

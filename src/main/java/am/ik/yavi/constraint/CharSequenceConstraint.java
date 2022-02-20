@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,22 +46,7 @@ import am.ik.yavi.core.ViolationMessage;
 
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGDECIMAL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGINTEGER;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BYTE;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
+import static am.ik.yavi.core.ViolationMessage.Default.*;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
@@ -70,11 +55,14 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
 			+ "+)*";
 
-	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
+	private static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
 			.compile(
 					"^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
 							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
 					Pattern.CASE_INSENSITIVE);
+
+	private static final Pattern VALID_UUID_REGEX = Pattern
+			.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -127,6 +115,31 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
 		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
 				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
+		return this;
+	}
+
+	/**
+	 * Does the given value start with the {@code prefix}
+	 * @param prefix the prefix the value has to start with
+	 * @since 0.10.0
+	 */
+	public CharSequenceConstraint<T, E> startsWith(CharSequence prefix) {
+		this.predicates()
+				.add(ConstraintPredicate.of(
+						x -> x.toString().startsWith(prefix.toString()),
+						CHAR_SEQUENCE_STARTSWITH, () -> new Object[] { prefix }, VALID));
+		return this;
+	}
+
+	/**
+	 * Does the given value end with the {@code suffix}
+	 * @param suffix the suffix the value has to end with
+	 * @since 0.10.0
+	 */
+	public CharSequenceConstraint<T, E> endsWith(CharSequence suffix) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> x.toString().endsWith(suffix.toString()),
+						CHAR_SEQUENCE_ENDSWITH, () -> new Object[] { suffix }, VALID));
 		return this;
 	}
 
@@ -282,6 +295,19 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 				return false;
 			}
 		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public CharSequenceConstraint<T, E> uuid() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_UUID_REGEX.matcher(x).matches();
+		}, CHAR_SEQUENCE_UUID, () -> new Object[] {}, VALID));
 		return this;
 	}
 

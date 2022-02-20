@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,116 @@ public class ArgumentsValidators {
 		return new Arguments10Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> Arguments11Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11) {
+		return new Arguments11Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11,
+			ValueValidator<? super A12, ? extends R12> v12) {
+		return new Arguments12Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12);
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11,
+			ValueValidator<? super A12, ? extends R12> v12,
+			ValueValidator<? super A13, ? extends R13> v13) {
+		return new Arguments13Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13);
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> Arguments14Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11,
+			ValueValidator<? super A12, ? extends R12> v12,
+			ValueValidator<? super A13, ? extends R13> v13,
+			ValueValidator<? super A14, ? extends R14> v14) {
+		return new Arguments14Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14);
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11,
+			ValueValidator<? super A12, ? extends R12> v12,
+			ValueValidator<? super A13, ? extends R13> v13,
+			ValueValidator<? super A14, ? extends R14> v14,
+			ValueValidator<? super A15, ? extends R15> v15) {
+		return new Arguments15Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14, v15);
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> split(
+			ValueValidator<? super A1, ? extends R1> v1,
+			ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3,
+			ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5,
+			ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7,
+			ValueValidator<? super A8, ? extends R8> v8,
+			ValueValidator<? super A9, ? extends R9> v9,
+			ValueValidator<? super A10, ? extends R10> v10,
+			ValueValidator<? super A11, ? extends R11> v11,
+			ValueValidator<? super A12, ? extends R12> v12,
+			ValueValidator<? super A13, ? extends R13> v13,
+			ValueValidator<? super A14, ? extends R14> v14,
+			ValueValidator<? super A15, ? extends R15> v15,
+			ValueValidator<? super A16, ? extends R16> v16) {
+		return new Arguments16Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14, v15, v16);
+	}
+
 	public static <A, R1, R2> Arguments2Combining<A, R1, R2> combine(
 			ValueValidator<? super A, ? extends R1> v1,
 			ValueValidator<? super A, ? extends R2> v2) {
@@ -214,6 +324,116 @@ public class ArgumentsValidators {
 		return new Arguments10Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
 
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> Arguments11Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11) {
+		return new Arguments11Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+	}
+
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> Arguments12Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11,
+			ValueValidator<? super A, ? extends R12> v12) {
+		return new Arguments12Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12);
+	}
+
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> Arguments13Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11,
+			ValueValidator<? super A, ? extends R12> v12,
+			ValueValidator<? super A, ? extends R13> v13) {
+		return new Arguments13Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13);
+	}
+
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11,
+			ValueValidator<? super A, ? extends R12> v12,
+			ValueValidator<? super A, ? extends R13> v13,
+			ValueValidator<? super A, ? extends R14> v14) {
+		return new Arguments14Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14);
+	}
+
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11,
+			ValueValidator<? super A, ? extends R12> v12,
+			ValueValidator<? super A, ? extends R13> v13,
+			ValueValidator<? super A, ? extends R14> v14,
+			ValueValidator<? super A, ? extends R15> v15) {
+		return new Arguments15Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14, v15);
+	}
+
+	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> Arguments16Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> combine(
+			ValueValidator<? super A, ? extends R1> v1,
+			ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3,
+			ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5,
+			ValueValidator<? super A, ? extends R6> v6,
+			ValueValidator<? super A, ? extends R7> v7,
+			ValueValidator<? super A, ? extends R8> v8,
+			ValueValidator<? super A, ? extends R9> v9,
+			ValueValidator<? super A, ? extends R10> v10,
+			ValueValidator<? super A, ? extends R11> v11,
+			ValueValidator<? super A, ? extends R12> v12,
+			ValueValidator<? super A, ? extends R13> v13,
+			ValueValidator<? super A, ? extends R14> v14,
+			ValueValidator<? super A, ? extends R15> v15,
+			ValueValidator<? super A, ? extends R16> v16) {
+		return new Arguments16Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11,
+				v12, v13, v14, v15, v16);
+	}
+
 	public static <A1, R, T> Arguments1Validator<A1, List<R>> traverse1(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments1Validator<? super A1, ? extends R>> f) {
@@ -293,6 +513,64 @@ public class ArgumentsValidators {
 								a7, a8, a9, a10, locale, constraintGroup)));
 	}
 
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R, T> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> traverse11(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments11Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, locale,
+				constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, locale, constraintGroup)));
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R, T> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> traverse12(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments12Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale,
+				constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, a12, locale, constraintGroup)));
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R, T> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> traverse13(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments13Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale,
+				constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, a12, a13, locale,
+								constraintGroup)));
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R, T> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> traverse14(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments14Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
+				constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, a12, a13, a14, locale,
+								constraintGroup)));
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R, T> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> traverse15(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments15Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+				constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+								constraintGroup)));
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R, T> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> traverse16(
+			Iterable<T> values,
+			Function<? super T, ? extends Arguments16Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends R>> f) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16,
+				locale, constraintGroup) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
+								constraintGroup)));
+	}
+
 	public static <A1, R> Arguments1Validator<A1, List<R>> sequence1(
 			Iterable<? extends Arguments1Validator<? super A1, ? extends R>> values) {
 		return traverse1(values, identity());
@@ -341,6 +619,36 @@ public class ArgumentsValidators {
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> sequence10(
 			Iterable<? extends Arguments10Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends R>> values) {
 		return traverse10(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> sequence11(
+			Iterable<? extends Arguments11Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends R>> values) {
+		return traverse11(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> sequence12(
+			Iterable<? extends Arguments12Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends R>> values) {
+		return traverse12(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> sequence13(
+			Iterable<? extends Arguments13Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends R>> values) {
+		return traverse13(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> sequence14(
+			Iterable<? extends Arguments14Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends R>> values) {
+		return traverse14(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> sequence15(
+			Iterable<? extends Arguments15Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends R>> values) {
+		return traverse15(values, identity());
+	}
+
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> sequence16(
+			Iterable<? extends Arguments16Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends R>> values) {
+		return traverse16(values, identity());
 	}
 
 	/**

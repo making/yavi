@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@ package am.ik.yavi.core;
 
 import java.util.Locale;
 
-import am.ik.yavi.fn.Either;
 import am.ik.yavi.fn.Validation;
 
 @FunctionalInterface
-public interface ValidatorSubset<T> {
+public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}.
 	 *
@@ -74,31 +73,13 @@ public interface ValidatorSubset<T> {
 	}
 
 	/**
-	 * Returns the corresponding either validator
-	 * @return either validator
-	 * @since 0.6.0
-	 */
-	default EitherValidator<T> either() {
-		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = ValidatorSubset.this.validate(target,
-					locale, constraintGroup);
-			if (violations.isValid()) {
-				return Either.right(target);
-			}
-			else {
-				return Either.left(violations);
-			}
-		};
-	}
-
-	/**
 	 * Returns the corresponding applicative validator
 	 * @return applicative validator
 	 * @since 0.6.0
 	 */
 	default ApplicativeValidator<T> applicative() {
 		return (target, locale, constraintGroup) -> {
-			final ConstraintViolations violations = ValidatorSubset.this.validate(target,
+			final ConstraintViolations violations = Validatable.this.validate(target,
 					locale, constraintGroup);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));

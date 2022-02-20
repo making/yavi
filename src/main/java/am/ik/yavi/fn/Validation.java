@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,16 +98,6 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	/**
-	 * Deprecated in favor of {@link #mapError(Function)}
-	 * @since 0.7.0
-	 */
-	@Deprecated
-	public <E2> Validation<E2, T> mapErrorsF(
-			Function<? super E, ? extends E2> errorMapper) {
-		return this.mapError(errorMapper);
-	}
-
-	/**
 	 * @since 0.8.2
 	 */
 	@SuppressWarnings("unchecked")
@@ -138,6 +128,16 @@ public abstract class Validation<E, T> implements Serializable {
 			return value();
 		}
 		else {
+			throw exceptionMapper.apply(errors());
+		}
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	public <X extends Throwable> void throwIfInvalid(
+			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+		if (!isValid()) {
 			throw exceptionMapper.apply(errors());
 		}
 	}
@@ -192,16 +192,8 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 	}
 
-	public Either<List<E>, T> toEither() {
-		return isValid() ? Either.right(value()) : Either.left(errors());
-	}
-
 	public <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
 		return new Combining2<>(this, validation);
-	}
-
-	public static <E, T> Validation<E, T> fromEither(Either<List<E>, T> either) {
-		return either.fold(Validation::failure, Validation::success);
 	}
 
 	public static <E, T> Validation<E, T> success(@Nullable T value) {

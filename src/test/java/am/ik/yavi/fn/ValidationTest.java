@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,40 +99,6 @@ class ValidationTest {
 				String::toUpperCase);
 		assertThat(bimap.isValid()).isFalse();
 		assertThat(bimap.errors()).isEqualTo(Arrays.asList("ERRORS1", "ERRORS2"));
-	}
-
-	@Test
-	void successToEither() {
-		final Validation<String, String> validation = Validation.success("test");
-		final Either<List<String>, String> either = validation.toEither();
-		assertThat(either.isRight()).isTrue();
-		assertThat(either.right().get()).isEqualTo("test");
-	}
-
-	@Test
-	void failureToEither() {
-		final Validation<String, String> validation = Validation.failure("errors1",
-				"errors2");
-		final Either<List<String>, String> either = validation.toEither();
-		assertThat(either.isLeft()).isTrue();
-		assertThat(either.left().get()).isEqualTo(Arrays.asList("errors1", "errors2"));
-	}
-
-	@Test
-	void successFromEither() {
-		final Either<List<String>, String> either = Either.right("test");
-		final Validation<String, String> validation = Validation.fromEither(either);
-		assertThat(validation.isValid()).isTrue();
-		assertThat(validation.value()).isEqualTo("test");
-	}
-
-	@Test
-	void failureFromEither() {
-		final Either<List<String>, String> either = Either
-				.left(Arrays.asList("errors1", "errors2"));
-		final Validation<String, String> validation = Validation.fromEither(either);
-		assertThat(validation.isValid()).isFalse();
-		assertThat(validation.errors()).isEqualTo(Arrays.asList("errors1", "errors2"));
 	}
 
 	@Test

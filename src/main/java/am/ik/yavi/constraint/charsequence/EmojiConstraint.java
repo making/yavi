@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public class EmojiConstraint<T, E extends CharSequence>
 		this.predicates().addAll(delegate.predicates());
 	}
 
+	@Override
 	public EmojiConstraint<T, E> fixedSize(int size) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -45,6 +46,7 @@ public class EmojiConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public EmojiConstraint<T, E> greaterThan(int min) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -53,6 +55,7 @@ public class EmojiConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public EmojiConstraint<T, E> greaterThanOrEqual(int min) {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(
 				this.checkSizePredicate(x -> size(x) >= min, this::size),
@@ -60,6 +63,7 @@ public class EmojiConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public EmojiConstraint<T, E> lessThan(int max) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(
@@ -68,6 +72,7 @@ public class EmojiConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	@Override
 	public EmojiConstraint<T, E> lessThanOrEqual(int max) {
 		this.predicates()
 				.add(ConstraintPredicate.withViolatedValue(

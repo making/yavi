@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,15 @@ public interface ValueValidator<T, X> {
 	default <X2> ValueValidator<T, X2> andThen(Function<? super X, ? extends X2> mapper) {
 		return (t, locale, constraintGroup) -> ValueValidator.this
 				.validate(t, locale, constraintGroup).map(mapper);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	default <X2> ValueValidator<T, X2> andThen(ValueValidator<? super X, X2> validator) {
+		return (t, locale, constraintGroup) -> ValueValidator.this
+				.validate(t, locale, constraintGroup)
+				.flatMap(v -> validator.validate(v, locale, constraintGroup));
 	}
 
 	default <A> ValueValidator<A, X> compose(Function<? super A, ? extends T> mapper) {

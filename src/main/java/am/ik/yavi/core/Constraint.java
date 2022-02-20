@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import am.ik.yavi.jsr305.Nullable;
+
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_EQUAL_TO;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_ONE_OF;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 
@@ -30,6 +35,24 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	default C isNull() {
 		this.predicates().add(ConstraintPredicate.of(Objects::isNull, OBJECT_IS_NULL,
 				() -> new Object[] {}, NullAs.INVALID));
+		return this.cast();
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default C equalTo(@Nullable V other) {
+		this.predicates().add(ConstraintPredicate.of(Predicate.isEqual(other),
+				OBJECT_EQUAL_TO, () -> new Object[] { other }, NullAs.INVALID));
+		return this.cast();
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default C oneOf(Collection<V> values) {
+		this.predicates().add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
+				() -> new Object[] { values }, NullAs.INVALID));
 		return this.cast();
 	}
 

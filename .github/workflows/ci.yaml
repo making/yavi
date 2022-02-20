@@ -3,12 +3,29 @@ on:
   push:
     branches:
     - develop
-    - master
+    - main
   pull_request:
     branches:
     - develop
-    - master
+    - main
 jobs:
+  code-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - name: Cache Maven
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Check formatting
+        run: ./mvnw formatter:validate
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -28,14 +45,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Unit Tests
-      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/master') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: ./mvnw -V test
     - name: Unit Tests with Coverage
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: |
         ./mvnw -V jacoco:prepare-agent test jacoco:report
     - name: Codacy Coverage Reporter
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
@@ -43,3 +60,46 @@ jobs:
         curl -Ls -o codacy-coverage-reporter "$(curl -Ls https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r '.assets | map({name, browser_download_url} | select(.name | contains("codacy-coverage-reporter-linux"))) | .[0].browser_download_url')"
         chmod +x codacy-coverage-reporter
         ./codacy-coverage-reporter report -l Java -r target/site/jacoco/jacoco.xml
+    - name: Deploy to sonatype-snapshots
+      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      env:
+        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+      run: |
+        set -e
+        cat > settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+               <id>sonatype-snapshots</id>
+               <username>${SONATYPE_USERNAME}</username>
+               <password>${SONATYPE_PASSWORD}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+        CURRENT_VERSION=$(grep '<version>' pom.xml | head -n 1 | sed -e 's|<version>||g' -e 's|</version>||g' | xargs echo)
+        if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
+          ./mvnw -V deploy -s settings.xml -DskipTests=true -DserverId=sonatype-snapshots
+        fi
+    - name: Deploy to sonatype-releases
+      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      env:
+        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
+      run: |
+        set -e
+        docker run \
+          --rm \
+          -e SONATYPE_USERNAME=${SONATYPE_USERNAME} \
+          -e SONATYPE_PASSWORD=${SONATYPE_PASSWORD} \
+          -e GPG_KEYNAME=${GPG_KEYNAME} \
+          -e GPG_PASSPHRASE=${GPG_PASSPHRASE} \
+          -e ENCRYPTION_PASSWORD=${ENCRYPTION_PASSWORD} \
+          -v ~/.m2:/root/.m2 \
+          -v "$PWD":/workspace \
+          -w /workspace \
+          making/deploy-sonatype

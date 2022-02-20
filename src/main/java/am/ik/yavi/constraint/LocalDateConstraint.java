@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,27 @@
  */
 package am.ik.yavi.constraint;
 
+import java.time.Clock;
 import java.time.LocalDate;
-import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.TemporalConstraintBase;
+import am.ik.yavi.constraint.base.ChronoLocalDateConstraintBase;
 
+/**
+ * This is the actual class for constraints on LocalDate.
+ *
+ * @author Diego Krupitza
+ * @since 0.10.0
+ */
 public class LocalDateConstraint<T>
-		extends TemporalConstraintBase<T, LocalDate, LocalDateConstraint<T>> {
+		extends ChronoLocalDateConstraintBase<T, LocalDate, LocalDateConstraint<T>> {
+
 	@Override
 	public LocalDateConstraint<T> cast() {
 		return this;
 	}
 
 	@Override
-	protected Predicate<LocalDate> isAfter(LocalDate min) {
-		return x -> x.isAfter(min);
-	}
-
-	@Override
-	protected Predicate<LocalDate> isOnOrAfter(LocalDate min) {
-		return this.isAfter(min).or(x -> x.isEqual(min));
-	}
-
-	@Override
-	protected Predicate<LocalDate> isBefore(LocalDate max) {
-		return x -> x.isBefore(max);
-	}
-
-	@Override
-	protected Predicate<LocalDate> isOnOrBefore(LocalDate max) {
-		return this.isBefore(max).or(x -> x.isEqual(max));
+	protected LocalDate getNow(Clock clock) {
+		return LocalDate.now(clock);
 	}
 }

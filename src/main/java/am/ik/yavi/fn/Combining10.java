@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,4 +79,8 @@ public class Combining10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> {
 		return v10.apply(apply9);
 	}
 
+	public <T11> Combining11<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> combine(
+			Validation<E, T11> v11) {
+		return new Combining11<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+	}
 }

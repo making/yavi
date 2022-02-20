@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2021 Toshiaki Maki <makingx@gmail.com>
+ * Copyright (C) 2018-2022 Toshiaki Maki <makingx@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ package am.ik.yavi.arguments;
 
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
@@ -47,6 +49,17 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	}
 
 	/**
+	 * @since 0.11.0
+	 */
+	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> andThen(
+			ValueValidator<? super X, X2> validator) {
+		return (a1, a2, a3, a4, a5, a6, a7, locale,
+				constraintGroup) -> Arguments7Validator.this
+						.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup)
+						.flatMap(v -> validator.validate(v, locale, constraintGroup));
+	}
+
+	/**
 	 * @since 0.7.0
 	 */
 	default <A> Arguments1Validator<A, X> compose(
@@ -58,6 +71,14 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),
 					locale, constraintGroup);
 		};
+	}
+
+	/**
+	 * @since 0.10.0
+	 */
+	default Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy() {
+		// WARNING:: The default implementation is not really lazy!
+		return this.andThen(x -> () -> x);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
@@ -108,74 +129,4 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
-	/**
-	 * Use {@link #validate(Object, Object, Object, Object, Object, Object, Object)}
-	 * instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7);
-	}
-
-	/**
-	 * Use
-	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
-	 * instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			ConstraintGroup constraintGroup) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, constraintGroup);
-	}
-
-	/**
-	 * Use
-	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Locale)}
-	 * instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			Locale locale) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, locale);
-	}
-
-	/**
-	 * Use
-	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, Locale, ConstraintGroup)}
-	 * instead
-	 */
-	@Deprecated
-	default Validated<X> validateArgs(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			Locale locale, ConstraintGroup constraintGroup) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup);
-	}
-
-	/**
-	 * Consider using
-	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object, ConstraintGroup)}
-	 * instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(@Nullable A1 a1, @Nullable A2 a2,
-			@Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6,
-			@Nullable A7 a7, ConstraintGroup constraintGroup) {
-		throw new UnsupportedOperationException(
-				"validateAndThrowIfInvalid is not supported. Consider using validate method instead.");
-	}
-
-	/**
-	 * Consider using
-	 * {@link #validate(Object, Object, Object, Object, Object, Object, Object)} instead
-	 */
-	@Deprecated
-	default void validateAndThrowIfInvalid(@Nullable A1 a1, @Nullable A2 a2,
-			@Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6,
-			@Nullable A7 a7) {
-		this.validateAndThrowIfInvalid(a1, a2, a3, a4, a5, a6, a7,
-				ConstraintGroup.DEFAULT);
-	}
 }
