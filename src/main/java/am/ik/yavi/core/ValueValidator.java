@@ -120,10 +120,6 @@ public interface ValueValidator<T, X> {
 		return ValueValidator.liftOptional(this);
 	}
 
-	default Validatable<T> validatable() {
-		return ValueValidator.validatable(this);
-	}
-
 	/**
 	 * @since 0.8.1
 	 */
@@ -160,15 +156,5 @@ public interface ValueValidator<T, X> {
 			ValueValidator<? super A1, ? extends R> validator) {
 		return (value, locale, constraintGroup) -> Validated.traverseOptional(value,
 				v -> validator.validate(v, locale, constraintGroup));
-	}
-
-	/**
-	 * @since 0.11.0
-	 */
-	static <A1, R> Validatable<A1> validatable(
-			ValueValidator<? super A1, ? extends R> applicative) {
-		return (target, locale, constraintGroup) -> applicative
-				.validate(target, locale, constraintGroup)
-				.fold(ConstraintViolations::of, result -> new ConstraintViolations());
 	}
 }

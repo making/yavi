@@ -675,7 +675,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	public <R> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			ValueValidator<T, R> applicative) {
-		this.conditionalValidators.add(new Pair<>(condition, applicative.validatable()));
+		this.conditionalValidators
+				.add(new Pair<>(condition, Validatable.from(applicative)));
 		return this;
 	}
 

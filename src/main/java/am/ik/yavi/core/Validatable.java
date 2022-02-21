@@ -89,4 +89,17 @@ public interface Validatable<T> {
 			}
 		};
 	}
+
+	/**
+	 * Converts given applicative validator to a regular validator.
+	 * @param applicative applicative validator to convert
+	 * @return regular validator
+	 * @since 0.11.0
+	 */
+	static <A1, R> Validatable<A1> from(
+			ValueValidator<? super A1, ? extends R> applicative) {
+		return (target, locale, constraintGroup) -> applicative
+				.validate(target, locale, constraintGroup)
+				.fold(ConstraintViolations::of, result -> new ConstraintViolations());
+	}
 }
