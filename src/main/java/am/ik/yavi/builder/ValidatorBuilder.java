@@ -22,6 +22,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +56,8 @@ import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.YearConstraint;
+import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.constraint.array.BooleanArrayConstraint;
 import am.ik.yavi.constraint.array.ByteArrayConstraint;
@@ -101,6 +105,8 @@ import am.ik.yavi.meta.ObjectConstraintMeta;
 import am.ik.yavi.meta.OffsetDateTimeConstraintMeta;
 import am.ik.yavi.meta.ShortConstraintMeta;
 import am.ik.yavi.meta.StringConstraintMeta;
+import am.ik.yavi.meta.YearConstraintMeta;
+import am.ik.yavi.meta.YearMonthConstraintMeta;
 import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
 
 public class ValidatorBuilder<T> implements Cloneable {
@@ -558,6 +564,54 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> _instant(ToInstantConstraint<T> f, String name,
 			Function<InstantConstraint<T>, InstantConstraint<T>> c) {
 		return this.constraint(f, name, c, InstantConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> constraint(ToYearMonthConstraint<T> f, String name,
+			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
+		return this.constraint(f, name, c, YearMonthConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> constraint(YearMonthConstraintMeta<T> meta,
+			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, YearMonthConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> _yearMonth(ToYearMonthConstraint<T> f, String name,
+			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
+		return this.constraint(f, name, c, YearMonthConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> constraint(ToYearConstraint<T> f, String name,
+			Function<YearConstraint<T>, YearConstraint<T>> c) {
+		return this.constraint(f, name, c, YearConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> constraint(YearConstraintMeta<T> meta,
+			Function<YearConstraint<T>, YearConstraint<T>> c) {
+		return this.constraint(meta.toValue(), meta.name(), c, YearConstraint::new);
+	}
+
+	/**
+	 * @since 0.11.0
+	 */
+	public ValidatorBuilder<T> _year(ToYearConstraint<T> f, String name,
+			Function<YearConstraint<T>, YearConstraint<T>> c) {
+		return this.constraint(f, name, c, YearConstraint::new);
 	}
 
 	public <L extends Collection<E>, E> ValidatorBuilder<T> constraint(
@@ -1113,6 +1167,12 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public interface ToInstantConstraint<T> extends Function<T, Instant> {
+	}
+
+	public interface ToYearConstraint<T> extends Function<T, Year> {
+	}
+
+	public interface ToYearMonthConstraint<T> extends Function<T, YearMonth> {
 	}
 
 	public interface ValidatorBuilderConverter<T>
