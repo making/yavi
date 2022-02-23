@@ -16,26 +16,13 @@
 package am.ik.yavi.builder
 
 import am.ik.yavi.constraint.*
-import am.ik.yavi.constraint.array.BooleanArrayConstraint
-import am.ik.yavi.constraint.array.ByteArrayConstraint
-import am.ik.yavi.constraint.array.CharArrayConstraint
-import am.ik.yavi.constraint.array.DoubleArrayConstraint
-import am.ik.yavi.constraint.array.FloatArrayConstraint
-import am.ik.yavi.constraint.array.IntArrayConstraint
-import am.ik.yavi.constraint.array.LongArrayConstraint
-import am.ik.yavi.constraint.array.ObjectArrayConstraint
-import am.ik.yavi.constraint.array.ShortArrayConstraint
+import am.ik.yavi.constraint.array.*
 import am.ik.yavi.core.ConstraintCondition
 import am.ik.yavi.core.ConstraintGroup
 import am.ik.yavi.core.Validator
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.ZonedDateTime
+import java.time.*
 import kotlin.reflect.KProperty1
 
 /**
@@ -273,6 +260,40 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	operator fun KProperty1<T, Instant?>.invoke(
 		name: String,
 		block: InstantConstraint<T>.() -> Unit
+	) =
+		validatorBuilder.constraint(this, name) { it.apply(block) }
+
+	/**
+	 * @since 0.11.0
+	 */
+	@JvmName("invokeTYearMonth")
+	operator fun KProperty1<T, YearMonth?>.invoke(block: YearMonthConstraint<T>.() -> Unit) =
+		validatorBuilder.constraint(this, this.name) { it.apply(block) }
+
+	/**
+	 * @since 0.11.0
+	 */
+	@JvmName("invokeTYearMonth")
+	operator fun KProperty1<T, YearMonth?>.invoke(
+		name: String,
+		block: YearMonthConstraint<T>.() -> Unit
+	) =
+		validatorBuilder.constraint(this, name) { it.apply(block) }
+
+	/**
+	 * @since 0.11.0
+	 */
+	@JvmName("invokeTYear")
+	operator fun KProperty1<T, Year?>.invoke(block: YearConstraint<T>.() -> Unit) =
+		validatorBuilder.constraint(this, this.name) { it.apply(block) }
+
+	/**
+	 * @since 0.11.0
+	 */
+	@JvmName("invokeTYear")
+	operator fun KProperty1<T, Year?>.invoke(
+		name: String,
+		block: YearConstraint<T>.() -> Unit
 	) =
 		validatorBuilder.constraint(this, name) { it.apply(block) }
 

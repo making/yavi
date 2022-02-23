@@ -204,6 +204,7 @@ public abstract class Validation<E, T> implements Serializable {
 		return new Failure<>(errors);
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <E, T> Validation<E, T> failure(E... errors) {
 		return new Failure<>(Arrays.asList(errors));
 	}
