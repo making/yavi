@@ -89,22 +89,22 @@ public class Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R1
 
 	public <X> Arguments1Validator<A, X> apply(
 			Function15<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? extends X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
-				this.v1.validate(a, locale, constraintGroup),
-				this.v2.validate(a, locale, constraintGroup),
-				this.v3.validate(a, locale, constraintGroup),
-				this.v4.validate(a, locale, constraintGroup),
-				this.v5.validate(a, locale, constraintGroup),
-				this.v6.validate(a, locale, constraintGroup),
-				this.v7.validate(a, locale, constraintGroup),
-				this.v8.validate(a, locale, constraintGroup),
-				this.v9.validate(a, locale, constraintGroup),
-				this.v10.validate(a, locale, constraintGroup),
-				this.v11.validate(a, locale, constraintGroup),
-				this.v12.validate(a, locale, constraintGroup),
-				this.v13.validate(a, locale, constraintGroup),
-				this.v14.validate(a, locale, constraintGroup),
-				this.v15.validate(a, locale, constraintGroup));
+		return (a, locale, constraintContext) -> Validations.apply(f::apply,
+				this.v1.validate(a, locale, constraintContext),
+				this.v2.validate(a, locale, constraintContext),
+				this.v3.validate(a, locale, constraintContext),
+				this.v4.validate(a, locale, constraintContext),
+				this.v5.validate(a, locale, constraintContext),
+				this.v6.validate(a, locale, constraintContext),
+				this.v7.validate(a, locale, constraintContext),
+				this.v8.validate(a, locale, constraintContext),
+				this.v9.validate(a, locale, constraintContext),
+				this.v10.validate(a, locale, constraintContext),
+				this.v11.validate(a, locale, constraintContext),
+				this.v12.validate(a, locale, constraintContext),
+				this.v13.validate(a, locale, constraintContext),
+				this.v14.validate(a, locale, constraintContext),
+				this.v15.validate(a, locale, constraintContext));
 	}
 
 	public <R16> Arguments16Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> combine(

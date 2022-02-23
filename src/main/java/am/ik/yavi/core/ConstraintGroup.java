@@ -17,8 +17,12 @@ package am.ik.yavi.core;
 
 import java.util.Objects;
 
+/**
+ * <code>ConstraintGroup</code> is a specialized <code>ConstraintContext</code> with only
+ * the name, attributes is empty.
+ */
 @FunctionalInterface
-public interface ConstraintGroup {
+public interface ConstraintGroup extends ConstraintContext {
 	ConstraintGroup DEFAULT = ConstraintGroup.of("DEFAULT");
 
 	static ConstraintGroup of(String name) {
@@ -44,7 +48,10 @@ public interface ConstraintGroup {
 		};
 	}
 
-	String name();
+	@Override
+	default Attribute attribute(String key) {
+		return () -> null;
+	}
 
 	default <T> ConstraintCondition<T> toCondition() {
 		return (target, group) -> Objects.equals(name(), group.name());

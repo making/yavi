@@ -20,6 +20,7 @@ import java.util.function.Function;
 public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 
 	private final Function<T, N> nested;
+
 	private final ConstraintCondition<N> constraintCondition;
 
 	public NestedConstraintCondition(Function<T, N> nested,
@@ -29,12 +30,12 @@ public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 	}
 
 	@Override
-	public boolean test(T t, ConstraintGroup constraintGroup) {
+	public boolean test(T t, ConstraintContext constraintContext) {
 		final N n = this.nested.apply(t);
 		if (n == null) {
 			return false;
 		}
 
-		return this.constraintCondition.test(n, constraintGroup);
+		return this.constraintCondition.test(n, constraintContext);
 	}
 }
