@@ -57,14 +57,14 @@ public class Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> {
 
 	public <X> Arguments1Validator<A, X> apply(
 			Function7<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? extends X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f::apply,
-				this.v1.validate(a, locale, constraintGroup),
-				this.v2.validate(a, locale, constraintGroup),
-				this.v3.validate(a, locale, constraintGroup),
-				this.v4.validate(a, locale, constraintGroup),
-				this.v5.validate(a, locale, constraintGroup),
-				this.v6.validate(a, locale, constraintGroup),
-				this.v7.validate(a, locale, constraintGroup));
+		return (a, locale, constraintContext) -> Validations.apply(f::apply,
+				this.v1.validate(a, locale, constraintContext),
+				this.v2.validate(a, locale, constraintContext),
+				this.v3.validate(a, locale, constraintContext),
+				this.v4.validate(a, locale, constraintContext),
+				this.v5.validate(a, locale, constraintContext),
+				this.v6.validate(a, locale, constraintContext),
+				this.v7.validate(a, locale, constraintContext));
 	}
 
 	public <R8> Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> combine(

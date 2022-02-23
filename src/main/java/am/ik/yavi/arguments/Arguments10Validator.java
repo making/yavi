@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
@@ -36,7 +37,7 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
 			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, Locale locale,
-			ConstraintGroup constraintGroup);
+			ConstraintContext constraintContext);
 
 	/**
 	 * @since 0.7.0
@@ -44,8 +45,8 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	default <X2> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
-				constraintGroup) -> Arguments10Validator.this.validate(a1, a2, a3, a4, a5,
-						a6, a7, a8, a9, a10, locale, constraintGroup).map(mapper);
+				constraintContext) -> Arguments10Validator.this.validate(a1, a2, a3, a4,
+						a5, a6, a7, a8, a9, a10, locale, constraintContext).map(mapper);
 	}
 
 	/**
@@ -54,10 +55,10 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	default <X2> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
-				constraintGroup) -> Arguments10Validator.this
+				constraintContext) -> Arguments10Validator.this
 						.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
-								constraintGroup)
-						.flatMap(v -> validator.validate(v, locale, constraintGroup));
+								constraintContext)
+						.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -65,12 +66,12 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments10<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10>> mapper) {
-		return (a, locale, constraintGroup) -> {
+		return (a, locale, constraintContext) -> {
 			final Arguments10<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10> args = mapper
 					.apply(a);
 			return Arguments10Validator.this.validate(args.arg1(), args.arg2(),
 					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),
-					args.arg8(), args.arg9(), args.arg10(), locale, constraintGroup);
+					args.arg8(), args.arg9(), args.arg10(), locale, constraintContext);
 		};
 	}
 
@@ -92,9 +93,9 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
 			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10,
-			ConstraintGroup constraintGroup) {
+			ConstraintContext constraintContext) {
 		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, Locale.getDefault(),
-				constraintGroup);
+				constraintContext);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
@@ -115,8 +116,8 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
 			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10,
-			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, constraintGroup)
+			ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -131,9 +132,11 @@ public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
 			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, Locale locale,
-			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
-				constraintGroup).orElseThrow(ConstraintViolationsException::new);
+			ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this
+				.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
+						constraintContext)
+				.orElseThrow(ConstraintViolationsException::new);
 	}
 
 }

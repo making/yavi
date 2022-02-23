@@ -53,13 +53,13 @@ public class Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6>
 
 	public <X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> apply(
 			Function6<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? extends X> f) {
-		return (a1, a2, a3, a4, a5, a6, locale, constraintGroup) -> Validations.apply(
-				f::apply, this.v1.validate(a1, locale, constraintGroup),
-				this.v2.validate(a2, locale, constraintGroup),
-				this.v3.validate(a3, locale, constraintGroup),
-				this.v4.validate(a4, locale, constraintGroup),
-				this.v5.validate(a5, locale, constraintGroup),
-				this.v6.validate(a6, locale, constraintGroup));
+		return (a1, a2, a3, a4, a5, a6, locale, constraintContext) -> Validations.apply(
+				f::apply, this.v1.validate(a1, locale, constraintContext),
+				this.v2.validate(a2, locale, constraintContext),
+				this.v3.validate(a3, locale, constraintContext),
+				this.v4.validate(a4, locale, constraintContext),
+				this.v5.validate(a5, locale, constraintContext),
+				this.v6.validate(a6, locale, constraintContext));
 	}
 
 	public <A7, R7> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> split(

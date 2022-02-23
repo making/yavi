@@ -437,138 +437,140 @@ public class ArgumentsValidators {
 	public static <A1, R, T> Arguments1Validator<A1, List<R>> traverse1(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments1Validator<? super A1, ? extends R>> f) {
-		return (a1, locale, constraintGroup) -> Validated.traverse(values,
-				f.andThen(validator -> validator.validate(a1, locale, constraintGroup)));
+		return (a1, locale, constraintContext) -> Validated.traverse(values, f
+				.andThen(validator -> validator.validate(a1, locale, constraintContext)));
 	}
 
 	public static <A1, A2, R, T> Arguments2Validator<A1, A2, List<R>> traverse2(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments2Validator<? super A1, ? super A2, ? extends R>> f) {
-		return (a1, a2, locale, constraintGroup) -> Validated.traverse(values, f.andThen(
-				validator -> validator.validate(a1, a2, locale, constraintGroup)));
+		return (a1, a2, locale, constraintContext) -> Validated.traverse(values,
+				f.andThen(validator -> validator.validate(a1, a2, locale,
+						constraintContext)));
 	}
 
 	public static <A1, A2, A3, R, T> Arguments3Validator<A1, A2, A3, List<R>> traverse3(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments3Validator<? super A1, ? super A2, ? super A3, ? extends R>> f) {
-		return (a1, a2, a3, locale, constraintGroup) -> Validated.traverse(values,
+		return (a1, a2, a3, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, a2, a3, locale,
-						constraintGroup)));
+						constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, R, T> Arguments4Validator<A1, A2, A3, A4, List<R>> traverse4(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments4Validator<? super A1, ? super A2, ? super A3, ? super A4, ? extends R>> f) {
-		return (a1, a2, a3, a4, locale, constraintGroup) -> Validated.traverse(values,
+		return (a1, a2, a3, a4, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, a2, a3, a4, locale,
-						constraintGroup)));
+						constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, R, T> Arguments5Validator<A1, A2, A3, A4, A5, List<R>> traverse5(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments5Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends R>> f) {
-		return (a1, a2, a3, a4, a5, locale, constraintGroup) -> Validated.traverse(values,
-				f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, locale,
-						constraintGroup)));
+		return (a1, a2, a3, a4, a5, locale, constraintContext) -> Validated
+				.traverse(values, f.andThen(validator -> validator.validate(a1, a2, a3,
+						a4, a5, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, R, T> Arguments6Validator<A1, A2, A3, A4, A5, A6, List<R>> traverse6(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments6Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends R>> f) {
-		return (a1, a2, a3, a4, a5, a6, locale, constraintGroup) -> Validated
+		return (a1, a2, a3, a4, a5, a6, locale, constraintContext) -> Validated
 				.traverse(values, f.andThen(validator -> validator.validate(a1, a2, a3,
-						a4, a5, a6, locale, constraintGroup)));
+						a4, a5, a6, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, R, T> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, List<R>> traverse7(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments7Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends R>> f) {
-		return (a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup) -> Validated
+		return (a1, a2, a3, a4, a5, a6, a7, locale, constraintContext) -> Validated
 				.traverse(values, f.andThen(validator -> validator.validate(a1, a2, a3,
-						a4, a5, a6, a7, locale, constraintGroup)));
+						a4, a5, a6, a7, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, R, T> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, List<R>> traverse8(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments8Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends R>> f) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintGroup) -> Validated
+		return (a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext) -> Validated
 				.traverse(values, f.andThen(validator -> validator.validate(a1, a2, a3,
-						a4, a5, a6, a7, a8, locale, constraintGroup)));
+						a4, a5, a6, a7, a8, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R, T> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, List<R>> traverse9(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments9Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends R>> f) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintGroup) -> Validated
-				.traverse(values, f.andThen(validator -> validator.validate(a1, a2, a3,
-						a4, a5, a6, a7, a8, a9, locale, constraintGroup)));
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale,
+				constraintContext) -> Validated.traverse(values,
+						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
+								a7, a8, a9, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R, T> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> traverse10(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments10Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
-								a7, a8, a9, a10, locale, constraintGroup)));
+								a7, a8, a9, a10, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R, T> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> traverse11(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments11Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
-								a7, a8, a9, a10, a11, locale, constraintGroup)));
+								a7, a8, a9, a10, a11, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R, T> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> traverse12(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments12Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
-								a7, a8, a9, a10, a11, a12, locale, constraintGroup)));
+								a7, a8, a9, a10, a11, a12, locale, constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R, T> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> traverse13(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments13Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
 								a7, a8, a9, a10, a11, a12, a13, locale,
-								constraintGroup)));
+								constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R, T> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> traverse14(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments14Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
 								a7, a8, a9, a10, a11, a12, a13, a14, locale,
-								constraintGroup)));
+								constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R, T> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> traverse15(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments15Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
-				constraintGroup) -> Validated.traverse(values,
+				constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
 								a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
-								constraintGroup)));
+								constraintContext)));
 	}
 
 	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R, T> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> traverse16(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments16Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16,
-				locale, constraintGroup) -> Validated.traverse(values,
+				locale, constraintContext) -> Validated.traverse(values,
 						f.andThen(validator -> validator.validate(a1, a2, a3, a4, a5, a6,
 								a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
-								constraintGroup)));
+								constraintContext)));
 	}
 
 	public static <A1, R> Arguments1Validator<A1, List<R>> sequence1(

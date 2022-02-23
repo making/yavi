@@ -197,6 +197,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
@@ -214,6 +215,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
@@ -268,13 +270,13 @@ $(if [ "${i}" == "1" ];then
 cat <<EOD
   @Override
 	Validated<X> validate(${args},
-			Locale locale, ConstraintGroup constraintGroup);
+			Locale locale, ConstraintContext constraintContext);
 EOD
 fi)
 $(if [ "${i}" != "1" ];then
 cat <<EOD
 	Validated<X> validate(${args},
-			Locale locale, ConstraintGroup constraintGroup);
+			Locale locale, ConstraintContext constraintContext);
 EOD
 fi)
 
@@ -282,17 +284,17 @@ fi)
 	 * @since 0.7.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (${as}, locale, constraintGroup) -> ${class}.this
-				.validate(${as}, locale, constraintGroup).map(mapper);
+		return (${as}, locale, constraintContext) -> ${class}.this
+				.validate(${as}, locale, constraintContext).map(mapper);
 	}
 
 	/**
 	 * @since 0.11.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (${as}, locale, constraintGroup) -> ${class}.this
-				.validate(${as}, locale, constraintGroup)
-				.flatMap(v -> validator.validate(v, locale, constraintGroup));
+		return (${as}, locale, constraintContext) -> ${class}.this
+				.validate(${as}, locale, constraintContext)
+				.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -303,17 +305,17 @@ cat <<EOD
 	@Override
 	default <A> ${class}<A, X> compose(
 			Function<? super A, ? extends A1> mapper) {
-		return (a, locale, constraintGroup) -> ${class}.this
-				.validate(mapper.apply(a), locale, constraintGroup);
+		return (a, locale, constraintContext) -> ${class}.this
+				.validate(mapper.apply(a), locale, constraintContext);
 	}
 EOD
 else
 cat <<EOD
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends ${arguments}> mapper) {
-		return (a, locale, constraintGroup) -> {
+		return (a, locale, constraintContext) -> {
 			final ${arguments} args = mapper.apply(a);
-			return ${class}.this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "args.arg${j}(), ";done) | sed 's/,$//'), locale, constraintGroup);
+			return ${class}.this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "args.arg${j}(), ";done) | sed 's/,$//'), locale, constraintContext);
 		};
 	}
 EOD
@@ -331,8 +333,8 @@ $(cat <<EOD
 		return this.validate(${as}, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
-	default Validated<X> validate(${args}, ConstraintGroup constraintGroup) {
-		return this.validate(${as}, Locale.getDefault(), constraintGroup);
+	default Validated<X> validate(${args}, ConstraintContext constraintContext) {
+		return this.validate(${as}, Locale.getDefault(), constraintContext);
 	}
 
 	default Validated<X> validate(${args}, Locale locale) {
@@ -343,9 +345,9 @@ $(cat <<EOD
 		return this.validate(${as}).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(${args}, ConstraintGroup constraintGroup)
+	default X validated(${args}, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(${as}, constraintGroup)
+		return this.validate(${as}, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -353,9 +355,9 @@ $(cat <<EOD
 		return this.validate(${as}, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(${args}, Locale locale, ConstraintGroup constraintGroup)
+	default X validated(${args}, Locale locale, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(${as}, locale, constraintGroup)
+		return this.validate(${as}, locale, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 EOD)
@@ -380,8 +382,8 @@ cat <<EOD
 	 */
 	@Override
 	default Arguments1Validator<A1, X> indexed(int index) {
-		return (a1, locale, constraintGroup) -> Arguments1Validator.this
-				.validate(a1, locale, constraintGroup).indexed(index);
+		return (a1, locale, constraintContext) -> Arguments1Validator.this
+				.validate(a1, locale, constraintContext).indexed(index);
 	}
 
 	/**
@@ -447,7 +449,7 @@ package am.ik.yavi.arguments;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import am.ik.yavi.core.ConstraintGroup;
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function${i};
@@ -477,9 +479,9 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 
   @Override
 	public Validated<X> validate(${args},
-			Locale locale, ConstraintGroup constraintGroup) {
+			Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-		    .validate(Arguments.of(${as}), locale, constraintGroup)
+		    .validate(Arguments.of(${as}), locale, constraintContext)
 				.map(values -> values.map(this.mapper));
 	}
 }
@@ -527,7 +529,7 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
 	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
-		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a${j}, locale, constraintGroup), ";done) | sed 's/,$//'));
+		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//'));
 	}
 $(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split(ValueValidator<? super A$((${i} + 1)), ? extends R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
@@ -574,7 +576,7 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
 	public <X> Arguments1Validator<A, X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
-		return (a, locale, constraintGroup) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a, locale, constraintGroup), ";done) | sed 's/,$//'));
+		return (a, locale, constraintContext) -> Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//'));
 	}
 $(if [ ${i} -lt ${nn} ];then echo;echo "	public <R$((${i} + 1))> Arguments$((${i} + 1))Combining<A, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> combine(ValueValidator<? super A, ? extends R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Combining<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
@@ -640,8 +642,8 @@ $(for i in `seq 1 ${nn}`;do cat <<EOD
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R, T> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), List<R>> traverse${i}(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends R>> f) {
-		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup) ->
-			Validated.traverse(values, f.andThen(validator -> validator.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintGroup)));
+		return ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) ->
+			Validated.traverse(values, f.andThen(validator -> validator.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext)));
 	}
 EOD
 done)
