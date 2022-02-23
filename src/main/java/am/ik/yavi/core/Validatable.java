@@ -26,17 +26,17 @@ public interface Validatable<T> {
 	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
-	 * @param constraintGroup constraint group to validate
+	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
 	ConstraintViolations validate(T target, Locale locale,
-			ConstraintGroup constraintGroup);
+			ConstraintContext constraintContext);
 
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
 	 *
 	 * @param target target to validate
 	 * @return constraint violations
@@ -48,7 +48,7 @@ public interface Validatable<T> {
 
 	/**
 	 * Validates all constraints on {@code target}.<br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint group.
+	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
 	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
@@ -64,12 +64,12 @@ public interface Validatable<T> {
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
 	 *
 	 * @param target target to validate
-	 * @param constraintGroup constraint group to validate
+	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	default ConstraintViolations validate(T target, ConstraintGroup constraintGroup) {
-		return this.validate(target, Locale.getDefault(), constraintGroup);
+	default ConstraintViolations validate(T target, ConstraintContext constraintContext) {
+		return this.validate(target, Locale.getDefault(), constraintContext);
 	}
 
 	/**
@@ -78,9 +78,9 @@ public interface Validatable<T> {
 	 * @since 0.6.0
 	 */
 	default ApplicativeValidator<T> applicative() {
-		return (target, locale, constraintGroup) -> {
+		return (target, locale, constraintContext) -> {
 			final ConstraintViolations violations = Validatable.this.validate(target,
-					locale, constraintGroup);
+					locale, constraintContext);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));
 			}

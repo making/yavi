@@ -47,10 +47,10 @@ public class NestedValidator<T, N> implements Validatable<T> {
 
 	@Override
 	public ConstraintViolations validate(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
+			ConstraintContext constraintContext) {
 		final N n = this.nested.apply(target);
 		if (n != null) {
-			return this.validator.validate(n, locale, constraintGroup);
+			return this.validator.validate(n, locale, constraintContext);
 		}
 		else {
 			return new ConstraintViolations();

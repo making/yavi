@@ -41,10 +41,10 @@ public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
 
 	public <X> Arguments3Validator<A1, A2, A3, X> apply(
 			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
-		return (a1, a2, a3, locale, constraintGroup) -> Validations.apply(f::apply,
-				this.v1.validate(a1, locale, constraintGroup),
-				this.v2.validate(a2, locale, constraintGroup),
-				this.v3.validate(a3, locale, constraintGroup));
+		return (a1, a2, a3, locale, constraintContext) -> Validations.apply(f::apply,
+				this.v1.validate(a1, locale, constraintContext),
+				this.v2.validate(a2, locale, constraintContext),
+				this.v3.validate(a3, locale, constraintContext));
 	}
 
 	public <A4, R4> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split(

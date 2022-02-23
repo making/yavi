@@ -138,8 +138,8 @@ public class Validator<T> implements Validatable<T> {
 
 	@Override
 	public ConstraintViolations validate(T target, Locale locale,
-			ConstraintGroup constraintGroup) {
-		return this.validate(target, "", -1, locale, constraintGroup);
+			ConstraintContext constraintContext) {
+		return this.validate(target, "", -1, locale, constraintContext);
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class Validator<T> implements Validatable<T> {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConstraintViolations validate(T target, String collectionName, int index,
-			Locale locale, ConstraintGroup constraintGroup) {
+			Locale locale, ConstraintContext constraintContext) {
 		if (target == null) {
 			throw new IllegalArgumentException("target must not be null");
 		}
@@ -219,7 +219,7 @@ public class Validator<T> implements Validatable<T> {
 						final String nestedName = this.indexedName(
 								collectionValidator.name(), collectionName, index);
 						final ConstraintViolations v = validator.validate(element,
-								nestedName, i++, locale, constraintGroup);
+								nestedName, i++, locale, constraintContext);
 						violations.addAll(v);
 						if (this.failFast) {
 							return violations;
@@ -230,10 +230,10 @@ public class Validator<T> implements Validatable<T> {
 		}
 		for (Pair<ConstraintCondition<T>, Validatable<T>> pair : this.conditionalValidators) {
 			final ConstraintCondition<T> condition = pair.first();
-			if (condition.test(target, constraintGroup)) {
+			if (condition.test(target, constraintContext)) {
 				final Validatable<T> validator = pair.second();
 				final ConstraintViolations constraintViolations = validator
-						.validate(target, locale, constraintGroup);
+						.validate(target, locale, constraintContext);
 				for (ConstraintViolation violation : constraintViolations) {
 					final ConstraintViolation renamed = violation
 							.rename(name -> this.prefix

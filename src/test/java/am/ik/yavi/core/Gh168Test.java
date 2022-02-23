@@ -62,14 +62,14 @@ class Gh168Test {
 
 	final Validator<Animal> validator = ValidatorBuilder.<Animal> of()
 			.constraintOnCondition(
-					(animal, constraintGroup) -> animal.type() == AnimalType.DOG,
+					(animal, constraintContext) -> animal.type() == AnimalType.DOG,
 					b -> b.forEach(Animal::actions, "actions", action -> action
 							.constraint(Action::name, "name", c -> c.predicate(
 									name -> name.equals("run") || name.equals("bark"),
 									"dog.message",
 									"For type dog an action \"{1}\" is not allowed. Allowed values are: [\"run\", \"bark\"]"))))
 			.constraintOnCondition(
-					(animal, constraintGroup) -> animal.type() == AnimalType.CAT,
+					(animal, constraintContext) -> animal.type() == AnimalType.CAT,
 					b -> b.forEach(Animal::actions, "actions", action -> action
 							.constraint(Action::name, "name", c -> c.predicate(
 									name -> name.equals("run") || name.equals("meow"),

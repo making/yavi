@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
@@ -35,7 +36,7 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			Locale locale, ConstraintGroup constraintGroup);
+			Locale locale, ConstraintContext constraintContext);
 
 	/**
 	 * @since 0.7.0
@@ -43,8 +44,8 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, a4, a5, a6, a7, locale,
-				constraintGroup) -> Arguments7Validator.this
-						.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup)
+				constraintContext) -> Arguments7Validator.this
+						.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
 						.map(mapper);
 	}
 
@@ -54,9 +55,9 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
 		return (a1, a2, a3, a4, a5, a6, a7, locale,
-				constraintGroup) -> Arguments7Validator.this
-						.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup)
-						.flatMap(v -> validator.validate(v, locale, constraintGroup));
+				constraintContext) -> Arguments7Validator.this
+						.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
+						.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -64,12 +65,12 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments7<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7>> mapper) {
-		return (a, locale, constraintGroup) -> {
+		return (a, locale, constraintContext) -> {
 			final Arguments7<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7> args = mapper
 					.apply(a);
 			return Arguments7Validator.this.validate(args.arg1(), args.arg2(),
 					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),
-					locale, constraintGroup);
+					locale, constraintContext);
 		};
 	}
 
@@ -89,9 +90,9 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			ConstraintGroup constraintGroup) {
+			ConstraintContext constraintContext) {
 		return this.validate(a1, a2, a3, a4, a5, a6, a7, Locale.getDefault(),
-				constraintGroup);
+				constraintContext);
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
@@ -109,8 +110,8 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			ConstraintGroup constraintGroup) throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, constraintGroup)
+			ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
@@ -123,9 +124,9 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 
 	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
 			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			Locale locale, ConstraintGroup constraintGroup)
+			Locale locale, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintGroup)
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
