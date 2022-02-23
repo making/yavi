@@ -22,6 +22,7 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.arguments.Arguments3Validator;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
@@ -401,7 +402,7 @@ public class ValidatorBuilderTest {
 		ValueValidator<String, String> validator = ValidatorBuilder.<String> of()
 				.constraintOnCondition(
 						(String address,
-								ConstraintGroup g) -> !"JP".equalsIgnoreCase(g.name()),
+								ConstraintContext c) -> !"JP".equalsIgnoreCase(c.name()),
 						passThrough)
 				.constraintOnGroup(group,
 						PhoneNumber.validator().applicative().compose(PhoneNumber::new))
