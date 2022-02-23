@@ -20,7 +20,6 @@ import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.arguments.Arguments3Validator;
-import am.ik.yavi.builder.ObjectValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 

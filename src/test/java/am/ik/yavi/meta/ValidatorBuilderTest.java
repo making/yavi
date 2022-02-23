@@ -18,17 +18,20 @@ package am.ik.yavi.meta;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.builder.ArgumentsValidatorBuilder;
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.ConstraintGroup;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ValueValidator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import am.ik.yavi.arguments.Arguments3Validator;
-import am.ik.yavi.builder.ArgumentsValidatorBuilder;
-import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.core.ConstraintViolations;
-import am.ik.yavi.core.ConstraintViolationsException;
-import am.ik.yavi.core.Validator;
 
 public class ValidatorBuilderTest {
 
@@ -390,5 +393,21 @@ public class ValidatorBuilderTest {
 				"The size of \"street\" must be greater than or equal to 2. The given size is 0");
 		assertThat(violations.get(2).message()).isEqualTo(
 				"The size of \"phoneNumber.value\" must be greater than or equal to 8. The given size is 0");
+	}
+
+	@Test
+	void conditionalValueValidators() {
+		ConstraintGroup group = ConstraintGroup.of("JP");
+		ValueValidator<String, String> passThrough = ValueValidator.passThrough();
+		ValueValidator<String, String> validator = ValidatorBuilder.<String> of()
+				.constraintOnCondition(
+						(String address,
+								ConstraintContext c) -> !"JP".equalsIgnoreCase(c.name()),
+						passThrough)
+				.constraintOnGroup(group,
+						PhoneNumber.validator().applicative().compose(PhoneNumber::new))
+				.build().applicative();
+		assertThat(validator.validate("1234", group).isValid()).isFalse();
+		assertThat(validator.validate("1234").isValid()).isTrue();
 	}
 }
