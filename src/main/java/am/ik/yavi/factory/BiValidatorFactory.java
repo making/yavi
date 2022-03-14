@@ -38,7 +38,7 @@ import am.ik.yavi.message.MessageFormatter;
  * </pre>
  *
  * A component can create a validator like following:
- * 
+ *
  * <pre>
  *{@literal @RestController}
  * public class OrderController {

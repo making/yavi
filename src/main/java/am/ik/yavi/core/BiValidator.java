@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
  * as Spring Framework's <code>org.springframework.validation.Validator</code>.
  *
  * Validator can be wrapped as follows:
- * 
+ *
  * <pre>
  * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
  *                        .constraint(CartItem::getQuantity, "quantity", c -> c.greaterThan(0))
