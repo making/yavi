@@ -81,6 +81,7 @@ import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
 import am.ik.yavi.core.NestedValidator;
 import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.NullWrapper;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValueValidator;
@@ -185,9 +186,12 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return new ValidatorBuilder<>();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Validator<T> build() {
-		return new Validator<>(messageKeySeparator, this.predicatesList,
+		return new Validator<T>(messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
+				(name, validator) -> ValidatorBuilder.<NullWrapper<T>>of()
+						.nest(NullWrapper::get, name, (Validator<? super T>) validator).build(),
 				this.messageFormatter == null ? new SimpleMessageFormatter()
 						: this.messageFormatter,
 				this.failFast);

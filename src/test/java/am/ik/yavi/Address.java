@@ -42,10 +42,7 @@ public class Address {
 
 	@Override
 	public String toString() {
-		return "Address{" +
-				"country=" + country +
-				", phoneNumber=" + phoneNumber +
-				", street='" + street + '\'' +
-				'}';
+		return "Address{" + "country=" + country + ", phoneNumber=" + phoneNumber
+				+ ", street='" + street + '\'' + '}';
 	}
 }
