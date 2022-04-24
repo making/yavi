@@ -19,7 +19,7 @@ import am.ik.yavi.builder.ArgumentsValidatorBuilder
 import am.ik.yavi.core.ConstraintViolationsException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ArgumentsValidatorKotlinTest {
     data class Person(val firstName: String?, val lastName: String?, val age: Int?)
