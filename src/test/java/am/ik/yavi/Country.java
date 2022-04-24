@@ -44,4 +44,11 @@ public class Country {
 	public static Validated<Country> of(String name) {
 		return applicativeValidator.validate(new Country(name));
 	}
+
+	@Override
+	public String toString() {
+		return "Country{" +
+				"name='" + name + '\'' +
+				'}';
+	}
 }
