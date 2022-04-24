@@ -18,7 +18,7 @@ package am.ik.yavi.builder
 import am.ik.yavi.core.ConstraintGroup
 import am.ik.yavi.core.Group
 import org.assertj.core.api.Assertions
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Instant

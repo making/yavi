@@ -18,7 +18,7 @@ package am.ik.yavi.fn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ValidationExtensionsTest {
 	@Test
