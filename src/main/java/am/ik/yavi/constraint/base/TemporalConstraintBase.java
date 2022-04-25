@@ -58,7 +58,7 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C past(Clock clock) {
-		return this.before(() -> this.getNow(clock)).message(TEMPORAL_PAST);
+		return this.before(() -> this.getNow(clock), false).message(TEMPORAL_PAST);
 	}
 
 	public C pastOrPresent() {
@@ -66,7 +66,7 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C pastOrPresent(Clock clock) {
-		return this.beforeOrEqual(() -> this.getNow(clock))
+		return this.beforeOrEqual(() -> this.getNow(clock), false)
 				.message(TEMPORAL_PAST_OR_PRESENT);
 	}
 
@@ -75,7 +75,7 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C future(Clock clock) {
-		return this.after(() -> this.getNow(clock)).message(TEMPORAL_FUTURE);
+		return this.after(() -> this.getNow(clock), false).message(TEMPORAL_FUTURE);
 	}
 
 	public C futureOrPresent() {
@@ -83,76 +83,186 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C futureOrPresent(Clock clock) {
-		return this.afterOrEqual(() -> this.getNow(clock))
+		return this.afterOrEqual(() -> this.getNow(clock), false)
 				.message(TEMPORAL_FUTURE_OR_PRESENT);
 	}
 
 	/**
-	 * Is the given temporal before the supplied {@code other}
+	 * Check if the given temporal is before the supplied {@code other} <br>
+	 * You can specify whether to memoize the result of the supplier by using the argument
+	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
+	 * supplier return value changes each time, be aware that the value used to compare
+	 * the input values and the value contained in the error message can be different.
+	 *
+	 * @param other the supplier providing the other temporal that is before
+	 * @param memoize whether to memoize the result of supplier
+	 * @since 0.11.1
+	 */
+	public C before(Supplier<V> other, boolean memoize) {
+		final Supplier<V> supplier = memoize ? memoize(other) : other;
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> this.isBefore(x, supplier.get()),
+						TEMPORAL_BEFORE, () -> new Object[] { supplier.get() }, VALID));
+		return cast();
+	}
+
+	/**
+	 * Check if the given temporal if before the supplied {@code other}. <br>
+	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
+	 * cached to always return the same value and is not available if you want to
+	 * dynamically return different values.<br>
+	 * If you don't want to memoize, use {@link #before(Supplier, boolean)} instead.
 	 *
 	 * @param other the supplier providing the other temporal that is before
 	 */
 	public C before(Supplier<V> other) {
-		final Supplier<V> memoized = memoize(other);
-		this.predicates()
-				.add(ConstraintPredicate.of(x -> this.isBefore(x, memoized.get()),
-						TEMPORAL_BEFORE, () -> new Object[] { memoized.get() }, VALID));
-		return cast();
+		return this.before(other, true);
 	}
 
-	public C beforeOrEqual(Supplier<V> other) {
-		final Supplier<V> memoized = memoize(other);
+	/**
+	 * Check if the given temporal is before or equals to the supplied {@code other}<br>
+	 * You can specify whether to memoize the result of the supplier by using the argument
+	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
+	 * supplier return value changes each time, be aware that the value used to compare
+	 * the input values and the value contained in the error message can be different.
+	 *
+	 * @param other the supplier providing the other temporal that is before or equals to
+	 * @param memoize whether to memoize the result of supplier
+	 * @since 0.11.1
+	 */
+	public C beforeOrEqual(Supplier<V> other, boolean memoize) {
+		final Supplier<V> supplier = memoize ? memoize(other) : other;
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> !this.isAfter(x, memoized.get()),
-						TEMPORAL_BEFORE_OR_EQUAL, () -> new Object[] { memoized.get() },
+				.add(ConstraintPredicate.of(x -> !this.isAfter(x, supplier.get()),
+						TEMPORAL_BEFORE_OR_EQUAL, () -> new Object[] { supplier.get() },
 						VALID));
 		return cast();
 	}
 
 	/**
-	 * Is the given temporal after the supplied {@code other}
+	 * Check if the given temporal if before or equals to the supplied {@code other}. <br>
+	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
+	 * cached to always return the same value and is not available if you want to
+	 * dynamically return different values.<br>
+	 * If you don't want to memoize, use {@link #beforeOrEqual(Supplier, boolean)}
+	 * instead.
 	 *
-	 * @param other the supplier providing the other temporal that is before
+	 * @param other the supplier providing the other temporal that is before or equals to
 	 */
-	public C after(Supplier<V> other) {
-		final Supplier<V> memoized = memoize(other);
-		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, memoized.get()),
-				TEMPORAL_AFTER, () -> new Object[] { memoized.get() }, VALID));
+	public C beforeOrEqual(Supplier<V> other) {
+		return beforeOrEqual(other, true);
+	}
+
+	/**
+	 * Check if the given temporal is after the supplied {@code other}<br>
+	 * You can specify whether to memoize the result of the supplier by using the argument
+	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
+	 * supplier return value changes each time, be aware that the value used to compare
+	 * the input values and the value contained in the error message can be different.
+	 *
+	 * @param other the supplier providing the other temporal that is after
+	 * @param memoize whether to memoize the result of supplier
+	 * @since 0.11.1
+	 */
+	public C after(Supplier<V> other, boolean memoize) {
+		final Supplier<V> supplier = memoize ? memoize(other) : other;
+		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, supplier.get()),
+				TEMPORAL_AFTER, () -> new Object[] { supplier.get() }, VALID));
 		return cast();
 	}
 
-	public C afterOrEqual(Supplier<V> other) {
-		final Supplier<V> memoized = memoize(other);
+	/**
+	 * Check if the given temporal if after the supplied {@code other}. <br>
+	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
+	 * cached to always return the same value and is not available if you want to
+	 * dynamically return different values.<br>
+	 * If you don't want to memoize, use {@link #after(Supplier, boolean)} instead.
+	 *
+	 * @param other the supplier providing the other temporal that is after
+	 */
+	public C after(Supplier<V> other) {
+		return this.after(other, true);
+	}
+
+	/**
+	 * Check if the given temporal is after or equals to the supplied {@code other}<br>
+	 * You can specify whether to memoize the result of the supplier by using the argument
+	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
+	 * supplier return value changes each time, be aware that the value used to compare
+	 * the input values and the value contained in the error message can be different.
+	 *
+	 * @param other the supplier providing the other temporal that is after or equals to
+	 * @param memoize whether to memoize the result of supplier
+	 * @since 0.11.1
+	 */
+	public C afterOrEqual(Supplier<V> other, boolean memoize) {
+		final Supplier<V> supplier = memoize ? memoize(other) : other;
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> !this.isBefore(x, memoized.get()),
-						TEMPORAL_AFTER_OR_EQUAL, () -> new Object[] { memoized.get() },
+				.add(ConstraintPredicate.of(x -> !this.isBefore(x, supplier.get()),
+						TEMPORAL_AFTER_OR_EQUAL, () -> new Object[] { supplier.get() },
 						VALID));
+		return cast();
+	}
+
+	/**
+	 * Check if the given temporal if after or equals to the supplied {@code other}. <br>
+	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
+	 * cached to always return the same value and is not available if you want to
+	 * dynamically return different values.<br>
+	 * If you don't want to memoize, use {@link #afterOrEqual(Supplier, boolean)} instead.
+	 *
+	 * @param other the supplier providing the other temporal that is after or equals to
+	 */
+	public C afterOrEqual(Supplier<V> other) {
+		return afterOrEqual(other, true);
+	}
+
+	/**
+	 * Is the given temporal between the supplied {@code rangeFrom} and {@code rangeTo}.
+	 * The range is not inclusive. This means if the dates are equal (rangeFrom = x =
+	 * rangeTo) it is invalid<br>
+	 * You can specify whether to memoize the result of the supplier by using the argument
+	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
+	 * supplier return value changes each time, be aware that the value used to compare
+	 * the input values and the value contained in the error message can be different.
+	 *
+	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
+	 *     in
+	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
+	 * @param memoize whether to memoize the result of supplier
+	 * @since 0.11.1
+	 */
+	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo, boolean memoize) {
+		final Supplier<V> supplierFrom = memoize ? memoize(rangeFrom) : rangeFrom;
+		final Supplier<V> supplierTo = memoize ? memoize(rangeTo) : rangeTo;
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			final V from = supplierFrom.get();
+			final V to = supplierTo.get();
+			if (this.isAfter(from, to)) {
+				throw new IllegalArgumentException(
+						"Parameter 'rangeFrom' has to be before 'rangeTo'");
+			}
+			return this.isBefore(from, x) && this.isAfter(to, x);
+		}, TEMPORAL_BETWEEN, () -> new Object[] { supplierFrom.get(), supplierTo.get() },
+				VALID));
 		return cast();
 	}
 
 	/**
 	 * Is the given temporal between the supplied {@code rangeFrom} and {@code rangeTo}.
 	 * The range is not inclusive. This means if the dates are equal (rangeFrom = x =
-	 * rangeTo) it is invalid
+	 * rangeTo) it is invalid <strong>The result of the supplier is memoized</strong>.
+	 * That means the supplier is cached to always return the same value and is not
+	 * available if you want to dynamically return different values.<br>
+	 * If you don't want to memoize, use {@link #between(Supplier, Supplier, boolean)}
+	 * instead.
 	 *
 	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
 	 *     in
 	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
 	 */
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
-		final Supplier<V> memoizedFrom = memoize(rangeFrom);
-		final Supplier<V> memoizedTo = memoize(rangeTo);
-		this.predicates().add(ConstraintPredicate.of(x -> {
-			final V from = memoizedFrom.get();
-			final V to = memoizedTo.get();
-			if (this.isAfter(from, to)) {
-				throw new IllegalArgumentException(
-						"Parameter 'rangeFrom' has to be before 'rangeTo'");
-			}
-			return this.isBefore(from, x) && this.isAfter(to, x);
-		}, TEMPORAL_BETWEEN, () -> new Object[] { memoizedFrom.get(), memoizedTo.get() },
-				VALID));
-		return cast();
+		return this.between(rangeFrom, rangeTo, true);
 	}
 
 	public C fieldPredicate(TemporalField field, LongPredicate predicate) {
