@@ -18,15 +18,18 @@ package am.ik.yavi.core;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
+
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 /**
  * Validates the target instances.
@@ -257,8 +260,9 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	private Validator<Supplier<Object>> nullSupplierValidator(String name) {
-		final Deque<ConstraintPredicate<Object>> notNull = new ObjectConstraint<>()
-				.notNull().predicates();
+		final Deque<ConstraintPredicate<Object>> notNull = new LinkedList<>();
+		notNull.add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,
+				() -> new Object[] {}, NullAs.INVALID));
 		final ConstraintPredicates<Supplier<Object>, Object> constraintPredicates = new ConstraintPredicates<>(
 				Supplier::get, name, notNull);
 		return new Validator<>(this.messageKeySeparator,
