@@ -25,6 +25,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -215,6 +216,38 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "134a", "abcd" })
 	void invalidPattern(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.pattern("[0-9]{4}"));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1234", "0000" })
+	void validPattern_pattern(String value) {
+		final Pattern pattern = Pattern.compile("[0-9]{4}");
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern(pattern));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "134a", "abcd" })
+	void invalidPattern_pattern(String value) {
+		final Pattern pattern = Pattern.compile("[0-9]{4}");
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern(pattern));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "1234", "0000" })
+	void validPattern_patternSupplier(String value) {
+		Predicate<String> predicate = retrievePredicate(
+				c -> c.pattern((() -> Pattern.compile("[0-9]{4}"))));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "134a", "abcd" })
+	void invalidPattern_patternSupplier(String value) {
+		Predicate<String> predicate = retrievePredicate(
+				c -> c.pattern(() -> Pattern.compile("[0-9]{4}")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
