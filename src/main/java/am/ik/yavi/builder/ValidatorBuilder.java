@@ -185,7 +185,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return new ValidatorBuilder<>();
 	}
 
-	@SuppressWarnings("unchecked")
 	public Validator<T> build() {
 		return new Validator<>(messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
