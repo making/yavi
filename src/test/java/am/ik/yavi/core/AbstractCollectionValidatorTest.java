@@ -109,9 +109,12 @@ abstract class AbstractCollectionValidatorTest {
 		FormWithCollection form = new FormWithCollection(Arrays.asList(
 				new Address(new Country("JP"), "tokyo", new PhoneNumber("0123456789")),
 				null));
-		// FIXME: does not check null element
 		ConstraintViolations violations = validator.validate(form);
-		assertThat(violations.isValid()).isTrue();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations.size()).isEqualTo(1);
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"addresses[1]\" must not be null");
+		assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 	}
 
 	@Test

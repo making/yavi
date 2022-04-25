@@ -39,4 +39,10 @@ public class Address {
 	public String street() {
 		return this.street;
 	}
+
+	@Override
+	public String toString() {
+		return "Address{" + "country=" + country + ", phoneNumber=" + phoneNumber
+				+ ", street='" + street + '\'' + '}';
+	}
 }

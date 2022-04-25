@@ -17,14 +17,19 @@ package am.ik.yavi.core;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
+
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 /**
  * Validates the target instances.
@@ -215,15 +220,21 @@ public class Validator<T> implements Validatable<T> {
 						.failFast(this.failFast);
 				int i = 0;
 				for (Object element : collection) {
+					final String nestedName = this.indexedName(collectionValidator.name(),
+							collectionName, index);
 					if (element != null) {
-						final String nestedName = this.indexedName(
-								collectionValidator.name(), collectionName, index);
 						final ConstraintViolations v = validator.validate(element,
 								nestedName, i++, locale, constraintContext);
 						violations.addAll(v);
-						if (this.failFast) {
-							return violations;
-						}
+					}
+					else {
+						final String name = this.indexedName("", nestedName, i++);
+						final ConstraintViolations v = this.nullSupplierValidator(name)
+								.validate(() -> null, locale, constraintContext);
+						violations.addAll(v);
+					}
+					if (!violations.isEmpty() && this.failFast) {
+						return violations;
 					}
 				}
 			}
@@ -239,7 +250,7 @@ public class Validator<T> implements Validatable<T> {
 							.rename(name -> this.prefix
 									+ this.indexedName(name, collectionName, index));
 					violations.add(renamed);
-					if (this.failFast) {
+					if (!violations.isEmpty() && this.failFast) {
 						return violations;
 					}
 				}
@@ -247,4 +258,17 @@ public class Validator<T> implements Validatable<T> {
 		}
 		return violations;
 	}
+
+	private Validator<Supplier<Object>> nullSupplierValidator(String name) {
+		final Deque<ConstraintPredicate<Object>> notNull = new LinkedList<>();
+		notNull.add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,
+				() -> new Object[] {}, NullAs.INVALID));
+		final ConstraintPredicates<Supplier<Object>, Object> constraintPredicates = new ConstraintPredicates<>(
+				Supplier::get, name, notNull);
+		return new Validator<>(this.messageKeySeparator,
+				Collections.singletonList(constraintPredicates), Collections.emptyList(),
+				Collections.emptyList(), this.messageFormatter, this.failFast,
+				this.prefix);
+	}
+
 }
