@@ -17,13 +17,14 @@ package am.ik.yavi.core;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 
@@ -225,11 +226,7 @@ public class Validator<T> implements Validatable<T> {
 					}
 					else {
 						final String name = this.indexedName("", nestedName, i++);
-						final Validator<Supplier<Object>> nullSupplierValidator = ValidatorBuilder
-								.<Supplier<Object>> of()
-								._object(Supplier::get, name, Constraint::notNull)
-								.failFast(this.failFast).build();
-						final ConstraintViolations v = nullSupplierValidator
+						final ConstraintViolations v = this.nullSupplierValidator(name)
 								.validate(() -> null, locale, constraintContext);
 						violations.addAll(v);
 					}
@@ -257,6 +254,17 @@ public class Validator<T> implements Validatable<T> {
 			}
 		}
 		return violations;
+	}
+
+	private Validator<Supplier<Object>> nullSupplierValidator(String name) {
+		final Deque<ConstraintPredicate<Object>> notNull = new ObjectConstraint<>()
+				.notNull().predicates();
+		final ConstraintPredicates<Supplier<Object>, Object> constraintPredicates = new ConstraintPredicates<>(
+				Supplier::get, name, notNull);
+		return new Validator<>(this.messageKeySeparator,
+				Collections.singletonList(constraintPredicates), Collections.emptyList(),
+				Collections.emptyList(), this.messageFormatter, this.failFast,
+				this.prefix);
 	}
 
 }
