@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 
@@ -50,19 +50,15 @@ public class Validator<T> implements Validatable<T> {
 
 	private final boolean failFast;
 
-	private final BiFunction<String, Validator<?>, Validator<NullWrapper<T>>> nullWrapperValidatorBuilder;
-
 	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
 
 	public Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
-			BiFunction<String, Validator<?>, Validator<NullWrapper<T>>> nullWrapperValidatorBuilder,
 			MessageFormatter messageFormatter) {
 		this(messageKeySeparator, predicatesList, collectionValidators,
-				conditionalValidators, nullWrapperValidatorBuilder, messageFormatter,
-				false);
+				conditionalValidators, messageFormatter, false);
 	}
 
 	/**
@@ -72,24 +68,20 @@ public class Validator<T> implements Validatable<T> {
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
-			BiFunction<String, Validator<?>, Validator<NullWrapper<T>>> nullWrapperValidatorBuilder,
 			MessageFormatter messageFormatter, boolean failFast) {
 		this(messageKeySeparator, predicatesList, collectionValidators,
-				conditionalValidators, nullWrapperValidatorBuilder, messageFormatter,
-				failFast, "");
+				conditionalValidators, messageFormatter, failFast, "");
 	}
 
 	private Validator(String messageKeySeparator,
 			List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
-			BiFunction<String, Validator<?>, Validator<NullWrapper<T>>> nullWrapperValidatorBuilder,
 			MessageFormatter messageFormatter, boolean failFast, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
 		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
 		this.conditionalValidators = Collections.unmodifiableList(conditionalValidators);
-		this.nullWrapperValidatorBuilder = nullWrapperValidatorBuilder;
 		this.messageFormatter = messageFormatter;
 		this.failFast = failFast;
 		this.prefix = (prefix == null || prefix.isEmpty()
@@ -100,8 +92,7 @@ public class Validator<T> implements Validatable<T> {
 	public Validator<T> prefixed(String prefix) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				this.nullWrapperValidatorBuilder, this.messageFormatter, this.failFast,
-				prefix);
+				this.messageFormatter, this.failFast, prefix);
 	}
 
 	/**
@@ -114,8 +105,7 @@ public class Validator<T> implements Validatable<T> {
 	public Validator<T> failFast(boolean failFast) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				this.nullWrapperValidatorBuilder, this.messageFormatter, failFast,
-				this.prefix);
+				this.messageFormatter, failFast, this.prefix);
 	}
 
 	/**
@@ -235,10 +225,12 @@ public class Validator<T> implements Validatable<T> {
 					}
 					else {
 						final String name = this.indexedName("", nestedName, i++);
-						final Validator<NullWrapper<T>> nullWrapperValidator = this.nullWrapperValidatorBuilder
-								.apply(name, validator).failFast(this.failFast);
-						final ConstraintViolations v = nullWrapperValidator.validate(
-								NullWrapper.INSTANCE, locale, constraintContext);
+						final Validator<Supplier<Object>> nullSupplierValidator = ValidatorBuilder
+								.<Supplier<Object>> of()
+								._object(Supplier::get, name, Constraint::notNull)
+								.failFast(this.failFast).build();
+						final ConstraintViolations v = nullSupplierValidator
+								.validate(() -> null, locale, constraintContext);
 						violations.addAll(v);
 					}
 					if (!violations.isEmpty() && this.failFast) {

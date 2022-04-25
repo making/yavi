@@ -24,10 +24,9 @@ public class Gh226Test {
 		String nullVal = null;
 		e.setRecipients(Arrays.asList(nullVal));
 		ConstraintViolations violations = baseEmailValidatorBuilder.validate(e);
-		System.out.println(violations);
 		assertThat(violations.size()).isEqualTo(1);
 		assertThat(violations.get(0).message())
-				.isEqualTo("\"recipients[0].aaa\" must not be null");
+				.isEqualTo("\"recipients[0]\" must not be null");
 	}
 
 	public class Email {
