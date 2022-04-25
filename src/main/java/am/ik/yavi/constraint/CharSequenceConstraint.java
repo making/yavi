@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -259,6 +260,26 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	public CharSequenceConstraint<T, E> pattern(String regex) {
 		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
 				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.11.1
+	 */
+	public CharSequenceConstraint<T, E> pattern(Pattern regex) {
+		this.predicates().add(ConstraintPredicate.of(x -> regex.matcher(x).matches(),
+				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex.pattern() }, VALID));
+		return this;
+	}
+
+	/**
+	 * @since 0.11.1
+	 */
+	public CharSequenceConstraint<T, E> pattern(Supplier<Pattern> regexSupplier) {
+		this.predicates()
+				.add(ConstraintPredicate.of(x -> regexSupplier.get().matcher(x).matches(),
+						CHAR_SEQUENCE_PATTERN,
+						() -> new Object[] { regexSupplier.get().pattern() }, VALID));
 		return this;
 	}
 
