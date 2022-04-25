@@ -25,7 +25,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Check formatting
-        run: ./mvnw formatter:validate
+        run: ./mvnw formatter:validate --no-transfer-progress
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -46,11 +46,11 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Unit Tests
       if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
-      run: ./mvnw -V test
+      run: ./mvnw -V test --no-transfer-progress
     - name: Unit Tests with Coverage
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: |
-        ./mvnw -V jacoco:prepare-agent test jacoco:report
+        ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
     - name: Codacy Coverage Reporter
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       env:
@@ -80,7 +80,7 @@ jobs:
         EOF
         CURRENT_VERSION=$(grep '<version>' pom.xml | head -n 1 | sed -e 's|<version>||g' -e 's|</version>||g' | xargs echo)
         if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
-          ./mvnw -V deploy -s settings.xml -DskipTests=true -DserverId=sonatype-snapshots
+          ./mvnw -V deploy -s settings.xml -DskipTests=true -DserverId=sonatype-snapshots --no-transfer-progress
         fi
     - name: Deploy to sonatype-releases
       if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
