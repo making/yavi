@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh226Test {
-	private static final Validator<String> recipientValidator = ValidatorBuilder.<String>of()
-			.constraint(String::toString, "aaa", e -> e.notNull().notBlank().notEmpty().email())
+	private static final Validator<String> recipientValidator = ValidatorBuilder
+			.<String> of().constraint(String::toString, "aaa",
+					e -> e.notNull().notBlank().notEmpty().email())
 			.build();
 
-	private static final Validator<Email> baseEmailValidatorBuilder = ValidatorBuilder.<Email>of()
-			.forEach(Email::getRecipients, "recipients", recipientValidator)
+	private static final Validator<Email> baseEmailValidatorBuilder = ValidatorBuilder
+			.<Email> of().forEach(Email::getRecipients, "recipients", recipientValidator)
 			.build();
 
 	@Test
@@ -23,8 +24,10 @@ public class Gh226Test {
 		String nullVal = null;
 		e.setRecipients(Arrays.asList(nullVal));
 		ConstraintViolations violations = baseEmailValidatorBuilder.validate(e);
+		System.out.println(violations);
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"recipients[0]\" must not be null");
+		assertThat(violations.get(0).message())
+				.isEqualTo("\"recipients[0].aaa\" must not be null");
 	}
 
 	public class Email {

@@ -190,8 +190,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public Validator<T> build() {
 		return new Validator<T>(messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
-				(name, validator) -> ValidatorBuilder.<NullWrapper<T>>of()
-						.nest(NullWrapper::get, name, (Validator<? super T>) validator).build(),
+				(name, validator) -> ValidatorBuilder.<NullWrapper<T>> of()
+						.nest(NullWrapper::get, name, (Validator<? super T>) validator)
+						.build(),
 				this.messageFormatter == null ? new SimpleMessageFormatter()
 						: this.messageFormatter,
 				this.failFast);
