@@ -15,10 +15,23 @@ public class Gh229Test {
 	void validationResultShouldDifferIfMemoizeIsTrue() {
 		final Validator<Supplier<Instant>> validator = ValidatorBuilder
 				.<Supplier<Instant>> of()
-				._instant(Supplier::get, "date", c -> c.before(Instant::now, true))
-				.build();
+				._instant(Supplier::get, "date", c -> c.before(() -> {
+					try {
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+					return Instant.now();
+				}, true)).build();
 		final ConstraintViolations violations1 = validator.validate(Instant::now);
 		assertThat(violations1.isValid()).isTrue();
+		try {
+			Thread.sleep(200);
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		final ConstraintViolations violations2 = validator.validate(Instant::now);
 		assertThat(violations2.isValid()).isFalse();
 		assertThat(violations2.size()).isEqualTo(1);
@@ -29,10 +42,23 @@ public class Gh229Test {
 	void validationResultShouldNotDifferIfMemoizeIsFalse() {
 		final Validator<Supplier<Instant>> validator = ValidatorBuilder
 				.<Supplier<Instant>> of()
-				._instant(Supplier::get, "date", c -> c.before(Instant::now, false))
-				.build();
+				._instant(Supplier::get, "date", c -> c.before(() -> {
+					try {
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+					return Instant.now();
+				}, false)).build();
 		final ConstraintViolations violations1 = validator.validate(Instant::now);
 		assertThat(violations1.isValid()).isTrue();
+		try {
+			Thread.sleep(200);
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		final ConstraintViolations violations2 = validator.validate(Instant::now);
 		assertThat(violations2.isValid()).isTrue();
 	}
