@@ -229,9 +229,8 @@ public class Validator<T> implements Validatable<T> {
 					}
 					else {
 						final String name = this.indexedName("", nestedName, i++);
-						final ConstraintViolations v = this.nullSupplierValidator(name)
-								.validate(() -> null, locale, constraintContext);
-						violations.addAll(v);
+						final ConstraintViolation v = notNullViolation(name, locale);
+						violations.add(v);
 					}
 					if (!violations.isEmpty() && this.failFast) {
 						return violations;
@@ -259,16 +258,10 @@ public class Validator<T> implements Validatable<T> {
 		return violations;
 	}
 
-	private Validator<Supplier<Object>> nullSupplierValidator(String name) {
-		final Deque<ConstraintPredicate<Object>> notNull = new LinkedList<>();
-		notNull.add(ConstraintPredicate.of(Objects::nonNull, OBJECT_NOT_NULL,
-				() -> new Object[] {}, NullAs.INVALID));
-		final ConstraintPredicates<Supplier<Object>, Object> constraintPredicates = new ConstraintPredicates<>(
-				Supplier::get, name, notNull);
-		return new Validator<>(this.messageKeySeparator,
-				Collections.singletonList(constraintPredicates), Collections.emptyList(),
-				Collections.emptyList(), this.messageFormatter, this.failFast,
-				this.prefix);
+	private ConstraintViolation notNullViolation(String name, Locale locale) {
+		return new ConstraintViolation(name, OBJECT_NOT_NULL.messageKey(),
+				OBJECT_NOT_NULL.defaultMessageFormat(),
+				pad(name, new Object[] {}, new ViolatedValue(null)),
+				this.messageFormatter, locale);
 	}
-
 }
