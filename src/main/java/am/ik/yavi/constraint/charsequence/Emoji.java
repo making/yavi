@@ -26,6 +26,11 @@ public class Emoji {
 
 	private static final String ELF = new String(new int[] { 0x1F9DD }, 0, 1);
 
+	private static final String E140_SKIN_RANGE = new String(new int[] { 0x1FAF0 }, 0, 1)
+			+ "-" + new String(new int[] { 0x1FAF6 }, 0, 1)
+			+ new String(new int[] { 0x1FAC3 }, 0, 1) + "-"
+			+ new String(new int[] { 0x1FAC5 }, 0, 1);
+
 	private static final String ENGLAND = new String(
 			new int[] { 0x1F3F4, 0xE0067, 0xE0062, 0xE0065, 0xE006E, 0xE0067, 0xE007F },
 			0, 7);
@@ -52,6 +57,9 @@ public class Emoji {
 	private static final String WHITE_UP_POINTING_INDEX = new String(new int[] { 0x261D },
 			0, 1);
 
+	private static final String ADHESIVE_BANDAGE = new String(new int[] { 0x1FA79 }, 0,
+			1);
+
 	private static final String ZERO_WIDTH_JOINER = "\u200D";
 
 	/**
@@ -68,10 +76,12 @@ public class Emoji {
 		String s = str
 				.replaceAll("[" + StandardizedVariationSequence.RANGE
 						+ COMBINING_ENCLOSING_KEYCAP + "]", "") //
-				.replaceAll("([" + WHITE_UP_POINTING_INDEX + "-" + ELF + "]["
-						+ SKIN_TONE_SELECTOR_RANGE + "])", DUMMY_REPLACEMENT)
+				.replaceAll(
+						"([" + WHITE_UP_POINTING_INDEX + "-" + ELF + E140_SKIN_RANGE
+								+ "][" + SKIN_TONE_SELECTOR_RANGE + "])",
+						DUMMY_REPLACEMENT)
 				.replaceAll("([" + ZERO_WIDTH_JOINER + "][" + SKUL_AND_CROSSBONES + "-"
-						+ PERSON + "])", "") //
+						+ PERSON + ADHESIVE_BANDAGE + "])", "") //
 				.replaceAll("([" + REGIONAL_INDICATOR_SYMBOL_LETTER_RANGE + "]{2})",
 						DUMMY_REPLACEMENT) //
 				.replace(ENGLAND, DUMMY_REPLACEMENT) //
