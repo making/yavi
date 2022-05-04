@@ -50,6 +50,11 @@ class EmojiTest {
 	}
 
 	@Test
+	void emoji14All() throws Exception {
+		verifyEmojiAll("emoji-test-14.txt");
+	}
+
+	@Test
 	void family() {
 		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
 		assertThat(emoji.length()).isEqualTo(42);
