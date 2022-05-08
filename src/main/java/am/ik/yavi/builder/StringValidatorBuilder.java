@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class StringValidatorBuilder {
-	private final String name;
 
-	private final Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder;
 
 	public static StringValidatorBuilder of(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new StringValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	StringValidatorBuilder(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static StringValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder) {
+		return new StringValidatorBuilder(builder);
+	}
+
+	StringValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
-		final Validator<Arguments1<String>> validator = ValidatorBuilder
-				.<Arguments1<String>> of().constraint(Arguments1::arg1, name, constraints)
-				.build();
+		final Validator<Arguments1<String>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new StringValidator<>(validator, mapper::apply);
 	}
 

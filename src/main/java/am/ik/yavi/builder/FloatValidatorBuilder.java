@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class FloatValidatorBuilder {
-	private final String name;
 
-	private final Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder;
 
 	public static FloatValidatorBuilder of(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new FloatValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	FloatValidatorBuilder(String name,
-			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static FloatValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder) {
+		return new FloatValidatorBuilder(builder);
+	}
+
+	FloatValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> FloatValidator<T> build(Function<? super Float, ? extends T> mapper) {
-		final Validator<Arguments1<Float>> validator = ValidatorBuilder
-				.<Arguments1<Float>> of().constraint(Arguments1::arg1, name, constraints)
-				.build();
+		final Validator<Arguments1<Float>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new FloatValidator<>(validator, mapper::apply);
 	}
 

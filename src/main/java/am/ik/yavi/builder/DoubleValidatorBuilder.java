@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class DoubleValidatorBuilder {
-	private final String name;
 
-	private final Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Double>>, ValidatorBuilder<Arguments1<Double>>> builder;
 
 	public static DoubleValidatorBuilder of(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new DoubleValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	DoubleValidatorBuilder(String name,
-			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static DoubleValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Double>>, ValidatorBuilder<Arguments1<Double>>> builder) {
+		return new DoubleValidatorBuilder(builder);
+	}
+
+	DoubleValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Double>>, ValidatorBuilder<Arguments1<Double>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> DoubleValidator<T> build(Function<? super Double, ? extends T> mapper) {
-		final Validator<Arguments1<Double>> validator = ValidatorBuilder
-				.<Arguments1<Double>> of().constraint(Arguments1::arg1, name, constraints)
-				.build();
+		final Validator<Arguments1<Double>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new DoubleValidator<>(validator, mapper::apply);
 	}
 

@@ -27,25 +27,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.11.0
  */
 public class YearValidatorBuilder {
-	private final String name;
 
-	private final Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder;
 
 	public static YearValidatorBuilder of(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new YearValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	YearValidatorBuilder(String name,
-			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static YearValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder) {
+		return new YearValidatorBuilder(builder);
+	}
+
+	YearValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> YearValidator<T> build(Function<? super Year, ? extends T> mapper) {
-		final Validator<Arguments1<Year>> validator = ValidatorBuilder
-				.<Arguments1<Year>> of().constraint(Arguments1::arg1, name, constraints)
-				.build();
+		final Validator<Arguments1<Year>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new YearValidator<>(validator, mapper::apply);
 	}
 

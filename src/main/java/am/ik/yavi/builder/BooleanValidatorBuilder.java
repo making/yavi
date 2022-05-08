@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class BooleanValidatorBuilder {
-	private final String name;
 
-	private final Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Boolean>>, ValidatorBuilder<Arguments1<Boolean>>> builder;
 
 	public static BooleanValidatorBuilder of(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new BooleanValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	BooleanValidatorBuilder(String name,
-			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static BooleanValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Boolean>>, ValidatorBuilder<Arguments1<Boolean>>> builder) {
+		return new BooleanValidatorBuilder(builder);
+	}
+
+	BooleanValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Boolean>>, ValidatorBuilder<Arguments1<Boolean>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> BooleanValidator<T> build(Function<? super Boolean, ? extends T> mapper) {
-		final Validator<Arguments1<Boolean>> validator = ValidatorBuilder
-				.<Arguments1<Boolean>> of()
-				.constraint(Arguments1::arg1, name, constraints).build();
+		final Validator<Arguments1<Boolean>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new BooleanValidator<>(validator, mapper::apply);
 	}
 
