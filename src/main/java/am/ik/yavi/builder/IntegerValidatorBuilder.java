@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class IntegerValidatorBuilder {
-	private final String name;
 
-	private final Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Integer>>, ValidatorBuilder<Arguments1<Integer>>> builder;
 
 	public static IntegerValidatorBuilder of(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new IntegerValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	IntegerValidatorBuilder(String name,
-			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static IntegerValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Integer>>, ValidatorBuilder<Arguments1<Integer>>> builder) {
+		return new IntegerValidatorBuilder(builder);
+	}
+
+	IntegerValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Integer>>, ValidatorBuilder<Arguments1<Integer>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> IntegerValidator<T> build(Function<? super Integer, ? extends T> mapper) {
-		final Validator<Arguments1<Integer>> validator = ValidatorBuilder
-				.<Arguments1<Integer>> of()
-				.constraint(Arguments1::arg1, name, constraints).build();
+		final Validator<Arguments1<Integer>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new IntegerValidator<>(validator, mapper::apply);
 	}
 

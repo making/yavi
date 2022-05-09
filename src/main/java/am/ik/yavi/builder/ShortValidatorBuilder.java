@@ -26,25 +26,30 @@ import am.ik.yavi.core.Validator;
  * @since 0.7.0
  */
 public class ShortValidatorBuilder {
-	private final String name;
 
-	private final Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder;
 
 	public static ShortValidatorBuilder of(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ShortValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	ShortValidatorBuilder(String name,
-			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static ShortValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder) {
+		return new ShortValidatorBuilder(builder);
+	}
+
+	ShortValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> ShortValidator<T> build(Function<? super Short, ? extends T> mapper) {
-		final Validator<Arguments1<Short>> validator = ValidatorBuilder
-				.<Arguments1<Short>> of().constraint(Arguments1::arg1, name, constraints)
-				.build();
+		final Validator<Arguments1<Short>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new ShortValidator<>(validator, mapper::apply);
 	}
 

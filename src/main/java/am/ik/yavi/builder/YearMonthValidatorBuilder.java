@@ -27,26 +27,31 @@ import am.ik.yavi.core.Validator;
  * @since 0.11.0
  */
 public class YearMonthValidatorBuilder {
-	private final String name;
 
-	private final Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<YearMonth>>, ValidatorBuilder<Arguments1<YearMonth>>> builder;
 
 	public static YearMonthValidatorBuilder of(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new YearMonthValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	YearMonthValidatorBuilder(String name,
-			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static YearMonthValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<YearMonth>>, ValidatorBuilder<Arguments1<YearMonth>>> builder) {
+		return new YearMonthValidatorBuilder(builder);
+	}
+
+	YearMonthValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<YearMonth>>, ValidatorBuilder<Arguments1<YearMonth>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> YearMonthValidator<T> build(
 			Function<? super YearMonth, ? extends T> mapper) {
-		final Validator<Arguments1<YearMonth>> validator = ValidatorBuilder
-				.<Arguments1<YearMonth>> of()
-				.constraint(Arguments1::arg1, name, constraints).build();
+		final Validator<Arguments1<YearMonth>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new YearMonthValidator<>(validator, mapper::apply);
 	}
 

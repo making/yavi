@@ -27,26 +27,31 @@ import am.ik.yavi.core.Validator;
  * @since 0.10.0
  */
 public class LocalDateTimeValidatorBuilder {
-	private final String name;
 
-	private final Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints;
+	private final Function<ValidatorBuilder<Arguments1<LocalDateTime>>, ValidatorBuilder<Arguments1<LocalDateTime>>> builder;
 
 	public static LocalDateTimeValidatorBuilder of(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new LocalDateTimeValidatorBuilder(name, constraints);
+		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
 	}
 
-	LocalDateTimeValidatorBuilder(String name,
-			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		this.name = name;
-		this.constraints = constraints;
+	/**
+	 * @since 0.11.3
+	 */
+	public static LocalDateTimeValidatorBuilder wrap(
+			Function<ValidatorBuilder<Arguments1<LocalDateTime>>, ValidatorBuilder<Arguments1<LocalDateTime>>> builder) {
+		return new LocalDateTimeValidatorBuilder(builder);
+	}
+
+	LocalDateTimeValidatorBuilder(
+			Function<ValidatorBuilder<Arguments1<LocalDateTime>>, ValidatorBuilder<Arguments1<LocalDateTime>>> builder) {
+		this.builder = builder;
 	}
 
 	public <T> LocalDateTimeValidator<T> build(
 			Function<? super LocalDateTime, ? extends T> mapper) {
-		final Validator<Arguments1<LocalDateTime>> validator = ValidatorBuilder
-				.<Arguments1<LocalDateTime>> of()
-				.constraint(Arguments1::arg1, name, constraints).build();
+		final Validator<Arguments1<LocalDateTime>> validator = this.builder
+				.apply(ValidatorBuilder.of()).build();
 		return new LocalDateTimeValidator<>(validator, mapper::apply);
 	}
 
