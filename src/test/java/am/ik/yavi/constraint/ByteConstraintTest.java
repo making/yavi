@@ -133,7 +133,7 @@ class ByteConstraintTest {
 	@ValueSource(strings = { "99", "100" })
 	void invalidNegativeOrZero(byte value) {
 		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -141,7 +141,7 @@ class ByteConstraintTest {
 	@ValueSource(strings = { "-101", "-120", "0" })
 	void validNegativeOrZero(byte value) {
 		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

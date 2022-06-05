@@ -130,7 +130,7 @@ class IntegerConstraintTest {
 	@ValueSource(ints = { 99, 100 })
 	void invalidNegativeOrZero(int value) {
 		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -138,7 +138,7 @@ class IntegerConstraintTest {
 	@ValueSource(ints = { -101, -120, 0 })
 	void validNegativeOrZero(int value) {
 		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

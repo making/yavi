@@ -134,7 +134,7 @@ class ShortConstraintTest {
 	@ValueSource(shorts = { 99, 100 })
 	void invalidNegativeOrZero(short value) {
 		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -142,7 +142,7 @@ class ShortConstraintTest {
 	@ValueSource(shorts = { -101, -120, 0 })
 	void validNegativeOrZero(short value) {
 		Predicate<Short> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

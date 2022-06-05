@@ -144,7 +144,7 @@ class BigIntegerConstraintTest {
 	@ValueSource(strings = { "99", "100" })
 	void invalidNegativeOrZero(BigInteger value) {
 		Predicate<BigInteger> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -152,7 +152,7 @@ class BigIntegerConstraintTest {
 	@ValueSource(strings = { "-101", "-150", "0" })
 	void validNegativeOrZero(BigInteger value) {
 		Predicate<BigInteger> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

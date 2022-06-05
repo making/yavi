@@ -130,7 +130,7 @@ class DoubleConstraintTest {
 	@ValueSource(doubles = { 99.0, 100 })
 	void invalidNegativeOrZero(double value) {
 		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -138,7 +138,7 @@ class DoubleConstraintTest {
 	@ValueSource(doubles = { -101, -120, 0 })
 	void validNegativeOrZero(double value) {
 		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

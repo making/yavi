@@ -130,7 +130,7 @@ class LongConstraintTest {
 	@ValueSource(longs = { 99, 100 })
 	void invalidNegativeOrZero(long value) {
 		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -138,7 +138,7 @@ class LongConstraintTest {
 	@ValueSource(longs = { -101, -120, 0 })
 	void validNegativeOrZero(long value) {
 		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

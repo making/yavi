@@ -130,7 +130,7 @@ class FloatConstraintTest {
 	@ValueSource(floats = { 99.0f, 100f })
 	void invalidNegativeOrZero(float value) {
 		Predicate<Float> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -138,7 +138,7 @@ class FloatConstraintTest {
 	@ValueSource(floats = { -101f, -120f, 0f })
 	void validNegativeOrZero(float value) {
 		Predicate<Float> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
