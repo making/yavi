@@ -128,7 +128,7 @@ class DoubleConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(doubles = { 99.0, 100 })
-	void invalidNegativeOrZero(double value) {
+	void invalidNegaitveOrZero(double value) {
 		Predicate<Double> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
@@ -136,9 +136,25 @@ class DoubleConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(doubles = { -101, -120, 0 })
-	void validNegativeOrZero(double value) {
+	void validNegaitveOrZero(double value) {
 		Predicate<Double> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { 99.0, 100 })
+	void invalidNegativeOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(doubles = { -101, -120, 0 })
+	void validNegativeOrZero(double value) {
+		Predicate<Double> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

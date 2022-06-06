@@ -128,7 +128,7 @@ class FloatConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(floats = { 99.0f, 100f })
-	void invalidNegativeOrZero(float value) {
+	void invalidNegaitveOrZero(float value) {
 		Predicate<Float> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
@@ -136,9 +136,25 @@ class FloatConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(floats = { -101f, -120f, 0f })
-	void validNegativeOrZero(float value) {
+	void validNegaitveOrZero(float value) {
 		Predicate<Float> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { 99.0f, 100f })
+	void invalidNegativeOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(floats = { -101f, -120f, 0f })
+	void validNegativeOrZero(float value) {
+		Predicate<Float> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

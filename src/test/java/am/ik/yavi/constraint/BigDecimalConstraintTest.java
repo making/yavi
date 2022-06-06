@@ -141,7 +141,7 @@ class BigDecimalConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "99", "100" })
-	void invalidNegativeOrZero(BigDecimal value) {
+	void invalidNegaitveOrZero(BigDecimal value) {
 		Predicate<BigDecimal> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
@@ -149,9 +149,25 @@ class BigDecimalConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-101", "-150", "0" })
-	void validNegativeOrZero(BigDecimal value) {
+	void validNegaitveOrZero(BigDecimal value) {
 		Predicate<BigDecimal> predicate = retrievePredicate(
 				NumericConstraintBase::negaitveOrZero);
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "99", "100" })
+	void invalidNegativeOrZero(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "-101", "-150", "0" })
+	void validNegativeOrZero(BigDecimal value) {
+		Predicate<BigDecimal> predicate = retrievePredicate(
+				NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
