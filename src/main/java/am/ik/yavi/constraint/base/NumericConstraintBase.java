@@ -79,6 +79,17 @@ public abstract class NumericConstraintBase<T, V, C extends Constraint<T, V, C>>
 	}
 
 	/**
+	 * @deprecated in favour of {@link NumericConstraintBase#negativeOrZero}
+	 * @since 0.10.0
+	 */
+	@Deprecated
+	public C negaitveOrZero() {
+		this.predicates().add(ConstraintPredicate.of(this.isLessThanOrEqual(zeroValue()),
+				NUMERIC_NEGATIVE_OR_ZERO, () -> new Object[] {}, VALID));
+		return cast();
+	}
+
+	/**
 	 * @since 0.10.0
 	 */
 	public C negativeOrZero() {
