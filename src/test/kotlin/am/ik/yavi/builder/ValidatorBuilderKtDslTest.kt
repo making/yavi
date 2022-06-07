@@ -66,6 +66,7 @@ data class DemoForEachMap(val x: Map<String, DemoString>)
 data class DemoForEachIfPresentMap(val x: Map<String, DemoString>?)
 data class DemoForEachArray(val x: Array<DemoString>)
 data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
+data class DemoUnwrap(val x: Int, val y: Int)
 
 class ValidatorBuilderKtDslTest {
 	private val demoStringValidator = validator<DemoString> {
@@ -1208,5 +1209,25 @@ class ValidatorBuilderKtDslTest {
 		val violation = violations[0]
 		Assertions.assertThat(violation.message()).isEqualTo(""""x" must not be null""")
 		Assertions.assertThat(violation.messageKey()).isEqualTo("object.notNull")
+	}
+
+	@Test
+	fun unwrap() {
+		val validator = validator<DemoUnwrap> {
+			unwrap().constraintOnTarget({ it.x > it.y }, "x", "x.isGreaterThanFrom", """"x" must be greater than "y"""")
+		}
+
+		var demo = DemoUnwrap(x = 2, y = 1)
+		var violations = validator.validate(demo)
+		Assertions.assertThat(violations.isValid).isTrue()
+
+		demo = DemoUnwrap(x = 1, y = 1)
+		violations = validator.validate(demo)
+		Assertions.assertThat(violations.isValid).isFalse()
+		Assertions.assertThat(violations.size).isEqualTo(1)
+		val violation = violations[0]
+		Assertions.assertThat(violation.name()).isEqualTo("x")
+		Assertions.assertThat(violation.message()).isEqualTo(""""x" must be greater than "y"""")
+		Assertions.assertThat(violation.messageKey()).isEqualTo("x.isGreaterThanFrom")
 	}
 }
