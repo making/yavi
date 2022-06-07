@@ -517,4 +517,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 			ValidatorBuilderKt(it).apply(block).validatorBuilder
 		}
 
+	/**
+	 * @since 0.12.0
+	 */
+	fun unwrap() = validatorBuilder
 }
