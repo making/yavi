@@ -29,6 +29,7 @@ import am.ik.yavi.jsr305.Nullable;
 /**
  * a specialized {@code Validation} type that regards {@code List<E>} as
  * {@code ConstraintViolations}
+ *
  * @param <T> value type in the case of success
  * @since 0.6.0
  */
@@ -42,6 +43,33 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 			return ((Validated<T>) delegate);
 		}
 		return new Validated<>(delegate);
+	}
+
+	/**
+	 * A wrapper of {@link am.ik.yavi.fn.Validation#success(Object)}
+	 *
+	 * @since 0.12.0
+	 */
+	public static <T> Validated<T> successWith(@Nullable T value) {
+		return new Validated<>(Validation.success(value));
+	}
+
+	/**
+	 * A wrapper of {@link am.ik.yavi.fn.Validation#failure(List)}
+	 *
+	 * @since 0.12.0
+	 */
+	public static <T> Validated<T> failureWith(List<ConstraintViolation> errors) {
+		return new Validated<>(Validation.failure(errors));
+	}
+
+	/**
+	 * A wrapper of {@link am.ik.yavi.fn.Validation#failure(Object[])}
+	 *
+	 * @since 0.12.0
+	 */
+	public static <T> Validated<T> failureWith(ConstraintViolation... errors) {
+		return new Validated<>(Validation.failure(errors));
 	}
 
 	Validated(Validation<ConstraintViolation, ? extends T> delegate) {
