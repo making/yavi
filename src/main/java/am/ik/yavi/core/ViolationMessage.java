@@ -96,6 +96,8 @@ public interface ViolationMessage {
 				"\"{0}\" must be a valid representation of a big integer"), //
 		CHAR_SEQUENCE_BIGDECIMAL("charSequence.bigdecimal",
 				"\"{0}\" must be a valid representation of a big decimal"), //
+		CHAR_SEQUENCE_LOCAL_DATE("charSequence.localdate",
+				"\"{0}\" must be a valid representation of a local date using the pattern: {1}. The give value is: {2}"),
 		BYTE_SIZE_LESS_THAN("byteSize.lessThan",
 				"The byte size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		BYTE_SIZE_LESS_THAN_OR_EQUAL("byteSize.lessThanOrEqual",

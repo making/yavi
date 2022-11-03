@@ -21,7 +21,12 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.arguments.Arguments3Validator;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.constraint.CharSequenceConstraint;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,5 +76,27 @@ class ValueValidatorTest {
 				.isFalse();
 		assertThat(addressValidator.andThen(foreignAddressValidator)
 				.validate("J", "tokyo", "+0123456789").isValid()).isFalse();
+	}
+
+	@Test
+	void invalidPatternStringToLocalDateValidator() {
+		ValueValidator<String, LocalDate> localDateValidator
+				= ValidatorBuilder.<String>of()._string(f -> f, "myLocalDate", CharSequenceConstraint::isLocalDate)
+				.build().applicative().andThen(LocalDate::parse);
+		final Validated<LocalDate> localDateValidated = localDateValidator.validate("31/01/2022");
+		Assertions.assertThat(localDateValidated.isValid()).isFalse();
+		Assertions.assertThat(localDateValidated.errors()).hasSize(1);
+		Assertions.assertThat(localDateValidated.errors().get(0).messageKey()).isEqualTo("charSequence.localdate");
+		Assertions.assertThat(localDateValidated.errors().get(0).message()).isEqualTo("\"myLocalDate\" must be a valid representation of a local date using the pattern: yyyy-MM-dd. The give value is: 31/01/2022");
+	}
+
+	@Test
+	void validStringToLocalDateValidator() {
+		ValueValidator<String, LocalDate> localDateValidator
+				= ValidatorBuilder.<String>of()._string(f -> f, "myLocalDate", c -> c.isLocalDate("dd/MM/yyyy"))
+				.build().applicative().andThen(s -> LocalDate.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+		final Validated<LocalDate> localDateValidated = localDateValidator.validate("31/01/2022");
+		Assertions.assertThat(localDateValidated.isValid()).isTrue();
+		Assertions.assertThat(localDateValidated.value()).isEqualTo(LocalDate.of(2022,1,31));
 	}
 }
