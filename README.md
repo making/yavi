@@ -35,6 +35,10 @@ YAVI has the following features:
 
 See [the reference documentation](https://yavi.ik.am) for details.
 
+### Presentations
+
+* 2021-07-01 YAVIの紹介 (Japanese) [[Deck](https://docs.google.com/presentation/d/1aw5cXqTxvMbBvTUU4TiF2oTUkG8orDujA5IRQGtIDiw/edit#slide=id.p)] [[Recording](https://www.youtube.com/watch?v=o0-u6QSBlv8)]
+
 ### Getting Started
 
 > This content is derived from https://hibernate.org/validator/documentation/getting-started/
