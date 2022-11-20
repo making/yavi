@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 /**
  * @since 0.10.0
  */
+@Deprecated
 public interface OffsetDateTimeConstraintMeta<T>
 		extends ConstraintMeta<T, OffsetDateTime> {
 

@@ -18,6 +18,7 @@ package am.ik.yavi.meta;
 /**
  * @since 0.4.0
  */
+@Deprecated
 public interface ObjectConstraintMeta<T, E> extends ConstraintMeta<T, E> {
 
 }

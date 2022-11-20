@@ -20,6 +20,7 @@ import java.math.BigInteger;
 /**
  * @since 0.4.0
  */
+@Deprecated
 public interface BigIntegerConstraintMeta<T> extends ConstraintMeta<T, BigInteger> {
 
 }

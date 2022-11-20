@@ -20,6 +20,7 @@ import java.time.LocalTime;
 /**
  * @since 0.10.0
  */
+@Deprecated
 public interface LocalTimeConstraintMeta<T> extends ConstraintMeta<T, LocalTime> {
 
 }

@@ -29,6 +29,7 @@ import java.util.Set;
 /**
  * @since 0.4.0
  */
+@Deprecated
 class ConstraintMetaTemplate {
 
 	private static final Set<String> supportedTypes = new HashSet<String>() {
