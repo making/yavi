@@ -222,6 +222,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(StringConstraintMeta<T> meta,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c,
@@ -247,6 +248,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(BooleanConstraintMeta<T> meta,
 			Function<BooleanConstraint<T>, BooleanConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BooleanConstraint::new);
@@ -265,6 +267,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(CharacterConstraintMeta<T> meta,
 			Function<CharacterConstraint<T>, CharacterConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, CharacterConstraint::new);
@@ -283,6 +286,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(ByteConstraintMeta<T> meta,
 			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ByteConstraint::new);
@@ -301,6 +305,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(ShortConstraintMeta<T> meta,
 			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, ShortConstraint::new);
@@ -319,6 +324,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(IntegerConstraintMeta<T> meta,
 			Function<IntegerConstraint<T>, IntegerConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, IntegerConstraint::new);
@@ -337,6 +343,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(LongConstraintMeta<T> meta,
 			Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, LongConstraint::new);
@@ -355,6 +362,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(FloatConstraintMeta<T> meta,
 			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, FloatConstraint::new);
@@ -373,6 +381,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(DoubleConstraintMeta<T> meta,
 			Function<DoubleConstraint<T>, DoubleConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, DoubleConstraint::new);
@@ -391,6 +400,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(BigIntegerConstraintMeta<T> meta,
 			Function<BigIntegerConstraint<T>, BigIntegerConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BigIntegerConstraint::new);
@@ -409,6 +419,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.4.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(BigDecimalConstraintMeta<T> meta,
 			Function<BigDecimalConstraint<T>, BigDecimalConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, BigDecimalConstraint::new);
@@ -422,6 +433,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.10.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(ToLocalTimeConstraint<T> f, String name,
 			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
 		return this.constraint(f, name, c, LocalTimeConstraint::new);
@@ -430,6 +442,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.10.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(LocalTimeConstraintMeta<T> meta,
 			Function<LocalTimeConstraint<T>, LocalTimeConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, LocalTimeConstraint::new);
@@ -454,6 +467,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.10.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(LocalDateConstraintMeta<T> meta,
 			Function<LocalDateConstraint<T>, LocalDateConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, LocalDateConstraint::new);
@@ -478,6 +492,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.10.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(LocalDateTimeConstraintMeta<T> meta,
 			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c,
@@ -578,6 +593,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.11.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(YearMonthConstraintMeta<T> meta,
 			Function<YearMonthConstraint<T>, YearMonthConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, YearMonthConstraint::new);
@@ -602,6 +618,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * @since 0.11.0
 	 */
+	@Deprecated
 	public ValidatorBuilder<T> constraint(YearConstraintMeta<T> meta,
 			Function<YearConstraint<T>, YearConstraint<T>> c) {
 		return this.constraint(meta.toValue(), meta.name(), c, YearConstraint::new);
@@ -907,6 +924,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(nested, name, validator, NullAs.INVALID);
 	}
 
+	@Deprecated
 	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
 			Validator<N> validator) {
 		return this.nest(meta.toValue(), meta.name(), validator, NullAs.INVALID);
@@ -917,6 +935,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(nested, name, converter, NullAs.INVALID);
 	}
 
+	@Deprecated
 	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
 			ValidatorBuilderConverter<N> converter) {
 		return this.nest(meta.toValue(), meta.name(), converter, NullAs.INVALID);
@@ -927,6 +946,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(nested, name, validator, NullAs.VALID);
 	}
 
+	@Deprecated
 	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
 			Validator<N> validator) {
 		return this.nest(meta.toValue(), meta.name(), validator, NullAs.VALID);
@@ -937,6 +957,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(nested, name, converter, NullAs.VALID);
 	}
 
+	@Deprecated
 	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
 			ValidatorBuilderConverter<N> converter) {
 		return this.nest(meta.toValue(), meta.name(), converter, NullAs.VALID);

@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 /**
  * @since 0.10.0
  */
+@Deprecated
 public interface ZonedDateTimeConstraintMeta<T> extends ConstraintMeta<T, ZonedDateTime> {
 
 }
