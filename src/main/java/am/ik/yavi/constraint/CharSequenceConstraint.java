@@ -193,13 +193,14 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private CharSequenceConstraint<T, E> isLocalDate(String pattern, Locale locale) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			try {
-				DateTimeFormatter.ofPattern(pattern, locale).withResolverStyle(ResolverStyle.STRICT).parse(x);
+				DateTimeFormatter.ofPattern(pattern, locale)
+						.withResolverStyle(ResolverStyle.STRICT).parse(x);
 				return true;
 			}
 			catch (DateTimeParseException ignored) {
 				return false;
 			}
-		}, CHAR_SEQUENCE_LOCAL_DATE, () -> new Object[] {pattern}, VALID));
+		}, CHAR_SEQUENCE_LOCAL_DATE, () -> new Object[] { pattern }, VALID));
 		return this;
 	}
 
