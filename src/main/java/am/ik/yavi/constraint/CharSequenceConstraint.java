@@ -22,9 +22,14 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -183,6 +188,23 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
+	 * @since 0.12.0
+	 */
+	private CharSequenceConstraint<T, E> isLocalDate(String pattern, Locale locale) {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			try {
+				DateTimeFormatter.ofPattern(pattern, locale)
+						.withResolverStyle(ResolverStyle.STRICT).parse(x);
+				return true;
+			}
+			catch (DateTimeParseException ignored) {
+				return false;
+			}
+		}, CHAR_SEQUENCE_LOCAL_DATE, () -> new Object[] { pattern }, VALID));
+		return this;
+	}
+
+	/**
 	 * @since 0.6.0
 	 */
 	public CharSequenceConstraint<T, E> isByte() {
@@ -236,6 +258,20 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> isBigDecimal() {
 		return this.isValidRepresentationOf(BigDecimal::new, CHAR_SEQUENCE_BIGDECIMAL);
+	}
+
+	/**
+	 * @since 0.12.0
+	 */
+	public CharSequenceConstraint<T, E> isIsoLocalDate() {
+		return this.isLocalDate("uuuu-MM-dd");
+	}
+
+	/**
+	 * @since 0.12.0
+	 */
+	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
+		return this.isLocalDate(pattern, Locale.getDefault());
 	}
 
 	public EmojiConstraint<T, E> emoji() {
