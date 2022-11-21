@@ -190,7 +190,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	/**
 	 * @since 0.12.0
 	 */
-	private CharSequenceConstraint<T, E> isValidLocalDate(String pattern, Locale locale) {
+	private CharSequenceConstraint<T, E> isLocalDate(String pattern, Locale locale) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			try {
 				DateTimeFormatter.ofPattern(pattern, locale).withResolverStyle(ResolverStyle.STRICT).parse(x);
@@ -270,7 +270,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.12.0
 	 */
 	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
-		return this.isValidLocalDate(pattern, Locale.getDefault());
+		return this.isLocalDate(pattern, Locale.getDefault());
 	}
 
 	public EmojiConstraint<T, E> emoji() {
