@@ -534,7 +534,7 @@ class CharSequenceConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "2022-02-02", "2022-12-31", "2022-01-01"})
 	void validIsLocalDate(String value) {
-		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isLocalDate);
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isIsoLocalDate);
 		assertThat(predicate.test(value)).isTrue();
 	}
 

@@ -25,9 +25,11 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -186,12 +188,12 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * @since 0.11.3
+	 * @since 0.12.0
 	 */
-	private CharSequenceConstraint<T, E> isValidLocalDate(String pattern) {
+	private CharSequenceConstraint<T, E> isValidLocalDate(String pattern, Locale locale) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			try {
-				LocalDate.parse(x, DateTimeFormatter.ofPattern(pattern));
+				DateTimeFormatter.ofPattern(pattern, locale).withResolverStyle(ResolverStyle.STRICT).parse(x);
 				return true;
 			}
 			catch (DateTimeParseException ignored) {
@@ -258,17 +260,17 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * @since 0.11.3
+	 * @since 0.12.0
 	 */
-	public CharSequenceConstraint<T, E> isLocalDate() {
-		return this.isValidLocalDate("yyyy-MM-dd");
+	public CharSequenceConstraint<T, E> isIsoLocalDate() {
+		return this.isLocalDate("uuuu-MM-dd");
 	}
 
 	/**
-	 * @since 0.11.3
+	 * @since 0.12.0
 	 */
 	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
-		return this.isValidLocalDate(pattern);
+		return this.isValidLocalDate(pattern, Locale.getDefault());
 	}
 
 	public EmojiConstraint<T, E> emoji() {
