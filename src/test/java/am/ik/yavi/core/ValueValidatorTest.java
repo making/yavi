@@ -98,9 +98,9 @@ class ValueValidatorTest {
 	void validStringToLocalDateValidator() {
 		ValueValidator<String, LocalDate> localDateValidator = ValidatorBuilder
 				.<String> of()
-				._string(f -> f, "myLocalDate", c -> c.localDate("dd/MM/yyyy")).build()
+				._string(f -> f, "myLocalDate", c -> c.localDate("dd/MM/uuuu")).build()
 				.applicative().andThen(s -> LocalDate.parse(s,
-						DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+						DateTimeFormatter.ofPattern("dd/MM/uuuu")));
 		final Validated<LocalDate> localDateValidated = localDateValidator
 				.validate("31/01/2022");
 		Assertions.assertThat(localDateValidated.isValid()).isTrue();
