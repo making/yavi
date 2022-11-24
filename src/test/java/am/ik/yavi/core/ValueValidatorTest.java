@@ -82,7 +82,7 @@ class ValueValidatorTest {
 	void invalidPatternStringToLocalDateValidator() {
 		ValueValidator<String, LocalDate> localDateValidator = ValidatorBuilder
 				.<String> of()
-				._string(f -> f, "myLocalDate", CharSequenceConstraint::isIsoLocalDate)
+				._string(f -> f, "myLocalDate", CharSequenceConstraint::isoLocalDate)
 				.build().applicative().andThen(LocalDate::parse);
 		final Validated<LocalDate> localDateValidated = localDateValidator
 				.validate("31/01/2022");
@@ -98,7 +98,7 @@ class ValueValidatorTest {
 	void validStringToLocalDateValidator() {
 		ValueValidator<String, LocalDate> localDateValidator = ValidatorBuilder
 				.<String> of()
-				._string(f -> f, "myLocalDate", c -> c.isLocalDate("dd/MM/yyyy")).build()
+				._string(f -> f, "myLocalDate", c -> c.localDate("dd/MM/yyyy")).build()
 				.applicative().andThen(s -> LocalDate.parse(s,
 						DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 		final Validated<LocalDate> localDateValidated = localDateValidator
