@@ -533,25 +533,25 @@ class CharSequenceConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "2022-02-02", "2022-12-31", "2022-01-01" })
-	void validIsLocalDate(String value) {
+	void validLocalDate(String value) {
 		Predicate<String> predicate = retrievePredicate(
-				CharSequenceConstraint::isIsoLocalDate);
+				CharSequenceConstraint::isoLocalDate);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "2022-02-02", "2022-12-31", "2022-01-01" })
-	void inValidIsLocalDateWithPattern(String value) {
+	void inValidLocalDateWithPattern(String value) {
 		String pattern = "dd/MM/yyyy";
-		Predicate<String> predicate = retrievePredicate(c -> c.isLocalDate(pattern));
+		Predicate<String> predicate = retrievePredicate(c -> c.localDate(pattern));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "01/01/2022", "31/01/2022", "31/12/2022" })
-	void validIsLocalDateWithPattern(String value) {
+	void validLocalDateWithPattern(String value) {
 		String pattern = "dd/MM/yyyy";
-		Predicate<String> predicate = retrievePredicate(c -> c.isLocalDate(pattern));
+		Predicate<String> predicate = retrievePredicate(c -> c.localDate(pattern));
 		assertThat(predicate.test(value)).isTrue();
 	}
 

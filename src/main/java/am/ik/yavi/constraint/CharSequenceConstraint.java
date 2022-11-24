@@ -126,6 +126,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	/**
 	 * Does the given value start with the {@code prefix}
+	 *
 	 * @param prefix the prefix the value has to start with
 	 * @since 0.10.0
 	 */
@@ -139,6 +140,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	/**
 	 * Does the given value end with the {@code suffix}
+	 *
 	 * @param suffix the suffix the value has to end with
 	 * @since 0.10.0
 	 */
@@ -261,17 +263,37 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * @since 0.12.0
+	 * @since 0.12.1
 	 */
-	public CharSequenceConstraint<T, E> isIsoLocalDate() {
-		return this.isLocalDate("uuuu-MM-dd");
+	public CharSequenceConstraint<T, E> isoLocalDate() {
+		return this.localDate("uuuu-MM-dd");
 	}
 
 	/**
+	 * Use {@link #isoLocalDate()} instead
+	 *
 	 * @since 0.12.0
 	 */
-	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
+	@Deprecated
+	public CharSequenceConstraint<T, E> isIsoLocalDate() {
+		return this.isoLocalDate();
+	}
+
+	/**
+	 * @since 0.12.1
+	 */
+	public CharSequenceConstraint<T, E> localDate(String pattern) {
 		return this.isLocalDate(pattern, Locale.getDefault());
+	}
+
+	/**
+	 * Use {@link #localDate(String)} instead
+	 *
+	 * @since 0.12.0
+	 */
+	@Deprecated
+	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
+		return this.localDate(pattern);
 	}
 
 	public EmojiConstraint<T, E> emoji() {
