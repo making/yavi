@@ -191,10 +191,10 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	/**
 	 * @since 0.12.0
 	 */
-	private CharSequenceConstraint<T, E> isLocalDate(String pattern, Locale locale) {
+	private CharSequenceConstraint<T, E> isLocalDatePattern(String pattern) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			try {
-				DateTimeFormatter.ofPattern(pattern, locale)
+				DateTimeFormatter.ofPattern(pattern)
 						.withResolverStyle(ResolverStyle.STRICT).parse(x);
 				return true;
 			}
@@ -265,7 +265,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.12.1
 	 */
 	public CharSequenceConstraint<T, E> isoLocalDate() {
-		return this.localDate("uuuu-MM-dd");
+		return this.isLocalDatePattern("uuuu-MM-dd");
 	}
 
 	/**
@@ -282,7 +282,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.12.1
 	 */
 	public CharSequenceConstraint<T, E> localDate(String pattern) {
-		return this.isLocalDate(pattern, Locale.getDefault());
+		return this.isLocalDatePattern(pattern);
 	}
 
 	/**
