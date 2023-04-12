@@ -20,7 +20,6 @@ import java.time.Instant;
 /**
  * @since 0.10.0
  */
-@Deprecated
 public interface InstantConstraintMeta<T> extends ConstraintMeta<T, Instant> {
 
 }

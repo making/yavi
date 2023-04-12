@@ -18,7 +18,6 @@ package am.ik.yavi.meta;
 /**
  * @since 0.4.0
  */
-@Deprecated
 public interface BooleanConstraintMeta<T> extends ConstraintMeta<T, Boolean> {
 
 }
