@@ -20,7 +20,6 @@ import java.util.function.Function;
 /**
  * @since 0.4.0
  */
-@Deprecated
 public interface ConstraintMeta<T, V> {
 	String name();
 

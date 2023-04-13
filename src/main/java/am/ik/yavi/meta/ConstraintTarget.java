@@ -23,7 +23,6 @@ import java.lang.annotation.Target;
 /**
  * @since 0.4.0
  */
-@Deprecated
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.SOURCE)
 public @interface ConstraintTarget {
