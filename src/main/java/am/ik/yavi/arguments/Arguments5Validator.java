@@ -75,6 +75,8 @@ public interface Arguments5Validator<A1, A2, A3, A4, A5, X> {
 	 */
 	default Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
 		// WARNING:: The default implementation is not really lazy!
+		java.util.logging.Logger.getLogger(Arguments5Validator.class.getName()).warning(
+				"the default implementation of lazy() is called which is not really lazy!");
 		return this.andThen(x -> () -> x);
 	}
 
