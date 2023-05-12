@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 class ArgumentsValidatorTest {
 
@@ -412,5 +413,31 @@ class ArgumentsValidatorTest {
 		assertThat(validated.errors().get(0).name()).isEqualTo("country");
 		assertThat(validated.errors().get(0).messageKey()).isEqualTo("object.notNull");
 		assertThat(validated.errors().get(0).args()[0]).isEqualTo("country");
+	}
+
+	@Test
+	void lazyValidationInConstructor_success() {
+		new Car("Morris", "DD-AB-123", 2);
+	}
+
+	@Test
+	void lazyValidationInConstructor_fail() {
+		final Throwable throwable = catchThrowable(() -> new Car(null, null, 1));
+		assertThat(throwable).isInstanceOf(ConstraintViolationsException.class);
+		final ConstraintViolationsException exception = (ConstraintViolationsException) throwable;
+		final ConstraintViolations violations = exception.violations();
+		assertThat(violations).isNotNull();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(3);
+		assertThat(violations.get(0).name()).isEqualTo("manufacturer");
+		assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
+		assertThat(violations.get(0).args()[0]).isEqualTo("manufacturer");
+		assertThat(violations.get(1).name()).isEqualTo("licensePlate");
+		assertThat(violations.get(1).messageKey()).isEqualTo("object.notNull");
+		assertThat(violations.get(1).args()[0]).isEqualTo("licensePlate");
+		assertThat(violations.get(2).name()).isEqualTo("seatCount");
+		assertThat(violations.get(2).messageKey())
+				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(2).args()[0]).isEqualTo("seatCount");
 	}
 }

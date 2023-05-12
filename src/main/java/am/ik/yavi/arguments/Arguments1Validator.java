@@ -104,6 +104,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	default Arguments1Validator<A1, Supplier<X>> lazy() {
 		// WARNING:: The default implementation is not really lazy!
+		java.util.logging.Logger.getLogger(Arguments1Validator.class.getName()).warning(
+				"the default implementation of lazy() is called which is not really lazy!");
 		return this.andThen(x -> () -> x);
 	}
 

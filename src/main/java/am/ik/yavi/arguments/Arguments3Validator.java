@@ -74,6 +74,8 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 */
 	default Arguments3Validator<A1, A2, A3, Supplier<X>> lazy() {
 		// WARNING:: The default implementation is not really lazy!
+		java.util.logging.Logger.getLogger(Arguments3Validator.class.getName()).warning(
+				"the default implementation of lazy() is called which is not really lazy!");
 		return this.andThen(x -> () -> x);
 	}
 
