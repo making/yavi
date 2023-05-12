@@ -20,7 +20,6 @@ import java.time.Year;
 /**
  * @since 0.11.0
  */
-@Deprecated
 public interface YearConstraintMeta<T> extends ConstraintMeta<T, Year> {
 
 }

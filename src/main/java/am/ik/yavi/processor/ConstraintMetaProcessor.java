@@ -65,7 +65,6 @@ import am.ik.yavi.meta.ConstraintTarget;
  */
 @SupportedAnnotationTypes({ "am.ik.yavi.meta.ConstraintTarget",
 		"am.ik.yavi.meta.ConstraintArguments" })
-@Deprecated
 public class ConstraintMetaProcessor extends AbstractProcessor {
 
 	@Override
