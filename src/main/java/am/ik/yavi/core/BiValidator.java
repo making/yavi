@@ -22,9 +22,8 @@ import java.util.function.BiConsumer;
  * object to validate and arbitrary errors object. <br>
  * The result of validation is contained in the errors object instead of returning it.
  * This class is useful for a library to adapt both YAVI and other validation library such
- * as Spring Framework's <code>org.springframework.validation.Validator</code>.
- *
- * Validator can be wrapped as follows:
+ * as Spring Framework's <code>org.springframework.validation.Validator</code>. Validator
+ * can be wrapped as follows:
  *
  * <pre>
  * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
@@ -40,19 +39,34 @@ import java.util.function.BiConsumer;
  * @since 0.5.0
  */
 public class BiValidator<T, E> implements BiConsumer<T, E> {
-	private final Validator<T> validator;
+	private final ValueValidator<T, T> validator;
 
 	private final ErrorHandler<E> errorHandler;
 
-	public BiValidator(Validator<T> validator, ErrorHandler<E> errorHandler) {
+	/**
+	 * Create a {@link BiValidator} from a {@link ValueValidator}
+	 *
+	 * @param validator value validator
+	 * @param errorHandler error handler
+	 * @since 0.13.0
+	 */
+	public BiValidator(ValueValidator<T, T> validator, ErrorHandler<E> errorHandler) {
 		this.validator = validator;
 		this.errorHandler = errorHandler;
 	}
 
+	public BiValidator(Validator<T> validator, ErrorHandler<E> errorHandler) {
+		this.validator = validator.applicative();
+		this.errorHandler = errorHandler;
+	}
+
 	public void accept(T target, E errors) {
-		final ConstraintViolations violations = this.validator.validate(target);
-		violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler
-				.handleError(errors, name, messageKey, args, defaultMessage));
+		final Validated<T> validated = this.validator.validate(target);
+		if (!validated.isValid()) {
+			final ConstraintViolations violations = validated.errors();
+			violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler
+					.handleError(errors, name, messageKey, args, defaultMessage));
+		}
 	}
 
 	@FunctionalInterface

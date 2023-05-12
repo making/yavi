@@ -18,30 +18,42 @@ package am.ik.yavi.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.BiValidator.ErrorHandler;
 import am.ik.yavi.message.SimpleMessageFormatter;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BiValidatorTest {
-	final BiValidator<User, List<ConstraintViolation>> validator = ValidatorBuilder
-			.of(User.class)
+
+	static final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name,
+			messageKey, args,
+			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey,
+					defaultMessage, args, new SimpleMessageFormatter(), Locale.ENGLISH));
+
+	static final Validator<User> userValidator = ValidatorBuilder.of(User.class)
 			.constraint(User::getName, "name",
 					c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
 			.constraint(User::getEmail, "email",
 					c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
 			.constraint(User::getAge, "age",
 					c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
-			.constraint(User::isEnabled, "enabled", c -> c.isTrue())
-			.build((errors, name, messageKey, args, defaultMessage) -> errors
-					.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-							new SimpleMessageFormatter(), Locale.ENGLISH)));
+			.constraint(User::isEnabled, "enabled", c -> c.isTrue()).build();
 
-	@Test
-	void allValid() throws Exception {
+	static Stream<BiValidator<User, List<ConstraintViolation>>> validators() {
+		return Stream.of(new BiValidator<>(userValidator, errorHandler),
+				new BiValidator<>(userValidator.applicative(), errorHandler));
+	}
+
+	@ParameterizedTest
+	@MethodSource("validators")
+	void allValid(BiValidator<User, List<ConstraintViolation>> validator)
+			throws Exception {
 		User user = new User("Demo", "demo@example.com", 100);
 		user.setEnabled(true);
 		final List<ConstraintViolation> violations = new ArrayList<>();
@@ -50,8 +62,10 @@ class BiValidatorTest {
 		assertThat(violations.size()).isEqualTo(0);
 	}
 
-	@Test
-	void allInvalid() throws Exception {
+	@ParameterizedTest
+	@MethodSource("validators")
+	void allInvalid(BiValidator<User, List<ConstraintViolation>> validator)
+			throws Exception {
 		User user = new User("", "example.com", 300);
 		user.setEnabled(false);
 		final List<ConstraintViolation> violations = new ArrayList<>();
