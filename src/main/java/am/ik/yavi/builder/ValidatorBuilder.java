@@ -111,6 +111,7 @@ import am.ik.yavi.meta.YearMonthConstraintMeta;
 import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
 
 public class ValidatorBuilder<T> implements Cloneable {
+
 	private static final String DEFAULT_SEPARATOR = ".";
 
 	final List<CollectionValidator<T, ?, ?>> collectionValidators = new ArrayList<>();
@@ -186,11 +187,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public Validator<T> build() {
-		return new Validator<>(messageKeySeparator, this.predicatesList,
-				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter == null ? new SimpleMessageFormatter()
-						: this.messageFormatter,
-				this.failFast);
+		return new Validator<>(messageKeySeparator, this.predicatesList, this.collectionValidators,
+				this.conditionalValidators,
+				this.messageFormatter == null ? new SimpleMessageFormatter() : this.messageFormatter, this.failFast);
 	}
 
 	/**
@@ -204,7 +203,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 *   .constraint(...)
 	 *   .build(Errors::rejectValue);
 	 * </pre>
-	 *
 	 * @param errorHandler handler that handle if the validation fails
 	 * @param <E> the type of the error object
 	 * @return <code>BiValidator</code> instance
@@ -224,12 +222,10 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public ValidatorBuilder<T> constraint(StringConstraintMeta<T> meta,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				CharSequenceConstraint::new);
+		return this.constraint(meta.toValue(), meta.name(), c, CharSequenceConstraint::new);
 	}
 
-	public <E extends CharSequence> ValidatorBuilder<T> _charSequence(
-			ToCharSequence<T, E> f, String name,
+	public <E extends CharSequence> ValidatorBuilder<T> _charSequence(ToCharSequence<T, E> f, String name,
 			Function<CharSequenceConstraint<T, E>, CharSequenceConstraint<T, E>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
@@ -275,8 +271,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(f, name, c, CharacterConstraint::new);
 	}
 
-	public ValidatorBuilder<T> constraint(ToByte<T> f, String name,
-			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
+	public ValidatorBuilder<T> constraint(ToByte<T> f, String name, Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
@@ -288,8 +283,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(meta.toValue(), meta.name(), c, ByteConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _byte(ToByte<T> f, String name,
-			Function<ByteConstraint<T>, ByteConstraint<T>> c) {
+	public ValidatorBuilder<T> _byte(ToByte<T> f, String name, Function<ByteConstraint<T>, ByteConstraint<T>> c) {
 		return this.constraint(f, name, c, ByteConstraint::new);
 	}
 
@@ -306,8 +300,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(meta.toValue(), meta.name(), c, ShortConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _short(ToShort<T> f, String name,
-			Function<ShortConstraint<T>, ShortConstraint<T>> c) {
+	public ValidatorBuilder<T> _short(ToShort<T> f, String name, Function<ShortConstraint<T>, ShortConstraint<T>> c) {
 		return this.constraint(f, name, c, ShortConstraint::new);
 	}
 
@@ -329,8 +322,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(f, name, c, IntegerConstraint::new);
 	}
 
-	public ValidatorBuilder<T> constraint(ToLong<T> f, String name,
-			Function<LongConstraint<T>, LongConstraint<T>> c) {
+	public ValidatorBuilder<T> constraint(ToLong<T> f, String name, Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
 
@@ -342,8 +334,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(meta.toValue(), meta.name(), c, LongConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _long(ToLong<T> f, String name,
-			Function<LongConstraint<T>, LongConstraint<T>> c) {
+	public ValidatorBuilder<T> _long(ToLong<T> f, String name, Function<LongConstraint<T>, LongConstraint<T>> c) {
 		return this.constraint(f, name, c, LongConstraint::new);
 	}
 
@@ -360,8 +351,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(meta.toValue(), meta.name(), c, FloatConstraint::new);
 	}
 
-	public ValidatorBuilder<T> _float(ToFloat<T> f, String name,
-			Function<FloatConstraint<T>, FloatConstraint<T>> c) {
+	public ValidatorBuilder<T> _float(ToFloat<T> f, String name, Function<FloatConstraint<T>, FloatConstraint<T>> c) {
 		return this.constraint(f, name, c, FloatConstraint::new);
 	}
 
@@ -480,8 +470,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public ValidatorBuilder<T> constraint(LocalDateTimeConstraintMeta<T> meta,
 			Function<LocalDateTimeConstraint<T>, LocalDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				LocalDateTimeConstraint::new);
+		return this.constraint(meta.toValue(), meta.name(), c, LocalDateTimeConstraint::new);
 	}
 
 	/**
@@ -505,8 +494,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public ValidatorBuilder<T> constraint(ZonedDateTimeConstraintMeta<T> meta,
 			Function<ZonedDateTimeConstraint<T>, ZonedDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				ZonedDateTimeConstraint::new);
+		return this.constraint(meta.toValue(), meta.name(), c, ZonedDateTimeConstraint::new);
 	}
 
 	/**
@@ -530,15 +518,13 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public ValidatorBuilder<T> constraint(OffsetDateTimeConstraintMeta<T> meta,
 			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
-		return this.constraint(meta.toValue(), meta.name(), c,
-				OffsetDateTimeConstraint::new);
+		return this.constraint(meta.toValue(), meta.name(), c, OffsetDateTimeConstraint::new);
 	}
 
 	/**
 	 * @since 0.10.0
 	 */
-	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f,
-			String name,
+	public ValidatorBuilder<T> _offsetDateTime(ToOffsetDateTimeConstraint<T> f, String name,
 			Function<OffsetDateTimeConstraint<T>, OffsetDateTimeConstraint<T>> c) {
 		return this.constraint(f, name, c, OffsetDateTimeConstraint::new);
 	}
@@ -615,14 +601,12 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(f, name, c, YearConstraint::new);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> constraint(
-			ToCollection<T, L, E> f, String name,
+	public <L extends Collection<E>, E> ValidatorBuilder<T> constraint(ToCollection<T, L, E> f, String name,
 			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> _collection(
-			ToCollection<T, L, E> f, String name,
+	public <L extends Collection<E>, E> ValidatorBuilder<T> _collection(ToCollection<T, L, E> f, String name,
 			Function<CollectionConstraint<T, L, E>, CollectionConstraint<T, L, E>> c) {
 		return this.constraint(f, name, c, CollectionConstraint::new);
 	}
@@ -732,13 +716,11 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public <R> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			ValueValidator<T, R> applicative) {
-		this.conditionalValidators
-				.add(new Pair<>(condition, Validatable.from(applicative)));
+		this.conditionalValidators.add(new Pair<>(condition, Validatable.from(applicative)));
 		return this;
 	}
 
-	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
-			Validator<T> validator) {
+	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition, Validator<T> validator) {
 		this.conditionalValidators.add(new Pair<>(condition, validator));
 		return this;
 	}
@@ -750,18 +732,15 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraintOnCondition(condition, validator);
 	}
 
-	public <R> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
-			ValueValidator<T, R> applicative) {
+	public <R> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, ValueValidator<T, R> applicative) {
 		return this.constraintOnCondition(group.toCondition(), applicative);
 	}
 
-	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
-			Validator<T> validator) {
+	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, Validator<T> validator) {
 		return this.constraintOnCondition(group.toCondition(), validator);
 	}
 
-	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
-			ValidatorBuilderConverter<T> converter) {
+	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, ValidatorBuilderConverter<T> converter) {
 		return this.constraintOnCondition(group.toCondition(), converter);
 	}
 
@@ -786,29 +765,24 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
 			ViolatedArguments<T> violatedArguments, ViolationMessage violationMessage) {
 		Deque<ConstraintPredicate<T>> predicates = new LinkedList<>();
-		predicates.add(ConstraintPredicate.of(predicate, violationMessage,
-				violatedArguments, NullAs.INVALID));
-		this.predicatesList
-				.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
+		predicates.add(ConstraintPredicate.of(predicate, violationMessage, violatedArguments, NullAs.INVALID));
+		this.predicatesList.add(new ConstraintPredicates<>(Function.identity(), name, predicates));
 		return this;
 	}
 
 	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
 			ViolationMessage violationMessage) {
-		return this.constraintOnTarget(predicate, name,
-				violatedValue -> CustomConstraint.EMPTY_ARRAY, violationMessage);
+		return this.constraintOnTarget(predicate, name, violatedValue -> CustomConstraint.EMPTY_ARRAY,
+				violationMessage);
 	}
 
-	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name,
-			String messageKey, String defaultMessage) {
-		return this.constraintOnTarget(predicate, name,
-				ViolationMessage.of(messageKey, defaultMessage));
+	public ValidatorBuilder<T> constraintOnTarget(Predicate<T> predicate, String name, String messageKey,
+			String defaultMessage) {
+		return this.constraintOnTarget(predicate, name, ViolationMessage.of(messageKey, defaultMessage));
 	}
 
-	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint,
-			String name) {
-		return this.constraintOnTarget(customConstraint, name, customConstraint,
-				customConstraint);
+	public ValidatorBuilder<T> constraintOnTarget(CustomConstraint<T> customConstraint, String name) {
+		return this.constraintOnTarget(customConstraint, name, customConstraint, customConstraint);
 	}
 
 	/**
@@ -819,19 +793,17 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(Function.identity(), name, c, ObjectConstraint::new);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(ToCollection<T, L, E> toCollection, String name,
+			Validator<E> validator) {
 		return this.forEach(toCollection, name, validator, NullAs.INVALID);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name,
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEach(ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter) {
 		return this.forEach(toCollection, name, converter, NullAs.INVALID);
 	}
 
-	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name,
-			Validator<V> validator) {
+	public <K, V> ValidatorBuilder<T> forEach(ToMap<T, K, V> toMap, String name, Validator<V> validator) {
 		return this.forEach(this.toMapToCollection(toMap), name, validator);
 	}
 
@@ -840,31 +812,26 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.forEach(this.toMapToCollection(toMap), name, converter);
 	}
 
-	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
-			Validator<E> validator) {
-		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
-				validator);
+	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name, Validator<E> validator) {
+		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name, validator);
 	}
 
 	public <E> ValidatorBuilder<T> forEach(ToObjectArray<T, E> toObjectArray, String name,
 			ValidatorBuilderConverter<E> converter) {
-		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name,
-				converter);
+		return this.forEach(this.toObjectArrayToCollection(toObjectArray), name, converter);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator) {
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(ToCollection<T, L, E> toCollection,
+			String name, Validator<E> validator) {
 		return this.forEach(toCollection, name, validator, NullAs.VALID);
 	}
 
-	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(
-			ToCollection<T, L, E> toCollection, String name,
-			ValidatorBuilderConverter<E> converter) {
+	public <L extends Collection<E>, E> ValidatorBuilder<T> forEachIfPresent(ToCollection<T, L, E> toCollection,
+			String name, ValidatorBuilderConverter<E> converter) {
 		return this.forEach(toCollection, name, converter, NullAs.VALID);
 	}
 
-	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name,
-			Validator<V> validator) {
+	public <K, V> ValidatorBuilder<T> forEachIfPresent(ToMap<T, K, V> toMap, String name, Validator<V> validator) {
 		return this.forEachIfPresent(this.toMapToCollection(toMap), name, validator);
 	}
 
@@ -873,16 +840,14 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.forEachIfPresent(this.toMapToCollection(toMap), name, converter);
 	}
 
-	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
-			String name, Validator<E> validator) {
-		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
-				validator);
+	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray, String name,
+			Validator<E> validator) {
+		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name, validator);
 	}
 
-	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray,
-			String name, ValidatorBuilderConverter<E> converter) {
-		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name,
-				converter);
+	public <E> ValidatorBuilder<T> forEachIfPresent(ToObjectArray<T, E> toObjectArray, String name,
+			ValidatorBuilderConverter<E> converter) {
+		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name, converter);
 	}
 
 	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
@@ -893,7 +858,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * Set whether to enable fail fast mode. If enabled, Validator returns from the
 	 * current validation as soon as the first constraint violation occurs.
-	 *
 	 * @param failFast whether to enable fail fast mode
 	 * @since 0.8.0
 	 */
@@ -902,33 +866,27 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this;
 	}
 
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
-			Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta, Validator<N> validator) {
 		return this.nest(meta.toValue(), meta.name(), validator, NullAs.INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			ValidatorBuilderConverter<N> converter) {
+	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, ValidatorBuilderConverter<N> converter) {
 		return this.nest(nested, name, converter, NullAs.INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta,
-			ValidatorBuilderConverter<N> converter) {
+	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta, ValidatorBuilderConverter<N> converter) {
 		return this.nest(meta.toValue(), meta.name(), converter, NullAs.INVALID);
 	}
 
-	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
-			Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.VALID);
 	}
 
-	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
-			Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta, Validator<N> validator) {
 		return this.nest(meta.toValue(), meta.name(), validator, NullAs.VALID);
 	}
 
@@ -942,29 +900,26 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(meta.toValue(), meta.name(), converter, NullAs.VALID);
 	}
 
-	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(
-			Function<T, V> f, String name, Function<C, C> c, Supplier<C> supplier) {
+	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(Function<T, V> f, String name,
+			Function<C, C> c, Supplier<C> supplier) {
 		C constraint = supplier.get();
 		Deque<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
 		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
 		return this;
 	}
 
-	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name,
+	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
 		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
 		return this.forEach(toCollection, name, builder.build(), nullAs);
 	}
 
-	protected final <L extends Collection<E>, E> ValidatorBuilder<T> forEach(
-			ToCollection<T, L, E> toCollection, String name, Validator<E> validator,
-			NullAs nullAs) {
+	protected final <L extends Collection<E>, E> ValidatorBuilder<T> forEach(ToCollection<T, L, E> toCollection,
+			String name, Validator<E> validator, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(toCollection, name, Constraint::notNull);
 		}
-		this.collectionValidators
-				.add(new CollectionValidator<>(toCollection, name, validator));
+		this.collectionValidators.add(new CollectionValidator<>(toCollection, name, validator));
 		return this;
 	}
 
@@ -975,49 +930,42 @@ public class ValidatorBuilder<T> implements Cloneable {
 		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
 		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name));
-		builder.conditionalValidators
-				.forEach(this.appendNestedConditionalValidator(nested, name));
-		builder.collectionValidators
-				.forEach(appendNestedCollectionValidator(nested, name));
+		builder.conditionalValidators.forEach(this.appendNestedConditionalValidator(nested, name));
+		builder.collectionValidators.forEach(appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
-	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
-			Validator<N> validator, NullAs nullAs) {
+	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, Validator<N> validator,
+			NullAs nullAs) {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
 		validator.forEachPredicates(this.appendNestedPredicates(nested, name));
-		validator.forEachConditionalValidator(
-				this.appendNestedConditionalValidator(nested, name));
-		validator.forEachCollectionValidator(
-				appendNestedCollectionValidator(nested, name));
+		validator.forEachConditionalValidator(this.appendNestedConditionalValidator(nested, name));
+		validator.forEachCollectionValidator(appendNestedCollectionValidator(nested, name));
 		return this;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(
-			Function<T, N> nested, String name) {
+	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(Function<T, N> nested, String name) {
 		return predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
-					this.toNestedValue(nested, predicates), nestedName,
-					predicates.predicates(), this.toNestedFunction(nested, predicates));
+					this.toNestedValue(nested, predicates), nestedName, predicates.predicates(),
+					this.toNestedFunction(nested, predicates));
 			this.predicatesList.add(constraintPredicates);
 		};
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested,
-			ConstraintPredicates<N, ?> predicates) {
+	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
 			return target -> {
 				N nestedValue = nested.apply(target);
 				if (nestedValue == null) {
 					return null;
 				}
-				return (N) ((NestedConstraintPredicates) predicates)
-						.nestedValue(nestedValue);
+				return (N) ((NestedConstraintPredicates) predicates).nestedValue(nestedValue);
 			};
 		}
 		return nested;
@@ -1026,12 +974,11 @@ public class ValidatorBuilder<T> implements Cloneable {
 	private <N> Consumer<Pair<ConstraintCondition<N>, Validatable<N>>> appendNestedConditionalValidator(
 			Function<T, N> nested, String name) {
 		return conditionalValidator -> {
-			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(
-					nested, conditionalValidator.first());
+			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(nested,
+					conditionalValidator.first());
 			final Validatable<N> validator = conditionalValidator.second();
 			final String nestedPrefix = toNestedPrefix(name, validator);
-			final Validatable<T> v = new NestedValidator<>(nested, validator,
-					nestedPrefix);
+			final Validatable<T> v = new NestedValidator<>(nested, validator, nestedPrefix);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
@@ -1045,20 +992,18 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(
-			Function<T, N> nested, String name) {
+	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(Function<T, N> nested,
+			String name) {
 		return collectionValidator -> {
-			String nestedName = name + this.messageKeySeparator
-					+ collectionValidator.name();
+			String nestedName = name + this.messageKeySeparator + collectionValidator.name();
 			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
-					toNestedCollection(nested, collectionValidator), nestedName,
-					collectionValidator.validator(), nested);
+					toNestedCollection(nested, collectionValidator), nestedName, collectionValidator.validator(),
+					nested);
 			this.collectionValidators.add(validator);
 		};
 	}
 
-	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(
-			ToMap<T, K, V> toMap) {
+	private <K, V> ToCollection<T, Collection<V>, V> toMapToCollection(ToMap<T, K, V> toMap) {
 		return t -> {
 			Map<K, V> map = toMap.apply(t);
 			if (map == null) {
@@ -1068,8 +1013,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		};
 	}
 
-	private <N> Function<T, Object> toNestedValue(Function<T, N> nested,
-			ConstraintPredicates<N, ?> predicates) {
+	private <N> Function<T, Object> toNestedValue(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
 		return (T target) -> {
 			N nestedValue = nested.apply(target);
 			if (nestedValue == null) {
@@ -1079,8 +1023,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 		};
 	}
 
-	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(
-			Function<T, N> nested, CollectionValidator<N, C, ?> validator) {
+	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(Function<T, N> nested,
+			CollectionValidator<N, C, ?> validator) {
 		return (T target) -> {
 			N nestedCollection = nested.apply(target);
 			if (nestedCollection == null) {
@@ -1090,8 +1034,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 		};
 	}
 
-	private <E> ToCollection<T, Collection<E>, E> toObjectArrayToCollection(
-			ToObjectArray<T, E> toObjectArray) {
+	private <E> ToCollection<T, Collection<E>, E> toObjectArrayToCollection(ToObjectArray<T, E> toObjectArray) {
 		return t -> {
 			E[] array = toObjectArray.apply(t);
 			if (array == null) {
@@ -1102,96 +1045,127 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
+
 	}
 
 	public interface ToBigInteger<T> extends Function<T, BigInteger> {
+
 	}
 
 	public interface ToBoolean<T> extends Function<T, Boolean> {
+
 	}
 
 	public interface ToBooleanArray<T> extends Function<T, boolean[]> {
+
 	}
 
 	public interface ToByte<T> extends Function<T, Byte> {
+
 	}
 
 	public interface ToByteArray<T> extends Function<T, byte[]> {
+
 	}
 
 	public interface ToCharArray<T> extends Function<T, char[]> {
+
 	}
 
 	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+
 	}
 
 	public interface ToCharacter<T> extends Function<T, Character> {
+
 	}
 
 	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, L> {
+
 	}
 
 	public interface ToDouble<T> extends Function<T, Double> {
+
 	}
 
 	public interface ToDoubleArray<T> extends Function<T, double[]> {
+
 	}
 
 	public interface ToFloat<T> extends Function<T, Float> {
+
 	}
 
 	public interface ToFloatArray<T> extends Function<T, float[]> {
+
 	}
 
 	public interface ToIntArray<T> extends Function<T, int[]> {
+
 	}
 
 	public interface ToInteger<T> extends Function<T, Integer> {
+
 	}
 
 	public interface ToLong<T> extends Function<T, Long> {
+
 	}
 
 	public interface ToLongArray<T> extends Function<T, long[]> {
+
 	}
 
 	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
+
 	}
 
 	public interface ToObjectArray<T, E> extends Function<T, E[]> {
+
 	}
 
 	public interface ToShort<T> extends Function<T, Short> {
+
 	}
 
 	public interface ToShortArray<T> extends Function<T, short[]> {
+
 	}
 
 	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
+
 	}
 
 	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
+
 	}
 
 	public interface ToOffsetDateTimeConstraint<T> extends Function<T, OffsetDateTime> {
+
 	}
 
 	public interface ToLocalDateTimeConstraint<T> extends Function<T, LocalDateTime> {
+
 	}
 
 	public interface ToLocalDateConstraint<T> extends Function<T, LocalDate> {
+
 	}
 
 	public interface ToInstantConstraint<T> extends Function<T, Instant> {
+
 	}
 
 	public interface ToYearConstraint<T> extends Function<T, Year> {
+
 	}
 
 	public interface ToYearMonthConstraint<T> extends Function<T, YearMonth> {
+
 	}
 
-	public interface ValidatorBuilderConverter<T>
-			extends Function<ValidatorBuilder<T>, ValidatorBuilder<T>> {
+	public interface ValidatorBuilderConverter<T> extends Function<ValidatorBuilder<T>, ValidatorBuilder<T>> {
+
 	}
+
 }

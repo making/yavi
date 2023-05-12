@@ -23,20 +23,21 @@ import am.ik.yavi.core.Validator;
 import java.util.Objects;
 
 public class PhoneNumber {
+
 	private final String value;
 
-	static final ApplicativeValidator<PhoneNumber> applicativeValidator = validator()
-			.prefixed("phoneNumber").applicative();
+	static final ApplicativeValidator<PhoneNumber> applicativeValidator = validator().prefixed("phoneNumber")
+		.applicative();
 
 	public PhoneNumber(String value) {
 		this.value = value;
 	}
 
 	public static Validator<PhoneNumber> validator() {
-		return ValidatorBuilder.<PhoneNumber> of()
-				.constraint((PhoneNumber p) -> p.value, "value",
-						c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
-				.build();
+		return ValidatorBuilder.<PhoneNumber>of()
+			.constraint((PhoneNumber p) -> p.value, "value",
+					c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
+			.build();
 	}
 
 	public String value() {
@@ -66,4 +67,5 @@ public class PhoneNumber {
 	public String toString() {
 		return "PhoneNumber{" + "value='" + value + '\'' + '}';
 	}
+
 }

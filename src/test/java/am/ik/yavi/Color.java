@@ -16,5 +16,7 @@
 package am.ik.yavi;
 
 public enum Color {
+
 	RED, BLUE, GREEN
+
 }

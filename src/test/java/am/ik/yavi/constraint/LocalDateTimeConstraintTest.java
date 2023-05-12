@@ -41,18 +41,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LocalDateTimeConstraintTest {
+
 	@Test
 	void isPastValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.past());
-		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isPastInValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.past());
-		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
@@ -65,37 +64,32 @@ class LocalDateTimeConstraintTest {
 	@Test
 	void isPastOrPresentValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
-		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isPastOrPresentInValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
-		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
 	void isPastOrPresentExactInValid() {
 		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.pastOrPresent(clock));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.pastOrPresent(clock));
 		assertThat(predicate.test(LocalDateTime.now(clock))).isTrue();
 	}
 
 	@Test
 	void isFutureValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.future());
-		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isFutureInValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.future());
-		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
@@ -108,30 +102,26 @@ class LocalDateTimeConstraintTest {
 	@Test
 	void isFutureOrPresentValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
-		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(LocalDateTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isFutureOrPresentInValid() {
 		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
-		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(LocalDateTime.now().minus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
 	void isFutureOrPresentExactInValid() {
 		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.futureOrPresent(clock));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.futureOrPresent(clock));
 		assertThat(predicate.test(LocalDateTime.now(clock))).isTrue();
 	}
 
 	@Test
 	void isBeforeValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.before(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -153,16 +143,14 @@ class LocalDateTimeConstraintTest {
 	@Test
 	void isAfterInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.after(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.after(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -176,8 +164,7 @@ class LocalDateTimeConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -185,49 +172,42 @@ class LocalDateTimeConstraintTest {
 	void isBeforeOrEqualInValid() {
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime past = now.minusDays(10);
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> past));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> past));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isBeforeOrEqualExactInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusDays(10)));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualExactInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@ParameterizedTest
 	@MethodSource("validBetweenDates")
-	void isBetweenValid(LocalDateTime now, LocalDateTime rangeFrom,
-			LocalDateTime rangeTo) {
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.between(() -> rangeFrom, () -> rangeTo));
+	void isBetweenValid(LocalDateTime now, LocalDateTime rangeFrom, LocalDateTime rangeTo) {
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.between(() -> rangeFrom, () -> rangeTo));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -236,8 +216,7 @@ class LocalDateTimeConstraintTest {
 		LocalDateTime now = LocalDateTime.now();
 		Supplier<LocalDateTime> nowSupplier = () -> now;
 
-		Predicate<LocalDateTime> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<LocalDateTime> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -247,9 +226,8 @@ class LocalDateTimeConstraintTest {
 
 		Predicate<LocalDateTime> predicate = retrievePredicate(
 				c -> c.between(() -> now.plusDays(1), () -> now.minusDays(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
@@ -272,16 +250,15 @@ class LocalDateTimeConstraintTest {
 	void Message() {
 		final AtomicReference<LocalDateTime> saved = new AtomicReference<>();
 		final LocalDateTimeValidator<LocalDateTime> validator = LocalDateTimeValidatorBuilder
-				.of("now", c -> c.after(() -> {
-					final LocalDateTime now = LocalDateTime.now();
-					saved.set(now);
-					return now;
-				})).build();
-		final Validated<LocalDateTime> validated = validator
-				.validate(LocalDateTime.now());
+			.of("now", c -> c.after(() -> {
+				final LocalDateTime now = LocalDateTime.now();
+				saved.set(now);
+				return now;
+			}))
+			.build();
+		final Validated<LocalDateTime> validated = validator.validate(LocalDateTime.now());
 		assertThat(validated.isValid()).isFalse();
-		assertThat(validated.errors().get(0).message())
-				.isEqualTo("\"now\" has to be after " + saved.get());
+		assertThat(validated.errors().get(0).message()).isEqualTo("\"now\" has to be after " + saved.get());
 	}
 
 	private static Stream<Arguments> validBetweenDates() {
@@ -293,7 +270,7 @@ class LocalDateTimeConstraintTest {
 
 	private static Predicate<LocalDateTime> retrievePredicate(
 			Function<LocalDateTimeConstraint<LocalDateTime>, LocalDateTimeConstraint<LocalDateTime>> constraint) {
-		return constraint.apply(new LocalDateTimeConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new LocalDateTimeConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

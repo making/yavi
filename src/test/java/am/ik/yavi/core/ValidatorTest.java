@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 class ValidatorTest {
+
 	@Test
 	void allInvalid() throws Exception {
 		User user = new User("", "example.com", 300);
@@ -47,15 +48,12 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(4);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
-		assertThat(violations.get(1).message())
-				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"name\" must be greater than or equal to 1. The given size is 0");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(1).message()).isEqualTo("\"email\" must be a valid email address");
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
-		assertThat(violations.get(2).message())
-				.isEqualTo("\"age\" must be less than or equal to 200");
+		assertThat(violations.get(2).message()).isEqualTo("\"age\" must be less than or equal to 200");
 		assertThat(violations.get(2).messageKey()).isEqualTo("numeric.lessThanOrEqual");
 		assertThat(violations.get(3).message()).isEqualTo("\"enabled\" must be true");
 		assertThat(violations.get(3).messageKey()).isEqualTo("boolean.isTrue");
@@ -69,14 +67,12 @@ class ValidatorTest {
 
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).asWhiteList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(whiteList).asWhiteList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
@@ -84,14 +80,14 @@ class ValidatorTest {
 	void codePointsAllIncludedRangeBeginToEnd() throws Exception {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(0x0041 /* A */, 0x007A /* z */).asWhiteList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(0x0041 /* A */, 0x007A /*
+																						 * z
+																						 */).asWhiteList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
@@ -99,16 +95,16 @@ class ValidatorTest {
 	void codePointsAllIncludedRangeRange() throws Exception {
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name", c -> c
+			.constraint(User::getName, "name",
+					c -> c
 						.codePoints(CodePoints.Range.of(0x0041 /* A */, 0x005A /* Z */),
 								CodePoints.Range.of(0x0061 /* a */, 0x007A /* z */))
 						.asWhiteList())
-				.build();
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
@@ -132,14 +128,12 @@ class ValidatorTest {
 
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).asWhiteList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(whiteList).asWhiteList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
@@ -163,14 +157,12 @@ class ValidatorTest {
 
 		User user = new User("abc@b.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(whiteList).asWhiteList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(whiteList).asWhiteList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[@, .]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asWhiteList");
 	}
 
@@ -182,14 +174,12 @@ class ValidatorTest {
 
 		User user = new User("abcA@Bb.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(blackList).asBlackList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(blackList).asBlackList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[a, b, A, B]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[a, b, A, B]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asBlackList");
 	}
 
@@ -200,14 +190,12 @@ class ValidatorTest {
 
 		User user = new User("abcA@Bb.c", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.codePoints(blackList).asBlackList())
-				.build();
+			.constraint(User::getName, "name", c -> c.codePoints(blackList).asBlackList())
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"[a, b]\" is/are not allowed for \"name\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"[a, b]\" is/are not allowed for \"name\"");
 		assertThat(violations.get(0).messageKey()).isEqualTo("codePoints.asBlackList");
 	}
 
@@ -215,39 +203,36 @@ class ValidatorTest {
 	void combiningCharacterByteSizeInValid() throws Exception {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.lessThanOrEqual(2).asByteArray().lessThanOrEqual(6))
-				.build();
+			.constraint(User::getName, "name", c -> c.lessThanOrEqual(2).asByteArray().lessThanOrEqual(6))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The byte size of \"name\" must be less than or equal to 6. The given size is 9");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The byte size of \"name\" must be less than or equal to 6. The given size is 9");
 	}
 
 	@Test
 	void combiningCharacterSizeAndByteSizeInValid() throws Exception {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.lessThanOrEqual(1).asByteArray().lessThanOrEqual(3))
-				.build();
+			.constraint(User::getName, "name", c -> c.lessThanOrEqual(1).asByteArray().lessThanOrEqual(3))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"name\" must be less than or equal to 1. The given size is 2");
-		assertThat(violations.get(1).message()).isEqualTo(
-				"The byte size of \"name\" must be less than or equal to 3. The given size is 9");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"name\" must be less than or equal to 1. The given size is 2");
+		assertThat(violations.get(1).message())
+			.isEqualTo("The byte size of \"name\" must be less than or equal to 3. The given size is 9");
 	}
 
 	@Test
 	void combiningCharacterValid() throws Exception {
 		User user = new User("モジ" /* モシ\u3099 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.fixedSize(2).asByteArray().fixedSize(9))
-				.build();
+			.constraint(User::getName, "name", c -> c.fixedSize(2).asByteArray().fixedSize(9))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
 	}
@@ -255,10 +240,9 @@ class ValidatorTest {
 	@Test
 	void condition() {
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraintOnCondition((u, cg) -> !u.getName().isEmpty(), //
-						b -> b.constraint(User::getEmail, "email",
-								c -> c.email().notEmpty()))
-				.build();
+			.constraintOnCondition((u, cg) -> !u.getName().isEmpty(), //
+					b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
+			.build();
 		{
 			User user = new User("", "", -1);
 			ConstraintViolations violations = validator.validate(user);
@@ -269,8 +253,7 @@ class ValidatorTest {
 			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"email\" must not be empty");
+			assertThat(violations.get(0).message()).isEqualTo("\"email\" must not be empty");
 			assertThat(violations.get(0).messageKey()).isEqualTo("container.notEmpty");
 		}
 	}
@@ -278,9 +261,9 @@ class ValidatorTest {
 	@Test
 	void constraintOnTarget() {
 		Validator<Range> validator = ValidatorBuilder.of(Range.class) //
-				.constraintOnTarget(Range::isToGreaterThanFrom, "to",
-						"to.isGreaterThanFrom", "\"to\" must be greater than \"from\".") //
-				.build();
+			.constraintOnTarget(Range::isToGreaterThanFrom, "to", "to.isGreaterThanFrom",
+					"\"to\" must be greater than \"from\".") //
+			.build();
 		{
 			Range range = new Range(1, 10);
 			ConstraintViolations violations = validator.validate(range);
@@ -291,8 +274,7 @@ class ValidatorTest {
 			ConstraintViolations violations = validator.validate(range);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"to\" must be greater than \"from\".");
+			assertThat(violations.get(0).message()).isEqualTo("\"to\" must be greater than \"from\".");
 			assertThat(violations.get(0).messageKey()).isEqualTo("to.isGreaterThanFrom");
 		}
 	}
@@ -300,13 +282,12 @@ class ValidatorTest {
 	@Test
 	void customMessageFormatter() throws Exception {
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.messageFormatter((messageKey, defaultMessageFormat, args,
-						locale) -> args[0].toString().toUpperCase() + "."
-								+ messageKey.toUpperCase())
-				.constraint(User::getAge, "age", c -> c.notNull() //
-						.greaterThanOrEqual(0) //
-						.lessThanOrEqual(20))
-				.build();
+			.messageFormatter((messageKey, defaultMessageFormat, args, locale) -> args[0].toString().toUpperCase() + "."
+					+ messageKey.toUpperCase())
+			.constraint(User::getAge, "age", c -> c.notNull() //
+				.greaterThanOrEqual(0) //
+				.lessThanOrEqual(20))
+			.build();
 		User user = new User("foo", "foo@example.com", 30);
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -323,16 +304,14 @@ class ValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		List<ViolationDetail> details = violations.details();
 		assertThat(details.size()).isEqualTo(3);
-		assertThat(details.get(0).getDefaultMessage()).isEqualTo(
-				"The size of \"name\" must be greater than or equal to 1. The given size is 0");
+		assertThat(details.get(0).getDefaultMessage())
+			.isEqualTo("The size of \"name\" must be greater than or equal to 1. The given size is 0");
 		assertThat(details.get(0).getKey()).isEqualTo("container.greaterThanOrEqual");
 		assertThat(details.get(0).getArgs()).containsExactly("name", 1, 0);
-		assertThat(details.get(1).getDefaultMessage())
-				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(details.get(1).getDefaultMessage()).isEqualTo("\"email\" must be a valid email address");
 		assertThat(details.get(1).getKey()).isEqualTo("charSequence.email");
 		assertThat(details.get(1).getArgs()).containsExactly("email", "example.com");
-		assertThat(details.get(2).getDefaultMessage())
-				.isEqualTo("\"age\" must be less than or equal to 200");
+		assertThat(details.get(2).getDefaultMessage()).isEqualTo("\"age\" must be less than or equal to 200");
 		assertThat(details.get(2).getKey()).isEqualTo("numeric.lessThanOrEqual");
 		assertThat(details.get(2).getArgs()).containsExactly("age", 200, 300);
 	}
@@ -341,21 +320,22 @@ class ValidatorTest {
 	void emojiInValid() throws Exception {
 		User user = new User("I❤️☕️", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name", c -> c.emoji().greaterThan(3)).build();
+			.constraint(User::getName, "name", c -> c.emoji().greaterThan(3))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"name\" must be greater than 3. The given size is 3");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"name\" must be greater than 3. The given size is 3");
 	}
 
 	@Test
 	void emojiValid() throws Exception {
 		User user = new User("I❤️☕️", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name", c -> c.emoji().lessThanOrEqual(3))
-				.build();
+			.constraint(User::getName, "name", c -> c.emoji().lessThanOrEqual(3))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
 	}
@@ -364,10 +344,9 @@ class ValidatorTest {
 	void group() {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraintOnCondition(Group.UPDATE.toCondition(), //
-						b -> b.constraint(User::getName, "name",
-								c -> c.lessThanOrEqual(5)))
-				.build();
+			.constraintOnCondition(Group.UPDATE.toCondition(), //
+					b -> b.constraint(User::getName, "name", c -> c.lessThanOrEqual(5)))
+			.build();
 		{
 			ConstraintViolations violations = validator.validate(user);
 			assertThat(violations.isValid()).isTrue();
@@ -376,10 +355,9 @@ class ValidatorTest {
 			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"name\" must be less than or equal to 5. The given size is 6");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 	}
 
@@ -387,11 +365,9 @@ class ValidatorTest {
 	void groupConditionByGroup() {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraintOnCondition(
-						(u, cg) -> cg == Group.UPDATE || cg == Group.DELETE, //
-						b -> b.constraint(User::getName, "name",
-								c -> c.lessThanOrEqual(5)))
-				.build();
+			.constraintOnCondition((u, cg) -> cg == Group.UPDATE || cg == Group.DELETE, //
+					b -> b.constraint(User::getName, "name", c -> c.lessThanOrEqual(5)))
+			.build();
 		{
 			ConstraintViolations violations = validator.validate(user);
 			assertThat(violations.isValid()).isTrue();
@@ -400,19 +376,17 @@ class ValidatorTest {
 			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"name\" must be less than or equal to 5. The given size is 6");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 		{
 			ConstraintViolations violations = validator.validate(user, Group.DELETE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"name\" must be less than or equal to 5. The given size is 6");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 	}
 
@@ -420,13 +394,11 @@ class ValidatorTest {
 	void groupTwoCondition() {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraintOnGroup(Group.UPDATE, //
-						b -> b.constraint(User::getName, "name",
-								c -> c.lessThanOrEqual(5)))
-				.constraintOnGroup(Group.DELETE, //
-						b -> b.constraint(User::getName, "name",
-								c -> c.greaterThanOrEqual(5)))
-				.build();
+			.constraintOnGroup(Group.UPDATE, //
+					b -> b.constraint(User::getName, "name", c -> c.lessThanOrEqual(5)))
+			.constraintOnGroup(Group.DELETE, //
+					b -> b.constraint(User::getName, "name", c -> c.greaterThanOrEqual(5)))
+			.build();
 		{
 			ConstraintViolations violations = validator.validate(user);
 			assertThat(violations.isValid()).isTrue();
@@ -435,10 +407,9 @@ class ValidatorTest {
 			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"name\" must be less than or equal to 5. The given size is 6");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 		{
 			ConstraintViolations violations = validator.validate(user, Group.DELETE);
@@ -450,55 +421,50 @@ class ValidatorTest {
 	void ivsByteSizeInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.variant(opts -> opts.ivs(IGNORE)).lessThanOrEqual(3)
-								.asByteArray().lessThanOrEqual(12))
-				.build();
+			.constraint(User::getName, "name",
+					c -> c.variant(opts -> opts.ivs(IGNORE)).lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The byte size of \"name\" must be less than or equal to 12. The given size is 13");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The byte size of \"name\" must be less than or equal to 12. The given size is 13");
 	}
 
 	@Test
 	void ivsInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.fixedSize(3).asByteArray().fixedSize(13))
-				.build();
+			.constraint(User::getName, "name", c -> c.fixedSize(3).asByteArray().fixedSize(13))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"name\" must be 3. The given size is 4");
+		assertThat(violations.get(0).message()).isEqualTo("The size of \"name\" must be 3. The given size is 4");
 	}
 
 	@Test
 	void ivsSizeAndByteSizeInValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
-				.build();
+			.constraint(User::getName, "name", c -> c.lessThanOrEqual(3).asByteArray().lessThanOrEqual(12))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"name\" must be less than or equal to 3. The given size is 4");
-		assertThat(violations.get(1).message()).isEqualTo(
-				"The byte size of \"name\" must be less than or equal to 12. The given size is 13");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"name\" must be less than or equal to 3. The given size is 4");
+		assertThat(violations.get(1).message())
+			.isEqualTo("The byte size of \"name\" must be less than or equal to 12. The given size is 13");
 	}
 
 	@Test
 	void ivsValid() throws Exception {
 		User user = new User("葛󠄁飾区" /* 葛\uDB40\uDD01飾区 */, null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)
-				.constraint(User::getName, "name",
-						c -> c.variant(opts -> opts.ivs(IGNORE)).fixedSize(3)
-								.asByteArray().fixedSize(13))
-				.build();
+			.constraint(User::getName, "name",
+					c -> c.variant(opts -> opts.ivs(IGNORE)).fixedSize(3).asByteArray().fixedSize(13))
+			.build();
 		ConstraintViolations violations = validator.validate(user);
 		violations.forEach(x -> System.out.println(x.message()));
 		assertThat(violations.isValid()).isTrue();
@@ -511,12 +477,10 @@ class ValidatorTest {
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(2);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"The size of \"email\" must be greater than or equal to 5. The given size is 2");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
-		assertThat(violations.get(1).message())
-				.isEqualTo("\"email\" must be a valid email address");
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"email\" must be greater than or equal to 5. The given size is 2");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(1).message()).isEqualTo("\"email\" must be a valid email address");
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.email");
 	}
 
@@ -537,12 +501,14 @@ class ValidatorTest {
 
 	@Test
 	void overrideMessage() {
-		Validator<User> validator = ValidatorBuilder.<User> of() //
-				.constraint(User::getName, "name",
-						c -> c.notNull().message("name is required!") //
-								.greaterThanOrEqual(1).message("name is too small!") //
-								.lessThanOrEqual(20).message("name is too large!")) //
-				.build();
+		Validator<User> validator = ValidatorBuilder.<User>of() //
+			.constraint(User::getName, "name", c -> c.notNull()
+				.message("name is required!") //
+				.greaterThanOrEqual(1)
+				.message("name is too small!") //
+				.lessThanOrEqual(20)
+				.message("name is too large!")) //
+			.build();
 
 		{
 			User user = new User(null, "a@b.c", 10);
@@ -558,8 +524,7 @@ class ValidatorTest {
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message()).isEqualTo("name is too small!");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.greaterThanOrEqual");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
 		}
 		{
 			User user = new User("012345678901234567890", "a@b.c", 10);
@@ -567,22 +532,20 @@ class ValidatorTest {
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
 			assertThat(violations.get(0).message()).isEqualTo("name is too large!");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 	}
 
 	@Test
 	void overrideViolationMessage() {
-		Validator<User> validator = ValidatorBuilder.<User> of() //
-				.constraint(User::getName, "name",
-						c -> c.notNull()
-								.message(ViolationMessage.of("a", "name is required!")) //
-								.greaterThanOrEqual(1)
-								.message(ViolationMessage.of("b", "name is too small!")) //
-								.lessThanOrEqual(20)
-								.message(ViolationMessage.of("c", "name is too large!"))) //
-				.build();
+		Validator<User> validator = ValidatorBuilder.<User>of() //
+			.constraint(User::getName, "name", c -> c.notNull()
+				.message(ViolationMessage.of("a", "name is required!")) //
+				.greaterThanOrEqual(1)
+				.message(ViolationMessage.of("b", "name is too small!")) //
+				.lessThanOrEqual(20)
+				.message(ViolationMessage.of("c", "name is too large!"))) //
+			.build();
 
 		{
 			User user = new User(null, "a@b.c", 10);
@@ -621,10 +584,8 @@ class ValidatorTest {
 			ConstraintViolations violations = e.getViolations();
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"age\" must be greater than or equal to 0");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("numeric.greaterThanOrEqual");
+			assertThat(violations.get(0).message()).isEqualTo("\"age\" must be greater than or equal to 0");
+			assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 		}
 	}
 
@@ -646,32 +607,28 @@ class ValidatorTest {
 	void violateGroupAndDefault() {
 		User user = new User("foobar", "foo@example.com", -1);
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-				.constraint(User::getEmail, "email", c -> c.email().lessThanOrEqual(10))
-				.constraintOnGroup(Group.UPDATE, //
-						b -> b.constraint(User::getName, "name",
-								c -> c.lessThanOrEqual(5)))
-				.build();
+			.constraint(User::getEmail, "email", c -> c.email().lessThanOrEqual(10))
+			.constraintOnGroup(Group.UPDATE, //
+					b -> b.constraint(User::getName, "name", c -> c.lessThanOrEqual(5)))
+			.build();
 		{
 			ConstraintViolations violations = validator.validate(user);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"email\" must be less than or equal to 10. The given size is 15");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"email\" must be less than or equal to 10. The given size is 15");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 		{
 			ConstraintViolations violations = validator.validate(user, Group.UPDATE);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(2);
-			assertThat(violations.get(0).message()).isEqualTo(
-					"The size of \"email\" must be less than or equal to 10. The given size is 15");
-			assertThat(violations.get(0).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
-			assertThat(violations.get(1).message()).isEqualTo(
-					"The size of \"name\" must be less than or equal to 5. The given size is 6");
-			assertThat(violations.get(1).messageKey())
-					.isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"email\" must be less than or equal to 10. The given size is 15");
+			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
+			assertThat(violations.get(1).message())
+				.isEqualTo("The size of \"name\" must be less than or equal to 5. The given size is 6");
+			assertThat(violations.get(1).messageKey()).isEqualTo("container.lessThanOrEqual");
 		}
 	}
 
@@ -679,8 +636,9 @@ class ValidatorTest {
 	void agePositiveValidatorUserValid() {
 		User user = new User("Diego", "foo@bar.com", 10);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getAge, "age", NumericConstraintBase::positive)
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -690,8 +648,9 @@ class ValidatorTest {
 	void agePositiveValidatorUserInValid() {
 		User user = new User("Diego", "foo@bar.com", -1);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::positive).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getAge, "age", NumericConstraintBase::positive)
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -703,8 +662,9 @@ class ValidatorTest {
 	void ageNegativeValidatorUserValid() {
 		User user = new User("Diego", "foo@bar.com", -1);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getAge, "age", NumericConstraintBase::negative)
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -714,8 +674,9 @@ class ValidatorTest {
 	void ageNegativeValidatorUserInValid() {
 		User user = new User("Diego", "foo@bar.com", 10);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getAge, "age", NumericConstraintBase::negative).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getAge, "age", NumericConstraintBase::negative)
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
@@ -726,14 +687,11 @@ class ValidatorTest {
 	@Test
 	void calendarDateIsBeforeNowValid() {
 		LocalDateTime now = LocalDateTime.now();
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.before(() -> now.plusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.before(() -> now.plusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -743,8 +701,9 @@ class ValidatorTest {
 	void nameStartWithValid() {
 		User user = new User("Diego Krupitza", "foo@bar.com", 22);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getName, "name", c -> c.startsWith("Diego")).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getName, "name", c -> c.startsWith("Diego"))
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -753,52 +712,41 @@ class ValidatorTest {
 	@Test
 	void calendarDateIsBeforeNowInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.before(() -> now.minusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.before(() -> now.minusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"datetime\" has to be before " + now.minusHours(10));
+		assertThat(violations.get(0).message()).isEqualTo("\"datetime\" has to be before " + now.minusHours(10));
 	}
 
 	@Test
 	void calendarDateIsAfterNowInValid() {
 		LocalDateTime now = LocalDateTime.now();
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.after(() -> now.plusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.after(() -> now.plusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"datetime\" has to be after " + now.plusHours(10));
+		assertThat(violations.get(0).message()).isEqualTo("\"datetime\" has to be after " + now.plusHours(10));
 	}
 
 	@Test
 	void calendarDateIsAfterNowValid() {
 		LocalDateTime now = LocalDateTime.now();
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.after(() -> now.minusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.after(() -> now.minusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -809,14 +757,11 @@ class ValidatorTest {
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime before = now.minusHours(10);
 		LocalDateTime after = now.plusHours(10);
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(() -> before, () -> after))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.between(() -> before, () -> after))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -826,22 +771,23 @@ class ValidatorTest {
 	void nameStartWithInValid() {
 		User user = new User("NotDiego", "foo@bar.com", 22);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getName, "name", c -> c.startsWith("Diego")).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getName, "name", c -> c.startsWith("Diego"))
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"name\" must start with \"Diego\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"name\" must start with \"Diego\"");
 	}
 
 	@Test
 	void nameEndsWithValid() {
 		User user = new User("Diego Krupitza", "foo@bar.com", 22);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getName, "name", c -> c.endsWith("Krupitza")).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getName, "name", c -> c.endsWith("Krupitza"))
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isTrue();
@@ -851,20 +797,16 @@ class ValidatorTest {
 	void calendarDateIsBetweenNowEqualInValid() {
 		LocalDateTime now = LocalDateTime.now();
 
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(() -> now, () -> now))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.between(() -> now, () -> now))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"datetime\" has to be between " + now + " and " + now);
+		assertThat(violations.get(0).message()).isEqualTo("\"datetime\" has to be between " + now + " and " + now);
 	}
 
 	@Test
@@ -873,46 +815,40 @@ class ValidatorTest {
 		LocalDateTime before = now.plusDays(10);
 		LocalDateTime after = now.plusDays(20);
 
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime",
-						c -> c.between(() -> before, () -> after))
-				.build();
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "datetime", c -> c.between(() -> before, () -> after))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"datetime\" has to be between " + before + " and " + after);
+		assertThat(violations.get(0).message()).isEqualTo("\"datetime\" has to be between " + before + " and " + after);
 	}
 
 	@Test
 	void nameEndsWithInValid() {
 		User user = new User("Diego Not", "foo@bar.com", 22);
 
-		Validator<User> validator = ValidatorBuilder.<User> of()
-				.constraint(User::getName, "name", c -> c.endsWith("Diego")).build();
+		Validator<User> validator = ValidatorBuilder.<User>of()
+			.constraint(User::getName, "name", c -> c.endsWith("Diego"))
+			.build();
 
 		ConstraintViolations violations = validator.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"name\" must end with \"Diego\"");
+		assertThat(violations.get(0).message()).isEqualTo("\"name\" must end with \"Diego\"");
 	}
 
 	@Test
 	void timeIsBeforeNowValid() {
 		LocalTime now = LocalTime.of(12, 30);
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.before(() -> now.plusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.before(() -> now.plusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -921,49 +857,41 @@ class ValidatorTest {
 	@Test
 	void timeIsBeforeNowInValid() {
 		LocalTime now = LocalTime.of(12, 30);
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.before(() -> now.minusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.before(() -> now.minusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"time\" has to be before " + now.minusHours(10));
+		assertThat(violations.get(0).message()).isEqualTo("\"time\" has to be before " + now.minusHours(10));
 	}
 
 	@Test
 	void timeIsAfterNowInValid() {
 		LocalTime now = LocalTime.of(12, 30);
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.after(() -> now.plusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.after(() -> now.plusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"time\" has to be after " + now.plusHours(10));
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be after " + now.plusHours(10));
 	}
 
 	@Test
 	void timeIsAfterNowValid() {
 		LocalTime now = LocalTime.of(12, 30);
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.after(() -> now.minusHours(10)))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.after(() -> now.minusHours(10)))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -975,13 +903,11 @@ class ValidatorTest {
 		LocalTime before = now.minusHours(10);
 		LocalTime after = now.plusHours(10);
 
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(() -> before, () -> after))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.between(() -> before, () -> after))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
@@ -991,19 +917,16 @@ class ValidatorTest {
 	void timeIsBetweenNowEqualInValid() {
 		LocalTime now = LocalTime.of(12, 30);
 
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(() -> now, () -> now))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.between(() -> now, () -> now))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"time\" has to be between " + now + " and " + now);
+		assertThat(violations.get(0).message()).isEqualTo("\"time\" has to be between " + now + " and " + now);
 	}
 
 	@Test
@@ -1012,92 +935,80 @@ class ValidatorTest {
 		LocalTime before = now.plusHours(10);
 		LocalTime after = now.plusHours(10).plusMinutes(1);
 
-		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime(
-				"BirthdayParty", now);
+		CalendarEntryLocalTime birthdayPartyEntry = new CalendarEntryLocalTime("BirthdayParty", now);
 
-		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalTime> of().constraint(CalendarEntryLocalTime::getTime,
-						"time", c -> c.between(() -> before, () -> after))
-				.build();
+		Validator<CalendarEntryLocalTime> validator = ValidatorBuilder.<CalendarEntryLocalTime>of()
+			.constraint(CalendarEntryLocalTime::getTime, "time", c -> c.between(() -> before, () -> after))
+			.build();
 
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"time\" has to be between " + before + " and " + after);
+		assertThat(violations.get(0).message()).startsWith("\"time\" has to be between " + before + " and " + after);
 	}
 
 	@Test
 	void futureValid() {
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", LocalDateTime.now().plusDays(1));
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
-						c -> c.future())
-				.build();
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty",
+				LocalDateTime.now().plusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime", c -> c.future())
+			.build();
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
 	}
 
 	@Test
 	void futureInValid() {
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", LocalDateTime.now().minusDays(1));
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
-						c -> c.future())
-				.build();
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty",
+				LocalDateTime.now().minusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime", c -> c.future())
+			.build();
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"dateTime\" must be a future date");
+		assertThat(violations.get(0).message()).startsWith("\"dateTime\" must be a future date");
 	}
 
 	@Test
 	void pastValid() {
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", LocalDateTime.now().minusDays(1));
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
-						c -> c.past())
-				.build();
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty",
+				LocalDateTime.now().minusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime", c -> c.past())
+			.build();
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isTrue();
 	}
 
 	@Test
 	void pastInValid() {
-		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime(
-				"BirthdayParty", LocalDateTime.now().plusDays(1));
-		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder
-				.<CalendarEntryLocalDateTime> of()
-				.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime",
-						c -> c.past())
-				.build();
+		CalendarEntryLocalDateTime birthdayPartyEntry = new CalendarEntryLocalDateTime("BirthdayParty",
+				LocalDateTime.now().plusDays(1));
+		Validator<CalendarEntryLocalDateTime> validator = ValidatorBuilder.<CalendarEntryLocalDateTime>of()
+			.constraint(CalendarEntryLocalDateTime::getDateTime, "dateTime", c -> c.past())
+			.build();
 		ConstraintViolations violations = validator.validate(birthdayPartyEntry);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.startsWith("\"dateTime\" must be a past date");
+		assertThat(violations.get(0).message()).startsWith("\"dateTime\" must be a past date");
 	}
 
 	Validator<User> validator() {
-		return ValidatorBuilder.<User> of() //
-				.constraint(User::getName, "name", c -> c.notNull() //
-						.greaterThanOrEqual(1) //
-						.lessThanOrEqual(20)) //
-				.constraint(User::getEmail, "email", c -> c.notNull() //
-						.greaterThanOrEqual(5) //
-						.lessThanOrEqual(50) //
-						.email()) //
-				.constraint(User::getAge, "age", c -> c.notNull() //
-						.greaterThanOrEqual(0) //
-						.lessThanOrEqual(200)) //
-				.constraint(User::isEnabled, "enabled", c -> c.isTrue()) //
-				.build();
+		return ValidatorBuilder.<User>of() //
+			.constraint(User::getName, "name", c -> c.notNull() //
+				.greaterThanOrEqual(1) //
+				.lessThanOrEqual(20)) //
+			.constraint(User::getEmail, "email", c -> c.notNull() //
+				.greaterThanOrEqual(5) //
+				.lessThanOrEqual(50) //
+				.email()) //
+			.constraint(User::getAge, "age", c -> c.notNull() //
+				.greaterThanOrEqual(0) //
+				.lessThanOrEqual(200)) //
+			.constraint(User::isEnabled, "enabled", c -> c.isTrue()) //
+			.build();
 	}
+
 }

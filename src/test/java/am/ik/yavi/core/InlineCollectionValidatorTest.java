@@ -26,17 +26,15 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
 class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
+
 	@Test
 	void nullCollectionValid() throws Exception {
-		Validator<FormWithCollection> validator = ValidatorBuilder
-				.of(FormWithCollection.class) //
-				.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
-						b -> b.constraint(Address::street, "street",
-								c -> c.notBlank().lessThan(32))
-								.nest(Address::country, "country", Country.validator())
-								.nestIfPresent(Address::phoneNumber, "phoneNumber",
-										PhoneNumber.validator()))
-				.build();
+		Validator<FormWithCollection> validator = ValidatorBuilder.of(FormWithCollection.class) //
+			.forEachIfPresent(FormWithCollection::getAddresses, "addresses",
+					b -> b.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
+						.nest(Address::country, "country", Country.validator())
+						.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator()))
+			.build();
 		FormWithCollection form = new FormWithCollection(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
@@ -45,12 +43,11 @@ class InlineCollectionValidatorTest extends AbstractCollectionValidatorTest {
 	@Override
 	public Validator<FormWithCollection> validator() {
 		return ValidatorBuilder.of(FormWithCollection.class) //
-				.forEach(FormWithCollection::getAddresses, "addresses",
-						b -> b.constraint(Address::street, "street",
-								c -> c.notBlank().lessThan(32))
-								.nest(Address::country, "country", Country.validator())
-								.nestIfPresent(Address::phoneNumber, "phoneNumber",
-										PhoneNumber.validator()))
-				.build();
+			.forEach(FormWithCollection::getAddresses, "addresses",
+					b -> b.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
+						.nest(Address::country, "country", Country.validator())
+						.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator()))
+			.build();
 	}
+
 }

@@ -47,8 +47,7 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "abc@example.com", "abc@localhost", "abc@192.168.1.10",
-			"東京@example.com", "" })
+	@ValueSource(strings = { "abc@example.com", "abc@localhost", "abc@192.168.1.10", "東京@example.com", "" })
 	void validEmail(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.email());
 		assertThat(predicate.test(value)).isTrue();
@@ -107,8 +106,7 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "ᠠ᠋", "ᠰ᠌" })
 	void ignoreFvsCharacter(String value) {
 		Predicate<String> predicate = retrievePredicate(
-				c -> c.variant(opts -> opts.fvs(MongolianFreeVariationSelector.IGNORE))
-						.fixedSize(1));
+				c -> c.variant(opts -> opts.fvs(MongolianFreeVariationSelector.IGNORE)).fixedSize(1));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
@@ -116,8 +114,7 @@ class CharSequenceConstraintTest {
 	@ValueSource(strings = { "\uD842\uDF9F\uDB40\uDD00", "\u908A\uDB40\uDD07" })
 	void ignoreIvsCharacter(String value) {
 		Predicate<String> predicate = retrievePredicate(
-				c -> c.variant(opts -> opts.ivs(IdeographicVariationSequence.IGNORE))
-						.fixedSize(1));
+				c -> c.variant(opts -> opts.ivs(IdeographicVariationSequence.IGNORE)).fixedSize(1));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
@@ -200,8 +197,7 @@ class CharSequenceConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "モジ" /* モシ\u3099 */ })
 	void notNormalizeCombiningCharacter(String value) {
-		Predicate<String> predicate = retrievePredicate(
-				c -> c.normalizer(null).fixedSize(3));
+		Predicate<String> predicate = retrievePredicate(c -> c.normalizer(null).fixedSize(3));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
@@ -238,16 +234,14 @@ class CharSequenceConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "1234", "0000" })
 	void validPattern_patternSupplier(String value) {
-		Predicate<String> predicate = retrievePredicate(
-				c -> c.pattern((() -> Pattern.compile("[0-9]{4}"))));
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern((() -> Pattern.compile("[0-9]{4}"))));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "134a", "abcd" })
 	void invalidPattern_patternSupplier(String value) {
-		Predicate<String> predicate = retrievePredicate(
-				c -> c.pattern(() -> Pattern.compile("[0-9]{4}")));
+		Predicate<String> predicate = retrievePredicate(c -> c.pattern(() -> Pattern.compile("[0-9]{4}")));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -277,8 +271,7 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "nonsense-nonsense-nonsense",
-			"12345678-1234-1234-1234-1234-12345678" })
+	@ValueSource(strings = { "nonsense-nonsense-nonsense", "12345678-1234-1234-1234-1234-12345678" })
 	void invalidUUID(String value) {
 		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::uuid);
 		assertThat(predicate.test(value)).isFalse();
@@ -397,9 +390,9 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "4111111111111111", "4242424242424242", "4012888888881881",
-			"5555555555554444", "5105105105105100", "378282246310005", "371449635398431",
-			"30569309025904", "38520000023237", "3530111333300000", "3566002020360505" })
+	@ValueSource(strings = { "4111111111111111", "4242424242424242", "4012888888881881", "5555555555554444",
+			"5105105105105100", "378282246310005", "371449635398431", "30569309025904", "38520000023237",
+			"3530111333300000", "3566002020360505" })
 	void validLuhn(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.luhn());
 		assertThat(predicate.test(value)).isTrue();
@@ -427,11 +420,9 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0",
-			"0:0:0:0:0:0:0:1", "::1", "2001:0db8:bd05:01d2:288a:1fc0:0001:10ee",
-			"2001:db8:20:3:1000:100:20:3", "2001:db8::1234:0:0:9abc", "2001:db8::9abc",
-			"::ffff:192.0.2.1", "fe80::0123:4567:89ab:cdef%4",
-			"fe80::0123:4567:89ab:cdef%fxp0" })
+	@ValueSource(strings = { "1762:0:0:0:0:B03:1:AF18", "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1", "::1",
+			"2001:0db8:bd05:01d2:288a:1fc0:0001:10ee", "2001:db8:20:3:1000:100:20:3", "2001:db8::1234:0:0:9abc",
+			"2001:db8::9abc", "::ffff:192.0.2.1", "fe80::0123:4567:89ab:cdef%4", "fe80::0123:4567:89ab:cdef%fxp0" })
 	void validIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
 		assertThat(predicate.test(value)).isTrue();
@@ -445,9 +436,8 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO",
-			"DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H", "DiegoFooT7UFB7ijEU",
-			"DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
+	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO", "DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H",
+			"DiegoFooT7UFB7ijEU", "DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
 			"DiegoFookcYOLkz00a", "DiegoFooiYBuRcAkXP" })
 	void validStartsWith(String value) {
 		String prefix = "DiegoFoo";
@@ -456,21 +446,18 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO",
-			"DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H", "DiegoFooT7UFB7ijEU",
-			"DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
+	@ValueSource(strings = { "DiegoFooiqMu3IPpgf", "DiegoFoojQ2gFpzEmO", "DiegoFooPcMzCARdWM", "DiegoFoohdORZ6ks8H",
+			"DiegoFooT7UFB7ijEU", "DiegoFooFSmlWu4XJz", "DiegoFoofwlgMXnuvW", "DiegoFooyj4MgAQeBi",
 			"DiegoFookcYOLkz00a", "DiegoFooiYBuRcAkXP" })
 	void validStartsWithStringBuilder(String value) {
 		StringBuilder prefixBuilder = new StringBuilder("Diego").append("Foo");
-		final Predicate<String> predicate = retrievePredicate(
-				c -> c.startsWith(prefixBuilder));
+		final Predicate<String> predicate = retrievePredicate(c -> c.startsWith(prefixBuilder));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
-			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
-			"iYBuRcAkXP" })
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H", "T7UFB7ijEU", "FSmlWu4XJz",
+			"fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a", "iYBuRcAkXP" })
 	void invalidStartsWith(String value) {
 		String prefix = "DiegoFoo";
 		final Predicate<String> predicate = retrievePredicate(c -> c.startsWith(prefix));
@@ -478,20 +465,18 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
-			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
-			"iYBuRcAkXP" })
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H", "T7UFB7ijEU", "FSmlWu4XJz",
+			"fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a", "iYBuRcAkXP" })
 	void invalidStartsWithStringBuilder(String value) {
 		StringBuilder prefixBuilder = new StringBuilder("Diego").append("Foo");
-		final Predicate<String> predicate = retrievePredicate(
-				c -> c.startsWith(prefixBuilder));
+		final Predicate<String> predicate = retrievePredicate(c -> c.startsWith(prefixBuilder));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgfDiego", "jQ2gFpzEmODiego", "PcMzCARdWMDiego",
-			"hdORZ6ks8HDiego", "T7UFB7ijEUDiego", "FSmlWu4XJzDiego", "fwlgMXnuvWDiego",
-			"yj4MgAQeBiDiego", "kcYOLkz00aDiego", "iYBuRcAkXPDiego" })
+	@ValueSource(
+			strings = { "iqMu3IPpgfDiego", "jQ2gFpzEmODiego", "PcMzCARdWMDiego", "hdORZ6ks8HDiego", "T7UFB7ijEUDiego",
+					"FSmlWu4XJzDiego", "fwlgMXnuvWDiego", "yj4MgAQeBiDiego", "kcYOLkz00aDiego", "iYBuRcAkXPDiego" })
 	void validEndsWith(String value) {
 		String suffix = "Diego";
 		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffix));
@@ -499,21 +484,18 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgfDiego1", "jQ2gFpzEmODiego1", "PcMzCARdWMDiego1",
-			"hdORZ6ks8HDiego1", "T7UFB7ijEUDiego1", "FSmlWu4XJzDiego1",
-			"fwlgMXnuvWDiego1", "yj4MgAQeBiDiego1", "kcYOLkz00aDiego1",
+	@ValueSource(strings = { "iqMu3IPpgfDiego1", "jQ2gFpzEmODiego1", "PcMzCARdWMDiego1", "hdORZ6ks8HDiego1",
+			"T7UFB7ijEUDiego1", "FSmlWu4XJzDiego1", "fwlgMXnuvWDiego1", "yj4MgAQeBiDiego1", "kcYOLkz00aDiego1",
 			"iYBuRcAkXPDiego1" })
 	void validEndsWithStringBuilder(String value) {
 		StringBuilder suffixBuilder = new StringBuilder("Diego").append(1);
-		final Predicate<String> predicate = retrievePredicate(
-				c -> c.endsWith(suffixBuilder));
+		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffixBuilder));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
-			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
-			"iYBuRcAkXP" })
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H", "T7UFB7ijEU", "FSmlWu4XJz",
+			"fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a", "iYBuRcAkXP" })
 	void invalidEndsWith(String value) {
 		String suffix = "Diego";
 		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffix));
@@ -521,21 +503,18 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H",
-			"T7UFB7ijEU", "FSmlWu4XJz", "fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a",
-			"iYBuRcAkXP" })
+	@ValueSource(strings = { "iqMu3IPpgf", "jQ2gFpzEmO", "PcMzCARdWM", "hdORZ6ks8H", "T7UFB7ijEU", "FSmlWu4XJz",
+			"fwlgMXnuvW", "yj4MgAQeBi", "kcYOLkz00a", "iYBuRcAkXP" })
 	void invalidEndsWithStringBuilder(String value) {
 		StringBuilder suffixBuilder = new StringBuilder("Diego").append(1);
-		final Predicate<String> predicate = retrievePredicate(
-				c -> c.endsWith(suffixBuilder));
+		final Predicate<String> predicate = retrievePredicate(c -> c.endsWith(suffixBuilder));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "2022-02-02", "2022-12-31", "2022-01-01" })
 	void validLocalDate(String value) {
-		Predicate<String> predicate = retrievePredicate(
-				CharSequenceConstraint::isoLocalDate);
+		Predicate<String> predicate = retrievePredicate(CharSequenceConstraint::isoLocalDate);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
@@ -557,7 +536,7 @@ class CharSequenceConstraintTest {
 
 	private static Predicate<String> retrievePredicate(
 			Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
-		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

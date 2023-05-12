@@ -16,7 +16,9 @@
 package am.ik.yavi.arguments;
 
 public class UserService {
+
 	public User createUser(String email, String name) {
 		return new User(email, name);
 	}
+
 }

@@ -15,8 +15,7 @@ public class Gh213Test {
 		final ConstraintViolations violations = User.VALIDATOR.validate(user);
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"firstName\" must not be null");
+		assertThat(violations.get(0).message()).isEqualTo("\"firstName\" must not be null");
 	}
 
 	@Test
@@ -33,8 +32,7 @@ public class Gh213Test {
 				ConstraintContext.from(singletonMap("country", "IT")));
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"lastName\" must not be null");
+		assertThat(violations.get(0).message()).isEqualTo("\"lastName\" must not be null");
 	}
 
 	@Test
@@ -49,8 +47,7 @@ public class Gh213Test {
 	void booleanContextInvalid() {
 		final User user = new User("foo", null, null);
 		final ConstraintViolations violations = User.VALIDATOR.validate(user,
-				ConstraintContext
-						.from(singletonMap("enableValidationInvoiceCode", true)));
+				ConstraintContext.from(singletonMap("enableValidationInvoiceCode", true)));
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message()).isEqualTo("\"code\" must not be null");
@@ -60,8 +57,7 @@ public class Gh213Test {
 	void booleanContextValid() {
 		final User user = new User("foo", null, null);
 		final ConstraintViolations violations = User.VALIDATOR.validate(user,
-				ConstraintContext
-						.from(singletonMap("enableValidationInvoiceCode", false)));
+				ConstraintContext.from(singletonMap("enableValidationInvoiceCode", false)));
 		assertThat(violations.isValid()).isTrue();
 	}
 
@@ -69,20 +65,17 @@ public class Gh213Test {
 	void booleanContextInvalidNested() {
 		final User user = new User("foo", null, new InvoiceCode(null));
 		final ConstraintViolations violations = User.VALIDATOR.validate(user,
-				ConstraintContext
-						.from(singletonMap("enableValidationInvoiceCode", true)));
+				ConstraintContext.from(singletonMap("enableValidationInvoiceCode", true)));
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"code.fiscalCode\" must not be null");
+		assertThat(violations.get(0).message()).isEqualTo("\"code.fiscalCode\" must not be null");
 	}
 
 	@Test
 	void booleanContextValidNested() {
 		final User user = new User("foo", null, new InvoiceCode("a"));
 		final ConstraintViolations violations = User.VALIDATOR.validate(user,
-				ConstraintContext
-						.from(singletonMap("enableValidationInvoiceCode", true)));
+				ConstraintContext.from(singletonMap("enableValidationInvoiceCode", true)));
 		assertThat(violations.isValid()).isTrue();
 	}
 
@@ -94,15 +87,13 @@ public class Gh213Test {
 
 		private InvoiceCode code;
 
-		static final Validator<User> VALIDATOR = ValidatorBuilder.<User> of()
-				.constraint(User::getFirstName, "firstName", Constraint::notNull)
-				.constraintOnCondition(hasAttributeWithValue("country", "IT"),
-						b -> b.constraint(User::getLastName, "lastName",
-								Constraint::notNull))
-				.constraintOnCondition(
-						hasAttributeWithValue("enableValidationInvoiceCode", true),
-						b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
-				.build();
+		static final Validator<User> VALIDATOR = ValidatorBuilder.<User>of()
+			.constraint(User::getFirstName, "firstName", Constraint::notNull)
+			.constraintOnCondition(hasAttributeWithValue("country", "IT"),
+					b -> b.constraint(User::getLastName, "lastName", Constraint::notNull))
+			.constraintOnCondition(hasAttributeWithValue("enableValidationInvoiceCode", true),
+					b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
+			.build();
 
 		public User(String firstName, String lastName, InvoiceCode code) {
 			this.firstName = firstName;
@@ -121,13 +112,14 @@ public class Gh213Test {
 		public InvoiceCode getCode() {
 			return code;
 		}
+
 	}
 
 	public static class InvoiceCode {
-		static final Validator<InvoiceCode> VALIDATOR = ValidatorBuilder
-				.<InvoiceCode> of()
-				.constraint(InvoiceCode::getFiscalCode, "fiscalCode", Constraint::notNull)
-				.build();
+
+		static final Validator<InvoiceCode> VALIDATOR = ValidatorBuilder.<InvoiceCode>of()
+			.constraint(InvoiceCode::getFiscalCode, "fiscalCode", Constraint::notNull)
+			.build();
 
 		public String fiscalCode;
 
@@ -138,6 +130,7 @@ public class Gh213Test {
 		public String getFiscalCode() {
 			return fiscalCode;
 		}
+
 	}
 
 }

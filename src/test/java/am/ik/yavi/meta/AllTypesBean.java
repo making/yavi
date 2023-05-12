@@ -242,4 +242,5 @@ public class AllTypesBean {
 	public void setLocalDateValue(@Nullable LocalDate localDateValue) {
 		this.localDateValue = localDateValue;
 	}
+
 }

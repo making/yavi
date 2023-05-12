@@ -18,14 +18,15 @@ package am.ik.yavi.constraint.charsequence.variant;
 import am.ik.yavi.jsr305.Nullable;
 
 public class VariantOptions {
+
 	private final MongolianFreeVariationSelector fvs;
 
 	private final IdeographicVariationSequence ivs;
 
 	private final StandardizedVariationSequence svs;
 
-	public VariantOptions(StandardizedVariationSequence svs,
-			IdeographicVariationSequence ivs, MongolianFreeVariationSelector fvs) {
+	public VariantOptions(StandardizedVariationSequence svs, IdeographicVariationSequence ivs,
+			MongolianFreeVariationSelector fvs) {
 		this.svs = svs;
 		this.ivs = ivs;
 		this.fvs = fvs;
@@ -61,6 +62,7 @@ public class VariantOptions {
 	}
 
 	public static class Builder {
+
 		private MongolianFreeVariationSelector fvs;
 
 		private IdeographicVariationSequence ivs;
@@ -103,5 +105,7 @@ public class VariantOptions {
 			this.svs = svs;
 			return this;
 		}
+
 	}
+
 }

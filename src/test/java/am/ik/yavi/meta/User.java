@@ -16,7 +16,9 @@
 package am.ik.yavi.meta;
 
 public class User {
+
 	private final String email;
+
 	private final String name;
 
 	public User(String email, String name) {
@@ -28,4 +30,5 @@ public class User {
 	public String toString() {
 		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + '}';
 	}
+
 }

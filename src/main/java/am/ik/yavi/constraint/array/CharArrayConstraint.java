@@ -23,8 +23,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class CharArrayConstraint<T>
-		extends ContainerConstraintBase<T, char[], CharArrayConstraint<T>> {
+public class CharArrayConstraint<T> extends ContainerConstraintBase<T, char[], CharArrayConstraint<T>> {
 
 	@Override
 	public CharArrayConstraint<T> cast() {
@@ -47,4 +46,5 @@ public class CharArrayConstraint<T>
 	protected ToIntFunction<char[]> size() {
 		return x -> x.length;
 	}
+
 }

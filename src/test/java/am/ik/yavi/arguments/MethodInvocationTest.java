@@ -24,13 +24,14 @@ import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolationsException;
 
 public class MethodInvocationTest {
+
 	static final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
-			.of(UserService::createUser) //
-			.builder(b -> b //
-					._object(Arguments1::arg1, "userService", c -> c.notNull())
-					._string(Arguments2::arg2, "email", c -> c.email())
-					._string(Arguments3::arg3, "name", c -> c.notNull())) //
-			.build();
+		.of(UserService::createUser) //
+		.builder(b -> b //
+			._object(Arguments1::arg1, "userService", c -> c.notNull())
+			._string(Arguments2::arg2, "email", c -> c.email())
+			._string(Arguments3::arg3, "name", c -> c.notNull())) //
+		.build();
 	static final UserService userService = new UserService();
 
 	@Test
@@ -42,11 +43,10 @@ public class MethodInvocationTest {
 	@Test
 	void invalid() {
 		assertThatThrownBy(() -> validator.validated(userService, "jd", null)) //
-				.isInstanceOfSatisfying(ConstraintViolationsException.class,
-						e -> assertThat(e.getMessage()).isEqualTo(
-								"Constraint violations found!" + System.lineSeparator()
-										+ "* \"email\" must be a valid email address"
-										+ System.lineSeparator()
-										+ "* \"name\" must not be null"));
+			.isInstanceOfSatisfying(ConstraintViolationsException.class,
+					e -> assertThat(e.getMessage()).isEqualTo("Constraint violations found!" + System.lineSeparator()
+							+ "* \"email\" must be a valid email address" + System.lineSeparator()
+							+ "* \"name\" must not be null"));
 	}
+
 }

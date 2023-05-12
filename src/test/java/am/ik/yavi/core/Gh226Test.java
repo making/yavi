@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh226Test {
-	private static final Validator<String> recipientValidator = ValidatorBuilder
-			.<String> of().constraint(String::toString, "aaa",
-					e -> e.notNull().notBlank().notEmpty().email())
-			.build();
 
-	private static final Validator<Email> baseEmailValidatorBuilder = ValidatorBuilder
-			.<Email> of().forEach(Email::getRecipients, "recipients", recipientValidator)
-			.build();
+	private static final Validator<String> recipientValidator = ValidatorBuilder.<String>of()
+		.constraint(String::toString, "aaa", e -> e.notNull().notBlank().notEmpty().email())
+		.build();
+
+	private static final Validator<Email> baseEmailValidatorBuilder = ValidatorBuilder.<Email>of()
+		.forEach(Email::getRecipients, "recipients", recipientValidator)
+		.build();
 
 	@Test
 	void nullElement() {
@@ -25,11 +25,11 @@ public class Gh226Test {
 		e.setRecipients(Arrays.asList(nullVal));
 		ConstraintViolations violations = baseEmailValidatorBuilder.validate(e);
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message())
-				.isEqualTo("\"recipients[0]\" must not be null");
+		assertThat(violations.get(0).message()).isEqualTo("\"recipients[0]\" must not be null");
 	}
 
 	public class Email {
+
 		private List<String> recipients;
 
 		public void setRecipients(List<String> recipients) {
@@ -39,6 +39,7 @@ public class Gh226Test {
 		public List<String> getRecipients() {
 			return this.recipients;
 		}
+
 	}
 
 }

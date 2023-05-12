@@ -21,20 +21,20 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 
 public class Country {
+
 	private final String name;
 
 	public Country(String name) {
 		this.name = name;
 	}
 
-	static final ApplicativeValidator<Country> applicativeValidator = validator()
-			.prefixed("country").applicative();
+	static final ApplicativeValidator<Country> applicativeValidator = validator().prefixed("country").applicative();
 
 	public static Validator<Country> validator() {
-		return ValidatorBuilder.<Country> of()
-				.constraint(Country::name, "name", c -> c.notBlank() //
-						.greaterThanOrEqual(2))
-				.build();
+		return ValidatorBuilder.<Country>of()
+			.constraint(Country::name, "name", c -> c.notBlank() //
+				.greaterThanOrEqual(2))
+			.build();
 	}
 
 	public String name() {
@@ -49,4 +49,5 @@ public class Country {
 	public String toString() {
 		return "Country{" + "name='" + name + '\'' + '}';
 	}
+
 }

@@ -27,6 +27,7 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.11.0
  */
 public interface ConstraintContext {
+
 	/**
 	 * Returns the attribute for the given key.
 	 * @param key key
@@ -39,7 +40,6 @@ public interface ConstraintContext {
 	 * This method exists on this interface for backwards compatibility with YAVI 0.10 and
 	 * earlier. <br>
 	 * It is effectively used in the lower interface <code>ConstraintGroup</code>.
-	 *
 	 * @return context name
 	 */
 	String name();
@@ -74,6 +74,7 @@ public interface ConstraintContext {
 
 	@FunctionalInterface
 	interface Attribute {
+
 		/**
 		 * Returns the attribute value. <code>null</code> is returned if the attribute
 		 * does not exist.
@@ -108,5 +109,7 @@ public interface ConstraintContext {
 		default boolean isEqualTo(Object value) {
 			return Objects.equals(this.value(), value);
 		}
+
 	}
+
 }

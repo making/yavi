@@ -68,15 +68,11 @@ public class AllTypesField {
 			@ConstraintTarget(field = true) boolean booleanPrimitiveValue,
 			@ConstraintTarget(field = true) Character characterValue,
 			@ConstraintTarget(field = true) char characterPrimitiveValue,
-			@ConstraintTarget(field = true) Byte byteValue,
-			@ConstraintTarget(field = true) byte bytePrimitiveValue,
-			@ConstraintTarget(field = true) Short shortValue,
-			@ConstraintTarget(field = true) short shortPrimitiveValue,
+			@ConstraintTarget(field = true) Byte byteValue, @ConstraintTarget(field = true) byte bytePrimitiveValue,
+			@ConstraintTarget(field = true) Short shortValue, @ConstraintTarget(field = true) short shortPrimitiveValue,
 			@ConstraintTarget(field = true) Integer integerValue,
-			@ConstraintTarget(field = true) int integerPrimitiveValue,
-			@ConstraintTarget(field = true) Long longValue,
-			@ConstraintTarget(field = true) long longPrimitiveValue,
-			@ConstraintTarget(field = true) Float floatValue,
+			@ConstraintTarget(field = true) int integerPrimitiveValue, @ConstraintTarget(field = true) Long longValue,
+			@ConstraintTarget(field = true) long longPrimitiveValue, @ConstraintTarget(field = true) Float floatValue,
 			@ConstraintTarget(field = true) float floatPrimitiveValue,
 			@ConstraintTarget(field = true) Double doubleValue,
 			@ConstraintTarget(field = true) double doublePrimitiveValue,
@@ -104,4 +100,5 @@ public class AllTypesField {
 		this.bigDecimalValue = bigDecimalValue;
 		this.localDateValue = localDateValue;
 	}
+
 }

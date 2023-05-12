@@ -16,8 +16,10 @@
 package am.ik.yavi.meta;
 
 public class UserService {
+
 	@ConstraintArguments
 	public User createUser(String email, String name) {
 		return new User(email, name);
 	}
+
 }

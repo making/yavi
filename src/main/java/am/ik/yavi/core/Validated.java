@@ -34,11 +34,11 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.6.0
  */
 public class Validated<T> extends Validation<ConstraintViolation, T> {
+
 	private final Validation<ConstraintViolation, ? extends T> delegate;
 
 	@SuppressWarnings("unchecked")
-	public static <T> Validated<T> of(
-			Validation<ConstraintViolation, ? extends T> delegate) {
+	public static <T> Validated<T> of(Validation<ConstraintViolation, ? extends T> delegate) {
 		if (delegate instanceof Validated) {
 			return ((Validated<T>) delegate);
 		}
@@ -98,15 +98,13 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(
-			@Nullable U value) {
+	protected <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(@Nullable U value) {
 		return (V) Validated.of(Validation.success(value));
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(
-			List<ConstraintViolation> errors) {
+	protected <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(List<ConstraintViolation> errors) {
 		return (V) Validated.of(Validation.failure(errors));
 	}
 
@@ -130,8 +128,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	/**
 	 * @since 0.7.0
 	 */
-	public static <T> Validated<List<T>> sequence(
-			Iterable<Validated<? extends T>> values) {
+	public static <T> Validated<List<T>> sequence(Iterable<Validated<? extends T>> values) {
 		return Validated.of(Validations.sequence(values));
 	}
 
@@ -154,10 +151,8 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	/**
 	 * @since 0.8.0
 	 */
-	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(
-			Iterable<T> values,
-			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper,
-			Supplier<C> factory) {
+	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(Iterable<T> values,
+			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper, Supplier<C> factory) {
 		return Validated.of(Validations.traverseIndexed(values, mapper, factory));
 	}
 

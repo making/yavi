@@ -27,12 +27,11 @@ public class FloatValidator<T> extends DefaultArguments1Validator<Float, T> {
 
 	@Override
 	public <T2> FloatValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new FloatValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new FloatValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public FloatValidator(Validator<Arguments1<Float>> validator,
-			Function1<? super Float, ? extends T> mapper) {
+	public FloatValidator(Validator<Arguments1<Float>> validator, Function1<? super Float, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

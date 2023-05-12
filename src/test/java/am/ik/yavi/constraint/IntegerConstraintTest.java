@@ -113,54 +113,48 @@ class IntegerConstraintTest {
 	@ParameterizedTest
 	@ValueSource(ints = { 99, 100, 0 })
 	void validPositiveOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = { -101, -12 })
 	void invalidPositiveOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = { 99, 100 })
 	void invalidNegaitveOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = { -101, -120, 0 })
 	void validNegaitveOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = { 99, 100 })
 	void invalidNegativeOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = { -101, -120, 0 })
 	void validNegativeOrZero(int value) {
-		Predicate<Integer> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Integer> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Integer> retrievePredicate(
 			Function<IntegerConstraint<Integer>, IntegerConstraint<Integer>> constraint) {
-		return constraint.apply(new IntegerConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new IntegerConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

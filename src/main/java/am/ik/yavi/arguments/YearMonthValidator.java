@@ -28,12 +28,12 @@ public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth,
 
 	@Override
 	public <T2> YearMonthValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new YearMonthValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new YearMonthValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
 	public YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
 			Function1<? super YearMonth, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

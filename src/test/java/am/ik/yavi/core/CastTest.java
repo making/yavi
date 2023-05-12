@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import am.ik.yavi.builder.ValidatorBuilder;
 
 class CastTest {
+
 	@Test
 	void anotherClonedValidatorShouldAlsoWork_GH23() {
 		final Student student = new Student();
@@ -52,10 +53,11 @@ class CastTest {
 	}
 
 	static class Employee extends Person {
+
 		static final Validator<Employee> validator = Person.validatorBuilder.clone()
-				.cast(Employee.class)
-				.constraint(Employee::getServiceId, "service", Constraint::notNull)
-				.build();
+			.cast(Employee.class)
+			.constraint(Employee::getServiceId, "service", Constraint::notNull)
+			.build();
 
 		private String serviceId;
 
@@ -66,12 +68,13 @@ class CastTest {
 		void setServiceId(String serviceId) {
 			this.serviceId = serviceId;
 		}
+
 	}
 
 	static class Person {
-		static ValidatorBuilder<Person> validatorBuilder = ValidatorBuilder
-				.of(Person.class)
-				.constraint(Person::getName, "name", Constraint::notNull);
+
+		static ValidatorBuilder<Person> validatorBuilder = ValidatorBuilder.of(Person.class)
+			.constraint(Person::getName, "name", Constraint::notNull);
 
 		static final Validator<Person> validator = validatorBuilder.build();
 
@@ -84,12 +87,15 @@ class CastTest {
 		void setName(String name) {
 			this.name = name;
 		}
+
 	}
 
 	static class Student extends Person {
+
 		static final Validator<Student> validator = Person.validatorBuilder.clone()
-				.cast(Student.class).constraint(Student::getId, "id", Constraint::notNull)
-				.build();
+			.cast(Student.class)
+			.constraint(Student::getId, "id", Constraint::notNull)
+			.build();
 
 		private String id;
 
@@ -100,5 +106,7 @@ class CastTest {
 		void setId(String id) {
 			this.id = id;
 		}
+
 	}
+
 }

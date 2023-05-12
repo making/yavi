@@ -48,14 +48,13 @@ public class BigDecimalValidatorBuilder {
 		this.builder = builder;
 	}
 
-	public <T> BigDecimalValidator<T> build(
-			Function<? super BigDecimal, ? extends T> mapper) {
-		final Validator<Arguments1<BigDecimal>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> BigDecimalValidator<T> build(Function<? super BigDecimal, ? extends T> mapper) {
+		final Validator<Arguments1<BigDecimal>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BigDecimalValidator<>(validator, mapper::apply);
 	}
 
 	public BigDecimalValidator<BigDecimal> build() {
 		return build(x -> x);
 	}
+
 }

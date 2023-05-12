@@ -23,6 +23,7 @@ import java.util.Set;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 
 public enum AsciiCodePoints implements CodePoints<String> {
+
 	ASCII_PRINTABLE_CHARS((CodePointsRanges<String>) () -> {
 		return Collections.singletonList(Range.of(0x0020 /*   */, 0x007E /* ~ */));
 	}), //
@@ -45,4 +46,5 @@ public enum AsciiCodePoints implements CodePoints<String> {
 	public Set<Integer> allExcludedCodePoints(String s) {
 		return this.delegate.allExcludedCodePoints(s);
 	}
+
 }

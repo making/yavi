@@ -31,94 +31,73 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 public class NestedValidatorTest extends AbstractNestedValidatorTest {
+
 	@Override
 	protected Validator<Address> validator() {
-		return ValidatorBuilder.<Address> of()
-				.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-				.nest(Address::country, "country", Country.validator())
-				.nestIfPresent(Address::phoneNumber, "phoneNumber",
-						PhoneNumber.validator())
-				.build();
+		return ValidatorBuilder.<Address>of()
+			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
+			.nest(Address::country, "country", Country.validator())
+			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
+			.build();
 	}
 
-	private ConstraintCondition<IntRange> whenAllOfNumbersNotNull = (r,
-			g) -> r.small != null && r.big != null;
+	private ConstraintCondition<IntRange> whenAllOfNumbersNotNull = (r, g) -> r.small != null && r.big != null;
 
 	private Validator<IntRange> thenCompareNumbers = ValidatorBuilder.of(IntRange.class)
-			.constraintOnTarget(r -> r.big > r.small, "big", null,
-					"[big] must be greater than [small]")
-			.build();
+		.constraintOnTarget(r -> r.big > r.small, "big", null, "[big] must be greater than [small]")
+		.build();
 
 	private Validator<IntRange> intRangeValidator = ValidatorBuilder.of(IntRange.class)
-			.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.small, "small",
-					Constraint::notNull)
-			.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.big, "big",
-					Constraint::notNull)
-			.constraintOnCondition(whenAllOfNumbersNotNull, thenCompareNumbers).build();
+		.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.small, "small", Constraint::notNull)
+		.constraint((ValidatorBuilder.ToInteger<IntRange>) r -> r.big, "big", Constraint::notNull)
+		.constraintOnCondition(whenAllOfNumbersNotNull, thenCompareNumbers)
+		.build();
 
-	private Validator<NestedObject> nestedObjectValidator = ValidatorBuilder
-			.<NestedObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
-			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
-			.build();
+	private Validator<NestedObject> nestedObjectValidator = ValidatorBuilder.<NestedObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
+		.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
+		.build();
 
-	private Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.nest(MainObject::getNested, "nested", nestedObjectValidator).build();
+	private Validator<MainObject> mainObjectValidator = ValidatorBuilder.<MainObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+		.nest(MainObject::getNested, "nested", nestedObjectValidator)
+		.build();
 
-	private Validator<MainObject> mainObjectIfPresentValidator = ValidatorBuilder
-			.<MainObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.nestIfPresent(MainObject::getNested, "nested", nestedObjectValidator)
-			.build();
+	private Validator<MainObject> mainObjectIfPresentValidator = ValidatorBuilder.<MainObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+		.nestIfPresent(MainObject::getNested, "nested", nestedObjectValidator)
+		.build();
 
-	private Validator<NestedObject> nestedObjectValidator_GH29 = ValidatorBuilder
-			.<NestedObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
-			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
-			.build();
+	private Validator<NestedObject> nestedObjectValidator_GH29 = ValidatorBuilder.<NestedObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
+		.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
+		.build();
 
-	private Validator<MainObject> mainObjectValidator_GH29 = ValidatorBuilder
-			.<MainObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.nest(MainObject::getNested, "nested",
-							nestedObjectValidator_GH29))
-			.constraintOnCondition(UPDATE.toCondition(), b -> b
-					.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
-			.build();
+	private Validator<MainObject> mainObjectValidator_GH29 = ValidatorBuilder.<MainObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+		.constraintOnCondition(CREATE.toCondition(),
+				b -> b.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
+		.constraintOnCondition(UPDATE.toCondition(),
+				b -> b.nest(MainObject::getNested, "nested", nestedObjectValidator_GH29))
+		.build();
 
-	private Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder
-			.<NestedObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
-			.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
-			.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator).build();
+	private Validator<NestedObject> nestedObjectValidator_GH90 = ValidatorBuilder.<NestedObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(NestedObject::getId, "id", Constraint::notNull))
+		.constraint(NestedObject::getText, "text", CharSequenceConstraint::notBlank)
+		.forEach(NestedObject::getIntRanges, "intRanges", intRangeValidator)
+		.build();
 
-	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder
-			.<MainObject> of()
-			.constraintOnCondition(CREATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
-			.constraintOnCondition(UPDATE.toCondition(),
-					b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
-			.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90).build();
+	private Validator<MainObject> mainObjectValidator_GH90 = ValidatorBuilder.<MainObject>of()
+		.constraintOnCondition(CREATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::isNull))
+		.constraintOnCondition(UPDATE.toCondition(), b -> b.constraint(MainObject::getId, "id", Constraint::notNull))
+		.nest(MainObject::getNested, "nested", nestedObjectValidator_GH90)
+		.build();
 
 	@Test
 	void shouldBeInValid_GH28() {
@@ -158,8 +137,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		nested.setId(1L);
 		target.setNested(nested);
 
-		final ConstraintViolations result = mainObjectValidator_GH29.validate(target,
-				CREATE);
+		final ConstraintViolations result = mainObjectValidator_GH29.validate(target, CREATE);
 
 		assertThat(result.isValid()).isFalse();
 		assertThat(result).hasSize(3);
@@ -183,7 +161,8 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	@Test
 	void testNested_GH20() {
 		Validator<Nested> validator = ValidatorBuilder.of(Nested.class)
-				.nest(n -> n.intRange, "intRange", intRangeValidator).build();
+			.nest(n -> n.intRange, "intRange", intRangeValidator)
+			.build();
 
 		Nested nested = new Nested(new IntRange(1, 0));
 
@@ -205,8 +184,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	void shouldBeValid_GH28() {
 		MainObject target = new MainObject();
 
-		ConstraintViolations result = mainObjectIfPresentValidator.validate(target,
-				CREATE);
+		ConstraintViolations result = mainObjectIfPresentValidator.validate(target, CREATE);
 
 		assertThat(result.isValid()).isTrue();
 	}
@@ -221,8 +199,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		nested.setText("test");
 		target.setNested(nested);
 
-		final ConstraintViolations result = mainObjectValidator_GH29.validate(target,
-				UPDATE);
+		final ConstraintViolations result = mainObjectValidator_GH29.validate(target, UPDATE);
 
 		assertThat(result.isValid()).isTrue();
 	}
@@ -255,141 +232,153 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		ConstraintViolations result = mainObjectValidator_GH90.validate(target, CREATE);
 
 		assertThat(result.isValid()).isFalse();
-		assertThat(result).extracting(ConstraintViolation::name)
-				.containsExactly("nested.intRanges[0].small");
+		assertThat(result).extracting(ConstraintViolation::name).containsExactly("nested.intRanges[0].small");
 	}
 
 	@org.junit.jupiter.api.Nested
 	class DeepNestingGH60Tests {
+
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenInnerNestedObjectIsRequired() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b", b -> b.nest(B::getC, "c",
-							c -> c.nest(C::getD, "d", d -> d.nest(D::getE, "e",
-									e -> e._integer(E::getValue, "value",
-											value -> value.greaterThanOrEqual(100))))))
-					.build();
+				.nest(A::getB, "b",
+						b -> b.nest(B::getC, "c", c -> c.nest(C::getD, "d", d -> d.nest(D::getE, "e",
+								e -> e._integer(E::getValue, "value", value -> value.greaterThanOrEqual(100))))))
+				.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null").isFalse();
+					.as("1-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null").isFalse();
+					.as("2-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null").isFalse();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(null, null))))).isValid())
-						.as("4-layer nested object is null (when it is required)")
-						.isFalse();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
-						.as("5-layer constraint is valid").isTrue();
+					.as("3-layer nested object is null")
+					.isFalse();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+					.as("4-layer nested object is null (when it is required)")
+					.isFalse();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
+					.as("5-layer constraint is valid")
+					.isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenInnerNestedObjectIsOptional() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b", b -> b.nestIfPresent(B::getC, "c",
-							c -> c.nest(C::getD, "d", d -> d.nestIfPresent(D::getE, "e",
-									e -> e._integer(E::getValue, "value",
-											value -> value.greaterThanOrEqual(100))))))
-					.build();
+				.nest(A::getB, "b",
+						b -> b.nestIfPresent(B::getC, "c", c -> c.nest(C::getD, "d", d -> d.nestIfPresent(D::getE, "e",
+								e -> e._integer(E::getValue, "value", value -> value.greaterThanOrEqual(100))))))
+				.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null").isFalse();
+					.as("1-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null (when it is optional)")
-						.isTrue();
+					.as("2-layer nested object is null (when it is optional)")
+					.isTrue();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null").isFalse();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(null, null))))).isValid())
-						.as("4-layer nested object is null (when it is optional)")
-						.isTrue();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
-						.as("5-layer constraint is valid").isTrue();
+					.as("3-layer nested object is null")
+					.isFalse();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+					.as("4-layer nested object is null (when it is optional)")
+					.isTrue();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(new E(100), null))))).isValid())
+					.as("5-layer constraint is valid")
+					.isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenForEachMethodIsUsed() {
 			final Validator<A> validator = ValidatorBuilder.of(A.class)
-					.nest(A::getB, "b", b -> b.nest(B::getC, "c",
-							c -> c.nest(C::getD, "d", d -> d.forEach(D::getList, "list",
-									e -> e._integer(E::getValue, "value",
-											value -> value.greaterThanOrEqual(100))))))
-					.build();
+				.nest(A::getB, "b",
+						b -> b.nest(B::getC, "c", c -> c.nest(C::getD, "d", d -> d.forEach(D::getList, "list",
+								e -> e._integer(E::getValue, "value", value -> value.greaterThanOrEqual(100))))))
+				.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null").isFalse();
+					.as("1-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null").isFalse();
+					.as("2-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null").isFalse();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(null, null))))).isValid())
-						.as("4-layer nested object is null (when it is required)")
-						.isFalse();
-				softly.assertThat(validator
-						.validate(new A(
-								new B(new C(new D(null, singletonList(new E(100)))))))
-						.isValid()).as("5-layer constraint is valid").isTrue();
+					.as("3-layer nested object is null")
+					.isFalse();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+					.as("4-layer nested object is null (when it is required)")
+					.isFalse();
+				softly
+					.assertThat(
+							validator.validate(new A(new B(new C(new D(null, singletonList(new E(100))))))).isValid())
+					.as("5-layer constraint is valid")
+					.isTrue();
 			});
 		}
 
 		@Test
 		void shouldValidateObjectWithManyLayersNestedObjectWhenForEachIfPresentMethodIsUsed() {
-			final Validator<A> validator = ValidatorBuilder.of(A.class).nest(A::getB, "b",
-					b -> b.nestIfPresent(B::getC, "c", c -> c.nest(C::getD, "d",
-							d -> d.forEachIfPresent(D::getList, "list",
-									e -> e._integer(E::getValue, "value",
-											value -> value.greaterThanOrEqual(100))))))
-					.build();
+			final Validator<A> validator = ValidatorBuilder.of(A.class)
+				.nest(A::getB, "b", b -> b.nestIfPresent(B::getC, "c",
+						c -> c.nest(C::getD, "d", d -> d.forEachIfPresent(D::getList, "list",
+								e -> e._integer(E::getValue, "value", value -> value.greaterThanOrEqual(100))))))
+				.build();
 
 			assertSoftly(softly -> {
 				softly.assertThat(validator.validate(new A(null)).isValid())
-						.as("1-layer nested object is null").isFalse();
+					.as("1-layer nested object is null")
+					.isFalse();
 				softly.assertThat(validator.validate(new A(new B(null))).isValid())
-						.as("2-layer nested object is null (when it is optional)")
-						.isTrue();
+					.as("2-layer nested object is null (when it is optional)")
+					.isTrue();
 				softly.assertThat(validator.validate(new A(new B(new C(null)))).isValid())
-						.as("3-layer nested object is null").isFalse();
-				softly.assertThat(validator
-						.validate(new A(new B(new C(new D(null, null))))).isValid())
-						.as("4-layer nested object is null (when it is optional)")
-						.isTrue();
-				softly.assertThat(validator
-						.validate(new A(
-								new B(new C(new D(null, singletonList(new E(100)))))))
-						.isValid()).as("5-layer constraint is valid").isTrue();
+					.as("3-layer nested object is null")
+					.isFalse();
+				softly.assertThat(validator.validate(new A(new B(new C(new D(null, null))))).isValid())
+					.as("4-layer nested object is null (when it is optional)")
+					.isTrue();
+				softly
+					.assertThat(
+							validator.validate(new A(new B(new C(new D(null, singletonList(new E(100))))))).isValid())
+					.as("5-layer constraint is valid")
+					.isTrue();
 			});
 		}
+
 	}
 
 	public static class Nested {
+
 		IntRange intRange;
 
 		Nested(IntRange intRange) {
 			this.intRange = intRange;
 		}
+
 	}
 
 	public static class IntRange {
+
 		public Integer small;
+
 		public Integer big;
 
 		IntRange(Integer small, Integer big) {
 			this.small = small;
 			this.big = big;
 		}
+
 	}
 
 	public static class MainObject {
+
 		Long id;
+
 		NestedObject nested;
 
 		public Long getId() {
@@ -407,11 +396,15 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public void setNested(NestedObject nested) {
 			this.nested = nested;
 		}
+
 	}
 
 	public static class NestedObject {
+
 		Long id;
+
 		String text;
+
 		List<IntRange> intRanges;
 
 		public Long getId() {
@@ -437,9 +430,11 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public void setIntRanges(List<IntRange> intRanges) {
 			this.intRanges = intRanges;
 		}
+
 	}
 
 	private static class A {
+
 		private final B b;
 
 		public A(B b) {
@@ -449,9 +444,11 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public B getB() {
 			return b;
 		}
+
 	}
 
 	private static class B {
+
 		private final C c;
 
 		public B(C c) {
@@ -461,9 +458,11 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public C getC() {
 			return c;
 		}
+
 	}
 
 	private static class C {
+
 		private final D d;
 
 		public C(D d) {
@@ -473,10 +472,13 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public D getD() {
 			return d;
 		}
+
 	}
 
 	private static class D {
+
 		private final E e;
+
 		private final List<E> list;
 
 		private D(E e, List<E> list) {
@@ -491,9 +493,11 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public List<E> getList() {
 			return list;
 		}
+
 	}
 
 	private static class E {
+
 		private final int value;
 
 		public E(int value) {
@@ -503,5 +507,7 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 		public int getValue() {
 			return value;
 		}
+
 	}
+
 }

@@ -21,6 +21,7 @@ import java.util.function.Function;
 import am.ik.yavi.jsr305.Nullable;
 
 public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T, V> {
+
 	private final Function<T, N> nested;
 
 	public NestedConstraintPredicates(Function<T, V> toValue, String name,
@@ -33,4 +34,5 @@ public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T,
 	public N nestedValue(T target) {
 		return nested.apply(target);
 	}
+
 }

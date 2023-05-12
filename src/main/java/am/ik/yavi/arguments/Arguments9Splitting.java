@@ -25,6 +25,7 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
+
 	protected final ValueValidator<? super A1, ? extends R1> v1;
 
 	protected final ValueValidator<? super A2, ? extends R2> v2;
@@ -43,14 +44,10 @@ public class Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3,
 
 	protected final ValueValidator<? super A9, ? extends R9> v9;
 
-	public Arguments9Splitting(ValueValidator<? super A1, ? extends R1> v1,
-			ValueValidator<? super A2, ? extends R2> v2,
-			ValueValidator<? super A3, ? extends R3> v3,
-			ValueValidator<? super A4, ? extends R4> v4,
-			ValueValidator<? super A5, ? extends R5> v5,
-			ValueValidator<? super A6, ? extends R6> v6,
-			ValueValidator<? super A7, ? extends R7> v7,
-			ValueValidator<? super A8, ? extends R8> v8,
+	public Arguments9Splitting(ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
+			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
+			ValueValidator<? super A7, ? extends R7> v7, ValueValidator<? super A8, ? extends R8> v8,
 			ValueValidator<? super A9, ? extends R9> v9) {
 		this.v1 = v1;
 		this.v2 = v2;
@@ -65,21 +62,17 @@ public class Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3,
 
 	public <X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> apply(
 			Function9<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? extends X> f) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale,
-				constraintContext) -> Validations.apply(f::apply,
-						this.v1.validate(a1, locale, constraintContext),
-						this.v2.validate(a2, locale, constraintContext),
-						this.v3.validate(a3, locale, constraintContext),
-						this.v4.validate(a4, locale, constraintContext),
-						this.v5.validate(a5, locale, constraintContext),
-						this.v6.validate(a6, locale, constraintContext),
-						this.v7.validate(a7, locale, constraintContext),
-						this.v8.validate(a8, locale, constraintContext),
-						this.v9.validate(a9, locale, constraintContext));
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext) -> Validations.apply(f::apply,
+				this.v1.validate(a1, locale, constraintContext), this.v2.validate(a2, locale, constraintContext),
+				this.v3.validate(a3, locale, constraintContext), this.v4.validate(a4, locale, constraintContext),
+				this.v5.validate(a5, locale, constraintContext), this.v6.validate(a6, locale, constraintContext),
+				this.v7.validate(a7, locale, constraintContext), this.v8.validate(a8, locale, constraintContext),
+				this.v9.validate(a9, locale, constraintContext));
 	}
 
 	public <A10, R10> Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> split(
 			ValueValidator<? super A10, ? extends R10> v10) {
 		return new Arguments10Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
 	}
+
 }

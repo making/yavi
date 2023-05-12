@@ -42,18 +42,17 @@ public class ObjectValidatorBuilder<X> {
 		return new ObjectValidatorBuilder<>(builder);
 	}
 
-	ObjectValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<X>>, ValidatorBuilder<Arguments1<X>>> builder) {
+	ObjectValidatorBuilder(Function<ValidatorBuilder<Arguments1<X>>, ValidatorBuilder<Arguments1<X>>> builder) {
 		this.builder = builder;
 	}
 
 	public <T> ObjectValidator<X, T> build(Function<? super X, ? extends T> mapper) {
-		final Validator<Arguments1<X>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new ObjectValidator<>(validator, mapper::apply);
 	}
 
 	public ObjectValidator<X, X> build() {
 		return build(x -> x);
 	}
+
 }

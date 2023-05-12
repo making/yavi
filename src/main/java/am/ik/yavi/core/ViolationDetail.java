@@ -21,6 +21,7 @@ import java.util.Arrays;
  * This class is intended to be used for the JSON serialization (such as Jackson)
  */
 public class ViolationDetail {
+
 	private final Object[] args;
 
 	private final String defaultMessage;
@@ -47,8 +48,8 @@ public class ViolationDetail {
 
 	@Override
 	public String toString() {
-		return "ViolationDetail{" + "key='" + key + '\'' + ", args="
-				+ Arrays.toString(args) + ", defaultMessage='" + defaultMessage + '\''
-				+ '}';
+		return "ViolationDetail{" + "key='" + key + '\'' + ", args=" + Arrays.toString(args) + ", defaultMessage='"
+				+ defaultMessage + '\'' + '}';
 	}
+
 }

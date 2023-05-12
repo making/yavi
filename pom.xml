@@ -211,14 +211,18 @@
                 <version>${maven-surefire-plugin.version}</version>
             </plugin>
             <plugin>
-                <groupId>net.revelc.code.formatter</groupId>
-                <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.18.0</version>
-                <configuration>
-                    <configFile>${project.basedir}/src/etc/eclipse-code-formatter.xml</configFile>
-                    <encoding>UTF-8</encoding>
-                    <lineEnding>LF</lineEnding>
-                </configuration>
+                <groupId>io.spring.javaformat</groupId>
+                <artifactId>spring-javaformat-maven-plugin</artifactId>
+                <version>0.0.38</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <inherited>true</inherited>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

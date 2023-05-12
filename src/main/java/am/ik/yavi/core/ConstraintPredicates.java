@@ -19,14 +19,14 @@ import java.util.Deque;
 import java.util.function.Function;
 
 public class ConstraintPredicates<T, V> {
+
 	private final String name;
 
 	private final Deque<ConstraintPredicate<V>> predicates;
 
 	private final Function<T, V> toValue;
 
-	public ConstraintPredicates(Function<T, V> toValue, String name,
-			Deque<ConstraintPredicate<V>> predicates) {
+	public ConstraintPredicates(Function<T, V> toValue, String name, Deque<ConstraintPredicate<V>> predicates) {
 		this.toValue = toValue;
 		this.name = name;
 		this.predicates = predicates;
@@ -43,4 +43,5 @@ public class ConstraintPredicates<T, V> {
 	public final Function<T, V> toValue() {
 		return this.toValue;
 	}
+
 }

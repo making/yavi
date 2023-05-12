@@ -26,8 +26,8 @@ import am.ik.yavi.constraint.base.ChronoZonedDateTimeConstraintBase;
  * @author Diego Krupitza
  * @since 0.10.0
  */
-public class ZonedDateTimeConstraint<T> extends
-		ChronoZonedDateTimeConstraintBase<T, ZonedDateTime, ZonedDateTimeConstraint<T>> {
+public class ZonedDateTimeConstraint<T>
+		extends ChronoZonedDateTimeConstraintBase<T, ZonedDateTime, ZonedDateTimeConstraint<T>> {
 
 	@Override
 	protected ZonedDateTime getNow(Clock clock) {
@@ -38,4 +38,5 @@ public class ZonedDateTimeConstraint<T> extends
 	public ZonedDateTimeConstraint<T> cast() {
 		return this;
 	}
+
 }

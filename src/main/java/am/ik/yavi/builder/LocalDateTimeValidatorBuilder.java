@@ -48,14 +48,13 @@ public class LocalDateTimeValidatorBuilder {
 		this.builder = builder;
 	}
 
-	public <T> LocalDateTimeValidator<T> build(
-			Function<? super LocalDateTime, ? extends T> mapper) {
-		final Validator<Arguments1<LocalDateTime>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> LocalDateTimeValidator<T> build(Function<? super LocalDateTime, ? extends T> mapper) {
+		final Validator<Arguments1<LocalDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new LocalDateTimeValidator<>(validator, mapper::apply);
 	}
 
 	public LocalDateTimeValidator<LocalDateTime> build() {
 		return build(x -> x);
 	}
+
 }

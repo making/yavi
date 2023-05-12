@@ -113,8 +113,7 @@ class YearMonthMonthConstraintTest {
 	@Test
 	void isBeforeValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.before(() -> now.plusMonths(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -136,16 +135,14 @@ class YearMonthMonthConstraintTest {
 	@Test
 	void isAfterInValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.after(() -> now.plusMonths(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.after(() -> now.minusMonths(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -159,8 +156,7 @@ class YearMonthMonthConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusMonths(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -168,40 +164,35 @@ class YearMonthMonthConstraintTest {
 	void isBeforeOrEqualInValid() {
 		YearMonth now = YearMonth.now();
 		YearMonth past = now.minusMonths(10);
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> past));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> past));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isBeforeOrEqualExactInValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualInValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusMonths(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusMonths(10)));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusMonths(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualExactValid() {
 		YearMonth now = YearMonth.now();
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -210,8 +201,7 @@ class YearMonthMonthConstraintTest {
 		YearMonth now = YearMonth.now();
 		Supplier<YearMonth> nowSupplier = () -> now;
 
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -221,23 +211,20 @@ class YearMonthMonthConstraintTest {
 
 		Predicate<YearMonth> predicate = retrievePredicate(
 				c -> c.between(() -> now.plusMonths(1), () -> now.minusMonths(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
 	void temporalFieldValid() {
-		OffsetDateTime value = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0,
-				ZoneOffset.ofHours(0));
-		Predicate<YearMonth> predicate = retrievePredicate(
-				c -> c.fieldPredicate(MONTH_OF_YEAR, s -> s >= 0));
+		OffsetDateTime value = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.ofHours(0));
+		Predicate<YearMonth> predicate = retrievePredicate(c -> c.fieldPredicate(MONTH_OF_YEAR, s -> s >= 0));
 		assertThat(predicate.test(YearMonth.from(value))).isTrue();
 	}
 
 	private static Predicate<YearMonth> retrievePredicate(
 			Function<YearMonthConstraint<YearMonth>, YearMonthConstraint<YearMonth>> constraint) {
-		return constraint.apply(new YearMonthConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new YearMonthConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

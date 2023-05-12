@@ -27,12 +27,11 @@ public class ShortValidator<T> extends DefaultArguments1Validator<Short, T> {
 
 	@Override
 	public <T2> ShortValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new ShortValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new ShortValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public ShortValidator(Validator<Arguments1<Short>> validator,
-			Function1<? super Short, ? extends T> mapper) {
+	public ShortValidator(Validator<Arguments1<Short>> validator, Function1<? super Short, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

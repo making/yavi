@@ -58,14 +58,13 @@ public class ValidatorFactory extends ValidatorFactorySupport {
 		this(null, null);
 	}
 
-	public ValidatorFactory(@Nullable String messageKeySeparator,
-			@Nullable MessageFormatter messageFormatter) {
+	public ValidatorFactory(@Nullable String messageKeySeparator, @Nullable MessageFormatter messageFormatter) {
 		super(messageKeySeparator, messageFormatter);
 	}
 
-	public <T> Validator<T> validator(
-			Function<ValidatorBuilder<T>, ValidatorBuilder<T>> constraints) {
+	public <T> Validator<T> validator(Function<ValidatorBuilder<T>, ValidatorBuilder<T>> constraints) {
 		final ValidatorBuilder<T> builder = super.initBuilder();
 		return constraints.apply(builder).build();
 	}
+
 }

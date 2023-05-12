@@ -25,6 +25,6 @@ import am.ik.yavi.jsr305.Nullable;
 @FunctionalInterface
 public interface Function5<T1, T2, T3, T4, T5, R> {
 
-	R apply(@Nullable T1 t1, @Nullable T2 t2, @Nullable T3 t3, @Nullable T4 t4,
-			@Nullable T5 t5);
+	R apply(@Nullable T1 t1, @Nullable T2 t2, @Nullable T3 t3, @Nullable T4 t4, @Nullable T5 t5);
+
 }

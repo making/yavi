@@ -27,12 +27,11 @@ public class StringValidator<T> extends DefaultArguments1Validator<String, T> {
 
 	@Override
 	public <T2> StringValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new StringValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new StringValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public StringValidator(Validator<Arguments1<String>> validator,
-			Function1<? super String, ? extends T> mapper) {
+	public StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

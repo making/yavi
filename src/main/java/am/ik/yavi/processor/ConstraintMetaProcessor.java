@@ -63,8 +63,7 @@ import am.ik.yavi.meta.ConstraintTarget;
 /**
  * @since 0.4.0
  */
-@SupportedAnnotationTypes({ "am.ik.yavi.meta.ConstraintTarget",
-		"am.ik.yavi.meta.ConstraintArguments" })
+@SupportedAnnotationTypes({ "am.ik.yavi.meta.ConstraintTarget", "am.ik.yavi.meta.ConstraintArguments" })
 public class ConstraintMetaProcessor extends AbstractProcessor {
 
 	@Override
@@ -73,8 +72,7 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 	}
 
 	@Override
-	public boolean process(Set<? extends TypeElement> annotations,
-			RoundEnvironment roundEnv) {
+	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		for (TypeElement typeElement : annotations) {
 			final Name qualifiedName = typeElement.getQualifiedName();
 			if (qualifiedName.contentEquals(ConstraintTarget.class.getName())) {
@@ -87,80 +85,63 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		return true;
 	}
 
-	private void processConstraintTarget(TypeElement typeElement,
-			RoundEnvironment roundEnv) {
-		final Set<? extends Element> elementsAnnotatedWith = roundEnv
-				.getElementsAnnotatedWith(typeElement);
-		final Map<String, List<Pair<Element, Integer>>> elementsMap = elementsAnnotatedWith
-				.stream()
-				.filter(x -> !(x instanceof ExecutableElement)
-						|| ((ExecutableElement) x).getTypeParameters().isEmpty())
-				.map(x -> new Pair<Element, Integer>(x, -1)).collect(groupingBy(k -> {
-					String className = "****";
-					final Element element = k.first();
-					if (element instanceof VariableElement) {
-						className = element.getEnclosingElement().getEnclosingElement()
-								.toString();
-					}
-					else if (element instanceof ExecutableElement) {
-						className = element.getEnclosingElement().toString();
-					}
-					return className;
-				}, toList()));
+	private void processConstraintTarget(TypeElement typeElement, RoundEnvironment roundEnv) {
+		final Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(typeElement);
+		final Map<String, List<Pair<Element, Integer>>> elementsMap = elementsAnnotatedWith.stream()
+			.filter(x -> !(x instanceof ExecutableElement) || ((ExecutableElement) x).getTypeParameters().isEmpty())
+			.map(x -> new Pair<Element, Integer>(x, -1))
+			.collect(groupingBy(k -> {
+				String className = "****";
+				final Element element = k.first();
+				if (element instanceof VariableElement) {
+					className = element.getEnclosingElement().getEnclosingElement().toString();
+				}
+				else if (element instanceof ExecutableElement) {
+					className = element.getEnclosingElement().toString();
+				}
+				return className;
+			}, toList()));
 		if (elementsMap.isEmpty()) {
 			return;
 		}
 		elementsMap.forEach(this::writeConstraintMetaFile);
 	}
 
-	private void processConstraintArguments(TypeElement typeElement,
-			RoundEnvironment roundEnv) {
-		final Set<? extends Element> elementsAnnotatedWith = roundEnv
-				.getElementsAnnotatedWith(typeElement);
+	private void processConstraintArguments(TypeElement typeElement, RoundEnvironment roundEnv) {
+		final Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(typeElement);
 
 		for (Element element : elementsAnnotatedWith) {
-			final List<Element> parameters = new ArrayList<>(
-					((ExecutableElement) element).getParameters());
+			final List<Element> parameters = new ArrayList<>(((ExecutableElement) element).getParameters());
 			String className = element.getEnclosingElement().toString();
 			if (element.getKind() == METHOD) {
 				parameters.add(0, element.getEnclosingElement());
-				className = className
-						+ beanUpperCamel(element.getSimpleName().toString());
+				className = className + beanUpperCamel(element.getSimpleName().toString());
 			}
-			final String argumentsClass = "am.ik.yavi.arguments.Arguments"
-					+ parameters.size() + "<" + parameters.stream()
-							.map(x -> type(x.asType())).collect(Collectors.joining(", "))
-					+ ">";
+			final String argumentsClass = "am.ik.yavi.arguments.Arguments" + parameters.size() + "<"
+					+ parameters.stream().map(x -> type(x.asType())).collect(Collectors.joining(", ")) + ">";
 			final List<Pair<Element, Integer>> pairs = parameters.stream()
-					.map(x -> new Pair<>(x, parameters.indexOf(x))).collect(toList());
-			this.writeConstraintArgumentMetaFile(className + "Arguments", argumentsClass,
-					pairs);
+				.map(x -> new Pair<>(x, parameters.indexOf(x)))
+				.collect(toList());
+			this.writeConstraintArgumentMetaFile(className + "Arguments", argumentsClass, pairs);
 		}
 	}
 
-	private void writeConstraintMetaFile(String className,
-			List<Pair<Element, Integer>> elements) {
+	private void writeConstraintMetaFile(String className, List<Pair<Element, Integer>> elements) {
 		this.writeMetaFile(className, elements, (pair, metas) -> {
 			final Element element = pair.first();
-			final ConstraintTarget constraintTarget = element
-					.getAnnotation(ConstraintTarget.class);
+			final ConstraintTarget constraintTarget = element.getAnnotation(ConstraintTarget.class);
 			final ElementKind kind = element.getKind();
 			final String name = element.getSimpleName().toString();
 			if (kind == METHOD) {
 				final TypeMirror type = ((ExecutableElement) element).getReturnType();
-				final String target = beanLowerCamel(constraintTarget.getter()
-						? name.replaceFirst("^" + getterPrefix(type), "")
-						: name);
-				metas.put(target, template(className, type(type), target, name,
-						constraintTarget.field()));
+				final String target = beanLowerCamel(
+						constraintTarget.getter() ? name.replaceFirst("^" + getterPrefix(type), "") : name);
+				metas.put(target, template(className, type(type), target, name, constraintTarget.field()));
 			}
 			else if (kind == PARAMETER) {
 				final TypeMirror type = element.asType();
-				final String method = (constraintTarget.getter()
-						? getterPrefix(type) + beanUpperCamel(name)
-						: name);
-				metas.put(name, template(className, type(type), name, method,
-						constraintTarget.field()));
+				final String method = (constraintTarget.getter() ? getterPrefix(type) + beanUpperCamel(name) : name);
+				metas.put(name, template(className, type(type), name, method, constraintTarget.field()));
 			}
 		});
 	}
@@ -172,10 +153,8 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 			final TypeMirror type = element.asType();
 			final int position = pair.second() + 1;
 			final String name = element.getSimpleName().toString();
-			metas.put(name,
-					ConstraintMetaTemplate.templateArgument(argumentsClass, type(type),
-							element.getKind() == CLASS ? beanLowerCamel(name) : name,
-							position));
+			metas.put(name, ConstraintMetaTemplate.templateArgument(argumentsClass, type(type),
+					element.getKind() == CLASS ? beanLowerCamel(name) : name, position));
 		});
 	}
 
@@ -184,12 +163,10 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		final Pair<String, String> pair = splitClassName(className);
 		final String packageName = pair.first();
 		final String simpleClassName = pair.second();
-		final String metaSimpleClassName = "_" + simpleClassName.replace('.', '_')
-				+ "Meta";
+		final String metaSimpleClassName = "_" + simpleClassName.replace('.', '_') + "Meta";
 		final String metaClassName = packageName + "." + metaSimpleClassName;
 		try {
-			final JavaFileObject builderFile = super.processingEnv.getFiler()
-					.createSourceFile(metaClassName);
+			final JavaFileObject builderFile = super.processingEnv.getFiler().createSourceFile(metaClassName);
 			try (final PrintWriter out = new PrintWriter(builderFile.openWriter())) {
 
 				if (!packageName.isEmpty()) {
@@ -291,4 +268,5 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		}
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
 	}
+
 }

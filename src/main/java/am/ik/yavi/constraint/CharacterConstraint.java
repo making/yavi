@@ -19,8 +19,8 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class CharacterConstraint<T>
-		extends NumericConstraintBase<T, Character, CharacterConstraint<T>> {
+public class CharacterConstraint<T> extends NumericConstraintBase<T, Character, CharacterConstraint<T>> {
+
 	@Override
 	public CharacterConstraint<T> cast() {
 		return this;
@@ -50,4 +50,5 @@ public class CharacterConstraint<T>
 	protected Character zeroValue() {
 		return Character.MIN_VALUE;
 	}
+
 }

@@ -26,13 +26,11 @@ import java.util.regex.Pattern;
 public interface PasswordPolicy<T> extends Predicate<T> {
 
 	default String name() {
-		return this.getClass().getSimpleName()
-				.replace(PasswordPolicy.class.getSimpleName(), "");
+		return this.getClass().getSimpleName().replace(PasswordPolicy.class.getSimpleName(), "");
 	}
 
 	/**
 	 * Rename the password policy
-	 *
 	 * @param name new name
 	 * @return renamed policy
 	 * @since 0.8.1
@@ -65,8 +63,7 @@ public interface PasswordPolicy<T> extends Predicate<T> {
 		};
 	}
 
-	static <T extends CharSequence> PatternPasswordPolicy<T> pattern(String name,
-			String regex) {
+	static <T extends CharSequence> PatternPasswordPolicy<T> pattern(String name, String regex) {
 		return new PatternPasswordPolicy<>(name, regex);
 	}
 
@@ -74,6 +71,7 @@ public interface PasswordPolicy<T> extends Predicate<T> {
 	 * @since 0.8.1
 	 */
 	class PatternPasswordPolicy<T extends CharSequence> implements PasswordPolicy<T> {
+
 		private final String name;
 
 		private final String regex;
@@ -115,7 +113,6 @@ public interface PasswordPolicy<T> extends Predicate<T> {
 
 		/**
 		 * Change the count of the policy
-		 *
 		 * @param count new count
 		 * @return new policy
 		 */
@@ -125,22 +122,20 @@ public interface PasswordPolicy<T> extends Predicate<T> {
 			}
 			return new PatternPasswordPolicy<>(this.name, this.regex, count);
 		}
+
 	}
 
-	PatternPasswordPolicy<String> UPPERCASE = PasswordPolicy.pattern("Uppercase",
-			"[A-Z]");
+	PatternPasswordPolicy<String> UPPERCASE = PasswordPolicy.pattern("Uppercase", "[A-Z]");
 
-	PatternPasswordPolicy<String> LOWERCASE = PasswordPolicy.pattern("Lowercase",
-			"[a-z]");
+	PatternPasswordPolicy<String> LOWERCASE = PasswordPolicy.pattern("Lowercase", "[a-z]");
 
 	/**
 	 * @since 0.8.1
 	 */
-	PatternPasswordPolicy<String> ALPHABETS = PasswordPolicy.pattern("Alphabets",
-			"[a-zA-Z]");
+	PatternPasswordPolicy<String> ALPHABETS = PasswordPolicy.pattern("Alphabets", "[a-zA-Z]");
 
 	PatternPasswordPolicy<String> NUMBERS = PasswordPolicy.pattern("Numbers", "[0-9]");
 
-	PatternPasswordPolicy<String> SYMBOLS = PasswordPolicy.pattern("Symbols",
-			"[!-/:-@\\[-`{-\\~]");
+	PatternPasswordPolicy<String> SYMBOLS = PasswordPolicy.pattern("Symbols", "[!-/:-@\\[-`{-\\~]");
+
 }

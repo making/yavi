@@ -24,12 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import am.ik.yavi.constraint.CharSequenceConstraint;
 
 class ByteSizeConstraintTest {
+
 	private CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<>();
 
 	@Test
 	void fixedSize() {
-		Predicate<String> predicate = constraint.asByteArray().fixedSize(4).predicates()
-				.peekFirst().predicate();
+		Predicate<String> predicate = constraint.asByteArray().fixedSize(4).predicates().peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
 		assertThat(predicate.test("あ")).isFalse(); // 3
@@ -39,8 +39,7 @@ class ByteSizeConstraintTest {
 
 	@Test
 	void greaterThan() {
-		Predicate<String> predicate = constraint.asByteArray().greaterThan(3).predicates()
-				.peekFirst().predicate();
+		Predicate<String> predicate = constraint.asByteArray().greaterThan(3).predicates().peekFirst().predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
 		assertThat(predicate.test("あ")).isFalse(); // 3
@@ -48,8 +47,11 @@ class ByteSizeConstraintTest {
 
 	@Test
 	void greaterThanOrEqual() {
-		Predicate<String> predicate = constraint.asByteArray().greaterThanOrEqual(3)
-				.predicates().peekFirst().predicate();
+		Predicate<String> predicate = constraint.asByteArray()
+			.greaterThanOrEqual(3)
+			.predicates()
+			.peekFirst()
+			.predicate();
 		assertThat(predicate.test("abcd")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("ab")).isFalse();
@@ -58,8 +60,7 @@ class ByteSizeConstraintTest {
 
 	@Test
 	void lessThan() {
-		Predicate<String> predicate = constraint.asByteArray().lessThan(3).predicates()
-				.peekFirst().predicate();
+		Predicate<String> predicate = constraint.asByteArray().lessThan(3).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isFalse();
 		assertThat(predicate.test("あ")).isFalse(); // 3
@@ -67,12 +68,12 @@ class ByteSizeConstraintTest {
 
 	@Test
 	void lessThanOrEqual() {
-		Predicate<String> predicate = constraint.asByteArray().lessThanOrEqual(3)
-				.predicates().peekFirst().predicate();
+		Predicate<String> predicate = constraint.asByteArray().lessThanOrEqual(3).predicates().peekFirst().predicate();
 		assertThat(predicate.test("ab")).isTrue();
 		assertThat(predicate.test("abc")).isTrue();
 		assertThat(predicate.test("abcd")).isFalse();
 		assertThat(predicate.test("あ")).isTrue(); // 3
 		assertThat(predicate.test("あa")).isFalse(); // 4
 	}
+
 }

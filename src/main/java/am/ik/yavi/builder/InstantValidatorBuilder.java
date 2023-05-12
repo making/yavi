@@ -49,12 +49,12 @@ public class InstantValidatorBuilder {
 	}
 
 	public <T> InstantValidator<T> build(Function<? super Instant, ? extends T> mapper) {
-		final Validator<Arguments1<Instant>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Instant>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new InstantValidator<>(validator, mapper::apply);
 	}
 
 	public InstantValidator<Instant> build() {
 		return build(x -> x);
 	}
+
 }

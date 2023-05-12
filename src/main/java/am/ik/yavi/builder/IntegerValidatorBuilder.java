@@ -48,12 +48,12 @@ public class IntegerValidatorBuilder {
 	}
 
 	public <T> IntegerValidator<T> build(Function<? super Integer, ? extends T> mapper) {
-		final Validator<Arguments1<Integer>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Integer>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new IntegerValidator<>(validator, mapper::apply);
 	}
 
 	public IntegerValidator<Integer> build() {
 		return build(x -> x);
 	}
+
 }

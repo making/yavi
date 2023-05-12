@@ -277,4 +277,5 @@ public class _AllTypesImmutableMeta {
 			return am.ik.yavi.meta.AllTypesImmutable::localDateValue;
 		}
 	};
+
 }

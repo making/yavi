@@ -24,8 +24,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Check formatting
-        run: ./mvnw formatter:validate --no-transfer-progress
   build:
     runs-on: ubuntu-latest
     strategy:

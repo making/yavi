@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
  * @since 0.7.0
  */
 public class InetAddressUtils {
+
 	public static final String IPV4_REGEX = "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$";
 
 	private static final Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
@@ -68,15 +69,13 @@ public class InetAddressUtils {
 		}
 		// The id syntax is implementation independent, but it presumably cannot allow:
 		// whitespace, '/' or '%'
-		if ((partsZoneIdRemoved.length == 2)
-				&& !partsZoneIdRemoved[1].matches("[^\\s/%]+")) {
+		if ((partsZoneIdRemoved.length == 2) && !partsZoneIdRemoved[1].matches("[^\\s/%]+")) {
 			return false; // invalid id
 		}
 
 		final String firstPart = partsZoneIdRemoved[0];
 		final boolean containsCompressedZeroes = firstPart.contains("::");
-		if (containsCompressedZeroes
-				&& (firstPart.indexOf("::") != firstPart.lastIndexOf("::"))) {
+		if (containsCompressedZeroes && (firstPart.indexOf("::") != firstPart.lastIndexOf("::"))) {
 			return false;
 		}
 		if ((firstPart.startsWith(":") && !firstPart.startsWith("::"))
@@ -134,10 +133,10 @@ public class InetAddressUtils {
 			}
 			validOctets++;
 		}
-		if (validOctets > IPV6_MAX_HEX_GROUPS
-				|| (validOctets < IPV6_MAX_HEX_GROUPS && !containsCompressedZeroes)) {
+		if (validOctets > IPV6_MAX_HEX_GROUPS || (validOctets < IPV6_MAX_HEX_GROUPS && !containsCompressedZeroes)) {
 			return false;
 		}
 		return true;
 	}
+
 }

@@ -37,7 +37,6 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Return {@link ValueValidator} instance that always successes without validation.
-	 *
 	 * @param <X> target class
 	 * @return value validator that always successes without validation
 	 */
@@ -46,22 +45,20 @@ public interface ValueValidator<T, X> {
 	}
 
 	default <X2> ValueValidator<T, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (t, locale, constraintContext) -> ValueValidator.this
-				.validate(t, locale, constraintContext).map(mapper);
+		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext).map(mapper);
 	}
 
 	/**
 	 * @since 0.11.0
 	 */
 	default <X2> ValueValidator<T, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (t, locale, constraintContext) -> ValueValidator.this
-				.validate(t, locale, constraintContext)
-				.flatMap(v -> validator.validate(v, locale, constraintContext));
+		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	default <A> ValueValidator<A, X> compose(Function<? super A, ? extends T> mapper) {
-		return (a, locale, constraintContext) -> ValueValidator.this
-				.validate(mapper.apply(a), locale, constraintContext);
+		return (a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
+				constraintContext);
 	}
 
 	default Validated<X> validate(T t) {
@@ -80,32 +77,26 @@ public interface ValueValidator<T, X> {
 		return this.validate(t).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(T t, ConstraintContext constraintContext)
-			throws ConstraintViolationsException {
-		return this.validate(t, constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(T t, ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(t, constraintContext).orElseThrow(ConstraintViolationsException::new);
 	}
 
 	default X validated(T t, Locale locale) throws ConstraintViolationsException {
 		return this.validate(t, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(T t, Locale locale, ConstraintContext constraintContext)
-			throws ConstraintViolationsException {
-		return this.validate(t, locale, constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(T t, Locale locale, ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(t, locale, constraintContext).orElseThrow(ConstraintViolationsException::new);
 	}
 
 	default ValueValidator<T, X> indexed(int index) {
-		return (t, locale, constraintContext) -> ValueValidator.this
-				.validate(t, locale, constraintContext).indexed(index);
+		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.indexed(index);
 	}
 
-	default <C extends Collection<X>> ValueValidator<Iterable<T>, C> liftCollection(
-			Supplier<C> factory) {
+	default <C extends Collection<X>> ValueValidator<Iterable<T>, C> liftCollection(Supplier<C> factory) {
 		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
-				(v, index) -> this.indexed(index).validate(v, locale, constraintContext),
-				factory);
+				(v, index) -> this.indexed(index).validate(v, locale, constraintContext), factory);
 	}
 
 	default ValueValidator<Iterable<T>, List<X>> liftList() {
@@ -126,16 +117,13 @@ public interface ValueValidator<T, X> {
 	static <A1, R, C extends Collection<R>> ValueValidator<Iterable<A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
-				(v, index) -> validator.indexed(index).validate(v, locale,
-						constraintContext),
-				factory);
+				(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory);
 	}
 
 	/**
 	 * @since 0.8.1
 	 */
-	static <A1, R> ValueValidator<Iterable<A1>, List<R>> liftList(
-			ValueValidator<? super A1, ? extends R> validator) {
+	static <A1, R> ValueValidator<Iterable<A1>, List<R>> liftList(ValueValidator<? super A1, ? extends R> validator) {
 		return ValueValidator.liftCollection(validator, ArrayList::new);
 
 	}
@@ -143,8 +131,7 @@ public interface ValueValidator<T, X> {
 	/**
 	 * @since 0.8.1
 	 */
-	static <A1, R> ValueValidator<Iterable<A1>, Set<R>> liftSet(
-			ValueValidator<? super A1, ? extends R> validator) {
+	static <A1, R> ValueValidator<Iterable<A1>, Set<R>> liftSet(ValueValidator<? super A1, ? extends R> validator) {
 		// Since Index is attached to the name of ConstraintViolation,
 		// we need a consistent order. This is why we use LinkedHashSet.
 		return ValueValidator.liftCollection(validator, LinkedHashSet::new);
@@ -158,4 +145,5 @@ public interface ValueValidator<T, X> {
 		return (value, locale, constraintContext) -> Validated.traverseOptional(value,
 				v -> validator.validate(v, locale, constraintContext));
 	}
+
 }

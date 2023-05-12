@@ -48,14 +48,13 @@ public class OffsetDateTimeValidatorBuilder {
 		this.builder = builder;
 	}
 
-	public <T> OffsetDateTimeValidator<T> build(
-			Function<? super OffsetDateTime, ? extends T> mapper) {
-		final Validator<Arguments1<OffsetDateTime>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> OffsetDateTimeValidator<T> build(Function<? super OffsetDateTime, ? extends T> mapper) {
+		final Validator<Arguments1<OffsetDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new OffsetDateTimeValidator<>(validator, mapper::apply);
 	}
 
 	public OffsetDateTimeValidator<OffsetDateTime> build() {
 		return build(x -> x);
 	}
+
 }

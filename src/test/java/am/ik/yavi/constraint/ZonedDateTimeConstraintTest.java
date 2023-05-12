@@ -40,18 +40,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ZonedDateTimeConstraintTest {
+
 	@Test
 	void isPastValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.past());
-		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isPastInValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.past());
-		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
@@ -64,37 +63,32 @@ class ZonedDateTimeConstraintTest {
 	@Test
 	void isPastOrPresentValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
-		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isPastOrPresentInValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.pastOrPresent());
-		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
 	void isPastOrPresentExactInValid() {
 		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.pastOrPresent(clock));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.pastOrPresent(clock));
 		assertThat(predicate.test(ZonedDateTime.now(clock))).isTrue();
 	}
 
 	@Test
 	void isFutureValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.future());
-		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isFutureInValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.future());
-		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
@@ -107,30 +101,26 @@ class ZonedDateTimeConstraintTest {
 	@Test
 	void isFutureOrPresentValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
-		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS)))
-				.isTrue();
+		assertThat(predicate.test(ZonedDateTime.now().plus(60, ChronoUnit.SECONDS))).isTrue();
 	}
 
 	@Test
 	void isFutureOrPresentInValid() {
 		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.futureOrPresent());
-		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS)))
-				.isFalse();
+		assertThat(predicate.test(ZonedDateTime.now().minus(60, ChronoUnit.SECONDS))).isFalse();
 	}
 
 	@Test
 	void isFutureOrPresentExactInValid() {
 		Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.futureOrPresent(clock));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.futureOrPresent(clock));
 		assertThat(predicate.test(ZonedDateTime.now(clock))).isTrue();
 	}
 
 	@Test
 	void isBeforeValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.before(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -152,16 +142,14 @@ class ZonedDateTimeConstraintTest {
 	@Test
 	void isAfterInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.after(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.after(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -175,8 +163,7 @@ class ZonedDateTimeConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -184,49 +171,42 @@ class ZonedDateTimeConstraintTest {
 	void isBeforeOrEqualInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
 		ZonedDateTime past = now.minusDays(10);
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> past));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> past));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isBeforeOrEqualExactInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusDays(10)));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualExactInValid() {
 		ZonedDateTime now = ZonedDateTime.now();
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@ParameterizedTest
 	@MethodSource("validBetweenDates")
-	void isBetweenValid(ZonedDateTime now, ZonedDateTime rangeFrom,
-			ZonedDateTime rangeTo) {
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.between(() -> rangeFrom, () -> rangeTo));
+	void isBetweenValid(ZonedDateTime now, ZonedDateTime rangeFrom, ZonedDateTime rangeTo) {
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.between(() -> rangeFrom, () -> rangeTo));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -235,8 +215,7 @@ class ZonedDateTimeConstraintTest {
 		ZonedDateTime now = ZonedDateTime.now();
 		Supplier<ZonedDateTime> nowSupplier = () -> now;
 
-		Predicate<ZonedDateTime> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<ZonedDateTime> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -246,15 +225,13 @@ class ZonedDateTimeConstraintTest {
 
 		Predicate<ZonedDateTime> predicate = retrievePredicate(
 				c -> c.between(() -> now.plusDays(1), () -> now.minusDays(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
 	void temporalFieldValid() {
-		ZonedDateTime value = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 0,
-				ZoneOffset.ofHours(9));
+		ZonedDateTime value = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneOffset.ofHours(9));
 		Predicate<ZonedDateTime> predicate = retrievePredicate(
 				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
 		assertThat(predicate.test(value)).isTrue();
@@ -262,27 +239,30 @@ class ZonedDateTimeConstraintTest {
 
 	@Test
 	void temporalFieldInValid() {
-		ZonedDateTime value = ZonedDateTime.of(2022, 1, 2, 0, 0, 0, 0,
-				ZoneOffset.ofHours(9));
+		ZonedDateTime value = ZonedDateTime.of(2022, 1, 2, 0, 0, 0, 0, ZoneOffset.ofHours(9));
 		Predicate<ZonedDateTime> predicate = retrievePredicate(
 				c -> c.fieldPredicate(DAY_OF_WEEK, week -> week == SATURDAY.getValue()));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	private static Stream<Arguments> validBetweenDates() {
-		List<Arguments> validBetweenZones = IntStream.rangeClosed(1, 10).boxed()
-				.map(i -> ZoneId.SHORT_IDS.values().stream().map(ZoneId::of)
-						.map(ZonedDateTime::now)
-						.map(zonedDateTime -> Arguments.of(zonedDateTime,
-								zonedDateTime.minusHours(i), zonedDateTime.plusHours(i)))
-						.collect(Collectors.toList()))
-				.flatMap(List::stream).collect(Collectors.toList());
+		List<Arguments> validBetweenZones = IntStream.rangeClosed(1, 10)
+			.boxed()
+			.map(i -> ZoneId.SHORT_IDS.values()
+				.stream()
+				.map(ZoneId::of)
+				.map(ZonedDateTime::now)
+				.map(zonedDateTime -> Arguments.of(zonedDateTime, zonedDateTime.minusHours(i),
+						zonedDateTime.plusHours(i)))
+				.collect(Collectors.toList()))
+			.flatMap(List::stream)
+			.collect(Collectors.toList());
 		return validBetweenZones.stream();
 	}
 
 	private static Predicate<ZonedDateTime> retrievePredicate(
 			Function<ZonedDateTimeConstraint<ZonedDateTime>, ZonedDateTimeConstraint<ZonedDateTime>> constraint) {
-		return constraint.apply(new ZonedDateTimeConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new ZonedDateTimeConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

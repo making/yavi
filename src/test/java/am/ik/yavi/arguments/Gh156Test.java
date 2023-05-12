@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh156Test {
+
 	static class Person {
+
 		private final String firstName;
 
 		private final String middleName;
@@ -41,28 +43,30 @@ public class Gh156Test {
 			if (this.middleName == null) {
 				return String.format("%s %s", this.firstName, this.lastName);
 			}
-			return String.format("%s %s %s", this.firstName, this.middleName,
-					this.lastName);
+			return String.format("%s %s %s", this.firstName, this.middleName, this.lastName);
 		}
+
 	}
 
 	final StringValidator<String> firstNameValidator = StringValidatorBuilder
-			.of("firstName", c -> c.notBlank().lessThanOrEqual(128)).build();
+		.of("firstName", c -> c.notBlank().lessThanOrEqual(128))
+		.build();
 
 	final StringValidator<String> middleNameValidator = StringValidatorBuilder
-			.of("middleName", c -> c.lessThanOrEqual(128)).build();
+		.of("middleName", c -> c.lessThanOrEqual(128))
+		.build();
 
 	final StringValidator<String> lastNameValidator = StringValidatorBuilder
-			.of("lastName", c -> c.notBlank().lessThanOrEqual(128)).build();
+		.of("lastName", c -> c.notBlank().lessThanOrEqual(128))
+		.build();
 
 	final Arguments3Validator<String, String, String, Person> personValidator = ArgumentsValidators
-			.split(firstNameValidator, middleNameValidator, lastNameValidator)
-			.apply(Person::new);
+		.split(firstNameValidator, middleNameValidator, lastNameValidator)
+		.apply(Person::new);
 
 	@Test
 	void allNonNull() {
-		final Validated<Person> validated = personValidator.validate("John", "Michael",
-				"Doe");
+		final Validated<Person> validated = personValidator.validate("John", "Michael", "Doe");
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value().toString()).isEqualTo("John Michael Doe");
 	}
@@ -80,4 +84,5 @@ public class Gh156Test {
 		assertThat(validated.isValid()).isFalse();
 		assertThat(validated.errors()).hasSize(2);
 	}
+
 }

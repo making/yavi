@@ -55,19 +55,15 @@ import static am.ik.yavi.core.ViolationMessage.Default.*;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
+
 	private static final String EMAIL_PART = "[^\\x00-\\x1F()<>@,;:\\\\\".\\[\\]\\s]";
 
-	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART
-			+ "+)*";
+	private static final String DOMAIN_PATTERN = EMAIL_PART + "+(\\." + EMAIL_PART + "+)*";
 
-	private static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern
-			.compile(
-					"^" + EMAIL_PART + "+(\\." + EMAIL_PART + "+)*@(" + DOMAIN_PATTERN
-							+ "|" + InetAddressUtils.IPV4_REGEX + ")$",
-					Pattern.CASE_INSENSITIVE);
+	private static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^" + EMAIL_PART + "+(\\." + EMAIL_PART
+			+ "+)*@(" + DOMAIN_PATTERN + "|" + InetAddressUtils.IPV4_REGEX + ")$", Pattern.CASE_INSENSITIVE);
 
-	private static final Pattern VALID_UUID_REGEX = Pattern
-			.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
+	private static final Pattern VALID_UUID_REGEX = Pattern.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
 
 	protected final Normalizer.Form normalizerForm;
 
@@ -77,8 +73,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		this(Normalizer.Form.NFC, VariantOptions.builder().build());
 	}
 
-	public CharSequenceConstraint(Normalizer.Form normalizerForm,
-			VariantOptions variantOptions) {
+	public CharSequenceConstraint(Normalizer.Form normalizerForm, VariantOptions variantOptions) {
 		this.normalizerForm = normalizerForm;
 		this.variantOptions = variantOptions;
 	}
@@ -118,35 +113,33 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> contains(CharSequence s) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.toString().contains(s),
-				CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s }, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(x -> x.toString().contains(s), CHAR_SEQUENCE_CONTAINS, () -> new Object[] { s },
+					VALID));
 		return this;
 	}
 
 	/**
 	 * Does the given value start with the {@code prefix}
-	 *
 	 * @param prefix the prefix the value has to start with
 	 * @since 0.10.0
 	 */
 	public CharSequenceConstraint<T, E> startsWith(CharSequence prefix) {
 		this.predicates()
-				.add(ConstraintPredicate.of(
-						x -> x.toString().startsWith(prefix.toString()),
-						CHAR_SEQUENCE_STARTSWITH, () -> new Object[] { prefix }, VALID));
+			.add(ConstraintPredicate.of(x -> x.toString().startsWith(prefix.toString()), CHAR_SEQUENCE_STARTSWITH,
+					() -> new Object[] { prefix }, VALID));
 		return this;
 	}
 
 	/**
 	 * Does the given value end with the {@code suffix}
-	 *
 	 * @param suffix the suffix the value has to end with
 	 * @since 0.10.0
 	 */
 	public CharSequenceConstraint<T, E> endsWith(CharSequence suffix) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> x.toString().endsWith(suffix.toString()),
-						CHAR_SEQUENCE_ENDSWITH, () -> new Object[] { suffix }, VALID));
+			.add(ConstraintPredicate.of(x -> x.toString().endsWith(suffix.toString()), CHAR_SEQUENCE_ENDSWITH,
+					() -> new Object[] { suffix }, VALID));
 		return this;
 	}
 
@@ -165,14 +158,13 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> password(
 			Function<CharSequencePasswordPoliciesBuilder<T, E>, List<ConstraintPredicate<E>>> builder) {
-		final List<ConstraintPredicate<E>> predicates = builder
-				.apply(new CharSequencePasswordPoliciesBuilder<>());
+		final List<ConstraintPredicate<E>> predicates = builder.apply(new CharSequencePasswordPoliciesBuilder<>());
 		this.predicates().addAll(predicates);
 		return this;
 	}
 
-	private <U> CharSequenceConstraint<T, E> isValidRepresentationOf(
-			Function<String, U> converter, ViolationMessage message) {
+	private <U> CharSequenceConstraint<T, E> isValidRepresentationOf(Function<String, U> converter,
+			ViolationMessage message) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			if (size().applyAsInt(x) == 0) {
 				return true;
@@ -194,8 +186,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	private CharSequenceConstraint<T, E> isLocalDatePattern(String pattern) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			try {
-				DateTimeFormatter.ofPattern(pattern)
-						.withResolverStyle(ResolverStyle.STRICT).parse(x);
+				DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT).parse(x);
 				return true;
 			}
 			catch (DateTimeParseException ignored) {
@@ -300,23 +291,22 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
-		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				normalizerForm, this.variantOptions);
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(normalizerForm, this.variantOptions);
 		constraint.predicates().addAll(this.predicates());
 		return constraint;
 	}
 
 	public CharSequenceConstraint<T, E> notBlank() {
 		this.predicates()
-				.add(ConstraintPredicate.of(
-						x -> x != null && trim(x.toString()).length() != 0,
-						CHAR_SEQUENCE_NOT_BLANK, () -> new Object[] {}, INVALID));
+			.add(ConstraintPredicate.of(x -> x != null && trim(x.toString()).length() != 0, CHAR_SEQUENCE_NOT_BLANK,
+					() -> new Object[] {}, INVALID));
 		return this;
 	}
 
 	public CharSequenceConstraint<T, E> pattern(String regex) {
-		this.predicates().add(ConstraintPredicate.of(x -> Pattern.matches(regex, x),
-				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex }, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(x -> Pattern.matches(regex, x), CHAR_SEQUENCE_PATTERN,
+					() -> new Object[] { regex }, VALID));
 		return this;
 	}
 
@@ -324,8 +314,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.11.1
 	 */
 	public CharSequenceConstraint<T, E> pattern(Pattern regex) {
-		this.predicates().add(ConstraintPredicate.of(x -> regex.matcher(x).matches(),
-				CHAR_SEQUENCE_PATTERN, () -> new Object[] { regex.pattern() }, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(x -> regex.matcher(x).matches(), CHAR_SEQUENCE_PATTERN,
+					() -> new Object[] { regex.pattern() }, VALID));
 		return this;
 	}
 
@@ -334,9 +325,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> pattern(Supplier<Pattern> regexSupplier) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> regexSupplier.get().matcher(x).matches(),
-						CHAR_SEQUENCE_PATTERN,
-						() -> new Object[] { regexSupplier.get().pattern() }, VALID));
+			.add(ConstraintPredicate.of(x -> regexSupplier.get().matcher(x).matches(), CHAR_SEQUENCE_PATTERN,
+					() -> new Object[] { regexSupplier.get().pattern() }, VALID));
 		return this;
 	}
 
@@ -345,8 +335,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv4() {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv4(x.toString()),
-						CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
+			.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv4(x.toString()), CHAR_SEQUENCE_IPV4,
+					() -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -355,8 +345,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv6() {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv6(x.toString()),
-						CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
+			.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv6(x.toString()), CHAR_SEQUENCE_IPV6,
+					() -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -393,8 +383,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.7.0
 	 */
 	public CharSequenceConstraint<T, E> luhn() {
-		this.predicates().add(ConstraintPredicate.of(CharSequenceConstraint::luhnCheck,
-				CHAR_SEQUENCE_LUHN, () -> new Object[] {}, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(CharSequenceConstraint::luhnCheck, CHAR_SEQUENCE_LUHN, () -> new Object[] {},
+					VALID));
 		return this;
 	}
 
@@ -423,19 +414,17 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		return sum != 0 && (sum % 10 == 0);
 	}
 
-	public CharSequenceConstraint<T, E> variant(
-			Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
+	public CharSequenceConstraint<T, E> variant(Function<VariantOptions.Builder, VariantOptions.Builder> opts) {
 		VariantOptions.Builder builder = VariantOptions.builder();
-		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(
-				this.normalizerForm, opts.apply(builder).build());
+		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(this.normalizerForm,
+				opts.apply(builder).build());
 		constraint.predicates().addAll(this.predicates());
 		return constraint;
 	}
 
 	protected String normalize(String s) {
 		String str = this.variantOptions.ignored(s);
-		return this.normalizerForm == null ? str
-				: Normalizer.normalize(str, this.normalizerForm);
+		return this.normalizerForm == null ? str : Normalizer.normalize(str, this.normalizerForm);
 	}
 
 	@Override
@@ -459,4 +448,5 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		}
 		return sb.toString();
 	}
+
 }

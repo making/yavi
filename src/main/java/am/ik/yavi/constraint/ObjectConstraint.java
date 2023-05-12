@@ -34,9 +34,9 @@ public class ObjectConstraint<T, E> extends ConstraintBase<T, E, ObjectConstrain
 	 */
 	public ObjectConstraint<T, E> password(
 			Function<ObjectPasswordPoliciesBuilder<T, E>, List<ConstraintPredicate<E>>> builder) {
-		final List<ConstraintPredicate<E>> predicates = builder
-				.apply(new ObjectPasswordPoliciesBuilder<>());
+		final List<ConstraintPredicate<E>> predicates = builder.apply(new ObjectPasswordPoliciesBuilder<>());
 		this.predicates().addAll(predicates);
 		return this;
 	}
+
 }

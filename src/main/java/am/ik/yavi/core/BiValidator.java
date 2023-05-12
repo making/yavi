@@ -40,6 +40,7 @@ import java.util.function.BiConsumer;
  * @since 0.5.0
  */
 public class BiValidator<T, E> implements BiConsumer<T, E> {
+
 	private final Validator<T> validator;
 
 	private final ErrorHandler<E> errorHandler;
@@ -51,13 +52,15 @@ public class BiValidator<T, E> implements BiConsumer<T, E> {
 
 	public void accept(T target, E errors) {
 		final ConstraintViolations violations = this.validator.validate(target);
-		violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler
-				.handleError(errors, name, messageKey, args, defaultMessage));
+		violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler.handleError(errors, name,
+				messageKey, args, defaultMessage));
 	}
 
 	@FunctionalInterface
 	public interface ErrorHandler<E> {
-		void handleError(E errors, String name, String messageKey, Object[] args,
-				String defaultMessage);
+
+		void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
+
 	}
+
 }

@@ -23,17 +23,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ObjectPasswordConstraintTest {
-	PasswordPolicy<Account> passwordPolicy = PasswordPolicy.of("UsernameNotIncluded",
-			account -> !account.password().toUpperCase()
-					.contains(account.username().toUpperCase()));
 
-	Validator<Account> validator = ValidatorBuilder.<Account> of()
-			.constraint(Account::username, "username", c -> c.notBlank())
-			.constraint(Account::password, "password",
-					c -> c.greaterThanOrEqual(8).password(policy -> policy.strong()))
-			.constraintOnTarget("password",
-					c -> c.password(policy -> policy.required(passwordPolicy).build()))
-			.build();
+	PasswordPolicy<Account> passwordPolicy = PasswordPolicy.of("UsernameNotIncluded",
+			account -> !account.password().toUpperCase().contains(account.username().toUpperCase()));
+
+	Validator<Account> validator = ValidatorBuilder.<Account>of()
+		.constraint(Account::username, "username", c -> c.notBlank())
+		.constraint(Account::password, "password", c -> c.greaterThanOrEqual(8).password(policy -> policy.strong()))
+		.constraintOnTarget("password", c -> c.password(policy -> policy.required(passwordPolicy).build()))
+		.build();
 
 	@Test
 	void valid() {
@@ -54,6 +52,7 @@ public class ObjectPasswordConstraintTest {
 	}
 
 	static class Account {
+
 		private final String username;
 
 		private final String password;
@@ -73,8 +72,9 @@ public class ObjectPasswordConstraintTest {
 
 		@Override
 		public String toString() {
-			return "Account{" + "username='" + username + '\'' + ", password='" + password
-					+ '\'' + '}';
+			return "Account{" + "username='" + username + '\'' + ", password='" + password + '\'' + '}';
 		}
+
 	}
+
 }

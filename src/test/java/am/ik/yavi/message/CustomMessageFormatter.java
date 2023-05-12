@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum CustomMessageFormatter implements MessageFormatter {
+
 	INSTANCE;
 
 	private final Map<String, String> formats;
@@ -37,16 +38,15 @@ public enum CustomMessageFormatter implements MessageFormatter {
 				put("numeric.greaterThanOrEqual", "\"{0}\" muss größer gleich {1} sein.");
 				put("numeric.lessThanOrEqual", "\"{0}\" muss kleiner gleich {1} sein.");
 				put("boolean.isTrue", "\"{0}\" muss wahr sein.");
-				put("charSequence.email",
-						"\"{0}\" muss eine gültige E-Mail Adresse sein.");
+				put("charSequence.email", "\"{0}\" muss eine gültige E-Mail Adresse sein.");
 			}
 		});
 	}
 
 	@Override
-	public String format(String messageKey, String defaultMessageFormat, Object[] args,
-			Locale locale) {
+	public String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale) {
 		final String format = this.formats.getOrDefault(messageKey, defaultMessageFormat);
 		return new MessageFormat(format, locale).format(args);
 	}
+
 }

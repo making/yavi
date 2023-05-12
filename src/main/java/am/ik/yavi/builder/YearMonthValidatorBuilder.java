@@ -48,14 +48,13 @@ public class YearMonthValidatorBuilder {
 		this.builder = builder;
 	}
 
-	public <T> YearMonthValidator<T> build(
-			Function<? super YearMonth, ? extends T> mapper) {
-		final Validator<Arguments1<YearMonth>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> YearMonthValidator<T> build(Function<? super YearMonth, ? extends T> mapper) {
+		final Validator<Arguments1<YearMonth>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new YearMonthValidator<>(validator, mapper::apply);
 	}
 
 	public YearMonthValidator<YearMonth> build() {
 		return build(x -> x);
 	}
+
 }

@@ -42,18 +42,17 @@ public class LongValidatorBuilder {
 		return new LongValidatorBuilder(builder);
 	}
 
-	LongValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<Long>>, ValidatorBuilder<Arguments1<Long>>> builder) {
+	LongValidatorBuilder(Function<ValidatorBuilder<Arguments1<Long>>, ValidatorBuilder<Arguments1<Long>>> builder) {
 		this.builder = builder;
 	}
 
 	public <T> LongValidator<T> build(Function<? super Long, ? extends T> mapper) {
-		final Validator<Arguments1<Long>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Long>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new LongValidator<>(validator, mapper::apply);
 	}
 
 	public LongValidator<Long> build() {
 		return build(x -> x);
 	}
+
 }

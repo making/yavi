@@ -44,16 +44,14 @@ class ByteConstraintTest {
 	@ParameterizedTest
 	@ValueSource(bytes = { 101, 100 })
 	void validGreaterThanOrEqual(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				c -> c.greaterThanOrEqual((byte) 100));
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThanOrEqual((byte) 100));
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(bytes = { 99, -50 })
 	void invalidGreaterThanOrEqual(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				c -> c.greaterThanOrEqual((byte) 100));
+		Predicate<Byte> predicate = retrievePredicate(c -> c.greaterThanOrEqual((byte) 100));
 		assertThat(predicate.test(value)).isFalse();
 	}
 
@@ -116,54 +114,47 @@ class ByteConstraintTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "99", "100", "0" })
 	void validPositiveOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-101", "-12" })
 	void invalidPositiveOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "99", "100" })
 	void invalidNegaitveOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-101", "-120", "0" })
 	void validNegaitveOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "99", "100" })
 	void invalidNegativeOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "-101", "-120", "0" })
 	void validNegativeOrZero(byte value) {
-		Predicate<Byte> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Byte> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
-	private static Predicate<Byte> retrievePredicate(
-			Function<ByteConstraint<Byte>, ByteConstraint<Byte>> constraint) {
-		return constraint.apply(new ByteConstraint<>()).predicates().peekFirst()
-				.predicate();
+	private static Predicate<Byte> retrievePredicate(Function<ByteConstraint<Byte>, ByteConstraint<Byte>> constraint) {
+		return constraint.apply(new ByteConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

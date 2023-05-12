@@ -96,4 +96,5 @@ public final class CharSequencePasswordPoliciesBuilder<T, E extends CharSequence
 	public List<ConstraintPredicate<E>> strong() {
 		return this.uppercase().lowercase().numbers().symbols().build();
 	}
+
 }

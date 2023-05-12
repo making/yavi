@@ -29,4 +29,5 @@ public class _Address_PhoneNumberMeta {
 			return am.ik.yavi.meta.Address.PhoneNumber::value;
 		}
 	};
+
 }

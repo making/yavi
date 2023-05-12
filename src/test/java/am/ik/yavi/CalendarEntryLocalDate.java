@@ -18,7 +18,9 @@ package am.ik.yavi;
 import java.time.LocalDate;
 
 public class CalendarEntryLocalDate {
+
 	private String title;
+
 	private LocalDate date;
 
 	public CalendarEntryLocalDate(String title, LocalDate timepoint) {
@@ -41,4 +43,5 @@ public class CalendarEntryLocalDate {
 	public void setDate(LocalDate date) {
 		this.date = date;
 	}
+
 }

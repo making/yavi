@@ -18,6 +18,7 @@ package am.ik.yavi;
 import am.ik.yavi.core.ConstraintViolations;
 
 public class ConstraintViolationsException extends RuntimeException {
+
 	private final ConstraintViolations violations;
 
 	public ConstraintViolationsException(ConstraintViolations violations) {
@@ -27,4 +28,5 @@ public class ConstraintViolationsException extends RuntimeException {
 	public ConstraintViolations getViolations() {
 		return this.violations;
 	}
+
 }

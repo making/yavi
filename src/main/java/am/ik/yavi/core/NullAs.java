@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 public enum NullAs {
+
 	INVALID(false), VALID(true);
 
 	private final boolean skipNull;
@@ -27,4 +28,5 @@ public enum NullAs {
 	public boolean skipNull() {
 		return this.skipNull;
 	}
+
 }

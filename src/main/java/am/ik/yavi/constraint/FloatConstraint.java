@@ -19,8 +19,8 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class FloatConstraint<T>
-		extends NumericConstraintBase<T, Float, FloatConstraint<T>> {
+public class FloatConstraint<T> extends NumericConstraintBase<T, Float, FloatConstraint<T>> {
+
 	@Override
 	public FloatConstraint<T> cast() {
 		return this;
@@ -50,4 +50,5 @@ public class FloatConstraint<T>
 	protected Float zeroValue() {
 		return 0f;
 	}
+
 }

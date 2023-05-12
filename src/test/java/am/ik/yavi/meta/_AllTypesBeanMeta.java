@@ -277,4 +277,5 @@ public class _AllTypesBeanMeta {
 			return am.ik.yavi.meta.AllTypesBean::getLocalDateValue;
 		}
 	};
+
 }

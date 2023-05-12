@@ -55,4 +55,5 @@ public class _UserServiceCreateUserArgumentsMeta {
 			return am.ik.yavi.arguments.Arguments3::arg3;
 		}
 	};
+
 }

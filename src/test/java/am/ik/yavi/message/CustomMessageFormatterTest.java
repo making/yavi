@@ -28,20 +28,19 @@ class CustomMessageFormatterTest {
 
 	@Test
 	void customMessage() {
-		final Validator<User> validator = ValidatorBuilder.<User> of()
-				.messageFormatter(CustomMessageFormatter.INSTANCE)
-				.constraint(User::getName, "name", c -> c.greaterThanOrEqual(2))
-				.constraint(User::getEmail, "email", c -> c.notNull())
-				.constraint(User::getAge, "age", c -> c.lessThanOrEqual(20)).build();
+		final Validator<User> validator = ValidatorBuilder.<User>of()
+			.messageFormatter(CustomMessageFormatter.INSTANCE)
+			.constraint(User::getName, "name", c -> c.greaterThanOrEqual(2))
+			.constraint(User::getEmail, "email", c -> c.notNull())
+			.constraint(User::getAge, "age", c -> c.lessThanOrEqual(20))
+			.build();
 
-		final ConstraintViolations violations = validator
-				.validate(new User("a", null, 30));
+		final ConstraintViolations violations = validator.validate(new User("a", null, 30));
 		assertThat(violations.size()).isEqualTo(3);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"Die Länge von \"name\" muss größer oder gleich 2 sein. Aktuelle Länge ist 1.");
-		assertThat(violations.get(1).message())
-				.isEqualTo("Für \"email\" muss ein Wert vorhanden sein.");
-		assertThat(violations.get(2).message())
-				.isEqualTo("\"age\" muss kleiner gleich 20 sein.");
+		assertThat(violations.get(0).message())
+			.isEqualTo("Die Länge von \"name\" muss größer oder gleich 2 sein. Aktuelle Länge ist 1.");
+		assertThat(violations.get(1).message()).isEqualTo("Für \"email\" muss ein Wert vorhanden sein.");
+		assertThat(violations.get(2).message()).isEqualTo("\"age\" muss kleiner gleich 20 sein.");
 	}
+
 }

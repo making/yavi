@@ -21,23 +21,21 @@ import am.ik.yavi.fn.Validation;
 
 @FunctionalInterface
 public interface Validatable<T> {
+
 	/**
 	 * Validates all constraints on {@code target}.
-	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	ConstraintViolations validate(T target, Locale locale,
-			ConstraintContext constraintContext);
+	ConstraintViolations validate(T target, Locale locale, ConstraintContext constraintContext);
 
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
-	 *
 	 * @param target target to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
@@ -49,7 +47,6 @@ public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}.<br>
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
-	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @return constraint violations
@@ -62,7 +59,6 @@ public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 *
 	 * @param target target to validate
 	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
@@ -79,8 +75,7 @@ public interface Validatable<T> {
 	 */
 	default ApplicativeValidator<T> applicative() {
 		return (target, locale, constraintContext) -> {
-			final ConstraintViolations violations = Validatable.this.validate(target,
-					locale, constraintContext);
+			final ConstraintViolations violations = Validatable.this.validate(target, locale, constraintContext);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));
 			}
@@ -96,10 +91,9 @@ public interface Validatable<T> {
 	 * @return regular validator
 	 * @since 0.11.0
 	 */
-	static <A1, R> Validatable<A1> from(
-			ValueValidator<? super A1, ? extends R> applicative) {
-		return (target, locale, constraintGroup) -> applicative
-				.validate(target, locale, constraintGroup)
-				.fold(ConstraintViolations::of, result -> new ConstraintViolations());
+	static <A1, R> Validatable<A1> from(ValueValidator<? super A1, ? extends R> applicative) {
+		return (target, locale, constraintGroup) -> applicative.validate(target, locale, constraintGroup)
+			.fold(ConstraintViolations::of, result -> new ConstraintViolations());
 	}
+
 }

@@ -41,7 +41,6 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
 	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
-	 *
 	 * @param validator core validator
 	 * @param <X> target class
 	 * @return arguments1 validator
@@ -53,7 +52,6 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
 	 * Convert {@link ValueValidator} instance into {@link Arguments1Validator}
-	 *
 	 * @param valueValidator value validator
 	 * @param <A1> class of argument1
 	 * @param <X> target class
@@ -65,38 +63,33 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	@Override
-	Validated<X> validate(@Nullable A1 a1, Locale locale,
-			ConstraintContext constraintContext);
+	Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext);
 
 	/**
 	 * @since 0.7.0
 	 */
 	@Override
-	default <X2> Arguments1Validator<A1, X2> andThen(
-			Function<? super X, ? extends X2> mapper) {
-		return (a1, locale, constraintContext) -> Arguments1Validator.this
-				.validate(a1, locale, constraintContext).map(mapper);
+	default <X2> Arguments1Validator<A1, X2> andThen(Function<? super X, ? extends X2> mapper) {
+		return (a1, locale, constraintContext) -> Arguments1Validator.this.validate(a1, locale, constraintContext)
+			.map(mapper);
 	}
 
 	/**
 	 * @since 0.11.0
 	 */
 	@Override
-	default <X2> Arguments1Validator<A1, X2> andThen(
-			ValueValidator<? super X, X2> validator) {
-		return (a1, locale, constraintContext) -> Arguments1Validator.this
-				.validate(a1, locale, constraintContext)
-				.flatMap(v -> validator.validate(v, locale, constraintContext));
+	default <X2> Arguments1Validator<A1, X2> andThen(ValueValidator<? super X, X2> validator) {
+		return (a1, locale, constraintContext) -> Arguments1Validator.this.validate(a1, locale, constraintContext)
+			.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
 	 * @since 0.7.0
 	 */
 	@Override
-	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends A1> mapper) {
-		return (a, locale, constraintContext) -> Arguments1Validator.this
-				.validate(mapper.apply(a), locale, constraintContext);
+	default <A> Arguments1Validator<A, X> compose(Function<? super A, ? extends A1> mapper) {
+		return (a, locale, constraintContext) -> Arguments1Validator.this.validate(mapper.apply(a), locale,
+				constraintContext);
 	}
 
 	/**
@@ -123,28 +116,23 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 		return this.validate(a1).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, ConstraintContext constraintContext)
-			throws ConstraintViolationsException {
-		return this.validate(a1, constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(@Nullable A1 a1, ConstraintContext constraintContext) throws ConstraintViolationsException {
+		return this.validate(a1, constraintContext).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, Locale locale)
-			throws ConstraintViolationsException {
+	default X validated(@Nullable A1 a1, Locale locale) throws ConstraintViolationsException {
 		return this.validate(a1, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, Locale locale,
-			ConstraintContext constraintContext) throws ConstraintViolationsException {
-		return this.validate(a1, locale, constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext)
+			throws ConstraintViolationsException {
+		return this.validate(a1, locale, constraintContext).orElseThrow(ConstraintViolationsException::new);
 	}
 
 	/**
 	 * @since 0.7.0
 	 */
-	default <A2, Y> Arguments2Splitting<A1, A2, X, Y> split(
-			ValueValidator<A2, Y> validator) {
+	default <A2, Y> Arguments2Splitting<A1, A2, X, Y> split(ValueValidator<A2, Y> validator) {
 		return new Arguments2Splitting<>(this, validator);
 	}
 
@@ -160,15 +148,14 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	@Override
 	default Arguments1Validator<A1, X> indexed(int index) {
-		return (a1, locale, constraintContext) -> Arguments1Validator.this
-				.validate(a1, locale, constraintContext).indexed(index);
+		return (a1, locale, constraintContext) -> Arguments1Validator.this.validate(a1, locale, constraintContext)
+			.indexed(index);
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
-	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
-			Supplier<C> factory) {
+	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(Supplier<C> factory) {
 		return Arguments1Validator.from(ValueValidator.super.liftCollection(factory));
 	}
 
@@ -192,4 +179,5 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
 		return Arguments1Validator.from(ValueValidator.super.liftOptional());
 	}
+
 }

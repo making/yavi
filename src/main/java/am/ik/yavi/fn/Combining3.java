@@ -22,6 +22,7 @@ package am.ik.yavi.fn;
  * @since 0.6.0
  */
 public class Combining3<E, T1, T2, T3> {
+
 	protected final Validation<E, T1> v1;
 
 	protected final Validation<E, T2> v2;
@@ -35,8 +36,7 @@ public class Combining3<E, T1, T2, T3> {
 	}
 
 	public <R, V extends Validation<E, R>> V apply(Function3<T1, T2, T3, R> f) {
-		final Validation<E, Function1<T2, Function1<T3, R>>> apply1 = v1
-				.apply(Validation.success(Functions.curry(f)));
+		final Validation<E, Function1<T2, Function1<T3, R>>> apply1 = v1.apply(Validation.success(Functions.curry(f)));
 		final Validation<E, Function1<T3, R>> apply2 = v2.apply(apply1);
 		return v3.apply(apply2);
 	}
@@ -44,4 +44,5 @@ public class Combining3<E, T1, T2, T3> {
 	public <T4> Combining4<E, T1, T2, T3, T4> combine(Validation<E, T4> v4) {
 		return new Combining4<>(v1, v2, v3, v4);
 	}
+
 }

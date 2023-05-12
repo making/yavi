@@ -19,6 +19,7 @@ import java.util.Locale;
 
 @FunctionalInterface
 public interface MessageFormatter {
-	String format(String messageKey, String defaultMessageFormat, Object[] args,
-			Locale locale);
+
+	String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale);
+
 }

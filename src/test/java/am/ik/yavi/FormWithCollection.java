@@ -18,6 +18,7 @@ package am.ik.yavi;
 import java.util.List;
 
 public class FormWithCollection {
+
 	private final List<Address> addresses;
 
 	public FormWithCollection(List<Address> addresses) {
@@ -27,4 +28,5 @@ public class FormWithCollection {
 	public List<Address> getAddresses() {
 		return addresses;
 	}
+
 }

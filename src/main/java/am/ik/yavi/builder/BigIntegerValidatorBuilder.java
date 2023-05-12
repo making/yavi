@@ -48,14 +48,13 @@ public class BigIntegerValidatorBuilder {
 		this.builder = builder;
 	}
 
-	public <T> BigIntegerValidator<T> build(
-			Function<? super BigInteger, ? extends T> mapper) {
-		final Validator<Arguments1<BigInteger>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> BigIntegerValidator<T> build(Function<? super BigInteger, ? extends T> mapper) {
+		final Validator<Arguments1<BigInteger>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BigIntegerValidator<>(validator, mapper::apply);
 	}
 
 	public BigIntegerValidator<BigInteger> build() {
 		return build(x -> x);
 	}
+
 }

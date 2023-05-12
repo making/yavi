@@ -30,6 +30,7 @@ public interface CodePoints<E extends CharSequence> {
 
 	@FunctionalInterface
 	interface CodePointsRanges<E extends CharSequence> extends CodePoints<E> {
+
 		@Override
 		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
 			if (s == null || s.length() == 0) {
@@ -62,6 +63,7 @@ public interface CodePoints<E extends CharSequence> {
 
 	@FunctionalInterface
 	interface CodePointsSet<E extends CharSequence> extends CodePoints<E> {
+
 		@Override
 		default Set<Integer> allExcludedCodePoints(@Nullable E s) {
 			if (s == null || s.length() == 0) {
@@ -82,9 +84,11 @@ public interface CodePoints<E extends CharSequence> {
 		}
 
 		Set<Integer> asSet();
+
 	}
 
 	interface Range {
+
 		static Range of(String begin, String end) {
 			return Range.of(begin.codePoints().sorted().findFirst().orElse(0),
 					end.codePoints().sorted().findFirst().orElse(0));
@@ -92,8 +96,7 @@ public interface CodePoints<E extends CharSequence> {
 
 		static Range of(int begin, int end) {
 			if (begin > end) {
-				throw new IllegalArgumentException("begin must not be greater than end ["
-						+ begin + ", " + end + "]");
+				throw new IllegalArgumentException("begin must not be greater than end [" + begin + ", " + end + "]");
 			}
 			return new Range() {
 				@Override
@@ -112,8 +115,7 @@ public interface CodePoints<E extends CharSequence> {
 						return false;
 					}
 					Range range = (Range) obj;
-					return Objects.equals(begin, range.begin())
-							&& Objects.equals(end, range.end());
+					return Objects.equals(begin, range.begin()) && Objects.equals(end, range.end());
 				}
 
 				@Override
@@ -130,5 +132,7 @@ public interface CodePoints<E extends CharSequence> {
 		int begin();
 
 		int end();
+
 	}
+
 }

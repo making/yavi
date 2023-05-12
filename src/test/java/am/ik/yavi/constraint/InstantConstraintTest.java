@@ -112,8 +112,7 @@ class InstantConstraintTest {
 	@Test
 	void isBeforeValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.before(() -> now.plusSeconds(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -135,16 +134,14 @@ class InstantConstraintTest {
 	@Test
 	void isAfterInValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.after(() -> now.plusSeconds(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.after(() -> now.minusSeconds(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -158,8 +155,7 @@ class InstantConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusSeconds(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -167,8 +163,7 @@ class InstantConstraintTest {
 	void isBeforeOrEqualInValid() {
 		Instant now = Instant.now();
 		Instant past = now.minusSeconds(10);
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> past));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> past));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -182,16 +177,14 @@ class InstantConstraintTest {
 	@Test
 	void isAfterOrEqualInValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusSeconds(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		Instant now = Instant.now();
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusSeconds(10)));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusSeconds(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -207,8 +200,7 @@ class InstantConstraintTest {
 		Instant now = Instant.now();
 		Supplier<Instant> nowSupplier = () -> now;
 
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -218,32 +210,27 @@ class InstantConstraintTest {
 
 		Predicate<Instant> predicate = retrievePredicate(
 				c -> c.between(() -> now.plusSeconds(1), () -> now.minusSeconds(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
 	void temporalFieldValid() {
-		OffsetDateTime value = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0,
-				ZoneOffset.ofHours(0));
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
+		OffsetDateTime value = OffsetDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneOffset.ofHours(0));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
 		assertThat(predicate.test(value.toInstant())).isTrue();
 	}
 
 	@Test
 	void temporalFieldInValid() {
-		OffsetDateTime value = OffsetDateTime.of(1969, 12, 31, 23, 59, 59, 0,
-				ZoneOffset.ofHours(0));
-		Predicate<Instant> predicate = retrievePredicate(
-				c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
+		OffsetDateTime value = OffsetDateTime.of(1969, 12, 31, 23, 59, 59, 0, ZoneOffset.ofHours(0));
+		Predicate<Instant> predicate = retrievePredicate(c -> c.fieldPredicate(INSTANT_SECONDS, s -> s >= 0));
 		assertThat(predicate.test(value.toInstant())).isFalse();
 	}
 
 	private static Predicate<Instant> retrievePredicate(
 			Function<InstantConstraint<Instant>, InstantConstraint<Instant>> constraint) {
-		return constraint.apply(new InstantConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new InstantConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

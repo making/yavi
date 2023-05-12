@@ -20,8 +20,7 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.jsr305.Nullable;
 
-public interface CustomConstraint<V>
-		extends Predicate<V>, ViolationMessage, ViolatedArguments<V> {
+public interface CustomConstraint<V> extends Predicate<V>, ViolationMessage, ViolatedArguments<V> {
 
 	Objects[] EMPTY_ARRAY = new Objects[0];
 
@@ -29,4 +28,5 @@ public interface CustomConstraint<V>
 	default Object[] arguments(@Nullable V violatedValue) {
 		return EMPTY_ARRAY;
 	}
+
 }

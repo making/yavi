@@ -26,8 +26,8 @@ import am.ik.yavi.constraint.base.TemporalConstraintBase;
  * @author Diego Krupitza
  * @since 0.10.0
  */
-public class LocalTimeConstraint<T>
-		extends TemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
+public class LocalTimeConstraint<T> extends TemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
+
 	@Override
 	protected boolean isAfter(LocalTime a, LocalTime b) {
 		return a.isAfter(b);
@@ -47,4 +47,5 @@ public class LocalTimeConstraint<T>
 	public LocalTimeConstraint<T> cast() {
 		return this;
 	}
+
 }

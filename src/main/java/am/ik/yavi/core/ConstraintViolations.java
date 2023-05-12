@@ -26,12 +26,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ConstraintViolations implements List<ConstraintViolation> {
+
 	private final List<ConstraintViolation> delegate;
 
 	/**
 	 * Constructs with the constraintViolations to delegate. If the given value is
 	 * <code>ConstraintViolations</code> itself, cast and return it.
-	 *
 	 * @param delegate constraintViolations to delegate
 	 * @since 0.6.0
 	 */
@@ -67,17 +67,16 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * others will impose restrictions on the type of elements that may be added. List
 	 * classes should clearly specify in their documentation any restrictions on what
 	 * elements may be added.
-	 *
 	 * @param constraintViolation element to be appended to this list
 	 * @return <tt>true</tt> (as specified by {@link Collection#add})
 	 * @throws UnsupportedOperationException if the <tt>add</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of the specified element prevents it from
-	 *     being added to this list
+	 * being added to this list
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
+	 * not permit null elements
 	 * @throws IllegalArgumentException if some property of this element prevents it from
-	 *     being added to this list
+	 * being added to this list
 	 */
 	@Override
 	public final boolean add(ConstraintViolation constraintViolation) {
@@ -88,19 +87,18 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * Inserts the specified element at the specified position in this list (optional
 	 * operation). Shifts the element currently at that position (if any) and any
 	 * subsequent elements to the right (adds one to their indices).
-	 *
 	 * @param index index at which the specified element is to be inserted
 	 * @param element element to be inserted
 	 * @throws UnsupportedOperationException if the <tt>add</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of the specified element prevents it from
-	 *     being added to this list
+	 * being added to this list
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
+	 * not permit null elements
 	 * @throws IllegalArgumentException if some property of the specified element prevents
-	 *     it from being added to this list
+	 * it from being added to this list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     (<tt>index &lt; 0 || index &gt; size()</tt>)
+	 * (<tt>index &lt; 0 || index &gt; size()</tt>)
 	 */
 	@Override
 	public final void add(int index, ConstraintViolation element) {
@@ -113,18 +111,17 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * operation). The behavior of this operation is undefined if the specified collection
 	 * is modified while the operation is in progress. (Note that this will occur if the
 	 * specified collection is this list, and it's nonempty.)
-	 *
 	 * @param c collection containing elements to be added to this list
 	 * @return <tt>true</tt> if this list changed as a result of the call
 	 * @throws UnsupportedOperationException if the <tt>addAll</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of an element of the specified collection
-	 *     prevents it from being added to this list
+	 * prevents it from being added to this list
 	 * @throws NullPointerException if the specified collection contains one or more null
-	 *     elements and this list does not permit null elements, or if the specified
-	 *     collection is null
+	 * elements and this list does not permit null elements, or if the specified
+	 * collection is null
 	 * @throws IllegalArgumentException if some property of an element of the specified
-	 *     collection prevents it from being added to this list
+	 * collection prevents it from being added to this list
 	 * @see #add(Object)
 	 */
 	@Override
@@ -141,22 +138,21 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * undefined if the specified collection is modified while the operation is in
 	 * progress. (Note that this will occur if the specified collection is this list, and
 	 * it's nonempty.)
-	 *
 	 * @param index index at which to insert the first element from the specified
-	 *     collection
+	 * collection
 	 * @param c collection containing elements to be added to this list
 	 * @return <tt>true</tt> if this list changed as a result of the call
 	 * @throws UnsupportedOperationException if the <tt>addAll</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of an element of the specified collection
-	 *     prevents it from being added to this list
+	 * prevents it from being added to this list
 	 * @throws NullPointerException if the specified collection contains one or more null
-	 *     elements and this list does not permit null elements, or if the specified
-	 *     collection is null
+	 * elements and this list does not permit null elements, or if the specified
+	 * collection is null
 	 * @throws IllegalArgumentException if some property of an element of the specified
-	 *     collection prevents it from being added to this list
+	 * collection prevents it from being added to this list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     (<tt>index &lt; 0 || index &gt; size()</tt>)
+	 * (<tt>index &lt; 0 || index &gt; size()</tt>)
 	 */
 	@Override
 	public final boolean addAll(int index, Collection<? extends ConstraintViolation> c) {
@@ -179,23 +175,19 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 *             // ...
 	 *             return "redirect:/";
 	 *         });
-	 * }</code>
-	 * </pre>
-	 *
+	 * }</code> </pre>
 	 * @param callback
 	 */
 	public ConstraintViolations apply(Callback callback) {
-		this.forEach(
-				v -> callback.apply(v.name(), v.messageKey(), v.args(), v.message()));
+		this.forEach(v -> callback.apply(v.name(), v.messageKey(), v.args(), v.message()));
 		return this;
 	}
 
 	/**
 	 * Removes all of the elements from this list (optional operation). The list will be
 	 * empty after this call returns.
-	 *
 	 * @throws UnsupportedOperationException if the <tt>clear</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 */
 	@Override
 	public final void clear() {
@@ -207,14 +199,13 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * returns <tt>true</tt> if and only if this list contains at least one element
 	 * <tt>e</tt> such that
 	 * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
-	 *
 	 * @param o element whose presence in this list is to be tested
 	 * @return <tt>true</tt> if this list contains the specified element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 *     with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
 	public final boolean contains(Object o) {
@@ -224,17 +215,16 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	/**
 	 * Returns <tt>true</tt> if this list contains all of the elements of the specified
 	 * collection.
-	 *
 	 * @param c collection to be checked for containment in this list
 	 * @return <tt>true</tt> if this list contains all of the elements of the specified
 	 * collection
 	 * @throws ClassCastException if the types of one or more elements in the specified
-	 *     collection are incompatible with this list
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * collection are incompatible with this list
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if the specified collection contains one or more null
-	 *     elements and this list does not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-	 *     specified collection is null
+	 * elements and this list does not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
+	 * collection is null
 	 * @see #contains(Object)
 	 */
 	@Override
@@ -243,17 +233,15 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	public List<ViolationDetail> details() {
-		return this.delegate.stream().map(ConstraintViolation::detail)
-				.collect(Collectors.toList());
+		return this.delegate.stream().map(ConstraintViolation::detail).collect(Collectors.toList());
 	}
 
 	/**
 	 * Returns the element at the specified position in this list.
-	 *
 	 * @param index index of the element to return
 	 * @return the element at the specified position in this list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     (<tt>index &lt; 0 || index &gt;= size()</tt>)
+	 * (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
 	@Override
 	public final ConstraintViolation get(int index) {
@@ -266,15 +254,14 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * index <tt>i</tt> such that
 	 * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>, or -1 if
 	 * there is no such index.
-	 *
 	 * @param o element to search for
 	 * @return the index of the first occurrence of the specified element in this list, or
 	 * -1 if this list does not contain the element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 *     with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
 	public final int indexOf(Object o) {
@@ -283,7 +270,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 
 	/**
 	 * Returns <tt>true</tt> if this list contains no elements.
-	 *
 	 * @return <tt>true</tt> if this list contains no elements
 	 */
 	@Override
@@ -297,7 +283,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 
 	/**
 	 * Returns an iterator over the elements in this list in proper sequence.
-	 *
 	 * @return an iterator over the elements in this list in proper sequence
 	 */
 	@Override
@@ -311,15 +296,14 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * index <tt>i</tt> such that
 	 * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>, or -1 if
 	 * there is no such index.
-	 *
 	 * @param o element to search for
 	 * @return the index of the last occurrence of the specified element in this list, or
 	 * -1 if this list does not contain the element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 *     with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 */
 	@Override
 	public final int lastIndexOf(Object o) {
@@ -328,7 +312,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 
 	/**
 	 * Returns a list iterator over the elements in this list (in proper sequence).
-	 *
 	 * @return a list iterator over the elements in this list (in proper sequence)
 	 */
 	@Override
@@ -342,13 +325,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * first element that would be returned by an initial call to {@link ListIterator#next
 	 * next}. An initial call to {@link ListIterator#previous previous} would return the
 	 * element with the specified index minus one.
-	 *
 	 * @param index index of the first element to be returned from the list iterator (by a
-	 *     call to {@link ListIterator#next next})
+	 * call to {@link ListIterator#next next})
 	 * @return a list iterator over the elements in this list (in proper sequence),
 	 * starting at the specified position in the list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     ({@code index < 0 || index > size()})
+	 * ({@code index < 0 || index > size()})
 	 */
 	@Override
 	public final ListIterator<ConstraintViolation> listIterator(int index) {
@@ -362,16 +344,15 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt> (if
 	 * such an element exists). Returns <tt>true</tt> if this list contained the specified
 	 * element (or equivalently, if this list changed as a result of the call).
-	 *
 	 * @param o element to be removed from this list, if present
 	 * @return <tt>true</tt> if this list contained the specified element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 *     with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws UnsupportedOperationException if the <tt>remove</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 */
 	@Override
 	public final boolean remove(Object o) {
@@ -382,13 +363,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * Removes the element at the specified position in this list (optional operation).
 	 * Shifts any subsequent elements to the left (subtracts one from their indices).
 	 * Returns the element that was removed from the list.
-	 *
 	 * @param index the index of the element to be removed
 	 * @return the element previously at the specified position
 	 * @throws UnsupportedOperationException if the <tt>remove</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     (<tt>index &lt; 0 || index &gt;= size()</tt>)
+	 * (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
 	@Override
 	public final ConstraintViolation remove(int index) {
@@ -398,18 +378,17 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	/**
 	 * Removes from this list all of its elements that are contained in the specified
 	 * collection (optional operation).
-	 *
 	 * @param c collection containing elements to be removed from this list
 	 * @return <tt>true</tt> if this list changed as a result of the call
 	 * @throws UnsupportedOperationException if the <tt>removeAll</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of an element of this list is incompatible
-	 *     with the specified collection
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with the specified collection
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if this list contains a null element and the specified
-	 *     collection does not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-	 *     specified collection is null
+	 * collection does not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
+	 * collection is null
 	 * @see #remove(Object)
 	 * @see #contains(Object)
 	 */
@@ -422,18 +401,17 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * Retains only the elements in this list that are contained in the specified
 	 * collection (optional operation). In other words, removes from this list all of its
 	 * elements that are not contained in the specified collection.
-	 *
 	 * @param c collection containing elements to be retained in this list
 	 * @return <tt>true</tt> if this list changed as a result of the call
 	 * @throws UnsupportedOperationException if the <tt>retainAll</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of an element of this list is incompatible
-	 *     with the specified collection
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with the specified collection
+	 * (<a href="Collection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException if this list contains a null element and the specified
-	 *     collection does not permit null elements
-	 *     (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-	 *     specified collection is null
+	 * collection does not permit null elements
+	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
+	 * collection is null
 	 * @see #remove(Object)
 	 * @see #contains(Object)
 	 */
@@ -445,20 +423,19 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	/**
 	 * Replaces the element at the specified position in this list with the specified
 	 * element (optional operation).
-	 *
 	 * @param index index of the element to replace
 	 * @param element element to be stored at the specified position
 	 * @return the element previously at the specified position
 	 * @throws UnsupportedOperationException if the <tt>set</tt> operation is not
-	 *     supported by this list
+	 * supported by this list
 	 * @throws ClassCastException if the class of the specified element prevents it from
-	 *     being added to this list
+	 * being added to this list
 	 * @throws NullPointerException if the specified element is null and this list does
-	 *     not permit null elements
+	 * not permit null elements
 	 * @throws IllegalArgumentException if some property of the specified element prevents
-	 *     it from being added to this list
+	 * it from being added to this list
 	 * @throws IndexOutOfBoundsException if the index is out of range
-	 *     (<tt>index &lt; 0 || index &gt;= size()</tt>)
+	 * (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
 	@Override
 	public final ConstraintViolation set(int index, ConstraintViolation element) {
@@ -468,7 +445,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	/**
 	 * Returns the number of elements in this list. If this list contains more than
 	 * <tt>Integer.MAX_VALUE</tt> elements, returns <tt>Integer.MAX_VALUE</tt>.
-	 *
 	 * @return the number of elements in this list
 	 */
 	@Override
@@ -506,12 +482,11 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * the returned list. (Structural modifications are those that change the size of this
 	 * list, or otherwise perturb it in such a fashion that iterations in progress may
 	 * yield incorrect results.)
-	 *
 	 * @param fromIndex low endpoint (inclusive) of the subList
 	 * @param toIndex high endpoint (exclusive) of the subList
 	 * @return a view of the specified range within this list
 	 * @throws IndexOutOfBoundsException for an illegal endpoint index value
-	 *     (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
+	 * (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
 	 *                                   fromIndex &gt; toIndex</tt>)
 	 */
 	@Override
@@ -519,8 +494,8 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 		return this.delegate.subList(fromIndex, toIndex);
 	}
 
-	public final <E extends RuntimeException> void throwIfInvalid(
-			Function<ConstraintViolations, E> toException) throws E {
+	public final <E extends RuntimeException> void throwIfInvalid(Function<ConstraintViolations, E> toException)
+			throws E {
 		if (!isValid()) {
 			throw toException.apply(this);
 		}
@@ -537,7 +512,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 *
 	 * <p>
 	 * This method acts as bridge between array-based and collection-based APIs.
-	 *
 	 * @return an array containing all of the elements in this list in proper sequence
 	 * @see Arrays#asList(Object[])
 	 */
@@ -579,13 +553,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * <p>
 	 * Note that <tt>toArray(new Object[0])</tt> is identical in function to
 	 * <tt>toArray()</tt>.
-	 *
 	 * @param a the array into which the elements of this list are to be stored, if it is
-	 *     big enough; otherwise, a new array of the same runtime type is allocated for
-	 *     this purpose.
+	 * big enough; otherwise, a new array of the same runtime type is allocated for this
+	 * purpose.
 	 * @return an array containing the elements of this list
 	 * @throws ArrayStoreException if the runtime type of the specified array is not a
-	 *     supertype of the runtime type of every element in this list
+	 * supertype of the runtime type of every element in this list
 	 * @throws NullPointerException if the specified array is null
 	 */
 	@Override
@@ -604,6 +577,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 
 	@FunctionalInterface
 	public interface Callback {
+
 		void apply(String name, String messageKey, Object[] args, String defaultMessage);
+
 	}
+
 }

@@ -23,8 +23,7 @@ public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 
 	private final ConstraintCondition<N> constraintCondition;
 
-	public NestedConstraintCondition(Function<T, N> nested,
-			ConstraintCondition<N> constraintCondition) {
+	public NestedConstraintCondition(Function<T, N> nested, ConstraintCondition<N> constraintCondition) {
 		this.nested = nested;
 		this.constraintCondition = constraintCondition;
 	}
@@ -38,4 +37,5 @@ public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 
 		return this.constraintCondition.test(n, constraintContext);
 	}
+
 }

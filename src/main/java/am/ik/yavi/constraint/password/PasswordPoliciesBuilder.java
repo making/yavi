@@ -31,6 +31,7 @@ import am.ik.yavi.core.ViolationMessage.Default;
  * @since 0.7.0
  */
 public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBuilder<T, E, B>> {
+
 	private final Set<PasswordPolicy<E>> requiredPolicies = new LinkedHashSet<>();
 
 	private final Set<PasswordPolicy<E>> optionalPolicies = new LinkedHashSet<>();
@@ -70,9 +71,9 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 
 	private List<ConstraintPredicate<E>> requiredConstraintPredicates() {
 		return this.requiredPolicies.stream()
-				.map(policy -> ConstraintPredicate.of(policy, Default.PASSWORD_REQUIRED,
-						() -> new Object[] { policy.name() }, NullAs.VALID))
-				.collect(Collectors.toList());
+			.map(policy -> ConstraintPredicate.of(policy, Default.PASSWORD_REQUIRED,
+					() -> new Object[] { policy.name() }, NullAs.VALID))
+			.collect(Collectors.toList());
 	}
 
 	private ConstraintPredicate<E> optionalConstraintPredicate() {
@@ -87,8 +88,8 @@ public abstract class PasswordPoliciesBuilder<T, E, B extends PasswordPoliciesBu
 		};
 		return ConstraintPredicate.of(predicate, Default.PASSWORD_OPTIONAL,
 				() -> new Object[] { this.minimumOptionalPoliciesRequirement,
-						this.optionalPolicies.stream().map(PasswordPolicy::name)
-								.collect(Collectors.toList()) },
+						this.optionalPolicies.stream().map(PasswordPolicy::name).collect(Collectors.toList()) },
 				NullAs.VALID);
 	}
+
 }

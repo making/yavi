@@ -29,16 +29,14 @@ class MapConstraintTest {
 
 	@Test
 	void containsKey() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(
-				c -> c.containsKey("foo"));
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.containsKey("foo"));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("bar", "baz"))).isFalse();
 	}
 
 	@Test
 	void containsValue() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(
-				c -> c.containsValue("bar"));
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.containsValue("bar"));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Collections.singletonMap("foo", "baz"))).isFalse();
 	}
@@ -64,8 +62,7 @@ class MapConstraintTest {
 
 	@Test
 	void greaterThan() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(
-				c -> c.greaterThan(2));
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.greaterThan(2));
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
 				put("a", "b");
@@ -83,8 +80,7 @@ class MapConstraintTest {
 
 	@Test
 	void greaterThanOrEqual() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(
-				c -> c.greaterThanOrEqual(2));
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.greaterThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isFalse();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -115,8 +111,7 @@ class MapConstraintTest {
 
 	@Test
 	void lessThanOrEqual() {
-		Predicate<Map<String, String>> predicate = retrievePredicate(
-				c -> c.lessThanOrEqual(2));
+		Predicate<Map<String, String>> predicate = retrievePredicate(c -> c.lessThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonMap("foo", "bar"))).isTrue();
 		assertThat(predicate.test(new HashMap<String, String>() {
 			{
@@ -142,7 +137,7 @@ class MapConstraintTest {
 
 	private static Predicate<Map<String, String>> retrievePredicate(
 			Function<MapConstraint<Map<String, String>, String, String>, MapConstraint<Map<String, String>, String, String>> constraint) {
-		return constraint.apply(new MapConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new MapConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

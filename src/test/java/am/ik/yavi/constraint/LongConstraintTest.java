@@ -113,54 +113,47 @@ class LongConstraintTest {
 	@ParameterizedTest
 	@ValueSource(longs = { 99, 100, 0 })
 	void validPositiveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { -101, -12 })
 	void invalidPositiveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { 99, 100 })
 	void invalidNegaitveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { -101, -120, 0 })
 	void validNegaitveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { 99, 100 })
 	void invalidNegativeOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(longs = { -101, -120, 0 })
 	void validNegativeOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
-	private static Predicate<Long> retrievePredicate(
-			Function<LongConstraint<Long>, LongConstraint<Long>> constraint) {
-		return constraint.apply(new LongConstraint<>()).predicates().peekFirst()
-				.predicate();
+	private static Predicate<Long> retrievePredicate(Function<LongConstraint<Long>, LongConstraint<Long>> constraint) {
+		return constraint.apply(new LongConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

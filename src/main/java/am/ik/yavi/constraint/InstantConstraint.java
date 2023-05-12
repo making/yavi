@@ -22,10 +22,11 @@ import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
 /**
  * This is the actual class for constraints on Instant.
+ *
  * @since 0.10.0
  */
-public class InstantConstraint<T>
-		extends TemporalConstraintBase<T, Instant, InstantConstraint<T>> {
+public class InstantConstraint<T> extends TemporalConstraintBase<T, Instant, InstantConstraint<T>> {
+
 	@Override
 	protected boolean isAfter(Instant a, Instant b) {
 		return a.isAfter(b);
@@ -45,4 +46,5 @@ public class InstantConstraint<T>
 	public InstantConstraint<T> cast() {
 		return this;
 	}
+
 }

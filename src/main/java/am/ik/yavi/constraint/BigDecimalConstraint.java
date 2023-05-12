@@ -20,8 +20,8 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class BigDecimalConstraint<T>
-		extends NumericConstraintBase<T, BigDecimal, BigDecimalConstraint<T>> {
+public class BigDecimalConstraint<T> extends NumericConstraintBase<T, BigDecimal, BigDecimalConstraint<T>> {
+
 	@Override
 	public BigDecimalConstraint<T> cast() {
 		return this;
@@ -51,4 +51,5 @@ public class BigDecimalConstraint<T>
 	protected BigDecimal zeroValue() {
 		return BigDecimal.ZERO;
 	}
+
 }

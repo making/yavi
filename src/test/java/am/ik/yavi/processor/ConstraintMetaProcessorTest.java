@@ -26,97 +26,91 @@ class ConstraintMetaProcessorTest {
 
 	@Test
 	void processBean() {
-		assertThat(JavaFileObjects.forResource("test/CarBean.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and()
-				.generatesSources(JavaFileObjects.forResource("test/_CarBeanMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/CarBean.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_CarBeanMeta.java"));
 	}
 
 	@Test
 	void processImmutable() {
-		assertThat(JavaFileObjects.forResource("test/Car.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and()
-				.generatesSources(JavaFileObjects.forResource("test/_CarMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/Car.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_CarMeta.java"));
 	}
 
 	@Test
 	void processFiled() {
-		assertThat(JavaFileObjects.forResource("test/CarField.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and()
-				.generatesSources(JavaFileObjects.forResource("test/_CarFieldMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/CarField.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_CarFieldMeta.java"));
 	}
 
 	@Test
 	void allTypesBean() {
-		assertThat(JavaFileObjects.forResource("test/AllTypesBean.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and().generatesSources(
-						JavaFileObjects.forResource("test/_AllTypesBeanMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/AllTypesBean.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_AllTypesBeanMeta.java"));
 	}
 
 	@Test
 	void allTypesImmutable() {
 		assertThat(JavaFileObjects.forResource("test/AllTypesImmutable.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and().generatesSources(
-						JavaFileObjects.forResource("test/_AllTypesImmutableMeta.java"));
+			.processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_AllTypesImmutableMeta.java"));
 	}
 
 	@Test
 	void allTypesField() {
-		assertThat(JavaFileObjects.forResource("test/AllTypesField.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and().generatesSources(
-						JavaFileObjects.forResource("test/_AllTypesFieldMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/AllTypesField.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_AllTypesFieldMeta.java"));
 	}
 
 	@Test
 	void processConstructorArguments() {
-		assertThat(JavaFileObjects.forResource("test/Car2.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and().generatesSources(
-						JavaFileObjects.forResource("test/_Car2ArgumentsMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/Car2.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_Car2ArgumentsMeta.java"));
 	}
 
 	@Test
 	void processMethodArguments() {
-		assertThat(JavaFileObjects.forResource("test/UserService.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and().generatesSources(JavaFileObjects
-						.forResource("test/_UserServiceCreateUserArgumentsMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/UserService.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_UserServiceCreateUserArgumentsMeta.java"));
 	}
 
 	@Test
 	void processInnerClass() {
-		assertThat(JavaFileObjects.forResource("test/Address.java"))
-				.processedWith(new ConstraintMetaProcessor()) //
-				.compilesWithoutError().and()
-				.generatesSources(JavaFileObjects.forResource("test/_AddressMeta.java"),
-						JavaFileObjects.forResource("test/_Address_CountryMeta.java"),
-						JavaFileObjects
-								.forResource("test/_Address_PhoneNumberMeta.java"));
+		assertThat(JavaFileObjects.forResource("test/Address.java")).processedWith(new ConstraintMetaProcessor()) //
+			.compilesWithoutError()
+			.and()
+			.generatesSources(JavaFileObjects.forResource("test/_AddressMeta.java"),
+					JavaFileObjects.forResource("test/_Address_CountryMeta.java"),
+					JavaFileObjects.forResource("test/_Address_PhoneNumberMeta.java"));
 	}
 
 	@Test
 	void testBeanLowerCamel() {
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("Name"))
-				.isEqualTo("name");
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAme"))
-				.isEqualTo("NAme");
-		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAME"))
-				.isEqualTo("NAME");
+		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("Name")).isEqualTo("name");
+		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAme")).isEqualTo("NAme");
+		Assertions.assertThat(ConstraintMetaProcessor.beanLowerCamel("NAME")).isEqualTo("NAME");
 	}
 
 	@Test
 	void testBeanUpperCamel() {
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("name"))
-				.isEqualTo("Name");
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAme"))
-				.isEqualTo("NAme");
-		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAME"))
-				.isEqualTo("NAME");
+		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("name")).isEqualTo("Name");
+		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAme")).isEqualTo("NAme");
+		Assertions.assertThat(ConstraintMetaProcessor.beanUpperCamel("NAME")).isEqualTo("NAME");
 	}
 
 }

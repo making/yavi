@@ -85,51 +85,44 @@ public class FailFastTest {
 
 	static Stream<Validator<Car>> carValidator() {
 		return Stream.of(
-				ValidatorBuilder.<Car> of()
-						.constraint(Car::getManufacturer, "manufacturer",
-								c -> c.notNull().notBlank())
-						.constraint(Car::isRegistered, "isRegistered",
-								c -> c.notNull().isTrue())
-						.failFast(true).build(),
-				ValidatorBuilder.<Car> of()
-						.constraint(Car::getManufacturer, "manufacturer",
-								c -> c.notNull().notBlank())
-						.constraint(Car::isRegistered, "isRegistered",
-								c -> c.notNull().isTrue())
-						.build().failFast(true));
+				ValidatorBuilder.<Car>of()
+					.constraint(Car::getManufacturer, "manufacturer", c -> c.notNull().notBlank())
+					.constraint(Car::isRegistered, "isRegistered", c -> c.notNull().isTrue())
+					.failFast(true)
+					.build(),
+				ValidatorBuilder.<Car>of()
+					.constraint(Car::getManufacturer, "manufacturer", c -> c.notNull().notBlank())
+					.constraint(Car::isRegistered, "isRegistered", c -> c.notNull().isTrue())
+					.build()
+					.failFast(true));
 	}
 
 	static Stream<Validator<CarOwner>> carOwnerValidator() {
 		return Stream.of(
-				ValidatorBuilder.<CarOwner> of().failFast(true).nest(CarOwner::getOwnerId,
-						"ownerId",
-						b -> b.constraint(OwnerId::getValue, "value",
-								c -> c.notNull().notBlank()))
-						.constraint(CarOwner::getName, "name", c -> c.notNull()
-								.notBlank())
-						.forEach(CarOwner::getCars, "cars",
-								b -> b.constraint(Car::getManufacturer, "manufacturer",
-										c -> c.notNull().notBlank())
-										.constraint(Car::isRegistered, "isRegistered",
-												c -> c.notNull().isTrue()))
-						.build(),
-				ValidatorBuilder.<CarOwner> of().failFast(true).nest(CarOwner::getOwnerId,
-						"ownerId",
-						b -> b.constraint(OwnerId::getValue, "value",
-								c -> c.notNull().notBlank()))
-						.constraintOnCondition((carOwner, group) -> true,
-								b -> b.constraint(CarOwner::getName, "name",
-										c -> c.notNull().notBlank()))
-						.forEach(CarOwner::getCars, "cars", b -> b
+				ValidatorBuilder.<CarOwner>of()
+					.failFast(true)
+					.nest(CarOwner::getOwnerId, "ownerId",
+							b -> b.constraint(OwnerId::getValue, "value", c -> c.notNull().notBlank()))
+					.constraint(CarOwner::getName, "name", c -> c.notNull().notBlank())
+					.forEach(CarOwner::getCars, "cars",
+							b -> b.constraint(Car::getManufacturer, "manufacturer", c -> c.notNull().notBlank())
+								.constraint(Car::isRegistered, "isRegistered", c -> c.notNull().isTrue()))
+					.build(),
+				ValidatorBuilder.<CarOwner>of()
+					.failFast(true)
+					.nest(CarOwner::getOwnerId, "ownerId",
+							b -> b.constraint(OwnerId::getValue, "value", c -> c.notNull().notBlank()))
+					.constraintOnCondition((carOwner, group) -> true,
+							b -> b.constraint(CarOwner::getName, "name", c -> c.notNull().notBlank()))
+					.forEach(CarOwner::getCars, "cars",
+							b -> b
 								.constraintOnCondition((car, group) -> true,
-										bb -> bb.constraint(Car::getManufacturer,
-												"manufacturer",
+										bb -> bb.constraint(Car::getManufacturer, "manufacturer",
 												c -> c.notNull().notBlank()))
 								.constraintOnCondition((car, group) -> true,
-										bb -> bb.constraint(Car::isRegistered,
-												"isRegistered",
+										bb -> bb.constraint(Car::isRegistered, "isRegistered",
 												c -> c.notNull().isTrue())))
-						.build());
+					.build());
 	}
 
 	public static class Car {
@@ -151,9 +144,11 @@ public class FailFastTest {
 		public boolean isRegistered() {
 			return isRegistered;
 		}
+
 	}
 
 	public static class CarOwner {
+
 		private final OwnerId ownerId;
 
 		private final String name;
@@ -178,9 +173,11 @@ public class FailFastTest {
 		public List<Car> getCars() {
 			return cars;
 		}
+
 	}
 
 	public static class OwnerId {
+
 		private final String value;
 
 		public OwnerId(@Nullable String value) {
@@ -191,5 +188,7 @@ public class FailFastTest {
 		public String getValue() {
 			return value;
 		}
+
 	}
+
 }
