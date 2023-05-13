@@ -158,9 +158,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	/**
+	 * @return the cloned builder
 	 * @deprecated please use the copy constructor
 	 * {@link #ValidatorBuilder(ValidatorBuilder)}
-	 * @return the cloned builder
 	 */
 	@Deprecated
 	public ValidatorBuilder<T> clone() {
@@ -169,6 +169,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 *
 	 * @param <X> the type of the instance to validate
 	 * @return builder instance
 	 */
@@ -178,6 +179,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 *
 	 * @param <X> the type of the instance to validate
 	 * @return builder instance
 	 */
@@ -194,9 +196,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	/**
-	 * Create a <code>BiValidator</code> instance using the given constraints.
-	 *
-	 * In case of Spring Framework's Validator integration
+	 * Create a <code>BiValidator</code> instance using the given constraints. In case of
+	 * Spring Framework's Validator integration
 	 *
 	 * <pre>
 	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
@@ -974,7 +975,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
 		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
-		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name));
+		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name, false));
 		builder.conditionalValidators
 				.forEach(this.appendNestedConditionalValidator(nested, name));
 		builder.collectionValidators
@@ -987,7 +988,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
-		validator.forEachPredicates(this.appendNestedPredicates(nested, name));
+		validator.forEachPredicates(
+				this.appendNestedPredicates(nested, name, validator.isFailFast()));
 		validator.forEachConditionalValidator(
 				this.appendNestedConditionalValidator(nested, name));
 		validator.forEachCollectionValidator(
@@ -997,12 +999,13 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(
-			Function<T, N> nested, String name) {
+			Function<T, N> nested, String name, boolean failFast) {
 		return predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
 					this.toNestedValue(nested, predicates), nestedName,
-					predicates.predicates(), this.toNestedFunction(nested, predicates));
+					predicates.predicates(), this.toNestedFunction(nested, predicates),
+					failFast);
 			this.predicatesList.add(constraintPredicates);
 		};
 	}
