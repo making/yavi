@@ -17,11 +17,8 @@ package am.ik.yavi.core;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -32,9 +29,8 @@ import am.ik.yavi.message.MessageFormatter;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 /**
- * Validates the target instances.
- *
- * A <code>Validator</code> instance is immutable and can be used as a singleton.
+ * Validates the target instances. A <code>Validator</code> instance is immutable and can
+ * be used as a singleton.
  *
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
@@ -106,10 +102,16 @@ public class Validator<T> implements Validatable<T> {
 	 * @param failFast whether to enable fail fast mode
 	 * @since 0.8.0
 	 */
+	@Override
 	public Validator<T> failFast(boolean failFast) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList,
 				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter, failFast, this.prefix);
+	}
+
+	@Override
+	public boolean isFailFast() {
+		return failFast;
 	}
 
 	/**
@@ -206,7 +208,10 @@ public class Validator<T> implements Validatable<T> {
 							constraintPredicate.defaultMessageFormat(),
 							pad(name, args, violatedValue), this.messageFormatter,
 							locale));
-					if (this.failFast) {
+					if (this.failFast
+							|| ((predicates instanceof NestedConstraintPredicates)
+									&& ((NestedConstraintPredicates) predicates)
+											.isFailFast())) {
 						return violations;
 					}
 				}
@@ -216,8 +221,9 @@ public class Validator<T> implements Validatable<T> {
 			final Collection collection = collectionValidator.toCollection()
 					.apply(target);
 			if (collection != null) {
-				final Validator validator = collectionValidator.validator()
-						.failFast(this.failFast);
+				final Validator validator = this.failFast
+						? collectionValidator.validator().failFast(true)
+						: collectionValidator.validator();
 				int i = 0;
 				for (Object element : collection) {
 					final String nestedName = this.indexedName(collectionValidator.name(),
@@ -232,7 +238,8 @@ public class Validator<T> implements Validatable<T> {
 						final ConstraintViolation v = notNullViolation(name, locale);
 						violations.add(v);
 					}
-					if (!violations.isEmpty() && this.failFast) {
+					if (!violations.isEmpty()
+							&& (this.failFast || validator.isFailFast())) {
 						return violations;
 					}
 				}
@@ -241,7 +248,9 @@ public class Validator<T> implements Validatable<T> {
 		for (Pair<ConstraintCondition<T>, Validatable<T>> pair : this.conditionalValidators) {
 			final ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintContext)) {
-				final Validatable<T> validator = pair.second();
+				final Validatable<T> validator = this.failFast
+						? pair.second().failFast(true)
+						: pair.second();
 				final ConstraintViolations constraintViolations = validator
 						.validate(target, locale, constraintContext);
 				for (ConstraintViolation violation : constraintViolations) {
@@ -249,7 +258,8 @@ public class Validator<T> implements Validatable<T> {
 							.rename(name -> this.prefix
 									+ this.indexedName(name, collectionName, index));
 					violations.add(renamed);
-					if (!violations.isEmpty() && this.failFast) {
+					if (!violations.isEmpty()
+							&& (this.failFast || validator.isFailFast())) {
 						return violations;
 					}
 				}

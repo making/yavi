@@ -123,4 +123,25 @@ public interface Validatable<T> {
 			}
 		};
 	}
+
+	/**
+	 * Set whether to enable fail fast mode. If enabled, Validatable returns from the
+	 * current validation as soon as the first constraint violation occurs.
+	 *
+	 * @param failFast whether to enable fail fast mode
+	 * @since 0.13.0
+	 */
+	default Validatable<T> failFast(boolean failFast) {
+		throw new UnsupportedOperationException("failFast is not implemented!");
+	}
+
+	/**
+	 * Returns whether it is failFast.
+	 *
+	 * @return whether it is failFast
+	 * @since 0.13.0
+	 */
+	default boolean isFailFast() {
+		return false;
+	}
 }
