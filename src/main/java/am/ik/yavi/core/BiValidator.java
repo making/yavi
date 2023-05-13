@@ -18,6 +18,9 @@ package am.ik.yavi.core;
 import java.util.function.BiConsumer;
 
 /**
+ * Deprecated in favor of {@link Validatable#toBiConsumer(am.ik.yavi.core.ErrorHandler)}
+ * and {@link ValueValidator#toBiConsumer(am.ik.yavi.core.ErrorHandler)}
+ *
  * <code>BiValidator</code> is a wrapper class of <code>Validator</code> that takes target
  * object to validate and arbitrary errors object. <br>
  * The result of validation is contained in the errors object instead of returning it.
@@ -38,6 +41,7 @@ import java.util.function.BiConsumer;
  * @author Toshiaki Maki
  * @since 0.5.0
  */
+@Deprecated
 public class BiValidator<T, E> implements BiConsumer<T, E> {
 	private final ValueValidator<T, ?> validator;
 
@@ -70,6 +74,10 @@ public class BiValidator<T, E> implements BiConsumer<T, E> {
 	}
 
 	@FunctionalInterface
+	@Deprecated
+	/**
+	 * Deprecated in favor of {@link am.ik.yavi.core.ErrorHandler}
+	 */
 	public interface ErrorHandler<E> {
 		void handleError(E errors, String name, String messageKey, Object[] args,
 				String defaultMessage);
