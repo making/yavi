@@ -16,6 +16,7 @@
 package am.ik.yavi.core;
 
 import java.util.Locale;
+import java.util.function.BiConsumer;
 
 import am.ik.yavi.fn.Validation;
 
@@ -74,6 +75,7 @@ public interface Validatable<T> {
 
 	/**
 	 * Returns the corresponding applicative validator
+	 *
 	 * @return applicative validator
 	 * @since 0.6.0
 	 */
@@ -92,6 +94,7 @@ public interface Validatable<T> {
 
 	/**
 	 * Converts given applicative validator to a regular validator.
+	 *
 	 * @param applicative applicative validator to convert
 	 * @return regular validator
 	 * @since 0.11.0
@@ -101,5 +104,23 @@ public interface Validatable<T> {
 		return (target, locale, constraintGroup) -> applicative
 				.validate(target, locale, constraintGroup)
 				.fold(ConstraintViolations::of, result -> new ConstraintViolations());
+	}
+
+	/**
+	 * Convert the validator to a biconsumer
+	 *
+	 * @param errorHandler error handler
+	 * @param <E> error type
+	 * @return bi consumer
+	 * @since 0.13.0
+	 */
+	default <E> BiConsumer<T, E> toBiConsumer(ErrorHandler<E> errorHandler) {
+		return (target, errors) -> {
+			final ConstraintViolations violations = Validatable.this.validate(target);
+			if (!violations.isValid()) {
+				violations.apply((name, messageKey, args, defaultMessage) -> errorHandler
+						.handleError(errors, name, messageKey, args, defaultMessage));
+			}
+		};
 	}
 }

@@ -15,38 +15,35 @@
  */
 package am.ik.yavi.factory;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.core.BiValidator;
-import am.ik.yavi.core.BiValidator.ErrorHandler;
+import am.ik.yavi.core.ErrorHandler;
+import am.ik.yavi.core.Validator;
 import am.ik.yavi.jsr305.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
- * Deprecated in favor of {@link BiConsumerFactory}
- *
- * A factory class of <code>BiValidator</code>. It can be used to manage the common
- * configurations of <code>BiValidator</code> in IoC container etc.<br>
- *
- * In case of Spring Framework, you can define <code>BiValidatorFactory</code> as follows:
+ * A factory class of <code>BiConsumer</code>. It can be used to manage the common
+ * configurations of <code>BiConsumer</code> in IoC container etc.<br>
+ * In case of Spring Framework, you can define <code>BiConsumerFactory</code> as follows:
  *
  * <pre>
- *{@literal @Bean}
- * public BiValidatorFactory&lt;Errors&gt; biValidatorFactory(MessageSource messageSource) {
+ * {@literal @Bean}
+ * public BiConsumerFactory&lt;Errors&gt; biConsumerFactory(MessageSource messageSource) {
  *   MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
- *   return new BiValidatorFactory&lt;&gt;(null, messageFormatter, Errors::rejectValues);
+ *   return new BiConsumerFactory&lt;&gt;(null, messageFormatter, Errors::rejectValues);
  * }
  * </pre>
  *
  * A component can create a validator like following:
  *
  * <pre>
- *{@literal @RestController}
+ * {@literal @RestController}
  * public class OrderController {
- *     private final BiValidator&lt;CartItem, Errors&gt; validator;
- *
- *     public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
+ *     private final BiConsumer&lt;CartItem, Errors&gt; validator;
+ *     public OrderController(BiConsumerFactory&lt;Errors&gt; factory) {
  *         this.validator = factory.validator(builder -> builder.constraint(...));
  *     }
  * }
@@ -54,29 +51,29 @@ import am.ik.yavi.message.MessageFormatter;
  *
  * @param <E> the type of the errors object
  * @author Toshiaki Maki
- * @since 0.5.0
+ * @since 0.13.0
  */
-@Deprecated
-public class BiValidatorFactory<E> extends ValidatorFactorySupport {
-	private final BiValidator.ErrorHandler<E> errorHandler;
+public class BiConsumerFactory<E> extends ValidatorFactorySupport {
+	private final ErrorHandler<E> errorHandler;
 
-	public BiValidatorFactory(@Nullable String messageKeySeparator,
+	public BiConsumerFactory(@Nullable String messageKeySeparator,
 			@Nullable MessageFormatter messageFormatter,
 			@Nullable ErrorHandler<E> errorHandler) {
 		super(messageKeySeparator, messageFormatter);
 		this.errorHandler = errorHandler;
 	}
 
-	public BiValidatorFactory(@Nullable ErrorHandler<E> errorHandler) {
+	public BiConsumerFactory(@Nullable ErrorHandler<E> errorHandler) {
 		this(null, null, errorHandler);
 	}
 
-	public <T> BiValidator<T, E> validator(
+	public <T> BiConsumer<T, E> validator(
 			Function<ValidatorBuilder<T>, ValidatorBuilder<T>> constraints) {
 		if (this.errorHandler == null) {
 			throw new IllegalArgumentException("'errorHandler' must not be null.");
 		}
 		final ValidatorBuilder<T> builder = super.initBuilder();
-		return constraints.apply(builder).build(this.errorHandler);
+		final Validator<T> validator = constraints.apply(builder).build();
+		return validator.toBiConsumer(this.errorHandler);
 	}
 }

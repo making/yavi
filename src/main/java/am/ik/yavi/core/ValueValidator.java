@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -157,5 +158,24 @@ public interface ValueValidator<T, X> {
 			ValueValidator<? super A1, ? extends R> validator) {
 		return (value, locale, constraintContext) -> Validated.traverseOptional(value,
 				v -> validator.validate(v, locale, constraintContext));
+	}
+
+	/**
+	 * Convert the value validator to a biconsumer
+	 *
+	 * @param errorHandler error handler
+	 * @param <E> error type
+	 * @return bi consumer
+	 * @since 0.13.0
+	 */
+	default <E> BiConsumer<T, E> toBiConsumer(ErrorHandler<E> errorHandler) {
+		return (target, errors) -> {
+			final Validated<?> validated = ValueValidator.this.validate(target);
+			if (!validated.isValid()) {
+				final ConstraintViolations violations = validated.errors();
+				violations.apply((name, messageKey, args, defaultMessage) -> errorHandler
+						.handleError(errors, name, messageKey, args, defaultMessage));
+			}
+		};
 	}
 }
