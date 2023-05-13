@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kotlin.version>1.8.21</kotlin.version>
-        <kotlin-coroutines.version>1.7.0</kotlin-coroutines.version>
+        <kotlin-coroutines.version>1.7.1</kotlin-coroutines.version>
         <junit.version>5.9.3</junit.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
