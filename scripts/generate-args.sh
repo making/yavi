@@ -325,10 +325,7 @@ $(cat <<EOD
 	 * @since 0.10.0
 	 */
 	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-	  // WARNING:: The default implementation is not really lazy!
-		java.util.logging.Logger.getLogger(${class}.class.getName())
-			.warning("the default implementation of lazy() is called which is not really lazy!");
-		return this.andThen(x -> () -> x);
+		throw new UnsupportedOperationException("lazy is not implemented!");
 	}
 
 	default Validated<X> validate(${args}) {

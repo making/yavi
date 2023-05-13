@@ -72,10 +72,7 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @since 0.10.0
 	 */
 	default Arguments2Validator<A1, A2, Supplier<X>> lazy() {
-		// WARNING:: The default implementation is not really lazy!
-		java.util.logging.Logger.getLogger(Arguments2Validator.class.getName()).warning(
-				"the default implementation of lazy() is called which is not really lazy!");
-		return this.andThen(x -> () -> x);
+		throw new UnsupportedOperationException("lazy is not implemented!");
 	}
 
 	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2) {
