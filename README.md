@@ -63,7 +63,7 @@ your `pom.xml`:
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.12.3</version>
+    <version>0.13.0</version>
 </dependency>
 ```
 
