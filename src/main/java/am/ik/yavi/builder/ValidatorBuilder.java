@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +126,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	boolean failFast = false;
 
+	ConflictStrategy conflictStrategy = ConflictStrategy.NOOP;
+
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
 	}
@@ -188,7 +191,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public Validator<T> build() {
-		return new Validator<>(messageKeySeparator, this.predicatesList,
+		return new Validator<>(messageKeySeparator,
+				new PredicatesList<>(this.conflictStrategy, this.predicatesList).toList(),
 				this.collectionValidators, this.conditionalValidators,
 				this.messageFormatter == null ? new SimpleMessageFormatter()
 						: this.messageFormatter,
@@ -198,7 +202,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * Create a <code>BiValidator</code> instance using the given constraints. In case of
 	 * Spring Framework's Validator integration
-	 *
 	 * <pre>
 	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
 	 *   .&lt;CartItem&gt;of()
@@ -903,6 +906,20 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this;
 	}
 
+	/**
+	 * Sets the {@link ConflictStrategy} that defines the behavior when a constraint name
+	 * conflicts when adding a constraint. By default, {@link ConflictStrategy#NOOP} is
+	 * used.
+	 *
+	 * @param conflictStrategy Conflict Strategy
+	 * @return validator builder (self)
+	 * @since 0.13.0
+	 */
+	public ValidatorBuilder<T> conflictStrategy(ConflictStrategy conflictStrategy) {
+		this.conflictStrategy = conflictStrategy;
+		return this;
+	}
+
 	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
 			Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.INVALID);
@@ -1052,7 +1069,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 			Function<T, N> nested, String name) {
 		return collectionValidator -> {
 			String nestedName = name + this.messageKeySeparator
-					+ collectionValidator.name();
+								+ collectionValidator.name();
 			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
 					toNestedCollection(nested, collectionValidator), nestedName,
 					collectionValidator.validator(), nested);
@@ -1196,5 +1213,47 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	public interface ValidatorBuilderConverter<T>
 			extends Function<ValidatorBuilder<T>, ValidatorBuilder<T>> {
+	}
+
+	/**
+	 * An internal class that manages predicate conflicts
+	 *
+	 * @param <T> target type
+	 * @since 0.13.0
+	 */
+	static final class PredicatesList<T> {
+		private final ConflictStrategy conflictStrategy;
+
+		private final Map<String, List<ConstraintPredicates<T, ?>>> predicatesListMap = new LinkedHashMap<>();
+
+		public PredicatesList(ConflictStrategy conflictStrategy) {
+			this.conflictStrategy = conflictStrategy;
+		}
+
+		public PredicatesList(ConflictStrategy conflictStrategy,
+				List<ConstraintPredicates<T, ?>> predicatesList) {
+			this(conflictStrategy);
+			predicatesList.forEach(this::add);
+		}
+
+		public void add(ConstraintPredicates<T, ?> predicates) {
+			final List<ConstraintPredicates<T, ?>> predicatesList = this.predicatesListMap
+					.computeIfAbsent(predicates.name(), s -> new ArrayList<>());
+			if (!predicatesList.isEmpty()) {
+				this.conflictStrategy.resolveConflict(predicatesList, predicates);
+			}
+			predicatesList.add(predicates);
+		}
+
+		public List<ConstraintPredicates<T, ?>> toList() {
+			final int length = predicatesListMap.values().stream().mapToInt(List::size)
+					.sum();
+			final List<ConstraintPredicates<T, ?>> list = new ArrayList<>(length);
+			for (List<ConstraintPredicates<T, ?>> predicates : predicatesListMap
+					.values()) {
+				list.addAll(predicates);
+			}
+			return list;
+		}
 	}
 }
