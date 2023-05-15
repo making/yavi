@@ -202,6 +202,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 	/**
 	 * Create a <code>BiValidator</code> instance using the given constraints. In case of
 	 * Spring Framework's Validator integration
+	 *
 	 * <pre>
 	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
 	 *   .&lt;CartItem&gt;of()
@@ -1069,7 +1070,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 			Function<T, N> nested, String name) {
 		return collectionValidator -> {
 			String nestedName = name + this.messageKeySeparator
-								+ collectionValidator.name();
+					+ collectionValidator.name();
 			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
 					toNestedCollection(nested, collectionValidator), nestedName,
 					collectionValidator.validator(), nested);
