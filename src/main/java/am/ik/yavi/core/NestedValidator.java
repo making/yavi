@@ -60,4 +60,21 @@ public class NestedValidator<T, N> implements Validatable<T> {
 	public String getPrefix() {
 		return prefix;
 	}
+
+	/**
+	 * @since 0.13.1
+	 */
+	@Override
+	public Validatable<T> failFast(boolean failFast) {
+		final Validatable<N> validatable = this.validator.failFast(failFast);
+		return new NestedValidator<>(this.nested, validatable, prefix);
+	}
+
+	/**
+	 * @since 0.13.1
+	 */
+	@Override
+	public boolean isFailFast() {
+		return this.validator.isFailFast();
+	}
 }
