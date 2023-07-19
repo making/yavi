@@ -492,7 +492,7 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 *
 	 * <pre>
 	 * {@code
-	 *      list.subList(from, to).clear();
+	 * list.subList(from, to).clear();
 	 * }
 	 * </pre>
 	 *
