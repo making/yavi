@@ -202,8 +202,8 @@ class ValidationTest {
 		assertThatThrownBy(() -> Validation
 				.<String, String> failure(Arrays.asList("e1", "e2"))
 				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors)))
-						.hasMessage("errors=[e1, e2]")
-						.isInstanceOf(IllegalArgumentException.class);
+				.hasMessage("errors=[e1, e2]")
+				.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
