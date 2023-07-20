@@ -63,7 +63,7 @@ your `pom.xml`:
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.13.0</version>
+    <version>0.13.1</version>
 </dependency>
 ```
 
@@ -73,13 +73,13 @@ This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter-api</artifactId>
-    <version>5.9.1</version>
+    <version>5.9.3</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>3.23.1</version>
+    <version>3.24.2</version>
     <scope>test</scope>
 </dependency>
 ```
