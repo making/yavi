@@ -51,15 +51,6 @@ jobs:
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: |
         ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
-    - name: Codacy Coverage Reporter
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
-      env:
-        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      run: |
-        set -e
-        curl -Ls -o codacy-coverage-reporter "$(curl -Ls https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r '.assets | map({name, browser_download_url} | select(.name | contains("codacy-coverage-reporter-linux"))) | .[0].browser_download_url')"
-        chmod +x codacy-coverage-reporter
-        ./codacy-coverage-reporter report -l Java -r target/site/jacoco/jacoco.xml
     - name: Deploy to sonatype-snapshots
       if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       env:
