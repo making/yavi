@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-          java: [8.x, 11.x, 17.x, 20.x]
+          java: [8.x, 11.x, 17.x, 21.x]
     steps:
     - uses: actions/checkout@v1
     - name: Set up Java
