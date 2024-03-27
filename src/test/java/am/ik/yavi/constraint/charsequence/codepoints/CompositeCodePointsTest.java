@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import static am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints.HIRAGANA;
 import static am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints.KATAKANA;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
@@ -42,6 +43,27 @@ class CompositeCodePointsTest {
 		assertThat(codePoints.allExcludedCodePoints("EF")).contains(0x0045, 0x0046);
 		assertThat(codePoints.allExcludedCodePoints("あいアイE")).containsOnly(0x0045);
 		assertThat(codePoints.allExcludedCodePoints("あいアイEF")).contains(0x0045, 0x0046);
+	}
+
+    @Test
+    void checkCodePointRange(){
+
+       CodePoints.CodePointsRanges<String> cp = () -> Arrays.asList(
+             CodePoints.Range.of('A','D'));
+
+       CodePoints<String> codePoints = new CompositeCodePoints<>(cp);
+       assertThat(codePoints.allExcludedCodePoints("ABCD")).isEmpty();
+       assertThat(codePoints.allExcludedCodePoints("EF")).contains(0x0045, 0x0046);
+       assertThat(codePoints.allExcludedCodePoints("CDE")).contains(0x0045);
+    }
+
+    @Test
+    void checkEmptyCompositeCodePoints()
+    {
+		assertThrows(IllegalArgumentException.class, () -> {
+			CodePoints<String> codePoints = new CompositeCodePoints<>();
+		}, "No code point is included");
+
 	}
 
 	@Test
