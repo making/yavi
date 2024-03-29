@@ -97,12 +97,12 @@ public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 		this.v16 = v16;
 	}
 
-	public <X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> apply(
+	public <X> Validator16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> apply(
 			Function16<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? super R16, ? extends X> f) {
-		return new Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X>() {
+		return new Validator16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X>() {
 
 			@Override
-			public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
+			public Validator16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
 				return ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15,
 						a16, locale,
 						constraintContext) -> Validations.apply((r1, r2, r3, r4, r5, r6,

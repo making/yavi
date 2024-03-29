@@ -15,8 +15,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.builder.IntegerValidatorBuilder;
-import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.validator.Yavi;
 
 public class Car {
 	private final String manufacturer;
@@ -25,23 +24,14 @@ public class Car {
 
 	private final int seatCount;
 
-	private static final StringValidator<String> manufacturerValidator = StringValidatorBuilder
-			.of("manufacturer", c -> c.notNull()).build();
-
-	private static final StringValidator<String> licensePlateValidator = StringValidatorBuilder
-			.of("licensePlate",
+	private static final Validator3<String, String, Integer, Car> validator = Yavi
+			.validator()._string("manufacturer", c -> c.notNull())
+			._string("licensePlate",
 					c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
-			.build();
-
-	private static final IntegerValidator<Integer> seatCountValidator = IntegerValidatorBuilder
-			.of("seatCount", c -> c.greaterThanOrEqual(2)).build();
-
-	private static final Arguments3Validator<String, String, Integer, Car> carValidator = ArgumentsValidators
-			.split(manufacturerValidator, licensePlateValidator, seatCountValidator)
-			.apply(Car::new);
+			._integer("seatCount", c -> c.greaterThanOrEqual(2)).apply(Car::new);
 
 	public Car(String manufacturer, String licensePlate, int seatCount) {
-		carValidator.lazy().validated(manufacturer, licensePlate, seatCount);
+		validator.lazy().validated(manufacturer, licensePlate, seatCount);
 		this.manufacturer = manufacturer;
 		this.licensePlate = licensePlate;
 		this.seatCount = seatCount;

@@ -53,12 +53,12 @@ public class Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> {
 		this.v5 = v5;
 	}
 
-	public <X> Arguments5Validator<A1, A2, A3, A4, A5, X> apply(
+	public <X> Validator5<A1, A2, A3, A4, A5, X> apply(
 			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends X> f) {
-		return new Arguments5Validator<A1, A2, A3, A4, A5, X>() {
+		return new Validator5<A1, A2, A3, A4, A5, X>() {
 
 			@Override
-			public Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
+			public Validator5<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
 				return ((a1, a2, a3, a4, a5, locale, constraintContext) -> Validations
 						.apply((r1, r2, r3, r4, r5) -> () -> f.apply(r1, r2, r3, r4, r5),
 								v1.validate(a1, locale, constraintContext),

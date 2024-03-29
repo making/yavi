@@ -15,8 +15,8 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
 import am.ik.yavi.jsr305.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -46,17 +46,10 @@ public class Gh156Test {
 		}
 	}
 
-	final StringValidator<String> firstNameValidator = StringValidatorBuilder
-			.of("firstName", c -> c.notBlank().lessThanOrEqual(128)).build();
-
-	final StringValidator<String> middleNameValidator = StringValidatorBuilder
-			.of("middleName", c -> c.lessThanOrEqual(128)).build();
-
-	final StringValidator<String> lastNameValidator = StringValidatorBuilder
-			.of("lastName", c -> c.notBlank().lessThanOrEqual(128)).build();
-
-	final Arguments3Validator<String, String, String, Person> personValidator = ArgumentsValidators
-			.split(firstNameValidator, middleNameValidator, lastNameValidator)
+	final Validator3<String, String, String, Person> personValidator = Yavi.validator()
+			._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
+			._string("middleName", c -> c.lessThanOrEqual(128))
+			._string("lastName", c -> c.notBlank().lessThanOrEqual(128))
 			.apply(Person::new);
 
 	@Test

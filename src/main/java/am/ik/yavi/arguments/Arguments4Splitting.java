@@ -49,12 +49,12 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 		this.v4 = v4;
 	}
 
-	public <X> Arguments4Validator<A1, A2, A3, A4, X> apply(
+	public <X> Validator4<A1, A2, A3, A4, X> apply(
 			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
-		return new Arguments4Validator<A1, A2, A3, A4, X>() {
+		return new Validator4<A1, A2, A3, A4, X>() {
 
 			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
+			public Validator4<A1, A2, A3, A4, Supplier<X>> lazy() {
 				return ((a1, a2, a3, a4, locale, constraintContext) -> Validations.apply(
 						(r1, r2, r3, r4) -> () -> f.apply(r1, r2, r3, r4),
 						v1.validate(a1, locale, constraintContext),
