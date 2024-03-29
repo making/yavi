@@ -26,7 +26,8 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.10.0
  */
-public class ZonedDateTimeValidatorBuilder {
+public class ZonedDateTimeValidatorBuilder
+		implements ValueValidatorBuilder<ZonedDateTime, ZonedDateTime> {
 
 	private final Function<ValidatorBuilder<Arguments1<ZonedDateTime>>, ValidatorBuilder<Arguments1<ZonedDateTime>>> builder;
 
@@ -48,6 +49,7 @@ public class ZonedDateTimeValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> ZonedDateTimeValidator<T> build(
 			Function<? super ZonedDateTime, ? extends T> mapper) {
 		final Validator<Arguments1<ZonedDateTime>> validator = this.builder
@@ -55,6 +57,7 @@ public class ZonedDateTimeValidatorBuilder {
 		return new ZonedDateTimeValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public ZonedDateTimeValidator<ZonedDateTime> build() {
 		return build(x -> x);
 	}

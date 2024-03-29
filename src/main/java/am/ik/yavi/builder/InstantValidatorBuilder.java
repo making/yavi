@@ -26,7 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.10.0
  */
-public class InstantValidatorBuilder {
+public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, Instant> {
 
 	private final Function<ValidatorBuilder<Arguments1<Instant>>, ValidatorBuilder<Arguments1<Instant>>> builder;
 
@@ -48,12 +48,14 @@ public class InstantValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> InstantValidator<T> build(Function<? super Instant, ? extends T> mapper) {
 		final Validator<Arguments1<Instant>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new InstantValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public InstantValidator<Instant> build() {
 		return build(x -> x);
 	}

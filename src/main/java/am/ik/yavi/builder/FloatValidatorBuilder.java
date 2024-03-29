@@ -25,7 +25,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class FloatValidatorBuilder {
+public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float> {
 
 	private final Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder;
 
@@ -47,12 +47,14 @@ public class FloatValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> FloatValidator<T> build(Function<? super Float, ? extends T> mapper) {
 		final Validator<Arguments1<Float>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new FloatValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public FloatValidator<Float> build() {
 		return build(x -> x);
 	}
