@@ -26,7 +26,8 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.11.0
  */
-public class YearMonthValidatorBuilder {
+public class YearMonthValidatorBuilder
+		implements ValueValidatorBuilder<YearMonth, YearMonth> {
 
 	private final Function<ValidatorBuilder<Arguments1<YearMonth>>, ValidatorBuilder<Arguments1<YearMonth>>> builder;
 
@@ -48,6 +49,7 @@ public class YearMonthValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> YearMonthValidator<T> build(
 			Function<? super YearMonth, ? extends T> mapper) {
 		final Validator<Arguments1<YearMonth>> validator = this.builder
@@ -55,6 +57,7 @@ public class YearMonthValidatorBuilder {
 		return new YearMonthValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public YearMonthValidator<YearMonth> build() {
 		return build(x -> x);
 	}

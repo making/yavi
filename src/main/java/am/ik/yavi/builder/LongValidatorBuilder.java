@@ -25,7 +25,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class LongValidatorBuilder {
+public class LongValidatorBuilder implements ValueValidatorBuilder<Long, Long> {
 
 	private final Function<ValidatorBuilder<Arguments1<Long>>, ValidatorBuilder<Arguments1<Long>>> builder;
 
@@ -47,12 +47,14 @@ public class LongValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> LongValidator<T> build(Function<? super Long, ? extends T> mapper) {
 		final Validator<Arguments1<Long>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new LongValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public LongValidator<Long> build() {
 		return build(x -> x);
 	}

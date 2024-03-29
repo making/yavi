@@ -26,7 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.11.0
  */
-public class YearValidatorBuilder {
+public class YearValidatorBuilder implements ValueValidatorBuilder<Year, Year> {
 
 	private final Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder;
 
@@ -48,12 +48,14 @@ public class YearValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> YearValidator<T> build(Function<? super Year, ? extends T> mapper) {
 		final Validator<Arguments1<Year>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new YearValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public YearValidator<Year> build() {
 		return build(x -> x);
 	}

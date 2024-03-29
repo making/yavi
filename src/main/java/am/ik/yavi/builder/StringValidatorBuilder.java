@@ -25,7 +25,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class StringValidatorBuilder {
+public class StringValidatorBuilder implements ValueValidatorBuilder<String, String> {
 
 	private final Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder;
 
@@ -47,12 +47,14 @@ public class StringValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new StringValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public StringValidator<String> build() {
 		return build(x -> x);
 	}

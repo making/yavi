@@ -25,7 +25,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class ShortValidatorBuilder {
+public class ShortValidatorBuilder implements ValueValidatorBuilder<Short, Short> {
 
 	private final Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder;
 
@@ -47,12 +47,14 @@ public class ShortValidatorBuilder {
 		this.builder = builder;
 	}
 
+	@Override
 	public <T> ShortValidator<T> build(Function<? super Short, ? extends T> mapper) {
 		final Validator<Arguments1<Short>> validator = this.builder
 				.apply(ValidatorBuilder.of()).build();
 		return new ShortValidator<>(validator, mapper::apply);
 	}
 
+	@Override
 	public ShortValidator<Short> build() {
 		return build(x -> x);
 	}
