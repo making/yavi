@@ -46,6 +46,7 @@ import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.constraint.CharacterConstraint;
 import am.ik.yavi.constraint.CollectionConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
+import am.ik.yavi.constraint.EnumConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
 import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
@@ -222,6 +223,22 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> constraint(ToCharSequence<T, String> f, String name,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
+	}
+
+	/**
+	 * @since 0.14.0
+	 */
+	public <E extends Enum<E>> ValidatorBuilder<T> constraint(toEnum<T, E> f, String name,
+			Function<EnumConstraint<T, E>, EnumConstraint<T, E>> c) {
+		return this.constraint(f, name, c, EnumConstraint::new);
+	}
+
+	/**
+	 * @since 0.14.0
+	 */
+	public <E extends Enum<E>> ValidatorBuilder<T> _enum(toEnum<T, E> f, String name,
+			Function<EnumConstraint<T, E>, EnumConstraint<T, E>> c) {
+		return this.constraint(f, name, c);
 	}
 
 	/**
@@ -1144,6 +1161,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	}
+
+	public interface toEnum<T, E extends Enum> extends Function<T, E> {
 	}
 
 	public interface ToCharacter<T> extends Function<T, Character> {
