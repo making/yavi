@@ -15,29 +15,6 @@
  */
 package am.ik.yavi.builder;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import am.ik.yavi.constraint.BigDecimalConstraint;
 import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
@@ -110,6 +87,29 @@ import am.ik.yavi.meta.StringConstraintMeta;
 import am.ik.yavi.meta.YearConstraintMeta;
 import am.ik.yavi.meta.YearMonthConstraintMeta;
 import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class ValidatorBuilder<T> implements Cloneable {
 	private static final String DEFAULT_SEPARATOR = ".";
@@ -730,6 +730,33 @@ public class ValidatorBuilder<T> implements Cloneable {
 	public ValidatorBuilder<T> _doubleArray(ToDoubleArray<T> f, String name,
 			Function<DoubleArrayConstraint<T>, DoubleArrayConstraint<T>> c) {
 		return this.constraint(f, name, c, DoubleArrayConstraint::new);
+	}
+
+	/**
+	 * @since 0.14.0
+	 */
+	public <C extends T> ValidatorBuilder<T> constraintOnClass(Class<C> clazz,
+			Validator<C> cValidator) {
+		Validator<T> TValidator = new ValidatorBuilder<T>()
+				.nest(clazz::cast, clazz.getName(), cValidator).build();
+
+		return constraintOnCondition(getClassConstraintCondition(clazz), TValidator);
+	}
+
+	/**
+	 * @since 0.14.0
+	 */
+	public <C extends T> ValidatorBuilder<T> constraintOnClass(Class<C> clazz,
+			ValidatorBuilderConverter<C> converter) {
+		ValidatorBuilderConverter<T> tConverter = tValidatorBuilder -> tValidatorBuilder
+				.nest(clazz::cast, clazz.getName(), converter);
+
+		return constraintOnCondition(getClassConstraintCondition(clazz), tConverter);
+	}
+
+	private <C extends T> ConstraintCondition<T> getClassConstraintCondition(
+			Class<C> classCondition) {
+		return (t, c) -> classCondition.isInstance(t);
 	}
 
 	/**
