@@ -17,55 +17,67 @@ public class ConstraintOnClassTest {
 
 	@ParameterizedTest
 	@MethodSource("provideValidators")
-	void testConstraintOnConditionClass(Validator<User> validator) {
-		User validAdmin = new Admin("admin123", "admin@gmail", 27, "yavi123");
-		User invalidAdmin = new Admin("Niraz", "niraz@gmail", 23, "user");
+	void testConstraintOnConditionClass(Validator<Parent> validator) {
+		Parent validChild = new Child(23, "drawing");
+		Parent invalidChild = new Child(6, "drawing");
 
-		assertThat(validator.validate(validAdmin).isValid()).isTrue();
-		assertThat(validator.validate(invalidAdmin).isValid()).isFalse();
+		assertThat(validator.validate(validChild).isValid()).isTrue();
+		assertThat(validator.validate(invalidChild).isValid()).isFalse();
 	}
 
 	@ParameterizedTest
 	@MethodSource("provideValidators")
-	void testConstraintOnNonConditionClass(Validator<User> validator) {
-		User validUser = new User("Rawad", "rawad@gmail", 25);
-		User invalidUser = new User("Almog", "almog@gmail", 19);
+	void testConstraintOnNonConditionClass(Validator<Parent> validator) {
+		Parent validParent = new Parent(35);
+		Parent invalidParent = new Parent(19);
 
-		assertThat(validator.validate(validUser).isValid()).isTrue();
-		assertThat(validator.validate(invalidUser).isValid()).isFalse();
+		assertThat(validator.validate(validParent).isValid()).isTrue();
+		assertThat(validator.validate(invalidParent).isValid()).isFalse();
 	}
 
 	static Stream<Arguments> provideValidators() {
-		ValidatorBuilder<User> userValidatorBuilder = ValidatorBuilder.of(User.class)
-				.constraint(User::getAge, "age", c -> c.greaterThan(20));
-		Function<CharSequenceConstraint<Admin, String>, CharSequenceConstraint<Admin, String>> startsWithAdmin = (
-				CharSequenceConstraint<Admin, String> c) -> c.startsWith("yavi");
+		ValidatorBuilder<Parent> userValidatorBuilder = ValidatorBuilder.of(Parent.class)
+				.constraint(Parent::getAge, "age", c -> c.greaterThan(20));
+		Function<CharSequenceConstraint<Child, String>, CharSequenceConstraint<Child, String>> equalsToDrawing = (
+				CharSequenceConstraint<Child, String> c) -> c.equalTo("drawing");
 
 		return Stream
 				.of(Arguments.of(new ValidatorBuilder<>(userValidatorBuilder)
-						.constraintOnClass(Admin.class,
-								ValidatorBuilder.of(Admin.class)
-										.constraint(Admin::getGroup, "group",
-												startsWithAdmin)
+						.constraintOnClass(Child.class,
+								ValidatorBuilder.of(Child.class)
+										.constraint(Child::getHobby, "hobby",
+												equalsToDrawing)
 										.build())
 						.build()), Arguments
 								.of(new ValidatorBuilder<>(userValidatorBuilder)
-										.constraintOnClass(Admin.class,
-												b -> b.constraint(Admin::getGroup,
-														"group", startsWithAdmin))
+										.constraintOnClass(Child.class,
+												b -> b.constraint(Child::getHobby,
+														"hobby", equalsToDrawing))
 										.build()));
 	}
 
-	private static class Admin extends User {
-		private String group;
+	private static class Child extends Parent {
+		private String hobby;
 
-		public Admin(String name, String email, int age, String group) {
-			super(name, email, age);
-			this.group = group;
+		public Child(int age, String hobby) {
+			super(age);
+			this.hobby = hobby;
 		}
 
-		public String getGroup() {
-			return group;
+		public String getHobby() {
+			return hobby;
+		}
+	}
+
+	private static class Parent {
+		private final int age;
+
+		public Parent(int age) {
+			this.age = age;
+		}
+
+		public int getAge() {
+			return age;
 		}
 	}
 }

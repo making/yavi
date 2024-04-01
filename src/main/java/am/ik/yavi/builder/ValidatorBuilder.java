@@ -54,6 +54,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ConstraintPredicates;
 import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.InheritanceValidator;
 import am.ik.yavi.core.NestedCollectionValidator;
 import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
@@ -67,45 +68,12 @@ import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
-import am.ik.yavi.meta.BigDecimalConstraintMeta;
-import am.ik.yavi.meta.BigIntegerConstraintMeta;
-import am.ik.yavi.meta.BooleanConstraintMeta;
-import am.ik.yavi.meta.ByteConstraintMeta;
-import am.ik.yavi.meta.CharacterConstraintMeta;
-import am.ik.yavi.meta.DoubleConstraintMeta;
-import am.ik.yavi.meta.FloatConstraintMeta;
-import am.ik.yavi.meta.InstantConstraintMeta;
-import am.ik.yavi.meta.IntegerConstraintMeta;
-import am.ik.yavi.meta.LocalDateConstraintMeta;
-import am.ik.yavi.meta.LocalDateTimeConstraintMeta;
-import am.ik.yavi.meta.LocalTimeConstraintMeta;
-import am.ik.yavi.meta.LongConstraintMeta;
-import am.ik.yavi.meta.ObjectConstraintMeta;
-import am.ik.yavi.meta.OffsetDateTimeConstraintMeta;
-import am.ik.yavi.meta.ShortConstraintMeta;
-import am.ik.yavi.meta.StringConstraintMeta;
-import am.ik.yavi.meta.YearConstraintMeta;
-import am.ik.yavi.meta.YearMonthConstraintMeta;
-import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
+import am.ik.yavi.meta.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.time.*;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -737,10 +705,12 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public <C extends T> ValidatorBuilder<T> constraintOnClass(Class<C> clazz,
 			Validator<C> cValidator) {
-		Validator<T> TValidator = new ValidatorBuilder<T>()
-				.nest(clazz::cast, clazz.getName(), cValidator).build();
+		Validatable<T> validatable = new InheritanceValidator<>(clazz, cValidator);
 
-		return constraintOnCondition(getClassConstraintCondition(clazz), TValidator);
+		this.conditionalValidators
+				.add(new Pair<>(getClassConstraintCondition(clazz), validatable));
+
+		return this;
 	}
 
 	/**
@@ -748,10 +718,9 @@ public class ValidatorBuilder<T> implements Cloneable {
 	 */
 	public <C extends T> ValidatorBuilder<T> constraintOnClass(Class<C> clazz,
 			ValidatorBuilderConverter<C> converter) {
-		ValidatorBuilderConverter<T> tConverter = tValidatorBuilder -> tValidatorBuilder
-				.nest(clazz::cast, clazz.getName(), converter);
+		Validator<C> cValidator = converter.apply(new ValidatorBuilder<>()).build();
 
-		return constraintOnCondition(getClassConstraintCondition(clazz), tConverter);
+		return constraintOnClass(clazz, cValidator);
 	}
 
 	private <C extends T> ConstraintCondition<T> getClassConstraintCondition(
@@ -1025,6 +994,7 @@ public class ValidatorBuilder<T> implements Cloneable {
 				.forEach(this.appendNestedConditionalValidator(nested, name));
 		builder.collectionValidators
 				.forEach(appendNestedCollectionValidator(nested, name));
+
 		return this;
 	}
 
