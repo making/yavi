@@ -33,6 +33,7 @@ import am.ik.yavi.builder.BigDecimalValidatorBuilder;
 import am.ik.yavi.builder.BigIntegerValidatorBuilder;
 import am.ik.yavi.builder.BooleanValidatorBuilder;
 import am.ik.yavi.builder.DoubleValidatorBuilder;
+import am.ik.yavi.builder.EnumValidatorBuilder;
 import am.ik.yavi.builder.FloatValidatorBuilder;
 import am.ik.yavi.builder.InstantValidatorBuilder;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
@@ -51,6 +52,7 @@ import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
+import am.ik.yavi.constraint.EnumConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
 import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
@@ -106,6 +108,12 @@ public final class Validator2ChainedBuilder<A1, A2> {
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return new Validator3ChainedBuilder<>(this.v1, this.v2,
 				DoubleValidatorBuilder.of(name, constraints).build());
+	}
+
+	public <E extends Enum<E>> Validator3ChainedBuilder<A1, A2, E> _enum(String name,
+			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
+		return new Validator3ChainedBuilder<>(this.v1, this.v2,
+				EnumValidatorBuilder.of(name, constraints).build());
 	}
 
 	public Validator3ChainedBuilder<A1, A2, Float> _float(String name,

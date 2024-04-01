@@ -67,6 +67,13 @@ data class DemoForEachIfPresentMap(val x: Map<String, DemoString>?)
 data class DemoForEachArray(val x: Array<DemoString>)
 data class DemoForEachIfPresentArray(val x: Array<DemoString>?)
 data class DemoUnwrap(val x: Int, val y: Int)
+data class DemoEnum(val color: Color) {
+	enum class Color {
+		RED,
+		GREEN,
+		BLUE
+	}
+}
 
 class ValidatorBuilderKtDslTest {
 	private val demoStringValidator = validator<DemoString> {
@@ -215,6 +222,26 @@ class ValidatorBuilderKtDslTest {
 		Assertions.assertThat(violation.message())
 			.isEqualTo("""The size of "x" must be less than 5. The given size is 6""")
 		Assertions.assertThat(violation.messageKey()).isEqualTo("container.lessThan")
+	}
+
+	@Test
+	fun constraintOnENUM() {
+		val validator = validator<DemoEnum> {
+			DemoEnum::color {
+			equalTo(DemoEnum.Color.BLUE)
+			}
+		}
+
+		var demo = DemoEnum(DemoEnum.Color.BLUE)
+		var violations = validator.validate(demo)
+		Assertions.assertThat(violations.isValid).isTrue()
+
+		demo = DemoEnum(DemoEnum.Color.RED)
+		violations = validator.validate(demo)
+		Assertions.assertThat(violations.isValid).isFalse()
+		Assertions.assertThat(violations.size).isEqualTo(1)
+		val violation = violations[0]
+		Assertions.assertThat(violation.message()).isEqualTo("\"color\" must be equal to BLUE")
 	}
 
 	@Test

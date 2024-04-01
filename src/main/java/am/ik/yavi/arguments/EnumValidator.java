@@ -15,37 +15,25 @@
  */
 package am.ik.yavi.arguments;
 
-public class User {
-	private final String email;
-	private final String name;
+import java.util.function.Function;
 
-	private final Role role;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.fn.Function1;
 
-	public enum Role {
-		USER, ADMIN, GUEST
-	}
-
-	public User(String email, String name, Role role) {
-		this.email = email;
-		this.name = name;
-		this.role = role;
-	}
-
-	public String email() {
-		return email;
-	}
-
-	public String name() {
-		return name;
-	}
-
-	public Role role() {
-		return role;
-	}
+/**
+ * @since 0.14.0
+ */
+public class EnumValidator<E extends Enum<E>, T>
+		extends DefaultArguments1Validator<E, T> {
 
 	@Override
-	public String toString() {
-		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + ", role="
-				+ role + '}';
+	public <T2> EnumValidator<E, T2> andThen(Function<? super T, ? extends T2> mapper) {
+		return new EnumValidator<>(super.validator,
+				s -> mapper.apply(super.mapper.apply(s)));
+	}
+
+	public EnumValidator(Validator<Arguments1<E>> validator,
+			Function1<? super E, ? extends T> mapper) {
+		super(validator, mapper);
 	}
 }
