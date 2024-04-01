@@ -37,7 +37,11 @@ import java.time.ZonedDateTime;
 import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
+$(if [ "${i}" != "1" ];then
+cat <<EOD
 import am.ik.yavi.arguments.ArgumentsValidators;
+EOD
+fi)
 import am.ik.yavi.arguments.Validator${i};
 import am.ik.yavi.builder.BigDecimalValidatorBuilder;
 import am.ik.yavi.builder.BigIntegerValidatorBuilder;
@@ -210,6 +214,18 @@ $(if [ "${i}" != "1" ];then
 cat <<EOD
 	public <R> Validator${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> f) {
 		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done) | sed 's/,$//')).apply(f);
+	}
+EOD
+fi)
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+	public <R> Validator1<A1, R> apply(Function1<A1, R> f) {
+		return (a1, locale, constraintContext) -> v1
+				.validate(a1, locale, constraintContext).map(f::apply);
+	}
+
+	public ValueValidator<A1, A1> get() {
+		return this.v1;
 	}
 EOD
 fi)

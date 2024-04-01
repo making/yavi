@@ -27,7 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
-import am.ik.yavi.arguments.ArgumentsValidators;
+
 import am.ik.yavi.arguments.Validator1;
 import am.ik.yavi.builder.BigDecimalValidatorBuilder;
 import am.ik.yavi.builder.BigIntegerValidatorBuilder;
@@ -190,4 +190,12 @@ public final class Validator1ChainedBuilder<A1> {
 				ZonedDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	public <R> Validator1<A1, R> apply(Function1<A1, R> f) {
+		return (a1, locale, constraintContext) -> v1
+				.validate(a1, locale, constraintContext).map(f::apply);
+	}
+
+	public ValueValidator<A1, A1> get() {
+		return this.v1;
+	}
 }

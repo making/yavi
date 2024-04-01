@@ -197,4 +197,5 @@ public final class Validator2ChainedBuilder<A1, A2> {
 	public <R> Validator2<A1, A2, R> apply(Function2<A1, A2, R> f) {
 		return ArgumentsValidators.split(this.v1, this.v2).apply(f);
 	}
+
 }

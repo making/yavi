@@ -207,4 +207,5 @@ public final class Validator4ChainedBuilder<A1, A2, A3, A4> {
 	public <R> Validator4<A1, A2, A3, A4, R> apply(Function4<A1, A2, A3, A4, R> f) {
 		return ArgumentsValidators.split(this.v1, this.v2, this.v3, this.v4).apply(f);
 	}
+
 }

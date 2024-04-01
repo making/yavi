@@ -244,7 +244,7 @@ public class CustomValidatorTest {
 		}
 	}
 
-	enum RangeConstraint implements CustomConstraint<Range> {
+	public enum RangeConstraint implements CustomConstraint<Range> {
 		SINGLETON;
 
 		@Override
