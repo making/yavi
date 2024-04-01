@@ -67,7 +67,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 
 /**
- * YAVI DSL
+ * YAVI Arguments Validator Builder
  *
  * @since 0.14.0
  */
