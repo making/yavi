@@ -773,9 +773,9 @@ import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
-import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function${i};
 EOD
 fi)
@@ -788,16 +788,16 @@ fi)
  */
 public final class ${class}$(if [ "${i}" -gt 0 ];then
 cat <<EOD
-<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>
+<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')>
 EOD
 fi)
 {
 
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
-$(for j in `seq 1 ${i}`;do echo "	final ValueValidator<A${j}, A${j}> v${j};";echo;done)
+$(for j in `seq 1 ${i}`;do echo "	final ValueValidator<A${j}, R${j}> v${j};";echo;done)
 
-	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<A${j}, A${j}> v${j}, ";done) | sed 's/,$//')) {
+	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 EOD
@@ -805,184 +805,237 @@ fi)
 
 $(if [ "${i}" != "${n}" ];then
 cat <<EOD
-
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
-			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				BigDecimalValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal> _bigDecimal(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
+			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
+		return this._bigDecimal(BigDecimalValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger> _bigInteger(String name,
-			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				BigIntegerValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(ValueValidator<BigInteger, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger> _bigInteger(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name,
+			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
+		return this._bigInteger(BigIntegerValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean> _boolean(String name,
-			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				BooleanValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(ValueValidator<Boolean, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean> _boolean(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name,
+			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
+		return this._boolean(BooleanValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name) {
 		return this._boolean(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double> _double(String name,
-			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				DoubleValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(ValueValidator<Double, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double> _double(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name,
+			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
+		return this._double(DoubleValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name) {
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E> _enum(String name,
-			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				EnumValidatorBuilder.of(name, constraints).build());
+	public <E extends Enum<E>, T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(ValueValidator<E, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E> _enum(String name) {
+	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name,
+			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
+		return this._enum(EnumValidatorBuilder.of(name, constraints).build());
+	}
+
+	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name) {
 		return this._enum(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float> _float(String name,
-			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				FloatValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(ValueValidator<Float, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float> _float(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name,
+			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
+		return this._float(FloatValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name) {
 		return this._float(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant> _instant(String name,
-			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				InstantValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(ValueValidator<Instant, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant> _instant(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name,
+			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
+		return this._instant(InstantValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name) {
 		return this._instant(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer> _integer(String name,
-			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				IntegerValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(ValueValidator<Integer, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer> _integer(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name,
+			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
+		return this._integer(IntegerValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name) {
 		return this._integer(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
-			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				LocalDateTimeValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime> _localDateTime(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
+			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
+		return this._localDateTime(LocalDateTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime> _localTime(String name,
-			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				LocalTimeValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(ValueValidator<LocalTime, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime> _localTime(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name,
+			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
+		return this._localTime(LocalTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long> _long(String name,
-			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				LongValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(ValueValidator<Long, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long> _long(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name,
+			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
+		return this._long(LongValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name) {
 		return this._long(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T> _object(String name,
-			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				ObjectValidatorBuilder.of(name, constraints).build());
+	public <T1, T2> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(ValueValidator<T1, T2> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T> _object(String name) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name,
+			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
+		return this._object(ObjectValidatorBuilder.of(name, constraints).build());
+	}
+
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name) {
 		return this._object(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
-			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				OffsetDateTimeValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(ValueValidator<OffsetDateTime, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
+			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
+		return this._offsetDateTime(OffsetDateTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short> _short(String name,
-			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				ShortValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(ValueValidator<Short, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short> _short(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name,
+			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
+		return this._short(ShortValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name) {
 		return this._short(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String> _string(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				StringValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(ValueValidator<String, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String> _string(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
+			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+		return this._string(StringValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name) {
 		return this._string(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth> _yearMonth(String name,
-			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				YearMonthValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(ValueValidator<YearMonth, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth> _yearMonth(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name,
+			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
+		return this._yearMonth(YearMonthValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year> _year(String name,
-			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				YearValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(ValueValidator<Year, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year> _year(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name,
+			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
+		return this._year(YearValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name) {
 		return this._year(name, Function.identity());
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
-			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi)
-				ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
+		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
-	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name) {
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
+			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
+		return this._zonedDateTime(ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 EOD
@@ -990,18 +1043,18 @@ fi)
 
 $(if [ "${i}" -gt 1 ];then
 cat <<EOD
-	public <R> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> f) {
+	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done) | sed 's/,$//')).apply(f);
 	}
 EOD
 fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-	public <R> ValueValidator<A1, R> apply(Function1<A1, R> f) {
+	public <X> ValueValidator<A1, X> apply(Function1<? super R1, ? extends X> f) {
 		return this.v1.andThen(f::apply);
 	}
 
-	public ValueValidator<A1, A1> get() {
+	public ValueValidator<A1, R1> get() {
 		return this.v1;
 	}
 EOD

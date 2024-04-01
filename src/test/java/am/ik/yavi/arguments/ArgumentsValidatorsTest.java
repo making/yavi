@@ -30,6 +30,7 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -262,7 +263,9 @@ class ArgumentsValidatorsTest {
 						.split(countryValidator, streetValidator, phoneNumberValidator)
 						.apply(Address::new),
 				countryValidator.split(streetValidator).split(phoneNumberValidator)
-						.apply(Address::new));
+						.apply(Address::new),
+				Yavi.arguments()._string(countryValidator)._string(streetValidator)
+						._string(phoneNumberValidator).apply(Address::new));
 	}
 
 	static Stream<Arguments1Validator<Map<String, String>, Address>> combineValidators() {
