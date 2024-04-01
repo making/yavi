@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
+import am.ik.yavi.jsr305.Nullable;
 
 /**
  * @since 0.8.0
@@ -34,7 +35,8 @@ import am.ik.yavi.fn.Validation;
 @FunctionalInterface
 public interface ValueValidator<T, X> {
 
-	Validated<X> validate(T t, Locale locale, ConstraintContext constraintContext);
+	Validated<X> validate(@Nullable T t, Locale locale,
+			ConstraintContext constraintContext);
 
 	/**
 	 * Return {@link ValueValidator} instance that always successes without validation.
@@ -65,33 +67,34 @@ public interface ValueValidator<T, X> {
 				.validate(mapper.apply(a), locale, constraintContext);
 	}
 
-	default Validated<X> validate(T t) {
+	default Validated<X> validate(@Nullable T t) {
 		return this.validate(t, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
-	default Validated<X> validate(T t, ConstraintContext constraintContext) {
+	default Validated<X> validate(@Nullable T t, ConstraintContext constraintContext) {
 		return this.validate(t, Locale.getDefault(), constraintContext);
 	}
 
-	default Validated<X> validate(T t, Locale locale) {
+	default Validated<X> validate(@Nullable T t, Locale locale) {
 		return this.validate(t, locale, ConstraintGroup.DEFAULT);
 	}
 
-	default X validated(T t) throws ConstraintViolationsException {
+	default X validated(@Nullable T t) throws ConstraintViolationsException {
 		return this.validate(t).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(T t, ConstraintContext constraintContext)
+	default X validated(@Nullable T t, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
 		return this.validate(t, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(T t, Locale locale) throws ConstraintViolationsException {
+	default X validated(@Nullable T t, Locale locale)
+			throws ConstraintViolationsException {
 		return this.validate(t, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(T t, Locale locale, ConstraintContext constraintContext)
+	default X validated(@Nullable T t, Locale locale, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
 		return this.validate(t, locale, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
