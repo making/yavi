@@ -51,14 +51,14 @@ jobs:
         gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
         gpg-passphrase: ${{ steps.secrets.outputs.GPG_PASSPHRASE }}
     - name: Unit Tests
-      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: ./mvnw -V test --no-transfer-progress
     - name: Unit Tests with Coverage
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
         ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
     - name: Deploy to sonatype-snapshots
-      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
         set -e
         cat > settings.xml <<EOF
@@ -77,7 +77,7 @@ jobs:
           ./mvnw -V deploy -s settings.xml --no-transfer-progress -DskipTests=true -DserverId=sonatype-snapshots
         fi
     - name: Deploy to sonatype-releases
-      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
+      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
         set -e
         cat > settings.xml <<EOF
