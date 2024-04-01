@@ -1,49 +1,55 @@
-name: CI
+name: Java CI with Maven
+
 on:
   push:
     branches:
     - develop
     - main
-  pull_request:
+    paths:
+    - src/**
+    - pom.xml
+    - .github/workflows/ci.yaml
+  pull_request_target:
     branches:
     - develop
     - main
+    paths:
+    - src/**
+    - pom.xml
+    - .github/workflows/ci.yaml
 jobs:
-  code-formatting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Java
-        uses: actions/setup-java@v1
-        with:
-          java-version: 17
-      - name: Cache Maven
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: Check formatting
-        run: ./mvnw formatter:validate --no-transfer-progress
   build:
     runs-on: ubuntu-latest
     strategy:
-        matrix:
-          java: [8.x, 11.x, 17.x, 21.x]
+      matrix:
+        java: [8.x, 11.x, 17.x, 21.x]
+    permissions:
+      id-token: write
+      contents: read
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Java
-      uses: actions/setup-java@v1
+    - uses: actions/checkout@v3
+    - name: Import Secrets
+      id: secrets
+      uses: hashicorp/vault-action@v2.5.0
+      with:
+        exportToken: true
+        exportEnv: true
+        method: jwt
+        url: ${{ secrets.VAULT_ADDR }}
+        role: cicd
+        secrets: |
+          kv/data/cicd/sonatype username | SONATYPE_USERNAME ;
+          kv/data/cicd/sonatype password | SONATYPE_PASSWORD ;
+          kv/data/cicd/gpg secring | GPG_SECRING ;
+          kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;
+    - name: Set up JDK
+      uses: actions/setup-java@v3
       with:
         java-version: ${{ matrix.java }}
-    - name: Cache Maven
-      uses: actions/cache@v1
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        distribution: 'liberica'
+        cache: maven
+        gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
+        gpg-passphrase: ${{ steps.secrets.outputs.GPG_PASSPHRASE }}
     - name: Unit Tests
       if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
       run: ./mvnw -V test --no-transfer-progress
@@ -53,9 +59,6 @@ jobs:
         ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
     - name: Deploy to sonatype-snapshots
       if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
-      env:
-        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       run: |
         set -e
         cat > settings.xml <<EOF
@@ -69,28 +72,40 @@ jobs:
           </servers>
         </settings>
         EOF
-        CURRENT_VERSION=$(grep '<version>' pom.xml | head -n 1 | sed -e 's|<version>||g' -e 's|</version>||g' | xargs echo)
+        CURRENT_VERSION=$(grep '<version>' pom.xml | head -n 1 | sed -e 's|<version>||g' -e 's|</version>||g' -e 's| ||g' |  tr -d '\t')
         if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
-          ./mvnw -V deploy -s settings.xml -DskipTests=true -DserverId=sonatype-snapshots --no-transfer-progress
+          ./mvnw -V deploy -s settings.xml --no-transfer-progress -DskipTests=true -DserverId=sonatype-snapshots
         fi
     - name: Deploy to sonatype-releases
       if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/jdk/8')
-      env:
-        SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-        SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-        GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        ENCRYPTION_PASSWORD: ${{ secrets.ENCRYPTION_PASSWORD }}
       run: |
         set -e
-        docker run \
-          --rm \
-          -e SONATYPE_USERNAME=${SONATYPE_USERNAME} \
-          -e SONATYPE_PASSWORD=${SONATYPE_PASSWORD} \
-          -e GPG_KEYNAME=${GPG_KEYNAME} \
-          -e GPG_PASSPHRASE=${GPG_PASSPHRASE} \
-          -e ENCRYPTION_PASSWORD=${ENCRYPTION_PASSWORD} \
-          -v ~/.m2:/root/.m2 \
-          -v "$PWD":/workspace \
-          -w /workspace \
-          making/deploy-sonatype
+        cat > settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+               <id>repo</id>
+               <username>${SONATYPE_USERNAME}</username>
+               <password>${SONATYPE_PASSWORD}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+        mvn -V \
+            javadoc:jar \
+            source:jar \
+            package \
+            org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign \
+            org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy \
+            --no-transfer-progress \
+            -s settings.xml \
+            -DserverId=repo \
+            -Dgpg.passphrase=${GPG_PASSPHRASE} \
+            -DnexusUrl=https://oss.sonatype.org \
+            -DautoReleaseAfterClose=true \
+            -DaltDeploymentRepository=repo::default::https://oss.sonatype.org/service/local/staging/deploy/maven2 \
+            -DskipTests=true
+    - name: Revoke token
+      if: always()
+      run: |
+        curl -X POST -s -H "X-Vault-Token: ${VAULT_TOKEN}" ${{ secrets.VAULT_ADDR }}/v1/auth/token/revoke-self
