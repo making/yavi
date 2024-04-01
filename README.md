@@ -37,7 +37,7 @@ See [the reference documentation](https://yavi.ik.am) for details.
 
 ### Presentations
 
-* 2021-07-01 YAVIの紹介 (Japanese) [[Deck](https://docs.google.com/presentation/d/1aw5cXqTxvMbBvTUU4TiF2oTUkG8orDujA5IRQGtIDiw/edit#slide=id.p)] [[Recording](https://www.youtube.com/watch?v=o0-u6QSBlv8)]
+* 2021-07-01 YAVIの紹介 (Japanese) [[Deck](https://docs.google.com/presentation/d/1ZcGN7qZpZ92XD6FwdHxpxJ1duF1kqilI97zq-0JpzsA/edit?usp=sharing)] [[Recording](https://www.youtube.com/watch?v=o0-u6QSBlv8)]
 
 ### Getting Started
 
