@@ -47,7 +47,7 @@ public class Gh156Test {
 	}
 
 	final Arguments3Validator<String, String, String, Person> personValidator = Yavi
-			.validator()._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
+			.arguments()._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
 			._string("middleName", c -> c.lessThanOrEqual(128))
 			._string("lastName", c -> c.notBlank().lessThanOrEqual(128))
 			.apply(Person::new);

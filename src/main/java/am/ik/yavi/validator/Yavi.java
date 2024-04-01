@@ -66,125 +66,149 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 
 /**
- * YAVI Arguments Validator Builder
+ * YAVI Validator Builder
  *
  * @since 0.14.0
  */
 public final class Yavi {
 
-	public static Yavi validator() {
-		return new Yavi();
+	/**
+	 * Buider for ArgumentsBuilder<br>
+	 * <br>
+	 * <strong>Example:</strong>
+	 *
+	 * <pre>
+	 * <code>
+	 * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+	 * 	._string("manufacturer", c -> c.notNull())
+	 * 	._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+	 * 	._integer("seatCount", c -> c.greaterThanOrEqual(2))
+	 * 	.apply(Car::new);
+	 * </code>
+	 * </pre>
+	 *
+	 * @return {@code YaviArguments} builder
+	 */
+	public static YaviArguments arguments() {
+		return new YaviArguments();
 	}
 
 	private Yavi() {
 
 	}
 
-	public Arguments1ValidatorBuilder<BigDecimal> _bigDecimal(String name,
-			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				BigDecimalValidatorBuilder.of(name, constraints).build());
-	}
+	public static class YaviArguments {
 
-	public Arguments1ValidatorBuilder<BigInteger> _bigInteger(String name,
-			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				BigIntegerValidatorBuilder.of(name, constraints).build());
-	}
+		private YaviArguments() {
 
-	public Arguments1ValidatorBuilder<Boolean> _boolean(String name,
-			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				BooleanValidatorBuilder.of(name, constraints).build());
-	}
+		}
 
-	public Arguments1ValidatorBuilder<Double> _double(String name,
-			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				DoubleValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<BigDecimal> _bigDecimal(String name,
+				Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					BigDecimalValidatorBuilder.of(name, constraints).build());
+		}
 
-	public <E extends Enum<E>> Arguments1ValidatorBuilder<E> _enum(String name,
-			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				EnumValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<BigInteger> _bigInteger(String name,
+				Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					BigIntegerValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Float> _float(String name,
-			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				FloatValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Boolean> _boolean(String name,
+				Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					BooleanValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Instant> _instant(String name,
-			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				InstantValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Double> _double(String name,
+				Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					DoubleValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Integer> _integer(String name,
-			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				IntegerValidatorBuilder.of(name, constraints).build());
-	}
+		public <E extends Enum<E>> Arguments1ValidatorBuilder<E> _enum(String name,
+				Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					EnumValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<LocalDateTime> _localDateTime(String name,
-			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				LocalDateTimeValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Float> _float(String name,
+				Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					FloatValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<LocalTime> _localTime(String name,
-			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				LocalTimeValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Instant> _instant(String name,
+				Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					InstantValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Long> _long(String name,
-			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				LongValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Integer> _integer(String name,
+				Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					IntegerValidatorBuilder.of(name, constraints).build());
+		}
 
-	public <T> Arguments1ValidatorBuilder<T> _object(String name,
-			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				ObjectValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<LocalDateTime> _localDateTime(String name,
+				Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					LocalDateTimeValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<OffsetDateTime> _offsetDateTime(String name,
-			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				OffsetDateTimeValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<LocalTime> _localTime(String name,
+				Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					LocalTimeValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Short> _short(String name,
-			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				ShortValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Long> _long(String name,
+				Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					LongValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<String> _string(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				StringValidatorBuilder.of(name, constraints).build());
-	}
+		public <T> Arguments1ValidatorBuilder<T> _object(String name,
+				Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					ObjectValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<YearMonth> _yearMonth(String name,
-			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				YearMonthValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<OffsetDateTime> _offsetDateTime(String name,
+				Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					OffsetDateTimeValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<Year> _year(String name,
-			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				YearValidatorBuilder.of(name, constraints).build());
-	}
+		public Arguments1ValidatorBuilder<Short> _short(String name,
+				Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					ShortValidatorBuilder.of(name, constraints).build());
+		}
 
-	public Arguments1ValidatorBuilder<ZonedDateTime> _zonedDateTime(String name,
-			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
-				ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+		public Arguments1ValidatorBuilder<String> _string(String name,
+				Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					StringValidatorBuilder.of(name, constraints).build());
+		}
+
+		public Arguments1ValidatorBuilder<YearMonth> _yearMonth(String name,
+				Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					YearMonthValidatorBuilder.of(name, constraints).build());
+		}
+
+		public Arguments1ValidatorBuilder<Year> _year(String name,
+				Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					YearValidatorBuilder.of(name, constraints).build());
+		}
+
+		public Arguments1ValidatorBuilder<ZonedDateTime> _zonedDateTime(String name,
+				Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
+			return new Arguments1ValidatorBuilder<>(
+					ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+		}
 	}
 }
