@@ -25,7 +25,7 @@ public class Car {
 	private final int seatCount;
 
 	private static final Arguments3Validator<String, String, Integer, Car> validator = Yavi
-			.validator() //
+			.arguments() //
 			._string("manufacturer", c -> c.notNull()) //
 			._string("licensePlate",
 					c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14)) //
@@ -43,5 +43,14 @@ public class Car {
 	public String toString() {
 		return "Car{" + "manufacturer='" + manufacturer + '\'' + ", licensePlate='"
 				+ licensePlate + '\'' + ", seatCount=" + seatCount + '}';
+	}
+
+	public static void main(String[] args) {
+		Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments() //
+				._string("manufacturer", c -> c.notNull()) //
+				._string("licensePlate",
+						c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14)) //
+				._integer("seatCount", c -> c.greaterThanOrEqual(2)) //
+				.apply(Car::new);
 	}
 }

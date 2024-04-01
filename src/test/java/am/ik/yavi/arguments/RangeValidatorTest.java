@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RangeValidatorTest {
-	Arguments2Validator<Integer, Integer, Range> validator = Yavi.validator()
+	Arguments2Validator<Integer, Integer, Range> validator = Yavi.arguments()
 			._integer("from", c -> c.greaterThanOrEqual(0))
 			._integer("to", c -> c.greaterThanOrEqual(0)).apply(Range::new)
-			.andThen(Yavi.validator()
+			.andThen(Yavi.arguments()
 					.<Range> _object("to", c -> c.predicate(RangeConstraint.SINGLETON))
 					.get());
 
