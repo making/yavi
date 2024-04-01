@@ -57,6 +57,10 @@ jobs:
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
         ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
+    - name: Build Javadoc
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      run: |
+        ./mvnw -V javadoc:jar --no-transfer-progress
     - name: Deploy to sonatype-snapshots
       if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
