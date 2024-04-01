@@ -84,11 +84,21 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, BigDecimalValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, BigDecimal> _bigDecimal(
+			String name) {
+		return this._bigDecimal(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, BigInteger> _bigInteger(
 			String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, BigIntegerValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, BigInteger> _bigInteger(
+			String name) {
+		return this._bigInteger(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Boolean> _boolean(String name,
@@ -97,10 +107,18 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, BooleanValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Boolean> _boolean(String name) {
+		return this._boolean(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, DoubleValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Double> _double(String name) {
+		return this._double(name, Function.identity());
 	}
 
 	public <E extends Enum<E>> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, E> _enum(
@@ -110,10 +128,19 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, EnumValidatorBuilder.of(name, constraints).build());
 	}
 
+	public <E extends Enum<E>> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, E> _enum(
+			String name) {
+		return this._enum(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, FloatValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Float> _float(String name) {
+		return this._float(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Instant> _instant(String name,
@@ -122,10 +149,18 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, InstantValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Instant> _instant(String name) {
+		return this._instant(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, IntegerValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Integer> _integer(String name) {
+		return this._integer(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, LocalDateTime> _localDateTime(
@@ -135,11 +170,21 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, LocalDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, LocalDateTime> _localDateTime(
+			String name) {
+		return this._localDateTime(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, LocalTime> _localTime(
 			String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, LocalTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, LocalTime> _localTime(
+			String name) {
+		return this._localTime(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Long> _long(String name,
@@ -148,10 +193,18 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, LongValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Long> _long(String name) {
+		return this._long(name, Function.identity());
+	}
+
 	public <T> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, T> _object(String name,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, ObjectValidatorBuilder.of(name, constraints).build());
+	}
+
+	public <T> Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, T> _object(String name) {
+		return this._object(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, OffsetDateTime> _offsetDateTime(
@@ -161,16 +214,29 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, OffsetDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, OffsetDateTime> _offsetDateTime(
+			String name) {
+		return this._offsetDateTime(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, ShortValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Short> _short(String name) {
+		return this._short(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, String> _string(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, StringValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, String> _string(String name) {
+		return this._string(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, YearMonth> _yearMonth(
@@ -180,10 +246,19 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 				this.v5, YearMonthValidatorBuilder.of(name, constraints).build());
 	}
 
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, YearMonth> _yearMonth(
+			String name) {
+		return this._yearMonth(name, Function.identity());
+	}
+
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, YearValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, Year> _year(String name) {
+		return this._year(name, Function.identity());
 	}
 
 	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, ZonedDateTime> _zonedDateTime(
@@ -191,6 +266,11 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5> {
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return new Arguments6ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, ZonedDateTime> _zonedDateTime(
+			String name) {
+		return this._zonedDateTime(name, Function.identity());
 	}
 
 	public <R> Arguments5Validator<A1, A2, A3, A4, A5, R> apply(
