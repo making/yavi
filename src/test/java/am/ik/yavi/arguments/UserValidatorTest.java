@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserValidatorTest {
-	Validator3<String, String, Role, User> validator = Yavi.validator()
+	Arguments3Validator<String, String, Role, User> validator = Yavi.validator()
 			._string("email", c -> c.notBlank().email())
 			._string("name", c -> c.notBlank())
 			.<Role> _enum("role", c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))

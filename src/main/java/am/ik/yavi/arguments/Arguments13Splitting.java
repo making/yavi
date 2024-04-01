@@ -85,12 +85,12 @@ public class Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 		this.v13 = v13;
 	}
 
-	public <X> Validator13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> apply(
+	public <X> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> apply(
 			Function13<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? extends X> f) {
-		return new Validator13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X>() {
+		return new Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X>() {
 
 			@Override
-			public Validator13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>> lazy() {
+			public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>> lazy() {
 				return ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale,
 						constraintContext) -> Validations.apply(
 								(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12,
