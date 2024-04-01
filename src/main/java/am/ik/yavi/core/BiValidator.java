@@ -30,7 +30,7 @@ import java.util.function.BiConsumer;
  *
  * <pre>
  * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
- *                        .constraint(CartItem::getQuantity, "quantity", c -> c.greaterThan(0))
+ *                        .constraint(CartItem::getQuantity, "quantity", c -&gt; c.greaterThan(0))
  *                        .constraint(...)
  *                        .build();
  * BiValidator&lt;CartItem, Errors&gt; validator = new BiValidator&lt;&gt;(validator, Errors::rejectValue);

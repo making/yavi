@@ -47,7 +47,7 @@ import am.ik.yavi.message.MessageFormatter;
  *     private final BiValidator&lt;CartItem, Errors&gt; validator;
  *
  *     public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
- *         this.validator = factory.validator(builder -> builder.constraint(...));
+ *         this.validator = factory.validator(builder -&gt; builder.constraint(...));
  *     }
  * }
  * </pre>

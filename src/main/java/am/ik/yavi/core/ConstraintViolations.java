@@ -172,10 +172,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * <code>&#64;PostMapping("users")
 	 * public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
 	 *     return validator.validateToEither(userForm)
-	 *         .fold(violations -> {
+	 *         .fold(violations -&gt; {
 	 *             violations.apply(bindingResult::rejectValue);
 	 *             return "userForm";
-	 *         }, form -> {
+	 *         }, form -&gt; {
 	 *             // ...
 	 *             return "redirect:/";
 	 *         });

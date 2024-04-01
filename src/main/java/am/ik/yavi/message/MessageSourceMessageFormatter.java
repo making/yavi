@@ -31,7 +31,7 @@ import am.ik.yavi.jsr305.Nullable;
  * org.springframework.context.MessageSource messageSource = ...;
  * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
  *                        .messageFormatter(new MessageSourceMessageFormatter(messageSource::getMessage))
- *                        .constraint(CartItem::getQuantity, "quantity", c -> c.greaterThan(0))
+ *                        .constraint(CartItem::getQuantity, "quantity", c -&gt; c.greaterThan(0))
  *                        .constraint(...)
  *                        .build();
  * </code>

@@ -136,7 +136,8 @@ public class Validator<T> implements Validatable<T> {
 	/**
 	 * This method is supposed to be used only internally.
 	 *
-	 * @param action callback per <code>Pair<ConstraintCondition<T>, Validator<T>></code>.
+	 * @param action callback per
+	 *     {@code Pair&lt;ConstraintCondition&lt;T&gt;, Validator&lt;T&gt;&gt;}.
 	 */
 	public void forEachConditionalValidator(
 			Consumer<Pair<ConstraintCondition<T>, Validatable<T>>> action) {

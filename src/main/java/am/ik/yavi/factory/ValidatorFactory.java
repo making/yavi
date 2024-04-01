@@ -44,7 +44,7 @@ import am.ik.yavi.message.MessageFormatter;
  *     private final Validator&lt;CartItem&gt; validator;
  *
  *     public OrderController(ValidatorFactory factory) {
- *         this.validator = factory.validator(builder -> builder.constraint(...));
+ *         this.validator = factory.validator(builder -&gt; builder.constraint(...));
  *     }
  * }
  * </pre>

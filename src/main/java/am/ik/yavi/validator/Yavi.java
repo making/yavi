@@ -31,10 +31,10 @@ public final class Yavi {
 	 *
 	 * <pre>
 	 * <code>
-	 * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
-	 * 	._string("manufacturer", c -> c.notNull())
-	 * 	._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
-	 * 	._integer("seatCount", c -> c.greaterThanOrEqual(2))
+	 * Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+	 * 	._string("manufacturer", c -&gt; c.notNull())
+	 * 	._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+	 * 	._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
 	 * 	.apply(Car::new);
 	 * </code>
 	 * </pre>
