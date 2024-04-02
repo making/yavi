@@ -805,7 +805,7 @@ fi)
 
 $(if [ "${i}" != "${n}" ];then
 cat <<EOD
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(ValueValidator<T, BigDecimal> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -818,7 +818,7 @@ cat <<EOD
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(ValueValidator<BigInteger, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(ValueValidator<T, BigInteger> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -831,7 +831,7 @@ cat <<EOD
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(ValueValidator<Boolean, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(ValueValidator<T, Boolean> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -844,7 +844,7 @@ cat <<EOD
 		return this._boolean(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(ValueValidator<Double, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(ValueValidator<T, Double> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -857,7 +857,7 @@ cat <<EOD
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>, T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(ValueValidator<E, T> validator) {
+	public <E extends Enum<E>, T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(ValueValidator<T, E> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -870,7 +870,7 @@ cat <<EOD
 		return this._enum(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(ValueValidator<Float, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(ValueValidator<T, Float> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -883,7 +883,7 @@ cat <<EOD
 		return this._float(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(ValueValidator<Instant, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(ValueValidator<T, Instant> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -896,7 +896,7 @@ cat <<EOD
 		return this._instant(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(ValueValidator<Integer, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(ValueValidator<T, Integer> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -909,7 +909,7 @@ cat <<EOD
 		return this._integer(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(ValueValidator<T, LocalDateTime> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -922,7 +922,7 @@ cat <<EOD
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(ValueValidator<LocalTime, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(ValueValidator<T, LocalTime> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -935,7 +935,7 @@ cat <<EOD
 		return this._localTime(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(ValueValidator<Long, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(ValueValidator<T, Long> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -961,7 +961,7 @@ cat <<EOD
 		return this._object(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(ValueValidator<OffsetDateTime, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(ValueValidator<T, OffsetDateTime> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -974,7 +974,7 @@ cat <<EOD
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(ValueValidator<Short, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(ValueValidator<T, Short> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -987,7 +987,7 @@ cat <<EOD
 		return this._short(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(ValueValidator<String, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(ValueValidator<T, String> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -1000,7 +1000,7 @@ cat <<EOD
 		return this._string(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(ValueValidator<YearMonth, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(ValueValidator<T, YearMonth> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -1013,7 +1013,7 @@ cat <<EOD
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(ValueValidator<Year, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(ValueValidator<T, Year> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
@@ -1026,7 +1026,7 @@ cat <<EOD
 		return this._year(name, Function.identity());
 	}
 
-	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
+	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(ValueValidator<T, ZonedDateTime> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
