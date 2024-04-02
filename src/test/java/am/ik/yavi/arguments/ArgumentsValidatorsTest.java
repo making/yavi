@@ -264,8 +264,8 @@ class ArgumentsValidatorsTest {
 						.apply(Address::new),
 				countryValidator.split(streetValidator).split(phoneNumberValidator)
 						.apply(Address::new),
-				Yavi.arguments()._string(countryValidator)._string(streetValidator)
-						._string(phoneNumberValidator).apply(Address::new));
+				Yavi.arguments()._object(countryValidator)._string(streetValidator)
+						._object(phoneNumberValidator).apply(Address::new));
 	}
 
 	static Stream<Arguments1Validator<Map<String, String>, Address>> combineValidators() {
