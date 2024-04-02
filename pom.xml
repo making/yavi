@@ -22,7 +22,7 @@
         <junit.version>5.10.2</junit.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
     </properties>
     <licenses>
