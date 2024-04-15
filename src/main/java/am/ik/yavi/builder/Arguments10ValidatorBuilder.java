@@ -95,8 +95,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		this.v10 = v10;
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, BigDecimal> _bigDecimal(
-			ValueValidator<T, BigDecimal> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigDecimal(
+			ValueValidator<BigDecimal, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -112,8 +112,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, BigInteger> _bigInteger(
-			ValueValidator<T, BigInteger> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigInteger(
+			ValueValidator<BigInteger, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -129,8 +129,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Boolean> _boolean(
-			ValueValidator<T, Boolean> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _boolean(
+			ValueValidator<Boolean, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -146,8 +146,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._boolean(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Double> _double(
-			ValueValidator<T, Double> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _double(
+			ValueValidator<Double, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -163,8 +163,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>, T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, E> _enum(
-			ValueValidator<T, E> validator) {
+	public <E extends Enum<E>, T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _enum(
+			ValueValidator<E, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -180,8 +180,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._enum(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Float> _float(
-			ValueValidator<T, Float> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _float(
+			ValueValidator<Float, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -197,8 +197,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._float(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Instant> _instant(
-			ValueValidator<T, Instant> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _instant(
+			ValueValidator<Instant, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -214,8 +214,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._instant(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Integer> _integer(
-			ValueValidator<T, Integer> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _integer(
+			ValueValidator<Integer, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -231,8 +231,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._integer(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, LocalDateTime> _localDateTime(
-			ValueValidator<T, LocalDateTime> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localDateTime(
+			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -249,8 +249,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, LocalTime> _localTime(
-			ValueValidator<T, LocalTime> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localTime(
+			ValueValidator<LocalTime, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -266,8 +266,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._localTime(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Long> _long(
-			ValueValidator<T, Long> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _long(
+			ValueValidator<Long, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -300,8 +300,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._object(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, OffsetDateTime> _offsetDateTime(
-			ValueValidator<T, OffsetDateTime> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _offsetDateTime(
+			ValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -318,8 +318,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Short> _short(
-			ValueValidator<T, Short> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _short(
+			ValueValidator<Short, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -335,8 +335,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._short(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, String> _string(
-			ValueValidator<T, String> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _string(
+			ValueValidator<String, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -352,8 +352,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._string(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, YearMonth> _yearMonth(
-			ValueValidator<T, YearMonth> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _yearMonth(
+			ValueValidator<YearMonth, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -369,8 +369,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Year> _year(
-			ValueValidator<T, Year> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _year(
+			ValueValidator<Year, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}
@@ -386,8 +386,8 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		return this._year(name, Function.identity());
 	}
 
-	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, ZonedDateTime> _zonedDateTime(
-			ValueValidator<T, ZonedDateTime> validator) {
+	public <T> Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _zonedDateTime(
+			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4,
 				this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, validator);
 	}

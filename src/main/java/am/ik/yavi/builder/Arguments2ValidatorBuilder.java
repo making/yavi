@@ -67,8 +67,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		this.v2 = v2;
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, BigDecimal> _bigDecimal(
-			ValueValidator<T, BigDecimal> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, BigDecimal, R1, R2, T> _bigDecimal(
+			ValueValidator<BigDecimal, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -83,8 +83,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, BigInteger> _bigInteger(
-			ValueValidator<T, BigInteger> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, BigInteger, R1, R2, T> _bigInteger(
+			ValueValidator<BigInteger, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -99,8 +99,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Boolean> _boolean(
-			ValueValidator<T, Boolean> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Boolean, R1, R2, T> _boolean(
+			ValueValidator<Boolean, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -115,8 +115,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._boolean(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Double> _double(
-			ValueValidator<T, Double> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Double, R1, R2, T> _double(
+			ValueValidator<Double, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -130,8 +130,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>, T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, E> _enum(
-			ValueValidator<T, E> validator) {
+	public <E extends Enum<E>, T> Arguments3ValidatorBuilder<A1, A2, E, R1, R2, T> _enum(
+			ValueValidator<E, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -146,8 +146,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._enum(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Float> _float(
-			ValueValidator<T, Float> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Float, R1, R2, T> _float(
+			ValueValidator<Float, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -160,8 +160,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._float(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Instant> _instant(
-			ValueValidator<T, Instant> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Instant, R1, R2, T> _instant(
+			ValueValidator<Instant, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -176,8 +176,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._instant(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Integer> _integer(
-			ValueValidator<T, Integer> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Integer, R1, R2, T> _integer(
+			ValueValidator<Integer, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -192,8 +192,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._integer(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, LocalDateTime> _localDateTime(
-			ValueValidator<T, LocalDateTime> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, LocalDateTime, R1, R2, T> _localDateTime(
+			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -209,8 +209,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, LocalTime> _localTime(
-			ValueValidator<T, LocalTime> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, LocalTime, R1, R2, T> _localTime(
+			ValueValidator<LocalTime, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -225,8 +225,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._localTime(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Long> _long(
-			ValueValidator<T, Long> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Long, R1, R2, T> _long(
+			ValueValidator<Long, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -253,8 +253,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._object(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, OffsetDateTime> _offsetDateTime(
-			ValueValidator<T, OffsetDateTime> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, OffsetDateTime, R1, R2, T> _offsetDateTime(
+			ValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -270,8 +270,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Short> _short(
-			ValueValidator<T, Short> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Short, R1, R2, T> _short(
+			ValueValidator<Short, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -284,8 +284,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._short(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, String> _string(
-			ValueValidator<T, String> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, String, R1, R2, T> _string(
+			ValueValidator<String, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -299,8 +299,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._string(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, YearMonth> _yearMonth(
-			ValueValidator<T, YearMonth> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, YearMonth, R1, R2, T> _yearMonth(
+			ValueValidator<YearMonth, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -315,8 +315,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, Year> _year(
-			ValueValidator<T, Year> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, Year, R1, R2, T> _year(
+			ValueValidator<Year, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
@@ -329,8 +329,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return this._year(name, Function.identity());
 	}
 
-	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, ZonedDateTime> _zonedDateTime(
-			ValueValidator<T, ZonedDateTime> validator) {
+	public <T> Arguments3ValidatorBuilder<A1, A2, ZonedDateTime, R1, R2, T> _zonedDateTime(
+			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments3ValidatorBuilder<>(this.v1, this.v2, validator);
 	}
 
