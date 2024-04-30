@@ -9,14 +9,13 @@ on:
     - src/**
     - pom.xml
     - .github/workflows/ci.yaml
-  pull_request_target:
+  pull_request:
     branches:
     - develop
     - main
     paths:
     - src/**
     - pom.xml
-    - .github/workflows/ci.yaml
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,29 +26,13 @@ jobs:
       id-token: write
       contents: read
     steps:
-    - uses: actions/checkout@v3
-    - name: Import Secrets
-      id: secrets
-      uses: hashicorp/vault-action@v2.5.0
-      with:
-        exportToken: true
-        exportEnv: true
-        method: jwt
-        url: ${{ secrets.VAULT_ADDR }}
-        role: cicd
-        secrets: |
-          kv/data/cicd/sonatype username | SONATYPE_USERNAME ;
-          kv/data/cicd/sonatype password | SONATYPE_PASSWORD ;
-          kv/data/cicd/gpg secring | GPG_SECRING ;
-          kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;
-    - name: Set up JDK
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
       with:
         java-version: ${{ matrix.java }}
         distribution: 'liberica'
         cache: maven
-        gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
-        gpg-passphrase: ${{ steps.secrets.outputs.GPG_PASSPHRASE }}
     - name: Unit Tests
       if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: ./mvnw -V test --no-transfer-progress
@@ -61,6 +44,21 @@ jobs:
       if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
         ./mvnw -V javadoc:jar --no-transfer-progress
+    - name: Import Secrets
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      id: secrets
+      uses: hashicorp/vault-action@v3.0.0
+      with:
+        exportToken: true
+        exportEnv: true
+        method: jwt
+        url: ${{ secrets.VAULT_ADDR }}
+        role: cicd
+        secrets: |
+          kv/data/cicd/sonatype username | SONATYPE_USERNAME ;
+          kv/data/cicd/sonatype password | SONATYPE_PASSWORD ;
+          kv/data/cicd/gpg secring | GPG_SECRING ;
+          kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;      
     - name: Deploy to sonatype-snapshots
       if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       run: |
@@ -112,4 +110,4 @@ jobs:
     - name: Revoke token
       if: always()
       run: |
-        curl -X POST -s -H "X-Vault-Token: ${VAULT_TOKEN}" ${{ secrets.VAULT_ADDR }}/v1/auth/token/revoke-self
+        curl -X POST -s -H "X-Vault-Token: ${VAULT_TOKEN}" ${{ secrets.VAULT_ADDR }}/v1/auth/token/revoke-self || true
