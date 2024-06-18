@@ -28,6 +28,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
 
+import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.constraint.BigDecimalConstraint;
 import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
@@ -332,11 +333,11 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._zonedDateTime(name, Function.identity());
 	}
 
-	public <X> ValueValidator<A1, X> apply(Function1<? super R1, ? extends X> f) {
-		return this.v1.andThen(f::apply);
+	public <X> Arguments1Validator<A1, X> apply(Function1<? super R1, ? extends X> f) {
+		return Arguments1Validator.from(this.v1.andThen(f::apply));
 	}
 
-	public ValueValidator<A1, R1> get() {
-		return this.v1;
+	public Arguments1Validator<A1, R1> get() {
+		return Arguments1Validator.from(this.v1);
 	}
 }

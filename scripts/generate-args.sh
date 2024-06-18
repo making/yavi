@@ -752,6 +752,10 @@ import am.ik.yavi.arguments.Arguments1;
 $(if [ "${i}" -gt 1 ];then
 cat <<EOD
 import am.ik.yavi.arguments.ArgumentsValidators;
+EOD
+fi)
+$(if [ "${i}" -gt 0 ];then
+cat <<EOD
 import am.ik.yavi.arguments.Arguments${i}Validator;
 EOD
 fi)
@@ -1050,12 +1054,12 @@ EOD
 fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-	public <X> ValueValidator<A1, X> apply(Function1<? super R1, ? extends X> f) {
-		return this.v1.andThen(f::apply);
+	public <X> Arguments1Validator<A1, X> apply(Function1<? super R1, ? extends X> f) {
+		return Arguments1Validator.from(this.v1.andThen(f::apply));
 	}
 
-	public ValueValidator<A1, R1> get() {
-		return this.v1;
+	public Arguments1Validator<A1, R1> get() {
+		return Arguments1Validator.from(this.v1);
 	}
 EOD
 fi)
