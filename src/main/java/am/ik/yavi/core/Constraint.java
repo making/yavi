@@ -26,6 +26,7 @@ import am.ik.yavi.jsr305.Nullable;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_EQUAL_TO;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_ONE_OF;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_ONE_OF;
 
 public interface Constraint<T, V, C extends Constraint<T, V, C>> {
@@ -52,6 +53,16 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 */
 	default C oneOf(Collection<V> values) {
 		this.predicates().add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
+				() -> new Object[] { values }, NullAs.VALID));
+		return this.cast();
+	}
+
+	/**
+	 * @since 0.14.1
+	 */
+	default C notOneOf(Collection<V> values) {
+		Predicate<V> notOneOf = v -> !values.contains(v);
+		this.predicates().add(ConstraintPredicate.of(notOneOf, OBJECT_NOT_ONE_OF,
 				() -> new Object[] { values }, NullAs.VALID));
 		return this.cast();
 	}
