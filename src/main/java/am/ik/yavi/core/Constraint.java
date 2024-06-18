@@ -43,7 +43,7 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 */
 	default C equalTo(@Nullable V other) {
 		this.predicates().add(ConstraintPredicate.of(Predicate.isEqual(other),
-				OBJECT_EQUAL_TO, () -> new Object[] { other }, NullAs.INVALID));
+				OBJECT_EQUAL_TO, () -> new Object[] { other }, NullAs.VALID));
 		return this.cast();
 	}
 
@@ -52,7 +52,7 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 */
 	default C oneOf(Collection<V> values) {
 		this.predicates().add(ConstraintPredicate.of(values::contains, OBJECT_ONE_OF,
-				() -> new Object[] { values }, NullAs.INVALID));
+				() -> new Object[] { values }, NullAs.VALID));
 		return this.cast();
 	}
 
