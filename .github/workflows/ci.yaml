@@ -27,7 +27,7 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 17
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: ${{ matrix.java }}
@@ -78,11 +78,11 @@ jobs:
         if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
           ./mvnw -V deploy -s settings.xml --no-transfer-progress -DskipTests=true -DserverId=sonatype-snapshots
         fi
-    - name: Set up JDK 17 with GPG
+    - name: Set up JDK with GPG
       if: github.ref == 'refs/heads/main'
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: ${{ matrix.java }}
         distribution: 'liberica'
         cache: maven
         gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
