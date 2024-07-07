@@ -43,6 +43,18 @@ public class BooleanArrayConstraint<T>
 		return this;
 	}
 
+	public BooleanArrayConstraint<T> onlyContains(boolean v){
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			for(boolean e : x){
+				if(e != v)
+					return false;
+			}
+			return true;
+		},ARRAY_CONTAINS,() -> new Object[]{v},VALID));
+		return this;
+	}
+
+
 	@Override
 	protected ToIntFunction<boolean[]> size() {
 		return x -> x.length;
