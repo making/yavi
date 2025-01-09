@@ -42,15 +42,13 @@ public class ShortValidatorBuilder implements ValueValidatorBuilder<Short, Short
 		return new ShortValidatorBuilder(builder);
 	}
 
-	ShortValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder) {
+	ShortValidatorBuilder(Function<ValidatorBuilder<Arguments1<Short>>, ValidatorBuilder<Arguments1<Short>>> builder) {
 		this.builder = builder;
 	}
 
 	@Override
 	public <T> ShortValidator<T> build(Function<? super Short, ? extends T> mapper) {
-		final Validator<Arguments1<Short>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Short>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new ShortValidator<>(validator, mapper::apply);
 	}
 
@@ -58,4 +56,5 @@ public class ShortValidatorBuilder implements ValueValidatorBuilder<Short, Short
 	public ShortValidator<Short> build() {
 		return build(x -> x);
 	}
+
 }

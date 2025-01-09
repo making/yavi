@@ -35,16 +35,20 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class ApplicativeValidationTest {
 
-	static final ApplicativeValidator<String> streetValidator = ValidatorBuilder
-			.of(String.class)._string(s -> s, "street", c -> c.notBlank()).build()
-			.applicative();
+	static final ApplicativeValidator<String> streetValidator = ValidatorBuilder.of(String.class)
+		._string(s -> s, "street", c -> c.notBlank())
+		.build()
+		.applicative();
 
-	static final ValueValidator<Map<String, String>, Country> mapCountryValidator = Country
-			.validator().prefixed("country").applicative()
-			.compose(map -> new Country(map.get("country")));
+	static final ValueValidator<Map<String, String>, Country> mapCountryValidator = Country.validator()
+		.prefixed("country")
+		.applicative()
+		.compose(map -> new Country(map.get("country")));
 
 	static final ValueValidator<Country, String> countryValidator = Country.validator()
-			.prefixed("country").applicative().andThen(Country::name);
+		.prefixed("country")
+		.applicative()
+		.andThen(Country::name);
 
 	@ParameterizedTest
 	@MethodSource("validValidations")
@@ -64,19 +68,17 @@ class ApplicativeValidationTest {
 		final List<ConstraintViolation> violations = validation.errors();
 		assertThat(violations).hasSize(3);
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(1).name()).isEqualTo("street");
 		assertThat(violations.get(1).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(2).name()).isEqualTo("phoneNumber.value");
-		assertThat(violations.get(2).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(2).messageKey()).isEqualTo("container.greaterThanOrEqual");
 	}
 
 	@Test
 	void compose_valid() {
 		final Validated<Country> countryValidated = mapCountryValidator
-				.validate(Collections.singletonMap("country", "JP"));
+			.validate(Collections.singletonMap("country", "JP"));
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value().name()).isEqualTo("JP");
 	}
@@ -84,32 +86,28 @@ class ApplicativeValidationTest {
 	@Test
 	void compose_invalid() {
 		final Validated<Country> countryValidated = mapCountryValidator
-				.validate(Collections.singletonMap("country", "J"));
+			.validate(Collections.singletonMap("country", "J"));
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
 	}
 
 	@Test
 	void andThen_valid() {
-		final Validated<String> countryValidated = countryValidator
-				.validate(new Country("JP"));
+		final Validated<String> countryValidated = countryValidator.validate(new Country("JP"));
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value()).isEqualTo("JP");
 	}
 
 	@Test
 	void andThen_invalid() {
-		final Validated<String> countryValidated = countryValidator
-				.validate(new Country("J"));
+		final Validated<String> countryValidated = countryValidator.validate(new Country("J"));
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
 		assertThat(violations.get(0).name()).isEqualTo("country.name");
 	}
 
@@ -118,10 +116,9 @@ class ApplicativeValidationTest {
 		final Validated<String> streetValidation = streetValidator.validate("xyz");
 		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("12345678");
 		return Stream.of(
-				arguments(countryValidation.combine(streetValidation)
-						.combine(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation,
-						streetValidation, phoneNumberValidation)));
+				arguments(
+						countryValidation.combine(streetValidation).combine(phoneNumberValidation).apply(Address::new)),
+				arguments(Validations.apply(Address::new, countryValidation, streetValidation, phoneNumberValidation)));
 	}
 
 	static Stream<Arguments> invalidValidations() {
@@ -129,9 +126,9 @@ class ApplicativeValidationTest {
 		final Validated<String> streetValidation = streetValidator.validate("");
 		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("1234567");
 		return Stream.of(
-				arguments(countryValidation.combine(streetValidation)
-						.combine(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation,
-						streetValidation, phoneNumberValidation)));
+				arguments(
+						countryValidation.combine(streetValidation).combine(phoneNumberValidation).apply(Address::new)),
+				arguments(Validations.apply(Address::new, countryValidation, streetValidation, phoneNumberValidation)));
 	}
+
 }

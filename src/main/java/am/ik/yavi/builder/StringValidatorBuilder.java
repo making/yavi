@@ -49,8 +49,7 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 
 	@Override
 	public <T> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
-		final Validator<Arguments1<String>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new StringValidator<>(validator, mapper::apply);
 	}
 
@@ -58,4 +57,5 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	public StringValidator<String> build() {
 		return build(x -> x);
 	}
+
 }

@@ -28,4 +28,5 @@ class FunctionsTest {
 		final Integer result = add10.apply(2);
 		assertThat(result).isEqualTo(12);
 	}
+
 }

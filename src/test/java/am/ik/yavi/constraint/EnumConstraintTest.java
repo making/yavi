@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.function.Predicate;
 
 class EnumConstraintTest {
+
 	private final EnumConstraint<Color, Color> enumConstraint = new EnumConstraint<>();
 
 	@Test
@@ -35,11 +36,11 @@ class EnumConstraintTest {
 	@ParameterizedTest(name = "test oneOf(BLUE,RED) for {0} should return {1}")
 	@CsvSource({ "BLUE,true", "GREEN,false" })
 	void testIsOneOf(Color color, boolean expectedResult) {
-		Predicate<Color> predicate = enumConstraint.oneOf(Color.BLUE, Color.RED)
-				.predicates().peekFirst().predicate();
+		Predicate<Color> predicate = enumConstraint.oneOf(Color.BLUE, Color.RED).predicates().peekFirst().predicate();
 
 		boolean actualResult = predicate.test(color);
 
 		Truth.assertThat(actualResult).isEqualTo(expectedResult);
 	}
+
 }

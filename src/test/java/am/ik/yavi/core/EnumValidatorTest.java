@@ -29,15 +29,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EnumValidatorTest {
+
 	Validator<Message> validator;
 
 	@Nested
 	class TestConstraintEnumValidator {
+
 		@BeforeEach
 		void beforeEach() {
 			validator = ValidatorBuilder.of(Message.class)
-					.constraint(Message::getColor, "color", c -> c.equalTo(Color.RED))
-					.build();
+				.constraint(Message::getColor, "color", c -> c.equalTo(Color.RED))
+				.build();
 		}
 
 		@Test
@@ -57,14 +59,17 @@ public class EnumValidatorTest {
 
 			assertThat(isValid).isFalse();
 		}
+
 	}
 
 	@Nested
 	class TestExplicitEnumValidator {
+
 		@BeforeEach
 		void beforeEach() {
-			validator = ValidatorBuilder.of(Message.class)._enum(Message::getColor,
-					"color", c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE))).build();
+			validator = ValidatorBuilder.of(Message.class)
+				._enum(Message::getColor, "color", c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE)))
+				.build();
 		}
 
 		@Test
@@ -84,5 +89,7 @@ public class EnumValidatorTest {
 
 			assertThat(isValid).isFalse();
 		}
+
 	}
+
 }

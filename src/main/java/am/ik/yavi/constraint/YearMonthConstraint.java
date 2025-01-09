@@ -25,8 +25,8 @@ import am.ik.yavi.constraint.base.TemporalConstraintBase;
  *
  * @since 0.11.0
  */
-public class YearMonthConstraint<T>
-		extends TemporalConstraintBase<T, YearMonth, YearMonthConstraint<T>> {
+public class YearMonthConstraint<T> extends TemporalConstraintBase<T, YearMonth, YearMonthConstraint<T>> {
+
 	@Override
 	protected boolean isAfter(YearMonth a, YearMonth b) {
 		return a.isAfter(b);
@@ -46,4 +46,5 @@ public class YearMonthConstraint<T>
 	public YearMonthConstraint<T> cast() {
 		return this;
 	}
+
 }

@@ -51,8 +51,7 @@ class CollectionConstraintTest {
 
 	@Test
 	void greaterThanOrEqual() {
-		Predicate<List<String>> predicate = retrievePredicate(
-				c -> c.greaterThanOrEqual(2));
+		Predicate<List<String>> predicate = retrievePredicate(c -> c.greaterThanOrEqual(2));
 		assertThat(predicate.test(Collections.singletonList("foo"))).isFalse();
 		assertThat(predicate.test(Arrays.asList("foo", "bar"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("foo", "bar", "baz"))).isTrue();
@@ -89,7 +88,7 @@ class CollectionConstraintTest {
 
 	private static Predicate<List<String>> retrievePredicate(
 			Function<CollectionConstraint<List<String>, List<String>, String>, CollectionConstraint<List<String>, List<String>, String>> constraint) {
-		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

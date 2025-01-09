@@ -47,8 +47,7 @@ class LongValidatorTest {
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -61,9 +60,8 @@ class LongValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(LongValidator<Price> priceValidator) {
-		assertThatThrownBy(() -> priceValidator.validated((long) -1))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"price\" must be greater than or equal to 0");
+		assertThatThrownBy(() -> priceValidator.validated((long) -1)).isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
 
 	@ParameterizedTest
@@ -71,7 +69,7 @@ class LongValidatorTest {
 	void composeValid(LongValidator<Price> priceValidator) {
 		final Map<String, Long> params = Collections.singletonMap("price", (long) 100);
 		final Arguments1Validator<Map<String, Long>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(100);
@@ -82,27 +80,25 @@ class LongValidatorTest {
 	void composeInvalid(LongValidator<Price> priceValidator) {
 		final Map<String, Long> params = Collections.singletonMap("price", (long) -1);
 		final Arguments1Validator<Map<String, Long>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	static Stream<LongValidator<Price>> validators() {
 		return Stream.of(
-				LongValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
-						.build(Price::new),
-				LongValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
-						.build().andThen(Price::new));
+				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0)).build(Price::new),
+				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
+					.build()
+					.andThen(Price::new));
 	}
 
 	public static class Price {
+
 		private final long value;
 
 		public Price(long value) {
@@ -112,5 +108,7 @@ class LongValidatorTest {
 		public long value() {
 			return value;
 		}
+
 	}
+
 }

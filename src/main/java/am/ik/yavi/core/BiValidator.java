@@ -43,13 +43,13 @@ import java.util.function.BiConsumer;
  */
 @Deprecated
 public class BiValidator<T, E> implements BiConsumer<T, E> {
+
 	private final ValueValidator<T, ?> validator;
 
 	private final ErrorHandler<E> errorHandler;
 
 	/**
 	 * Create a {@link BiValidator} from a {@link ValueValidator}
-	 *
 	 * @param validator value validator
 	 * @param errorHandler error handler
 	 * @since 0.13.0
@@ -68,8 +68,8 @@ public class BiValidator<T, E> implements BiConsumer<T, E> {
 		final Validated<?> validated = this.validator.validate(target);
 		if (!validated.isValid()) {
 			final ConstraintViolations violations = validated.errors();
-			violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler
-					.handleError(errors, name, messageKey, args, defaultMessage));
+			violations.apply((name, messageKey, args, defaultMessage) -> this.errorHandler.handleError(errors, name,
+					messageKey, args, defaultMessage));
 		}
 	}
 
@@ -79,7 +79,9 @@ public class BiValidator<T, E> implements BiConsumer<T, E> {
 	 * Deprecated in favor of {@link am.ik.yavi.core.ErrorHandler}
 	 */
 	public interface ErrorHandler<E> {
-		void handleError(E errors, String name, String messageKey, Object[] args,
-				String defaultMessage);
+
+		void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
+
 	}
+
 }

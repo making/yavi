@@ -55,8 +55,7 @@ import am.ik.yavi.core.ValueValidator;
  */
 public final class YaviArguments {
 
-	public <T> Arguments1ValidatorBuilder<BigDecimal, T> _bigDecimal(
-			ValueValidator<BigDecimal, T> validator) {
+	public <T> Arguments1ValidatorBuilder<BigDecimal, T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -69,8 +68,7 @@ public final class YaviArguments {
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<BigInteger, T> _bigInteger(
-			ValueValidator<BigInteger, T> validator) {
+	public <T> Arguments1ValidatorBuilder<BigInteger, T> _bigInteger(ValueValidator<BigInteger, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -83,8 +81,7 @@ public final class YaviArguments {
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Boolean, T> _boolean(
-			ValueValidator<Boolean, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Boolean, T> _boolean(ValueValidator<Boolean, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -97,8 +94,7 @@ public final class YaviArguments {
 		return this._boolean(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Double, T> _double(
-			ValueValidator<Double, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Double, T> _double(ValueValidator<Double, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -111,8 +107,7 @@ public final class YaviArguments {
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>, T> Arguments1ValidatorBuilder<E, T> _enum(
-			ValueValidator<E, T> validator) {
+	public <E extends Enum<E>, T> Arguments1ValidatorBuilder<E, T> _enum(ValueValidator<E, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -125,8 +120,7 @@ public final class YaviArguments {
 		return this._enum(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Float, T> _float(
-			ValueValidator<Float, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Float, T> _float(ValueValidator<Float, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -139,8 +133,7 @@ public final class YaviArguments {
 		return this._float(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Instant, T> _instant(
-			ValueValidator<Instant, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Instant, T> _instant(ValueValidator<Instant, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -153,8 +146,7 @@ public final class YaviArguments {
 		return this._instant(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Integer, T> _integer(
-			ValueValidator<Integer, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Integer, T> _integer(ValueValidator<Integer, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -167,25 +159,20 @@ public final class YaviArguments {
 		return this._integer(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<LocalDateTime, T> _localDateTime(
-			ValueValidator<LocalDateTime, T> validator) {
+	public <T> Arguments1ValidatorBuilder<LocalDateTime, T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
-	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(
-			String name,
+	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return this._localDateTime(
-				LocalDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._localDateTime(LocalDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(
-			String name) {
+	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<LocalTime, T> _localTime(
-			ValueValidator<LocalTime, T> validator) {
+	public <T> Arguments1ValidatorBuilder<LocalTime, T> _localTime(ValueValidator<LocalTime, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -198,8 +185,7 @@ public final class YaviArguments {
 		return this._localTime(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Long, T> _long(
-			ValueValidator<Long, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Long, T> _long(ValueValidator<Long, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -212,8 +198,7 @@ public final class YaviArguments {
 		return this._long(name, Function.identity());
 	}
 
-	public <T1, T2> Arguments1ValidatorBuilder<T1, T2> _object(
-			ValueValidator<T1, T2> validator) {
+	public <T1, T2> Arguments1ValidatorBuilder<T1, T2> _object(ValueValidator<T1, T2> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -231,20 +216,16 @@ public final class YaviArguments {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
-	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(
-			String name,
+	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return this._offsetDateTime(
-				OffsetDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._offsetDateTime(OffsetDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(
-			String name) {
+	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Short, T> _short(
-			ValueValidator<Short, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Short, T> _short(ValueValidator<Short, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -257,8 +238,7 @@ public final class YaviArguments {
 		return this._short(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<String, T> _string(
-			ValueValidator<String, T> validator) {
+	public <T> Arguments1ValidatorBuilder<String, T> _string(ValueValidator<String, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -271,8 +251,7 @@ public final class YaviArguments {
 		return this._string(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<YearMonth, T> _yearMonth(
-			ValueValidator<YearMonth, T> validator) {
+	public <T> Arguments1ValidatorBuilder<YearMonth, T> _yearMonth(ValueValidator<YearMonth, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -285,8 +264,7 @@ public final class YaviArguments {
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<Year, T> _year(
-			ValueValidator<Year, T> validator) {
+	public <T> Arguments1ValidatorBuilder<Year, T> _year(ValueValidator<Year, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
@@ -299,20 +277,16 @@ public final class YaviArguments {
 		return this._year(name, Function.identity());
 	}
 
-	public <T> Arguments1ValidatorBuilder<ZonedDateTime, T> _zonedDateTime(
-			ValueValidator<ZonedDateTime, T> validator) {
+	public <T> Arguments1ValidatorBuilder<ZonedDateTime, T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder<>(validator);
 	}
 
-	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(
-			String name,
+	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return this._zonedDateTime(
-				ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._zonedDateTime(ZonedDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(
-			String name) {
+	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 

@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstraint<T>> {
+
 	@Override
 	public LongConstraint<T> cast() {
 		return this;
@@ -49,4 +50,5 @@ public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstr
 	protected Long zeroValue() {
 		return 0L;
 	}
+
 }

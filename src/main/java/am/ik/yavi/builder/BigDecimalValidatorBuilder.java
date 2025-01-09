@@ -26,8 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class BigDecimalValidatorBuilder
-		implements ValueValidatorBuilder<BigDecimal, BigDecimal> {
+public class BigDecimalValidatorBuilder implements ValueValidatorBuilder<BigDecimal, BigDecimal> {
 
 	private final Function<ValidatorBuilder<Arguments1<BigDecimal>>, ValidatorBuilder<Arguments1<BigDecimal>>> builder;
 
@@ -50,10 +49,8 @@ public class BigDecimalValidatorBuilder
 	}
 
 	@Override
-	public <T> BigDecimalValidator<T> build(
-			Function<? super BigDecimal, ? extends T> mapper) {
-		final Validator<Arguments1<BigDecimal>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> BigDecimalValidator<T> build(Function<? super BigDecimal, ? extends T> mapper) {
+		final Validator<Arguments1<BigDecimal>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BigDecimalValidator<>(validator, mapper::apply);
 	}
 
@@ -61,4 +58,5 @@ public class BigDecimalValidatorBuilder
 	public BigDecimalValidator<BigDecimal> build() {
 		return build(x -> x);
 	}
+
 }

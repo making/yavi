@@ -49,8 +49,7 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 
 	@Override
 	public <T> BooleanValidator<T> build(Function<? super Boolean, ? extends T> mapper) {
-		final Validator<Arguments1<Boolean>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Boolean>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BooleanValidator<>(validator, mapper::apply);
 	}
 
@@ -58,4 +57,5 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	public BooleanValidator<Boolean> build() {
 		return build(x -> x);
 	}
+
 }

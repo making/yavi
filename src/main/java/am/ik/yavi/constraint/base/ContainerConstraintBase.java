@@ -33,64 +33,56 @@ import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolatedValue;
 
-public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C>>
-		extends ConstraintBase<T, V, C> {
+public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C>> extends ConstraintBase<T, V, C> {
 
 	public C fixedSize(int size) {
 		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) == size,
-								this.size()),
-						CONTAINER_FIXED_SIZE, () -> new Object[] { size }, VALID));
+			.add(ConstraintPredicate.withViolatedValue(
+					this.checkSizePredicate(x -> size().applyAsInt(x) == size, this.size()), CONTAINER_FIXED_SIZE,
+					() -> new Object[] { size }, VALID));
 		return cast();
 	}
 
 	public C greaterThan(int min) {
 		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) > min,
-								this.size()),
-						CONTAINER_GREATER_THAN, () -> new Object[] { min }, VALID));
+			.add(ConstraintPredicate.withViolatedValue(
+					this.checkSizePredicate(x -> size().applyAsInt(x) > min, this.size()), CONTAINER_GREATER_THAN,
+					() -> new Object[] { min }, VALID));
 		return cast();
 	}
 
 	public C greaterThanOrEqual(int min) {
 		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) >= min,
-								this.size()),
-						CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min },
-						VALID));
+			.add(ConstraintPredicate.withViolatedValue(
+					this.checkSizePredicate(x -> size().applyAsInt(x) >= min, this.size()),
+					CONTAINER_GREATER_THAN_OR_EQUAL, () -> new Object[] { min }, VALID));
 		return cast();
 	}
 
 	public C lessThan(int max) {
 		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) < max,
-								this.size()),
-						CONTAINER_LESS_THAN, () -> new Object[] { max }, VALID));
+			.add(ConstraintPredicate.withViolatedValue(
+					this.checkSizePredicate(x -> size().applyAsInt(x) < max, this.size()), CONTAINER_LESS_THAN,
+					() -> new Object[] { max }, VALID));
 		return cast();
 	}
 
 	public C lessThanOrEqual(int max) {
 		this.predicates()
-				.add(ConstraintPredicate.withViolatedValue(
-						this.checkSizePredicate(x -> size().applyAsInt(x) <= max,
-								this.size()),
-						CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
+			.add(ConstraintPredicate.withViolatedValue(
+					this.checkSizePredicate(x -> size().applyAsInt(x) <= max, this.size()),
+					CONTAINER_LESS_THAN_OR_EQUAL, () -> new Object[] { max }, VALID));
 		return cast();
 	}
 
 	public C notEmpty() {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0,
-						CONTAINER_NOT_EMPTY, () -> new Object[] {}, INVALID));
+			.add(ConstraintPredicate.of(x -> x != null && size().applyAsInt(x) != 0, CONTAINER_NOT_EMPTY,
+					() -> new Object[] {}, INVALID));
 		return cast();
 	}
 
-	protected Function<V, Optional<ViolatedValue>> checkSizePredicate(
-			Predicate<V> predicate, ToIntFunction<V> size) {
+	protected Function<V, Optional<ViolatedValue>> checkSizePredicate(Predicate<V> predicate, ToIntFunction<V> size) {
 		return v -> {
 			if (predicate.test(v)) {
 				return Optional.empty();
@@ -101,4 +93,5 @@ public abstract class ContainerConstraintBase<T, V, C extends Constraint<T, V, C
 	}
 
 	protected abstract ToIntFunction<V> size();
+
 }

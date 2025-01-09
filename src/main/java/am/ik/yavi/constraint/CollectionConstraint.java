@@ -40,8 +40,8 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	}
 
 	public CollectionConstraint<T, L, E> contains(E s) {
-		this.predicates().add(ConstraintPredicate.of(x -> x.contains(s),
-				COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(x -> x.contains(s), COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
 		return this;
 	}
 
@@ -74,4 +74,5 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	protected ToIntFunction<L> size() {
 		return Collection::size;
 	}
+
 }

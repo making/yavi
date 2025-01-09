@@ -29,104 +29,91 @@ public class CustomValidatorTest {
 
 	@Test
 	public void predicate() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
-				.constraint(Book::isbn, "isbn", c -> c.notNull() //
-						.predicate(CustomValidatorTest::isISBN13, //
-								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
-				.build();
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
+			.constraint(Book::isbn, "isbn", c -> c.notNull() //
+				.predicate(CustomValidatorTest::isISBN13, //
+						"custom.isbn13", "\"{0}\" must be ISBN13 format"))
+			.build();
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("9784777519699"));
+			ConstraintViolations violations = validator.validate(new Book("9784777519699"));
 			assertThat(violations.isValid()).isTrue();
 		}
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("1111111111111"));
+			ConstraintViolations violations = validator.validate(new Book("1111111111111"));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must be ISBN13 format");
 			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must not be null");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must not be null");
 			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 		}
 	}
 
 	@Test
 	public void predicateCustom() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
-				.constraint(Book::isbn, "isbn", c -> c.notNull() //
-						.predicate(IsbnConstraint.SINGLETON))
-				.build();
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
+			.constraint(Book::isbn, "isbn", c -> c.notNull() //
+				.predicate(IsbnConstraint.SINGLETON))
+			.build();
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("9784777519699"));
+			ConstraintViolations violations = validator.validate(new Book("9784777519699"));
 			assertThat(violations.isValid()).isTrue();
 		}
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("1111111111111"));
+			ConstraintViolations violations = validator.validate(new Book("1111111111111"));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must be ISBN13 format");
 			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must not be null");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must not be null");
 			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
 		}
 	}
 
 	@Test
 	public void predicateNullable() {
-		Validator<Book> validator = ValidatorBuilder.<Book> of() //
-				.constraint(Book::isbn, "isbn",
-						c -> c.predicateNullable(v -> v != null && isISBN13(v), //
-								"custom.isbn13", "\"{0}\" must be ISBN13 format"))
-				.build();
+		Validator<Book> validator = ValidatorBuilder.<Book>of() //
+			.constraint(Book::isbn, "isbn", c -> c.predicateNullable(v -> v != null && isISBN13(v), //
+					"custom.isbn13", "\"{0}\" must be ISBN13 format"))
+			.build();
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("9784777519699"));
+			ConstraintViolations violations = validator.validate(new Book("9784777519699"));
 			assertThat(violations.isValid()).isTrue();
 		}
 		{
-			ConstraintViolations violations = validator
-					.validate(new Book("1111111111111"));
+			ConstraintViolations violations = validator.validate(new Book("1111111111111"));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must be ISBN13 format");
 			assertThat(violations.get(0).messageKey()).isEqualTo("custom.isbn13");
 		}
 		{
 			ConstraintViolations violations = validator.validate(new Book(null));
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"isbn\" must be ISBN13 format");
+			assertThat(violations.get(0).message()).isEqualTo("\"isbn\" must be ISBN13 format");
 		}
 	}
 
 	@Test
 	public void range() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
-				.constraintOnObject(r -> r, "range", c -> c.notNull() //
-						.predicate(r -> {
-							Range range = Range.class.cast(r);
-							return range.getFrom() < range.getTo();
-						}, "range.cross", "\"from\" must be less than \"to\""))
-				.build();
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
+			.constraintOnObject(r -> r, "range", c -> c.notNull() //
+				.predicate(r -> {
+					Range range = Range.class.cast(r);
+					return range.getFrom() < range.getTo();
+				}, "range.cross", "\"from\" must be less than \"to\""))
+			.build();
 		{
 			Range range = new Range(0, 10);
 			ConstraintViolations violations = validator.validate(range);
@@ -137,17 +124,16 @@ public class CustomValidatorTest {
 			ConstraintViolations violations = validator.validate(range);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).message()).isEqualTo("\"from\" must be less than \"to\"");
 			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
 	@Test
 	public void rangeConstraintOnTarget() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
-				.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
-				.build();
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
+			.constraintOnTarget(RangeConstraint.SINGLETON, "range") //
+			.build();
 		{
 			Range range = new Range(0, 10);
 			ConstraintViolations violations = validator.validate(range);
@@ -158,18 +144,17 @@ public class CustomValidatorTest {
 			ConstraintViolations violations = validator.validate(range);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).message()).isEqualTo("\"from\" must be less than \"to\"");
 			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
 	@Test
 	public void rangeCustom() throws Exception {
-		Validator<Range> validator = ValidatorBuilder.<Range> of() //
-				.constraintOnObject(r -> r, "range", c -> c.notNull() //
-						.predicateNullable(RangeConstraint.SINGLETON))
-				.build();
+		Validator<Range> validator = ValidatorBuilder.<Range>of() //
+			.constraintOnObject(r -> r, "range", c -> c.notNull() //
+				.predicateNullable(RangeConstraint.SINGLETON))
+			.build();
 		{
 			Range range = new Range(0, 10);
 			ConstraintViolations violations = validator.validate(range);
@@ -180,19 +165,18 @@ public class CustomValidatorTest {
 			ConstraintViolations violations = validator.validate(range);
 			assertThat(violations.isValid()).isFalse();
 			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message())
-					.isEqualTo("\"from\" must be less than \"to\"");
+			assertThat(violations.get(0).message()).isEqualTo("\"from\" must be less than \"to\"");
 			assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 		}
 	}
 
 	@Test
 	public void instantRangeCustom_gh36() throws Exception {
-		final InstantRangeConstraint constraint = new InstantRangeConstraint(
-				Instant.parse("2020-01-15T00:00:00Z"),
+		final InstantRangeConstraint constraint = new InstantRangeConstraint(Instant.parse("2020-01-15T00:00:00Z"),
 				Instant.parse("2020-01-16T00:00:00Z"));
 		final Validator<Instant> validator = ValidatorBuilder.of(Instant.class)
-				.constraintOnTarget(constraint, "instant").build();
+			.constraintOnTarget(constraint, "instant")
+			.build();
 
 		final Instant instant = Instant.parse("2020-01-17T00:00:00Z");
 		final ConstraintViolations violations = validator.validate(instant);
@@ -226,6 +210,7 @@ public class CustomValidatorTest {
 	}
 
 	enum IsbnConstraint implements CustomConstraint<String> {
+
 		SINGLETON;
 
 		@Override
@@ -242,9 +227,11 @@ public class CustomValidatorTest {
 		public boolean test(String s) {
 			return isISBN13(s);
 		}
+
 	}
 
 	public enum RangeConstraint implements CustomConstraint<Range> {
+
 		SINGLETON;
 
 		@Override
@@ -264,6 +251,7 @@ public class CustomValidatorTest {
 			}
 			return r.getFrom() < r.getTo();
 		}
+
 	}
 
 	static class InstantRangeConstraint implements CustomConstraint<Instant> {
@@ -296,5 +284,7 @@ public class CustomValidatorTest {
 		public boolean test(Instant instant) {
 			return instant.isAfter(this.start) && instant.isBefore(this.end);
 		}
+
 	}
+
 }

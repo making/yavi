@@ -20,6 +20,7 @@ import java.util.Objects;
 import am.ik.yavi.jsr305.Nullable;
 
 public class ViolatedValue {
+
 	private final Object value;
 
 	public ViolatedValue(@Nullable Object value) {
@@ -35,4 +36,5 @@ public class ViolatedValue {
 	public Object value() {
 		return this.value;
 	}
+
 }

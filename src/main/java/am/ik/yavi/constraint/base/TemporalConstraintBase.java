@@ -47,6 +47,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
  */
 public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
+
 	abstract protected boolean isAfter(V a, V b);
 
 	abstract protected boolean isBefore(V a, V b);
@@ -66,8 +67,7 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C pastOrPresent(Clock clock) {
-		return this.beforeOrEqual(() -> this.getNow(clock), false)
-				.message(TEMPORAL_PAST_OR_PRESENT);
+		return this.beforeOrEqual(() -> this.getNow(clock), false).message(TEMPORAL_PAST_OR_PRESENT);
 	}
 
 	public C future() {
@@ -83,8 +83,7 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	public C futureOrPresent(Clock clock) {
-		return this.afterOrEqual(() -> this.getNow(clock), false)
-				.message(TEMPORAL_FUTURE_OR_PRESENT);
+		return this.afterOrEqual(() -> this.getNow(clock), false).message(TEMPORAL_FUTURE_OR_PRESENT);
 	}
 
 	/**
@@ -93,7 +92,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
 	 * supplier return value changes each time, be aware that the value used to compare
 	 * the input values and the value contained in the error message can be different.
-	 *
 	 * @param other the supplier providing the other temporal that is before
 	 * @param memoize whether to memoize the result of supplier
 	 * @since 0.11.1
@@ -101,8 +99,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	public C before(Supplier<V> other, boolean memoize) {
 		final Supplier<V> supplier = memoize ? memoize(other) : other;
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> this.isBefore(x, supplier.get()),
-						TEMPORAL_BEFORE, () -> new Object[] { supplier.get() }, VALID));
+			.add(ConstraintPredicate.of(x -> this.isBefore(x, supplier.get()), TEMPORAL_BEFORE,
+					() -> new Object[] { supplier.get() }, VALID));
 		return cast();
 	}
 
@@ -112,7 +110,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * cached to always return the same value and is not available if you want to
 	 * dynamically return different values.<br>
 	 * If you don't want to memoize, use {@link #before(Supplier, boolean)} instead.
-	 *
 	 * @param other the supplier providing the other temporal that is before
 	 */
 	public C before(Supplier<V> other) {
@@ -125,7 +122,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
 	 * supplier return value changes each time, be aware that the value used to compare
 	 * the input values and the value contained in the error message can be different.
-	 *
 	 * @param other the supplier providing the other temporal that is before or equals to
 	 * @param memoize whether to memoize the result of supplier
 	 * @since 0.11.1
@@ -133,9 +129,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	public C beforeOrEqual(Supplier<V> other, boolean memoize) {
 		final Supplier<V> supplier = memoize ? memoize(other) : other;
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> !this.isAfter(x, supplier.get()),
-						TEMPORAL_BEFORE_OR_EQUAL, () -> new Object[] { supplier.get() },
-						VALID));
+			.add(ConstraintPredicate.of(x -> !this.isAfter(x, supplier.get()), TEMPORAL_BEFORE_OR_EQUAL,
+					() -> new Object[] { supplier.get() }, VALID));
 		return cast();
 	}
 
@@ -146,7 +141,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * dynamically return different values.<br>
 	 * If you don't want to memoize, use {@link #beforeOrEqual(Supplier, boolean)}
 	 * instead.
-	 *
 	 * @param other the supplier providing the other temporal that is before or equals to
 	 */
 	public C beforeOrEqual(Supplier<V> other) {
@@ -159,15 +153,15 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
 	 * supplier return value changes each time, be aware that the value used to compare
 	 * the input values and the value contained in the error message can be different.
-	 *
 	 * @param other the supplier providing the other temporal that is after
 	 * @param memoize whether to memoize the result of supplier
 	 * @since 0.11.1
 	 */
 	public C after(Supplier<V> other, boolean memoize) {
 		final Supplier<V> supplier = memoize ? memoize(other) : other;
-		this.predicates().add(ConstraintPredicate.of(x -> this.isAfter(x, supplier.get()),
-				TEMPORAL_AFTER, () -> new Object[] { supplier.get() }, VALID));
+		this.predicates()
+			.add(ConstraintPredicate.of(x -> this.isAfter(x, supplier.get()), TEMPORAL_AFTER,
+					() -> new Object[] { supplier.get() }, VALID));
 		return cast();
 	}
 
@@ -177,7 +171,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * cached to always return the same value and is not available if you want to
 	 * dynamically return different values.<br>
 	 * If you don't want to memoize, use {@link #after(Supplier, boolean)} instead.
-	 *
 	 * @param other the supplier providing the other temporal that is after
 	 */
 	public C after(Supplier<V> other) {
@@ -190,7 +183,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
 	 * supplier return value changes each time, be aware that the value used to compare
 	 * the input values and the value contained in the error message can be different.
-	 *
 	 * @param other the supplier providing the other temporal that is after or equals to
 	 * @param memoize whether to memoize the result of supplier
 	 * @since 0.11.1
@@ -198,9 +190,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	public C afterOrEqual(Supplier<V> other, boolean memoize) {
 		final Supplier<V> supplier = memoize ? memoize(other) : other;
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> !this.isBefore(x, supplier.get()),
-						TEMPORAL_AFTER_OR_EQUAL, () -> new Object[] { supplier.get() },
-						VALID));
+			.add(ConstraintPredicate.of(x -> !this.isBefore(x, supplier.get()), TEMPORAL_AFTER_OR_EQUAL,
+					() -> new Object[] { supplier.get() }, VALID));
 		return cast();
 	}
 
@@ -210,7 +201,6 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * cached to always return the same value and is not available if you want to
 	 * dynamically return different values.<br>
 	 * If you don't want to memoize, use {@link #afterOrEqual(Supplier, boolean)} instead.
-	 *
 	 * @param other the supplier providing the other temporal that is after or equals to
 	 */
 	public C afterOrEqual(Supplier<V> other) {
@@ -225,9 +215,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
 	 * supplier return value changes each time, be aware that the value used to compare
 	 * the input values and the value contained in the error message can be different.
-	 *
 	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
-	 *     in
+	 * in
 	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
 	 * @param memoize whether to memoize the result of supplier
 	 * @since 0.11.1
@@ -239,12 +228,10 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 			final V from = supplierFrom.get();
 			final V to = supplierTo.get();
 			if (this.isAfter(from, to)) {
-				throw new IllegalArgumentException(
-						"Parameter 'rangeFrom' has to be before 'rangeTo'");
+				throw new IllegalArgumentException("Parameter 'rangeFrom' has to be before 'rangeTo'");
 			}
 			return this.isBefore(from, x) && this.isAfter(to, x);
-		}, TEMPORAL_BETWEEN, () -> new Object[] { supplierFrom.get(), supplierTo.get() },
-				VALID));
+		}, TEMPORAL_BETWEEN, () -> new Object[] { supplierFrom.get(), supplierTo.get() }, VALID));
 		return cast();
 	}
 
@@ -256,9 +243,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	 * available if you want to dynamically return different values.<br>
 	 * If you don't want to memoize, use {@link #between(Supplier, Supplier, boolean)}
 	 * instead.
-	 *
 	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
-	 *     in
+	 * in
 	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
 	 */
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
@@ -267,8 +253,8 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 
 	public C fieldPredicate(TemporalField field, LongPredicate predicate) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> predicate.test(x.getLong(field)),
-						TEMPORAL_FIELD, () -> new Object[] { field }, VALID));
+			.add(ConstraintPredicate.of(x -> predicate.test(x.getLong(field)), TEMPORAL_FIELD,
+					() -> new Object[] { field }, VALID));
 		return cast();
 	}
 
@@ -277,10 +263,10 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 		return () -> {
 			final T value = supplier.get();
 			if (value == null) {
-				return supplier
-						.updateAndGet(prev -> prev == null ? delegate.get() : prev);
+				return supplier.updateAndGet(prev -> prev == null ? delegate.get() : prev);
 			}
 			return value;
 		};
 	}
+
 }

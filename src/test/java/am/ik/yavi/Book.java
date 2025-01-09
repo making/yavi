@@ -16,6 +16,7 @@
 package am.ik.yavi;
 
 public class Book {
+
 	private final String isbn;
 
 	public Book(String isbn) {
@@ -25,4 +26,5 @@ public class Book {
 	public String isbn() {
 		return this.isbn;
 	}
+
 }

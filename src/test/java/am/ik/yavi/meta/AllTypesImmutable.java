@@ -63,14 +63,12 @@ public class AllTypesImmutable {
 
 	private final LocalDate localDateValue;
 
-	public AllTypesImmutable(String stringValue, Boolean booleanValue,
-			boolean booleanPrimitiveValue, Character characterValue,
-			char characterPrimitiveValue, Byte byteValue, byte bytePrimitiveValue,
-			Short shortValue, short shortPrimitiveValue, Integer integerValue,
-			int integerPrimitiveValue, Long longValue, long longPrimitiveValue,
-			Float floatValue, float floatPrimitiveValue, Double doubleValue,
-			double doublePrimitiveValue, BigInteger bigIntegerValue,
-			BigDecimal bigDecimalValue, @Nullable LocalDate localDateValue) {
+	public AllTypesImmutable(String stringValue, Boolean booleanValue, boolean booleanPrimitiveValue,
+			Character characterValue, char characterPrimitiveValue, Byte byteValue, byte bytePrimitiveValue,
+			Short shortValue, short shortPrimitiveValue, Integer integerValue, int integerPrimitiveValue,
+			Long longValue, long longPrimitiveValue, Float floatValue, float floatPrimitiveValue, Double doubleValue,
+			double doublePrimitiveValue, BigInteger bigIntegerValue, BigDecimal bigDecimalValue,
+			@Nullable LocalDate localDateValue) {
 		this.stringValue = stringValue;
 		this.booleanValue = booleanValue;
 		this.booleanPrimitiveValue = booleanPrimitiveValue;
@@ -192,4 +190,5 @@ public class AllTypesImmutable {
 	public LocalDate localDateValue() {
 		return localDateValue;
 	}
+
 }

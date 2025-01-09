@@ -20,8 +20,10 @@ package am.ik.yavi.constraint.password;
  */
 public class ObjectPasswordPoliciesBuilder<T, E>
 		extends PasswordPoliciesBuilder<T, E, ObjectPasswordPoliciesBuilder<T, E>> {
+
 	@Override
 	protected ObjectPasswordPoliciesBuilder<T, E> cast() {
 		return this;
 	}
+
 }

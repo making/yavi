@@ -22,6 +22,7 @@ import java.util.Set;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 
 public enum UnicodeCodePoints implements CodePoints<String> {
+
 	/**
 	 * Hiragana listed in https://www.unicode.org/charts/nameslist/c_3040.html<br>
 	 * Note that this is a bit different from JIS X 0208's row 4 (Hiragana, 0x3041-0x3093)
@@ -53,4 +54,5 @@ public enum UnicodeCodePoints implements CodePoints<String> {
 	public Set<Integer> allExcludedCodePoints(String s) {
 		return this.delegate.allExcludedCodePoints(s);
 	}
+
 }

@@ -27,12 +27,11 @@ public class IntegerValidator<T> extends DefaultArguments1Validator<Integer, T> 
 
 	@Override
 	public <T2> IntegerValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new IntegerValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new IntegerValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public IntegerValidator(Validator<Arguments1<Integer>> validator,
-			Function1<? super Integer, ? extends T> mapper) {
+	public IntegerValidator(Validator<Arguments1<Integer>> validator, Function1<? super Integer, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

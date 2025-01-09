@@ -43,15 +43,13 @@ public class YearValidatorBuilder implements ValueValidatorBuilder<Year, Year> {
 		return new YearValidatorBuilder(builder);
 	}
 
-	YearValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder) {
+	YearValidatorBuilder(Function<ValidatorBuilder<Arguments1<Year>>, ValidatorBuilder<Arguments1<Year>>> builder) {
 		this.builder = builder;
 	}
 
 	@Override
 	public <T> YearValidator<T> build(Function<? super Year, ? extends T> mapper) {
-		final Validator<Arguments1<Year>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Year>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new YearValidator<>(validator, mapper::apply);
 	}
 
@@ -59,4 +57,5 @@ public class YearValidatorBuilder implements ValueValidatorBuilder<Year, Year> {
 	public YearValidator<Year> build() {
 		return build(x -> x);
 	}
+
 }

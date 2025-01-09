@@ -23,8 +23,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class FloatArrayConstraint<T>
-		extends ContainerConstraintBase<T, float[], FloatArrayConstraint<T>> {
+public class FloatArrayConstraint<T> extends ContainerConstraintBase<T, float[], FloatArrayConstraint<T>> {
 
 	@Override
 	public FloatArrayConstraint<T> cast() {
@@ -47,4 +46,5 @@ public class FloatArrayConstraint<T>
 	protected ToIntFunction<float[]> size() {
 		return x -> x.length;
 	}
+
 }

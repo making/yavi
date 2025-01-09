@@ -19,8 +19,8 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class IntegerConstraint<T>
-		extends NumericConstraintBase<T, Integer, IntegerConstraint<T>> {
+public class IntegerConstraint<T> extends NumericConstraintBase<T, Integer, IntegerConstraint<T>> {
+
 	@Override
 	public IntegerConstraint<T> cast() {
 		return this;
@@ -50,4 +50,5 @@ public class IntegerConstraint<T>
 	protected Integer zeroValue() {
 		return 0;
 	}
+
 }

@@ -16,7 +16,9 @@
 package am.ik.yavi;
 
 public class Range {
+
 	private final int from;
+
 	private final int to;
 
 	public Range(int from, int to) {
@@ -35,4 +37,5 @@ public class Range {
 	public boolean isToGreaterThanFrom() {
 		return this.to > this.from;
 	}
+
 }

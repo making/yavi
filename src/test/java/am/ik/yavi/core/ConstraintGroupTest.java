@@ -46,6 +46,9 @@ class ConstraintGroupTest {
 	}
 
 	enum CustomGroup implements ConstraintGroup {
+
 		FOO, BAR
+
 	}
+
 }

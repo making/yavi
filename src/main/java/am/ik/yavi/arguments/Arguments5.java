@@ -27,8 +27,7 @@ public class Arguments5<A1, A2, A3, A4, A5> extends Arguments4<A1, A2, A3, A4> {
 
 	protected final A5 arg5;
 
-	Arguments5(@Nullable A1 arg1, @Nullable A2 arg2, @Nullable A3 arg3, @Nullable A4 arg4,
-			@Nullable A5 arg5) {
+	Arguments5(@Nullable A1 arg1, @Nullable A2 arg2, @Nullable A3 arg3, @Nullable A4 arg4, @Nullable A5 arg5) {
 		super(arg1, arg2, arg3, arg4);
 		this.arg5 = arg5;
 	}
@@ -38,8 +37,8 @@ public class Arguments5<A1, A2, A3, A4, A5> extends Arguments4<A1, A2, A3, A4> {
 		return this.arg5;
 	}
 
-	public final <X> X map(
-			Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper) {
+	public final <X> X map(Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2, arg3, arg4, arg5);
 	}
+
 }

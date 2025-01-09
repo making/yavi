@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class LocalDateConstraintTest {
+
 	@Test
 	void isPastValid() {
 		Predicate<LocalDate> predicate = retrievePredicate(c -> c.past());
@@ -116,8 +117,7 @@ class LocalDateConstraintTest {
 	@Test
 	void isBeforeValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.before(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -139,16 +139,14 @@ class LocalDateConstraintTest {
 	@Test
 	void isAfterInValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.after(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.after(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -162,8 +160,7 @@ class LocalDateConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -171,48 +168,42 @@ class LocalDateConstraintTest {
 	void isBeforeOrEqualInValid() {
 		LocalDate now = LocalDate.now();
 		LocalDate past = now.minusDays(10);
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> past));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> past));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isBeforeOrEqualExactValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualInValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusDays(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusDays(10)));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusDays(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@Test
 	void isAfterOrEqualExactInValid() {
 		LocalDate now = LocalDate.now();
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
 	@ParameterizedTest
 	@MethodSource("validBetweenDates")
 	void isBetweenValid(LocalDate now, LocalDate rangeFrom, LocalDate rangeTo) {
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.between(() -> rangeFrom, () -> rangeTo));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.between(() -> rangeFrom, () -> rangeTo));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -221,8 +212,7 @@ class LocalDateConstraintTest {
 		LocalDate now = LocalDate.now();
 		Supplier<LocalDate> nowSupplier = () -> now;
 
-		Predicate<LocalDate> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<LocalDate> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -232,9 +222,8 @@ class LocalDateConstraintTest {
 
 		Predicate<LocalDate> predicate = retrievePredicate(
 				c -> c.between(() -> now.plusDays(1), () -> now.minusDays(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
@@ -262,7 +251,7 @@ class LocalDateConstraintTest {
 
 	private static Predicate<LocalDate> retrievePredicate(
 			Function<LocalDateConstraint<LocalDate>, LocalDateConstraint<LocalDate>> constraint) {
-		return constraint.apply(new LocalDateConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new LocalDateConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

@@ -18,6 +18,7 @@ package am.ik.yavi;
 import java.util.Map;
 
 public class FormWithMap {
+
 	private final Map<String, Address> addresses;
 
 	public FormWithMap(Map<String, Address> addresses) {
@@ -27,4 +28,5 @@ public class FormWithMap {
 	public Map<String, Address> getAddresses() {
 		return addresses;
 	}
+
 }

@@ -24,11 +24,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserValidatorTest {
+
 	Arguments3Validator<String, String, Role, User> validator = Yavi.arguments()
-			._string("email", c -> c.notBlank().email())
-			._string("name", c -> c.notBlank())
-			.<Role> _enum("role", c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))
-			.apply(User::new);
+		._string("email", c -> c.notBlank().email())
+		._string("name", c -> c.notBlank())
+		.<Role>_enum("role", c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))
+		.apply(User::new);
 
 	@Test
 	void valid() {
@@ -51,4 +52,5 @@ public class UserValidatorTest {
 		assertThat(violations.get(2).name()).isEqualTo("role");
 		assertThat(violations.get(2).messageKey()).isEqualTo("object.oneOf");
 	}
+
 }
