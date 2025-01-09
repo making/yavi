@@ -22,10 +22,10 @@ import java.util.EnumSet;
 
 /**
  * class for enum constraints
+ *
  * @since 0.14.0
  */
-public class EnumConstraint<T, E extends Enum<E>>
-		extends ConstraintBase<T, E, EnumConstraint<T, E>> {
+public class EnumConstraint<T, E extends Enum<E>> extends ConstraintBase<T, E, EnumConstraint<T, E>> {
 
 	@Override
 	public EnumConstraint<T, E> cast() {
@@ -42,4 +42,5 @@ public class EnumConstraint<T, E extends Enum<E>>
 
 		return super.oneOf(enumSet);
 	}
+
 }

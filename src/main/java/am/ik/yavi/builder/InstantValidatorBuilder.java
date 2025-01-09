@@ -50,8 +50,7 @@ public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, I
 
 	@Override
 	public <T> InstantValidator<T> build(Function<? super Instant, ? extends T> mapper) {
-		final Validator<Arguments1<Instant>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Instant>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new InstantValidator<>(validator, mapper::apply);
 	}
 
@@ -59,4 +58,5 @@ public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, I
 	public InstantValidator<Instant> build() {
 		return build(x -> x);
 	}
+
 }

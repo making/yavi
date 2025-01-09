@@ -27,8 +27,8 @@ public class Arguments6<A1, A2, A3, A4, A5, A6> extends Arguments5<A1, A2, A3, A
 
 	protected final A6 arg6;
 
-	Arguments6(@Nullable A1 arg1, @Nullable A2 arg2, @Nullable A3 arg3, @Nullable A4 arg4,
-			@Nullable A5 arg5, @Nullable A6 arg6) {
+	Arguments6(@Nullable A1 arg1, @Nullable A2 arg2, @Nullable A3 arg3, @Nullable A4 arg4, @Nullable A5 arg5,
+			@Nullable A6 arg6) {
 		super(arg1, arg2, arg3, arg4, arg5);
 		this.arg6 = arg6;
 	}
@@ -42,4 +42,5 @@ public class Arguments6<A1, A2, A3, A4, A5, A6> extends Arguments5<A1, A2, A3, A
 			Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2, arg3, arg4, arg5, arg6);
 	}
+
 }

@@ -16,7 +16,9 @@
 package am.ik.yavi;
 
 public class Message {
+
 	private final String text;
+
 	private final Color color;
 
 	public Message(String text, Color color) {
@@ -31,4 +33,5 @@ public class Message {
 	public Color getColor() {
 		return color;
 	}
+
 }

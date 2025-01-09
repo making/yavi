@@ -27,12 +27,11 @@ public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
 
 	@Override
 	public <T2> ObjectValidator<X, T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new ObjectValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new ObjectValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public ObjectValidator(Validator<Arguments1<X>> validator,
-			Function1<? super X, ? extends T> mapper) {
+	public ObjectValidator(Validator<Arguments1<X>> validator, Function1<? super X, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

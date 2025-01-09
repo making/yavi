@@ -26,8 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.7.0
  */
-public class BigIntegerValidatorBuilder
-		implements ValueValidatorBuilder<BigInteger, BigInteger> {
+public class BigIntegerValidatorBuilder implements ValueValidatorBuilder<BigInteger, BigInteger> {
 
 	private final Function<ValidatorBuilder<Arguments1<BigInteger>>, ValidatorBuilder<Arguments1<BigInteger>>> builder;
 
@@ -50,10 +49,8 @@ public class BigIntegerValidatorBuilder
 	}
 
 	@Override
-	public <T> BigIntegerValidator<T> build(
-			Function<? super BigInteger, ? extends T> mapper) {
-		final Validator<Arguments1<BigInteger>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> BigIntegerValidator<T> build(Function<? super BigInteger, ? extends T> mapper) {
+		final Validator<Arguments1<BigInteger>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BigIntegerValidator<>(validator, mapper::apply);
 	}
 
@@ -61,4 +58,5 @@ public class BigIntegerValidatorBuilder
 	public BigIntegerValidator<BigInteger> build() {
 		return build(x -> x);
 	}
+
 }

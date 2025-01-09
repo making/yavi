@@ -34,26 +34,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ObjectConstraintTest {
+
 	private final ObjectConstraint<String, String> constraint = new ObjectConstraint<>();
 
 	@Test
 	void isNull() {
-		Predicate<String> predicate = constraint.isNull().predicates().getFirst()
-				.predicate();
+		Predicate<String> predicate = constraint.isNull().predicates().getFirst().predicate();
 		assertThat(predicate.test("foo")).isFalse();
 		assertThat(predicate.test(null)).isTrue();
 	}
 
 	@Test
 	void notNull() {
-		Predicate<String> predicate = constraint.notNull().predicates().getFirst()
-				.predicate();
+		Predicate<String> predicate = constraint.notNull().predicates().getFirst().predicate();
 		assertThat(predicate.test("foo")).isTrue();
 		assertThat(predicate.test(null)).isFalse();
 	}
 
 	@Nested
 	class EqualTo {
+
 		@Test
 		void equalObjectsSucceed() {
 			assertThat(equalToPredicate("other").test("other")).isTrue();
@@ -82,26 +82,25 @@ class ObjectConstraintTest {
 		private Predicate<String> equalToPredicate(@Nullable String other) {
 			return constraint.equalTo(other).predicates().getFirst().predicate();
 		}
+
 	}
 
 	@Nested
 	class OneOf {
+
 		@Test
 		void succeedsWhenInputIsOneOfValues() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("this"))
-					.isTrue();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("this")).isTrue();
 		}
 
 		@Test
 		void failsWhenInputIsNoneOfValues() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("unknown"))
-					.isFalse();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test("unknown")).isFalse();
 		}
 
 		@Test
 		void failsWhenInputIsNull() {
-			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test(null))
-					.isFalse();
+			assertThat(oneOfPredicate(Arrays.asList("this", "other")).test(null)).isFalse();
 		}
 
 		@Test
@@ -111,28 +110,25 @@ class ObjectConstraintTest {
 
 		@Test
 		void nullValuesIsNotAllowed() {
-			assertThatThrownBy(() -> oneOfPredicate(null))
-					.isExactlyInstanceOf(NullPointerException.class);
+			assertThatThrownBy(() -> oneOfPredicate(null)).isExactlyInstanceOf(NullPointerException.class);
 		}
 
 		@Test
 		void violatedOneOfArgumentsAreRenderedCorrectly() {
-			final Validator<Message> validator = ValidatorBuilder.<Message> of()
-					.constraint(Message::getText, "text",
-							c -> c.oneOf(Arrays.asList("a", "b")))
-					._object(Message::getColor, "color",
-							c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE)))
-					.build();
-			final ConstraintViolations violations = validator
-					.validate(new Message("c", Color.GREEN));
+			final Validator<Message> validator = ValidatorBuilder.<Message>of()
+				.constraint(Message::getText, "text", c -> c.oneOf(Arrays.asList("a", "b")))
+				._object(Message::getColor, "color", c -> c.oneOf(EnumSet.of(Color.RED, Color.BLUE)))
+				.build();
+			final ConstraintViolations violations = validator.validate(new Message("c", Color.GREEN));
 			assertThat(violations).extracting(ConstraintViolation::message)
-					.containsExactlyInAnyOrder(
-							"\"text\" must be one of the following values: [a, b]",
-							"\"color\" must be one of the following values: [RED, BLUE]");
+				.containsExactlyInAnyOrder("\"text\" must be one of the following values: [a, b]",
+						"\"color\" must be one of the following values: [RED, BLUE]");
 		}
 
 		private Predicate<String> oneOfPredicate(List<String> values) {
 			return constraint.oneOf(values).predicates().getFirst().predicate();
 		}
+
 	}
+
 }

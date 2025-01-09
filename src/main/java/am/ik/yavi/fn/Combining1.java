@@ -22,6 +22,7 @@ package am.ik.yavi.fn;
  * @since 0.6.0
  */
 public class Combining1<E, T1> {
+
 	protected final Validation<E, T1> v1;
 
 	public Combining1(Validation<E, T1> v1) {
@@ -35,4 +36,5 @@ public class Combining1<E, T1> {
 	public <T2> Combining2<E, T1, T2> combine(Validation<E, T2> v2) {
 		return new Combining2<>(v1, v2);
 	}
+
 }

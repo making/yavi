@@ -63,40 +63,33 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		this.v1 = v1;
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, BigDecimal, R1, T> _bigDecimal(
-			ValueValidator<BigDecimal, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, BigDecimal, R1, T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, BigDecimal, R1, BigDecimal> _bigDecimal(
-			String name,
+	public Arguments2ValidatorBuilder<A1, BigDecimal, R1, BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return this._bigDecimal(BigDecimalValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, BigDecimal, R1, BigDecimal> _bigDecimal(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, BigDecimal, R1, BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, BigInteger, R1, T> _bigInteger(
-			ValueValidator<BigInteger, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, BigInteger, R1, T> _bigInteger(ValueValidator<BigInteger, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, BigInteger, R1, BigInteger> _bigInteger(
-			String name,
+	public Arguments2ValidatorBuilder<A1, BigInteger, R1, BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return this._bigInteger(BigIntegerValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, BigInteger, R1, BigInteger> _bigInteger(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, BigInteger, R1, BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Boolean, R1, T> _boolean(
-			ValueValidator<Boolean, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Boolean, R1, T> _boolean(ValueValidator<Boolean, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -109,8 +102,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._boolean(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Double, R1, T> _double(
-			ValueValidator<Double, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Double, R1, T> _double(ValueValidator<Double, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -123,8 +115,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._double(name, Function.identity());
 	}
 
-	public <E extends Enum<E>, T> Arguments2ValidatorBuilder<A1, E, R1, T> _enum(
-			ValueValidator<E, T> validator) {
+	public <E extends Enum<E>, T> Arguments2ValidatorBuilder<A1, E, R1, T> _enum(ValueValidator<E, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -133,13 +124,11 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._enum(EnumValidatorBuilder.of(name, constraints).build());
 	}
 
-	public <E extends Enum<E>> Arguments2ValidatorBuilder<A1, E, R1, E> _enum(
-			String name) {
+	public <E extends Enum<E>> Arguments2ValidatorBuilder<A1, E, R1, E> _enum(String name) {
 		return this._enum(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Float, R1, T> _float(
-			ValueValidator<Float, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Float, R1, T> _float(ValueValidator<Float, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -152,8 +141,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._float(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Instant, R1, T> _instant(
-			ValueValidator<Instant, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Instant, R1, T> _instant(ValueValidator<Instant, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -166,8 +154,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._instant(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Integer, R1, T> _integer(
-			ValueValidator<Integer, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Integer, R1, T> _integer(ValueValidator<Integer, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -185,36 +172,29 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, LocalDateTime, R1, LocalDateTime> _localDateTime(
-			String name,
+	public Arguments2ValidatorBuilder<A1, LocalDateTime, R1, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return this._localDateTime(
-				LocalDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._localDateTime(LocalDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, LocalDateTime, R1, LocalDateTime> _localDateTime(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, LocalDateTime, R1, LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, LocalTime, R1, T> _localTime(
-			ValueValidator<LocalTime, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, LocalTime, R1, T> _localTime(ValueValidator<LocalTime, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, LocalTime, R1, LocalTime> _localTime(
-			String name,
+	public Arguments2ValidatorBuilder<A1, LocalTime, R1, LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return this._localTime(LocalTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, LocalTime, R1, LocalTime> _localTime(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, LocalTime, R1, LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Long, R1, T> _long(
-			ValueValidator<Long, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Long, R1, T> _long(ValueValidator<Long, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -227,8 +207,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._long(name, Function.identity());
 	}
 
-	public <T1, T2> Arguments2ValidatorBuilder<A1, T1, R1, T2> _object(
-			ValueValidator<T1, T2> validator) {
+	public <T1, T2> Arguments2ValidatorBuilder<A1, T1, R1, T2> _object(ValueValidator<T1, T2> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -246,20 +225,16 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, OffsetDateTime, R1, OffsetDateTime> _offsetDateTime(
-			String name,
+	public Arguments2ValidatorBuilder<A1, OffsetDateTime, R1, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return this._offsetDateTime(
-				OffsetDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._offsetDateTime(OffsetDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, OffsetDateTime, R1, OffsetDateTime> _offsetDateTime(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, OffsetDateTime, R1, OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Short, R1, T> _short(
-			ValueValidator<Short, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Short, R1, T> _short(ValueValidator<Short, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -272,8 +247,7 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._short(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, String, R1, T> _string(
-			ValueValidator<String, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, String, R1, T> _string(ValueValidator<String, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -286,24 +260,20 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return this._string(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, YearMonth, R1, T> _yearMonth(
-			ValueValidator<YearMonth, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, YearMonth, R1, T> _yearMonth(ValueValidator<YearMonth, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, YearMonth, R1, YearMonth> _yearMonth(
-			String name,
+	public Arguments2ValidatorBuilder<A1, YearMonth, R1, YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return this._yearMonth(YearMonthValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, YearMonth, R1, YearMonth> _yearMonth(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, YearMonth, R1, YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
-	public <T> Arguments2ValidatorBuilder<A1, Year, R1, T> _year(
-			ValueValidator<Year, T> validator) {
+	public <T> Arguments2ValidatorBuilder<A1, Year, R1, T> _year(ValueValidator<Year, T> validator) {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
@@ -321,15 +291,12 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 		return new Arguments2ValidatorBuilder<>(this.v1, validator);
 	}
 
-	public Arguments2ValidatorBuilder<A1, ZonedDateTime, R1, ZonedDateTime> _zonedDateTime(
-			String name,
+	public Arguments2ValidatorBuilder<A1, ZonedDateTime, R1, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return this._zonedDateTime(
-				ZonedDateTimeValidatorBuilder.of(name, constraints).build());
+		return this._zonedDateTime(ZonedDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
-	public Arguments2ValidatorBuilder<A1, ZonedDateTime, R1, ZonedDateTime> _zonedDateTime(
-			String name) {
+	public Arguments2ValidatorBuilder<A1, ZonedDateTime, R1, ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 
@@ -340,4 +307,5 @@ public final class Arguments1ValidatorBuilder<A1, R1> {
 	public Arguments1Validator<A1, R1> get() {
 		return Arguments1Validator.from(this.v1);
 	}
+
 }

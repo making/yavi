@@ -47,8 +47,7 @@ class DoubleValidatorTest {
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -62,17 +61,16 @@ class DoubleValidatorTest {
 	@MethodSource("validators")
 	void validatedInvalid(DoubleValidator<Price> priceValidator) {
 		assertThatThrownBy(() -> priceValidator.validated((double) -1))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"price\" must be greater than or equal to 0");
+			.isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeValid(DoubleValidator<Price> priceValidator) {
-		final Map<String, Double> params = Collections.singletonMap("price",
-				(double) 100);
+		final Map<String, Double> params = Collections.singletonMap("price", (double) 100);
 		final Arguments1Validator<Map<String, Double>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(100);
@@ -83,27 +81,25 @@ class DoubleValidatorTest {
 	void composeInvalid(DoubleValidator<Price> priceValidator) {
 		final Map<String, Double> params = Collections.singletonMap("price", (double) -1);
 		final Arguments1Validator<Map<String, Double>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	static Stream<DoubleValidator<Price>> validators() {
 		return Stream.of(
-				DoubleValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
-						.build(Price::new),
-				DoubleValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
-						.build().andThen(Price::new));
+				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0)).build(Price::new),
+				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
+					.build()
+					.andThen(Price::new));
 	}
 
 	public static class Price {
+
 		private final double value;
 
 		public Price(double value) {
@@ -113,5 +109,7 @@ class DoubleValidatorTest {
 		public double value() {
 			return value;
 		}
+
 	}
+
 }

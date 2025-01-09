@@ -50,4 +50,5 @@ import javax.annotation.meta.TypeQualifierNickname;
 @Nonnull
 @TypeQualifierNickname
 public @interface NonNull {
+
 }

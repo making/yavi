@@ -29,10 +29,9 @@ class ConstraintViolationsExceptionTest {
 	void customMessage() {
 		final ConstraintViolations violations = new ConstraintViolations();
 		final SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
-		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.",
-				new Object[] { "a" }, messageFormatter, Locale.ENGLISH));
-		final ConstraintViolationsException exception = new ConstraintViolationsException(
-				"error!", violations);
+		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.", new Object[] { "a" },
+				messageFormatter, Locale.ENGLISH));
+		final ConstraintViolationsException exception = new ConstraintViolationsException("error!", violations);
 		assertThat(exception.getMessage()).isEqualTo("error!");
 	}
 
@@ -40,11 +39,11 @@ class ConstraintViolationsExceptionTest {
 	void defaultMessage() {
 		final ConstraintViolations violations = new ConstraintViolations();
 		final SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
-		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.",
-				new Object[] { "a" }, messageFormatter, Locale.ENGLISH));
-		final ConstraintViolationsException exception = new ConstraintViolationsException(
-				violations);
-		assertThat(exception.getMessage()).isEqualTo("Constraint violations found!"
-				+ System.lineSeparator() + "* a is invalid.");
+		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.", new Object[] { "a" },
+				messageFormatter, Locale.ENGLISH));
+		final ConstraintViolationsException exception = new ConstraintViolationsException(violations);
+		assertThat(exception.getMessage())
+			.isEqualTo("Constraint violations found!" + System.lineSeparator() + "* a is invalid.");
 	}
+
 }

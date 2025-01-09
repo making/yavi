@@ -113,54 +113,48 @@ class DoubleConstraintTest {
 	@ParameterizedTest
 	@ValueSource(doubles = { 99.5, 100.5, 0 })
 	void validPositiveOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(doubles = { -101, -12 })
 	void invalidPositiveOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::positiveOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::positiveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(doubles = { 99.0, 100 })
 	void invalidNegaitveOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(doubles = { -101, -120, 0 })
 	void validNegaitveOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negaitveOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
 	@ValueSource(doubles = { 99.0, 100 })
 	void invalidNegativeOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
 	}
 
 	@ParameterizedTest
 	@ValueSource(doubles = { -101, -120, 0 })
 	void validNegativeOrZero(double value) {
-		Predicate<Double> predicate = retrievePredicate(
-				NumericConstraintBase::negativeOrZero);
+		Predicate<Double> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	private static Predicate<Double> retrievePredicate(
 			Function<DoubleConstraint<Double>, DoubleConstraint<Double>> constraint) {
-		return constraint.apply(new DoubleConstraint<>()).predicates().peekFirst()
-				.predicate();
+		return constraint.apply(new DoubleConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
 public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstraint<T>> {
+
 	@Override
 	public ByteConstraint<T> cast() {
 		return this;
@@ -49,4 +50,5 @@ public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstr
 	protected Byte zeroValue() {
 		return 0;
 	}
+
 }

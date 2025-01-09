@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RangeValidatorTest {
+
 	Arguments2Validator<Integer, Integer, Range> validator = Yavi.arguments()
-			._integer("from", c -> c.greaterThanOrEqual(0))
-			._integer("to", c -> c.greaterThanOrEqual(0)).apply(Range::new)
-			.andThen(Yavi.arguments()
-					.<Range> _object("to", c -> c.predicate(RangeConstraint.SINGLETON))
-					.get());
+		._integer("from", c -> c.greaterThanOrEqual(0))
+		._integer("to", c -> c.greaterThanOrEqual(0))
+		.apply(Range::new)
+		.andThen(Yavi.arguments().<Range>_object("to", c -> c.predicate(RangeConstraint.SINGLETON)).get());
 
 	@Test
 	void valid() {
@@ -46,11 +46,9 @@ public class RangeValidatorTest {
 		ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(2);
 		assertThat(violations.get(0).name()).isEqualTo("from");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 		assertThat(violations.get(1).name()).isEqualTo("to");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(1).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@Test
@@ -62,4 +60,5 @@ public class RangeValidatorTest {
 		assertThat(violations.get(0).name()).isEqualTo("to");
 		assertThat(violations.get(0).messageKey()).isEqualTo("range.cross");
 	}
+
 }

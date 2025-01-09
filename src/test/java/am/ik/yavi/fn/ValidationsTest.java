@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidationsTest {
+
 	@Test
 	void combine() {
 		final Validation<List<String>, String> v1 = Validation.success("s1");
 		final Validation<List<String>, String> v2 = Validation.success("s2");
 		final Validation<List<String>, String> v3 = Validation.success("s3");
 
-		final String s = Validations.combine(v1, v2, v3)
-				.apply((s1, s2, s3) -> String.join("-", s1, s2, s3)).value();
+		final String s = Validations.combine(v1, v2, v3).apply((s1, s2, s3) -> String.join("-", s1, s2, s3)).value();
 		assertThat(s).isEqualTo("s1-s2-s3");
 	}
 
@@ -40,54 +40,49 @@ class ValidationsTest {
 		final Validation<List<String>, String> v2 = Validation.success("s2");
 		final Validation<List<String>, String> v3 = Validation.success("s3");
 
-		final String s = Validations
-				.apply((s1, s2, s3) -> String.join("-", s1, s2, s3), v1, v2, v3).value();
+		final String s = Validations.apply((s1, s2, s3) -> String.join("-", s1, s2, s3), v1, v2, v3).value();
 		assertThat(s).isEqualTo("s1-s2-s3");
 	}
 
 	@Test
 	void sequenceValid() {
 		final Validation<List<String>, List<Integer>> validation = Validations
-				.sequence(Arrays.asList(Validation.success(1), Validation.success(2)));
+			.sequence(Arrays.asList(Validation.success(1), Validation.success(2)));
 		assertThat(validation.value()).containsExactly(1, 2);
 	}
 
 	@Test
 	void sequenceInvalid() {
 		final Validation<String, List<Integer>> validation = Validations
-				.sequence(Arrays.asList(Validation.success(1),
-						Validation.failure(Arrays.asList("e1", "e2")),
-						Validation.success(2),
-						Validation.failure(Arrays.asList("e3", "e4"))));
+			.sequence(Arrays.asList(Validation.success(1), Validation.failure(Arrays.asList("e1", "e2")),
+					Validation.success(2), Validation.failure(Arrays.asList("e3", "e4"))));
 		assertThat(validation.errors()).containsExactly("e1", "e2", "e3", "e4");
 	}
 
 	@Test
 	void traverseValid() {
-		final Validation<String, List<Integer>> validation = Validations
-				.traverse(Arrays.asList(1, 2), i -> Validation.success(i));
+		final Validation<String, List<Integer>> validation = Validations.traverse(Arrays.asList(1, 2),
+				i -> Validation.success(i));
 		assertThat(validation.value()).containsExactly(1, 2);
 	}
 
 	@Test
 	void traverseInvalid() {
-		final Validation<String, List<Integer>> validation = Validations
-				.traverse(Arrays.asList(1, -1, 2, -2), i -> {
-					if (i > 0) {
-						return Validation.success(i);
-					}
-					else {
-						return Validation.failure(
-								Arrays.asList("e" + (-2 * i - 1), "e" + (-2 * i)));
-					}
-				});
+		final Validation<String, List<Integer>> validation = Validations.traverse(Arrays.asList(1, -1, 2, -2), i -> {
+			if (i > 0) {
+				return Validation.success(i);
+			}
+			else {
+				return Validation.failure(Arrays.asList("e" + (-2 * i - 1), "e" + (-2 * i)));
+			}
+		});
 		assertThat(validation.errors()).containsExactly("e1", "e2", "e3", "e4");
 	}
 
 	@Test
 	void traverseIndexedInvalid() {
-		final Validation<String, List<Integer>> validation = Validations
-				.traverseIndexed(Arrays.asList(1, -1, 2, -2), (i, index) -> {
+		final Validation<String, List<Integer>> validation = Validations.traverseIndexed(Arrays.asList(1, -1, 2, -2),
+				(i, index) -> {
 					if (i > 0) {
 						return Validation.success(i);
 					}
@@ -97,4 +92,5 @@ class ValidationsTest {
 				});
 		assertThat(validation.errors()).containsExactly("e[1]", "e[3]");
 	}
+
 }

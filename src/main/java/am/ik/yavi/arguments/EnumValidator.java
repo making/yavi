@@ -23,17 +23,15 @@ import am.ik.yavi.fn.Function1;
 /**
  * @since 0.14.0
  */
-public class EnumValidator<E extends Enum<E>, T>
-		extends DefaultArguments1Validator<E, T> {
+public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Validator<E, T> {
 
 	@Override
 	public <T2> EnumValidator<E, T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new EnumValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new EnumValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public EnumValidator(Validator<Arguments1<E>> validator,
-			Function1<? super E, ? extends T> mapper) {
+	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

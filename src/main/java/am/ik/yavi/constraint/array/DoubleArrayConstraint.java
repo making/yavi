@@ -24,8 +24,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class DoubleArrayConstraint<T>
-		extends ContainerConstraintBase<T, double[], DoubleArrayConstraint<T>> {
+public class DoubleArrayConstraint<T> extends ContainerConstraintBase<T, double[], DoubleArrayConstraint<T>> {
 
 	@Override
 	public DoubleArrayConstraint<T> cast() {
@@ -34,8 +33,8 @@ public class DoubleArrayConstraint<T>
 
 	public DoubleArrayConstraint<T> contains(double v) {
 		this.predicates()
-				.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v),
-						ARRAY_CONTAINS, () -> new Object[] { v }, VALID));
+			.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v), ARRAY_CONTAINS,
+					() -> new Object[] { v }, VALID));
 		return this;
 	}
 
@@ -43,4 +42,5 @@ public class DoubleArrayConstraint<T>
 	protected ToIntFunction<double[]> size() {
 		return x -> x.length;
 	}
+
 }

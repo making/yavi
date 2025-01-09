@@ -49,8 +49,7 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 
 	@Override
 	public <T> DoubleValidator<T> build(Function<? super Double, ? extends T> mapper) {
-		final Validator<Arguments1<Double>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Double>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new DoubleValidator<>(validator, mapper::apply);
 	}
 
@@ -58,4 +57,5 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 	public DoubleValidator<Double> build() {
 		return build(x -> x);
 	}
+
 }

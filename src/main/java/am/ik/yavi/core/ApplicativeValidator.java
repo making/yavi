@@ -17,9 +17,11 @@ package am.ik.yavi.core;
 
 /**
  * Applicative validator class
+ *
  * @param <T> Target class
  * @since 0.6.0
  */
 @FunctionalInterface
 public interface ApplicativeValidator<T> extends ValueValidator<T, T> {
+
 }

@@ -24,10 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh338Test {
 
-	static Validator<EntityUpdate> validator = ValidatorBuilder.<EntityUpdate> of()
-			.constraint(EntityUpdate::getMessageType, "messageType",
-					c -> c.notOneOf(Arrays.asList(-9999, -137)))
-			.build();
+	static Validator<EntityUpdate> validator = ValidatorBuilder.<EntityUpdate>of()
+		.constraint(EntityUpdate::getMessageType, "messageType", c -> c.notOneOf(Arrays.asList(-9999, -137)))
+		.build();
 
 	@Test
 	void valid() {
@@ -40,11 +39,12 @@ public class Gh338Test {
 		ConstraintViolations violations = validator.validate(new EntityUpdate(-137));
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations.size()).isEqualTo(1);
-		assertThat(violations.get(0).message()).isEqualTo(
-				"\"messageType\" must not be one of the following values: [-9999, -137]");
+		assertThat(violations.get(0).message())
+			.isEqualTo("\"messageType\" must not be one of the following values: [-9999, -137]");
 	}
 
 	static class EntityUpdate {
+
 		private final Integer messageType;
 
 		EntityUpdate(Integer messageType) {
@@ -54,5 +54,7 @@ public class Gh338Test {
 		public Integer getMessageType() {
 			return messageType;
 		}
+
 	}
+
 }

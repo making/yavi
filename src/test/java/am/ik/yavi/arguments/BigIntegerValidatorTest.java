@@ -35,8 +35,7 @@ class BigIntegerValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateValid(BigIntegerValidator<Price> priceValidator) {
-		final Validated<Price> priceValidated = priceValidator
-				.validate(BigInteger.valueOf(100));
+		final Validated<Price> priceValidated = priceValidator.validate(BigInteger.valueOf(100));
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigInteger.valueOf(100));
 	}
@@ -44,14 +43,12 @@ class BigIntegerValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateInvalid(BigIntegerValidator<Price> priceValidator) {
-		final Validated<Price> priceValidated = priceValidator
-				.validate(BigInteger.valueOf(-1));
+		final Validated<Price> priceValidated = priceValidator.validate(BigInteger.valueOf(-1));
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -65,17 +62,16 @@ class BigIntegerValidatorTest {
 	@MethodSource("validators")
 	void validatedInvalid(BigIntegerValidator<Price> priceValidator) {
 		assertThatThrownBy(() -> priceValidator.validated(BigInteger.valueOf(-1)))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"price\" must be greater than or equal to 0");
+			.isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeValid(BigIntegerValidator<Price> priceValidator) {
-		final Map<String, BigInteger> params = Collections.singletonMap("price",
-				BigInteger.valueOf(100));
+		final Map<String, BigInteger> params = Collections.singletonMap("price", BigInteger.valueOf(100));
 		final Arguments1Validator<Map<String, BigInteger>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigInteger.valueOf(100));
@@ -84,34 +80,28 @@ class BigIntegerValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeInvalid(BigIntegerValidator<Price> priceValidator) {
-		final Map<String, BigInteger> params = Collections.singletonMap("price",
-				BigInteger.valueOf(-1));
+		final Map<String, BigInteger> params = Collections.singletonMap("price", BigInteger.valueOf(-1));
 		final Arguments1Validator<Map<String, BigInteger>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	static Stream<BigIntegerValidator<Price>> validators() {
 		return Stream.of(
-				BigIntegerValidatorBuilder
-						.of("price",
-								c -> c.notNull()
-										.greaterThanOrEqual(BigInteger.valueOf(0)))
-						.build(Price::new),
-				BigIntegerValidatorBuilder
-						.of("price",
-								c -> c.notNull()
-										.greaterThanOrEqual(BigInteger.valueOf(0)))
-						.build().andThen(Price::new));
+				BigIntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigInteger.valueOf(0)))
+					.build(Price::new),
+				BigIntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigInteger.valueOf(0)))
+					.build()
+					.andThen(Price::new));
 	}
 
 	public static class Price {
+
 		private final BigInteger value;
 
 		public Price(BigInteger value) {
@@ -121,5 +111,7 @@ class BigIntegerValidatorTest {
 		public BigInteger value() {
 			return value;
 		}
+
 	}
+
 }

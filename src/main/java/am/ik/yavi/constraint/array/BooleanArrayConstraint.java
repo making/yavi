@@ -23,8 +23,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class BooleanArrayConstraint<T>
-		extends ContainerConstraintBase<T, boolean[], BooleanArrayConstraint<T>> {
+public class BooleanArrayConstraint<T> extends ContainerConstraintBase<T, boolean[], BooleanArrayConstraint<T>> {
 
 	@Override
 	public BooleanArrayConstraint<T> cast() {
@@ -47,4 +46,5 @@ public class BooleanArrayConstraint<T>
 	protected ToIntFunction<boolean[]> size() {
 		return x -> x.length;
 	}
+
 }

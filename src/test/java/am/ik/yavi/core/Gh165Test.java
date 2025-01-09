@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class Gh165Test {
+
 	private final CustomConstraint<String> constraint = new CustomConstraint<String>() {
 		private final int maxCount = 4;
 
@@ -48,6 +49,7 @@ class Gh165Test {
 	};
 
 	static class Tag {
+
 		private final String name;
 
 		Tag(String name) {
@@ -57,16 +59,17 @@ class Gh165Test {
 		public String getName() {
 			return name;
 		}
+
 	}
 
 	@Test
 	void valid() {
 		final Validator<Tag> validator = ValidatorBuilder.of(Tag.class)
-				.constraint(Tag::getName, "name", c -> c.notBlank().predicate(constraint))
-				.build();
+			.constraint(Tag::getName, "name", c -> c.notBlank().predicate(constraint))
+			.build();
 		final ConstraintViolations violations = validator.validate(new Tag("aaaaaa"));
 		assertThat(violations.isValid()).isFalse();
-		assertThat(violations.get(0).message())
-				.isEqualTo("The tag \"aaaaaa\" is longer than 4 bytes. length is 6");
+		assertThat(violations.get(0).message()).isEqualTo("The tag \"aaaaaa\" is longer than 4 bytes. length is 6");
 	}
+
 }

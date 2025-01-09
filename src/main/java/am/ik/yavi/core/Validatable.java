@@ -22,23 +22,21 @@ import am.ik.yavi.fn.Validation;
 
 @FunctionalInterface
 public interface Validatable<T> {
+
 	/**
 	 * Validates all constraints on {@code target}.
-	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
 	 */
-	ConstraintViolations validate(T target, Locale locale,
-			ConstraintContext constraintContext);
+	ConstraintViolations validate(T target, Locale locale, ConstraintContext constraintContext);
 
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
-	 *
 	 * @param target target to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
@@ -50,7 +48,6 @@ public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}.<br>
 	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
-	 *
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @return constraint violations
@@ -63,7 +60,6 @@ public interface Validatable<T> {
 	/**
 	 * Validates all constraints on {@code target}. <br>
 	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 *
 	 * @param target target to validate
 	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
@@ -75,14 +71,12 @@ public interface Validatable<T> {
 
 	/**
 	 * Returns the corresponding applicative validator
-	 *
 	 * @return applicative validator
 	 * @since 0.6.0
 	 */
 	default ApplicativeValidator<T> applicative() {
 		return (target, locale, constraintContext) -> {
-			final ConstraintViolations violations = Validatable.this.validate(target,
-					locale, constraintContext);
+			final ConstraintViolations violations = Validatable.this.validate(target, locale, constraintContext);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));
 			}
@@ -94,21 +88,17 @@ public interface Validatable<T> {
 
 	/**
 	 * Converts given applicative validator to a regular validator.
-	 *
 	 * @param applicative applicative validator to convert
 	 * @return regular validator
 	 * @since 0.11.0
 	 */
-	static <A1, R> Validatable<A1> from(
-			ValueValidator<? super A1, ? extends R> applicative) {
-		return (target, locale, constraintGroup) -> applicative
-				.validate(target, locale, constraintGroup)
-				.fold(ConstraintViolations::of, result -> new ConstraintViolations());
+	static <A1, R> Validatable<A1> from(ValueValidator<? super A1, ? extends R> applicative) {
+		return (target, locale, constraintGroup) -> applicative.validate(target, locale, constraintGroup)
+			.fold(ConstraintViolations::of, result -> new ConstraintViolations());
 	}
 
 	/**
 	 * Convert the validator to a biconsumer
-	 *
 	 * @param errorHandler error handler
 	 * @param <E> error type
 	 * @return bi consumer
@@ -118,8 +108,8 @@ public interface Validatable<T> {
 		return (target, errors) -> {
 			final ConstraintViolations violations = Validatable.this.validate(target);
 			if (!violations.isValid()) {
-				violations.apply((name, messageKey, args, defaultMessage) -> errorHandler
-						.handleError(errors, name, messageKey, args, defaultMessage));
+				violations.apply((name, messageKey, args, defaultMessage) -> errorHandler.handleError(errors, name,
+						messageKey, args, defaultMessage));
 			}
 		};
 	}
@@ -127,7 +117,6 @@ public interface Validatable<T> {
 	/**
 	 * Set whether to enable fail fast mode. If enabled, Validatable returns from the
 	 * current validation as soon as the first constraint violation occurs.
-	 *
 	 * @param failFast whether to enable fail fast mode
 	 * @since 0.13.0
 	 */
@@ -137,11 +126,11 @@ public interface Validatable<T> {
 
 	/**
 	 * Returns whether it is failFast.
-	 *
 	 * @return whether it is failFast
 	 * @since 0.13.0
 	 */
 	default boolean isFailFast() {
 		return false;
 	}
+
 }

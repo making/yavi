@@ -16,13 +16,17 @@
 package am.ik.yavi.arguments;
 
 public class User {
+
 	private final String email;
+
 	private final String name;
 
 	private final Role role;
 
 	public enum Role {
+
 		USER, ADMIN, GUEST
+
 	}
 
 	public User(String email, String name, Role role) {
@@ -45,7 +49,7 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + ", role="
-				+ role + '}';
+		return "User{" + "email='" + email + '\'' + ", name='" + name + '\'' + ", role=" + role + '}';
 	}
+
 }

@@ -26,8 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.14.0
  */
-public class LocalTimeValidatorBuilder
-		implements ValueValidatorBuilder<LocalTime, LocalTime> {
+public class LocalTimeValidatorBuilder implements ValueValidatorBuilder<LocalTime, LocalTime> {
 
 	private final Function<ValidatorBuilder<Arguments1<LocalTime>>, ValidatorBuilder<Arguments1<LocalTime>>> builder;
 
@@ -50,10 +49,8 @@ public class LocalTimeValidatorBuilder
 	}
 
 	@Override
-	public <T> LocalTimeValidator<T> build(
-			Function<? super LocalTime, ? extends T> mapper) {
-		final Validator<Arguments1<LocalTime>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> LocalTimeValidator<T> build(Function<? super LocalTime, ? extends T> mapper) {
+		final Validator<Arguments1<LocalTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new LocalTimeValidator<>(validator, mapper::apply);
 	}
 
@@ -61,4 +58,5 @@ public class LocalTimeValidatorBuilder
 	public LocalTimeValidator<LocalTime> build() {
 		return build(x -> x);
 	}
+
 }

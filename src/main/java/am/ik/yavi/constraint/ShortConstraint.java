@@ -19,8 +19,8 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
-public class ShortConstraint<T>
-		extends NumericConstraintBase<T, Short, ShortConstraint<T>> {
+public class ShortConstraint<T> extends NumericConstraintBase<T, Short, ShortConstraint<T>> {
+
 	@Override
 	public ShortConstraint<T> cast() {
 		return this;
@@ -50,4 +50,5 @@ public class ShortConstraint<T>
 	protected Short zeroValue() {
 		return 0;
 	}
+
 }

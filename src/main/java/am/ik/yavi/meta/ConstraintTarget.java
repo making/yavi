@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 @Target({ ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.SOURCE)
 public @interface ConstraintTarget {
+
 	boolean getter() default true;
 
 	boolean field() default false;
+
 }

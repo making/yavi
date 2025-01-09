@@ -23,7 +23,9 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh156Test {
+
 	static class Person {
+
 		private final String firstName;
 
 		private final String middleName;
@@ -41,21 +43,20 @@ public class Gh156Test {
 			if (this.middleName == null) {
 				return String.format("%s %s", this.firstName, this.lastName);
 			}
-			return String.format("%s %s %s", this.firstName, this.middleName,
-					this.lastName);
+			return String.format("%s %s %s", this.firstName, this.middleName, this.lastName);
 		}
+
 	}
 
-	final Arguments3Validator<String, String, String, Person> personValidator = Yavi
-			.arguments()._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
-			._string("middleName", c -> c.lessThanOrEqual(128))
-			._string("lastName", c -> c.notBlank().lessThanOrEqual(128))
-			.apply(Person::new);
+	final Arguments3Validator<String, String, String, Person> personValidator = Yavi.arguments()
+		._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
+		._string("middleName", c -> c.lessThanOrEqual(128))
+		._string("lastName", c -> c.notBlank().lessThanOrEqual(128))
+		.apply(Person::new);
 
 	@Test
 	void allNonNull() {
-		final Validated<Person> validated = personValidator.validate("John", "Michael",
-				"Doe");
+		final Validated<Person> validated = personValidator.validate("John", "Michael", "Doe");
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value().toString()).isEqualTo("John Michael Doe");
 	}
@@ -73,4 +74,5 @@ public class Gh156Test {
 		assertThat(validated.isValid()).isFalse();
 		assertThat(validated.errors()).hasSize(2);
 	}
+
 }

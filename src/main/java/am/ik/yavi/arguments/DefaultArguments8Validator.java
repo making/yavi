@@ -31,11 +31,12 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public class DefaultArguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>
 		implements Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
+
 	protected final Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> validator;
+
 	protected final Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper;
 
-	public DefaultArguments8Validator(
-			Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> validator,
+	public DefaultArguments8Validator(Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> validator,
 			Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
@@ -46,17 +47,16 @@ public class DefaultArguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>
 	 */
 	@Override
 	public DefaultArguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>> lazy() {
-		return new DefaultArguments8Validator<>(this.validator, (a1, a2, a3, a4, a5, a6,
-				a7, a8) -> () -> this.mapper.apply(a1, a2, a3, a4, a5, a6, a7, a8));
+		return new DefaultArguments8Validator<>(this.validator,
+				(a1, a2, a3, a4, a5, a6, a7, a8) -> () -> this.mapper.apply(a1, a2, a3, a4, a5, a6, a7, a8));
 	}
 
 	@Override
-	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, Locale locale, ConstraintContext constraintContext) {
+	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-				.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8), locale,
-						constraintContext)
-				.map(values -> values.map(this.mapper));
+			.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8), locale, constraintContext)
+			.map(values -> values.map(this.mapper));
 	}
+
 }

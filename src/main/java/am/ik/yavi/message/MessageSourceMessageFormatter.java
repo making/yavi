@@ -34,13 +34,13 @@ import am.ik.yavi.jsr305.Nullable;
  *                        .constraint(CartItem::getQuantity, "quantity", c -&gt; c.greaterThan(0))
  *                        .constraint(...)
  *                        .build();
- * </code>
- * </pre>
+ * </code> </pre>
  *
  * @author Toshiaki Maki
  * @since 0.5.0
  */
 public class MessageSourceMessageFormatter implements MessageFormatter {
+
 	private final MessageSource messageSource;
 
 	public MessageSourceMessageFormatter(MessageSource messageSource) {
@@ -48,12 +48,9 @@ public class MessageSourceMessageFormatter implements MessageFormatter {
 	}
 
 	@Override
-	public String format(String messageKey, String defaultMessageFormat, Object[] args,
-			Locale locale) {
-		final String defaultMessage = new MessageFormat(defaultMessageFormat, locale)
-				.format(args);
-		final String message = this.messageSource.getMessage(messageKey, args,
-				defaultMessage, locale);
+	public String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale) {
+		final String defaultMessage = new MessageFormat(defaultMessageFormat, locale).format(args);
+		final String message = this.messageSource.getMessage(messageKey, args, defaultMessage, locale);
 		return Objects.requireNonNull(message, defaultMessage);
 	}
 
@@ -62,8 +59,10 @@ public class MessageSourceMessageFormatter implements MessageFormatter {
 	 */
 	@FunctionalInterface
 	public interface MessageSource {
+
 		@Nullable
-		String getMessage(String code, Object[] args, String defaultMessage,
-				Locale locale);
+		String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
+
 	}
+
 }

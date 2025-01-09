@@ -22,6 +22,7 @@ package am.ik.yavi.fn;
  * @since 0.6.0
  */
 public class Combining4<E, T1, T2, T3, T4> {
+
 	protected final Validation<E, T1> v1;
 
 	protected final Validation<E, T2> v2;
@@ -30,8 +31,7 @@ public class Combining4<E, T1, T2, T3, T4> {
 
 	protected final Validation<E, T4> v4;
 
-	public Combining4(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4) {
+	public Combining4(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -40,7 +40,7 @@ public class Combining4<E, T1, T2, T3, T4> {
 
 	public <R, V extends Validation<E, R>> V apply(Function4<T1, T2, T3, T4, R> f) {
 		final Validation<E, Function1<T2, Function1<T3, Function1<T4, R>>>> apply1 = v1
-				.apply(Validation.success(Functions.curry(f)));
+			.apply(Validation.success(Functions.curry(f)));
 		final Validation<E, Function1<T3, Function1<T4, R>>> apply2 = v2.apply(apply1);
 		final Validation<E, Function1<T4, R>> apply3 = v3.apply(apply2);
 		return v4.apply(apply3);
@@ -49,4 +49,5 @@ public class Combining4<E, T1, T2, T3, T4> {
 	public <T5> Combining5<E, T1, T2, T3, T4, T5> combine(Validation<E, T5> v5) {
 		return new Combining5<>(v1, v2, v3, v4, v5);
 	}
+
 }

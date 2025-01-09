@@ -29,9 +29,10 @@ import am.ik.yavi.jsr305.Nullable;
  *
  * @since 0.7.0
  */
-public class DefaultArguments5Validator<A1, A2, A3, A4, A5, X>
-		implements Arguments5Validator<A1, A2, A3, A4, A5, X> {
+public class DefaultArguments5Validator<A1, A2, A3, A4, A5, X> implements Arguments5Validator<A1, A2, A3, A4, A5, X> {
+
 	protected final Validator<Arguments5<A1, A2, A3, A4, A5>> validator;
+
 	protected final Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper;
 
 	public DefaultArguments5Validator(Validator<Arguments5<A1, A2, A3, A4, A5>> validator,
@@ -50,11 +51,11 @@ public class DefaultArguments5Validator<A1, A2, A3, A4, A5, X>
 	}
 
 	@Override
-	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, Locale locale,
-			ConstraintContext constraintContext) {
+	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-				.validate(Arguments.of(a1, a2, a3, a4, a5), locale, constraintContext)
-				.map(values -> values.map(this.mapper));
+			.validate(Arguments.of(a1, a2, a3, a4, a5), locale, constraintContext)
+			.map(values -> values.map(this.mapper));
 	}
+
 }

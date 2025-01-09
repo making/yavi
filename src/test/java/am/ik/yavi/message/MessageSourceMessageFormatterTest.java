@@ -27,12 +27,11 @@ class MessageSourceMessageFormatterTest {
 
 	@Test
 	void format() {
-		final MessageSource messageSource = (code, args, defaultMessage,
-				locale) -> "Message " + code + " " + Arrays.toString(args);
-		final MessageSourceMessageFormatter messageFormatter = new MessageSourceMessageFormatter(
-				messageSource);
-		final String message = messageFormatter.format("demo", "", new Object[] { 1, 2 },
-				Locale.ENGLISH);
+		final MessageSource messageSource = (code, args, defaultMessage, locale) -> "Message " + code + " "
+				+ Arrays.toString(args);
+		final MessageSourceMessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource);
+		final String message = messageFormatter.format("demo", "", new Object[] { 1, 2 }, Locale.ENGLISH);
 		assertThat(message).isEqualTo("Message demo [1, 2]");
 	}
+
 }
