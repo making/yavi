@@ -59,16 +59,14 @@ public class Gh127Test {
 		// Container4 -> Container3 -> Container2(with ConstraintCondition) -> Container1
 		ConstraintViolations actual = Container4.VALIDATOR.validate(container4(""));
 
-		assertThat(actual.get(0).name())
-				.isEqualTo("container3.container2.container1.value");
+		assertThat(actual.get(0).name()).isEqualTo("container3.container2.container1.value");
 	}
 
 	private static class Container4 {
 
-		private static final Validator<Container4> VALIDATOR = ValidatorBuilder
-				.of(Container4.class)
-				.nest(Container4::getContainer3, "container3", Container3.VALIDATOR)
-				.build();
+		private static final Validator<Container4> VALIDATOR = ValidatorBuilder.of(Container4.class)
+			.nest(Container4::getContainer3, "container3", Container3.VALIDATOR)
+			.build();
 
 		private Container3 container3;
 
@@ -79,14 +77,14 @@ public class Gh127Test {
 		public Container3 getContainer3() {
 			return container3;
 		}
+
 	}
 
 	private static class Container3 {
 
-		private static final Validator<Container3> VALIDATOR = ValidatorBuilder
-				.of(Container3.class).nest(Container3::getContainer2, "container2",
-						Container2.VALIDATOR_WITH_CONDITION)
-				.build();
+		private static final Validator<Container3> VALIDATOR = ValidatorBuilder.of(Container3.class)
+			.nest(Container3::getContainer2, "container2", Container2.VALIDATOR_WITH_CONDITION)
+			.build();
 
 		private Container2 container2;
 
@@ -97,18 +95,18 @@ public class Gh127Test {
 		public Container2 getContainer2() {
 			return container2;
 		}
+
 	}
 
 	private static class Container2 {
 
-		private static final Validator<Container2> VALIDATOR = ValidatorBuilder
-				.of(Container2.class)
-				.nest(Container2::getContainer1, "container1", Container1.VALIDATOR)
-				.build();
+		private static final Validator<Container2> VALIDATOR = ValidatorBuilder.of(Container2.class)
+			.nest(Container2::getContainer1, "container1", Container1.VALIDATOR)
+			.build();
 
-		private static final Validator<Container2> VALIDATOR_WITH_CONDITION = ValidatorBuilder
-				.of(Container2.class).constraintOnCondition((c, g) -> true, VALIDATOR)
-				.build();
+		private static final Validator<Container2> VALIDATOR_WITH_CONDITION = ValidatorBuilder.of(Container2.class)
+			.constraintOnCondition((c, g) -> true, VALIDATOR)
+			.build();
 
 		private Container1 container1;
 
@@ -119,14 +117,14 @@ public class Gh127Test {
 		public Container1 getContainer1() {
 			return container1;
 		}
+
 	}
 
 	private static class Container1 {
 
-		private static final Validator<Container1> VALIDATOR = ValidatorBuilder
-				.of(Container1.class).constraint(Container1::getValue, "value",
-						CharSequenceConstraint::notBlank)
-				.build();
+		private static final Validator<Container1> VALIDATOR = ValidatorBuilder.of(Container1.class)
+			.constraint(Container1::getValue, "value", CharSequenceConstraint::notBlank)
+			.build();
 
 		private String value;
 
@@ -137,5 +135,7 @@ public class Gh127Test {
 		public String getValue() {
 			return value;
 		}
+
 	}
+
 }

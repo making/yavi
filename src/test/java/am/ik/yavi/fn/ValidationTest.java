@@ -34,69 +34,56 @@ class ValidationTest {
 		assertThat(validation.value()).isEqualTo("test");
 		assertThatThrownBy(validation::errors).isInstanceOf(NoSuchElementException.class);
 		assertThat(validation.map(String::toUpperCase).value()).isEqualTo("TEST");
-		assertThat(validation
-				.mapErrors(x -> x.stream().map(String::toUpperCase).collect(toList()))
-				.value()).isEqualTo("test");
-		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).value())
-				.isEqualTo("hello test");
+		assertThat(validation.mapErrors(x -> x.stream().map(String::toUpperCase).collect(toList())).value())
+			.isEqualTo("test");
+		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).value()).isEqualTo("hello test");
 		assertThat(validation).isEqualTo(Validation.success("test"));
-		assertThat(validation.hashCode())
-				.isEqualTo(Validation.success("test").hashCode());
+		assertThat(validation.hashCode()).isEqualTo(Validation.success("test").hashCode());
 	}
 
 	@Test
 	void failure() {
-		final Validation<String, String> validation = Validation.failure("errors1",
-				"errors2");
+		final Validation<String, String> validation = Validation.failure("errors1", "errors2");
 		assertThat(validation.isValid()).isFalse();
 		assertThatThrownBy(validation::value).isInstanceOf(NoSuchElementException.class);
 		assertThat(validation.errors()).isEqualTo(Arrays.asList("errors1", "errors2"));
-		assertThat(validation.map(String::toUpperCase).errors())
-				.isEqualTo(Arrays.asList("errors1", "errors2"));
-		assertThat(validation
-				.mapErrors(x -> x.stream().map(String::toUpperCase).collect(toList()))
-				.errors()).isEqualTo(Arrays.asList("ERRORS1", "ERRORS2"));
+		assertThat(validation.map(String::toUpperCase).errors()).isEqualTo(Arrays.asList("errors1", "errors2"));
+		assertThat(validation.mapErrors(x -> x.stream().map(String::toUpperCase).collect(toList())).errors())
+			.isEqualTo(Arrays.asList("ERRORS1", "ERRORS2"));
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).errors())
-				.isEqualTo(Arrays.asList("errors1", "errors2"));
+			.isEqualTo(Arrays.asList("errors1", "errors2"));
 		assertThat(validation).isEqualTo(Validation.failure("errors1", "errors2"));
-		assertThat(validation.hashCode())
-				.isEqualTo(Validation.failure("errors1", "errors2").hashCode());
+		assertThat(validation.hashCode()).isEqualTo(Validation.failure("errors1", "errors2").hashCode());
 	}
 
 	@Test
 	void foldSuccess() {
 		final Validation<String, String> validation = Validation.success("test");
-		final String fold = validation.fold(e -> String.join(",", e),
-				String::toUpperCase);
+		final String fold = validation.fold(e -> String.join(",", e), String::toUpperCase);
 		assertThat(fold).isEqualTo("TEST");
 	}
 
 	@Test
 	void foldFailure() {
-		final Validation<String, String> validation = Validation.failure("errors1",
-				"errors2");
-		final String fold = validation.fold(e -> String.join(",", e),
-				String::toUpperCase);
+		final Validation<String, String> validation = Validation.failure("errors1", "errors2");
+		final String fold = validation.fold(e -> String.join(",", e), String::toUpperCase);
 		assertThat(fold).isEqualTo("errors1,errors2");
 	}
 
 	@Test
 	void bimapSuccess() {
 		final Validation<String, String> validation = Validation.success("test");
-		final Validation<String, String> bimap = validation.bimap(
-				errors -> errors.stream().map(String::toUpperCase).collect(toList()),
-				String::toUpperCase);
+		final Validation<String, String> bimap = validation
+			.bimap(errors -> errors.stream().map(String::toUpperCase).collect(toList()), String::toUpperCase);
 		assertThat(bimap.isValid()).isTrue();
 		assertThat(bimap.value()).isEqualTo("TEST");
 	}
 
 	@Test
 	void bimapFailure() {
-		final Validation<String, String> validation = Validation.failure("errors1",
-				"errors2");
-		final Validation<String, String> bimap = validation.bimap(
-				errors -> errors.stream().map(String::toUpperCase).collect(toList()),
-				String::toUpperCase);
+		final Validation<String, String> validation = Validation.failure("errors1", "errors2");
+		final Validation<String, String> bimap = validation
+			.bimap(errors -> errors.stream().map(String::toUpperCase).collect(toList()), String::toUpperCase);
 		assertThat(bimap.isValid()).isFalse();
 		assertThat(bimap.errors()).isEqualTo(Arrays.asList("ERRORS1", "ERRORS2"));
 	}
@@ -114,13 +101,19 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
 
-		final Validation<String, String> validation = v1.combine(v2).combine(v3)
-				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
-				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
-						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
+		final Validation<String, String> validation = v1.combine(v2)
+			.combine(v3)
+			.combine(v4)
+			.combine(v5)
+			.combine(v6)
+			.combine(v7)
+			.combine(v8)
+			.combine(v9)
+			.combine(v10)
+			.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9,
+					s10));
 		assertThat(validation.isValid()).isTrue();
-		assertThat(validation.value())
-				.isEqualTo("s1, s2, s3, s4, s5, s6, s7, s8, s9, s10");
+		assertThat(validation.value()).isEqualTo("s1, s2, s3, s4, s5, s6, s7, s8, s9, s10");
 	}
 
 	@Test
@@ -136,14 +129,20 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.failure("f9");
 		final Validation<String, String> v10 = Validation.failure("f10");
 
-		final Validation<String, String> validation = v1.combine(v2).combine(v3)
-				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
-				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
-						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
+		final Validation<String, String> validation = v1.combine(v2)
+			.combine(v3)
+			.combine(v4)
+			.combine(v5)
+			.combine(v6)
+			.combine(v7)
+			.combine(v8)
+			.combine(v9)
+			.combine(v10)
+			.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9,
+					s10));
 
 		assertThat(validation.isValid()).isFalse();
-		assertThat(validation.errors()).containsExactly("f1", "f2", "f3", "f4", "f5",
-				"f6", "f7", "f8", "f9", "f10");
+		assertThat(validation.errors()).containsExactly("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10");
 	}
 
 	@Test
@@ -159,10 +158,17 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.success("s10");
 
-		final Validation<String, String> validation = v1.combine(v2).combine(v3)
-				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
-				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
-						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
+		final Validation<String, String> validation = v1.combine(v2)
+			.combine(v3)
+			.combine(v4)
+			.combine(v5)
+			.combine(v6)
+			.combine(v7)
+			.combine(v8)
+			.combine(v9)
+			.combine(v10)
+			.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9,
+					s10));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f1");
@@ -181,10 +187,17 @@ class ValidationTest {
 		final Validation<String, String> v9 = Validation.success("s9");
 		final Validation<String, String> v10 = Validation.failure("f10");
 
-		final Validation<String, String> validation = v1.combine(v2).combine(v3)
-				.combine(v4).combine(v5).combine(v6).combine(v7).combine(v8).combine(v9)
-				.combine(v10).apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String
-						.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10));
+		final Validation<String, String> validation = v1.combine(v2)
+			.combine(v3)
+			.combine(v4)
+			.combine(v5)
+			.combine(v6)
+			.combine(v7)
+			.combine(v8)
+			.combine(v9)
+			.combine(v10)
+			.apply((s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) -> String.join(", ", s1, s2, s3, s4, s5, s6, s7, s8, s9,
+					s10));
 
 		assertThat(validation.isValid()).isFalse();
 		assertThat(validation.errors()).containsExactly("f10");
@@ -192,31 +205,28 @@ class ValidationTest {
 
 	@Test
 	void orElseThrowSuccess() {
-		final String s = Validation.<String, String> success("test")
-				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors));
+		final String s = Validation.<String, String>success("test")
+			.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors));
 		assertThat(s).isEqualTo("test");
 	}
 
 	@Test
 	void orElseThrowFailure() {
-		assertThatThrownBy(() -> Validation
-				.<String, String> failure(Arrays.asList("e1", "e2"))
-				.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors)))
-				.hasMessage("errors=[e1, e2]")
-				.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> Validation.<String, String>failure(Arrays.asList("e1", "e2"))
+			.orElseThrow(errors -> new IllegalArgumentException("errors=" + errors))).hasMessage("errors=[e1, e2]")
+			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void orElseGetSuccess() {
-		final String s = Validation.<String, String> success("test")
-				.orElseGet(errors -> String.join(",", errors));
+		final String s = Validation.<String, String>success("test").orElseGet(errors -> String.join(",", errors));
 		assertThat(s).isEqualTo("test");
 	}
 
 	@Test
 	void orElseGetFailure() {
-		final String s = Validation.<String, String> failure("e1", "e2")
-				.orElseGet(errors -> String.join(",", errors));
+		final String s = Validation.<String, String>failure("e1", "e2").orElseGet(errors -> String.join(",", errors));
 		assertThat(s).isEqualTo("e1,e2");
 	}
+
 }

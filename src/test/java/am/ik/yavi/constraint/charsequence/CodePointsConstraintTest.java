@@ -37,16 +37,16 @@ class CodePointsConstraintTest {
 				Range.of(0x0041/* A */, 0x005A /* Z */),
 				Range.of(0x0061/* a */, 0x007A /* z */));
 
-		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
+		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>().codePoints(whiteList)
+			.asWhiteList()
+			.predicates()
+			.peekFirst();
 
 		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbCＤ").get().value())
-				.isEqualTo(Collections.singletonList("Ｄ"));
-		assertThat(predicate.violatedValue("AbあCＤ").get().value())
-				.isEqualTo(Arrays.asList("あ", "Ｄ"));
+		assertThat(predicate.violatedValue("AbCＤ").get().value()).isEqualTo(Collections.singletonList("Ｄ"));
+		assertThat(predicate.violatedValue("AbあCＤ").get().value()).isEqualTo(Arrays.asList("あ", "Ｄ"));
 	}
 
 	@Test
@@ -67,16 +67,16 @@ class CodePointsConstraintTest {
 						0x0075 /* u */, 0x0076 /* v */, 0x0077 /* w */, 0x0078 /* x */,
 						0x0079 /* y */, 0x007A /* z */));
 
-		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(whiteList).asWhiteList().predicates().peekFirst();
+		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>().codePoints(whiteList)
+			.asWhiteList()
+			.predicates()
+			.peekFirst();
 
 		assertThat(predicate.violatedValue("ABCD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ABcD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("AbcD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbCＤ").get().value())
-				.isEqualTo(Collections.singletonList("Ｄ"));
-		assertThat(predicate.violatedValue("AbあCＤ").get().value())
-				.isEqualTo(Arrays.asList("あ", "Ｄ"));
+		assertThat(predicate.violatedValue("AbCＤ").get().value()).isEqualTo(Collections.singletonList("Ｄ"));
+		assertThat(predicate.violatedValue("AbあCＤ").get().value()).isEqualTo(Arrays.asList("あ", "Ｄ"));
 	}
 
 	@Test
@@ -85,15 +85,15 @@ class CodePointsConstraintTest {
 				Range.of(0x0041/* A */, 0x0042 /* B */),
 				Range.of(0x0061/* a */, 0x0062 /* b */));
 
-		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(blackList).asBlackList().predicates().peekFirst();
+		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>().codePoints(blackList)
+			.asBlackList()
+			.predicates()
+			.peekFirst();
 
 		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("cd").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("ABCD").get().value())
-				.isEqualTo(Arrays.asList("A", "B"));
-		assertThat(predicate.violatedValue("AbCD").get().value())
-				.isEqualTo(Arrays.asList("A", "b"));
+		assertThat(predicate.violatedValue("ABCD").get().value()).isEqualTo(Arrays.asList("A", "B"));
+		assertThat(predicate.violatedValue("AbCD").get().value()).isEqualTo(Arrays.asList("A", "b"));
 	}
 
 	@Test
@@ -101,15 +101,16 @@ class CodePointsConstraintTest {
 		CodePointsSet<String> blackList = () -> new HashSet<>(
 				Arrays.asList(0x0041 /* A */, 0x0042 /* B */));
 
-		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>()
-				.codePoints(blackList).asBlackList().predicates().peekFirst();
+		ConstraintPredicate<String> predicate = new CharSequenceConstraint<String, String>().codePoints(blackList)
+			.asBlackList()
+			.predicates()
+			.peekFirst();
 
 		assertThat(predicate.violatedValue("CD").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("ab").isPresent()).isFalse();
 		assertThat(predicate.violatedValue("abCD").isPresent()).isFalse();
-		assertThat(predicate.violatedValue("AbCD").get().value())
-				.isEqualTo(Collections.singletonList("A"));
-		assertThat(predicate.violatedValue("ABCD").get().value())
-				.isEqualTo(Arrays.asList("A", "B"));
+		assertThat(predicate.violatedValue("AbCD").get().value()).isEqualTo(Collections.singletonList("A"));
+		assertThat(predicate.violatedValue("ABCD").get().value()).isEqualTo(Arrays.asList("A", "B"));
 	}
+
 }

@@ -36,6 +36,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
  * @author Toshiaki Maki
  */
 public class Validator<T> implements Validatable<T> {
+
 	private final List<CollectionValidator<T, ?, ?>> collectionValidators;
 
 	private final List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators;
@@ -52,61 +53,53 @@ public class Validator<T> implements Validatable<T> {
 
 	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
 
-	public Validator(String messageKeySeparator,
-			List<ConstraintPredicates<T, ?>> predicatesList,
+	public Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
 			MessageFormatter messageFormatter) {
-		this(messageKeySeparator, predicatesList, collectionValidators,
-				conditionalValidators, messageFormatter, false);
+		this(messageKeySeparator, predicatesList, collectionValidators, conditionalValidators, messageFormatter, false);
 	}
 
 	/**
 	 * @since 0.8.0
 	 */
-	public Validator(String messageKeySeparator,
-			List<ConstraintPredicates<T, ?>> predicatesList,
+	public Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
-			MessageFormatter messageFormatter, boolean failFast) {
-		this(messageKeySeparator, predicatesList, collectionValidators,
-				conditionalValidators, messageFormatter, failFast, "");
+			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators, MessageFormatter messageFormatter,
+			boolean failFast) {
+		this(messageKeySeparator, predicatesList, collectionValidators, conditionalValidators, messageFormatter,
+				failFast, "");
 	}
 
-	private Validator(String messageKeySeparator,
-			List<ConstraintPredicates<T, ?>> predicatesList,
+	private Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
-			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators,
-			MessageFormatter messageFormatter, boolean failFast, String prefix) {
+			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators, MessageFormatter messageFormatter,
+			boolean failFast, String prefix) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
 		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
 		this.conditionalValidators = Collections.unmodifiableList(conditionalValidators);
 		this.messageFormatter = messageFormatter;
 		this.failFast = failFast;
-		this.prefix = (prefix == null || prefix.isEmpty()
-				|| prefix.endsWith(this.messageKeySeparator)) ? prefix
-						: prefix + this.messageKeySeparator;
+		this.prefix = (prefix == null || prefix.isEmpty() || prefix.endsWith(this.messageKeySeparator)) ? prefix
+				: prefix + this.messageKeySeparator;
 	}
 
 	public Validator<T> prefixed(String prefix) {
-		return new Validator<>(this.messageKeySeparator, this.predicatesList,
-				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter, this.failFast, prefix);
+		return new Validator<>(this.messageKeySeparator, this.predicatesList, this.collectionValidators,
+				this.conditionalValidators, this.messageFormatter, this.failFast, prefix);
 	}
 
 	/**
 	 * Set whether to enable fail fast mode. If enabled, Validator returns from the
 	 * current validation as soon as the first constraint violation occurs.
-	 *
 	 * @param failFast whether to enable fail fast mode
 	 * @since 0.8.0
 	 */
 	@Override
 	public Validator<T> failFast(boolean failFast) {
-		return new Validator<>(this.messageKeySeparator, this.predicatesList,
-				this.collectionValidators, this.conditionalValidators,
-				this.messageFormatter, failFast, this.prefix);
+		return new Validator<>(this.messageKeySeparator, this.predicatesList, this.collectionValidators,
+				this.conditionalValidators, this.messageFormatter, failFast, this.prefix);
 	}
 
 	@Override
@@ -116,7 +109,6 @@ public class Validator<T> implements Validatable<T> {
 
 	/**
 	 * This method is supposed to be used only internally.
-	 *
 	 * @param action callback per <code>ConstraintPredicates</code>.
 	 */
 	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
@@ -125,28 +117,23 @@ public class Validator<T> implements Validatable<T> {
 
 	/**
 	 * This method is supposed to be used only internally.
-	 *
 	 * @param action callback per <code>CollectionValidator</code>.
 	 */
-	public void forEachCollectionValidator(
-			Consumer<CollectionValidator<T, ?, ?>> action) {
+	public void forEachCollectionValidator(Consumer<CollectionValidator<T, ?, ?>> action) {
 		this.collectionValidators.forEach(action);
 	}
 
 	/**
 	 * This method is supposed to be used only internally.
-	 *
 	 * @param action callback per
-	 *     {@code Pair&lt;ConstraintCondition&lt;T&gt;, Validator&lt;T&gt;&gt;}.
+	 * {@code Pair&lt;ConstraintCondition&lt;T&gt;, Validator&lt;T&gt;&gt;}.
 	 */
-	public void forEachConditionalValidator(
-			Consumer<Pair<ConstraintCondition<T>, Validatable<T>>> action) {
+	public void forEachConditionalValidator(Consumer<Pair<ConstraintCondition<T>, Validatable<T>>> action) {
 		this.conditionalValidators.forEach(action);
 	}
 
 	@Override
-	public ConstraintViolations validate(T target, Locale locale,
-			ConstraintContext constraintContext) {
+	public ConstraintViolations validate(T target, Locale locale, ConstraintContext constraintContext) {
 		return this.validate(target, "", -1, locale, constraintContext);
 	}
 
@@ -174,8 +161,8 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ConstraintViolations validate(T target, String collectionName, int index,
-			Locale locale, ConstraintContext constraintContext) {
+	private ConstraintViolations validate(T target, String collectionName, int index, Locale locale,
+			ConstraintContext constraintContext) {
 		if (target == null) {
 			throw new IllegalArgumentException("target must not be null");
 		}
@@ -193,45 +180,34 @@ public class Validator<T> implements Validatable<T> {
 				if (v == null && constraintPredicate.nullValidity().skipNull()) {
 					continue;
 				}
-				final Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate)
-						.violatedValue(v);
+				final Optional<ViolatedValue> violated = ((ConstraintPredicate) constraintPredicate).violatedValue(v);
 				if (violated.isPresent()) {
 					final ViolatedValue violatedValue = violated.get();
-					final String name = this.prefix
-							+ this.indexedName(predicates.name(), collectionName, index);
+					final String name = this.prefix + this.indexedName(predicates.name(), collectionName, index);
 					final Supplier<Object[]> argsSupplier = constraintPredicate.args();
 					final Object[] args = (argsSupplier instanceof ViolatedArguments)
-							? ((ViolatedArguments) argsSupplier)
-									.arguments(violatedValue.value())
-							: argsSupplier.get();
-					violations.add(new ConstraintViolation(name,
-							constraintPredicate.messageKey(),
-							constraintPredicate.defaultMessageFormat(),
-							pad(name, args, violatedValue), this.messageFormatter,
-							locale));
-					if (this.failFast
-							|| ((predicates instanceof NestedConstraintPredicates)
-									&& ((NestedConstraintPredicates) predicates)
-											.isFailFast())) {
+							? ((ViolatedArguments) argsSupplier).arguments(violatedValue.value()) : argsSupplier.get();
+					violations.add(new ConstraintViolation(name, constraintPredicate.messageKey(),
+							constraintPredicate.defaultMessageFormat(), pad(name, args, violatedValue),
+							this.messageFormatter, locale));
+					if (this.failFast || ((predicates instanceof NestedConstraintPredicates)
+							&& ((NestedConstraintPredicates) predicates).isFailFast())) {
 						return violations;
 					}
 				}
 			}
 		}
 		for (CollectionValidator<T, ?, ?> collectionValidator : this.collectionValidators) {
-			final Collection collection = collectionValidator.toCollection()
-					.apply(target);
+			final Collection collection = collectionValidator.toCollection().apply(target);
 			if (collection != null) {
-				final Validator validator = this.failFast
-						? collectionValidator.validator().failFast(true)
+				final Validator validator = this.failFast ? collectionValidator.validator().failFast(true)
 						: collectionValidator.validator();
 				int i = 0;
 				for (Object element : collection) {
-					final String nestedName = this.indexedName(collectionValidator.name(),
-							collectionName, index);
+					final String nestedName = this.indexedName(collectionValidator.name(), collectionName, index);
 					if (element != null) {
-						final ConstraintViolations v = validator.validate(element,
-								nestedName, i++, locale, constraintContext);
+						final ConstraintViolations v = validator.validate(element, nestedName, i++, locale,
+								constraintContext);
 						violations.addAll(v);
 					}
 					else {
@@ -239,8 +215,7 @@ public class Validator<T> implements Validatable<T> {
 						final ConstraintViolation v = notNullViolation(name, locale);
 						violations.add(v);
 					}
-					if (!violations.isEmpty()
-							&& (this.failFast || validator.isFailFast())) {
+					if (!violations.isEmpty() && (this.failFast || validator.isFailFast())) {
 						return violations;
 					}
 				}
@@ -249,18 +224,13 @@ public class Validator<T> implements Validatable<T> {
 		for (Pair<ConstraintCondition<T>, Validatable<T>> pair : this.conditionalValidators) {
 			final ConstraintCondition<T> condition = pair.first();
 			if (condition.test(target, constraintContext)) {
-				final Validatable<T> validator = this.failFast
-						? pair.second().failFast(true)
-						: pair.second();
-				final ConstraintViolations constraintViolations = validator
-						.validate(target, locale, constraintContext);
+				final Validatable<T> validator = this.failFast ? pair.second().failFast(true) : pair.second();
+				final ConstraintViolations constraintViolations = validator.validate(target, locale, constraintContext);
 				for (ConstraintViolation violation : constraintViolations) {
 					final ConstraintViolation renamed = violation
-							.rename(name -> this.prefix
-									+ this.indexedName(name, collectionName, index));
+						.rename(name -> this.prefix + this.indexedName(name, collectionName, index));
 					violations.add(renamed);
-					if (!violations.isEmpty()
-							&& (this.failFast || validator.isFailFast())) {
+					if (!violations.isEmpty() && (this.failFast || validator.isFailFast())) {
 						return violations;
 					}
 				}
@@ -270,9 +240,8 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	private ConstraintViolation notNullViolation(String name, Locale locale) {
-		return new ConstraintViolation(name, OBJECT_NOT_NULL.messageKey(),
-				OBJECT_NOT_NULL.defaultMessageFormat(),
-				pad(name, new Object[] {}, new ViolatedValue(null)),
-				this.messageFormatter, locale);
+		return new ConstraintViolation(name, OBJECT_NOT_NULL.messageKey(), OBJECT_NOT_NULL.defaultMessageFormat(),
+				pad(name, new Object[] {}, new ViolatedValue(null)), this.messageFormatter, locale);
 	}
+
 }

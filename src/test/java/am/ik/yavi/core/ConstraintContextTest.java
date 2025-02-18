@@ -27,8 +27,7 @@ class ConstraintContextTest {
 
 	@Test
 	void fromMap() {
-		final ConstraintContext context = ConstraintContext
-				.from(singletonMap("country", "IT"));
+		final ConstraintContext context = ConstraintContext.from(singletonMap("country", "IT"));
 		final Attribute attribute = context.attribute("country");
 		assertThat(attribute.exists()).isTrue();
 		final Object country = attribute.value();
@@ -50,4 +49,5 @@ class ConstraintContextTest {
 		assertThat(typedCountry).isEqualTo("IT");
 		assertThat(context.attribute("foo").exists()).isFalse();
 	}
+
 }

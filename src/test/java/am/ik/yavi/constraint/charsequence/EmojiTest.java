@@ -76,8 +76,8 @@ class EmojiTest {
 	}
 
 	void verifyEmojiAll(String file) throws Exception {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-				this.getClass().getClassLoader().getResourceAsStream(file)))) {
+		try (BufferedReader reader = new BufferedReader(
+				new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(file)))) {
 			String line;
 			int n = 0;
 			do {
@@ -87,7 +87,8 @@ class EmojiTest {
 					continue;
 				}
 				int[] codePoints = Arrays.stream(line.split(";")[0].trim().split(" "))
-						.mapToInt(x -> Integer.parseInt(x, 16)).toArray();
+					.mapToInt(x -> Integer.parseInt(x, 16))
+					.toArray();
 				String emoji = new String(codePoints, 0, codePoints.length);
 				int len = Emoji.bestEffortCount("This is " + emoji + ".");
 				assertThat(len).describedAs(emoji + " L" + n).isEqualTo(10);
@@ -96,4 +97,5 @@ class EmojiTest {
 			while (line != null);
 		}
 	}
+
 }

@@ -27,8 +27,9 @@ import am.ik.yavi.core.ValueValidator;
  * @since 0.14.0
  */
 public interface ValueValidatorBuilder<A, R> {
+
 	ValueValidator<? super A, ? extends R> build();
 
-	<T> ValueValidator<? super A, ? extends T> build(
-			Function<? super R, ? extends T> mapper);
+	<T> ValueValidator<? super A, ? extends T> build(Function<? super R, ? extends T> mapper);
+
 }

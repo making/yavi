@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ObjectValidatorTest {
+
 	static final CustomConstraint<Instant> past = new CustomConstraint<Instant>() {
 
 		@Override
@@ -54,8 +55,7 @@ class ObjectValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateValid(ObjectValidator<Instant, Date> dateValidator) {
-		final Validated<Date> dateValidated = dateValidator
-				.validate(Instant.ofEpochMilli(1000L));
+		final Validated<Date> dateValidated = dateValidator.validate(Instant.ofEpochMilli(1000L));
 		assertThat(dateValidated.isValid()).isTrue();
 		assertThat(dateValidated.value().getTime()).isEqualTo(1000L);
 	}
@@ -63,8 +63,7 @@ class ObjectValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateInvalid(ObjectValidator<Instant, Date> dateValidator) {
-		final Validated<Date> dateValidated = dateValidator
-				.validate(Instant.now().plusSeconds(1));
+		final Validated<Date> dateValidated = dateValidator.validate(Instant.now().plusSeconds(1));
 		assertThat(dateValidated.isValid()).isFalse();
 		final ConstraintViolations violations = dateValidated.errors();
 		assertThat(violations).hasSize(1);
@@ -83,17 +82,16 @@ class ObjectValidatorTest {
 	@MethodSource("validators")
 	void validatedInvalid(ObjectValidator<Instant, Date> dateValidator) {
 		assertThatThrownBy(() -> dateValidator.validated(Instant.now().plusSeconds(1)))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"createdAt\" must be past");
+			.isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"createdAt\" must be past");
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeValid(ObjectValidator<Instant, Date> dateValidator) {
-		final Map<String, Instant> params = Collections.singletonMap("createdAt",
-				Instant.ofEpochMilli(1000L));
+		final Map<String, Instant> params = Collections.singletonMap("createdAt", Instant.ofEpochMilli(1000L));
 		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
-				.compose(map -> map.get("createdAt"));
+			.compose(map -> map.get("createdAt"));
 		final Validated<Date> dateValidated = mapValidator.validate(params);
 		assertThat(dateValidated.isValid()).isTrue();
 		assertThat(dateValidated.value().getTime()).isEqualTo(1000L);
@@ -102,10 +100,9 @@ class ObjectValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeInvalid(ObjectValidator<Instant, Date> dateValidator) {
-		final Map<String, Instant> params = Collections.singletonMap("createdAt",
-				Instant.now().plusSeconds(1));
+		final Map<String, Instant> params = Collections.singletonMap("createdAt", Instant.now().plusSeconds(1));
 		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
-				.compose(map -> map.get("createdAt"));
+			.compose(map -> map.get("createdAt"));
 		final Validated<Date> dateValidated = mapValidator.validate(params);
 		assertThat(dateValidated.isValid()).isFalse();
 		final ConstraintViolations violations = dateValidated.errors();
@@ -116,13 +113,11 @@ class ObjectValidatorTest {
 
 	static Stream<ObjectValidator<Instant, Date>> validators() {
 		return Stream.of(
-				ObjectValidatorBuilder
-						.<Instant> of("createdAt",
-								c -> c.notNull().predicateNullable(past))
-						.build(Date::from),
-				ObjectValidatorBuilder
-						.<Instant> of("createdAt",
-								c -> c.notNull().predicateNullable(past))
-						.build().andThen(Date::from));
+				ObjectValidatorBuilder.<Instant>of("createdAt", c -> c.notNull().predicateNullable(past))
+					.build(Date::from),
+				ObjectValidatorBuilder.<Instant>of("createdAt", c -> c.notNull().predicateNullable(past))
+					.build()
+					.andThen(Date::from));
 	}
+
 }

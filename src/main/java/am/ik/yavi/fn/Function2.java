@@ -26,4 +26,5 @@ import am.ik.yavi.jsr305.Nullable;
 public interface Function2<T1, T2, R> {
 
 	R apply(@Nullable T1 t1, @Nullable T2 t2);
+
 }

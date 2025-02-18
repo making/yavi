@@ -28,12 +28,12 @@ public class LocalTimeValidator<T> extends DefaultArguments1Validator<LocalTime,
 
 	@Override
 	public <T2> LocalTimeValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new LocalTimeValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new LocalTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
 	public LocalTimeValidator(Validator<Arguments1<LocalTime>> validator,
 			Function1<? super LocalTime, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

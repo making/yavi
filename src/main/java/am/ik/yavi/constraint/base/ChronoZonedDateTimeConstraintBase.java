@@ -27,6 +27,7 @@ import am.ik.yavi.core.Constraint;
  */
 public abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZonedDateTime<?>, C extends Constraint<T, V, C>>
 		extends TemporalConstraintBase<T, V, C> {
+
 	@Override
 	protected boolean isAfter(V a, V b) {
 		return a.isAfter(b);
@@ -36,4 +37,5 @@ public abstract class ChronoZonedDateTimeConstraintBase<T, V extends ChronoZoned
 	protected boolean isBefore(V a, V b) {
 		return a.isBefore(b);
 	}
+
 }

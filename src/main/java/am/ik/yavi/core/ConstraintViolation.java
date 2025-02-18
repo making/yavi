@@ -22,6 +22,7 @@ import java.util.function.Function;
 import am.ik.yavi.message.MessageFormatter;
 
 public class ConstraintViolation {
+
 	private final Object[] args;
 
 	private final String defaultMessageFormat;
@@ -34,9 +35,8 @@ public class ConstraintViolation {
 
 	private final String name;
 
-	public ConstraintViolation(String name, String messageKey,
-			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter,
-			Locale locale) {
+	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, Object[] args,
+			MessageFormatter messageFormatter, Locale locale) {
 		this.name = name;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
@@ -62,8 +62,7 @@ public class ConstraintViolation {
 	}
 
 	public String message() {
-		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat,
-				this.args, this.locale);
+		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat, this.args, this.locale);
 	}
 
 	public String messageKey() {
@@ -76,9 +75,8 @@ public class ConstraintViolation {
 
 	@Override
 	public String toString() {
-		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='"
-				+ messageKey + '\'' + ", defaultMessageFormat='" + defaultMessageFormat
-				+ '\'' + ", args=" + Arrays.toString(args) + '}';
+		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='" + messageKey + '\''
+				+ ", defaultMessageFormat='" + defaultMessageFormat + '\'' + ", args=" + Arrays.toString(args) + '}';
 	}
 
 	public Object violatedValue() {
@@ -94,8 +92,8 @@ public class ConstraintViolation {
 		if (newArgs.length > 0) {
 			newArgs[0] = newName;
 		}
-		return new ConstraintViolation(newName, this.messageKey,
-				this.defaultMessageFormat, newArgs, this.messageFormatter, this.locale);
+		return new ConstraintViolation(newName, this.messageKey, this.defaultMessageFormat, newArgs,
+				this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -104,4 +102,5 @@ public class ConstraintViolation {
 	public ConstraintViolation indexed(int index) {
 		return this.rename(name -> name + "[" + index + "]");
 	}
+
 }

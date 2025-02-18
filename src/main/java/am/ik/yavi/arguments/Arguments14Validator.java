@@ -34,9 +34,8 @@ import am.ik.yavi.jsr305.Nullable;
 @FunctionalInterface
 public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> {
 
-	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
 			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, Locale locale,
 			ConstraintContext constraintContext);
 
@@ -47,9 +46,8 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 			Function<? super X, ? extends X2> mapper) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
 				constraintContext) -> Arguments14Validator.this
-						.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13,
-								a14, locale, constraintContext)
-						.map(mapper);
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext)
+					.map(mapper);
 	}
 
 	/**
@@ -59,9 +57,8 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 			ValueValidator<? super X, X2> validator) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
 				constraintContext) -> Arguments14Validator.this
-						.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13,
-								a14, locale, constraintContext)
-						.flatMap(v -> validator.validate(v, locale, constraintContext));
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext));
 	}
 
 	/**
@@ -71,10 +68,9 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 			Function<? super A, ? extends Arguments14<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14>> mapper) {
 		return (a, locale, constraintContext) -> {
 			final Arguments14<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14> args = mapper
-					.apply(a);
-			return Arguments14Validator.this.validate(args.arg1(), args.arg2(),
-					args.arg3(), args.arg4(), args.arg5(), args.arg6(), args.arg7(),
-					args.arg8(), args.arg9(), args.arg10(), args.arg11(), args.arg12(),
+				.apply(a);
+			return Arguments14Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(), args.arg5(),
+					args.arg6(), args.arg7(), args.arg8(), args.arg9(), args.arg10(), args.arg11(), args.arg12(),
 					args.arg13(), args.arg14(), locale, constraintContext);
 		};
 	}
@@ -86,69 +82,56 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 		throw new UnsupportedOperationException("lazy is not implemented!");
 	}
 
-	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
 			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-				Locale.getDefault(), ConstraintGroup.DEFAULT);
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, Locale.getDefault(),
+				ConstraintGroup.DEFAULT);
 	}
 
-	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
-			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
-			ConstraintContext constraintContext) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-				Locale.getDefault(), constraintContext);
+	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, ConstraintContext constraintContext) {
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, Locale.getDefault(),
+				constraintContext);
 	}
 
-	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+	default Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
 			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, Locale locale) {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-				locale, ConstraintGroup.DEFAULT);
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
+				ConstraintGroup.DEFAULT);
 	}
 
-	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
-			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14)
-			throws ConstraintViolationsException {
+	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14) throws ConstraintViolationsException {
 		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14)
-				.orElseThrow(ConstraintViolationsException::new);
+			.orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
-			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
-			ConstraintContext constraintContext) throws ConstraintViolationsException {
-		return this
-				.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-						constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, ConstraintContext constraintContext)
+			throws ConstraintViolationsException {
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, constraintContext)
+			.orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
 			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, Locale locale)
 			throws ConstraintViolationsException {
-		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-				locale).orElseThrow(ConstraintViolationsException::new);
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale)
+			.orElseThrow(ConstraintViolationsException::new);
 	}
 
-	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
-			@Nullable A4 a4, @Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7,
-			@Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
-			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, Locale locale,
-			ConstraintContext constraintContext) throws ConstraintViolationsException {
-		return this
-				.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14,
-						locale, constraintContext)
-				.orElseThrow(ConstraintViolationsException::new);
+	default X validated(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
+			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
+			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, Locale locale, ConstraintContext constraintContext)
+			throws ConstraintViolationsException {
+		return this.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext)
+			.orElseThrow(ConstraintViolationsException::new);
 	}
 
 }

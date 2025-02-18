@@ -50,8 +50,7 @@ class StringValidatorTest {
 		assertThat(violations.get(0).name()).isEqualTo("country");
 		assertThat(violations.get(0).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(1).name()).isEqualTo("country");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(1).messageKey()).isEqualTo("container.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -64,11 +63,9 @@ class StringValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(StringValidator<Country> countryValidator) {
-		assertThatThrownBy(() -> countryValidator.validated(" "))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"country\" must not be blank")
-				.hasMessageContaining(
-						"The size of \"country\" must be greater than or equal to 2. The given size is 1");
+		assertThatThrownBy(() -> countryValidator.validated(" ")).isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"country\" must not be blank")
+			.hasMessageContaining("The size of \"country\" must be greater than or equal to 2. The given size is 1");
 	}
 
 	@ParameterizedTest
@@ -76,7 +73,7 @@ class StringValidatorTest {
 	void composeValid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", "JP");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-				.compose(map -> map.get("country"));
+			.compose(map -> map.get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value().name()).isEqualTo("JP");
@@ -87,7 +84,7 @@ class StringValidatorTest {
 	void composeInvalid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", " ");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-				.compose(map -> map.get("country"));
+			.compose(map -> map.get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();
@@ -95,17 +92,15 @@ class StringValidatorTest {
 		assertThat(violations.get(0).name()).isEqualTo("country");
 		assertThat(violations.get(0).messageKey()).isEqualTo("charSequence.notBlank");
 		assertThat(violations.get(1).name()).isEqualTo("country");
-		assertThat(violations.get(1).messageKey())
-				.isEqualTo("container.greaterThanOrEqual");
+		assertThat(violations.get(1).messageKey()).isEqualTo("container.greaterThanOrEqual");
 	}
 
 	static Stream<StringValidator<Country>> validators() {
 		return Stream.of(
-				StringValidatorBuilder
-						.of("country", c -> c.notBlank().greaterThanOrEqual(2))
-						.build(Country::new),
-				StringValidatorBuilder
-						.of("country", c -> c.notBlank().greaterThanOrEqual(2)).build()
-						.andThen(Country::new));
+				StringValidatorBuilder.of("country", c -> c.notBlank().greaterThanOrEqual(2)).build(Country::new),
+				StringValidatorBuilder.of("country", c -> c.notBlank().greaterThanOrEqual(2))
+					.build()
+					.andThen(Country::new));
 	}
+
 }

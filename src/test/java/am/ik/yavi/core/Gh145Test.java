@@ -22,23 +22,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class Gh145Test {
 
-	private static final Validator<Address> ADDRESS_VALIDATOR = ValidatorBuilder
-			.of(Address.class)
-			.constraint(Address::getCity, "city", city -> city.notBlank())
-			.nestIfPresent(Address::getCountry, "country",
-					countryValidatorBuilder -> countryValidatorBuilder
-							.constraint(Country::getCode, "code",
-									code -> code.lessThan(3))
-							.constraintOnCondition(
-									(country, group) -> country.getName() != null,
-									conditionalCountryBuilder -> conditionalCountryBuilder
-											.constraint(Country::getCode, "code",
-													code -> code.notBlank())))
-			.build();
+	private static final Validator<Address> ADDRESS_VALIDATOR = ValidatorBuilder.of(Address.class)
+		.constraint(Address::getCity, "city", city -> city.notBlank())
+		.nestIfPresent(Address::getCountry, "country",
+				countryValidatorBuilder -> countryValidatorBuilder
+					.constraint(Country::getCode, "code", code -> code.lessThan(3))
+					.constraintOnCondition((country, group) -> country.getName() != null,
+							conditionalCountryBuilder -> conditionalCountryBuilder.constraint(Country::getCode, "code",
+									code -> code.notBlank())))
+		.build();
 
-	private static final Validator<Person> PERSON_VALIDATOR = ValidatorBuilder
-			.of(Person.class).constraint(Person::getName, "name", name -> name.notBlank())
-			.nestIfPresent(Person::getAddress, "address", ADDRESS_VALIDATOR).build();
+	private static final Validator<Person> PERSON_VALIDATOR = ValidatorBuilder.of(Person.class)
+		.constraint(Person::getName, "name", name -> name.notBlank())
+		.nestIfPresent(Person::getAddress, "address", ADDRESS_VALIDATOR)
+		.build();
 
 	@Test
 	void shouldBeValidAddressWithoutCountry() {
@@ -66,25 +63,23 @@ public class Gh145Test {
 
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).extracting(ConstraintViolation::message)
-				.containsOnly("\"country.code\" must not be blank");
+			.containsOnly("\"country.code\" must not be blank");
 	}
 
 	@Test
 	void shouldBeInvalidWhenPersonHasAddressWithoutCountryCode() {
-		Person person = new Person("Jack",
-				new Address("Paris", new Country(null, "France")));
+		Person person = new Person("Jack", new Address("Paris", new Country(null, "France")));
 
 		ConstraintViolations violations = PERSON_VALIDATOR.validate(person);
 
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).extracting(ConstraintViolation::message)
-				.containsOnly("\"address.country.code\" must not be blank");
+			.containsOnly("\"address.country.code\" must not be blank");
 	}
 
 	@Test
 	void shouldBeValidWhenPersonHasAddressWithCountryCodeAndName() {
-		Person person = new Person("Jack",
-				new Address("Paris", new Country("FR", "France")));
+		Person person = new Person("Jack", new Address("Paris", new Country("FR", "France")));
 
 		ConstraintViolations violations = PERSON_VALIDATOR.validate(person);
 
@@ -92,7 +87,9 @@ public class Gh145Test {
 	}
 
 	private static class Person {
+
 		private String name;
+
 		private Address address;
 
 		public Person(String name, Address address) {
@@ -107,10 +104,13 @@ public class Gh145Test {
 		public Address getAddress() {
 			return address;
 		}
+
 	}
 
 	private static class Address {
+
 		private String city;
+
 		private Country country;
 
 		public Address(String city, Country country) {
@@ -125,10 +125,13 @@ public class Gh145Test {
 		public Country getCountry() {
 			return country;
 		}
+
 	}
 
 	private static class Country {
+
 		private String code;
+
 		private String name;
 
 		public Country(String code, String name) {
@@ -143,5 +146,7 @@ public class Gh145Test {
 		public String getName() {
 			return name;
 		}
+
 	}
+
 }

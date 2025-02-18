@@ -20,6 +20,7 @@ import am.ik.yavi.jsr305.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 
 abstract class ValidatorFactorySupport {
+
 	protected final String messageKeySeparator;
 
 	protected final MessageFormatter messageFormatter;
@@ -31,12 +32,12 @@ abstract class ValidatorFactorySupport {
 	}
 
 	protected <T> ValidatorBuilder<T> initBuilder() {
-		final ValidatorBuilder<T> builder = this.messageKeySeparator == null
-				? new ValidatorBuilder<>()
+		final ValidatorBuilder<T> builder = this.messageKeySeparator == null ? new ValidatorBuilder<>()
 				: new ValidatorBuilder<>(this.messageKeySeparator);
 		if (this.messageFormatter != null) {
 			builder.messageFormatter(messageFormatter);
 		}
 		return builder;
 	}
+
 }

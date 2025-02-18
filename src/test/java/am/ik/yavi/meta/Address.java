@@ -23,8 +23,7 @@ public class Address {
 
 	private final String street;
 
-	public Address(@ConstraintTarget(getter = false) Country country,
-			@ConstraintTarget(getter = false) String street,
+	public Address(@ConstraintTarget(getter = false) Country country, @ConstraintTarget(getter = false) String street,
 			@ConstraintTarget(getter = false) PhoneNumber phoneNumber) {
 		this.country = country;
 		this.street = street;
@@ -54,6 +53,7 @@ public class Address {
 		public String name() {
 			return this.name;
 		}
+
 	}
 
 	public static class PhoneNumber {
@@ -67,5 +67,7 @@ public class Address {
 		public String value() {
 			return this.value;
 		}
+
 	}
+
 }

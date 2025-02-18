@@ -41,7 +41,7 @@ public interface ViolatedArguments<T> extends Supplier<Object[]> {
 
 	@SuppressWarnings("unchecked")
 	static <T> Supplier<Object[]> supplyArguments(Predicate<T> predicate) {
-		return (predicate instanceof ViolatedArguments) ? (ViolatedArguments<T>) predicate
-				: () -> new Object[] {};
+		return (predicate instanceof ViolatedArguments) ? (ViolatedArguments<T>) predicate : () -> new Object[] {};
 	}
+
 }

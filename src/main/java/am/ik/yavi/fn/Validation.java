@@ -39,6 +39,7 @@ import static java.util.stream.Collectors.toList;
  * @since 0.6.0
  */
 public abstract class Validation<E, T> implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 
 	public abstract boolean isValid();
@@ -46,17 +47,15 @@ public abstract class Validation<E, T> implements Serializable {
 	/**
 	 * Returns the value of this {@code Validation} if is a {@code Success} or throws if
 	 * this is an {@code Failure}.
-	 *
 	 * @return The value of this {@code Validation}
 	 * @throws NoSuchElementException if this is an {@code Failure} or the value is
-	 *     {@code null}
+	 * {@code null}
 	 */
 	public abstract T value();
 
 	/**
 	 * Returns the value of this {@code Validation} if is a {@code Success} or throws if
 	 * this is an {@code Failure}. {@code null} can be returned.
-	 *
 	 * @return The value of this {@code Validation}
 	 * @throws NoSuchElementException if this is an {@code Failure}.
 	 */
@@ -66,15 +65,13 @@ public abstract class Validation<E, T> implements Serializable {
 	/**
 	 * Returns the errors of this {@code Validation} if it is an {@code Failure} or throws
 	 * if this is a {@code Success}.
-	 *
 	 * @return The errors, if present
 	 * @throws NoSuchElementException if this is a {@code Success}
 	 */
 	public abstract List<E> errors();
 
 	@SuppressWarnings("unchecked")
-	public <T2, V extends Validation<E, T2>> V map(
-			Function<? super T, ? extends T2> mapper) {
+	public <T2, V extends Validation<E, T2>> V map(Function<? super T, ? extends T2> mapper) {
 		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (V) this;
 	}
 
@@ -91,28 +88,22 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E2> Validation<E2, T> mapErrors(
-			Function<? super List<E>, ? extends List<E2>> errorsMapper) {
-		return isValid() ? (Validation<E2, T>) this
-				: Validation.failure(errorsMapper.apply(errors()));
+	public <E2> Validation<E2, T> mapErrors(Function<? super List<E>, ? extends List<E2>> errorsMapper) {
+		return isValid() ? (Validation<E2, T>) this : Validation.failure(errorsMapper.apply(errors()));
 	}
 
 	/**
 	 * @since 0.8.2
 	 */
 	@SuppressWarnings("unchecked")
-	public <E2> Validation<E2, T> mapError(
-			Function<? super E, ? extends E2> errorMapper) {
+	public <E2> Validation<E2, T> mapError(Function<? super E, ? extends E2> errorMapper) {
 		return isValid() ? (Validation<E2, T>) this
-				: Validation
-						.failure(errors().stream().map(errorMapper).collect(toList()));
+				: Validation.failure(errors().stream().map(errorMapper).collect(toList()));
 	}
 
-	public <E2, T2> Validation<E2, T2> bimap(
-			Function<? super List<E>, ? extends List<E2>> errorsMapper,
+	public <E2, T2> Validation<E2, T2> bimap(Function<? super List<E>, ? extends List<E2>> errorsMapper,
 			Function<? super T, ? extends T2> mapper) {
-		return isValid() ? Validation.success(mapper.apply(value()))
-				: Validation.failure(errorsMapper.apply(errors()));
+		return isValid() ? Validation.success(mapper.apply(value())) : Validation.failure(errorsMapper.apply(errors()));
 	}
 
 	public Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
@@ -122,8 +113,7 @@ public abstract class Validation<E, T> implements Serializable {
 		return this;
 	}
 
-	public <X extends Throwable> T orElseThrow(
-			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+	public <X extends Throwable> T orElseThrow(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (isValid()) {
 			return value();
 		}
@@ -135,8 +125,7 @@ public abstract class Validation<E, T> implements Serializable {
 	/**
 	 * @since 0.10.0
 	 */
-	public <X extends Throwable> void throwIfInvalid(
-			Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+	public <X extends Throwable> void throwIfInvalid(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (!isValid()) {
 			throw exceptionMapper.apply(errors());
 		}
@@ -151,8 +140,7 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 	}
 
-	public <U> U fold(Function<? super List<E>, ? extends U> errorsMapper,
-			Function<? super T, ? extends U> mapper) {
+	public <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
@@ -210,6 +198,7 @@ public abstract class Validation<E, T> implements Serializable {
 	}
 
 	public static class Success<E, T> extends Validation<E, T> {
+
 		private static final long serialVersionUID = 1L;
 
 		public final T value;
@@ -238,8 +227,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 		@Override
 		public List<E> errors() throws RuntimeException {
-			throw new NoSuchElementException(
-					"errors of 'Success' Validation does not exist.");
+			throw new NoSuchElementException("errors of 'Success' Validation does not exist.");
 		}
 
 		@Override
@@ -256,9 +244,11 @@ public abstract class Validation<E, T> implements Serializable {
 		public int hashCode() {
 			return Objects.hash(value);
 		}
+
 	}
 
 	public static class Failure<E, T> extends Validation<E, T> {
+
 		private static final long serialVersionUID = 1L;
 
 		private final List<E> errors;
@@ -280,8 +270,7 @@ public abstract class Validation<E, T> implements Serializable {
 
 		@Override
 		public T value() {
-			throw new NoSuchElementException(
-					"value of 'Failure' Validation does not exists. Errors=" + errors);
+			throw new NoSuchElementException("value of 'Failure' Validation does not exists. Errors=" + errors);
 		}
 
 		@Override
@@ -308,5 +297,7 @@ public abstract class Validation<E, T> implements Serializable {
 		public int hashCode() {
 			return Objects.hash(errors);
 		}
+
 	}
+
 }

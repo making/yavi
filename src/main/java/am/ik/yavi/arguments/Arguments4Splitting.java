@@ -31,6 +31,7 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.7.0
  */
 public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
+
 	protected final ValueValidator<? super A1, ? extends R1> v1;
 
 	protected final ValueValidator<? super A2, ? extends R2> v2;
@@ -39,10 +40,8 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 
 	protected final ValueValidator<? super A4, ? extends R4> v4;
 
-	public Arguments4Splitting(ValueValidator<? super A1, ? extends R1> v1,
-			ValueValidator<? super A2, ? extends R2> v2,
-			ValueValidator<? super A3, ? extends R3> v3,
-			ValueValidator<? super A4, ? extends R4> v4) {
+	public Arguments4Splitting(ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
+			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -56,21 +55,16 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 			@Override
 			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
 				return ((a1, a2, a3, a4, locale, constraintContext) -> Validations.apply(
-						(r1, r2, r3, r4) -> () -> f.apply(r1, r2, r3, r4),
-						v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext),
-						v3.validate(a3, locale, constraintContext),
+						(r1, r2, r3, r4) -> () -> f.apply(r1, r2, r3, r4), v1.validate(a1, locale, constraintContext),
+						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
 						v4.validate(a4, locale, constraintContext)));
 			}
 
 			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2,
-					@Nullable A3 a3, @Nullable A4 a4, Locale locale,
-					ConstraintContext constraintContext) {
-				return Validations.apply(f::apply,
-						v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext),
-						v3.validate(a3, locale, constraintContext),
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
+				return Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
+						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
 						v4.validate(a4, locale, constraintContext));
 			}
 		};
@@ -80,4 +74,5 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 			ValueValidator<? super A5, ? extends R5> v5) {
 		return new Arguments5Splitting<>(v1, v2, v3, v4, v5);
 	}
+
 }

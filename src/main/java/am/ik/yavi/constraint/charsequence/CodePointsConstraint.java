@@ -29,12 +29,11 @@ import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolatedValue;
 
-public class CodePointsConstraint<T, E extends CharSequence>
-		extends CharSequenceConstraint<T, E> {
+public class CodePointsConstraint<T, E extends CharSequence> extends CharSequenceConstraint<T, E> {
+
 	private final CodePoints<E> codePoints;
 
-	public CodePointsConstraint(CharSequenceConstraint<T, E> delegate,
-			CodePoints<E> codePoints) {
+	public CodePointsConstraint(CharSequenceConstraint<T, E> delegate, CodePoints<E> codePoints) {
 		super();
 		this.codePoints = codePoints;
 		this.predicates().addAll(delegate.predicates());
@@ -57,8 +56,8 @@ public class CodePointsConstraint<T, E extends CharSequence>
 				return Optional.empty();
 			}
 			List<String> includedList = included.stream() //
-					.map(i -> new String(new int[] { i }, 0, 1)) //
-					.collect(Collectors.toList());
+				.map(i -> new String(new int[] { i }, 0, 1)) //
+				.collect(Collectors.toList());
 			return Optional.of(new ViolatedValue(includedList));
 		}, CODE_POINTS_NOT_INCLUDED, () -> new Object[] {}, VALID));
 		return this;
@@ -71,8 +70,8 @@ public class CodePointsConstraint<T, E extends CharSequence>
 				return Optional.empty();
 			}
 			List<String> excludedList = excludedFromWhiteList.stream() //
-					.map(i -> new String(new int[] { i }, 0, 1)) //
-					.collect(Collectors.toList());
+				.map(i -> new String(new int[] { i }, 0, 1)) //
+				.collect(Collectors.toList());
 			return Optional.of(new ViolatedValue(excludedList));
 		}, CODE_POINTS_ALL_INCLUDED, () -> new Object[] {}, VALID));
 		return this;
@@ -84,6 +83,7 @@ public class CodePointsConstraint<T, E extends CharSequence>
 	}
 
 	public static class Builder<T, E extends CharSequence> {
+
 		private final CodePoints<E> codePoints;
 
 		private final CharSequenceConstraint<T, E> delegate;
@@ -94,14 +94,13 @@ public class CodePointsConstraint<T, E extends CharSequence>
 		}
 
 		public CodePointsConstraint<T, E> asBlackList() {
-			return new CodePointsConstraint<>(this.delegate, this.codePoints)
-					.asBlackList();
+			return new CodePointsConstraint<>(this.delegate, this.codePoints).asBlackList();
 		}
 
 		public CodePointsConstraint<T, E> asWhiteList() {
-			return new CodePointsConstraint<>(this.delegate, this.codePoints)
-					.asWhiteList();
+			return new CodePointsConstraint<>(this.delegate, this.codePoints).asWhiteList();
 		}
+
 	}
 
 }

@@ -22,6 +22,7 @@ package am.ik.yavi.fn;
  * @since 0.6.0
  */
 public class Combining10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> {
+
 	protected final Validation<E, T1> v1;
 
 	protected final Validation<E, T2> v2;
@@ -42,10 +43,9 @@ public class Combining10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> {
 
 	protected final Validation<E, T10> v10;
 
-	public Combining10(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
-			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
-			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
-			Validation<E, T10> v10) {
+	public Combining10(Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
+			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8,
+			Validation<E, T9> v9, Validation<E, T10> v10) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -58,29 +58,26 @@ public class Combining10<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> {
 		this.v10 = v10;
 	}
 
-	public <R, V extends Validation<E, R>> V apply(
-			Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> f) {
+	public <R, V extends Validation<E, R>> V apply(Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> f) {
 		final Validation<E, Function1<T2, Function1<T3, Function1<T4, Function1<T5, Function1<T6, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>>>>>>> apply1 = v1
-				.apply(Validation.success(Functions.curry(f)));
+			.apply(Validation.success(Functions.curry(f)));
 		final Validation<E, Function1<T3, Function1<T4, Function1<T5, Function1<T6, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>>>>>> apply2 = v2
-				.apply(apply1);
+			.apply(apply1);
 		final Validation<E, Function1<T4, Function1<T5, Function1<T6, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>>>>> apply3 = v3
-				.apply(apply2);
+			.apply(apply2);
 		final Validation<E, Function1<T5, Function1<T6, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>>>> apply4 = v4
-				.apply(apply3);
+			.apply(apply3);
 		final Validation<E, Function1<T6, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>>> apply5 = v5
-				.apply(apply4);
-		final Validation<E, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>> apply6 = v6
-				.apply(apply5);
-		final Validation<E, Function1<T8, Function1<T9, Function1<T10, R>>>> apply7 = v7
-				.apply(apply6);
+			.apply(apply4);
+		final Validation<E, Function1<T7, Function1<T8, Function1<T9, Function1<T10, R>>>>> apply6 = v6.apply(apply5);
+		final Validation<E, Function1<T8, Function1<T9, Function1<T10, R>>>> apply7 = v7.apply(apply6);
 		final Validation<E, Function1<T9, Function1<T10, R>>> apply8 = v8.apply(apply7);
 		final Validation<E, Function1<T10, R>> apply9 = v9.apply(apply8);
 		return v10.apply(apply9);
 	}
 
-	public <T11> Combining11<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> combine(
-			Validation<E, T11> v11) {
+	public <T11> Combining11<E, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> combine(Validation<E, T11> v11) {
 		return new Combining11<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
 	}
+
 }

@@ -35,8 +35,7 @@ class BigDecimalValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateValid(BigDecimalValidator<Price> priceValidator) {
-		final Validated<Price> priceValidated = priceValidator
-				.validate(BigDecimal.valueOf(100));
+		final Validated<Price> priceValidated = priceValidator.validate(BigDecimal.valueOf(100));
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigDecimal.valueOf(100));
 	}
@@ -44,14 +43,12 @@ class BigDecimalValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validateInvalid(BigDecimalValidator<Price> priceValidator) {
-		final Validated<Price> priceValidated = priceValidator
-				.validate(BigDecimal.valueOf(-1));
+		final Validated<Price> priceValidated = priceValidator.validate(BigDecimal.valueOf(-1));
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -65,17 +62,16 @@ class BigDecimalValidatorTest {
 	@MethodSource("validators")
 	void validatedInvalid(BigDecimalValidator<Price> priceValidator) {
 		assertThatThrownBy(() -> priceValidator.validated(BigDecimal.valueOf(-1)))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"price\" must be greater than or equal to 0");
+			.isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
 
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeValid(BigDecimalValidator<Price> priceValidator) {
-		final Map<String, BigDecimal> params = Collections.singletonMap("price",
-				BigDecimal.valueOf(100));
+		final Map<String, BigDecimal> params = Collections.singletonMap("price", BigDecimal.valueOf(100));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigDecimal.valueOf(100));
@@ -84,34 +80,28 @@ class BigDecimalValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void composeInvalid(BigDecimalValidator<Price> priceValidator) {
-		final Map<String, BigDecimal> params = Collections.singletonMap("price",
-				BigDecimal.valueOf(-1));
+		final Map<String, BigDecimal> params = Collections.singletonMap("price", BigDecimal.valueOf(-1));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	static Stream<BigDecimalValidator<Price>> validators() {
 		return Stream.of(
-				BigDecimalValidatorBuilder
-						.of("price",
-								c -> c.notNull()
-										.greaterThanOrEqual(BigDecimal.valueOf(0)))
-						.build(Price::new),
-				BigDecimalValidatorBuilder
-						.of("price",
-								c -> c.notNull()
-										.greaterThanOrEqual(BigDecimal.valueOf(0)))
-						.build().andThen(Price::new));
+				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
+					.build(Price::new),
+				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
+					.build()
+					.andThen(Price::new));
 	}
 
 	public static class Price {
+
 		private final BigDecimal value;
 
 		public Price(BigDecimal value) {
@@ -121,5 +111,7 @@ class BigDecimalValidatorTest {
 		public BigDecimal value() {
 			return value;
 		}
+
 	}
+
 }

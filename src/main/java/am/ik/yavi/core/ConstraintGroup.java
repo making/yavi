@@ -23,6 +23,7 @@ import java.util.Objects;
  */
 @FunctionalInterface
 public interface ConstraintGroup extends ConstraintContext {
+
 	ConstraintGroup DEFAULT = ConstraintGroup.of("DEFAULT");
 
 	static ConstraintGroup of(String name) {
@@ -56,4 +57,5 @@ public interface ConstraintGroup extends ConstraintContext {
 	default <T> ConstraintCondition<T> toCondition() {
 		return (target, group) -> Objects.equals(name(), group.name());
 	}
+
 }

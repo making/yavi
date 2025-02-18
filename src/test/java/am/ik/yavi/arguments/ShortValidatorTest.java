@@ -47,8 +47,7 @@ class ShortValidatorTest {
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	@ParameterizedTest
@@ -61,9 +60,8 @@ class ShortValidatorTest {
 	@ParameterizedTest
 	@MethodSource("validators")
 	void validatedInvalid(ShortValidator<Price> priceValidator) {
-		assertThatThrownBy(() -> priceValidator.validated((short) -1))
-				.isInstanceOf(ConstraintViolationsException.class)
-				.hasMessageContaining("\"price\" must be greater than or equal to 0");
+		assertThatThrownBy(() -> priceValidator.validated((short) -1)).isInstanceOf(ConstraintViolationsException.class)
+			.hasMessageContaining("\"price\" must be greater than or equal to 0");
 	}
 
 	@ParameterizedTest
@@ -71,7 +69,7 @@ class ShortValidatorTest {
 	void composeValid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) 100);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo((short) 100);
@@ -82,27 +80,25 @@ class ShortValidatorTest {
 	void composeInvalid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) -1);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-				.compose(map -> map.get("price"));
+			.compose(map -> map.get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).name()).isEqualTo("price");
-		assertThat(violations.get(0).messageKey())
-				.isEqualTo("numeric.greaterThanOrEqual");
+		assertThat(violations.get(0).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 	}
 
 	static Stream<ShortValidator<Price>> validators() {
 		return Stream.of(
-				ShortValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
-						.build(Price::new),
-				ShortValidatorBuilder
-						.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
-						.build().andThen(Price::new));
+				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0)).build(Price::new),
+				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
+					.build()
+					.andThen(Price::new));
 	}
 
 	public static class Price {
+
 		private final short value;
 
 		public Price(short value) {
@@ -112,5 +108,7 @@ class ShortValidatorTest {
 		public short value() {
 			return value;
 		}
+
 	}
+
 }

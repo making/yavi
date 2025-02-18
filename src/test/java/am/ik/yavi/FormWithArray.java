@@ -16,6 +16,7 @@
 package am.ik.yavi;
 
 public class FormWithArray {
+
 	private final Address[] addresses;
 
 	public FormWithArray(Address[] addresses) {
@@ -25,4 +26,5 @@ public class FormWithArray {
 	public Address[] getAddresses() {
 		return addresses;
 	}
+
 }

@@ -54,10 +54,10 @@ import am.ik.yavi.message.MessageFormatter;
  * @since 0.13.0
  */
 public class BiConsumerFactory<E> extends ValidatorFactorySupport {
+
 	private final ErrorHandler<E> errorHandler;
 
-	public BiConsumerFactory(@Nullable String messageKeySeparator,
-			@Nullable MessageFormatter messageFormatter,
+	public BiConsumerFactory(@Nullable String messageKeySeparator, @Nullable MessageFormatter messageFormatter,
 			@Nullable ErrorHandler<E> errorHandler) {
 		super(messageKeySeparator, messageFormatter);
 		this.errorHandler = errorHandler;
@@ -67,8 +67,7 @@ public class BiConsumerFactory<E> extends ValidatorFactorySupport {
 		this(null, null, errorHandler);
 	}
 
-	public <T> BiConsumer<T, E> validator(
-			Function<ValidatorBuilder<T>, ValidatorBuilder<T>> constraints) {
+	public <T> BiConsumer<T, E> validator(Function<ValidatorBuilder<T>, ValidatorBuilder<T>> constraints) {
 		if (this.errorHandler == null) {
 			throw new IllegalArgumentException("'errorHandler' must not be null.");
 		}
@@ -76,4 +75,5 @@ public class BiConsumerFactory<E> extends ValidatorFactorySupport {
 		final Validator<T> validator = constraints.apply(builder).build();
 		return validator.toBiConsumer(this.errorHandler);
 	}
+
 }

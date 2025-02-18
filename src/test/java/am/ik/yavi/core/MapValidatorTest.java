@@ -26,18 +26,18 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
 
 class MapValidatorTest extends AbstractMapValidatorTest {
-	Validator<Address> addressValidator = ValidatorBuilder.<Address> of()
-			.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
-			.nest(Address::country, "country", Country.validator())
-			.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
-			.build();
+
+	Validator<Address> addressValidator = ValidatorBuilder.<Address>of()
+		.constraint(Address::street, "street", c -> c.notBlank().lessThan(32))
+		.nest(Address::country, "country", Country.validator())
+		.nestIfPresent(Address::phoneNumber, "phoneNumber", PhoneNumber.validator())
+		.build();
 
 	@Test
 	void nullCollectionValid() throws Exception {
 		Validator<FormWithMap> validator = ValidatorBuilder.of(FormWithMap.class) //
-				.forEachIfPresent(FormWithMap::getAddresses, "addresses",
-						addressValidator)
-				.build();
+			.forEachIfPresent(FormWithMap::getAddresses, "addresses", addressValidator)
+			.build();
 		FormWithMap form = new FormWithMap(null);
 		ConstraintViolations violations = validator.validate(form);
 		assertThat(violations.isValid()).isTrue();
@@ -46,7 +46,8 @@ class MapValidatorTest extends AbstractMapValidatorTest {
 	@Override
 	public Validator<FormWithMap> validator() {
 		return ValidatorBuilder.of(FormWithMap.class) //
-				.forEach(FormWithMap::getAddresses, "addresses", addressValidator)
-				.build();
+			.forEach(FormWithMap::getAddresses, "addresses", addressValidator)
+			.build();
 	}
+
 }

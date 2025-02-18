@@ -16,10 +16,12 @@
 package am.ik.yavi.constraint.charsequence.variant;
 
 public enum IdeographicVariationSequence {
+
 	IGNORE(true), NOT_IGNORE(false);
 
 	public static final String RANGE = new String(new int[] { 0xE0100 }, 0, 1) + "-"
 			+ new String(new int[] { 0xE01EF }, 0, 1);
+
 	private final boolean ignore;
 
 	IdeographicVariationSequence(boolean ignore) {
@@ -29,4 +31,5 @@ public enum IdeographicVariationSequence {
 	public boolean ignore() {
 		return this.ignore;
 	}
+
 }

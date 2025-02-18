@@ -23,16 +23,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class Gh335Test {
 
-	public static Validator<NestedObject> nestedValidator = ValidatorBuilder
-			.<NestedObject> of() //
-			.constraintOnCondition((nested, constraintGroup) -> nested.bool(),
-					c -> c.constraint(NestedObject::field, "field", Constraint::notNull)) //
-			.failFast(true) //
-			.build();
-	public static Validator<RootObject> rootValidator = ValidatorBuilder.<RootObject> of() //
-			.nest(RootObject::nested2, "nested2", nestedValidator) //
-			.failFast(true) //
-			.build();
+	public static Validator<NestedObject> nestedValidator = ValidatorBuilder.<NestedObject>of() //
+		.constraintOnCondition((nested, constraintGroup) -> nested.bool(),
+				c -> c.constraint(NestedObject::field, "field", Constraint::notNull)) //
+		.failFast(true) //
+		.build();
+
+	public static Validator<RootObject> rootValidator = ValidatorBuilder.<RootObject>of() //
+		.nest(RootObject::nested2, "nested2", nestedValidator) //
+		.failFast(true) //
+		.build();
 
 	@Test
 	void rootValidator_Should_FailFast() {
@@ -61,7 +61,9 @@ public class Gh335Test {
 	}
 
 	public static class NestedObject {
+
 		private final String field;
+
 		private final Boolean bool;
 
 		public NestedObject(String field, Boolean bool) {
@@ -76,10 +78,13 @@ public class Gh335Test {
 		public Boolean bool() {
 			return bool;
 		}
+
 	}
 
 	public static class RootObject {
+
 		private final String field;
+
 		private final NestedObject nested2;
 
 		public RootObject(String field, NestedObject nested2) {
@@ -94,5 +99,7 @@ public class Gh335Test {
 		public NestedObject nested2() {
 			return nested2;
 		}
+
 	}
+
 }

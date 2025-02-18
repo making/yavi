@@ -25,6 +25,7 @@ import am.ik.yavi.fn.Validations;
  * @since 0.7.0
  */
 public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
+
 	protected final ValueValidator<? super A, ? extends R1> v1;
 
 	protected final ValueValidator<? super A, ? extends R2> v2;
@@ -37,12 +38,9 @@ public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
 
 	protected final ValueValidator<? super A, ? extends R6> v6;
 
-	public Arguments6Combining(ValueValidator<? super A, ? extends R1> v1,
-			ValueValidator<? super A, ? extends R2> v2,
-			ValueValidator<? super A, ? extends R3> v3,
-			ValueValidator<? super A, ? extends R4> v4,
-			ValueValidator<? super A, ? extends R5> v5,
-			ValueValidator<? super A, ? extends R6> v6) {
+	public Arguments6Combining(ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
+			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -54,16 +52,13 @@ public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
 	public <X> Arguments1Validator<A, X> apply(
 			Function6<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? extends X> f) {
 		return (a, locale, constraintContext) -> Validations.apply(f::apply,
-				this.v1.validate(a, locale, constraintContext),
-				this.v2.validate(a, locale, constraintContext),
-				this.v3.validate(a, locale, constraintContext),
-				this.v4.validate(a, locale, constraintContext),
-				this.v5.validate(a, locale, constraintContext),
-				this.v6.validate(a, locale, constraintContext));
+				this.v1.validate(a, locale, constraintContext), this.v2.validate(a, locale, constraintContext),
+				this.v3.validate(a, locale, constraintContext), this.v4.validate(a, locale, constraintContext),
+				this.v5.validate(a, locale, constraintContext), this.v6.validate(a, locale, constraintContext));
 	}
 
-	public <R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
-			ValueValidator<? super A, ? extends R7> v7) {
+	public <R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(ValueValidator<? super A, ? extends R7> v7) {
 		return new Arguments7Combining<>(v1, v2, v3, v4, v5, v6, v7);
 	}
+
 }

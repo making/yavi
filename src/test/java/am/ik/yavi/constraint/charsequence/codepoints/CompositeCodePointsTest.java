@@ -83,4 +83,5 @@ class CompositeCodePointsTest {
 		assertThat(codePoints.allExcludedCodePoints("ABCDEあい")).containsOnly(0x0045);
 		assertThat(codePoints.allExcludedCodePoints("ABCDEFあい")).contains(0x0045, 0x0046);
 	}
+
 }

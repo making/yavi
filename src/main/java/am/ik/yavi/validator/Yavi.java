@@ -36,9 +36,7 @@ public final class Yavi {
 	 * 	._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
 	 * 	._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
 	 * 	.apply(Car::new);
-	 * </code>
-	 * </pre>
-	 *
+	 * </code> </pre>
 	 * @return {@code YaviArguments} builder
 	 */
 	public static YaviArguments arguments() {
@@ -48,4 +46,5 @@ public final class Yavi {
 	private Yavi() {
 
 	}
+
 }

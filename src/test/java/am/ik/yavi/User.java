@@ -16,6 +16,7 @@
 package am.ik.yavi;
 
 public class User {
+
 	private Integer age;
 
 	private String email;
@@ -61,4 +62,5 @@ public class User {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
+
 }

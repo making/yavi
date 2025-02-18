@@ -56,4 +56,5 @@ public class _PersonArgumentsMeta {
 			return am.ik.yavi.arguments.Arguments3::arg3;
 		}
 	};
+
 }

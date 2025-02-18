@@ -89,15 +89,11 @@ public final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 
 	final ValueValidator<A16, R16> v16;
 
-	public Arguments16ValidatorBuilder(ValueValidator<A1, R1> v1,
-			ValueValidator<A2, R2> v2, ValueValidator<A3, R3> v3,
-			ValueValidator<A4, R4> v4, ValueValidator<A5, R5> v5,
-			ValueValidator<A6, R6> v6, ValueValidator<A7, R7> v7,
-			ValueValidator<A8, R8> v8, ValueValidator<A9, R9> v9,
-			ValueValidator<A10, R10> v10, ValueValidator<A11, R11> v11,
-			ValueValidator<A12, R12> v12, ValueValidator<A13, R13> v13,
-			ValueValidator<A14, R14> v14, ValueValidator<A15, R15> v15,
-			ValueValidator<A16, R16> v16) {
+	public Arguments16ValidatorBuilder(ValueValidator<A1, R1> v1, ValueValidator<A2, R2> v2, ValueValidator<A3, R3> v3,
+			ValueValidator<A4, R4> v4, ValueValidator<A5, R5> v5, ValueValidator<A6, R6> v6, ValueValidator<A7, R7> v7,
+			ValueValidator<A8, R8> v8, ValueValidator<A9, R9> v9, ValueValidator<A10, R10> v10,
+			ValueValidator<A11, R11> v11, ValueValidator<A12, R12> v12, ValueValidator<A13, R13> v13,
+			ValueValidator<A14, R14> v14, ValueValidator<A15, R15> v15, ValueValidator<A16, R16> v16) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;
@@ -118,9 +114,10 @@ public final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 
 	public <X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> apply(
 			Function16<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? super R16, ? extends X> f) {
-		return ArgumentsValidators.split(this.v1, this.v2, this.v3, this.v4, this.v5,
-				this.v6, this.v7, this.v8, this.v9, this.v10, this.v11, this.v12,
-				this.v13, this.v14, this.v15, this.v16).apply(f);
+		return ArgumentsValidators
+			.split(this.v1, this.v2, this.v3, this.v4, this.v5, this.v6, this.v7, this.v8, this.v9, this.v10, this.v11,
+					this.v12, this.v13, this.v14, this.v15, this.v16)
+			.apply(f);
 	}
 
 }

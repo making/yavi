@@ -27,23 +27,21 @@ import am.ik.yavi.core.ConstraintPredicates;
  */
 @FunctionalInterface
 public interface ConflictStrategy {
+
 	/**
 	 * Define how to resolve conflicts of a constraint name when adding a constraint.
-	 *
 	 * @param predicatesList existing predicates list
 	 * @param predicates new (conflicting) predicate
 	 * @param <T> target type
 	 */
-	<T> void resolveConflict(List<ConstraintPredicates<T, ?>> predicatesList,
-			ConstraintPredicates<T, ?> predicates);
+	<T> void resolveConflict(List<ConstraintPredicates<T, ?>> predicatesList, ConstraintPredicates<T, ?> predicates);
 
 	/**
 	 * Do nothing if a conflict occurs. That means simply appending the predicate.
 	 */
 	ConflictStrategy NOOP = new ConflictStrategy() {
 		@Override
-		public <T> void resolveConflict(
-				List<ConstraintPredicates<T, ?>> constraintPredicates,
+		public <T> void resolveConflict(List<ConstraintPredicates<T, ?>> constraintPredicates,
 				ConstraintPredicates<T, ?> predicates) {
 			// NOOP
 		}
@@ -54,10 +52,10 @@ public interface ConflictStrategy {
 	 */
 	ConflictStrategy OVERRIDE = new ConflictStrategy() {
 		@Override
-		public <T> void resolveConflict(
-				List<ConstraintPredicates<T, ?>> constraintPredicates,
+		public <T> void resolveConflict(List<ConstraintPredicates<T, ?>> constraintPredicates,
 				ConstraintPredicates<T, ?> predicates) {
 			constraintPredicates.clear();
 		}
 	};
+
 }

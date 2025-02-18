@@ -27,12 +27,11 @@ public class BooleanValidator<T> extends DefaultArguments1Validator<Boolean, T> 
 
 	@Override
 	public <T2> BooleanValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
-		return new BooleanValidator<>(super.validator,
-				s -> mapper.apply(super.mapper.apply(s)));
+		return new BooleanValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
-	public BooleanValidator(Validator<Arguments1<Boolean>> validator,
-			Function1<? super Boolean, ? extends T> mapper) {
+	public BooleanValidator(Validator<Arguments1<Boolean>> validator, Function1<? super Boolean, ? extends T> mapper) {
 		super(validator, mapper);
 	}
+
 }

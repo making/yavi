@@ -111,8 +111,7 @@ class YearConstraintTest {
 	@Test
 	void isBeforeValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.before(() -> now.plusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.before(() -> now.plusYears(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -134,16 +133,14 @@ class YearConstraintTest {
 	@Test
 	void isAfterInValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.after(() -> now.plusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.after(() -> now.plusYears(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.after(() -> now.minusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.after(() -> now.minusYears(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -157,8 +154,7 @@ class YearConstraintTest {
 	@Test
 	void isBeforeOrEqualValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.beforeOrEqual(() -> now.plusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.beforeOrEqual(() -> now.plusYears(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -180,16 +176,14 @@ class YearConstraintTest {
 	@Test
 	void isAfterOrEqualInValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.plusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.plusYears(10)));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
 	@Test
 	void isAfterOrEqualValid() {
 		Year now = Year.now();
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.afterOrEqual(() -> now.minusYears(10)));
+		Predicate<Year> predicate = retrievePredicate(c -> c.afterOrEqual(() -> now.minusYears(10)));
 		assertThat(predicate.test(now)).isTrue();
 	}
 
@@ -205,8 +199,7 @@ class YearConstraintTest {
 		Year now = Year.now();
 		Supplier<Year> nowSupplier = () -> now;
 
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.between(nowSupplier, nowSupplier));
+		Predicate<Year> predicate = retrievePredicate(c -> c.between(nowSupplier, nowSupplier));
 		assertThat(predicate.test(now)).isFalse();
 	}
 
@@ -214,23 +207,19 @@ class YearConstraintTest {
 	void isBetweenInValidException() {
 		Year now = Year.now();
 
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.between(() -> now.plusYears(1), () -> now.minusYears(1)));
-		assertThatThrownBy(() -> predicate.test(now))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
+		Predicate<Year> predicate = retrievePredicate(c -> c.between(() -> now.plusYears(1), () -> now.minusYears(1)));
+		assertThatThrownBy(() -> predicate.test(now)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("Parameter 'rangeFrom' has to be before 'rangeTo'");
 	}
 
 	@Test
 	void temporalFieldValid() {
-		Predicate<Year> predicate = retrievePredicate(
-				c -> c.fieldPredicate(YEAR, s -> s >= 0));
+		Predicate<Year> predicate = retrievePredicate(c -> c.fieldPredicate(YEAR, s -> s >= 0));
 		assertThat(predicate.test(Year.of(999_999_999))).isTrue();
 	}
 
-	private static Predicate<Year> retrievePredicate(
-			Function<YearConstraint<Year>, YearConstraint<Year>> constraint) {
-		return constraint.apply(new YearConstraint<>()).predicates().peekFirst()
-				.predicate();
+	private static Predicate<Year> retrievePredicate(Function<YearConstraint<Year>, YearConstraint<Year>> constraint) {
+		return constraint.apply(new YearConstraint<>()).predicates().peekFirst().predicate();
 	}
+
 }

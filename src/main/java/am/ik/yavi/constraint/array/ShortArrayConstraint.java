@@ -23,8 +23,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
-public class ShortArrayConstraint<T>
-		extends ContainerConstraintBase<T, short[], ShortArrayConstraint<T>> {
+public class ShortArrayConstraint<T> extends ContainerConstraintBase<T, short[], ShortArrayConstraint<T>> {
 
 	@Override
 	public ShortArrayConstraint<T> cast() {
@@ -47,4 +46,5 @@ public class ShortArrayConstraint<T>
 	protected ToIntFunction<short[]> size() {
 		return x -> x.length;
 	}
+
 }

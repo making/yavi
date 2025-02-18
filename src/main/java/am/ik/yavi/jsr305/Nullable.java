@@ -50,4 +50,5 @@ import javax.annotation.meta.When;
 @Nonnull(when = When.MAYBE)
 @TypeQualifierNickname
 public @interface Nullable {
+
 }

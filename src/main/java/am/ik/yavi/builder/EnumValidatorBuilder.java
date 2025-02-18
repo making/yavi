@@ -25,8 +25,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.14.0
  */
-public class EnumValidatorBuilder<E extends Enum<E>>
-		implements ValueValidatorBuilder<E, E> {
+public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBuilder<E, E> {
 
 	private final Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder;
 
@@ -40,15 +39,13 @@ public class EnumValidatorBuilder<E extends Enum<E>>
 		return new EnumValidatorBuilder<>(builder);
 	}
 
-	EnumValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder) {
+	EnumValidatorBuilder(Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder) {
 		this.builder = builder;
 	}
 
 	@Override
 	public <T> EnumValidator<E, T> build(Function<? super E, ? extends T> mapper) {
-		final Validator<Arguments1<E>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new EnumValidator<>(validator, mapper::apply);
 	}
 
@@ -56,4 +53,5 @@ public class EnumValidatorBuilder<E extends Enum<E>>
 	public EnumValidator<E, E> build() {
 		return build(e -> e);
 	}
+
 }

@@ -42,15 +42,13 @@ public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float
 		return new FloatValidatorBuilder(builder);
 	}
 
-	FloatValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder) {
+	FloatValidatorBuilder(Function<ValidatorBuilder<Arguments1<Float>>, ValidatorBuilder<Arguments1<Float>>> builder) {
 		this.builder = builder;
 	}
 
 	@Override
 	public <T> FloatValidator<T> build(Function<? super Float, ? extends T> mapper) {
-		final Validator<Arguments1<Float>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+		final Validator<Arguments1<Float>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new FloatValidator<>(validator, mapper::apply);
 	}
 
@@ -58,4 +56,5 @@ public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float
 	public FloatValidator<Float> build() {
 		return build(x -> x);
 	}
+
 }

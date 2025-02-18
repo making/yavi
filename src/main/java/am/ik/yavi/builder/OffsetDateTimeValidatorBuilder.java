@@ -26,8 +26,7 @@ import am.ik.yavi.core.Validator;
 /**
  * @since 0.10.0
  */
-public class OffsetDateTimeValidatorBuilder
-		implements ValueValidatorBuilder<OffsetDateTime, OffsetDateTime> {
+public class OffsetDateTimeValidatorBuilder implements ValueValidatorBuilder<OffsetDateTime, OffsetDateTime> {
 
 	private final Function<ValidatorBuilder<Arguments1<OffsetDateTime>>, ValidatorBuilder<Arguments1<OffsetDateTime>>> builder;
 
@@ -50,10 +49,8 @@ public class OffsetDateTimeValidatorBuilder
 	}
 
 	@Override
-	public <T> OffsetDateTimeValidator<T> build(
-			Function<? super OffsetDateTime, ? extends T> mapper) {
-		final Validator<Arguments1<OffsetDateTime>> validator = this.builder
-				.apply(ValidatorBuilder.of()).build();
+	public <T> OffsetDateTimeValidator<T> build(Function<? super OffsetDateTime, ? extends T> mapper) {
+		final Validator<Arguments1<OffsetDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new OffsetDateTimeValidator<>(validator, mapper::apply);
 	}
 
@@ -61,4 +58,5 @@ public class OffsetDateTimeValidatorBuilder
 	public OffsetDateTimeValidator<OffsetDateTime> build() {
 		return build(x -> x);
 	}
+
 }

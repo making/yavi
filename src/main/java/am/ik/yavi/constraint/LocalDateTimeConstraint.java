@@ -26,8 +26,8 @@ import am.ik.yavi.constraint.base.ChronoLocalDateTimeConstraintBase;
  * @author Diego Krupitza
  * @since 0.10.0
  */
-public class LocalDateTimeConstraint<T> extends
-		ChronoLocalDateTimeConstraintBase<T, LocalDateTime, LocalDateTimeConstraint<T>> {
+public class LocalDateTimeConstraint<T>
+		extends ChronoLocalDateTimeConstraintBase<T, LocalDateTime, LocalDateTimeConstraint<T>> {
 
 	@Override
 	public LocalDateTimeConstraint<T> cast() {
@@ -38,4 +38,5 @@ public class LocalDateTimeConstraint<T> extends
 	protected LocalDateTime getNow(Clock clock) {
 		return LocalDateTime.now(clock);
 	}
+
 }
