@@ -6,7 +6,7 @@ Great to hear you would like to contribute to YAVI! 🥳👍🏽
 
 Before you contribute your changes please make sure you follow the guidelines in this file.
 
-* Please run `./mvnw formatter:format` to make sure your follow the code style guidelines.
+* Please run `./mvnw spring-javaformat:apply` to make sure your follow the code style guidelines.
 * Make sure you follow the [Commit messages](#commit-messages) guidelines.
 * Make sure you describe your changes inside the pull request, so we get a better overview why this change is needed.
 * Add few test cases (unit or integration tests) that back your changes.
