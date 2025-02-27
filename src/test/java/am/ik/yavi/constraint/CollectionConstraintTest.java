@@ -86,6 +86,18 @@ class CollectionConstraintTest {
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "b"))).isFalse();
 	}
 
+	@Test
+	void allOf() {
+		Predicate<List<String>> predicate = retrievePredicate(c -> c.allOf(Arrays.asList("a", "b", "c")));
+		assertThat(predicate.test(Arrays.asList("a", "b", "c", "d"))).isTrue();
+		assertThat(predicate.test(Arrays.asList("a", "b", "c"))).isTrue();
+		assertThat(predicate.test(Arrays.asList("a", "b"))).isFalse();
+		assertThat(predicate.test(Arrays.asList("a"))).isFalse();
+		assertThat(predicate.test(Arrays.asList("a", "b", "d"))).isFalse();
+		assertThat(predicate.test(Arrays.asList("x", "y"))).isFalse();
+		assertThat(predicate.test(Arrays.asList())).isFalse();
+	}
+
 	private static Predicate<List<String>> retrievePredicate(
 			Function<CollectionConstraint<List<String>, List<String>, String>, CollectionConstraint<List<String>, List<String>, String>> constraint) {
 		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst().predicate();

@@ -29,6 +29,7 @@ import am.ik.yavi.core.ViolatedValue;
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
+import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_ALL_OF;
 
 public class CollectionConstraint<T, L extends Collection<E>, E>
 		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
@@ -68,6 +69,22 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 		}, COLLECTION_UNIQUE, () -> new Object[] {}, VALID));
 		return this;
 	}
+
+	public CollectionConstraint<T, L, E> allOf(Collection<? extends E> values) {
+		this.predicates().add(ConstraintPredicate.withViolatedValue(collection -> {
+			final Set<E> missingValues = new HashSet<>(values);
+
+			if (collection instanceof Set)
+				missingValues.removeAll(collection);
+			else
+				missingValues.removeAll(new HashSet<>(collection));
+
+			return missingValues.isEmpty() ? Optional.empty() : Optional.of(new ViolatedValue(missingValues));
+		}, OBJECT_ALL_OF, () -> new Object[]{values.toString()}, VALID));
+
+		return this;
+	}
+
 
 	@Override
 	protected ToIntFunction<L> size() {

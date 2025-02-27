@@ -42,6 +42,7 @@ public interface ViolationMessage {
 		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
 		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}"), //
 		OBJECT_NOT_ONE_OF("object.notOneOf", "\"{0}\" must not be one of the following values: {1}"), //
+		OBJECT_ALL_OF("object.allOf", "\"{0}\" must be have of all of the following values: {1}, missing values: {2}"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan", "The size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		CONTAINER_LESS_THAN_OR_EQUAL("container.lessThanOrEqual",
