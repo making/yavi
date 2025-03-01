@@ -42,7 +42,6 @@ public interface ViolationMessage {
 		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
 		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}"), //
 		OBJECT_NOT_ONE_OF("object.notOneOf", "\"{0}\" must not be one of the following values: {1}"), //
-		OBJECT_ALL_OF("object.allOf", "\"{0}\" must be have of all of the following values: {1}, missing values: {2}"), //
 		CONTAINER_NOT_EMPTY("container.notEmpty", "\"{0}\" must not be empty"), //
 		CONTAINER_LESS_THAN("container.lessThan", "The size of \"{0}\" must be less than {1}. The given size is {2}"), //
 		CONTAINER_LESS_THAN_OR_EQUAL("container.lessThanOrEqual",
@@ -95,6 +94,7 @@ public interface ViolationMessage {
 		BYTE_SIZE_FIXED_SIZE("byteSize.fixedSize", "The byte size of \"{0}\" must be {1}. The given size is {2}"), //
 		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}"), //
 		COLLECTION_UNIQUE("collection.unique", "\"{0}\" must be unique. {1} is/are duplicated."), //
+		COLLECTION_CONTAINS_ALL("collection.containsAll", "\"{0}\" must be have of all of the following values: {1}, missing values: {2}"), //
 		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
 		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //
 		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}"), //
