@@ -76,16 +76,16 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 
 			if (collection instanceof Set) {
 				missingValues.removeAll(collection);
-			} else {
+			}
+			else {
 				missingValues.removeAll(new HashSet<>(collection));
 			}
 
 			return missingValues.isEmpty() ? Optional.empty() : Optional.of(new ViolatedValue(missingValues));
-		}, COLLECTION_CONTAINS_ALL, () -> new Object[]{values.toString()}, VALID));
+		}, COLLECTION_CONTAINS_ALL, () -> new Object[] { values.toString() }, VALID));
 
 		return this;
 	}
-
 
 	@Override
 	protected ToIntFunction<L> size() {
