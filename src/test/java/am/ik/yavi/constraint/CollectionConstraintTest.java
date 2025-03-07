@@ -86,6 +86,33 @@ class CollectionConstraintTest {
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "b"))).isFalse();
 	}
 
+	@Test
+	void containsAll() {
+		List<String> mustVisitCities = Arrays.asList("a", "b", "c");
+		Predicate<List<String>> predicate = retrievePredicate(c -> c.containsAll(mustVisitCities));
+
+		List<String> visitingCities = Arrays.asList("a", "b", "c", "d");
+		assertThat(predicate.test(visitingCities)).isTrue();
+
+		visitingCities = Arrays.asList("a", "b", "c");
+		assertThat(predicate.test(visitingCities)).isTrue();
+
+		visitingCities = Arrays.asList("a", "b");
+		assertThat(predicate.test(visitingCities)).isFalse();
+
+		visitingCities = Arrays.asList("a");
+		assertThat(predicate.test(visitingCities)).isFalse();
+
+		visitingCities = Arrays.asList();
+		assertThat(predicate.test(visitingCities)).isFalse();
+
+		visitingCities = Arrays.asList("a", "b", "d");
+		assertThat(predicate.test(visitingCities)).isFalse();
+
+		visitingCities = Arrays.asList("x", "y");
+		assertThat(predicate.test(visitingCities)).isFalse();
+	}
+
 	private static Predicate<List<String>> retrievePredicate(
 			Function<CollectionConstraint<List<String>, List<String>, String>, CollectionConstraint<List<String>, List<String>, String>> constraint) {
 		return constraint.apply(new CollectionConstraint<>()).predicates().peekFirst().predicate();
