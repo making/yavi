@@ -15,6 +15,9 @@
  */
 package am.ik.yavi.constraint;
 
+import am.ik.yavi.constraint.base.ContainerConstraintBase;
+import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ViolatedValue;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -22,14 +25,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 
-import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.core.ConstraintPredicate;
-import am.ik.yavi.core.ViolatedValue;
-
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
-import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS_ALL;
+import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
 
 public class CollectionConstraint<T, L extends Collection<E>, E>
 		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
@@ -70,6 +69,9 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 		return this;
 	}
 
+	/**
+	 * @since 0.14.3
+	 */
 	public CollectionConstraint<T, L, E> containsAll(Collection<? extends E> values) {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(collection -> {
 			final Set<E> missingValues = new HashSet<>(values);
