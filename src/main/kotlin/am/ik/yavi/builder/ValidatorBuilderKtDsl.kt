@@ -36,7 +36,8 @@ inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
 
 class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 
-	fun build(): Validator<T> {
+	@PublishedApi
+	internal fun build(): Validator<T> {
 		return validatorBuilder.build()
 	}
 
