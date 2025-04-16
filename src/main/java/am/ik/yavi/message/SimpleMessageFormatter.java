@@ -28,7 +28,6 @@ public class SimpleMessageFormatter implements MessageFormatter {
 
 	/**
 	 * Returns the singleton instance of {@link SimpleMessageFormatter}.
-	 * 
 	 * @return the singleton instance
 	 */
 	public static SimpleMessageFormatter getInstance() {
