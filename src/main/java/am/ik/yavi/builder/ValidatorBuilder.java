@@ -194,7 +194,8 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return new Validator<>(messageKeySeparator,
 				new PredicatesList<>(this.conflictStrategy, this.predicatesList).toList(), this.collectionValidators,
 				this.conditionalValidators,
-				this.messageFormatter == null ? new SimpleMessageFormatter() : this.messageFormatter, this.failFast);
+				this.messageFormatter == null ? SimpleMessageFormatter.getInstance() : this.messageFormatter,
+				this.failFast);
 	}
 
 	/**

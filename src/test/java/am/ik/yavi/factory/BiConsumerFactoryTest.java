@@ -32,7 +32,7 @@ class BiConsumerFactoryTest {
 
 	private final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name, messageKey, args,
 			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-					new SimpleMessageFormatter(), Locale.ENGLISH));
+					SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
 
 	private final BiConsumerFactory<List<ConstraintViolation>> validatorFactory = new BiConsumerFactory<>(
 			this.errorHandler);

@@ -28,7 +28,7 @@ class ConstraintViolationsExceptionTest {
 	@Test
 	void customMessage() {
 		final ConstraintViolations violations = new ConstraintViolations();
-		final SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
+		final SimpleMessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
 		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.", new Object[] { "a" },
 				messageFormatter, Locale.ENGLISH));
 		final ConstraintViolationsException exception = new ConstraintViolationsException("error!", violations);
@@ -38,7 +38,7 @@ class ConstraintViolationsExceptionTest {
 	@Test
 	void defaultMessage() {
 		final ConstraintViolations violations = new ConstraintViolations();
-		final SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
+		final SimpleMessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
 		violations.add(new ConstraintViolation("name1", "key", "{0} is invalid.", new Object[] { "a" },
 				messageFormatter, Locale.ENGLISH));
 		final ConstraintViolationsException exception = new ConstraintViolationsException(violations);

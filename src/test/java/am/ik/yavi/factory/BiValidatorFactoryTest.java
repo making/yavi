@@ -32,7 +32,7 @@ class BiValidatorFactoryTest {
 
 	private final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name, messageKey, args,
 			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-					new SimpleMessageFormatter(), Locale.ENGLISH));
+					SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
 
 	private final BiValidatorFactory<List<ConstraintViolation>> validatorFactory = new BiValidatorFactory<>(
 			this.errorHandler);
