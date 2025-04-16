@@ -33,7 +33,7 @@ class BiConsumerTest {
 
 	static final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name, messageKey, args,
 			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-					new SimpleMessageFormatter(), Locale.ENGLISH));
+					SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
 
 	static final Validator<User> userValidator = ValidatorBuilder.of(User.class)
 		.constraint(User::getName, "name", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))

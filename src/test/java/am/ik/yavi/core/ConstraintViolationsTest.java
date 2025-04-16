@@ -27,7 +27,7 @@ public class ConstraintViolationsTest {
 
 	@Test
 	public void apply() {
-		SimpleMessageFormatter messageFormatter = new SimpleMessageFormatter();
+		SimpleMessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
 		ConstraintViolations violations = new ConstraintViolations();
 		violations.add(new ConstraintViolation("foo0", "abc0", "hello0", new Object[] { 1 }, messageFormatter,
 				Locale.getDefault()));
