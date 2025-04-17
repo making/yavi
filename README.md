@@ -189,6 +189,206 @@ as you can see in
 `carIsValid()`. You can also check if the validation was successful with
 the `ConstraintViolations.isValid` method.
 
+### Always Valid model?
+
+Are you dissatisfied with the classic validation approach of creating an object (that might be invalid) first and then validating it? If you want to create a model that can only be generated and exist in a valid state, YAVI can help you achieve this as well.
+
+In this case, create your `Car` class as follows:
+
+```java
+package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public final class Car {
+
+	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+		._string("manufacturer", c -> c.notNull())
+		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+		._integer("seatCount", c -> c.greaterThanOrEqual(2))
+		.apply(Car::new);
+
+	private final String manufacturer;
+
+	private final String licensePlate;
+
+	private final Integer seatCount;
+
+	public static Validated<Car> of(String manufacturer, String licensePlate, Integer seatCount) {
+		return validator.validate(manufacturer, licensePlate, seatCount);
+	}
+
+	private Car(String manufacturer, String licensePlate, Integer seatCount) {
+		this.manufacturer = manufacturer;
+		this.licensePlate = licensePlate;
+		this.seatCount = seatCount;
+	}
+
+	public String manufacturer() {
+		return manufacturer;
+	}
+
+	public String licensePlate() {
+		return licensePlate;
+	}
+
+	public Integer seatCount() {
+		return seatCount;
+	}
+
+}
+```
+
+`Arguments3Validator<String, String, Integer, Car>` is a validator that validates three arguments (`String`, `String`, `Integer`) and creates a `Car` instance only when validation succeeds.
+
+With this approach, since the `Car` class's constructor is private, you need to create a `Car` instance through the `of` factory method. The `of` method validates the arguments before creating a `Car` instance. It returns the validation result wrapped in a `Validated` type. If validation fails, you cannot obtain a `Car` instance.
+
+The test code changes to:
+
+```java
+package com.example;
+
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validated;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CarTest {
+
+	@Test
+	void manufacturerIsNull() {
+		Validated<Car> validated = Car.of(null, "DD-AB-123", 4);
+		assertThat(validated.isValid()).isFalse();
+		ConstraintViolations violations = validated.errors();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
+	}
+
+	@Test
+	void licensePlateTooShort() {
+		Validated<Car> validated = Car.of("Morris", "D", 4);
+		ConstraintViolations violations = validated.errors();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).message())
+			.isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+	}
+
+	@Test
+	void seatCountTooLow() {
+		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 1);
+		ConstraintViolations violations = validated.errors();
+		assertThat(violations.isValid()).isFalse();
+		assertThat(violations).hasSize(1);
+		assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
+	}
+
+	@Test
+	void carIsValid() {
+		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 2);
+		assertThat(validated.isValid()).isTrue();
+		Car car = validated.value();
+		assertThat(car.manufacturer()).isEqualTo("Morris");
+		assertThat(car.licensePlate()).isEqualTo("DD-AB-123");
+		assertThat(car.seatCount()).isEqualTo(2);
+	}
+
+}
+```
+
+Would you prefer to perform validation within the constructor rather than through a factory method? (And would you like to keep using records?) This can also be achieved with YAVI.
+This time, let's modify the `Car` class as follows:
+
+```java
+package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+
+	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+		._string("manufacturer", c -> c.notNull())
+		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+		._integer("seatCount", c -> c.greaterThanOrEqual(2))
+		.apply(Car::new);
+
+	public Car {
+		validator.lazy().validated(manufacturer, licensePlate, seatCount);
+	}
+}
+```
+
+With this approach, validation is performed at the constructor stage, and invalid objects will not be created - instead, a `ConstraintViolationsException` will be thrown.
+
+(Using the `lazy` method prevents recursive creation of `Car` instances in the constructor even when validation succeeds. This is necessary to avoid a StackOverflow error.)
+
+The test code changes to:
+
+```java
+package com.example;
+
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ConstraintViolationsException;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class CarTest {
+
+	@Test
+	void manufacturerIsNull() {
+		assertThatThrownBy(() -> {
+			new Car(null, "DD-AB-123", 4);
+		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
+			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations).hasSize(1);
+			assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
+		});
+	}
+
+	@Test
+	void licensePlateTooShort() {
+		assertThatThrownBy(() -> {
+			new Car("Morris", "D", 4);
+		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
+			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations).hasSize(1);
+			assertThat(violations.get(0).message())
+				.isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+		});
+	}
+
+	@Test
+	void seatCountTooLow() {
+		assertThatThrownBy(() -> {
+			new Car("Morris", "DD-AB-123", 1);
+		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
+			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+			assertThat(violations.isValid()).isFalse();
+			assertThat(violations).hasSize(1);
+			assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
+		});
+	}
+
+	@Test
+	void carIsValid() {
+		assertThatCode(() -> {
+			new Car("Morris", "DD-AB-123", 2);
+		}).doesNotThrowAnyException();
+	}
+
+}
+```
+
 #### Where to go next?
 
 That concludes the 5 minutes tour through the world of YAVI. If you want a more complete
