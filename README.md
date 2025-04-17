@@ -271,8 +271,8 @@ class CarTest {
 	@Test
 	void licensePlateTooShort() {
 		Validated<Car> validated = Car.of("Morris", "D", 4);
-		ConstraintViolations violations = validated.errors();
 		assertThat(violations.isValid()).isFalse();
+		ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message())
 			.isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
@@ -281,8 +281,8 @@ class CarTest {
 	@Test
 	void seatCountTooLow() {
 		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 1);
-		ConstraintViolations violations = validated.errors();
 		assertThat(violations.isValid()).isFalse();
+		ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
 	}
