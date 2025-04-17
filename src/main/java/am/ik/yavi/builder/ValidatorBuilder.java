@@ -15,29 +15,6 @@
  */
 package am.ik.yavi.builder;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 import am.ik.yavi.constraint.BigDecimalConstraint;
 import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
@@ -111,7 +88,72 @@ import am.ik.yavi.meta.StringConstraintMeta;
 import am.ik.yavi.meta.YearConstraintMeta;
 import am.ik.yavi.meta.YearMonthConstraintMeta;
 import am.ik.yavi.meta.ZonedDateTimeConstraintMeta;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
+/**
+ * A builder class for creating {@link Validator} instances with fluent API.
+ * <p>
+ * ValidatorBuilder allows construction of validators with various constraints for
+ * different types of properties. It supports validation for primitive types, collections,
+ * arrays, nested objects, and conditional validation. The builder follows a fluent
+ * pattern where constraints can be chained together to create complex validation rules.
+ * <p>
+ * The builder provides two types of methods:
+ * <ul>
+ * <li>Methods prefixed with "_" (like {@code _string}, {@code _integer}) - Concise
+ * shorthand methods that explicitly specify the type. These methods are provided for
+ * cases where type inference fails with the overloaded constraint methods.</li>
+ * <li>Methods prefixed with "constraint" - More descriptive constraint methods with the
+ * same functionality. These methods are recommended when type inference works
+ * correctly.</li>
+ * </ul>
+ * <p>
+ * Properties are referenced using method references or lambda expressions, along with a
+ * name for error messages, and a function to define constraints on that property.
+ * <p>
+ * Example usage: <pre>{@code
+ * Validator<Person> validator = ValidatorBuilder.<Person>of()
+ *     // Using constraint method with successful type inference
+ *     .constraint(Person::getName, "name", c -> c.notBlank().lessThan(20))
+ *     // Using _integer method for explicit type declaration
+ *     ._integer(Person::getAge, "age", c -> c.greaterThan(0).lessThan(120))
+ *     .build();
+ * }</pre>
+ * <p>
+ * Advanced features:
+ * <ul>
+ * <li>Nested validation for complex object graphs</li>
+ * <li>Collection validation for elements in arrays, collections, and maps</li>
+ * <li>Conditional validation based on predicate conditions</li>
+ * <li>Group-based validation for differentiating validation contexts</li>
+ * <li>Custom message formatting</li>
+ * <li>Fail-fast capability to abort validation on first error</li>
+ * </ul>
+ *
+ * @param <T> the type of the target object to validate
+ * @author Toshiaki Maki
+ */
 public class ValidatorBuilder<T> implements Cloneable {
 
 	private static final String DEFAULT_SEPARATOR = ".";
@@ -130,10 +172,19 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	ConflictStrategy conflictStrategy = ConflictStrategy.NOOP;
 
+	/**
+	 * Constructs a new ValidatorBuilder with the default message key separator. The
+	 * default separator is a dot (".").
+	 */
 	public ValidatorBuilder() {
 		this(DEFAULT_SEPARATOR);
 	}
 
+	/**
+	 * Constructs a new ValidatorBuilder with the specified message key separator.
+	 * @param messageKeySeparator the separator used for constructing message keys for
+	 * nested properties (e.g., "address.street")
+	 */
 	public ValidatorBuilder(String messageKeySeparator) {
 		this.messageKeySeparator = messageKeySeparator;
 	}
@@ -152,11 +203,24 @@ public class ValidatorBuilder<T> implements Cloneable {
 		this.failFast = cloningSource.failFast;
 	}
 
+	/**
+	 * Casts this ValidatorBuilder to a ValidatorBuilder for a subtype of T. This is
+	 * useful when you want to reuse validators for a supertype when validating a subtype.
+	 * @param <S> the subtype of T
+	 * @param clazz the Class object of the subtype
+	 * @return this ValidatorBuilder cast to ValidatorBuilder&lt;S&gt;
+	 */
 	@SuppressWarnings("unchecked")
 	public <S extends T> ValidatorBuilder<S> cast(Class<S> clazz) {
 		return (ValidatorBuilder<S>) this;
 	}
 
+	/**
+	 * Casts this ValidatorBuilder to a ValidatorBuilder for a subtype of T. This method
+	 * doesn't require the Class object parameter.
+	 * @param <S> the subtype of T
+	 * @return this ValidatorBuilder cast to ValidatorBuilder&lt;S&gt;
+	 */
 	@SuppressWarnings("unchecked")
 	public <S extends T> ValidatorBuilder<S> cast() {
 		return (ValidatorBuilder<S>) this;
@@ -174,8 +238,19 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 * <p>
+	 * This method accepts a Class parameter which can be useful for explicitly specifying
+	 * the type to validate, although the type parameter can often be inferred from the
+	 * context.
+	 * <p>
+	 * Example: <pre>{@code
+	 * Validator<Person> validator = ValidatorBuilder.of(Person.class)
+	 *     ._string(Person::getName, "name", c -> c.notBlank())
+	 *     .build();
+	 * }</pre>
 	 * @param <X> the type of the instance to validate
-	 * @return builder instance
+	 * @param clazz the Class object of the type to validate
+	 * @return a new ValidatorBuilder instance
 	 */
 	public static <X> ValidatorBuilder<X> of(Class<X> clazz) {
 		return new ValidatorBuilder<>();
@@ -183,13 +258,30 @@ public class ValidatorBuilder<T> implements Cloneable {
 
 	/**
 	 * Factory method for a {@code ValidatorBuilder} to build {@code Validator} instance.
+	 * <p>
+	 * This method uses type inference to determine the type parameter, which makes for a
+	 * more concise syntax in most cases.
+	 * <p>
+	 * Example: <pre>{@code
+	 * Validator<Person> validator = ValidatorBuilder.<Person>of()
+	 *     .constraint(Person::getName, "name", c -> c.notBlank())
+	 *     .build();
+	 * }</pre>
 	 * @param <X> the type of the instance to validate
-	 * @return builder instance
+	 * @return a new ValidatorBuilder instance
 	 */
 	public static <X> ValidatorBuilder<X> of() {
 		return new ValidatorBuilder<>();
 	}
 
+	/**
+	 * Builds a Validator instance with all the constraints that have been added to this
+	 * builder.
+	 * <p>
+	 * This is the final step in the builder chain, which creates the actual validator
+	 * that can be used to validate objects of type T.
+	 * @return a new Validator instance configured with all added constraints
+	 */
 	public Validator<T> build() {
 		return new Validator<>(messageKeySeparator,
 				new PredicatesList<>(this.conflictStrategy, this.predicatesList).toList(), this.collectionValidators,
@@ -251,6 +343,19 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
 	}
 
+	/**
+	 * Adds a constraint for a String property of type T.
+	 * <p>
+	 * This is a shorthand method for validating String properties with a more concise
+	 * method name. For example: <pre>{@code
+	 * ValidatorBuilder<Person> builder = ValidatorBuilder.<Person>of()
+	 *    ._string(Person::getName, "name", c -> c.notBlank().lessThan(100))
+	 * }</pre>
+	 * @param f a function to extract the String property from type T
+	 * @param name the property name used in error messages
+	 * @param c a function to configure constraints on the String property
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> _string(ToCharSequence<T, String> f, String name,
 			Function<CharSequenceConstraint<T, String>, CharSequenceConstraint<T, String>> c) {
 		return this.constraint(f, name, c, CharSequenceConstraint::new);
@@ -733,6 +838,16 @@ public class ValidatorBuilder<T> implements Cloneable {
 	}
 
 	/**
+	 * Adds a conditional validator that is only applied when the specified condition is
+	 * met.
+	 * <p>
+	 * This method allows you to apply validation rules conditionally based on the state
+	 * of the object being validated. The validation will only be performed if the
+	 * condition predicate returns true for the target object.
+	 * @param <R> the return type of the validator
+	 * @param condition the condition that determines whether validation should be applied
+	 * @param applicative the validator to apply when the condition is met
+	 * @return this builder instance for method chaining
 	 * @since 0.11.0
 	 */
 	public <R> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
@@ -741,11 +856,56 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this;
 	}
 
+	/**
+	 * Adds a conditional validator that is only applied when the specified condition is
+	 * met.
+	 * <p>
+	 * This method allows you to apply a complete validator conditionally based on the
+	 * state of the object being validated. The validation will only be performed if the
+	 * condition predicate returns true for the target object.
+	 * <p>
+	 * Example: <pre>{@code
+	 * // Only validate credit card if payment method is "card"
+	 * ValidatorBuilder<Payment> builder = ValidatorBuilder.<Payment>of()
+	 *     .constraint(Payment::getMethod, "method", c -> c.notBlank())
+	 *     .constraintOnCondition(
+	 *         payment -> "card".equals(payment.getMethod()),
+	 *         ValidatorBuilder.<Payment>of()
+	 *             .constraint(Payment::getCardNumber, "cardNumber", c -> c.notBlank().pattern("[0-9]{16}"))
+	 *             .constraint(Payment::getCardExpiry, "cardExpiry", c -> c.notBlank().pattern("[0-9]{2}/[0-9]{2}"))
+	 *             .build()
+	 *     );
+	 * }</pre>
+	 * @param condition the condition that determines whether validation should be applied
+	 * @param validator the validator to apply when the condition is met
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition, Validator<T> validator) {
 		this.conditionalValidators.add(new Pair<>(condition, validator));
 		return this;
 	}
 
+	/**
+	 * Adds a conditional validator using a builder converter that is only applied when
+	 * the specified condition is met.
+	 * <p>
+	 * This method allows you to define conditional validation using a builder converter
+	 * function. The validation will only be performed if the condition predicate returns
+	 * true for the target object.
+	 * <p>
+	 * Example: <pre>{@code
+	 * ValidatorBuilder<Order> builder = ValidatorBuilder.<Order>of()
+	 *     ._integer(Order::getAmount, "amount", c -> c.greaterThan(0))
+	 *     .constraintOnCondition(
+	 *         order -> order.getAmount() > 10000,
+	 *         b -> b._string(Order::getApprovalCode, "approvalCode", c -> c.notBlank())
+	 *     );
+	 * }</pre>
+	 * @param condition the condition that determines whether validation should be applied
+	 * @param converter a function that accepts and returns a ValidatorBuilder to define
+	 * additional constraints
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			ValidatorBuilderConverter<T> converter) {
 		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
@@ -753,14 +913,100 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.constraintOnCondition(condition, validator);
 	}
 
+	/**
+	 * Adds a group-based validator that is applied only when the given constraint group
+	 * is active.
+	 * <p>
+	 * This method provides a way to organize validation rules into logical groups that
+	 * can be selectively applied during validation. For example, you might have different
+	 * validation rules for creating vs. updating an entity.
+	 * <p>
+	 * The validation will only be performed if the constraint group is active during
+	 * validation.
+	 * @param <R> the return type of the validator
+	 * @param group the constraint group that determines whether validation should be
+	 * applied
+	 * @param applicative the validator to apply when the group is active
+	 * @return this builder instance for method chaining
+	 */
 	public <R> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, ValueValidator<T, R> applicative) {
 		return this.constraintOnCondition(group.toCondition(), applicative);
 	}
 
+	/**
+	 * Adds a group-based validator that is applied only when the given constraint group
+	 * is active.
+	 * <p>
+	 * This method provides a way to organize validation rules into logical groups that
+	 * can be selectively applied during validation. For example, you might have different
+	 * validation rules for creating vs. updating an entity.
+	 * <p>
+	 * Example: <pre>{@code
+	 * // Define validation groups
+	 * ConstraintGroup CREATE = new ConstraintGroup("CREATE");
+	 * ConstraintGroup UPDATE = new ConstraintGroup("UPDATE");
+	 * 
+	 * // Create validator with group-specific constraints
+	 * Validator<User> validator = ValidatorBuilder.<User>of()
+	 *     // Common validation for all scenarios
+	 *     .constraint(User::getUsername, "username", c -> c.notBlank())
+	 *     
+	 *     // Password validation only for user creation
+	 *     .constraintOnGroup(CREATE, 
+	 *         ValidatorBuilder.<User>of()
+	 *             .constraint(User::getPassword, "password", c -> c.notBlank().greaterThanOrEqual(8))
+	 *             .build())
+	 *             
+	 *     // ID validation only for user updates
+	 *     .constraintOnGroup(UPDATE,
+	 *         ValidatorBuilder.<User>of()
+	 *             .constraint(User::getId, "id", c -> c.greaterThan(0))
+	 *             .build())
+	 *     .build();
+	 *             
+	 * // Validate for creation
+	 * ConstraintViolations violations = validator.validate(user, CREATE);
+	 * }</pre>
+	 * @param group the constraint group that determines whether validation should be
+	 * applied
+	 * @param validator the validator to apply when the group is active
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, Validator<T> validator) {
 		return this.constraintOnCondition(group.toCondition(), validator);
 	}
 
+	/**
+	 * Adds a group-based validator using a builder converter that is applied only when
+	 * the given constraint group is active.
+	 * <p>
+	 * This method provides a way to organize validation rules into logical groups using a
+	 * builder converter function. The validation will only be performed if the constraint
+	 * group is active during validation.
+	 * <p>
+	 * Example: <pre>{@code
+	 * // Define validation groups
+	 * ConstraintGroup ADMIN = new ConstraintGroup("ADMIN");
+	 * ConstraintGroup USER = new ConstraintGroup("USER");
+	 * 
+	 * // Create validator with group-specific constraints
+	 * Validator<Document> validator = ValidatorBuilder.<Document>of()
+	 *     // Common validation for all scenarios
+	 *     .constraint(Document::getTitle, "title", c -> c.notBlank())
+	 *     
+	 *     // Admin-only validation using converter function
+	 *     .constraintOnGroup(ADMIN, builder -> 
+	 *         builder.constraint(Document::getSecurityLevel, "securityLevel", c -> c.notBlank())
+	 *                .constraint(Document::isClassified, "classified", c -> c.isTrue())
+	 *     )
+	 *     .build();
+	 * }</pre>
+	 * @param group the constraint group that determines whether validation should be
+	 * applied
+	 * @param converter a function that accepts and returns a ValidatorBuilder to define
+	 * additional constraints
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, ValidatorBuilderConverter<T> converter) {
 		return this.constraintOnCondition(group.toCondition(), converter);
 	}
@@ -871,6 +1117,23 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.forEachIfPresent(this.toObjectArrayToCollection(toObjectArray), name, converter);
 	}
 
+	/**
+	 * Sets a custom message formatter for the validator.
+	 * <p>
+	 * Message formatters are responsible for creating error messages when validation
+	 * fails. By default, {@link SimpleMessageFormatter} is used, but you can provide your
+	 * own implementation for custom error message formatting.
+	 * <p>
+	 * Example: <pre>{@code
+	 * // Create a validator with a custom message formatter
+	 * Validator<User> validator = ValidatorBuilder.<User>of()
+	 *     .constraint(User::getName, "name", c -> c.notBlank())
+	 *     .messageFormatter(new CustomMessageFormatter())
+	 *     .build();
+	 * }</pre>
+	 * @param messageFormatter the custom message formatter to use
+	 * @return this builder instance for method chaining
+	 */
 	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
 		this.messageFormatter = messageFormatter;
 		return this;
@@ -900,6 +1163,31 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this;
 	}
 
+	/**
+	 * Adds a nested validator for a property that requires complex validation.
+	 * <p>
+	 * This method allows validation of complex object graphs by applying a separate
+	 * validator to a nested property of the target object. If the nested property is
+	 * null, validation will fail with a "must not be null" violation unless nestIfPresent
+	 * is used instead.
+	 * <p>
+	 * Example: <pre>{@code
+	 * Validator<Address> addressValidator = ValidatorBuilder.<Address>of()
+	 *     .constraint(Address::getStreet, "street", c -> c.notBlank())
+	 *     .constraint(Address::getCity, "city", c -> c.notBlank())
+	 *     .build();
+	 * 
+	 * Validator<Person> personValidator = ValidatorBuilder.<Person>of()
+	 *     .constraint(Person::getName, "name", c -> c.notBlank())
+	 *     .nest(Person::getAddress, "address", addressValidator)
+	 *     .build();
+	 * }</pre>
+	 * @param <N> the type of the nested property
+	 * @param nested a function to extract the nested property from type T
+	 * @param name the property name used in error messages
+	 * @param validator the validator to apply to the nested property
+	 * @return this builder instance for method chaining
+	 */
 	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.INVALID);
 	}
@@ -916,6 +1204,27 @@ public class ValidatorBuilder<T> implements Cloneable {
 		return this.nest(meta.toValue(), meta.name(), converter, NullAs.INVALID);
 	}
 
+	/**
+	 * Adds a nested validator for a property that requires complex validation, but only
+	 * applies it if the property is non-null.
+	 * <p>
+	 * This method works like {@link #nest(Function, String, Validator)}, but does not
+	 * generate a "must not be null" error if the nested property is null. Instead,
+	 * validation is skipped for null properties.
+	 * <p>
+	 * Example: <pre>{@code
+	 * // Address is optional, but if present, must be valid
+	 * Validator<Person> personValidator = ValidatorBuilder.<Person>of()
+	 *     .constraint(Person::getName, "name", c -> c.notBlank())
+	 *     .nestIfPresent(Person::getAddress, "address", addressValidator)
+	 *     .build();
+	 * }</pre>
+	 * @param <N> the type of the nested property
+	 * @param nested a function to extract the nested property from type T
+	 * @param name the property name used in error messages
+	 * @param validator the validator to apply to the nested property if it is non-null
+	 * @return this builder instance for method chaining
+	 */
 	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.VALID);
 	}
