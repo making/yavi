@@ -15,10 +15,8 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Arrays;
-import java.util.Locale;
-
 import am.ik.yavi.message.SimpleMessageFormatter;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,11 +27,20 @@ public class ConstraintViolationsTest {
 	public void apply() {
 		SimpleMessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
 		ConstraintViolations violations = new ConstraintViolations();
-		violations.add(new ConstraintViolation("foo0", "abc0", "hello0", new Object[] { 1 }, messageFormatter,
-				Locale.getDefault()));
-		violations.add(new ConstraintViolation("foo1", "abc1", "hello1", new Object[] { 1 }, messageFormatter,
-				Locale.getDefault()));
-
+		violations.add(ConstraintViolation.builder()
+			.name("foo0")
+			.messageKey("abc0")
+			.defaultMessageFormat("hello0")
+			.args(1)
+			.messageFormatter(messageFormatter)
+			.build());
+		violations.add(ConstraintViolation.builder()
+			.name("foo1")
+			.messageKey("abc1")
+			.defaultMessageFormat("hello1")
+			.args(1)
+			.messageFormatter(messageFormatter)
+			.build());
 		BindingResult bindingResult = new BindingResult();
 		violations.apply(bindingResult::rejectValue);
 		assertThat(bindingResult.toString()).isEqualTo("[foo0_abc0_[1]_hello0][foo1_abc1_[1]_hello1]");

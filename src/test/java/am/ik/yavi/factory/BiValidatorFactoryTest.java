@@ -15,15 +15,12 @@
  */
 package am.ik.yavi.factory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import am.ik.yavi.User;
 import am.ik.yavi.core.BiValidator;
 import am.ik.yavi.core.BiValidator.ErrorHandler;
 import am.ik.yavi.core.ConstraintViolation;
-import am.ik.yavi.message.SimpleMessageFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,8 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BiValidatorFactoryTest {
 
 	private final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name, messageKey, args,
-			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-					SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
+			defaultMessage) -> errors.add(ConstraintViolation.builder()
+				.name(name)
+				.messageKey(messageKey)
+				.defaultMessageFormat(defaultMessage)
+				.args(args)
+				.build());
 
 	private final BiValidatorFactory<List<ConstraintViolation>> validatorFactory = new BiValidatorFactory<>(
 			this.errorHandler);

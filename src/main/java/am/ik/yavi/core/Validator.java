@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.fn.Pair;
+import am.ik.yavi.message.MessageFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,9 +24,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import am.ik.yavi.fn.Pair;
-import am.ik.yavi.message.MessageFormatter;
 
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
@@ -152,14 +151,6 @@ public class Validator<T> implements Validatable<T> {
 		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
 	}
 
-	private Object[] pad(String name, Object[] args, ViolatedValue violatedValue) {
-		Object[] pad = new Object[args.length + 2];
-		pad[0] = name;
-		System.arraycopy(args, 0, pad, 1, args.length);
-		pad[pad.length - 1] = violatedValue.value();
-		return pad;
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConstraintViolations validate(T target, String collectionName, int index, Locale locale,
 			ConstraintContext constraintContext) {
@@ -187,9 +178,15 @@ public class Validator<T> implements Validatable<T> {
 					final Supplier<Object[]> argsSupplier = constraintPredicate.args();
 					final Object[] args = (argsSupplier instanceof ViolatedArguments)
 							? ((ViolatedArguments) argsSupplier).arguments(violatedValue.value()) : argsSupplier.get();
-					violations.add(new ConstraintViolation(name, constraintPredicate.messageKey(),
-							constraintPredicate.defaultMessageFormat(), pad(name, args, violatedValue),
-							this.messageFormatter, locale));
+					final ConstraintViolation violation = ConstraintViolation.builder()
+						.name(name)
+						.messageKey(constraintPredicate.messageKey())
+						.defaultMessageFormat(constraintPredicate.defaultMessageFormat())
+						.argsWithPrependedNameAndAppendedViolatedValue(args, violatedValue)
+						.messageFormatter(this.messageFormatter)
+						.locale(locale)
+						.build();
+					violations.add(violation);
 					if (this.failFast || ((predicates instanceof NestedConstraintPredicates)
 							&& ((NestedConstraintPredicates) predicates).isFailFast())) {
 						return violations;
@@ -240,8 +237,14 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	private ConstraintViolation notNullViolation(String name, Locale locale) {
-		return new ConstraintViolation(name, OBJECT_NOT_NULL.messageKey(), OBJECT_NOT_NULL.defaultMessageFormat(),
-				pad(name, new Object[] {}, new ViolatedValue(null)), this.messageFormatter, locale);
+		return ConstraintViolation.builder()
+			.name(name)
+			.messageKey(OBJECT_NOT_NULL.messageKey())
+			.defaultMessageFormat(OBJECT_NOT_NULL.defaultMessageFormat())
+			.argsWithPrependedName()
+			.messageFormatter(this.messageFormatter)
+			.locale(locale)
+			.build();
 	}
 
 }

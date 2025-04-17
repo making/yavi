@@ -15,15 +15,12 @@
  */
 package am.ik.yavi.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.BiConsumer;
-import java.util.stream.Stream;
-
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.message.SimpleMessageFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -32,8 +29,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BiConsumerTest {
 
 	static final ErrorHandler<List<ConstraintViolation>> errorHandler = (errors, name, messageKey, args,
-			defaultMessage) -> errors.add(new ConstraintViolation(name, messageKey, defaultMessage, args,
-					SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
+			defaultMessage) -> errors.add(ConstraintViolation.builder()
+				.name(name)
+				.messageKey(messageKey)
+				.defaultMessageFormat(defaultMessage)
+				.args(args)
+				.build());
 
 	static final Validator<User> userValidator = ValidatorBuilder.of(User.class)
 		.constraint(User::getName, "name", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))

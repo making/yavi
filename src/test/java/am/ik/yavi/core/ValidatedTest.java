@@ -16,14 +16,9 @@
 package am.ik.yavi.core;
 
 import java.util.Collections;
-import java.util.Locale;
-
-import am.ik.yavi.message.SimpleMessageFormatter;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class ValidatedTest {
 
@@ -37,8 +32,7 @@ class ValidatedTest {
 	@Test
 	void failureWith() {
 		final Validated<Object> validated = Validated
-			.failureWith(new ConstraintViolation("name", "notNull", "\"{0}\" must not be blank.",
-					new Object[] { "name", "" }, SimpleMessageFormatter.getInstance(), Locale.ENGLISH));
+			.failureWith(ConstraintViolation.builder().name("name").message("\"{0}\" must not be blank."));
 		assertThat(validated.isValid()).isFalse();
 		assertThat(validated.errors()).hasSize(1);
 		assertThat(validated.errors().get(0).message()).isEqualTo("\"name\" must not be blank.");
@@ -46,9 +40,8 @@ class ValidatedTest {
 
 	@Test
 	void testFailureWith() {
-		final Validated<Object> validated = Validated.failureWith(
-				Collections.singletonList(new ConstraintViolation("name", "notNull", "\"{0}\" must not be blank.",
-						new Object[] { "name", "" }, SimpleMessageFormatter.getInstance(), Locale.ENGLISH)));
+		final Validated<Object> validated = Validated.failureWith(Collections
+			.singletonList(ConstraintViolation.builder().name("name").message("\"{0}\" must not be blank.")));
 		assertThat(validated.isValid()).isFalse();
 		assertThat(validated.errors()).hasSize(1);
 		assertThat(validated.errors().get(0).message()).isEqualTo("\"name\" must not be blank.");
