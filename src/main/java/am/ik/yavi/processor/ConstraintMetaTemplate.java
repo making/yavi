@@ -88,7 +88,7 @@ class ConstraintMetaTemplate {
 				+ "\t\t\treturn %s;\n" + //
 				"\t\t}\n" + //
 				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType, target, className, type,
-				"am.ik.yavi.arguments.Arguments" + position + "::arg" + position);
+				className.replaceAll("<(.+)>", "") + "::arg" + position);
 	}
 
 	private static String simpleType(String type) {

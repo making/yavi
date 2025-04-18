@@ -30,10 +30,13 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.7.0
  */
 public class DefaultArguments4Validator<A1, A2, A3, A4, X> implements Arguments4Validator<A1, A2, A3, A4, X> {
-  protected final Validator<Arguments4<A1, A2, A3, A4>> validator;
+
+	protected final Validator<Arguments4<A1, A2, A3, A4>> validator;
+
 	protected final Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper;
 
-	public DefaultArguments4Validator(Validator<Arguments4<A1, A2, A3, A4>> validator, Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
+	public DefaultArguments4Validator(Validator<Arguments4<A1, A2, A3, A4>> validator,
+			Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
 	}
@@ -43,14 +46,16 @@ public class DefaultArguments4Validator<A1, A2, A3, A4, X> implements Arguments4
 	 */
 	@Override
 	public DefaultArguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
-		return new DefaultArguments4Validator<>(this.validator, (a1, a2, a3, a4) -> () -> this.mapper.apply(a1, a2, a3, a4));
+		return new DefaultArguments4Validator<>(this.validator,
+				(a1, a2, a3, a4) -> () -> this.mapper.apply(a1, a2, a3, a4));
 	}
 
-  @Override
-	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-			Locale locale, ConstraintContext constraintContext) {
+	@Override
+	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, Locale locale,
+			ConstraintContext constraintContext) {
 		return this.validator.applicative()
-		    .validate(Arguments.of(a1, a2, a3, a4), locale, constraintContext)
-				.map(values -> values.map(this.mapper));
+			.validate(Arguments.of(a1, a2, a3, a4), locale, constraintContext)
+			.map(values -> values.map(this.mapper));
 	}
+
 }

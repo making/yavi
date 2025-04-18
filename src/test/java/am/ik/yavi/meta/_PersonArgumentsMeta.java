@@ -27,7 +27,7 @@ public class _PersonArgumentsMeta {
 
 		@Override
 		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<java.lang.String, java.lang.String, java.lang.Integer>, java.lang.String> toValue() {
-			return am.ik.yavi.arguments.Arguments1::arg1;
+			return am.ik.yavi.arguments.Arguments3::arg1;
 		}
 	};
 
@@ -40,7 +40,7 @@ public class _PersonArgumentsMeta {
 
 		@Override
 		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<java.lang.String, java.lang.String, java.lang.Integer>, java.lang.String> toValue() {
-			return am.ik.yavi.arguments.Arguments2::arg2;
+			return am.ik.yavi.arguments.Arguments3::arg2;
 		}
 	};
 

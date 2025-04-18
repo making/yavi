@@ -26,7 +26,7 @@ public class Product {
 
 	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder.of(Product::new) //
 		.builder(b -> b //
-			._string(Arguments1::arg1, "name", c -> c.notEmpty())
+			._string(Arguments2::arg1, "name", c -> c.notEmpty())
 			._integer(Arguments2::arg2, "price", c -> c.greaterThan(0)))
 		.build();
 

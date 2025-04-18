@@ -26,7 +26,7 @@ public class _Car2ArgumentsMeta {
 
 		@Override
 		public java.util.function.Function<am.ik.yavi.arguments.Arguments2<java.lang.String, java.lang.Integer>, java.lang.String> toValue() {
-			return am.ik.yavi.arguments.Arguments1::arg1;
+			return am.ik.yavi.arguments.Arguments2::arg1;
 		}
 	};
 
