@@ -29,9 +29,9 @@ import am.ik.yavi.jsr305.Nullable;
  * @param <A1> the type of argument at position 1
  * @since 0.3.0
  */
-public class Arguments1<A1> {
+public final class Arguments1<A1> {
 
-	protected final A1 arg1;
+	private final A1 arg1;
 
 	/**
 	 * Creates a new Arguments1 instance with the provided arguments.
@@ -46,7 +46,7 @@ public class Arguments1<A1> {
 	 * @return the argument at position 1
 	 */
 	@Nullable
-	public final A1 arg1() {
+	public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -56,7 +56,7 @@ public class Arguments1<A1> {
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
-	public final <X> X map(Function1<? super A1, ? extends X> mapper) {
+	public <X> X map(Function1<? super A1, ? extends X> mapper) {
 		return mapper.apply(arg1);
 	}
 
@@ -67,7 +67,7 @@ public class Arguments1<A1> {
 	 * @return a new Arguments2 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments2<A1, B> append(@Nullable B arg) {
+	public <B> Arguments2<A1, B> append(@Nullable B arg) {
 		return new Arguments2<>(this.arg1, arg);
 	}
 
@@ -78,7 +78,7 @@ public class Arguments1<A1> {
 	 * @return a new Arguments2 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments2<B, A1> prepend(@Nullable B arg) {
+	public <B> Arguments2<B, A1> prepend(@Nullable B arg) {
 		return new Arguments2<>(arg, this.arg1);
 	}
 
