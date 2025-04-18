@@ -16,6 +16,7 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,9 +35,48 @@ import am.ik.yavi.jsr305.Nullable;
 @FunctionalInterface
 public interface Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> {
 
+	/**
+	 * Convert an Arguments1Validator that validates Arguments10 to an
+	 * Arguments10Validator
+	 * @param validator validator for Arguments10
+	 * @param <A1> type of first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <X> target result type
+	 * @return arguments10 validator that takes arguments directly
+	 * @since 0.16.0
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> unwrap(
+			Arguments1Validator<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>, X> validator) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext) -> validator
+			.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10), locale, constraintContext);
+	}
+
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
 			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, Locale locale,
 			ConstraintContext constraintContext);
+
+	/**
+	 * Convert this validator to one that validates Arguments10 as a single object.
+	 * @return a validator that takes an Arguments10
+	 * @since 0.16.0
+	 */
+	default Arguments1Validator<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>, X> wrap() {
+		return (args, locale, constraintContext) -> {
+			final Arguments10<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10> nonNullArgs = Objects
+				.requireNonNull(args);
+			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(),
+					nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(), nonNullArgs.arg8(), nonNullArgs.arg9(),
+					nonNullArgs.arg10(), locale, constraintContext);
+		};
+	}
 
 	/**
 	 * @since 0.7.0

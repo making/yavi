@@ -18,6 +18,7 @@ package am.ik.yavi.arguments;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -62,8 +63,33 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 		return valueValidator::validate;
 	}
 
+	/**
+	 * Convert an Arguments1Validator that validates Arguments1&lt;A1&gt; to an
+	 * Arguments1Validator&lt;A1, X&gt;
+	 * @param validator validator for Arguments1&lt;A1&gt;
+	 * @param <A1> class of argument1
+	 * @param <X> target class
+	 * @return arguments1 validator that takes an A1 directly
+	 * @since 0.16.0
+	 */
+	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
+		return (a1, locale, constraintContext) -> validator.validate(Arguments.of(a1), locale, constraintContext);
+	}
+
 	@Override
 	Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext);
+
+	/**
+	 * Convert this validator to one that validates Arguments1 as a single object.
+	 * @return a validator that takes an Arguments1
+	 * @since 0.16.0
+	 */
+	default Arguments1Validator<Arguments1<A1>, X> wrap() {
+		return (args, locale, constraintContext) -> {
+			final Arguments1<? extends A1> nonNullArgs = Objects.requireNonNull(args);
+			return this.validate(nonNullArgs.arg1(), locale, constraintContext);
+		};
+	}
 
 	/**
 	 * @since 0.7.0

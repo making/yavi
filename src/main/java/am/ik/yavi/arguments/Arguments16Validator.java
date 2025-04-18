@@ -16,6 +16,7 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,10 +35,58 @@ import am.ik.yavi.jsr305.Nullable;
 @FunctionalInterface
 public interface Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> {
 
+	/**
+	 * Convert an Arguments1Validator that validates Arguments16 to an
+	 * Arguments16Validator
+	 * @param validator validator for Arguments16
+	 * @param <A1> type of first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <A13> type of argument at position 13
+	 * @param <A14> type of argument at position 14
+	 * @param <A15> type of argument at position 15
+	 * @param <A16> type of argument at position 16
+	 * @param <X> target result type
+	 * @return arguments16 validator that takes arguments directly
+	 * @since 0.16.0
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> unwrap(
+			Arguments1Validator<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>, X> validator) {
+		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
+				constraintContext) -> validator.validate(
+						Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16), locale,
+						constraintContext);
+	}
+
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
 			@Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, @Nullable A10 a10, @Nullable A11 a11,
 			@Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14, @Nullable A15 a15, @Nullable A16 a16,
 			Locale locale, ConstraintContext constraintContext);
+
+	/**
+	 * Convert this validator to one that validates Arguments16 as a single object.
+	 * @return a validator that takes an Arguments16
+	 * @since 0.16.0
+	 */
+	default Arguments1Validator<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>, X> wrap() {
+		return (args, locale, constraintContext) -> {
+			final Arguments16<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15, ? extends A16> nonNullArgs = Objects
+				.requireNonNull(args);
+			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(),
+					nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(), nonNullArgs.arg8(), nonNullArgs.arg9(),
+					nonNullArgs.arg10(), nonNullArgs.arg11(), nonNullArgs.arg12(), nonNullArgs.arg13(),
+					nonNullArgs.arg14(), nonNullArgs.arg15(), nonNullArgs.arg16(), locale, constraintContext);
+		};
+	}
 
 	/**
 	 * @since 0.7.0

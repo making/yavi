@@ -16,6 +16,7 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -34,8 +35,41 @@ import am.ik.yavi.jsr305.Nullable;
 @FunctionalInterface
 public interface Arguments6Validator<A1, A2, A3, A4, A5, A6, X> {
 
+	/**
+	 * Convert an Arguments1Validator that validates Arguments6 to an Arguments6Validator
+	 * @param validator validator for Arguments6
+	 * @param <A1> type of first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <X> target result type
+	 * @return arguments6 validator that takes arguments directly
+	 * @since 0.16.0
+	 */
+	static <A1, A2, A3, A4, A5, A6, X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> unwrap(
+			Arguments1Validator<Arguments6<A1, A2, A3, A4, A5, A6>, X> validator) {
+		return (a1, a2, a3, a4, a5, a6, locale, constraintContext) -> validator
+			.validate(Arguments.of(a1, a2, a3, a4, a5, a6), locale, constraintContext);
+	}
+
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
 			@Nullable A6 a6, Locale locale, ConstraintContext constraintContext);
+
+	/**
+	 * Convert this validator to one that validates Arguments6 as a single object.
+	 * @return a validator that takes an Arguments6
+	 * @since 0.16.0
+	 */
+	default Arguments1Validator<Arguments6<A1, A2, A3, A4, A5, A6>, X> wrap() {
+		return (args, locale, constraintContext) -> {
+			final Arguments6<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6> nonNullArgs = Objects
+				.requireNonNull(args);
+			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(),
+					nonNullArgs.arg5(), nonNullArgs.arg6(), locale, constraintContext);
+		};
+	}
 
 	/**
 	 * @since 0.7.0
