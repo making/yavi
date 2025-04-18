@@ -30,13 +30,10 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.7.0
  */
 public class DefaultArguments3Validator<A1, A2, A3, X> implements Arguments3Validator<A1, A2, A3, X> {
-
-	protected final Validator<Arguments3<A1, A2, A3>> validator;
-
+  protected final Validator<Arguments3<A1, A2, A3>> validator;
 	protected final Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper;
 
-	public DefaultArguments3Validator(Validator<Arguments3<A1, A2, A3>> validator,
-			Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper) {
+	public DefaultArguments3Validator(Validator<Arguments3<A1, A2, A3>> validator, Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
 	}
@@ -49,12 +46,11 @@ public class DefaultArguments3Validator<A1, A2, A3, X> implements Arguments3Vali
 		return new DefaultArguments3Validator<>(this.validator, (a1, a2, a3) -> () -> this.mapper.apply(a1, a2, a3));
 	}
 
-	@Override
-	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
-			ConstraintContext constraintContext) {
+  @Override
+	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3,
+			Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-			.validate(Arguments.of(a1, a2, a3), locale, constraintContext)
-			.map(values -> values.map(this.mapper));
+		    .validate(Arguments.of(a1, a2, a3), locale, constraintContext)
+				.map(values -> values.map(this.mapper));
 	}
-
 }
