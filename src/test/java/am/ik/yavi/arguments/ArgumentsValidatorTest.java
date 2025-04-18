@@ -15,14 +15,6 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.Range;
@@ -33,6 +25,16 @@ import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.fn.Pair;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 import static java.util.function.Function.identity;
@@ -383,6 +385,70 @@ class ArgumentsValidatorTest {
 		assertThat(violations.get(2).name()).isEqualTo("seatCount");
 		assertThat(violations.get(2).messageKey()).isEqualTo("numeric.greaterThanOrEqual");
 		assertThat(violations.get(2).args()[0]).isEqualTo("seatCount");
+	}
+
+	@Test
+	void wrap() {
+		Arguments1Validator<Arguments3<String, String, Integer>, User> nestValidator = arguments3Validator.wrap();
+		Validated<User> validate = nestValidator.validate(Arguments.of("foo", "foo@example", 18));
+		assertThat(validate.isValid()).isTrue();
+		User user = validate.value();
+		assertThat(user.getName()).isEqualTo("foo");
+		assertThat(user.getEmail()).isEqualTo("foo@example");
+		assertThat(user.getAge()).isEqualTo(18);
+	}
+
+	@Test
+	void unwrap() {
+		Arguments1Validator<Arguments3<String, String, Integer>, User> nestValidator = arguments3Validator
+			.compose(Function.identity());
+		Arguments3Validator<String, String, Integer, User> flattenValidator = Arguments3Validator.unwrap(nestValidator);
+		Validated<User> validate = flattenValidator.validate("foo", "foo@example", 18);
+		assertThat(validate.isValid()).isTrue();
+		User user = validate.value();
+		assertThat(user.getName()).isEqualTo("foo");
+		assertThat(user.getEmail()).isEqualTo("foo@example");
+		assertThat(user.getAge()).isEqualTo(18);
+	}
+
+	@Test
+	void combine() {
+		Arguments1Validator<Arguments2<Integer, Integer>, Range> rangeValidator = arguments2Validator.wrap();
+		Arguments1Validator<Arguments3<String, String, Integer>, User> userValidator = arguments3Validator.wrap();
+
+		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, Range> composedRangeValidator = rangeValidator
+			.compose(Arguments5::first2);
+		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, User> composedUserValidator = userValidator
+			.compose(Arguments5::last3);
+
+		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, Pair<Range, User>> combinedValidator = composedRangeValidator
+			.combine(composedUserValidator)
+			.apply((range, user) -> new Pair<>(Objects.requireNonNull(range), Objects.requireNonNull(user)));
+
+		Arguments5Validator<Integer, Integer, String, String, Integer, Pair<Range, User>> unwrapValidator = Arguments5Validator
+			.unwrap(combinedValidator);
+
+		{
+			Validated<Pair<Range, User>> pairValidated = unwrapValidator.validate(1, 2, "foo", "foo@example.com", 18);
+			assertThat(pairValidated.isValid()).isTrue();
+			Pair<Range, User> pair = pairValidated.value();
+			assertThat(pair.first().getFrom()).isEqualTo(1);
+			assertThat(pair.first().getTo()).isEqualTo(2);
+			assertThat(pair.second().getName()).isEqualTo("foo");
+			assertThat(pair.second().getEmail()).isEqualTo("foo@example.com");
+			assertThat(pair.second().getAge()).isEqualTo(18);
+		}
+		{
+			Validated<Pair<Range, User>> pairValidated = unwrapValidator.validate(20, 10, "foo", "barbar", -1);
+			assertThat(pairValidated.isValid()).isFalse();
+			ConstraintViolations violations = pairValidated.errors();
+			assertThat(violations).hasSize(5);
+			assertThat(violations.get(0).message()).isEqualTo("\"from\" must be less than or equal to 9");
+			assertThat(violations.get(1).message()).isEqualTo("\"to\" must be less than or equal to 9");
+			assertThat(violations.get(2).message()).isEqualTo("\"to\" must be greater than \"from\".");
+			assertThat(violations.get(3).message()).isEqualTo("\"email\" must be a valid email address");
+			assertThat(violations.get(4).message()).isEqualTo("\"age\" must be greater than or equal to 0");
+		}
 	}
 
 }

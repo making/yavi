@@ -480,6 +480,7 @@ for i in `seq 1 ${n}`;do
   class="Arguments${i}Validator"
   file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
   arguments="Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? extends A${j}, ";done) | sed 's/,$//')>"
+  wrapArguments="Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>"
   args="$(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//')"
   as="$(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')"
   echo $file
@@ -504,6 +505,7 @@ package am.ik.yavi.arguments;
 $(if [ "${i}" != "1" ];then
 cat <<EOD
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -520,6 +522,7 @@ cat <<EOD
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -569,10 +572,39 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
 		return valueValidator::validate;
 	}
+
+	/**
+	 * Convert an Arguments1Validator that validates Arguments1&lt;A1&gt; to an Arguments1Validator&lt;A1, X&gt;
+	 *
+	 * @param validator validator for Arguments1&lt;A1&gt;
+	 * @param <A1> class of argument1
+	 * @param <X> target class
+	 * @return arguments1 validator that takes an A1 directly
+	 * @since 0.16.0
+	 */
+	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
+		return (a1, locale, constraintContext) -> validator.validate(Arguments.of(a1), locale,
+				constraintContext);
+	}
 EOD
 else
 cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> {
+
+	/**
+	 * Convert an Arguments1Validator that validates Arguments${i} to an ${class}
+	 *
+	 * @param validator validator for Arguments${i}
+	 * @param <A1> type of first argument
+$(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> type of argument at position ${j}"; done; fi)
+	 * @param <X> target result type
+	 * @return arguments${i} validator that takes arguments directly
+	 * @since 0.16.0
+	 */
+	static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> unwrap(Arguments1Validator<${wrapArguments}, X> validator) {
+		return (${as}, locale, constraintContext) -> validator.validate(Arguments.of(${as}), locale,
+				constraintContext);
+	}
 EOD
 fi)
 
@@ -589,6 +621,20 @@ cat <<EOD
 			Locale locale, ConstraintContext constraintContext);
 EOD
 fi)
+
+	/**
+	 * Convert this validator to one that validates Arguments${i} as a single object.
+	 *
+	 * @return a validator that takes an Arguments${i}
+	 * @since 0.16.0
+	 */
+	default Arguments1Validator<${wrapArguments}, X> wrap() {
+		return (args, locale, constraintContext) -> {
+			final ${arguments} nonNullArgs = Objects.requireNonNull(args);
+			return this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "nonNullArgs.arg${j}(), ";done) | sed 's/,$//'),
+					locale, constraintContext);
+		};
+	}
 
 	/**
 	 * @since 0.7.0
