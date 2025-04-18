@@ -30,9 +30,7 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.7.0
  */
 public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1, X> {
-
-	protected final Validator<Arguments1<A1>> validator;
-
+  protected final Validator<Arguments1<A1>> validator;
 	protected final Function1<? super A1, ? extends X> mapper;
 
 	public DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper) {
@@ -48,11 +46,11 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1));
 	}
 
-	@Override
-	public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+  @Override
+	public Validated<X> validate(@Nullable A1 a1,
+			Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-			.validate(Arguments.of(a1), locale, constraintContext)
-			.map(values -> values.map(this.mapper));
+		    .validate(Arguments.of(a1), locale, constraintContext)
+				.map(values -> values.map(this.mapper));
 	}
-
 }
