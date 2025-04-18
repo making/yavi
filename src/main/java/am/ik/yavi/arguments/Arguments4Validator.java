@@ -48,8 +48,18 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 */
 	static <A1, A2, A3, A4, X> Arguments4Validator<A1, A2, A3, A4, X> unwrap(
 			Arguments1Validator<Arguments4<A1, A2, A3, A4>, X> validator) {
-		return (a1, a2, a3, a4, locale, constraintContext) -> validator.validate(Arguments.of(a1, a2, a3, a4), locale,
-				constraintContext);
+		return new Arguments4Validator<A1, A2, A3, A4, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(Arguments.of(a1, a2, a3, a4), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
+				return Arguments4Validator.unwrap(validator.lazy());
+			}
+		};
 	}
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, Locale locale,
@@ -61,11 +71,21 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments4<A1, A2, A3, A4>, X> wrap() {
-		return (args, locale, constraintContext) -> {
-			final Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4> nonNullArgs = Objects
-				.requireNonNull(args);
-			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(), locale,
-					constraintContext);
+		Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<Arguments4<A1, A2, A3, A4>, X>() {
+			@Override
+			public Validated<X> validate(Arguments4<A1, A2, A3, A4> args, Locale locale,
+					ConstraintContext constraintContext) {
+				final Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4> nonNullArgs = Objects
+					.requireNonNull(args);
+				return Arguments4Validator.this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(),
+						nonNullArgs.arg4(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<Arguments4<A1, A2, A3, A4>, Supplier<X>> lazy() {
+				return lazy.wrap();
+			}
 		};
 	}
 

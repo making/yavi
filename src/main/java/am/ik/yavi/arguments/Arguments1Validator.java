@@ -73,7 +73,17 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.16.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
-		return (a1, locale, constraintContext) -> validator.validate(Arguments.of(a1), locale, constraintContext);
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(Arguments.of(a1), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return Arguments1Validator.unwrap(validator.lazy());
+			}
+		};
 	}
 
 	@Override
@@ -85,9 +95,18 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments1<A1>, X> wrap() {
-		return (args, locale, constraintContext) -> {
-			final Arguments1<? extends A1> nonNullArgs = Objects.requireNonNull(args);
-			return this.validate(nonNullArgs.arg1(), locale, constraintContext);
+		Arguments1Validator<A1, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<Arguments1<A1>, X>() {
+			@Override
+			public Validated<X> validate(Arguments1<A1> args, Locale locale, ConstraintContext constraintContext) {
+				final Arguments1<? extends A1> nonNullArgs = Objects.requireNonNull(args);
+				return Arguments1Validator.this.validate(nonNullArgs.arg1(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<Arguments1<A1>, Supplier<X>> lazy() {
+				return lazy.wrap();
+			}
 		};
 	}
 
