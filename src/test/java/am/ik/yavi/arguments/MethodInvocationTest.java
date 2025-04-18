@@ -28,9 +28,9 @@ public class MethodInvocationTest {
 	static final Arguments4Validator<UserService, String, String, Role, User> validator = ArgumentsValidatorBuilder
 		.of(UserService::createUser) //
 		.builder(b -> b //
-			._object(Arguments1::arg1, "userService", c -> c.notNull())
-			._string(Arguments2::arg2, "email", c -> c.email())
-			._string(Arguments3::arg3, "name", c -> c.notNull())
+			._object(Arguments4::arg1, "userService", c -> c.notNull())
+			._string(Arguments4::arg2, "email", c -> c.email())
+			._string(Arguments4::arg3, "name", c -> c.notNull())
 			._enum(Arguments4::arg4, "role", c -> c.notNull().oneOf(Role.USER, Role.ADMIN))) //
 		.build();
 

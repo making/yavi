@@ -7,32 +7,46 @@ for i in `seq 1 ${n}`;do
   file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
   echo $file
 
-  # Begin generating additional methods for firstN if i > 1
-  additional_methods=""
+  # Create all arg method declarations
+  arg_methods=""
+  for j in `seq 1 ${i}`; do
+    arg_methods+="
+	/**
+	 * Returns the argument at position ${j}.
+	 *
+	 * @return the argument at position ${j}
+	 */
+	@Nullable
+	public final A${j} arg${j}() {
+		return this.arg${j};
+	}
+"
+  done
+
+  # Create all firstM methods (for N > 1)
+  first_methods=""
   if [ ${i} -gt 1 ]; then
-    # Only generate first method for direct parent (i-1)
-    j=$((${i} - 1))
+    for j in `seq 1 $((${i} - 1))`; do
+      # Create type parameters for first method
+      first_type_params=""
+      for k in `seq 1 ${j}`; do
+        first_type_params="${first_type_params}A${k}"
+        if [ ${k} -lt ${j} ]; then
+          first_type_params="${first_type_params}, "
+        fi
+      done
 
-    # Create type parameters for first method
-    first_type_params=""
-    for k in `seq 1 ${j}`; do
-      first_type_params="${first_type_params}A${k}"
-      if [ ${k} -lt ${j} ]; then
-        first_type_params="${first_type_params}, "
-      fi
-    done
+      # Create arguments for first method
+      first_args=""
+      for k in `seq 1 ${j}`; do
+        first_args="${first_args}arg${k}"
+        if [ ${k} -lt ${j} ]; then
+          first_args="${first_args}, "
+        fi
+      done
 
-    # Create arguments for first method
-    first_args=""
-    for k in `seq 1 ${j}`; do
-      first_args="${first_args}arg${k}"
-      if [ ${k} -lt ${j} ]; then
-        first_args="${first_args}, "
-      fi
-    done
-
-    # Add first method
-    additional_methods+="
+      # Add first method
+      first_methods+="
 	/**
 	 * Returns a new Arguments${j} instance containing only the first ${j} arguments.
 	 *
@@ -43,6 +57,7 @@ for i in `seq 1 ${n}`;do
 		return new Arguments${j}<>(${first_args});
 	}
 "
+    done
   fi
 
   # Create class type parameters
@@ -54,6 +69,13 @@ for i in `seq 1 ${n}`;do
     fi
   done
 
+  # Create field declarations for all arguments
+  field_declarations=""
+  for j in `seq 1 ${i}`; do
+    field_declarations+="
+	protected final A${j} arg${j};"
+  done
+
   # Create constructor parameters
   constructor_params=""
   for j in `seq 1 ${i}`; do
@@ -63,27 +85,12 @@ for i in `seq 1 ${n}`;do
     fi
   done
 
-  # Create parent class parameters if needed
-  parent_params=""
-  if [ ${i} -gt 1 ]; then
-    for j in `seq 1 $((${i} - 1))`; do
-      parent_params="${parent_params}A${j}"
-      if [ ${j} -lt $((${i} - 1)) ]; then
-        parent_params="${parent_params}, "
-      fi
-    done
-  fi
-
-  # Create super constructor arguments if needed
-  super_args=""
-  if [ ${i} -gt 1 ]; then
-    for j in `seq 1 $((${i} - 1))`; do
-      super_args="${super_args}arg${j}"
-      if [ ${j} -lt $((${i} - 1)) ]; then
-        super_args="${super_args}, "
-      fi
-    done
-  fi
+  # Create constructor parameter assignments
+  constructor_assignments=""
+  for j in `seq 1 ${i}`; do
+    constructor_assignments+="
+		this.arg${j} = arg${j};"
+  done
 
   # Create function parameters
   function_params=""
@@ -139,18 +146,8 @@ for i in `seq 1 ${n}`;do
     fi
   done
 
-  # Build the class definition with extends clause if needed
+  # Build the class definition (no inheritance now)
   class_definition="${class}<${class_type_params}>"
-  if [ ${i} -gt 1 ]; then
-    class_definition="${class_definition} extends Arguments$((${i} - 1))<${parent_params}>"
-  fi
-
-  # Build the super constructor call if needed
-  super_constructor=""
-  if [ ${i} -gt 1 ]; then
-    super_constructor="
-		super(${super_args});"
-  fi
 
   cat <<EOF > ${file}
 /*
@@ -185,28 +182,16 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.3.0
  */
 public class ${class_definition} {
-
-	protected final A${i} arg${i};
+${field_declarations}
 
 	/**
 	 * Creates a new Arguments${i} instance with the provided arguments.
 	 *
 	 * @param ${param_docs}
 	 */
-	${class}(${constructor_params}) {${super_constructor}
-		this.arg${i} = arg${i};
+	${class}(${constructor_params}) {${constructor_assignments}
 	}
-
-	/**
-	 * Returns the argument at position ${i}.
-	 *
-	 * @return the argument at position ${i}
-	 */
-	@Nullable
-	public final A${i} arg${i}() {
-		return this.arg${i};
-	}
-
+${arg_methods}
 	/**
 	 * Applies the provided mapping function to all arguments contained in this instance.
 	 *
@@ -216,7 +201,7 @@ public class ${class_definition} {
 	 */
 	public final <X> X map(Function${i}<${function_params}, ? extends X> mapper) {
 		return mapper.apply(${map_args});
-	}${additional_methods}
+	}${first_methods}
 
 	/**
 	 * Indicates whether some other object is "equal to" this one.
@@ -259,6 +244,7 @@ public class ${class_definition} {
 }
 EOF
 done
+
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/builder/ArgumentsValidatorBuilder.java
 /*
  * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>

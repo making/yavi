@@ -30,10 +30,13 @@ import am.ik.yavi.jsr305.Nullable;
  * @since 0.7.0
  */
 public class DefaultArguments2Validator<A1, A2, X> implements Arguments2Validator<A1, A2, X> {
-  protected final Validator<Arguments2<A1, A2>> validator;
+
+	protected final Validator<Arguments2<A1, A2>> validator;
+
 	protected final Function2<? super A1, ? super A2, ? extends X> mapper;
 
-	public DefaultArguments2Validator(Validator<Arguments2<A1, A2>> validator, Function2<? super A1, ? super A2, ? extends X> mapper) {
+	public DefaultArguments2Validator(Validator<Arguments2<A1, A2>> validator,
+			Function2<? super A1, ? super A2, ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
 	}
@@ -46,11 +49,11 @@ public class DefaultArguments2Validator<A1, A2, X> implements Arguments2Validato
 		return new DefaultArguments2Validator<>(this.validator, (a1, a2) -> () -> this.mapper.apply(a1, a2));
 	}
 
-  @Override
-	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2,
-			Locale locale, ConstraintContext constraintContext) {
+	@Override
+	public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale, ConstraintContext constraintContext) {
 		return this.validator.applicative()
-		    .validate(Arguments.of(a1, a2), locale, constraintContext)
-				.map(values -> values.map(this.mapper));
+			.validate(Arguments.of(a1, a2), locale, constraintContext)
+			.map(values -> values.map(this.mapper));
 	}
+
 }
