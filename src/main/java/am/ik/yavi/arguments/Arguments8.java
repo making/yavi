@@ -213,6 +213,69 @@ public class Arguments8<A1, A2, A3, A4, A5, A6, A7, A8> {
 	}
 
 	/**
+	 * Returns a new Arguments1 instance containing only the last 1 arguments.
+	 * @return an Arguments1 instance with arguments from arg8 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments1<A8> last1() {
+		return new Arguments1<>(arg8);
+	}
+
+	/**
+	 * Returns a new Arguments2 instance containing only the last 2 arguments.
+	 * @return an Arguments2 instance with arguments from arg7 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments2<A7, A8> last2() {
+		return new Arguments2<>(arg7, arg8);
+	}
+
+	/**
+	 * Returns a new Arguments3 instance containing only the last 3 arguments.
+	 * @return an Arguments3 instance with arguments from arg6 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments3<A6, A7, A8> last3() {
+		return new Arguments3<>(arg6, arg7, arg8);
+	}
+
+	/**
+	 * Returns a new Arguments4 instance containing only the last 4 arguments.
+	 * @return an Arguments4 instance with arguments from arg5 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments4<A5, A6, A7, A8> last4() {
+		return new Arguments4<>(arg5, arg6, arg7, arg8);
+	}
+
+	/**
+	 * Returns a new Arguments5 instance containing only the last 5 arguments.
+	 * @return an Arguments5 instance with arguments from arg4 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments5<A4, A5, A6, A7, A8> last5() {
+		return new Arguments5<>(arg4, arg5, arg6, arg7, arg8);
+	}
+
+	/**
+	 * Returns a new Arguments6 instance containing only the last 6 arguments.
+	 * @return an Arguments6 instance with arguments from arg3 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments6<A3, A4, A5, A6, A7, A8> last6() {
+		return new Arguments6<>(arg3, arg4, arg5, arg6, arg7, arg8);
+	}
+
+	/**
+	 * Returns a new Arguments7 instance containing only the last 7 arguments.
+	 * @return an Arguments7 instance with arguments from arg2 to arg8
+	 * @since 0.16.0
+	 */
+	public final Arguments7<A2, A3, A4, A5, A6, A7, A8> last7() {
+		return new Arguments7<>(arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise
