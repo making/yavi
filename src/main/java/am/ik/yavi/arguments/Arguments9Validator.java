@@ -53,8 +53,19 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
 	 */
 	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> unwrap(
 			Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, X> validator) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext) -> validator
-			.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9), locale, constraintContext);
+		return new Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy() {
+				return Arguments9Validator.unwrap(validator.lazy());
+			}
+		};
 	}
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
@@ -67,12 +78,22 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, X> wrap() {
-		return (args, locale, constraintContext) -> {
-			final Arguments9<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9> nonNullArgs = Objects
-				.requireNonNull(args);
-			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(),
-					nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(), nonNullArgs.arg8(), nonNullArgs.arg9(),
-					locale, constraintContext);
+		Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, X>() {
+			@Override
+			public Validated<X> validate(Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9> args, Locale locale,
+					ConstraintContext constraintContext) {
+				final Arguments9<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9> nonNullArgs = Objects
+					.requireNonNull(args);
+				return Arguments9Validator.this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(),
+						nonNullArgs.arg4(), nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(),
+						nonNullArgs.arg8(), nonNullArgs.arg9(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, Supplier<X>> lazy() {
+				return lazy.wrap();
+			}
 		};
 	}
 

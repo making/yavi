@@ -47,8 +47,18 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 */
 	static <A1, A2, A3, X> Arguments3Validator<A1, A2, A3, X> unwrap(
 			Arguments1Validator<Arguments3<A1, A2, A3>, X> validator) {
-		return (a1, a2, a3, locale, constraintContext) -> validator.validate(Arguments.of(a1, a2, a3), locale,
-				constraintContext);
+		return new Arguments3Validator<A1, A2, A3, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(Arguments.of(a1, a2, a3), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, Supplier<X>> lazy() {
+				return Arguments3Validator.unwrap(validator.lazy());
+			}
+		};
 	}
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
@@ -60,9 +70,20 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments3<A1, A2, A3>, X> wrap() {
-		return (args, locale, constraintContext) -> {
-			final Arguments3<? extends A1, ? extends A2, ? extends A3> nonNullArgs = Objects.requireNonNull(args);
-			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), locale, constraintContext);
+		Arguments3Validator<A1, A2, A3, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<Arguments3<A1, A2, A3>, X>() {
+			@Override
+			public Validated<X> validate(Arguments3<A1, A2, A3> args, Locale locale,
+					ConstraintContext constraintContext) {
+				final Arguments3<? extends A1, ? extends A2, ? extends A3> nonNullArgs = Objects.requireNonNull(args);
+				return Arguments3Validator.this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(),
+						locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<Arguments3<A1, A2, A3>, Supplier<X>> lazy() {
+				return lazy.wrap();
+			}
 		};
 	}
 
