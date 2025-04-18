@@ -61,6 +61,28 @@ public class Arguments1<A1> {
 	}
 
 	/**
+	 * Appends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to append
+	 * @param arg the argument to append
+	 * @return a new Arguments2 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments2<A1, B> append(@Nullable B arg) {
+		return new Arguments2<>(this.arg1, arg);
+	}
+
+	/**
+	 * Prepends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to prepend
+	 * @param arg the argument to prepend
+	 * @return a new Arguments2 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments2<B, A1> prepend(@Nullable B arg) {
+		return new Arguments2<>(arg, this.arg1);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise

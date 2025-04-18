@@ -16,6 +16,9 @@ class ArgumentsTest {
 		assertThat(args.first2()).isEqualTo(Arguments.of(1, "two"));
 		assertThat(args.last1()).isEqualTo(Arguments.of(3.0));
 		assertThat(args.last2()).isEqualTo(Arguments.of("two", 3.0));
+		assertThat(args.append(4.0f)).isEqualTo(Arguments.of(1, "two", 3.0, 4.0f));
+		assertThat(args.prepend(0)).isEqualTo(Arguments.of(0, 1, "two", 3.0));
+		assertThat(args.reverse()).isEqualTo(Arguments.of(3.0, "two", 1));
 	}
 
 	@Test
@@ -31,6 +34,8 @@ class ArgumentsTest {
 		assertThat(args.last1()).isEqualTo(Arguments.of(4.0f));
 		assertThat(args.last2()).isEqualTo(Arguments.of(3.0, 4.0f));
 		assertThat(args.last3()).isEqualTo(Arguments.of("two", 3.0, 4.0f));
+		assertThat(args.append(5)).isEqualTo(Arguments.of(1, "two", 3.0, 4.0f, 5));
+		assertThat(args.prepend(0)).isEqualTo(Arguments.of(0, 1, "two", 3.0, 4.0f));
 	}
 
 }

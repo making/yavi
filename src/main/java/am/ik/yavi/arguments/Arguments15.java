@@ -494,6 +494,42 @@ public class Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13,
 	}
 
 	/**
+	 * Appends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to append
+	 * @param arg the argument to append
+	 * @return a new Arguments16 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, B> append(
+			@Nullable B arg) {
+		return new Arguments16<>(this.arg1, this.arg2, this.arg3, this.arg4, this.arg5, this.arg6, this.arg7, this.arg8,
+				this.arg9, this.arg10, this.arg11, this.arg12, this.arg13, this.arg14, this.arg15, arg);
+	}
+
+	/**
+	 * Prepends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to prepend
+	 * @param arg the argument to prepend
+	 * @return a new Arguments16 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments16<B, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15> prepend(
+			@Nullable B arg) {
+		return new Arguments16<>(arg, this.arg1, this.arg2, this.arg3, this.arg4, this.arg5, this.arg6, this.arg7,
+				this.arg8, this.arg9, this.arg10, this.arg11, this.arg12, this.arg13, this.arg14, this.arg15);
+	}
+
+	/**
+	 * Returns a new Arguments15 instance with the arguments in reverse order.
+	 * @return an Arguments15 instance with arguments in reverse order
+	 * @since 0.16.0
+	 */
+	public final Arguments15<A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1> reverse() {
+		return new Arguments15<>(arg15, arg14, arg13, arg12, arg11, arg10, arg9, arg8, arg7, arg6, arg5, arg4, arg3,
+				arg2, arg1);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise
