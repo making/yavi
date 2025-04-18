@@ -47,7 +47,6 @@ import am.ik.yavi.constraint.array.IntArrayConstraint;
 import am.ik.yavi.constraint.array.LongArrayConstraint;
 import am.ik.yavi.constraint.array.ObjectArrayConstraint;
 import am.ik.yavi.constraint.array.ShortArrayConstraint;
-import am.ik.yavi.core.BiValidator;
 import am.ik.yavi.core.CollectionValidator;
 import am.ik.yavi.core.Constraint;
 import am.ik.yavi.core.ConstraintCondition;
@@ -288,25 +287,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 				this.conditionalValidators,
 				this.messageFormatter == null ? SimpleMessageFormatter.getInstance() : this.messageFormatter,
 				this.failFast);
-	}
-
-	/**
-	 * Create a <code>BiValidator</code> instance using the given constraints. In case of
-	 * Spring Framework's Validator integration
-	 *
-	 * <pre>
-	 * BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder
-	 *   .&lt;CartItem&gt;of()
-	 *   .constraint(...)
-	 *   .build(Errors::rejectValue);
-	 * </pre>
-	 * @param errorHandler handler that handle if the validation fails
-	 * @param <E> the type of the error object
-	 * @return <code>BiValidator</code> instance
-	 */
-	public <E> BiValidator<T, E> build(BiValidator.ErrorHandler<E> errorHandler) {
-		final Validator<T> validator = this.build();
-		return new BiValidator<>(validator, errorHandler);
 	}
 
 	public ValidatorBuilder<T> constraint(ToCharSequence<T, String> f, String name,
