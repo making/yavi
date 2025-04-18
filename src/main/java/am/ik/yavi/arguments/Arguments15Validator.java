@@ -60,10 +60,22 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> unwrap(
 			Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X> validator) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
-				constraintContext) -> validator.validate(
+		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					@Nullable A15 a15, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(
 						Arguments.of(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15), locale,
 						constraintContext);
+			}
+
+			@Override
+			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy() {
+				return Arguments15Validator.unwrap(validator.lazy());
+			}
+		};
 	}
 
 	Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4, @Nullable A5 a5,
@@ -77,13 +89,26 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X> wrap() {
-		return (args, locale, constraintContext) -> {
-			final Arguments15<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15> nonNullArgs = Objects
-				.requireNonNull(args);
-			return this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(), nonNullArgs.arg4(),
-					nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(), nonNullArgs.arg8(), nonNullArgs.arg9(),
-					nonNullArgs.arg10(), nonNullArgs.arg11(), nonNullArgs.arg12(), nonNullArgs.arg13(),
-					nonNullArgs.arg14(), nonNullArgs.arg15(), locale, constraintContext);
+		Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy = this
+			.lazy();
+		return new Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X>() {
+			@Override
+			public Validated<X> validate(
+					Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15> args, Locale locale,
+					ConstraintContext constraintContext) {
+				final Arguments15<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15> nonNullArgs = Objects
+					.requireNonNull(args);
+				return Arguments15Validator.this.validate(nonNullArgs.arg1(), nonNullArgs.arg2(), nonNullArgs.arg3(),
+						nonNullArgs.arg4(), nonNullArgs.arg5(), nonNullArgs.arg6(), nonNullArgs.arg7(),
+						nonNullArgs.arg8(), nonNullArgs.arg9(), nonNullArgs.arg10(), nonNullArgs.arg11(),
+						nonNullArgs.arg12(), nonNullArgs.arg13(), nonNullArgs.arg14(), nonNullArgs.arg15(), locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, Supplier<X>> lazy() {
+				return lazy.wrap();
+			}
 		};
 	}
 

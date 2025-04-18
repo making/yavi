@@ -20,12 +20,16 @@ import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.Range;
 import am.ik.yavi.User;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
+import am.ik.yavi.builder.LocalDateValidatorBuilder;
+import am.ik.yavi.builder.LocalTimeValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Pair;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -389,8 +393,8 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void wrap() {
-		Arguments1Validator<Arguments3<String, String, Integer>, User> nestValidator = arguments3Validator.wrap();
-		Validated<User> validate = nestValidator.validate(Arguments.of("foo", "foo@example", 18));
+		Arguments1Validator<Arguments3<String, String, Integer>, User> wrapValidator = arguments3Validator.wrap();
+		Validated<User> validate = wrapValidator.validate(Arguments.of("foo", "foo@example", 18));
 		assertThat(validate.isValid()).isTrue();
 		User user = validate.value();
 		assertThat(user.getName()).isEqualTo("foo");
@@ -400,15 +404,77 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void unwrap() {
-		Arguments1Validator<Arguments3<String, String, Integer>, User> nestValidator = arguments3Validator
+		Arguments1Validator<Arguments3<String, String, Integer>, User> wrapValidator = arguments3Validator
 			.compose(Function.identity());
-		Arguments3Validator<String, String, Integer, User> flattenValidator = Arguments3Validator.unwrap(nestValidator);
-		Validated<User> validate = flattenValidator.validate("foo", "foo@example", 18);
+		Arguments3Validator<String, String, Integer, User> unwrapValidator = Arguments3Validator.unwrap(wrapValidator);
+		Validated<User> validate = unwrapValidator.validate("foo", "foo@example", 18);
 		assertThat(validate.isValid()).isTrue();
 		User user = validate.value();
 		assertThat(user.getName()).isEqualTo("foo");
 		assertThat(user.getEmail()).isEqualTo("foo@example");
 		assertThat(user.getAge()).isEqualTo(18);
+	}
+
+	static class TimeSlot {
+
+		private final LocalTime startTime;
+
+		private final LocalTime endTime;
+
+		private static final Function<String, LocalTimeValidator<LocalTime>> localTimeValidator = name -> LocalTimeValidatorBuilder
+			.of(name, c -> c.notNull())
+			.build();
+
+		private static final LocalTimeValidator<LocalTime> startTimeValidator = localTimeValidator.apply("startTime");
+
+		private static final LocalTimeValidator<LocalTime> endTimeValidator = localTimeValidator.apply("endTime");
+
+		public static Arguments2Validator<LocalTime, LocalTime, TimeSlot> validator = startTimeValidator
+			.split(endTimeValidator)
+			.apply(TimeSlot::new);
+
+		public TimeSlot(LocalTime startTime, LocalTime endTime) {
+			validator.lazy().validate(startTime, endTime);
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+
+	}
+
+	static class Reservation {
+
+		private final LocalDate date;
+
+		private final LocalTime startTime;
+
+		private final LocalTime endTime;
+
+		private static final LocalDateValidator<LocalDate> localDateValidator = LocalDateValidatorBuilder
+			.of("date", c -> c.notNull())
+			.build();
+
+		public static Arguments1Validator<Arguments3<LocalDate, LocalTime, LocalTime>, Reservation> v1 = localDateValidator
+			.wrap()
+			.<Arguments3<LocalDate, LocalTime, LocalTime>>compose(Arguments3::first1)
+			.combine(TimeSlot.validator.wrap().compose(Arguments3::last2))
+			.apply((localDate, timeSlot) -> new Reservation(Objects.requireNonNull(localDate),
+					Objects.requireNonNull(timeSlot).startTime, timeSlot.endTime));
+
+		public static final Arguments3Validator<LocalDate, LocalTime, LocalTime, Reservation> validator = Arguments3Validator
+			.unwrap(v1);
+
+		public Reservation(LocalDate date, LocalTime startTime, LocalTime endTime) {
+			validator.lazy().validated(date, startTime, endTime);
+			this.date = date;
+			this.startTime = startTime;
+			this.endTime = endTime;
+		}
+
+	}
+
+	@Test
+	void unwrapLazy() {
+		new Reservation(LocalDate.of(2025, 10, 1), LocalTime.of(10, 0), LocalTime.of(11, 0));
 	}
 
 	@Test
