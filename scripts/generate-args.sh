@@ -60,6 +60,46 @@ for i in `seq 1 ${n}`;do
     done
   fi
 
+  # Create all lastM methods (for N > 1)
+  last_methods=""
+  if [ ${i} -gt 1 ]; then
+    for j in `seq 1 $((${i} - 1))`; do
+      # Calculate starting position for last method
+      start_pos=$((${i} - ${j} + 1))
+
+      # Create type parameters for last method
+      last_type_params=""
+      for k in `seq ${start_pos} ${i}`; do
+        last_type_params="${last_type_params}A${k}"
+        if [ ${k} -lt ${i} ]; then
+          last_type_params="${last_type_params}, "
+        fi
+      done
+
+      # Create arguments for last method
+      last_args=""
+      for k in `seq ${start_pos} ${i}`; do
+        last_args="${last_args}arg${k}"
+        if [ ${k} -lt ${i} ]; then
+          last_args="${last_args}, "
+        fi
+      done
+
+      # Add last method
+      last_methods+="
+	/**
+	 * Returns a new Arguments${j} instance containing only the last ${j} arguments.
+	 *
+	 * @return an Arguments${j} instance with arguments from arg${start_pos} to arg${i}
+	 * @since 0.16.0
+	 */
+	public final Arguments${j}<${last_type_params}> last${j}() {
+		return new Arguments${j}<>(${last_args});
+	}
+"
+    done
+  fi
+
   # Create class type parameters
   class_type_params=""
   for j in `seq 1 ${i}`; do
@@ -201,7 +241,7 @@ ${arg_methods}
 	 */
 	public final <X> X map(Function${i}<${function_params}, ? extends X> mapper) {
 		return mapper.apply(${map_args});
-	}${first_methods}
+	}${first_methods}${last_methods}
 
 	/**
 	 * Indicates whether some other object is "equal to" this one.

@@ -82,6 +82,15 @@ public class Arguments2<A1, A2> {
 	}
 
 	/**
+	 * Returns a new Arguments1 instance containing only the last 1 arguments.
+	 * @return an Arguments1 instance with arguments from arg2 to arg2
+	 * @since 0.16.0
+	 */
+	public final Arguments1<A2> last1() {
+		return new Arguments1<>(arg2);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise
