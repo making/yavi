@@ -527,6 +527,16 @@ public class Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13,
 	}
 
 	/**
+	 * Returns a new Arguments16 instance with the arguments in reverse order.
+	 * @return an Arguments16 instance with arguments in reverse order
+	 * @since 0.16.0
+	 */
+	public final Arguments16<A16, A15, A14, A13, A12, A11, A10, A9, A8, A7, A6, A5, A4, A3, A2, A1> reverse() {
+		return new Arguments16<>(arg16, arg15, arg14, arg13, arg12, arg11, arg10, arg9, arg8, arg7, arg6, arg5, arg4,
+				arg3, arg2, arg1);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise

@@ -100,6 +100,115 @@ for i in `seq 1 ${n}`;do
     done
   fi
 
+  # Create append method (only for classes less than max size)
+  append_method=""
+  if [ ${i} -lt ${n} ]; then
+    new_size=$((${i} + 1))
+    append_method="
+	/**
+	 * Appends an additional argument to create a new, larger Arguments instance.
+	 *
+	 * @param <B> the type of the argument to append
+	 * @param arg the argument to append
+	 * @return a new Arguments${new_size} instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments${new_size}<"
+
+    # Add type parameters for result
+    for j in `seq 1 ${i}`; do
+      append_method+="A${j}"
+      if [ ${j} -lt ${i} ] || [ ${i} -lt ${new_size} ]; then
+        append_method+=", "
+      fi
+    done
+    append_method+="B> append(@Nullable B arg) {
+		return new Arguments${new_size}<>("
+
+    # Add arguments for result constructor
+    for j in `seq 1 ${i}`; do
+      append_method+="this.arg${j}"
+      if [ ${j} -lt ${i} ] || [ ${i} -lt ${new_size} ]; then
+        append_method+=", "
+      fi
+    done
+    append_method+="arg);
+	}
+"
+  fi
+
+  # Create prepend method (only for classes less than max size)
+  prepend_method=""
+  if [ ${i} -lt ${n} ]; then
+    new_size=$((${i} + 1))
+    prepend_method="
+	/**
+	 * Prepends an additional argument to create a new, larger Arguments instance.
+	 *
+	 * @param <B> the type of the argument to prepend
+	 * @param arg the argument to prepend
+	 * @return a new Arguments${new_size} instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments${new_size}<B, "
+
+    # Add type parameters for result (already prepended B)
+    for j in `seq 1 ${i}`; do
+      prepend_method+="A${j}"
+      if [ ${j} -lt ${i} ]; then
+        prepend_method+=", "
+      fi
+    done
+    prepend_method+="> prepend(@Nullable B arg) {
+		return new Arguments${new_size}<>(arg, "
+
+    # Add arguments for result constructor (arg prepended)
+    for j in `seq 1 ${i}`; do
+      prepend_method+="this.arg${j}"
+      if [ ${j} -lt ${i} ]; then
+        prepend_method+=", "
+      fi
+    done
+    prepend_method+=");
+	}
+"
+  fi
+
+  # Create reverse method
+  reverse_method=""
+  if [ ${i} -gt 1 ]; then
+    # Create type parameters for reverse method (in reverse order)
+    reverse_type_params=""
+    for j in `seq ${i} -1 1`; do
+      reverse_type_params="${reverse_type_params}A${j}"
+      if [ ${j} -gt 1 ]; then
+        reverse_type_params="${reverse_type_params}, "
+      fi
+    done
+
+    # Create arguments for reverse method (in reverse order)
+    reverse_args=""
+    for j in `seq ${i} -1 1`; do
+      reverse_args="${reverse_args}arg${j}"
+      if [ ${j} -gt 1 ]; then
+        reverse_args="${reverse_args}, "
+      fi
+    done
+
+    # Add reverse method
+    reverse_method="
+	/**
+	 * Returns a new Arguments${i} instance with the arguments in reverse order.
+	 *
+	 * @return an Arguments${i} instance with arguments in reverse order
+	 * @since 0.16.0
+	 */
+	public final Arguments${i}<${reverse_type_params}> reverse() {
+		return new Arguments${i}<>(${reverse_args});
+	}
+"
+  fi
+
   # Create class type parameters
   class_type_params=""
   for j in `seq 1 ${i}`; do
@@ -241,7 +350,7 @@ ${arg_methods}
 	 */
 	public final <X> X map(Function${i}<${function_params}, ? extends X> mapper) {
 		return mapper.apply(${map_args});
-	}${first_methods}${last_methods}
+	}${first_methods}${last_methods}${append_method}${prepend_method}${reverse_method}
 
 	/**
 	 * Indicates whether some other object is "equal to" this one.

@@ -91,6 +91,37 @@ public class Arguments2<A1, A2> {
 	}
 
 	/**
+	 * Appends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to append
+	 * @param arg the argument to append
+	 * @return a new Arguments3 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments3<A1, A2, B> append(@Nullable B arg) {
+		return new Arguments3<>(this.arg1, this.arg2, arg);
+	}
+
+	/**
+	 * Prepends an additional argument to create a new, larger Arguments instance.
+	 * @param <B> the type of the argument to prepend
+	 * @param arg the argument to prepend
+	 * @return a new Arguments3 instance with the additional argument
+	 * @since 0.16.0
+	 */
+	public final <B> Arguments3<B, A1, A2> prepend(@Nullable B arg) {
+		return new Arguments3<>(arg, this.arg1, this.arg2);
+	}
+
+	/**
+	 * Returns a new Arguments2 instance with the arguments in reverse order.
+	 * @return an Arguments2 instance with arguments in reverse order
+	 * @since 0.16.0
+	 */
+	public final Arguments2<A2, A1> reverse() {
+		return new Arguments2<>(arg2, arg1);
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one.
 	 * @param obj the reference object with which to compare
 	 * @return true if this object is the same as the obj argument; false otherwise
