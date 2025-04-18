@@ -35,21 +35,21 @@ import am.ik.yavi.jsr305.Nullable;
  * @param <A7> the type of argument at position 7
  * @since 0.3.0
  */
-public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
+public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 
-	protected final A1 arg1;
+	private final A1 arg1;
 
-	protected final A2 arg2;
+	private final A2 arg2;
 
-	protected final A3 arg3;
+	private final A3 arg3;
 
-	protected final A4 arg4;
+	private final A4 arg4;
 
-	protected final A5 arg5;
+	private final A5 arg5;
 
-	protected final A6 arg6;
+	private final A6 arg6;
 
-	protected final A7 arg7;
+	private final A7 arg7;
 
 	/**
 	 * Creates a new Arguments7 instance with the provided arguments.
@@ -73,7 +73,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 1
 	 */
 	@Nullable
-	public final A1 arg1() {
+	public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -82,7 +82,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 2
 	 */
 	@Nullable
-	public final A2 arg2() {
+	public A2 arg2() {
 		return this.arg2;
 	}
 
@@ -91,7 +91,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 3
 	 */
 	@Nullable
-	public final A3 arg3() {
+	public A3 arg3() {
 		return this.arg3;
 	}
 
@@ -100,7 +100,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 4
 	 */
 	@Nullable
-	public final A4 arg4() {
+	public A4 arg4() {
 		return this.arg4;
 	}
 
@@ -109,7 +109,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 5
 	 */
 	@Nullable
-	public final A5 arg5() {
+	public A5 arg5() {
 		return this.arg5;
 	}
 
@@ -118,7 +118,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 6
 	 */
 	@Nullable
-	public final A6 arg6() {
+	public A6 arg6() {
 		return this.arg6;
 	}
 
@@ -127,7 +127,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return the argument at position 7
 	 */
 	@Nullable
-	public final A7 arg7() {
+	public A7 arg7() {
 		return this.arg7;
 	}
 
@@ -137,7 +137,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
-	public final <X> X map(
+	public <X> X map(
 			Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	}
@@ -147,7 +147,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments1 instance with arguments from arg1 to arg1
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A1> first1() {
+	public Arguments1<A1> first1() {
 		return new Arguments1<>(arg1);
 	}
 
@@ -156,7 +156,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments2 instance with arguments from arg1 to arg2
 	 * @since 0.16.0
 	 */
-	public final Arguments2<A1, A2> first2() {
+	public Arguments2<A1, A2> first2() {
 		return new Arguments2<>(arg1, arg2);
 	}
 
@@ -165,7 +165,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments3 instance with arguments from arg1 to arg3
 	 * @since 0.16.0
 	 */
-	public final Arguments3<A1, A2, A3> first3() {
+	public Arguments3<A1, A2, A3> first3() {
 		return new Arguments3<>(arg1, arg2, arg3);
 	}
 
@@ -174,7 +174,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments4 instance with arguments from arg1 to arg4
 	 * @since 0.16.0
 	 */
-	public final Arguments4<A1, A2, A3, A4> first4() {
+	public Arguments4<A1, A2, A3, A4> first4() {
 		return new Arguments4<>(arg1, arg2, arg3, arg4);
 	}
 
@@ -183,7 +183,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments5 instance with arguments from arg1 to arg5
 	 * @since 0.16.0
 	 */
-	public final Arguments5<A1, A2, A3, A4, A5> first5() {
+	public Arguments5<A1, A2, A3, A4, A5> first5() {
 		return new Arguments5<>(arg1, arg2, arg3, arg4, arg5);
 	}
 
@@ -192,7 +192,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments6 instance with arguments from arg1 to arg6
 	 * @since 0.16.0
 	 */
-	public final Arguments6<A1, A2, A3, A4, A5, A6> first6() {
+	public Arguments6<A1, A2, A3, A4, A5, A6> first6() {
 		return new Arguments6<>(arg1, arg2, arg3, arg4, arg5, arg6);
 	}
 
@@ -201,7 +201,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments1 instance with arguments from arg7 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A7> last1() {
+	public Arguments1<A7> last1() {
 		return new Arguments1<>(arg7);
 	}
 
@@ -210,7 +210,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments2 instance with arguments from arg6 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments2<A6, A7> last2() {
+	public Arguments2<A6, A7> last2() {
 		return new Arguments2<>(arg6, arg7);
 	}
 
@@ -219,7 +219,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments3 instance with arguments from arg5 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments3<A5, A6, A7> last3() {
+	public Arguments3<A5, A6, A7> last3() {
 		return new Arguments3<>(arg5, arg6, arg7);
 	}
 
@@ -228,7 +228,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments4 instance with arguments from arg4 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments4<A4, A5, A6, A7> last4() {
+	public Arguments4<A4, A5, A6, A7> last4() {
 		return new Arguments4<>(arg4, arg5, arg6, arg7);
 	}
 
@@ -237,7 +237,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments5 instance with arguments from arg3 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments5<A3, A4, A5, A6, A7> last5() {
+	public Arguments5<A3, A4, A5, A6, A7> last5() {
 		return new Arguments5<>(arg3, arg4, arg5, arg6, arg7);
 	}
 
@@ -246,7 +246,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments6 instance with arguments from arg2 to arg7
 	 * @since 0.16.0
 	 */
-	public final Arguments6<A2, A3, A4, A5, A6, A7> last6() {
+	public Arguments6<A2, A3, A4, A5, A6, A7> last6() {
 		return new Arguments6<>(arg2, arg3, arg4, arg5, arg6, arg7);
 	}
 
@@ -257,7 +257,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return a new Arguments8 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments8<A1, A2, A3, A4, A5, A6, A7, B> append(@Nullable B arg) {
+	public <B> Arguments8<A1, A2, A3, A4, A5, A6, A7, B> append(@Nullable B arg) {
 		return new Arguments8<>(this.arg1, this.arg2, this.arg3, this.arg4, this.arg5, this.arg6, this.arg7, arg);
 	}
 
@@ -268,7 +268,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return a new Arguments8 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments8<B, A1, A2, A3, A4, A5, A6, A7> prepend(@Nullable B arg) {
+	public <B> Arguments8<B, A1, A2, A3, A4, A5, A6, A7> prepend(@Nullable B arg) {
 		return new Arguments8<>(arg, this.arg1, this.arg2, this.arg3, this.arg4, this.arg5, this.arg6, this.arg7);
 	}
 
@@ -277,7 +277,7 @@ public class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * @return an Arguments7 instance with arguments in reverse order
 	 * @since 0.16.0
 	 */
-	public final Arguments7<A7, A6, A5, A4, A3, A2, A1> reverse() {
+	public Arguments7<A7, A6, A5, A4, A3, A2, A1> reverse() {
 		return new Arguments7<>(arg7, arg6, arg5, arg4, arg3, arg2, arg1);
 	}
 

@@ -30,11 +30,11 @@ import am.ik.yavi.jsr305.Nullable;
  * @param <A2> the type of argument at position 2
  * @since 0.3.0
  */
-public class Arguments2<A1, A2> {
+public final class Arguments2<A1, A2> {
 
-	protected final A1 arg1;
+	private final A1 arg1;
 
-	protected final A2 arg2;
+	private final A2 arg2;
 
 	/**
 	 * Creates a new Arguments2 instance with the provided arguments.
@@ -50,7 +50,7 @@ public class Arguments2<A1, A2> {
 	 * @return the argument at position 1
 	 */
 	@Nullable
-	public final A1 arg1() {
+	public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -59,7 +59,7 @@ public class Arguments2<A1, A2> {
 	 * @return the argument at position 2
 	 */
 	@Nullable
-	public final A2 arg2() {
+	public A2 arg2() {
 		return this.arg2;
 	}
 
@@ -69,7 +69,7 @@ public class Arguments2<A1, A2> {
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
-	public final <X> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
+	public <X> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2);
 	}
 
@@ -78,7 +78,7 @@ public class Arguments2<A1, A2> {
 	 * @return an Arguments1 instance with arguments from arg1 to arg1
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A1> first1() {
+	public Arguments1<A1> first1() {
 		return new Arguments1<>(arg1);
 	}
 
@@ -87,7 +87,7 @@ public class Arguments2<A1, A2> {
 	 * @return an Arguments1 instance with arguments from arg2 to arg2
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A2> last1() {
+	public Arguments1<A2> last1() {
 		return new Arguments1<>(arg2);
 	}
 
@@ -98,7 +98,7 @@ public class Arguments2<A1, A2> {
 	 * @return a new Arguments3 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments3<A1, A2, B> append(@Nullable B arg) {
+	public <B> Arguments3<A1, A2, B> append(@Nullable B arg) {
 		return new Arguments3<>(this.arg1, this.arg2, arg);
 	}
 
@@ -109,7 +109,7 @@ public class Arguments2<A1, A2> {
 	 * @return a new Arguments3 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments3<B, A1, A2> prepend(@Nullable B arg) {
+	public <B> Arguments3<B, A1, A2> prepend(@Nullable B arg) {
 		return new Arguments3<>(arg, this.arg1, this.arg2);
 	}
 
@@ -118,7 +118,7 @@ public class Arguments2<A1, A2> {
 	 * @return an Arguments2 instance with arguments in reverse order
 	 * @since 0.16.0
 	 */
-	public final Arguments2<A2, A1> reverse() {
+	public Arguments2<A2, A1> reverse() {
 		return new Arguments2<>(arg2, arg1);
 	}
 

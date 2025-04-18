@@ -32,15 +32,15 @@ import am.ik.yavi.jsr305.Nullable;
  * @param <A4> the type of argument at position 4
  * @since 0.3.0
  */
-public class Arguments4<A1, A2, A3, A4> {
+public final class Arguments4<A1, A2, A3, A4> {
 
-	protected final A1 arg1;
+	private final A1 arg1;
 
-	protected final A2 arg2;
+	private final A2 arg2;
 
-	protected final A3 arg3;
+	private final A3 arg3;
 
-	protected final A4 arg4;
+	private final A4 arg4;
 
 	/**
 	 * Creates a new Arguments4 instance with the provided arguments.
@@ -59,7 +59,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return the argument at position 1
 	 */
 	@Nullable
-	public final A1 arg1() {
+	public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -68,7 +68,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return the argument at position 2
 	 */
 	@Nullable
-	public final A2 arg2() {
+	public A2 arg2() {
 		return this.arg2;
 	}
 
@@ -77,7 +77,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return the argument at position 3
 	 */
 	@Nullable
-	public final A3 arg3() {
+	public A3 arg3() {
 		return this.arg3;
 	}
 
@@ -86,7 +86,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return the argument at position 4
 	 */
 	@Nullable
-	public final A4 arg4() {
+	public A4 arg4() {
 		return this.arg4;
 	}
 
@@ -96,7 +96,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
-	public final <X> X map(Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
+	public <X> X map(Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2, arg3, arg4);
 	}
 
@@ -105,7 +105,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments1 instance with arguments from arg1 to arg1
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A1> first1() {
+	public Arguments1<A1> first1() {
 		return new Arguments1<>(arg1);
 	}
 
@@ -114,7 +114,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments2 instance with arguments from arg1 to arg2
 	 * @since 0.16.0
 	 */
-	public final Arguments2<A1, A2> first2() {
+	public Arguments2<A1, A2> first2() {
 		return new Arguments2<>(arg1, arg2);
 	}
 
@@ -123,7 +123,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments3 instance with arguments from arg1 to arg3
 	 * @since 0.16.0
 	 */
-	public final Arguments3<A1, A2, A3> first3() {
+	public Arguments3<A1, A2, A3> first3() {
 		return new Arguments3<>(arg1, arg2, arg3);
 	}
 
@@ -132,7 +132,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments1 instance with arguments from arg4 to arg4
 	 * @since 0.16.0
 	 */
-	public final Arguments1<A4> last1() {
+	public Arguments1<A4> last1() {
 		return new Arguments1<>(arg4);
 	}
 
@@ -141,7 +141,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments2 instance with arguments from arg3 to arg4
 	 * @since 0.16.0
 	 */
-	public final Arguments2<A3, A4> last2() {
+	public Arguments2<A3, A4> last2() {
 		return new Arguments2<>(arg3, arg4);
 	}
 
@@ -150,7 +150,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments3 instance with arguments from arg2 to arg4
 	 * @since 0.16.0
 	 */
-	public final Arguments3<A2, A3, A4> last3() {
+	public Arguments3<A2, A3, A4> last3() {
 		return new Arguments3<>(arg2, arg3, arg4);
 	}
 
@@ -161,7 +161,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return a new Arguments5 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments5<A1, A2, A3, A4, B> append(@Nullable B arg) {
+	public <B> Arguments5<A1, A2, A3, A4, B> append(@Nullable B arg) {
 		return new Arguments5<>(this.arg1, this.arg2, this.arg3, this.arg4, arg);
 	}
 
@@ -172,7 +172,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return a new Arguments5 instance with the additional argument
 	 * @since 0.16.0
 	 */
-	public final <B> Arguments5<B, A1, A2, A3, A4> prepend(@Nullable B arg) {
+	public <B> Arguments5<B, A1, A2, A3, A4> prepend(@Nullable B arg) {
 		return new Arguments5<>(arg, this.arg1, this.arg2, this.arg3, this.arg4);
 	}
 
@@ -181,7 +181,7 @@ public class Arguments4<A1, A2, A3, A4> {
 	 * @return an Arguments4 instance with arguments in reverse order
 	 * @since 0.16.0
 	 */
-	public final Arguments4<A4, A3, A2, A1> reverse() {
+	public Arguments4<A4, A3, A2, A1> reverse() {
 		return new Arguments4<>(arg4, arg3, arg2, arg1);
 	}
 
