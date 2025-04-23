@@ -78,7 +78,7 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, X> wrap() {
-		Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy = this.lazy();
+		final Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>, X>() {
 			@Override
 			public Validated<X> validate(Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9> args, Locale locale,

@@ -67,7 +67,7 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments2<A1, A2>, X> wrap() {
-		Arguments2Validator<A1, A2, Supplier<X>> lazy = this.lazy();
+		final Arguments2Validator<A1, A2, Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<Arguments2<A1, A2>, X>() {
 			@Override
 			public Validated<X> validate(Arguments2<A1, A2> args, Locale locale, ConstraintContext constraintContext) {
