@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.Year;
@@ -39,6 +40,7 @@ import am.ik.yavi.constraint.FloatConstraint;
 import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
 import am.ik.yavi.constraint.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.constraint.LocalTimeConstraint;
 import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
@@ -249,6 +251,23 @@ public final class Arguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, R1, R2
 	public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, LocalTime> _localTime(
 			String name) {
 		return this._localTime(name, Function.identity());
+	}
+
+	public <T> Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, T> _localDate(
+			ValueValidator<LocalDate, T> validator) {
+		return new Arguments8ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4, this.v5, this.v6, this.v7,
+				validator);
+	}
+
+	public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
+			String name,
+			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
+		return this._localDate(LocalDateValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
+			String name) {
+		return this._localDate(name, Function.identity());
 	}
 
 	public <T> Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, T> _long(

@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.Year;
@@ -39,6 +40,7 @@ import am.ik.yavi.constraint.FloatConstraint;
 import am.ik.yavi.constraint.InstantConstraint;
 import am.ik.yavi.constraint.IntegerConstraint;
 import am.ik.yavi.constraint.LocalDateTimeConstraint;
+import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.constraint.LocalTimeConstraint;
 import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
@@ -262,6 +264,23 @@ public final class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, LocalTime> _localTime(
 			String name) {
 		return this._localTime(name, Function.identity());
+	}
+
+	public <T> Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, T> _localDate(
+			ValueValidator<LocalDate, T> validator) {
+		return new Arguments12ValidatorBuilder<>(this.v1, this.v2, this.v3, this.v4, this.v5, this.v6, this.v7, this.v8,
+				this.v9, this.v10, this.v11, validator);
+	}
+
+	public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, LocalDate> _localDate(
+			String name,
+			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
+		return this._localDate(LocalDateValidatorBuilder.of(name, constraints).build());
+	}
+
+	public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, LocalDate> _localDate(
+			String name) {
+		return this._localDate(name, Function.identity());
 	}
 
 	public <T> Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, T> _long(
