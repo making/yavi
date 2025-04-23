@@ -583,6 +583,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	 * @since 0.16.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
+		final Arguments1Validator<Arguments1<A1>, Supplier<X>> lazy = validator.lazy();
 		return new Arguments1Validator<A1, X>() {
 			@Override
 			public Validated<X> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -591,7 +592,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 
 			@Override
 			public Arguments1Validator<A1, Supplier<X>> lazy() {
-				return Arguments1Validator.unwrap(validator.lazy());
+				return Arguments1Validator.unwrap(lazy);
 			}
 		};
 	}
@@ -648,7 +649,7 @@ fi)
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<${wrapArguments}, X> wrap() {
-		${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
+		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<${wrapArguments}, X>() {
 			@Override
 			public Validated<X> validate(${wrapArguments} args, Locale locale,
