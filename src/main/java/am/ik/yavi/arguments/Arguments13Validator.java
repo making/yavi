@@ -135,10 +135,24 @@ public interface Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <X2> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale,
-				constraintContext) -> Arguments13Validator.this
+		final Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>> lazy = this
+			.lazy();
+		return new Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, A9 a9, A10 a10,
+					A11 a11, A12 a12, A13 a13, Locale locale, ConstraintContext constraintContext) {
+				return Arguments13Validator.this
 					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext));
+			}
+
+			@Override
+			public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X2>> lazy() {
+				return lazy.andThen((xSupplier, locale, constraintContext) -> validator
+					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+					.map(x2 -> () -> x2));
+			}
+		};
 	}
 
 	/**

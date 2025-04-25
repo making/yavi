@@ -113,9 +113,22 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @since 0.11.0
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (a1, a2, a3, a4, locale, constraintContext) -> Arguments4Validator.this
-			.validate(a1, a2, a3, a4, locale, constraintContext)
-			.flatMap(v -> validator.validate(v, locale, constraintContext));
+		final Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy = this.lazy();
+		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
+					ConstraintContext constraintContext) {
+				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext));
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, Supplier<X2>> lazy() {
+				return lazy.andThen((xSupplier, locale, constraintContext) -> validator
+					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+					.map(x2 -> () -> x2));
+			}
+		};
 	}
 
 	/**

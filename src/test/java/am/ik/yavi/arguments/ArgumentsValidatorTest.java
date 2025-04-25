@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
+import static am.ik.yavi.core.ValueValidator.passThrough;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -522,6 +523,13 @@ class ArgumentsValidatorTest {
 		arguments1Validator.andThen(Country::name).lazy().validated("JP");
 		arguments2Validator.andThen(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
 		arguments3Validator.andThen(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
+	}
+
+	@Test
+	void andThenValidator() {
+		arguments1Validator.andThen(passThrough()).lazy().validated("JP");
+		arguments2Validator.andThen(passThrough()).lazy().validated(1, 2);
+		arguments3Validator.andThen(passThrough()).lazy().validated("aa", "bb@cc.dd", 18);
 	}
 
 }

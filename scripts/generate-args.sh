@@ -689,9 +689,21 @@ fi)
 	 * @since 0.11.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (${as}, locale, constraintContext) -> ${class}.this
-				.validate(${as}, locale, constraintContext)
-				.flatMap(v -> validator.validate(v, locale, constraintContext));
+		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
+		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
+			@Override
+			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
+				return ${class}.this.validate(${as}, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext));
+			}
+
+			@Override
+			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X2>> lazy() {
+				return lazy.andThen((xSupplier, locale, constraintContext) -> validator
+					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+					.map(x2 -> () -> x2));
+			}
+		};
 	}
 
 	/**
