@@ -583,7 +583,6 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	 * @since 0.16.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
-		final Arguments1Validator<Arguments1<A1>, Supplier<X>> lazy = validator.lazy();
 		return new Arguments1Validator<A1, X>() {
 			@Override
 			public Validated<X> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -592,7 +591,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 
 			@Override
 			public Arguments1Validator<A1, Supplier<X>> lazy() {
-				return Arguments1Validator.unwrap(lazy);
+				return Arguments1Validator.unwrap(validator.lazy());
 			}
 		};
 	}
@@ -613,7 +612,6 @@ $(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> ty
 	 */
 	static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> unwrap(
 			Arguments1Validator<${wrapArguments}, X> validator) {
-		final Arguments1Validator<${wrapArguments}, Supplier<X>> lazy =	validator.lazy();
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>() {
 			@Override
 			public Validated<X> validate(${args}, Locale locale, ConstraintContext constraintContext) {
@@ -622,7 +620,7 @@ $(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> ty
 
 			@Override
 			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-				return ${class}.unwrap(lazy);
+				return ${class}.unwrap(validator.lazy());
 			}
 		};
 	}
@@ -650,7 +648,6 @@ fi)
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<${wrapArguments}, X> wrap() {
-		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<${wrapArguments}, X>() {
 			@Override
 			public Validated<X> validate(${wrapArguments} args, Locale locale,
@@ -662,7 +659,7 @@ fi)
 
 			@Override
 			public Arguments1Validator<${wrapArguments}, Supplier<X>> lazy() {
-				return lazy.wrap();
+				return ${class}.this.lazy().wrap();
 			}
 		};
 	}
@@ -671,7 +668,6 @@ fi)
 	 * @since 0.7.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
-		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
 			@Override
 			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
@@ -680,7 +676,7 @@ fi)
 
 			@Override
 			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X2>> lazy() {
-				return lazy
+				return ${class}.this.lazy()
 					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
 		};
@@ -690,7 +686,6 @@ fi)
 	 * @since 0.11.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
-		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
 			@Override
 			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
@@ -700,7 +695,7 @@ fi)
 
 			@Override
 			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X2>> lazy() {
-				return lazy.andThen((xSupplier, locale, constraintContext) -> validator
+				return ${class}.this.lazy().andThen((xSupplier, locale, constraintContext) -> validator
 					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
 					.map(x2 -> () -> x2));
 			}
@@ -714,7 +709,6 @@ $(if [ "${i}" == "1" ];then
 cat <<EOD
 	@Override
 	default <A> Arguments1Validator<A, X> compose(Function<? super A, ? extends A1> mapper) {
-		Arguments1Validator<A1, Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
@@ -723,7 +717,7 @@ cat <<EOD
 
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
-				return lazy.compose(mapper);
+				return Arguments1Validator.this.lazy().compose(mapper);
 			}
 		};
 	}
@@ -732,7 +726,6 @@ else
 cat <<EOD
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends ${arguments}> mapper) {
-		final ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
@@ -742,7 +735,7 @@ cat <<EOD
 
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
-				return lazy.compose(mapper);
+				return ${class}.this.lazy().compose(mapper);
 			}
 		};
 	}

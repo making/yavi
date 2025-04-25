@@ -60,8 +60,6 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> unwrap(
 			Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X> validator) {
-		final Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, Supplier<X>> lazy = validator
-			.lazy();
 		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
@@ -75,7 +73,7 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 
 			@Override
 			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy() {
-				return Arguments15Validator.unwrap(lazy);
+				return Arguments15Validator.unwrap(validator.lazy());
 			}
 		};
 	}
@@ -91,8 +89,6 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X> wrap() {
-		final Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy = this
-			.lazy();
 		return new Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, X>() {
 			@Override
 			public Validated<X> validate(
@@ -109,7 +105,7 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 
 			@Override
 			public Arguments1Validator<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>, Supplier<X>> lazy() {
-				return lazy.wrap();
+				return Arguments15Validator.this.lazy().wrap();
 			}
 		};
 	}
@@ -119,8 +115,6 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <X2> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
-		final Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy = this
-			.lazy();
 		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X2>() {
 			@Override
 			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, A9 a9, A10 a10,
@@ -133,7 +127,7 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 
 			@Override
 			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X2>> lazy() {
-				return lazy
+				return Arguments15Validator.this.lazy()
 					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
 		};
@@ -144,8 +138,6 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <X2> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X2> andThen(
 			ValueValidator<? super X, X2> validator) {
-		final Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy = this
-			.lazy();
 		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X2>() {
 			@Override
 			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, A9 a9, A10 a10,
@@ -158,9 +150,10 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 
 			@Override
 			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X2>> lazy() {
-				return lazy.andThen((xSupplier, locale, constraintContext) -> validator
-					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
-					.map(x2 -> () -> x2));
+				return Arguments15Validator.this.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> validator
+						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+						.map(x2 -> () -> x2));
 			}
 		};
 	}
@@ -170,8 +163,6 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments15<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14, ? extends A15>> mapper) {
-		final Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy = this
-			.lazy();
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
@@ -184,7 +175,7 @@ public interface Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
-				return lazy.compose(mapper);
+				return Arguments15Validator.this.lazy().compose(mapper);
 			}
 		};
 	}
