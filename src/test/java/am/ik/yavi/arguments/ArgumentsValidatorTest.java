@@ -474,8 +474,17 @@ class ArgumentsValidatorTest {
 	}
 
 	@Test
+	void wrapLazy() {
+		arguments1Validator.wrap().lazy().validated(Arguments.of("JP"));
+		arguments2Validator.wrap().lazy().validated(Arguments.of(1, 2));
+		arguments3Validator.wrap().lazy().validated(Arguments.of("aa", "bb@cc.dd", 18));
+	}
+
+	@Test
 	void unwrapLazy() {
-		new Reservation(LocalDate.of(2025, 10, 1), LocalTime.of(10, 0), LocalTime.of(11, 0));
+		Arguments1Validator.unwrap(arguments1Validator.wrap()).lazy().validated("JP");
+		Arguments2Validator.unwrap(arguments2Validator.wrap()).lazy().validated(1, 2);
+		Arguments3Validator.unwrap(arguments3Validator.wrap()).lazy().validated("aa", "bb@cc.dd", 18);
 	}
 
 	@Test
@@ -542,6 +551,11 @@ class ArgumentsValidatorTest {
 			.<Object[]>compose(objects -> Arguments.of((String) objects[0], (String) objects[1], (Integer) objects[2]))
 			.lazy()
 			.validated(new Object[] { "aa", "bb@cc.dd", 18 });
+	}
+
+	@Test
+	void combineUnwrapLazy() {
+		new Reservation(LocalDate.of(2025, 10, 1), LocalTime.of(10, 0), LocalTime.of(11, 0));
 	}
 
 }
