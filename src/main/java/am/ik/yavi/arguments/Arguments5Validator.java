@@ -137,11 +137,20 @@ public interface Arguments5Validator<A1, A2, A3, A4, A5, X> {
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments5<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5>> mapper) {
-		return (a, locale, constraintContext) -> {
-			final Arguments5<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5> args = mapper
-				.apply(a);
-			return Arguments5Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(), args.arg5(),
-					locale, constraintContext);
+		final Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<A, X>() {
+			@Override
+			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+				final Arguments5<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5> args = mapper
+					.apply(a);
+				return Arguments5Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(),
+						args.arg5(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A, Supplier<X>> lazy() {
+				return lazy.compose(mapper);
+			}
 		};
 	}
 

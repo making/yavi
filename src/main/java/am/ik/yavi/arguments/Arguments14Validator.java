@@ -162,12 +162,22 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments14<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14>> mapper) {
-		return (a, locale, constraintContext) -> {
-			final Arguments14<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14> args = mapper
-				.apply(a);
-			return Arguments14Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(), args.arg5(),
-					args.arg6(), args.arg7(), args.arg8(), args.arg9(), args.arg10(), args.arg11(), args.arg12(),
-					args.arg13(), args.arg14(), locale, constraintContext);
+		final Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>> lazy = this
+			.lazy();
+		return new Arguments1Validator<A, X>() {
+			@Override
+			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+				final Arguments14<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8, ? extends A9, ? extends A10, ? extends A11, ? extends A12, ? extends A13, ? extends A14> args = mapper
+					.apply(a);
+				return Arguments14Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(),
+						args.arg5(), args.arg6(), args.arg7(), args.arg8(), args.arg9(), args.arg10(), args.arg11(),
+						args.arg12(), args.arg13(), args.arg14(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A, Supplier<X>> lazy() {
+				return lazy.compose(mapper);
+			}
 		};
 	}
 

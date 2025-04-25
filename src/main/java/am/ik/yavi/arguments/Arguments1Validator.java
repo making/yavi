@@ -158,8 +158,18 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	@Override
 	default <A> Arguments1Validator<A, X> compose(Function<? super A, ? extends A1> mapper) {
-		return (a, locale, constraintContext) -> Arguments1Validator.this.validate(mapper.apply(a), locale,
-				constraintContext);
+		Arguments1Validator<A1, Supplier<X>> lazy = this.lazy();
+		return new Arguments1Validator<A, X>() {
+			@Override
+			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+				return Arguments1Validator.this.validate(mapper.apply(a), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A, Supplier<X>> lazy() {
+				return lazy.compose(mapper);
+			}
+		};
 	}
 
 	/**

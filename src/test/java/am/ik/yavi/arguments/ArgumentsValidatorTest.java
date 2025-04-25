@@ -526,10 +526,22 @@ class ArgumentsValidatorTest {
 	}
 
 	@Test
-	void andThenValidator() {
+	void andThenValidatorLazy() {
 		arguments1Validator.andThen(passThrough()).lazy().validated("JP");
 		arguments2Validator.andThen(passThrough()).lazy().validated(1, 2);
 		arguments3Validator.andThen(passThrough()).lazy().validated("aa", "bb@cc.dd", 18);
+	}
+
+	@Test
+	void composeLazy() {
+		arguments1Validator.<Object[]>compose(objects -> (String) objects[0]).lazy().validated(new Object[] { "JP" });
+		arguments2Validator.<Object[]>compose(objects -> Arguments.of((Integer) objects[0], (Integer) objects[1]))
+			.lazy()
+			.validated(new Object[] { 1, 2 });
+		arguments3Validator
+			.<Object[]>compose(objects -> Arguments.of((String) objects[0], (String) objects[1], (Integer) objects[2]))
+			.lazy()
+			.validated(new Object[] { "aa", "bb@cc.dd", 18 });
 	}
 
 }
