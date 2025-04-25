@@ -517,4 +517,11 @@ class ArgumentsValidatorTest {
 		}
 	}
 
+	@Test
+	void andThenLazy() {
+		arguments1Validator.andThen(Country::name).lazy().validated("JP");
+		arguments2Validator.andThen(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
+		arguments3Validator.andThen(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
+	}
+
 }

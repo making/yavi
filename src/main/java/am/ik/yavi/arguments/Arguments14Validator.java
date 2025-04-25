@@ -113,10 +113,23 @@ public interface Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A
 	 */
 	default <X2> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X2> andThen(
 			Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
-				constraintContext) -> Arguments14Validator.this
+		final Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>> lazy = this
+			.lazy();
+		return new Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, A9 a9, A10 a10,
+					A11 a11, A12 a12, A13 a13, A14 a14, Locale locale, ConstraintContext constraintContext) {
+				return Arguments14Validator.this
 					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext)
 					.map(mapper);
+			}
+
+			@Override
+			public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X2>> lazy() {
+				return lazy
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**

@@ -95,9 +95,20 @@ public interface Arguments6Validator<A1, A2, A3, A4, A5, A6, X> {
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments6Validator<A1, A2, A3, A4, A5, A6, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, a4, a5, a6, locale, constraintContext) -> Arguments6Validator.this
-			.validate(a1, a2, a3, a4, a5, a6, locale, constraintContext)
-			.map(mapper);
+		final Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X>> lazy = this.lazy();
+		return new Arguments6Validator<A1, A2, A3, A4, A5, A6, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, Locale locale,
+					ConstraintContext constraintContext) {
+				return Arguments6Validator.this.validate(a1, a2, a3, a4, a5, a6, locale, constraintContext).map(mapper);
+			}
+
+			@Override
+			public Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X2>> lazy() {
+				return lazy
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**

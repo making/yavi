@@ -98,9 +98,21 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, a4, a5, a6, a7, locale, constraintContext) -> Arguments7Validator.this
-			.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
-			.map(mapper);
+		final Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy = this.lazy();
+		return new Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, Locale locale,
+					ConstraintContext constraintContext) {
+				return Arguments7Validator.this.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
+					.map(mapper);
+			}
+
+			@Override
+			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X2>> lazy() {
+				return lazy
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**

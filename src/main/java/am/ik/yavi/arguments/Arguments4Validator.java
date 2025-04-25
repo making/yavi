@@ -93,9 +93,20 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, a4, locale, constraintContext) -> Arguments4Validator.this
-			.validate(a1, a2, a3, a4, locale, constraintContext)
-			.map(mapper);
+		final Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy = this.lazy();
+		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
+					ConstraintContext constraintContext) {
+				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext).map(mapper);
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, Supplier<X2>> lazy() {
+				return lazy
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**
