@@ -49,6 +49,7 @@ public interface Arguments5Validator<A1, A2, A3, A4, A5, X> {
 	 */
 	static <A1, A2, A3, A4, A5, X> Arguments5Validator<A1, A2, A3, A4, A5, X> unwrap(
 			Arguments1Validator<Arguments5<A1, A2, A3, A4, A5>, X> validator) {
+		final Arguments1Validator<Arguments5<A1, A2, A3, A4, A5>, Supplier<X>> lazy = validator.lazy();
 		return new Arguments5Validator<A1, A2, A3, A4, A5, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
@@ -58,7 +59,7 @@ public interface Arguments5Validator<A1, A2, A3, A4, A5, X> {
 
 			@Override
 			public Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
-				return Arguments5Validator.unwrap(validator.lazy());
+				return Arguments5Validator.unwrap(lazy);
 			}
 		};
 	}

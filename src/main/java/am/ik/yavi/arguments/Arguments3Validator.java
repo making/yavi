@@ -47,6 +47,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 */
 	static <A1, A2, A3, X> Arguments3Validator<A1, A2, A3, X> unwrap(
 			Arguments1Validator<Arguments3<A1, A2, A3>, X> validator) {
+		final Arguments1Validator<Arguments3<A1, A2, A3>, Supplier<X>> lazy = validator.lazy();
 		return new Arguments3Validator<A1, A2, A3, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
@@ -56,7 +57,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 
 			@Override
 			public Arguments3Validator<A1, A2, A3, Supplier<X>> lazy() {
-				return Arguments3Validator.unwrap(validator.lazy());
+				return Arguments3Validator.unwrap(lazy);
 			}
 		};
 	}

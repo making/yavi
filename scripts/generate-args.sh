@@ -613,6 +613,7 @@ $(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> ty
 	 */
 	static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> unwrap(
 			Arguments1Validator<${wrapArguments}, X> validator) {
+		final Arguments1Validator<${wrapArguments}, Supplier<X>> lazy =	validator.lazy();
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>() {
 			@Override
 			public Validated<X> validate(${args}, Locale locale, ConstraintContext constraintContext) {
@@ -621,7 +622,7 @@ $(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> ty
 
 			@Override
 			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-				return ${class}.unwrap(validator.lazy());
+				return ${class}.unwrap(lazy);
 			}
 		};
 	}

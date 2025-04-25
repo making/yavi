@@ -52,6 +52,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 	 */
 	static <A1, A2, A3, A4, A5, A6, A7, A8, X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> unwrap(
 			Arguments1Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, X> validator) {
+		final Arguments1Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, Supplier<X>> lazy = validator.lazy();
 		return new Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
@@ -62,7 +63,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 
 			@Override
 			public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>> lazy() {
-				return Arguments8Validator.unwrap(validator.lazy());
+				return Arguments8Validator.unwrap(lazy);
 			}
 		};
 	}
