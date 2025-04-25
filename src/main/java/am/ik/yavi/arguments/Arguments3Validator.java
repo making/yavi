@@ -70,7 +70,6 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments3<A1, A2, A3>, X> wrap() {
-		final Arguments3Validator<A1, A2, A3, Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<Arguments3<A1, A2, A3>, X>() {
 			@Override
 			public Validated<X> validate(Arguments3<A1, A2, A3> args, Locale locale,
@@ -82,7 +81,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 
 			@Override
 			public Arguments1Validator<Arguments3<A1, A2, A3>, Supplier<X>> lazy() {
-				return lazy.wrap();
+				return Arguments3Validator.this.lazy().wrap();
 			}
 		};
 	}
@@ -91,18 +90,39 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments3Validator<A1, A2, A3, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, a3, locale, constraintContext) -> Arguments3Validator.this
-			.validate(a1, a2, a3, locale, constraintContext)
-			.map(mapper);
+		return new Arguments3Validator<A1, A2, A3, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, Locale locale, ConstraintContext constraintContext) {
+				return Arguments3Validator.this.validate(a1, a2, a3, locale, constraintContext).map(mapper);
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, Supplier<X2>> lazy() {
+				return Arguments3Validator.this.lazy()
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**
 	 * @since 0.11.0
 	 */
 	default <X2> Arguments3Validator<A1, A2, A3, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (a1, a2, a3, locale, constraintContext) -> Arguments3Validator.this
-			.validate(a1, a2, a3, locale, constraintContext)
-			.flatMap(v -> validator.validate(v, locale, constraintContext));
+		return new Arguments3Validator<A1, A2, A3, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, Locale locale, ConstraintContext constraintContext) {
+				return Arguments3Validator.this.validate(a1, a2, a3, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext));
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, Supplier<X2>> lazy() {
+				return Arguments3Validator.this.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> validator
+						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+						.map(x2 -> () -> x2));
+			}
+		};
 	}
 
 	/**
@@ -110,9 +130,18 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments3<? extends A1, ? extends A2, ? extends A3>> mapper) {
-		return (a, locale, constraintContext) -> {
-			final Arguments3<? extends A1, ? extends A2, ? extends A3> args = mapper.apply(a);
-			return Arguments3Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), locale, constraintContext);
+		return new Arguments1Validator<A, X>() {
+			@Override
+			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+				final Arguments3<? extends A1, ? extends A2, ? extends A3> args = mapper.apply(a);
+				return Arguments3Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A, Supplier<X>> lazy() {
+				return Arguments3Validator.this.lazy().compose(mapper);
+			}
 		};
 	}
 

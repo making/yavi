@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
+import static am.ik.yavi.core.ValueValidator.passThrough;
 import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -473,8 +474,17 @@ class ArgumentsValidatorTest {
 	}
 
 	@Test
+	void wrapLazy() {
+		arguments1Validator.wrap().lazy().validated(Arguments.of("JP"));
+		arguments2Validator.wrap().lazy().validated(Arguments.of(1, 2));
+		arguments3Validator.wrap().lazy().validated(Arguments.of("aa", "bb@cc.dd", 18));
+	}
+
+	@Test
 	void unwrapLazy() {
-		new Reservation(LocalDate.of(2025, 10, 1), LocalTime.of(10, 0), LocalTime.of(11, 0));
+		Arguments1Validator.unwrap(arguments1Validator.wrap()).lazy().validated("JP");
+		Arguments2Validator.unwrap(arguments2Validator.wrap()).lazy().validated(1, 2);
+		Arguments3Validator.unwrap(arguments3Validator.wrap()).lazy().validated("aa", "bb@cc.dd", 18);
 	}
 
 	@Test
@@ -515,6 +525,37 @@ class ArgumentsValidatorTest {
 			assertThat(violations.get(3).message()).isEqualTo("\"email\" must be a valid email address");
 			assertThat(violations.get(4).message()).isEqualTo("\"age\" must be greater than or equal to 0");
 		}
+	}
+
+	@Test
+	void andThenLazy() {
+		arguments1Validator.andThen(Country::name).lazy().validated("JP");
+		arguments2Validator.andThen(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
+		arguments3Validator.andThen(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
+	}
+
+	@Test
+	void andThenValidatorLazy() {
+		arguments1Validator.andThen(passThrough()).lazy().validated("JP");
+		arguments2Validator.andThen(passThrough()).lazy().validated(1, 2);
+		arguments3Validator.andThen(passThrough()).lazy().validated("aa", "bb@cc.dd", 18);
+	}
+
+	@Test
+	void composeLazy() {
+		arguments1Validator.<Object[]>compose(objects -> (String) objects[0]).lazy().validated(new Object[] { "JP" });
+		arguments2Validator.<Object[]>compose(objects -> Arguments.of((Integer) objects[0], (Integer) objects[1]))
+			.lazy()
+			.validated(new Object[] { 1, 2 });
+		arguments3Validator
+			.<Object[]>compose(objects -> Arguments.of((String) objects[0], (String) objects[1], (Integer) objects[2]))
+			.lazy()
+			.validated(new Object[] { "aa", "bb@cc.dd", 18 });
+	}
+
+	@Test
+	void combineUnwrapLazy() {
+		new Reservation(LocalDate.of(2025, 10, 1), LocalTime.of(10, 0), LocalTime.of(11, 0));
 	}
 
 }

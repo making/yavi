@@ -67,7 +67,6 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @since 0.16.0
 	 */
 	default Arguments1Validator<Arguments2<A1, A2>, X> wrap() {
-		final Arguments2Validator<A1, A2, Supplier<X>> lazy = this.lazy();
 		return new Arguments1Validator<Arguments2<A1, A2>, X>() {
 			@Override
 			public Validated<X> validate(Arguments2<A1, A2> args, Locale locale, ConstraintContext constraintContext) {
@@ -78,7 +77,7 @@ public interface Arguments2Validator<A1, A2, X> {
 
 			@Override
 			public Arguments1Validator<Arguments2<A1, A2>, Supplier<X>> lazy() {
-				return lazy.wrap();
+				return Arguments2Validator.this.lazy().wrap();
 			}
 		};
 	}
@@ -87,17 +86,39 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @since 0.7.0
 	 */
 	default <X2> Arguments2Validator<A1, A2, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return (a1, a2, locale,
-				constraintContext) -> Arguments2Validator.this.validate(a1, a2, locale, constraintContext).map(mapper);
+		return new Arguments2Validator<A1, A2, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, Locale locale, ConstraintContext constraintContext) {
+				return Arguments2Validator.this.validate(a1, a2, locale, constraintContext).map(mapper);
+			}
+
+			@Override
+			public Arguments2Validator<A1, A2, Supplier<X2>> lazy() {
+				return Arguments2Validator.this.lazy()
+					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+			}
+		};
 	}
 
 	/**
 	 * @since 0.11.0
 	 */
 	default <X2> Arguments2Validator<A1, A2, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (a1, a2, locale, constraintContext) -> Arguments2Validator.this
-			.validate(a1, a2, locale, constraintContext)
-			.flatMap(v -> validator.validate(v, locale, constraintContext));
+		return new Arguments2Validator<A1, A2, X2>() {
+			@Override
+			public Validated<X2> validate(A1 a1, A2 a2, Locale locale, ConstraintContext constraintContext) {
+				return Arguments2Validator.this.validate(a1, a2, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext));
+			}
+
+			@Override
+			public Arguments2Validator<A1, A2, Supplier<X2>> lazy() {
+				return Arguments2Validator.this.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> validator
+						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
+						.map(x2 -> () -> x2));
+			}
+		};
 	}
 
 	/**
@@ -105,9 +126,17 @@ public interface Arguments2Validator<A1, A2, X> {
 	 */
 	default <A> Arguments1Validator<A, X> compose(
 			Function<? super A, ? extends Arguments2<? extends A1, ? extends A2>> mapper) {
-		return (a, locale, constraintContext) -> {
-			final Arguments2<? extends A1, ? extends A2> args = mapper.apply(a);
-			return Arguments2Validator.this.validate(args.arg1(), args.arg2(), locale, constraintContext);
+		return new Arguments1Validator<A, X>() {
+			@Override
+			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+				final Arguments2<? extends A1, ? extends A2> args = mapper.apply(a);
+				return Arguments2Validator.this.validate(args.arg1(), args.arg2(), locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A, Supplier<X>> lazy() {
+				return Arguments2Validator.this.lazy().compose(mapper);
+			}
 		};
 	}
 
