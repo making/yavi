@@ -271,7 +271,7 @@ class CarTest {
 	@Test
 	void licensePlateTooShort() {
 		Validated<Car> validated = Car.of("Morris", "D", 4);
-		assertThat(violations.isValid()).isFalse();
+		assertThat(validated.isValid()).isFalse();
 		ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message())
@@ -281,7 +281,7 @@ class CarTest {
 	@Test
 	void seatCountTooLow() {
 		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 1);
-		assertThat(violations.isValid()).isFalse();
+		assertThat(validated.isValid()).isFalse();
 		ConstraintViolations violations = validated.errors();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
@@ -388,6 +388,65 @@ class CarTest {
 
 }
 ```
+
+#### Reusable and composable validators
+
+Let's take a look at a more advanced usage.
+
+The following constraints are domain rules that can potentially be used not only for the `Car` class:
+
+> * `manufacturer` must never be null
+> * `licensePlate` must never be null and must be between 2 and 14 characters long
+> * `seatCount` must be at least 2
+
+In YAVI, you can define small validators for each value and then combine them to compose validators for objects.
+
+Please take a look at the following definition:
+
+```java
+package com.example;
+
+import am.ik.yavi.builder.IntegerValidatorBuilder;
+import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.core.Validated;
+
+public final class Car {
+
+  public static StringValidator<String> manufacturerValidator = StringValidatorBuilder
+          .of("manufacturer", c -> c.notNull())
+          .build();
+
+  public static StringValidator<String> licensePlateValidator = StringValidatorBuilder
+          .of("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+          .build();
+
+  public static IntegerValidator<Integer> seatCountValidator = IntegerValidatorBuilder
+          .of("seatCount", c -> c.greaterThanOrEqual(2))
+          .build();
+
+  private static Arguments3Validator<String, String, Integer, Car> validator = manufacturerValidator
+          .split(licensePlateValidator)
+          .split(seatCountValidator)
+          .apply(Car::new);
+
+  private final String manufacturer;
+
+  private final String licensePlate;
+
+  private final Integer seatCount;
+
+  public static Validated<Car> of(String manufacturer, String licensePlate, Integer seatCount) {
+    return validator.validate(manufacturer, licensePlate, seatCount);
+  }
+
+  // omitted
+
+}
+```
+
+After defining validators for `manufacturer`, `licensePlate`, and `seatCount`, it combines these three validators (`StringValidator<T>` is a validator that validates a `String` and returns an object of type `T`, and `IntegerValidator<T>` is a validator that validates an `Integer` and returns an object of type `T`) to create an `Arguments3Validator<String, String, Integer, Car>`.
+
+These small validators can also be used for generating other objects, which prevents domain rules from being scattered throughout the code.
 
 #### Where to go next?
 
