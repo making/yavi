@@ -126,20 +126,6 @@ class LongConstraintTest {
 
 	@ParameterizedTest
 	@ValueSource(longs = { 99, 100 })
-	void invalidNegaitveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
-		assertThat(predicate.test(value)).isFalse();
-	}
-
-	@ParameterizedTest
-	@ValueSource(longs = { -101, -120, 0 })
-	void validNegaitveOrZero(long value) {
-		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negaitveOrZero);
-		assertThat(predicate.test(value)).isTrue();
-	}
-
-	@ParameterizedTest
-	@ValueSource(longs = { 99, 100 })
 	void invalidNegativeOrZero(long value) {
 		Predicate<Long> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isFalse();
