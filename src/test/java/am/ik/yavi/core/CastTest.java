@@ -15,11 +15,10 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import am.ik.yavi.builder.ValidatorBuilder;
 
 class CastTest {
 
@@ -54,7 +53,7 @@ class CastTest {
 
 	static class Employee extends Person {
 
-		static final Validator<Employee> validator = Person.validatorBuilder.clone()
+		static final Validator<Employee> validator = new ValidatorBuilder<>(Person.validatorBuilder)
 			.cast(Employee.class)
 			.constraint(Employee::getServiceId, "service", Constraint::notNull)
 			.build();
@@ -92,8 +91,7 @@ class CastTest {
 
 	static class Student extends Person {
 
-		static final Validator<Student> validator = Person.validatorBuilder.clone()
-			.cast(Student.class)
+		static final Validator<Student> validator = new ValidatorBuilder<>(Person.validatorBuilder).cast(Student.class)
 			.constraint(Student::getId, "id", Constraint::notNull)
 			.build();
 

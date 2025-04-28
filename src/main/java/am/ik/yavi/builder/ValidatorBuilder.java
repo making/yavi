@@ -153,7 +153,7 @@ import java.util.function.Supplier;
  * @param <T> the type of the target object to validate
  * @author Toshiaki Maki
  */
-public class ValidatorBuilder<T> implements Cloneable {
+public class ValidatorBuilder<T> {
 
 	private static final String DEFAULT_SEPARATOR = ".";
 
@@ -223,16 +223,6 @@ public class ValidatorBuilder<T> implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public <S extends T> ValidatorBuilder<S> cast() {
 		return (ValidatorBuilder<S>) this;
-	}
-
-	/**
-	 * @return the cloned builder
-	 * @deprecated please use the copy constructor
-	 * {@link #ValidatorBuilder(ValidatorBuilder)}
-	 */
-	@Deprecated
-	public ValidatorBuilder<T> clone() {
-		return new ValidatorBuilder<>(this);
 	}
 
 	/**
