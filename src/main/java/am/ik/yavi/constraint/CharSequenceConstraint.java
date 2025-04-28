@@ -15,26 +15,6 @@
  */
 package am.ik.yavi.constraint;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.ToIntFunction;
-import java.util.regex.Pattern;
-
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
 import am.ik.yavi.constraint.charsequence.CodePoints;
@@ -48,10 +28,47 @@ import am.ik.yavi.constraint.inetaddress.InetAddressUtils;
 import am.ik.yavi.constraint.password.CharSequencePasswordPoliciesBuilder;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
+import java.util.regex.Pattern;
 
 import static am.ik.yavi.core.NullAs.INVALID;
 import static am.ik.yavi.core.NullAs.VALID;
-import static am.ik.yavi.core.ViolationMessage.Default.*;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGDECIMAL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BIGINTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_BYTE;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_CONTAINS;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_DOUBLE;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_ENDSWITH;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LOCAL_DATE;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LONG;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LUHN;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_STARTSWITH;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
 		extends ContainerConstraintBase<T, E, CharSequenceConstraint<T, E>> {
@@ -260,30 +277,10 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * Use {@link #isoLocalDate()} instead
-	 *
-	 * @since 0.12.0
-	 */
-	@Deprecated
-	public CharSequenceConstraint<T, E> isIsoLocalDate() {
-		return this.isoLocalDate();
-	}
-
-	/**
 	 * @since 0.12.1
 	 */
 	public CharSequenceConstraint<T, E> localDate(String pattern) {
 		return this.isLocalDatePattern(pattern);
-	}
-
-	/**
-	 * Use {@link #localDate(String)} instead
-	 *
-	 * @since 0.12.0
-	 */
-	@Deprecated
-	public CharSequenceConstraint<T, E> isLocalDate(String pattern) {
-		return this.localDate(pattern);
 	}
 
 	public EmojiConstraint<T, E> emoji() {
