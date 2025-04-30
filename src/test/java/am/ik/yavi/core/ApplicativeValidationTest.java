@@ -48,7 +48,7 @@ class ApplicativeValidationTest {
 	static final ValueValidator<Country, String> countryValidator = Country.validator()
 		.prefixed("country")
 		.applicative()
-		.andThen(Country::name);
+		.map(Country::name);
 
 	@ParameterizedTest
 	@MethodSource("validValidations")

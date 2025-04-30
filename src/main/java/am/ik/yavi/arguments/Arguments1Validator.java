@@ -110,10 +110,25 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	/**
+	 * @deprecated Use {@link #map(Function)} instead.
 	 * @since 0.7.0
 	 */
 	@Override
+	@Deprecated
 	default <X2> Arguments1Validator<A1, X2> andThen(Function<? super X, ? extends X2> mapper) {
+		return this.map(mapper);
+	}
+
+	/**
+	 * Maps the validated value to a new type using the provided mapper function. This is
+	 * a transformation operation that applies the function only if validation succeeds.
+	 * @param mapper function to transform the validated value
+	 * @param <X2> the type after transformation
+	 * @return a value validator that applies the mapping function after validation
+	 * @since 0.17.0
+	 */
+	@Override
+	default <X2> Arguments1Validator<A1, X2> map(Function<? super X, ? extends X2> mapper) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
 			public Validated<X2> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -123,7 +138,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public Arguments1Validator<A1, Supplier<X2>> lazy() {
 				return Arguments1Validator.this.lazy()
-					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
 		};
 	}

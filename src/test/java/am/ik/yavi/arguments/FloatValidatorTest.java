@@ -94,7 +94,7 @@ class FloatValidatorTest {
 				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0)).build(Price::new),
 				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {

@@ -27,7 +27,7 @@ import am.ik.yavi.fn.Function1;
 public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth, T> {
 
 	@Override
-	public <T2> YearMonthValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> YearMonthValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new YearMonthValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

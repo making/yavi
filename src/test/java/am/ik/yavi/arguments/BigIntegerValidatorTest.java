@@ -97,7 +97,7 @@ class BigIntegerValidatorTest {
 					.build(Price::new),
 				BigIntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigInteger.valueOf(0)))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {

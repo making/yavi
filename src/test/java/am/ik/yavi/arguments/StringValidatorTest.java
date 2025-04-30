@@ -100,7 +100,7 @@ class StringValidatorTest {
 				StringValidatorBuilder.of("country", c -> c.notBlank().greaterThanOrEqual(2)).build(Country::new),
 				StringValidatorBuilder.of("country", c -> c.notBlank().greaterThanOrEqual(2))
 					.build()
-					.andThen(Country::new));
+					.map(Country::new));
 	}
 
 }

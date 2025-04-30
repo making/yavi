@@ -27,7 +27,7 @@ import am.ik.yavi.fn.Function1;
 public class BigDecimalValidator<T> extends DefaultArguments1Validator<BigDecimal, T> {
 
 	@Override
-	public <T2> BigDecimalValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> BigDecimalValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new BigDecimalValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

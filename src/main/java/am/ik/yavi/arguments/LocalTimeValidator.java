@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class LocalTimeValidator<T> extends DefaultArguments1Validator<LocalTime, T> {
 
 	@Override
-	public <T2> LocalTimeValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> LocalTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new LocalTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

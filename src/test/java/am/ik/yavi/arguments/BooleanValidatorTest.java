@@ -91,7 +91,7 @@ class BooleanValidatorTest {
 
 	static Stream<BooleanValidator<Checked>> validators() {
 		return Stream.of(BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build(Checked::new),
-				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build().andThen(Checked::new));
+				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build().map(Checked::new));
 	}
 
 	public static class Checked {

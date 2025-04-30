@@ -89,9 +89,23 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	}
 
 	/**
+	 * @deprecated Use {@link #map(Function)} instead.
 	 * @since 0.7.0
 	 */
+	@Deprecated
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(Function<? super X, ? extends X2> mapper) {
+		return this.map(mapper);
+	}
+
+	/**
+	 * Maps the validated value to a new type using the provided mapper function. This is
+	 * a transformation operation that applies the function only if validation succeeds.
+	 * @param mapper function to transform the validated value
+	 * @param <X2> the type after transformation
+	 * @return a value validator that applies the mapping function after validation
+	 * @since 0.17.0
+	 */
+	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> map(Function<? super X, ? extends X2> mapper) {
 		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
 			@Override
 			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
@@ -102,7 +116,7 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 			@Override
 			public Arguments4Validator<A1, A2, A3, A4, Supplier<X2>> lazy() {
 				return Arguments4Validator.this.lazy()
-					.andThen((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
+					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
 		};
 	}

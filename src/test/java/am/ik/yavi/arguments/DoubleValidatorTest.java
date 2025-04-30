@@ -95,7 +95,7 @@ class DoubleValidatorTest {
 				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0)).build(Price::new),
 				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {

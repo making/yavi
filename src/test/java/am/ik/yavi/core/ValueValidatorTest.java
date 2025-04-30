@@ -79,7 +79,7 @@ class ValueValidatorTest {
 			._string(f -> f, "myLocalDate", CharSequenceConstraint::isoLocalDate)
 			.build()
 			.applicative()
-			.andThen(LocalDate::parse);
+			.map(LocalDate::parse);
 		final Validated<LocalDate> localDateValidated = localDateValidator.validate("31/01/2022");
 		Assertions.assertThat(localDateValidated.isValid()).isFalse();
 		Assertions.assertThat(localDateValidated.errors()).hasSize(1);
@@ -95,7 +95,7 @@ class ValueValidatorTest {
 			._string(f -> f, "myLocalDate", c -> c.localDate("dd/MM/uuuu"))
 			.build()
 			.applicative()
-			.andThen(s -> LocalDate.parse(s, DateTimeFormatter.ofPattern("dd/MM/uuuu")));
+			.map(s -> LocalDate.parse(s, DateTimeFormatter.ofPattern("dd/MM/uuuu")));
 		final Validated<LocalDate> localDateValidated = localDateValidator.validate("31/01/2022");
 		Assertions.assertThat(localDateValidated.isValid()).isTrue();
 		Assertions.assertThat(localDateValidated.value()).isEqualTo(LocalDate.of(2022, 1, 31));

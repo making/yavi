@@ -97,7 +97,7 @@ class BigDecimalValidatorTest {
 					.build(Price::new),
 				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {
