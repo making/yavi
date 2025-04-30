@@ -528,10 +528,10 @@ class ArgumentsValidatorTest {
 	}
 
 	@Test
-	void andThenLazy() {
+	void mapLazy() {
 		arguments1Validator.map(Country::name).lazy().validated("JP");
-		arguments2Validator.andThen(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
-		arguments3Validator.andThen(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
+		arguments2Validator.map(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
+		arguments3Validator.map(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
 	}
 
 	@Test
