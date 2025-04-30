@@ -15,6 +15,8 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.fn.Validation;
+import am.ik.yavi.jsr305.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -26,10 +28,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import am.ik.yavi.fn.Validation;
-import am.ik.yavi.jsr305.Nullable;
-
 /**
+ * A validator interface that validates a value of type T and transforms it into type X.
+ * This interface represents a validation process that not only validates the input but
+ * also has the capability to transform it from one type to another, returning the
+ * validated and transformed result.
+ *
+ * @param <T> the type of the object to be validated
+ * @param <X> the type of the validated and transformed result
  * @since 0.8.0
  */
 @FunctionalInterface
@@ -46,7 +52,23 @@ public interface ValueValidator<T, X> {
 		return (x, locale, constraintContext) -> Validated.of(Validation.success(x));
 	}
 
+	/**
+	 * @deprecated Use {@link #map(Function)} instead.
+	 */
+	@Deprecated
 	default <X2> ValueValidator<T, X2> andThen(Function<? super X, ? extends X2> mapper) {
+		return this.map(mapper);
+	}
+
+	/**
+	 * Maps the validated value to a new type using the provided mapper function. This is
+	 * a transformation operation that applies the function only if validation succeeds.
+	 * @param mapper function to transform the validated value
+	 * @param <X2> the type after transformation
+	 * @return a value validator that applies the mapping function after validation
+	 * @since 0.17.0
+	 */
+	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends X2> mapper) {
 		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext).map(mapper);
 	}
 

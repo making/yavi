@@ -94,7 +94,7 @@ class ShortValidatorTest {
 				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0)).build(Price::new),
 				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {

@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class ZonedDateTimeValidator<T> extends DefaultArguments1Validator<ZonedDateTime, T> {
 
 	@Override
-	public <T2> ZonedDateTimeValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> ZonedDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new ZonedDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

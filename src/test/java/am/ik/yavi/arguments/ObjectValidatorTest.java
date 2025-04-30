@@ -117,7 +117,7 @@ class ObjectValidatorTest {
 					.build(Date::from),
 				ObjectValidatorBuilder.<Instant>of("createdAt", c -> c.notNull().predicateNullable(past))
 					.build()
-					.andThen(Date::from));
+					.map(Date::from));
 	}
 
 }

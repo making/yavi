@@ -26,7 +26,7 @@ import am.ik.yavi.fn.Function1;
 public class IntegerValidator<T> extends DefaultArguments1Validator<Integer, T> {
 
 	@Override
-	public <T2> IntegerValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> IntegerValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new IntegerValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

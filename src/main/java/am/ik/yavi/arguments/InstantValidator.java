@@ -27,7 +27,7 @@ import am.ik.yavi.fn.Function1;
 public class InstantValidator<T> extends DefaultArguments1Validator<Instant, T> {
 
 	@Override
-	public <T2> InstantValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> InstantValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new InstantValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 

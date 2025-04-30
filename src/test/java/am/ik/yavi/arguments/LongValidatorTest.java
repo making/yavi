@@ -94,7 +94,7 @@ class LongValidatorTest {
 				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0)).build(Price::new),
 				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
 					.build()
-					.andThen(Price::new));
+					.map(Price::new));
 	}
 
 	public static class Price {

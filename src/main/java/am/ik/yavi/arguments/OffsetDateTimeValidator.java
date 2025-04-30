@@ -27,7 +27,7 @@ import am.ik.yavi.fn.Function1;
 public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<OffsetDateTime, T> {
 
 	@Override
-	public <T2> OffsetDateTimeValidator<T2> andThen(Function<? super T, ? extends T2> mapper) {
+	public <T2> OffsetDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new OffsetDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
 	}
 
