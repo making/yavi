@@ -590,6 +590,17 @@ class ValidatorTest {
 	}
 
 	@Test
+	void throwIfInValidWithCustomMessageForNullTarget() throws Exception {
+		try {
+			validator().validate(null).throwIfInvalid(v -> new IllegalArgumentException("Custom message"));
+			fail("fail");
+		}
+		catch (IllegalArgumentException e) {
+			assertThat(e.getMessage()).isEqualTo("Custom message");
+		}
+	}
+
+	@Test
 	void throwIfInValidValid() throws Exception {
 		User user = new User("foo", "foo@example.com", 30);
 		validator().validate(user).throwIfInvalid(ConstraintViolationsException::new);

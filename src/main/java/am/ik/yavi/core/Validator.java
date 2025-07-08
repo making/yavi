@@ -363,7 +363,13 @@ public class Validator<T> implements Validatable<T> {
 	private ConstraintViolations validate(T target, String collectionName, int index, Locale locale,
 			ConstraintContext constraintContext) {
 		if (target == null) {
-			throw new IllegalArgumentException("target must not be null");
+			// Return ConstraintViolations instead of throwing exception
+			// to allow throwIfInvalid() to handle custom messages
+			final ConstraintViolations violations = new ConstraintViolations();
+			final String name = this.prefix + this.indexedName("", collectionName, index);
+			final ConstraintViolation violation = notNullViolation(name, locale);
+			violations.add(violation);
+			return violations;
 		}
 		final ConstraintViolations violations = new ConstraintViolations();
 		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
