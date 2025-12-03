@@ -53,6 +53,8 @@ public class CompositeCodePoints<E extends CharSequence> implements CodePoints<E
 		}
 	}
 
+
+
 	@Override
 	public Set<Integer> allExcludedCodePoints(E s) {
 		Set<Integer> excluded = null;
