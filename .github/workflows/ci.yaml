@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8.x, 11.x, 17.x, 21.x]
+        java: [17.x, 21.x]
     permissions:
       id-token: write
       contents: read
@@ -36,18 +36,18 @@ jobs:
         distribution: 'liberica'
         cache: maven
     - name: Unit Tests
-      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       run: ./mvnw -V test --no-transfer-progress
     - name: Unit Tests with Coverage
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       run: |
         ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
     - name: Build Javadoc
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       run: |
         ./mvnw -V javadoc:jar --no-transfer-progress
     - name: Import Secrets
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       id: secrets
       uses: hashicorp/vault-action@v3.0.0
       with:
@@ -62,7 +62,7 @@ jobs:
           kv/data/cicd/gpg secring | GPG_SECRING ;
           kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;      
     - name: Deploy to sonatype-snapshots
-      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       run: |
         set -e
         cat > settings.xml <<EOF
@@ -90,7 +90,7 @@ jobs:
         gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
         gpg-passphrase: ${{ steps.secrets.outputs.GPG_PASSPHRASE }}
     - name: Deploy to sonatype-releases
-      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/17')
       run: |
         set -e
         cat > settings.xml <<EOF
