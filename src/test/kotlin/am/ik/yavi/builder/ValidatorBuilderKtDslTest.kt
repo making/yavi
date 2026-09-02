@@ -75,6 +75,8 @@ data class DemoEnum(val color: Color) {
 	}
 }
 
+data class DemoEnumNullable(val color: DemoEnum.Color?)
+
 class ValidatorBuilderKtDslTest {
 	private val demoStringValidator = validator<DemoString> {
 		DemoString::x {
@@ -242,6 +244,26 @@ class ValidatorBuilderKtDslTest {
 		Assertions.assertThat(violations.size).isEqualTo(1)
 		val violation = violations[0]
 		Assertions.assertThat(violation.message()).isEqualTo("\"color\" must be equal to BLUE")
+	}
+
+	@Test
+	fun constraintOnNullableENUM() {
+		val validator = validator<DemoEnumNullable> {
+			DemoEnumNullable::color {
+				oneOf(DemoEnum.Color.BLUE, DemoEnum.Color.GREEN)
+			}
+		}
+
+		var violations = validator.validate(DemoEnumNullable(DemoEnum.Color.BLUE))
+		Assertions.assertThat(violations.isValid).isTrue()
+
+		violations = validator.validate(DemoEnumNullable(null))
+		Assertions.assertThat(violations.isValid).isTrue()
+
+		violations = validator.validate(DemoEnumNullable(DemoEnum.Color.RED))
+		Assertions.assertThat(violations.isValid).isFalse()
+		Assertions.assertThat(violations.size).isEqualTo(1)
+		Assertions.assertThat(violations[0].messageKey()).isEqualTo("object.oneOf")
 	}
 
 	@Test

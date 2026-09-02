@@ -113,6 +113,11 @@
                     <jvmTarget>${java.version}</jvmTarget>
                     <languageVersion>2.2</languageVersion>
                     <apiVersion>2.2</apiVersion>
+                    <args>
+                        <!-- Fail the build on warnings so that deprecations scheduled to become
+                             errors in a future language version are caught early. -->
+                        <arg>-Werror</arg>
+                    </args>
                 </configuration>
                 <executions>
                     <execution>

@@ -414,7 +414,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	) =
 		validatorBuilder.constraint(this, name) { it.apply(block) }
 
-	operator fun <E : Enum<E>?> KProperty1<T, E?>.invoke(block: EnumConstraint<T, E>.() -> Unit) =
+	operator fun <E : Enum<E>> KProperty1<T, E?>.invoke(block: EnumConstraint<T, E>.() -> Unit) =
 		validatorBuilder.constraint(this, this.name) { it.apply(block) }
 
 
