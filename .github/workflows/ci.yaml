@@ -19,104 +19,78 @@ on:
     - pom.xml
     - .springjavaformatconfig
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [8.x, 11.x, 17.x, 21.x]
-    permissions:
-      id-token: write
-      contents: read
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK
-      uses: actions/setup-java@v4
+    - uses: actions/checkout@v7
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v6
       with:
         java-version: ${{ matrix.java }}
         distribution: 'liberica'
         cache: maven
     - name: Unit Tests
-      if: (github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main') || !startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
-      run: ./mvnw -V test --no-transfer-progress
+      if: matrix.java != '8.x'
+      run: ./mvnw -V --no-transfer-progress clean test
     - name: Unit Tests with Coverage
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
-      run: |
-        ./mvnw -V jacoco:prepare-agent test jacoco:report --no-transfer-progress
+      if: matrix.java == '8.x'
+      run: ./mvnw -V --no-transfer-progress clean jacoco:prepare-agent test jacoco:report
     - name: Build Javadoc
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
-      run: |
-        ./mvnw -V javadoc:jar --no-transfer-progress
+      if: matrix.java == '8.x'
+      run: ./mvnw -V --no-transfer-progress javadoc:jar
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - uses: actions/checkout@v7
     - name: Import Secrets
-      if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
       id: secrets
-      uses: hashicorp/vault-action@v3.0.0
+      uses: hashicorp/vault-action@v4.0.0
       with:
         exportToken: true
-        exportEnv: true
         method: jwt
         url: ${{ secrets.VAULT_ADDR }}
         role: cicd
         secrets: |
-          kv/data/cicd/sonatype username | SONATYPE_USERNAME ;
-          kv/data/cicd/sonatype password | SONATYPE_PASSWORD ;
+          kv/data/cicd/maven_central username | MAVEN_CENTRAL_USERNAME ;
+          kv/data/cicd/maven_central password | MAVEN_CENTRAL_PASSWORD ;
           kv/data/cicd/gpg secring | GPG_SECRING ;
-          kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;      
-    - name: Deploy to sonatype-snapshots
-      if: github.ref == 'refs/heads/develop' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
-      run: |
-        set -e
-        cat > settings.xml <<EOF
-        <settings>
-          <servers>
-            <server>
-               <id>sonatype-snapshots</id>
-               <username>${SONATYPE_USERNAME}</username>
-               <password>${SONATYPE_PASSWORD}</password>
-            </server>
-          </servers>
-        </settings>
-        EOF
-        CURRENT_VERSION=$(grep '<version>' pom.xml | head -n 1 | sed -e 's|<version>||g' -e 's|</version>||g' -e 's| ||g' |  tr -d '\t')
-        if [ "${CURRENT_VERSION}" = "$(echo ${CURRENT_VERSION} | grep "\-SNAPSHOT")" ];then
-          ./mvnw -V deploy -s settings.xml --no-transfer-progress -DskipTests=true -DserverId=sonatype-snapshots
-        fi
-    - name: Set up JDK with GPG
-      if: github.ref == 'refs/heads/main'
-      uses: actions/setup-java@v4
+          kv/data/cicd/gpg passphrase | GPG_PASSPHRASE ;
+    - name: Set up JDK 8
+      uses: actions/setup-java@v6
       with:
-        java-version: ${{ matrix.java }}
+        java-version: '8'
         distribution: 'liberica'
         cache: maven
         gpg-private-key: ${{ steps.secrets.outputs.GPG_SECRING }}
         gpg-passphrase: ${{ steps.secrets.outputs.GPG_PASSPHRASE }}
-    - name: Deploy to sonatype-releases
-      if: github.ref == 'refs/heads/main' && startsWith(env.JAVA_HOME, '/opt/hostedtoolcache/Java_Liberica_jdk/8')
+    - name: Generates Maven Settings
+      uses: s4u/maven-settings-action@v4.0.0
+      with:
+        servers: |
+          [{
+              "id": "central",
+              "username": "${{ steps.secrets.outputs.MAVEN_CENTRAL_USERNAME }}",
+              "password": "${{ steps.secrets.outputs.MAVEN_CENTRAL_PASSWORD }}"
+          }]
+    - name: Deploy to Maven Central
       run: |
         set -e
-        cat > settings.xml <<EOF
-        <settings>
-          <servers>
-            <server>
-               <id>repo</id>
-               <username>${SONATYPE_USERNAME}</username>
-               <password>${SONATYPE_PASSWORD}</password>
-            </server>
-          </servers>
-        </settings>
-        EOF
-        mvn -V \
+        ./mvnw -V \
             javadoc:jar \
             source:jar \
             package \
             org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign \
-            org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy \
+            deploy \
             --no-transfer-progress \
-            -s settings.xml \
-            -DserverId=repo \
             -Dgpg.passphrase=${GPG_PASSPHRASE} \
-            -DnexusUrl=https://oss.sonatype.org \
-            -DautoReleaseAfterClose=true \
-            -DaltDeploymentRepository=repo::default::https://oss.sonatype.org/service/local/staging/deploy/maven2 \
             -DskipTests=true
     - name: Revoke token
       if: always()
