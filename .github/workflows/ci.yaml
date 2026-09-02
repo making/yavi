@@ -83,12 +83,7 @@ jobs:
     - name: Deploy to Maven Central
       run: |
         set -e
-        ./mvnw -V \
-            javadoc:jar \
-            source:jar \
-            package \
-            org.apache.maven.plugins:maven-gpg-plugin:3.0.1:sign \
-            deploy \
+        ./mvnw -V -Prelease deploy \
             --no-transfer-progress \
             -Dgpg.passphrase=${GPG_PASSPHRASE} \
             -DskipTests=true
