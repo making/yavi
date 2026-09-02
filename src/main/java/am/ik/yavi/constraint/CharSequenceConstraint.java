@@ -31,7 +31,7 @@ import am.ik.yavi.core.ViolationMessage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
@@ -347,16 +347,25 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 		return this;
 	}
 
+	/**
+	 * Tests that the value is a URL. An empty value is considered valid.
+	 * <p>
+	 * Since 0.17.0 the value is parsed with {@link URI} instead of the deprecated
+	 * {@code URL(String)} constructor, which silently strips leading and trailing
+	 * characters up to {@code ' '} before parsing. Values that only passed because of
+	 * that trimming, that contain unencoded characters, or that have an empty authority
+	 * are now rejected.
+	 */
 	public CharSequenceConstraint<T, E> url() {
 		this.predicates().add(ConstraintPredicate.of(x -> {
 			if (size().applyAsInt(x) == 0) {
 				return true;
 			}
 			try {
-				new URL(x.toString());
+				URI.create(x.toString()).toURL();
 				return true;
 			}
-			catch (MalformedURLException e) {
+			catch (IllegalArgumentException | MalformedURLException e) {
 				return false;
 			}
 		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));

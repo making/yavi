@@ -246,14 +246,17 @@ class CharSequenceConstraintTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "http://example.com", "https://example.com", "" })
+	@ValueSource(strings = { "http://example.com", "https://example.com", "https://example.com/a%20b", "mailto:a@b.com",
+			"" })
 	void validUrl(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.url());
 		assertThat(predicate.test(value)).isTrue();
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "example.com", "htt://example.com" })
+	@ValueSource(strings = { "example.com", "htt://example.com", " https://example.com", "https://example.com ",
+			"\thttps://example.com", "\nhttps://example.com", "https://example.com/a b", "https://example.com/[]",
+			"http://" })
 	void invalidUrl(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.url());
 		assertThat(predicate.test(value)).isFalse();
