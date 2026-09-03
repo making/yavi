@@ -132,6 +132,26 @@ Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
   .build();
 ```
 
+`protocol`, `host` and `port` can be restricted as well:
+
+```java
+public class Foo {
+  @URL(protocol = "https", host = "example.com", port = 8443)
+  private String text;
+
+  // omitted setter/getter
+}
+```
+
+to
+
+```java
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
+  .constraint(Foo::getText, "text",
+      c -> c.url(url -> url.protocol("https").host("example.com").port(8443).build()))
+  .build();
+```
+
 ### `@Min`
 
 ```java

@@ -69,6 +69,10 @@ public interface ViolationMessage {
 		CHAR_SEQUENCE_IPV4("charSequence.ipv4", "\"{0}\" must be a valid IPv4"), //
 		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		CHAR_SEQUENCE_URL("charSequence.url", "\"{0}\" must be a valid URL"), //
+		CHAR_SEQUENCE_URL_PROTOCOL("charSequence.url.protocol",
+				"The protocol of \"{0}\" must be one of the following values: {1}"), //
+		CHAR_SEQUENCE_URL_HOST("charSequence.url.host", "The host of \"{0}\" must be one of the following values: {1}"), //
+		CHAR_SEQUENCE_URL_PORT("charSequence.url.port", "The port of \"{0}\" must be one of the following values: {1}"), //
 		CHAR_SEQUENCE_UUID("charSequence.uuid", "\"{0}\" must be a valid UUID"), //
 		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
 		CHAR_SEQUENCE_LUHN("charSequence.luhn", "the check digit for \"{0}\" is invalid, Luhn checksum failed"), //

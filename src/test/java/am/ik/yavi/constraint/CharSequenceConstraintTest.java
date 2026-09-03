@@ -17,11 +17,13 @@ package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence;
 import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector;
+import am.ik.yavi.core.ConstraintPredicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.Deque;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -260,6 +262,72 @@ class CharSequenceConstraintTest {
 	void invalidUrl(String value) {
 		Predicate<String> predicate = retrievePredicate(c -> c.url());
 		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://example.com", "HTTPS://example.com", "http://example.com/a", "" })
+	void validUrlWithProtocol(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.protocol("http", "https").build()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "ftp://example.com", "file:/tmp/a", "mailto:a@b.com" })
+	void invalidUrlWithProtocol(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.protocol("http", "https").build()));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://example.com", "https://EXAMPLE.com/a?b=c", "https://example.com:8443", "" })
+	void validUrlWithHost(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.host("example.com").build()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://www.example.com", "https://example.com.evil.com", "https://example.org" })
+	void invalidUrlWithHost(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.host("example.com").build()));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://example.com", "https://example.com:443", "https://example.com:8443/a", "" })
+	void validUrlWithPort(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.port(443, 8443).build()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://example.com:8080", "http://example.com", "mailto:a@b.com" })
+	void invalidUrlWithPort(String value) {
+		Predicate<String> predicate = retrievePredicates(c -> c.url(url -> url.port(443, 8443).build()));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "https://example.com:8443/a", "" })
+	void validUrlWithProtocolAndHostAndPort(String value) {
+		Predicate<String> predicate = retrievePredicates(
+				c -> c.url(url -> url.protocol("https").host("example.com").port(8443).build()));
+		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "http://example.com:8443/a", "https://example.org:8443/a", "https://example.com/a" })
+	void invalidUrlWithProtocolAndHostAndPort(String value) {
+		Predicate<String> predicate = retrievePredicates(
+				c -> c.url(url -> url.protocol("https").host("example.com").port(8443).build()));
+		assertThat(predicate.test(value)).isFalse();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "example.com", " https://example.com", "https://example.com/a b" })
+	void unparsableUrlReportsOnlyOneViolation(String value) {
+		CharSequenceConstraint<String, String> constraint = new CharSequenceConstraint<String, String>()
+			.url(url -> url.protocol("https").host("example.com").port(443).build());
+		assertThat(constraint.predicates().stream().filter(p -> !p.predicate().test(value))).hasSize(1);
 	}
 
 	@ParameterizedTest
@@ -540,6 +608,13 @@ class CharSequenceConstraintTest {
 	private static Predicate<String> retrievePredicate(
 			Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
 		return constraint.apply(new CharSequenceConstraint<>()).predicates().peekFirst().predicate();
+	}
+
+	private static Predicate<String> retrievePredicates(
+			Function<CharSequenceConstraint<String, String>, CharSequenceConstraint<String, String>> constraint) {
+		final Deque<ConstraintPredicate<String>> predicates = constraint.apply(new CharSequenceConstraint<>())
+			.predicates();
+		return value -> predicates.stream().allMatch(predicate -> predicate.predicate().test(value));
 	}
 
 }
