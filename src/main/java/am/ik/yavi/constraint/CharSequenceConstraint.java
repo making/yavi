@@ -23,6 +23,7 @@ import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
 import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
 import am.ik.yavi.constraint.charsequence.EmojiConstraint;
+import am.ik.yavi.constraint.charsequence.UrlConstraintBuilder;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.constraint.inetaddress.InetAddressUtils;
 import am.ik.yavi.constraint.password.CharSequencePasswordPoliciesBuilder;
@@ -30,8 +31,6 @@ import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
@@ -67,7 +66,6 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_STARTSWITH;
-import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URL;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
 
 public class CharSequenceConstraint<T, E extends CharSequence>
@@ -350,25 +348,28 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	/**
 	 * Tests that the value is a URL. An empty value is considered valid.
 	 * <p>
-	 * Since 0.17.0 the value is parsed with {@link URI} instead of the deprecated
-	 * {@code URL(String)} constructor, which silently strips leading and trailing
-	 * characters up to {@code ' '} before parsing. Values that only passed because of
-	 * that trimming, that contain unencoded characters, or that have an empty authority
-	 * are now rejected.
+	 * Since 0.17.0 the value is parsed with {@link java.net.URI} instead of the
+	 * deprecated {@code URL(String)} constructor, which silently strips leading and
+	 * trailing characters up to {@code ' '} before parsing. Values that only passed
+	 * because of that trimming, that contain unencoded characters, or that have an empty
+	 * authority are now rejected.
 	 */
 	public CharSequenceConstraint<T, E> url() {
-		this.predicates().add(ConstraintPredicate.of(x -> {
-			if (size().applyAsInt(x) == 0) {
-				return true;
-			}
-			try {
-				URI.create(x.toString()).toURL();
-				return true;
-			}
-			catch (IllegalArgumentException | MalformedURLException e) {
-				return false;
-			}
-		}, CHAR_SEQUENCE_URL, () -> new Object[] {}, VALID));
+		return this.url(UrlConstraintBuilder::build);
+	}
+
+	/**
+	 * Tests that the value is a URL whose protocol, host and/or port are the expected
+	 * ones. An empty value is considered valid.
+	 *
+	 * <pre>{@code
+	 * c.url(url -> url.protocol("http", "https").host("example.com").build())
+	 * }</pre>
+	 *
+	 * @since 0.17.1
+	 */
+	public CharSequenceConstraint<T, E> url(Function<UrlConstraintBuilder<E>, List<ConstraintPredicate<E>>> builder) {
+		this.predicates().addAll(builder.apply(new UrlConstraintBuilder<>(this.size())));
 		return this;
 	}
 
