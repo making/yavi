@@ -19,7 +19,7 @@
         <kotlin.version>2.4.10</kotlin.version>
         <kotlin-coroutines.version>1.11.0</kotlin-coroutines.version>
         <junit.version>5.14.4</junit.version>
-        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
