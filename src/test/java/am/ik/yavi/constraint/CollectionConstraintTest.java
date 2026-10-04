@@ -18,9 +18,12 @@ package am.ik.yavi.constraint;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import am.ik.yavi.core.ConstraintPredicate;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -111,6 +114,36 @@ class CollectionConstraintTest {
 
 		visitingCities = Arrays.asList("x", "y");
 		assertThat(predicate.test(visitingCities)).isFalse();
+	}
+
+	@Test
+	void containsAllUsesCollectionComparator() {
+		Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		values.add("a");
+		List<String> required = Arrays.asList("A", "a");
+		ConstraintPredicate<Set<String>> predicate = new CollectionConstraint<Set<String>, Set<String>, String>()
+			.containsAll(required)
+			.predicates()
+			.peekFirst();
+
+		assertThat(values.containsAll(required)).isTrue();
+		assertThat(predicate.predicate().test(values)).isTrue();
+		values.add("b");
+		assertThat(predicate.predicate().test(values)).isTrue();
+	}
+
+	@Test
+	void containsAllReportsOnlyValuesMissingAccordingToCollectionComparator() {
+		Set<String> values = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		values.add("a");
+		List<String> required = Arrays.asList("A", "B");
+		ConstraintPredicate<Set<String>> predicate = new CollectionConstraint<Set<String>, Set<String>, String>()
+			.containsAll(required)
+			.predicates()
+			.peekFirst();
+
+		assertThat(values.containsAll(required)).isFalse();
+		assertThat(predicate.violatedValue(values).get().value()).isEqualTo(Collections.singleton("B"));
 	}
 
 	private static Predicate<List<String>> retrievePredicate(
