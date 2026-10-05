@@ -316,6 +316,27 @@
             </build>
         </profile>
         <profile>
+            <id>jdk8-tools</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <!-- compile-testing declares com.sun:tools (system scope) only via a file-activated
+                 profile. Maven 3.10+ no longer resolves transitive system-scope dependencies, so
+                 on JDK 8 com.sun.source.util.TreeScanner disappears from the surefire fork
+                 classpath. Re-declare it directly. On JDK 9+ com.sun.source comes from the
+                 jdk.compiler module and no tools.jar exists. -->
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.8</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>jpms-aware</id>
             <activation>
                 <jdk>[9,)</jdk>
