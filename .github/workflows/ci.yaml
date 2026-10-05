@@ -10,6 +10,7 @@ on:
     - pom.xml
     - .github/workflows/ci.yaml
     - .springjavaformatconfig
+    - .mvn/**
   pull_request:
     branches:
     - develop
@@ -18,6 +19,7 @@ on:
     - src/**
     - pom.xml
     - .springjavaformatconfig
+    - .mvn/**
 jobs:
   test:
     runs-on: ubuntu-latest
