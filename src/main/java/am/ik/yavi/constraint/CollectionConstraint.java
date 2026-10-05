@@ -77,7 +77,7 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 			final Set<E> missingValues = new HashSet<>(values);
 
 			if (collection instanceof Set) {
-				missingValues.removeAll(collection);
+				missingValues.removeIf(collection::contains);
 			}
 			else {
 				missingValues.removeAll(new HashSet<>(collection));
