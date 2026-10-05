@@ -16,7 +16,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <kotlin.version>2.4.10</kotlin.version>
+        <kotlin.version>2.4.20</kotlin.version>
         <kotlin-coroutines.version>1.11.0</kotlin-coroutines.version>
         <junit.version>5.14.4</junit.version>
         <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
