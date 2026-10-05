@@ -86,7 +86,7 @@ jobs:
       run: |
         set -e
         ./mvnw -V -Prelease deploy \
-            -Dmaven.resolver.transport=wagon \
+            -Dmaven.repository.credentialScope=id \
             --no-transfer-progress \
             -Dgpg.passphrase=${GPG_PASSPHRASE} \
             -DskipTests=true
