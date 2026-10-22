@@ -24,6 +24,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import am.ik.yavi.core.ConstraintPredicate;
+import am.ik.yavi.core.ViolationMessage;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,6 +145,23 @@ class CollectionConstraintTest {
 
 		assertThat(values.containsAll(required)).isFalse();
 		assertThat(predicate.violatedValue(values).get().value()).isEqualTo(Collections.singleton("B"));
+	}
+
+	@Test
+	void containsAllPreservesMissingValuesWithCustomViolationMessage() {
+		ConstraintPredicate<List<String>> predicate = new CollectionConstraint<List<String>, List<String>, String>()
+			.containsAll(Arrays.asList("a", "b", "c"))
+			.message(ViolationMessage.of("missing.values", "Missing: {1}"))
+			.predicates()
+			.peekFirst();
+
+		assertThat(predicate.messageKey()).isEqualTo("missing.values");
+		assertThat(predicate.defaultMessageFormat()).isEqualTo("Missing: {1}");
+		assertThat(predicate.violatedValue(Arrays.asList("a", "b")).get().value())
+			.isEqualTo(Collections.singleton("c"));
+		assertThat(predicate.violatedValue(Arrays.asList("a", "b", "c"))).isEmpty();
+		assertThat(predicate.overrideMessage("Still missing: {1}").violatedValue(Arrays.asList("a", "b")).get().value())
+			.isEqualTo(Collections.singleton("c"));
 	}
 
 	private static Predicate<List<String>> retrievePredicate(
