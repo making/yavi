@@ -80,7 +80,12 @@ public class ConstraintPredicate<V> {
 	}
 
 	public ConstraintPredicate<V> overrideMessage(ViolationMessage message) {
-		return new ConstraintPredicate<>(this.predicate, message, this.args, this.nullAs);
+		return new ConstraintPredicate<V>(this.predicate, message, this.args, this.nullAs) {
+			@Override
+			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
+				return ConstraintPredicate.this.violatedValue(target);
+			}
+		};
 	}
 
 	public ConstraintPredicate<V> overrideMessage(String message) {
