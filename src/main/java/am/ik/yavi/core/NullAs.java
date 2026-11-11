@@ -4,9 +4,29 @@
  */
 package am.ik.yavi.core;
 
+/**
+ * Defines how a constraint treats a {@code null} value.
+ *
+ * <p>
+ * This is used when a {@link ConstraintPredicate} is added: {@link #VALID} skips the
+ * predicate for a {@code null} value, and {@link #INVALID} evaluates it.
+ * </p>
+ *
+ * @since 0.0.18
+ */
 public enum NullAs {
 
-	INVALID(false), VALID(true);
+	/**
+	 * The predicate is evaluated for a {@code null} value, so {@code null} can be
+	 * rejected.
+	 */
+	INVALID(false),
+
+	/**
+	 * The predicate is skipped for a {@code null} value, so {@code null} is considered
+	 * valid.
+	 */
+	VALID(true);
 
 	private final boolean skipNull;
 
@@ -14,6 +34,10 @@ public enum NullAs {
 		this.skipNull = skipNull;
 	}
 
+	/**
+	 * Returns whether a constraint with this setting skips a {@code null} value.
+	 * @return {@code true} if a {@code null} value is skipped and therefore valid
+	 */
 	public boolean skipNull() {
 		return this.skipNull;
 	}

@@ -9,13 +9,27 @@ import java.time.chrono.ChronoLocalDate;
 import am.ik.yavi.core.Constraint;
 
 /**
- * This is the base class for constraints on ChronoLocalDate.
+ * Base class for constraints on {@link ChronoLocalDate} values.
  *
+ * <p>
+ * The comparisons are delegated to the {@code isAfter} and {@code isBefore} methods of
+ * {@link ChronoLocalDate}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @param <V> the {@link ChronoLocalDate} type the constraints apply to
+ * @param <C> the concrete constraint type returned for method chaining
  * @author Diego Krupitza
  * @since 0.10.0
  */
 public abstract class ChronoLocalDateConstraintBase<T, V extends ChronoLocalDate, C extends Constraint<T, V, C>>
 		extends TemporalConstraintBase<T, V, C> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public ChronoLocalDateConstraintBase() {
+	}
 
 	@Override
 	protected boolean isAfter(V a, V b) {

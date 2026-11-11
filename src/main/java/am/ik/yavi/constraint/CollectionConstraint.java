@@ -19,14 +19,44 @@ import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS_ALL;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
 
+/**
+ * Constraints on a collection value.
+ *
+ * <p>
+ * Besides the content checks of this class, the size constraints of
+ * {@link ContainerConstraintBase} are available. A {@code null} value is considered valid
+ * and the checks are skipped, except for {@link ContainerConstraintBase#notEmpty()}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @param <L> the collection type the constraints apply to
+ * @param <E> the element type of the collection
+ * @since 0.0.1
+ */
 public class CollectionConstraint<T, L extends Collection<E>, E>
 		extends ContainerConstraintBase<T, L, CollectionConstraint<T, L, E>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public CollectionConstraint() {
+	}
 
 	@Override
 	public CollectionConstraint<T, L, E> cast() {
 		return this;
 	}
 
+	/**
+	 * Requires the collection to contain the given element.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code collection.contains} and the
+	 * default message {@code "{0}" must contain {1}}, where {@code {1}} is the element.
+	 * </p>
+	 * @param s the element the collection has to contain
+	 * @return this constraint
+	 */
 	public CollectionConstraint<T, L, E> contains(E s) {
 		this.predicates()
 			.add(ConstraintPredicate.of(x -> x.contains(s), COLLECTION_CONTAINS, () -> new Object[] { s }, VALID));
@@ -34,6 +64,14 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	}
 
 	/**
+	 * Requires the elements of the collection to be unique.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code collection.unique} and the
+	 * default message {@code "{0}" must be unique. {1} is/are duplicated.}, where
+	 * {@code {1}} is the set of duplicated elements.
+	 * </p>
+	 * @return this constraint
 	 * @since 0.8.3
 	 */
 	public CollectionConstraint<T, L, E> unique() {
@@ -59,6 +97,16 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	}
 
 	/**
+	 * Requires the collection to contain all of the given elements.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code collection.containsAll} and the
+	 * default message {@code "{0}" must be have of all of the following values: {1},
+	 * missing values: {2}}, where {@code {1}} is the given elements and {@code {2}} is
+	 * the set of missing elements.
+	 * </p>
+	 * @param values the elements the collection has to contain
+	 * @return this constraint
 	 * @since 0.14.3
 	 */
 	public CollectionConstraint<T, L, E> containsAll(Collection<? extends E> values) {

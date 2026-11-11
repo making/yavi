@@ -13,13 +13,41 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
+/**
+ * Constraints on a {@code long[]} value.
+ *
+ * <p>
+ * Besides {@link #contains(long)}, the size constraints of
+ * {@link ContainerConstraintBase} are available. A {@code null} array is considered valid
+ * and the checks are skipped, except for {@link ContainerConstraintBase#notEmpty()}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @since 0.0.1
+ */
 public class LongArrayConstraint<T> extends ContainerConstraintBase<T, long[], LongArrayConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public LongArrayConstraint() {
+	}
 
 	@Override
 	public LongArrayConstraint<T> cast() {
 		return this;
 	}
 
+	/**
+	 * Requires the array to contain the given value.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code array.contains} and the default
+	 * message {@code "{0}" must contain {1}}, where {@code {1}} is the value.
+	 * </p>
+	 * @param v the value the array has to contain
+	 * @return this constraint
+	 */
 	public LongArrayConstraint<T> contains(long v) {
 		this.predicates()
 			.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v), ARRAY_CONTAINS,
