@@ -107,6 +107,25 @@
         </dependency>
     </dependencies>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- Javadoc is part of the public API documentation of this library.
+                         Treat doclint findings as build failures so that broken links,
+                         malformed HTML and undocumented public API cannot be released.
+                         The overview page is included in the generated documentation. -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <doclint>all</doclint>
+                        <failOnWarnings>true</failOnWarnings>
+                        <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <!-- Based on instructions here - https://kotlinlang.org/docs/reference/using-maven.html -->
@@ -288,7 +307,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${maven-javadoc-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
