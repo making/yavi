@@ -14,14 +14,24 @@ import java.util.ListIterator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * A mutable {@link List} of {@link ConstraintViolation} instances.
+ *
+ * <p>
+ * Instances are returned when validation fails and are empty when validation succeeds;
+ * use {@link #isValid()} to check the outcome. The list is not thread-safe.
+ *
+ * @since 0.0.1
+ */
 public class ConstraintViolations implements List<ConstraintViolation> {
 
 	private final List<ConstraintViolation> delegate;
 
 	/**
-	 * Constructs with the constraintViolations to delegate. If the given value is
-	 * <code>ConstraintViolations</code> itself, cast and return it.
-	 * @param delegate constraintViolations to delegate
+	 * Returns the given violations as a {@code ConstraintViolations} instance. If the
+	 * argument already is a {@code ConstraintViolations}, it is returned as-is.
+	 * @param delegate the violations to wrap
+	 * @return the given violations, or a new instance wrapping them
 	 * @since 0.6.0
 	 */
 	public static ConstraintViolations of(List<ConstraintViolation> delegate) {
@@ -39,8 +49,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
-	 * Constructs with the constraintViolations to delegate
-	 * @param delegate constraintViolations to delegate
+	 * Constructs an instance that delegates to the given list. The list is not copied, so
+	 * subsequent changes to it are reflected by this instance.
+	 * @param delegate the violations to delegate to
 	 * @since 0.6.0
 	 */
 	public ConstraintViolations(List<ConstraintViolation> delegate) {
@@ -122,11 +133,11 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * Inserts all of the elements in the specified collection into this list at the
 	 * specified position (optional operation). Shifts the element currently at that
 	 * position (if any) and any subsequent elements to the right (increases their
-	 * indices). The new elements will appear in this list in the order that they are
-	 * returned by the specified collection's iterator. The behavior of this operation is
-	 * undefined if the specified collection is modified while the operation is in
-	 * progress. (Note that this will occur if the specified collection is this list, and
-	 * it's nonempty.)
+	 * indices).
+	 *
+	 * <p>
+	 * Note that this implementation delegates to {@link #addAll(Collection)} and ignores
+	 * {@code index}; the elements are appended to the end of this list.
 	 * @param index index at which to insert the first element from the specified
 	 * collection
 	 * @param c collection containing elements to be added to this list
@@ -140,8 +151,6 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * collection is null
 	 * @throws IllegalArgumentException if some property of an element of the specified
 	 * collection prevents it from being added to this list
-	 * @throws IndexOutOfBoundsException if the index is out of range
-	 * (<code>index &lt; 0 || index &gt; size()</code>)
 	 */
 	@Override
 	public final boolean addAll(int index, Collection<? extends ConstraintViolation> c) {
@@ -149,23 +158,18 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
-	 * This method is intended to be used with Spring MVC
+	 * Passes every violation to the given callback and returns this list.
 	 *
-	 * <strong>sample</strong>
+	 * <p>
+	 * This method is intended to be used with Spring MVC:
 	 *
-	 * <pre>
-	 * <code>&#64;PostMapping("users")
-	 * public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
-	 *     return validator.validateToEither(userForm)
-	 *         .fold(violations -&gt; {
-	 *             violations.apply(bindingResult::rejectValue);
-	 *             return "userForm";
-	 *         }, form -&gt; {
-	 *             // ...
-	 *             return "redirect:/";
-	 *         });
-	 * }</code> </pre>
-	 * @param callback
+	 * <pre>{@code
+	 * ConstraintViolations violations = validator.validate(userForm);
+	 * violations.apply(bindingResult::rejectValue);
+	 * }</pre>
+	 * @param callback the callback invoked for each violation
+	 * @return this list
+	 * @since 0.0.7
 	 */
 	public ConstraintViolations apply(Callback callback) {
 		this.forEach(v -> callback.apply(v.name(), v.messageKey(), v.args(), v.message()));
@@ -191,10 +195,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @param o element whose presence in this list is to be tested
 	 * @return <code>true</code> if this list contains the specified element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (optional)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 * not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements (optional)
 	 */
 	@Override
 	public final boolean contains(Object o) {
@@ -208,12 +211,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @return <code>true</code> if this list contains all of the elements of the
 	 * specified collection
 	 * @throws ClassCastException if the types of one or more elements in the specified
-	 * collection are incompatible with this list
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * collection are incompatible with this list (optional)
 	 * @throws NullPointerException if the specified collection contains one or more null
-	 * elements and this list does not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
-	 * collection is null
+	 * elements and this list does not permit null elements (optional), or if the
+	 * specified collection is null
 	 * @see #contains(Object)
 	 */
 	@Override
@@ -221,6 +222,11 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 		return this.delegate.containsAll(c);
 	}
 
+	/**
+	 * Returns the details of all violations in this list.
+	 * @return a list of violation details, one per violation
+	 * @since 0.0.3
+	 */
 	public List<ViolationDetail> details() {
 		return this.delegate.stream().map(ConstraintViolation::detail).collect(Collectors.toList());
 	}
@@ -247,10 +253,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @return the index of the first occurrence of the specified element in this list, or
 	 * -1 if this list does not contain the element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (optional)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 * not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements (optional)
 	 */
 	@Override
 	public final int indexOf(Object o) {
@@ -266,6 +271,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 		return this.delegate.isEmpty();
 	}
 
+	/**
+	 * Returns whether validation succeeded, that is whether this list contains no
+	 * violations.
+	 * @return {@code true} if this list is empty, {@code false} otherwise
+	 * @since 0.0.1
+	 */
 	public final boolean isValid() {
 		return this.delegate.isEmpty();
 	}
@@ -289,10 +300,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @return the index of the last occurrence of the specified element in this list, or
 	 * -1 if this list does not contain the element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (optional)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 * not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements (optional)
 	 */
 	@Override
 	public final int lastIndexOf(Object o) {
@@ -337,10 +347,9 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @param o element to be removed from this list, if present
 	 * @return <code>true</code> if this list contained the specified element
 	 * @throws ClassCastException if the type of the specified element is incompatible
-	 * with this list (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with this list (optional)
 	 * @throws NullPointerException if the specified element is null and this list does
-	 * not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * not permit null elements (optional)
 	 * @throws UnsupportedOperationException if the <code>remove</code> operation is not
 	 * supported by this list
 	 */
@@ -373,12 +382,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @throws UnsupportedOperationException if the <code>removeAll</code> operation is
 	 * not supported by this list
 	 * @throws ClassCastException if the class of an element of this list is incompatible
-	 * with the specified collection
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with the specified collection (optional)
 	 * @throws NullPointerException if this list contains a null element and the specified
-	 * collection does not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
-	 * collection is null
+	 * collection does not permit null elements (optional), or if the specified collection
+	 * is null
 	 * @see #remove(Object)
 	 * @see #contains(Object)
 	 */
@@ -396,12 +403,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @throws UnsupportedOperationException if the <code>retainAll</code> operation is
 	 * not supported by this list
 	 * @throws ClassCastException if the class of an element of this list is incompatible
-	 * with the specified collection
-	 * (<a href="Collection.html#optional-restrictions">optional</a>)
+	 * with the specified collection (optional)
 	 * @throws NullPointerException if this list contains a null element and the specified
-	 * collection does not permit null elements
-	 * (<a href="Collection.html#optional-restrictions">optional</a>), or if the specified
-	 * collection is null
+	 * collection does not permit null elements (optional), or if the specified collection
+	 * is null
 	 * @see #remove(Object)
 	 * @see #contains(Object)
 	 */
@@ -449,23 +454,21 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * empty.) The returned list is backed by this list, so non-structural changes in the
 	 * returned list are reflected in this list, and vice-versa. The returned list
 	 * supports all of the optional list operations supported by this list.
-	 * <p>
+	 *
 	 * <p>
 	 * This method eliminates the need for explicit range operations (of the sort that
 	 * commonly exist for arrays). Any operation that expects a list can be used as a
 	 * range operation by passing a subList view instead of a whole list. For example, the
 	 * following idiom removes a range of elements from a list:
 	 *
-	 * <pre>
-	 * {@code
+	 * <pre>{@code
 	 * list.subList(from, to).clear();
-	 * }
-	 * </pre>
+	 * }</pre>
 	 *
 	 * Similar idioms may be constructed for <code>indexOf</code> and
 	 * <code>lastIndexOf</code>, and all of the algorithms in the <code>Collections</code>
 	 * class can be applied to a subList.
-	 * <p>
+	 *
 	 * <p>
 	 * The semantics of the list returned by this method become undefined if the backing
 	 * list (i.e., this list) is <i>structurally modified</i> in any way other than via
@@ -476,14 +479,21 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * @param toIndex high endpoint (exclusive) of the subList
 	 * @return a view of the specified range within this list
 	 * @throws IndexOutOfBoundsException for an illegal endpoint index value
-	 * (<code>fromIndex &lt; 0 || toIndex &gt; size ||
-	 *                                   fromIndex &gt; toIndex</code>)
+	 * (<code>fromIndex &lt; 0 || toIndex &gt; size || fromIndex &gt; toIndex</code>)
 	 */
 	@Override
 	public final List<ConstraintViolation> subList(int fromIndex, int toIndex) {
 		return this.delegate.subList(fromIndex, toIndex);
 	}
 
+	/**
+	 * Throws the exception produced by the given function if this list contains at least
+	 * one violation.
+	 * @param toException the function that creates the exception from these violations
+	 * @param <E> the exception type
+	 * @throws E if this list is not valid
+	 * @since 0.0.3
+	 */
 	public final <E extends RuntimeException> void throwIfInvalid(Function<ConstraintViolations, E> toException)
 			throws E {
 		if (!isValid()) {
@@ -534,13 +544,10 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * Suppose <code>x</code> is a list known to contain only strings. The following code
 	 * can be used to dump the list into a newly allocated array of <code>String</code>:
 	 *
-	 * <pre>
-	 * {
-	 * 	&#64;code
-	 * 	String[] y = x.toArray(new String[0]);
-	 * }
-	 * </pre>
-	 * <p>
+	 * <pre>{@code
+	 * String[] y = x.toArray(new String[0]);
+	 * }</pre>
+	 *
 	 * Note that <code>toArray(new Object[0])</code> is identical in function to
 	 * <code>toArray()</code>.
 	 * @param a the array into which the elements of this list are to be stored, if it is
@@ -556,18 +563,40 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 		return this.delegate.toArray(a);
 	}
 
+	/**
+	 * Returns a string representation of the violations.
+	 * @return a string representation of the violations
+	 */
 	@Override
 	public String toString() {
 		return this.delegate.toString();
 	}
 
+	/**
+	 * Returns an unmodifiable view of the violations.
+	 * @return an unmodifiable view of the violations
+	 * @since 0.0.1
+	 */
 	public final List<ConstraintViolation> violations() {
 		return Collections.unmodifiableList(this.delegate);
 	}
 
+	/**
+	 * Callback invoked for each violation by
+	 * {@link ConstraintViolations#apply(Callback)}.
+	 *
+	 * @since 0.0.7
+	 */
 	@FunctionalInterface
 	public interface Callback {
 
+		/**
+		 * Handles a single violation.
+		 * @param name the property name that failed validation
+		 * @param messageKey the message id of the violated constraint
+		 * @param args the message arguments
+		 * @param defaultMessage the formatted violation message
+		 */
 		void apply(String name, String messageKey, Object[] args, String defaultMessage);
 
 	}

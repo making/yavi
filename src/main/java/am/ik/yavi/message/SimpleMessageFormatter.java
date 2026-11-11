@@ -8,8 +8,15 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 /**
- * A simple implementation of {@link MessageFormatter} that formats messages using
- * {@link MessageFormat}. This class is a singleton to optimize resource usage.
+ * A {@link MessageFormatter} that formats the default message format with
+ * {@link MessageFormat}.
+ *
+ * <p>
+ * The message id is ignored; no localized message lookup is performed. This is the
+ * formatter used by default. Since a new {@link MessageFormat} instance is created for
+ * every call, the shared {@link #getInstance() instance} is thread-safe.
+ *
+ * @since 0.0.1
  */
 public class SimpleMessageFormatter implements MessageFormatter {
 
@@ -33,6 +40,16 @@ public class SimpleMessageFormatter implements MessageFormatter {
 		// Public constructor kept for backward compatibility
 	}
 
+	/**
+	 * Formats the given default message format with {@link MessageFormat}, ignoring the
+	 * message id.
+	 * @param messageKey the message id, which is ignored
+	 * @param defaultMessageFormat the message format containing {@link MessageFormat}
+	 * placeholders
+	 * @param args the arguments referenced by placeholders in the message format
+	 * @param locale the locale used for formatting
+	 * @return the formatted message
+	 */
 	@Override
 	public String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale) {
 		return new MessageFormat(defaultMessageFormat, locale).format(args);

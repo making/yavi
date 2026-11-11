@@ -15,33 +15,30 @@ import java.util.function.Function;
  * Represents a single constraint violation that occurs during validation.
  *
  * <p>
- * This class encapsulates details about a validation failure, including:
- * <ul>
- * <li>The field or property name that failed validation</li>
- * <li>The message key used for internationalization</li>
- * <li>The default message format to use when no localized message is found</li>
- * <li>Any arguments needed for message formatting</li>
- * <li>The message formatter and locale to use for message formatting</li>
- * </ul>
+ * A violation carries the property name, the message id, the default message format, the
+ * message arguments, the message formatter and the locale. The message arguments start
+ * with the property name and end with the value that violated the constraint.
  *
  * <p>
- * ConstraintViolation objects are immutable after creation. The class provides a builder
- * API for creating instances in a type-safe manner with required and optional properties
- * clearly distinguished.
+ * Instances are immutable in these properties, except that {@link #args()} returns the
+ * internal array, which should not be modified. Use {@link #builder()} to create
+ * instances in a type-safe manner with required and optional properties clearly
+ * distinguished.
  *
  * @since 0.1.0
  */
 public class ConstraintViolation {
 
 	/**
-	 * Arguments to be used when formatting the constraint violation message. The last
-	 * element in this array typically contains the value that violated the constraint.
+	 * Arguments to be used when formatting the constraint violation message. The first
+	 * element is the property name and the last element is the value that violated the
+	 * constraint.
 	 */
 	private final Object[] args;
 
 	/**
 	 * The default message format to use when no localized message is found for the
-	 * message key. This format string may contain placeholders that will be replaced with
+	 * message id. This format string may contain placeholders that will be replaced with
 	 * values from the args array.
 	 */
 	private final String defaultMessageFormat;
@@ -60,7 +57,7 @@ public class ConstraintViolation {
 	private final MessageFormatter messageFormatter;
 
 	/**
-	 * The key used to look up localized messages in resource bundles. This is the primary
+	 * The id used to look up localized messages in resource bundles. This is the primary
 	 * identifier for retrieving the proper message format.
 	 */
 	private final String messageKey;
@@ -74,12 +71,14 @@ public class ConstraintViolation {
 	/**
 	 * Creates a new constraint violation.
 	 * @param name the field or property name that this constraint violation applies to
-	 * @param messageKey the key used to look up localized messages
+	 * @param messageKey the id used to look up localized messages
 	 * @param defaultMessageFormat the default message format to use when no localized
 	 * message is found
 	 * @param args the arguments to be used when formatting the message
-	 * @param messageFormatter the message formatter to be used
-	 * @param locale the locale to be used for message localization
+	 * @param messageFormatter the message formatter to be used; {@code null} selects
+	 * {@link SimpleMessageFormatter#getInstance()}
+	 * @param locale the locale to be used for message localization; {@code null} selects
+	 * the default locale
 	 * @deprecated Use {@link #builder()} instead for a more fluent and type-safe API
 	 */
 	@Deprecated
@@ -95,7 +94,12 @@ public class ConstraintViolation {
 
 	/**
 	 * Returns the arguments used for message formatting.
-	 * @return an array of objects that were provided as formatting arguments
+	 *
+	 * <p>
+	 * The first element is the property name and the last element is the value that
+	 * violated the constraint.
+	 * @return the array of arguments; this is the internal array and should not be
+	 * modified by the caller
 	 */
 	public Object[] args() {
 		return this.args;
@@ -110,28 +114,26 @@ public class ConstraintViolation {
 	}
 
 	/**
-	 * Creates and returns a ViolationDetail object that contains structured information
-	 * about this constraint violation.
+	 * Returns structured information about this constraint violation.
 	 *
 	 * <p>
-	 * The detail object contains the message key, arguments, and formatted message,
-	 * providing a more structured representation of the violation.
-	 * @return a new ViolationDetail instance representing this constraint violation
+	 * The returned detail contains the message id and the arguments of this violation
+	 * together with its formatted message.
+	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 */
 	public ViolationDetail detail() {
 		return new ViolationDetail(this.messageKey, this.args, this.message());
 	}
 
 	/**
-	 * Creates and returns a ViolationDetail object that contains structured information
-	 * about this constraint violation, using the provided message formatter.
+	 * Returns structured information about this constraint violation, using the provided
+	 * message formatter to format the message.
 	 *
 	 * <p>
-	 * This method allows changing the message formatter at runtime, affecting how the
-	 * message in the violation detail is formatted. All other properties (message key,
-	 * arguments) remain the same as in the original constraint violation.
+	 * All other properties (message id and arguments) remain the same as in this
+	 * violation.
 	 * @param messageFormatter the message formatter to use for formatting the message
-	 * @return a new ViolationDetail instance representing this constraint violation
+	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 * @since 0.16.0
 	 */
 	public ViolationDetail detail(MessageFormatter messageFormatter) {
@@ -151,7 +153,7 @@ public class ConstraintViolation {
 	 *
 	 * <p>
 	 * The message is formatted using the configured message formatter, applying the
-	 * message key, default message format, arguments, and locale.
+	 * message id, default message format, arguments and locale.
 	 * @return the formatted message describing the constraint violation
 	 */
 	public String message() {
@@ -163,17 +165,12 @@ public class ConstraintViolation {
 	 * provided message formatter instead of the one configured at creation time.
 	 *
 	 * <p>
-	 * This method allows changing the message formatter at runtime, which is useful when
-	 * different formatting strategies need to be applied to the same constraint
-	 * violation. All other properties (message key, default message format, arguments,
-	 * and locale) remain the same as in the original constraint violation.
+	 * All other properties (message id, default message format, arguments and locale)
+	 * remain the same as in this violation.
 	 *
-	 * <p>
-	 * Example usage: <pre>{@code
-	 * // Using a custom message formatter for specific formatting needs
-	 * ConstraintViolation violation = // ... obtain violation
-	 * CustomMessageFormatter formatter = new CustomMessageFormatter();
-	 * String formattedMessage = violation.message(formatter);
+	 * <pre>{@code
+	 * ConstraintViolation violation = ...;
+	 * String message = violation.message(new SimpleMessageFormatter());
 	 * }</pre>
 	 * @param messageFormatter the message formatter to use for formatting the message
 	 * @return the formatted message using the provided formatter
@@ -184,8 +181,8 @@ public class ConstraintViolation {
 	}
 
 	/**
-	 * Returns the message key used for looking up localized messages.
-	 * @return the message key for internationalization
+	 * Returns the message id used for looking up localized messages.
+	 * @return the message id for internationalization
 	 */
 	public String messageKey() {
 		return this.messageKey;
@@ -203,8 +200,8 @@ public class ConstraintViolation {
 	 * Returns a string representation of this constraint violation.
 	 *
 	 * <p>
-	 * The string representation includes the name, message key, default message format,
-	 * and arguments.
+	 * The string representation includes the name, message id, default message format and
+	 * arguments.
 	 * @return a string representation of this constraint violation
 	 */
 	@Override
@@ -279,7 +276,7 @@ public class ConstraintViolation {
 		/** The field name that the constraint violation applies to */
 		private String name;
 
-		/** The message key for internationalization */
+		/** The message id for internationalization */
 		private String messageKey;
 
 		/** The default message format if no localized message is found */
@@ -313,8 +310,8 @@ public class ConstraintViolation {
 		}
 
 		/**
-		 * Sets the message key for internationalization lookup.
-		 * @param messageKey the key used to look up localized messages
+		 * Sets the message id for internationalization lookup.
+		 * @param messageKey the id used to look up localized messages
 		 * @return the next stage of the builder for method chaining
 		 */
 		public Builder messageKey(String messageKey) {
@@ -430,7 +427,7 @@ public class ConstraintViolation {
 	 * The staged building process follows this sequence:
 	 * <ol>
 	 * <li>First, set the name property ({@link Name})</li>
-	 * <li>Then, set the message key property ({@link MessageKey})</li>
+	 * <li>Then, set the message id property ({@link MessageKey})</li>
 	 * <li>Next, set the default message format property
 	 * ({@link DefaultMessageFormat})</li>
 	 * <li>Finally, optionally set any additional properties and build
@@ -452,6 +449,8 @@ public class ConstraintViolation {
 		 * <p>
 		 * This is the entry point for the staged builder pattern. The name property
 		 * specifies which field or property the constraint violation applies to.
+		 *
+		 * @since 0.15.0
 		 */
 		interface Name {
 
@@ -459,35 +458,36 @@ public class ConstraintViolation {
 			 * Sets the name of the field or property that this constraint violation
 			 * applies to.
 			 * @param name the field or property name
-			 * @return the next stage of the builder which requires setting the message
-			 * key
+			 * @return the next stage of the builder which requires setting the message id
 			 */
 			MessageKey name(String name);
 
 		}
 
 		/**
-		 * Second stage of the builder which requires setting the message key property.
+		 * Second stage of the builder which requires setting the message id property.
 		 *
 		 * <p>
 		 * This interface represents the second stage in the staged builder pattern after
-		 * the name has been set. The message key is used for internationalization lookup
+		 * the name has been set. The message id is used for internationalization lookup
 		 * to find the appropriate localized message template.
+		 *
+		 * @since 0.15.0
 		 */
 		interface MessageKey {
 
 			/**
-			 * The default message key to use when no specific key is needed. This
-			 * constant is used as a fallback when internationalization is not required.
+			 * The default message id to use when no specific id is needed. This constant
+			 * is used as a fallback when internationalization is not required.
 			 */
 			String DEFAULT_MESSAGE_KEY = "_";
 
 			/**
-			 * Sets the message key for internationalization lookup.
+			 * Sets the message id for internationalization lookup.
 			 *
 			 * <p>
-			 * The message key is used to look up localized messages in resource bundles.
-			 * @param messageKey the key used to look up localized messages
+			 * The message id is used to look up localized messages in resource bundles.
+			 * @param messageKey the id used to look up localized messages
 			 * @return the next stage of the builder which requires setting the default
 			 * message format
 			 */
@@ -497,7 +497,7 @@ public class ConstraintViolation {
 			 * Convenient shortcut builder method that creates a complete constraint
 			 * violation in a single call. This method automatically:
 			 * <ul>
-			 * <li>Sets the message key to the default value
+			 * <li>Sets the message id to the default value
 			 * ({@link #DEFAULT_MESSAGE_KEY})</li>
 			 * <li>Uses the provided message as the default message format</li>
 			 * <li>Prepends the field name as the first argument in the argument list</li>
@@ -527,8 +527,10 @@ public class ConstraintViolation {
 		 *
 		 * <p>
 		 * This interface represents the third stage in the staged builder pattern after
-		 * the message key has been set. The default message format is the fallback
-		 * message template to use when no localized message is found for the message key.
+		 * the message id has been set. The default message format is the fallback message
+		 * template to use when no localized message is found for the message id.
+		 *
+		 * @since 0.15.0
 		 */
 		interface DefaultMessageFormat {
 
@@ -537,7 +539,7 @@ public class ConstraintViolation {
 			 *
 			 * <p>
 			 * This format string serves as a fallback when no localized message can be
-			 * found for the specified message key. It may contain placeholders that will
+			 * found for the specified message id. It may contain placeholders that will
 			 * be replaced with values from the args array during message formatting.
 			 * @param defaultMessageFormat the default message format string
 			 * @return the final stage of the builder where all remaining properties are
@@ -556,6 +558,8 @@ public class ConstraintViolation {
 		 * all required properties have been set. At this point, the builder can be used
 		 * to set optional properties like arguments, message formatter, and locale, or it
 		 * can directly build the ConstraintViolation instance.
+		 *
+		 * @since 0.15.0
 		 */
 		interface Optionals {
 
@@ -622,8 +626,8 @@ public class ConstraintViolation {
 			 *
 			 * <p>
 			 * The message formatter is responsible for formatting the constraint
-			 * violation message by using the message key to look up localized messages
-			 * and applying the arguments to the message template.
+			 * violation message by using the message id to look up localized messages and
+			 * applying the arguments to the message template.
 			 *
 			 * <p>
 			 * If not specified, a default {@link SimpleMessageFormatter} will be used.
