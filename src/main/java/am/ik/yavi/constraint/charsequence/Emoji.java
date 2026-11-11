@@ -7,6 +7,17 @@ package am.ik.yavi.constraint.charsequence;
 import am.ik.yavi.constraint.charsequence.variant.StandardizedVariationSequence;
 import am.ik.yavi.jsr305.Nullable;
 
+/**
+ * Best-effort counter for the number of emoji in a string.
+ *
+ * <p>
+ * The counter is used by {@link EmojiConstraint}. It recognizes emoji built from several
+ * code points, such as skin tone modifiers, keycaps, regional indicator pairs,
+ * subdivision flags and ZWJ sequences, and counts each of them as one.
+ * </p>
+ *
+ * @since 0.0.12
+ */
 public class Emoji {
 
 	private static final String COMBINING_ENCLOSING_KEYCAP = new String(new int[] { 0x20E3 }, 0, 1);
@@ -45,11 +56,21 @@ public class Emoji {
 	private static final String ZERO_WIDTH_JOINER = "\u200D";
 
 	/**
-	 * Try to return the length of the given string.<br>
-	 * This method does not grantee the exact length.
+	 * Creates an instance. The class has no state beyond the static counter.
+	 */
+	public Emoji() {
+	}
+
+	/**
+	 * Tries to return the number of emoji in the given string.
+	 *
+	 * <p>
+	 * The count is not guaranteed to be exact: emoji that are not known to this method,
+	 * for instance newer ones, are counted by their remaining code points.
+	 * </p>
+	 * @param str the string to count, possibly {@code null}
+	 * @return the best-effort number of emoji, zero for {@code null} or an empty string
 	 * @see <a href="https://unicode.org/Public/emoji/12.0/emoji-test.txt">Emoji 12.0</a>
-	 * @param str
-	 * @return the length of the given string which may be true
 	 */
 	public static int bestEffortCount(@Nullable String str) {
 		if (str == null || str.isEmpty()) {

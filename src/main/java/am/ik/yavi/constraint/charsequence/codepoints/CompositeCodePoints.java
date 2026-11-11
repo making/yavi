@@ -12,10 +12,29 @@ import java.util.Set;
 
 import am.ik.yavi.constraint.charsequence.CodePoints;
 
+/**
+ * Combines several {@link CodePoints} definitions into one.
+ *
+ * <p>
+ * The included code points of the result are the union of the included code points of the
+ * given definitions. A white list constraint built from it therefore accepts a code point
+ * that any of the definitions includes, and a black list constraint rejects a code point
+ * that any of them excludes.
+ * </p>
+ *
+ * @param <E> the type of the character sequence
+ * @since 0.0.15
+ */
 public class CompositeCodePoints<E extends CharSequence> implements CodePoints<E> {
 
 	private final List<CodePoints<E>> composite = new ArrayList<>();
 
+	/**
+	 * Creates the combined definition.
+	 * @param codePoints the definitions to combine
+	 * @throws IllegalArgumentException if the given definitions provide no code point,
+	 * that is, if none is given or all of them are empty sets or ranges
+	 */
 	@SafeVarargs
 	public CompositeCodePoints(CodePoints<E>... codePoints) {
 		final Set<Integer> codePointsSet = new LinkedHashSet<>();
@@ -42,6 +61,13 @@ public class CompositeCodePoints<E extends CharSequence> implements CodePoints<E
 		}
 	}
 
+	/**
+	 * Returns the code points of the given value that none of the combined definitions
+	 * includes.
+	 * @param s the value, possibly {@code null}
+	 * @return the code points outside of all definitions, empty if {@code s} is
+	 * {@code null} or empty
+	 */
 	@Override
 	public Set<Integer> allExcludedCodePoints(E s) {
 		Set<Integer> excluded = null;
