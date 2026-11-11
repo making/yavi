@@ -1,23 +1,32 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.core;
 
+/**
+ * Defines how a constraint treats a {@code null} value.
+ *
+ * <p>
+ * This is used when a {@link ConstraintPredicate} is added: {@link #VALID} skips the
+ * predicate for a {@code null} value, and {@link #INVALID} evaluates it.
+ * </p>
+ *
+ * @since 0.0.18
+ */
 public enum NullAs {
 
-	INVALID(false), VALID(true);
+	/**
+	 * The predicate is evaluated for a {@code null} value, so {@code null} can be
+	 * rejected.
+	 */
+	INVALID(false),
+
+	/**
+	 * The predicate is skipped for a {@code null} value, so {@code null} is considered
+	 * valid.
+	 */
+	VALID(true);
 
 	private final boolean skipNull;
 
@@ -25,6 +34,10 @@ public enum NullAs {
 		this.skipNull = skipNull;
 	}
 
+	/**
+	 * Returns whether a constraint with this setting skips a {@code null} value.
+	 * @return {@code true} if a {@code null} value is skipped and therefore valid
+	 */
 	public boolean skipNull() {
 		return this.skipNull;
 	}

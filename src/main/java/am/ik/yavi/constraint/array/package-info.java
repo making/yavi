@@ -1,17 +1,18 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * Constraints on array values.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * <p>
+ * The classes cover object arrays and every primitive array type. They provide
+ * containment and the size constraints inherited from
+ * {@link am.ik.yavi.constraint.base.ContainerConstraintBase}. A {@code null} array is
+ * considered valid and the checks are skipped, except for
+ * {@link am.ik.yavi.constraint.base.ContainerConstraintBase#notEmpty()}.
+ * </p>
+ * @since 0.0.17
  */
 @NonNullApi
 package am.ik.yavi.constraint.array;

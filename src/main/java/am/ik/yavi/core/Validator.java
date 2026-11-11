@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.core;
 
@@ -28,44 +17,40 @@ import java.util.function.Supplier;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 /**
- * A core component of the YAVI validation framework that validates target instances
- * against a set of constraints. This class is the primary entry point for validation
- * operations in YAVI.
- * 
+ * Standard {@link Validatable} implementation that validates a target object against a
+ * set of constraint predicates, collection validators and conditional validators.
+ *
  * <p>
- * A {@code Validator} instance is immutable and thread-safe, making it suitable for use
- * as a singleton. Once constructed with a specific set of validation rules, it can be
- * reused across multiple validation operations.
- * 
+ * A validator is normally created with {@link am.ik.yavi.builder.ValidatorBuilder}.
+ * Instances are immutable and thread-safe, so they can be shared and reused. The
+ * collections passed to the constructor are not copied, only wrapped as unmodifiable
+ * views, so they must not be modified after construction.
+ *
  * <p>
- * The validator supports several advanced features:
+ * Supported features include:
  * <ul>
- * <li>Collection validation - validates elements within collections</li>
- * <li>Nested validation - validates properties of complex objects</li>
- * <li>Conditional validation - applies validators conditionally based on predicates</li>
- * <li>Fail-fast mode - stops validation upon first constraint violation</li>
- * <li>Customizable error messages - supports i18n through {@link MessageFormatter}</li>
- * <li>Prefix support - allows namespace prefixing for validation in complex object
- * graphs</li>
+ * <li>collection element validation ({@link CollectionValidator})</li>
+ * <li>nested object validation ({@link NestedValidator})</li>
+ * <li>conditional validation ({@link ConstraintCondition}) and constraint groups
+ * ({@link ConstraintGroup})</li>
+ * <li>fail-fast mode, which returns after the first violation</li>
+ * <li>localized messages through {@link MessageFormatter}</li>
+ * <li>name prefixes for violations in nested object graphs</li>
  * </ul>
- * 
+ *
  * <p>
- * A validator instance is typically created using the
- * {@link am.ik.yavi.builder.ValidatorBuilder}, which provides a fluent API for defining
- * validation constraints.
- * 
- * <p>
- * Example usage: <pre>{@code
+ * Example: <pre>{@code
  * Validator<Person> validator = ValidatorBuilder.<Person>of()
  *     .constraint(Person::getName, "name", c -> c.notBlank().lessThan(20))
  *     .constraint(Person::getAge, "age", c -> c.greaterThan(0).lessThan(120))
  *     .build();
- *     
+ *
  * ConstraintViolations violations = validator.validate(person);
  * }</pre>
  *
  * @param <T> the type of the instance to validate
  * @author Toshiaki Maki
+ * @since 0.0.1
  * @see am.ik.yavi.builder.ValidatorBuilder
  * @see ConstraintViolations
  * @see Validatable
@@ -89,23 +74,18 @@ public class Validator<T> implements Validatable<T> {
 	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
 
 	/**
-	 * Creates a new validator with the specified constraints, validators, and formatter
-	 * settings.
-	 * 
+	 * Creates a validator with fail-fast mode disabled.
+	 *
 	 * <p>
-	 * This constructor creates a validator with fail-fast mode disabled by default. This
-	 * means all constraints will be validated even after violations are found.
-	 * 
-	 * <p>
-	 * Note: This constructor is typically not called directly by application code.
-	 * Instead, use {@link am.ik.yavi.builder.ValidatorBuilder} to create validator
-	 * instances with a more convenient fluent API.
+	 * Application code normally uses {@link am.ik.yavi.builder.ValidatorBuilder} instead
+	 * of calling this constructor directly.
 	 * @param messageKeySeparator the separator used to join message keys (e.g., ".")
 	 * @param predicatesList list of constraint predicates to apply to the target object
 	 * @param collectionValidators list of validators for collections within the target
 	 * object
 	 * @param conditionalValidators list of validators that are applied conditionally
 	 * @param messageFormatter the formatter used to create violation messages
+	 * @throws NullPointerException if any of the lists is {@code null}
 	 */
 	public Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
@@ -115,20 +95,11 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * Creates a new validator with the specified constraints, validators, formatter
-	 * settings, and fail-fast mode configuration.
-	 * 
+	 * Creates a validator with the specified fail-fast mode.
+	 *
 	 * <p>
-	 * This constructor allows specifying whether the validator should operate in
-	 * fail-fast mode. When fail-fast is enabled, validation stops as soon as the first
-	 * constraint violation is detected. This can improve performance in cases where any
-	 * validation failure is sufficient to reject the input.
-	 * 
-	 * <p>
-	 * Note: This constructor is typically not called directly by application code.
-	 * Instead, use {@link am.ik.yavi.builder.ValidatorBuilder} to create validator
-	 * instances with a more convenient fluent API, and then apply
-	 * {@link #failFast(boolean)} if needed.
+	 * Application code normally uses {@link am.ik.yavi.builder.ValidatorBuilder} and
+	 * {@link #failFast(boolean)} instead of calling this constructor directly.
 	 * @param messageKeySeparator the separator used to join message keys (e.g., ".")
 	 * @param predicatesList list of constraint predicates to apply to the target object
 	 * @param collectionValidators list of validators for collections within the target
@@ -136,6 +107,7 @@ public class Validator<T> implements Validatable<T> {
 	 * @param conditionalValidators list of validators that are applied conditionally
 	 * @param messageFormatter the formatter used to create violation messages
 	 * @param failFast whether to enable fail-fast mode
+	 * @throws NullPointerException if any of the lists is {@code null}
 	 * @since 0.8.0
 	 */
 	public Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
@@ -161,22 +133,22 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * Creates a new validator instance with the specified prefix applied to all
-	 * constraint names.
-	 * 
+	 * Returns a new validator that prefixes every violation name with the given prefix.
+	 *
 	 * <p>
-	 * This is particularly useful when validating nested objects to provide a
-	 * hierarchical naming structure for constraint violations. The prefix helps identify
-	 * which part of a complex object structure contains validation errors.
-	 * 
+	 * This is useful when the validator is applied to an object nested in another object,
+	 * so that violations identify the path to the invalid property. The prefix is joined
+	 * to the names with the configured message key separator. An empty prefix leaves the
+	 * names unchanged.
+	 *
 	 * <p>
-	 * For example, when validating an {@code Address} object within a {@code Person}
-	 * object, you might use {@code validator.prefixed("address")} to prefix all
-	 * constraint violations with "address".
-	 * 
-	 * <p>
-	 * The prefix is combined with the existing constraint names using the configured
-	 * {@code messageKeySeparator}.
+	 * Example: <pre>{@code
+	 * Validator<Address> validator = ValidatorBuilder.<Address>of()
+	 *     .constraint(Address::street, "street", c -> c.notBlank())
+	 *     .build()
+	 *     .prefixed("address");
+	 * // a violation is reported with the name "address.street"
+	 * }</pre>
 	 * @param prefix the prefix to apply to all constraint names
 	 * @return a new validator instance with the specified prefix
 	 */
@@ -186,31 +158,17 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * Creates a new validator instance with the specified fail-fast mode setting.
-	 * 
-	 * <p>
-	 * In fail-fast mode, the validator stops validation immediately after finding the
-	 * first constraint violation. This can be useful in scenarios where any validation
-	 * failure is sufficient to reject the input, improving performance by avoiding
-	 * unnecessary validation checks.
-	 * 
-	 * <p>
-	 * When fail-fast mode is disabled (the default), the validator will collect all
-	 * constraint violations, which is useful for providing comprehensive feedback to
-	 * users.
-	 * 
-	 * <p>
-	 * Since validator instances are immutable, this method returns a new validator
-	 * instance with the same constraints and settings, but with the specified fail-fast
-	 * mode.
+	 * Returns a new validator with the specified fail-fast mode. The constraints and all
+	 * other settings are shared with this validator.
 	 *
 	 * <p>
-	 * Example usage: <pre>{@code
-	 * // Create a validator with fail-fast enabled
+	 * In fail-fast mode, validation returns immediately after the first constraint
+	 * violation. When fail-fast mode is disabled (the default), all violations are
+	 * collected.
+	 *
+	 * <p>
+	 * Example: <pre>{@code
 	 * Validator<Person> failFastValidator = validator.failFast(true);
-	 * 
-	 * // Create a validator with fail-fast disabled
-	 * Validator<Person> completeValidator = validator.failFast(false);
 	 * }</pre>
 	 * @param failFast whether to enable fail-fast mode
 	 * @return a new validator instance with the specified fail-fast mode
@@ -225,12 +183,6 @@ public class Validator<T> implements Validatable<T> {
 
 	/**
 	 * Returns whether this validator operates in fail-fast mode.
-	 * 
-	 * <p>
-	 * When a validator is in fail-fast mode, it will stop validation as soon as it
-	 * encounters the first constraint violation, rather than collecting all violations.
-	 * This can improve performance in scenarios where any validation failure is
-	 * sufficient to reject the input.
 	 * @return {@code true} if this validator is configured to operate in fail-fast mode,
 	 * {@code false} otherwise
 	 * @see #failFast(boolean)
@@ -241,7 +193,11 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * This method is supposed to be used only internally.
+	 * Iterates over the constraint predicates of this validator.
+	 *
+	 * <p>
+	 * This method is intended for internal use, for example by
+	 * {@link am.ik.yavi.builder.ValidatorBuilder} when nesting this validator.
 	 * @param action callback per <code>ConstraintPredicates</code>.
 	 */
 	public void forEachPredicates(Consumer<ConstraintPredicates<T, ?>> action) {
@@ -249,7 +205,11 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * This method is supposed to be used only internally.
+	 * Iterates over the collection validators of this validator.
+	 *
+	 * <p>
+	 * This method is intended for internal use, for example by
+	 * {@link am.ik.yavi.builder.ValidatorBuilder} when nesting this validator.
 	 * @param action callback per <code>CollectionValidator</code>.
 	 */
 	public void forEachCollectionValidator(Consumer<CollectionValidator<T, ?, ?>> action) {
@@ -257,37 +217,36 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * This method is supposed to be used only internally.
+	 * Iterates over the conditional validators of this validator.
+	 *
+	 * <p>
+	 * This method is intended for internal use, for example by
+	 * {@link am.ik.yavi.builder.ValidatorBuilder} when nesting this validator.
 	 * @param action callback per
-	 * {@code Pair&lt;ConstraintCondition&lt;T&gt;, Validator&lt;T&gt;&gt;}.
+	 * {@code Pair&lt;ConstraintCondition&lt;T&gt;, Validatable&lt;T&gt;&gt;}.
 	 */
 	public void forEachConditionalValidator(Consumer<Pair<ConstraintCondition<T>, Validatable<T>>> action) {
 		this.conditionalValidators.forEach(action);
 	}
 
 	/**
-	 * Validates the target object and returns any constraint violations detected.
-	 * 
+	 * Validates the target object and returns the constraint violations.
+	 *
 	 * <p>
-	 * This method performs validation against all constraints defined in this validator
-	 * for the given target object. The validation process includes:
-	 * <ul>
-	 * <li>Basic property validation using the defined constraint predicates</li>
-	 * <li>Collection element validation (if any collection validators are defined)</li>
-	 * <li>Conditional validation (if any conditional validators are defined)</li>
-	 * </ul>
-	 * 
+	 * Validation applies the constraint predicates, then the collection validators, then
+	 * the conditional validators whose condition matches. Nested objects are validated
+	 * only when they are not {@code null}; a {@code null} entry in a validated collection
+	 * is reported as an {@code object.notNull} violation. Violation names are built from
+	 * the prefix, the property name and, for collection elements, the element index.
+	 *
 	 * <p>
-	 * If fail-fast mode is enabled, the validation will stop upon the first violated
-	 * constraint. Otherwise, it will collect all constraint violations.
-	 * 
-	 * <p>
-	 * The locale parameter is used for message formatting of constraint violation
-	 * messages. The constraint context provides additional information that can be used
-	 * by conditional validators.
+	 * When fail-fast mode is enabled, validation returns as soon as the first violation
+	 * is found. Otherwise all violations are collected. The given locale is used to
+	 * format the violation messages, and the constraint context is passed to conditional
+	 * validators.
 	 * @param target the object to validate, must not be null
 	 * @param locale the locale for message formatting
-	 * @param constraintContext additional context for validation
+	 * @param constraintContext context used by conditional validators
 	 * @return constraint violations detected during validation, or an empty container if
 	 * no violations
 	 * @throws IllegalArgumentException if target is null
@@ -298,42 +257,15 @@ public class Validator<T> implements Validatable<T> {
 	}
 
 	/**
-	 * Returns an applicative validator based on this validator.
-	 * 
-	 * <p>
-	 * An applicative validator provides a functional programming style approach to
-	 * validation, allowing the composition of validation results using applicative
-	 * functors. This enables validating an object and transforming the result in a fluent
-	 * style.
-	 * 
-	 * <p>
-	 * The returned applicative validator shares the same validation rules as this
-	 * validator but provides additional methods for composing validation results with
-	 * functions.
+	 * Returns an {@link ApplicativeValidator} based on this validator.
 	 *
 	 * <p>
-	 * Example usage: <pre>{@code
-	 * // Create an applicative validator
-	 * ApplicativeValidator<Person> applicative = validator.applicative();
-	 * 
-	 * // Validate and get a Validated result
-	 * Validated<Person> result = applicative.validate(person);
-	 * 
-	 * // Check if validation passed and get the value
-	 * if (result.isValid()) {
-	 *     Person validPerson = result.value();
-	 *     // Do something with the valid person
-	 * } else {
-	 *     ConstraintViolations violations = result.errors();
-	 *     // Handle validation errors
-	 * }
-	 * 
-	 * // Combining multiple validations
-	 * Validated<Country> countryResult = Country.validator().applicative().validate(country);
-	 * Validated<String> streetResult = streetValidator.validate(street);
-	 * Validated<PhoneNumber> phoneResult = PhoneNumber.validator().applicative().validate(phoneNumber);
-	 * 
-	 * // Combine results with a constructor to create a composite object
+	 * The returned validator applies the same constraints and wraps the result in a
+	 * {@link Validated}, which can be combined with other validations to build a
+	 * composite value in applicative style.
+	 *
+	 * <p>
+	 * Example: <pre>{@code
 	 * Validated<Address> addressResult = countryResult
 	 *     .combine(streetResult)
 	 *     .combine(phoneResult)

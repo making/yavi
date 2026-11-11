@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.meta;
 
@@ -21,6 +10,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Marks a constructor or method whose arguments the annotation processor turns into
+ * metadata constants.
+ *
+ * <p>
+ * For a constructor of {@code Foo}, the processor generates {@code _FooArgumentsMeta};
+ * for a method {@code bar} of {@code Foo}, it generates {@code _FooBarArgumentsMeta}, in
+ * which the receiver object is the first argument. The constants reference an
+ * {@code am.ik.yavi.arguments.ArgumentsN} container and are used with the builder passed
+ * to {@link am.ik.yavi.builder.ArgumentsValidatorBuilder#of}. The annotation has
+ * {@link RetentionPolicy#SOURCE} retention, so it is not present at runtime.
+ *
  * @since 0.4.0
  */
 @Target({ ElementType.CONSTRUCTOR, ElementType.METHOD })

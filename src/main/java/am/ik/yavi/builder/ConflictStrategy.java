@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.builder;
 
@@ -20,24 +9,35 @@ import java.util.List;
 import am.ik.yavi.core.ConstraintPredicates;
 
 /**
- * Conflict Strategy that defines the behavior when a constraint name conflicts when
- * adding a constraint.
+ * Defines how a repeated constraint name is resolved when a validator is built.
+ *
+ * <p>
+ * A strategy is set with {@link ValidatorBuilder#conflictStrategy(ConflictStrategy)} and
+ * is applied by {@link ValidatorBuilder#build()} for each constraint whose name is
+ * already present. The strategy may modify the list of existing predicates; the resulting
+ * list is used for the built validator.
  *
  * @since 0.13.0
+ * @see ValidatorBuilder#conflictStrategy(ConflictStrategy)
  */
 @FunctionalInterface
 public interface ConflictStrategy {
 
 	/**
-	 * Define how to resolve conflicts of a constraint name when adding a constraint.
-	 * @param predicatesList existing predicates list
-	 * @param predicates new (conflicting) predicate
-	 * @param <T> target type
+	 * Resolves a name conflict between existing predicates and a new predicate.
+	 *
+	 * <p>
+	 * This method is called with the mutable list of existing predicates for the name.
+	 * Implementations may clear it, replace its entries or leave it unchanged; the new
+	 * predicate is appended after this method returns.
+	 * @param <T> the type of the target object
+	 * @param predicatesList the mutable list of existing predicates with the same name
+	 * @param predicates the new predicate whose name conflicts
 	 */
 	<T> void resolveConflict(List<ConstraintPredicates<T, ?>> predicatesList, ConstraintPredicates<T, ?> predicates);
 
 	/**
-	 * Do nothing if a conflict occurs. That means simply appending the predicate.
+	 * Keeps the existing predicates and appends the new predicate.
 	 */
 	ConflictStrategy NOOP = new ConflictStrategy() {
 		@Override
@@ -48,7 +48,7 @@ public interface ConflictStrategy {
 	};
 
 	/**
-	 * If there is a conflict, remove the existing predicates and adopt the new predicate.
+	 * Removes the existing predicates so that only the new predicate is used.
 	 */
 	ConflictStrategy OVERRIDE = new ConflictStrategy() {
 		@Override

@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.message;
 
@@ -22,19 +11,21 @@ import java.util.Objects;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
- * <code>MessageFormatter</code> implementation that delegates formatting to
- * <code>MessageSource</code>.<br>
- * This can adopt Spring Framework's <code>MessageSource</code> as follows:
+ * A {@link MessageFormatter} that looks up localized messages through a
+ * {@link MessageSource}.
  *
- * <pre>
- * <code>
+ * <p>
+ * The default message format is first formatted with {@link MessageFormat} and passed to
+ * the message source as the fallback. This allows Spring Framework's
+ * {@code MessageSource} to be used as follows:
+ *
+ * <pre>{@code
  * org.springframework.context.MessageSource messageSource = ...;
- * Validator&lt;CartItem&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
- *                        .messageFormatter(new MessageSourceMessageFormatter(messageSource::getMessage))
- *                        .constraint(CartItem::getQuantity, "quantity", c -&gt; c.greaterThan(0))
- *                        .constraint(...)
- *                        .build();
- * </code> </pre>
+ * Validator<CartItem> validator = ValidatorBuilder.<CartItem>of()
+ *         .messageFormatter(new MessageSourceMessageFormatter(messageSource::getMessage))
+ *         .constraint(CartItem::getQuantity, "quantity", c -> c.greaterThan(0))
+ *         .build();
+ * }</pre>
  *
  * @author Toshiaki Maki
  * @since 0.5.0
@@ -43,10 +34,28 @@ public class MessageSourceMessageFormatter implements MessageFormatter {
 
 	private final MessageSource messageSource;
 
+	/**
+	 * Creates a formatter that delegates to the given message source.
+	 * @param messageSource the message source used to look up localized messages
+	 */
 	public MessageSourceMessageFormatter(MessageSource messageSource) {
 		this.messageSource = messageSource;
 	}
 
+	/**
+	 * Looks up a localized message for the given message id and formats it.
+	 *
+	 * <p>
+	 * The {@code defaultMessageFormat} is formatted with {@link MessageFormat} and passed
+	 * to the message source as the default message.
+	 * @param messageKey the message id used to look up a localized message
+	 * @param defaultMessageFormat the message format used when no localized message is
+	 * found
+	 * @param args the arguments referenced by placeholders in the message format
+	 * @param locale the locale used for the lookup and formatting
+	 * @return the formatted message
+	 * @throws NullPointerException if the message source returns {@code null}
+	 */
 	@Override
 	public String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale) {
 		final String defaultMessage = new MessageFormat(defaultMessageFormat, locale).format(args);
@@ -55,11 +64,19 @@ public class MessageSourceMessageFormatter implements MessageFormatter {
 	}
 
 	/**
-	 * A compatible interface of Spring Framework's <code>MessageSource</code>.
+	 * A compatible interface of Spring Framework's {@code MessageSource}.
 	 */
 	@FunctionalInterface
 	public interface MessageSource {
 
+		/**
+		 * Resolves a message for the given code.
+		 * @param code the message id to look up
+		 * @param args the arguments referenced by placeholders in the message
+		 * @param defaultMessage the message to use when no message is found for the code
+		 * @param locale the locale used for the lookup
+		 * @return the resolved message
+		 */
 		@Nullable
 		String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
 

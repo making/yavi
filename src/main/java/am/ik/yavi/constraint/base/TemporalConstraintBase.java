@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.constraint.base;
 
@@ -38,9 +27,16 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST;
 import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
 
 /**
- * This is the base class for constraints on Temporal classes. Methods in the class
- * require the {@link V} to extend Temporal.
+ * Base class for constraints on temporal values.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * actual comparison is delegated to the abstract methods of the concrete temporal type.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @param <V> the temporal type the constraints apply to
+ * @param <C> the concrete constraint type returned for method chaining
  * @author Diego Krupitza
  * @author Toshiaki Maki
  * @since 0.10.0
@@ -48,52 +44,145 @@ import static am.ik.yavi.core.ViolationMessage.Default.TEMPORAL_PAST_OR_PRESENT;
 public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C extends Constraint<T, V, C>>
 		extends ConstraintBase<T, V, C> {
 
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public TemporalConstraintBase() {
+	}
+
+	/**
+	 * Tests whether {@code a} is after {@code b}.
+	 * @param a the first temporal
+	 * @param b the second temporal
+	 * @return {@code true} if {@code a} is after {@code b}
+	 */
 	abstract protected boolean isAfter(V a, V b);
 
+	/**
+	 * Tests whether {@code a} is before {@code b}.
+	 * @param a the first temporal
+	 * @param b the second temporal
+	 * @return {@code true} if {@code a} is before {@code b}
+	 */
 	abstract protected boolean isBefore(V a, V b);
 
+	/**
+	 * Returns the current temporal for the given clock.
+	 * @param clock the clock to read the current time from
+	 * @return the current temporal
+	 */
 	abstract protected V getNow(Clock clock);
 
+	/**
+	 * Requires the value to be in the past according to the system default time zone.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.past} and the default
+	 * message {@code "{0}" must be a past date}.
+	 * </p>
+	 * @return this constraint
+	 */
 	public C past() {
 		return this.past(Clock.systemDefaultZone());
 	}
 
+	/**
+	 * Requires the value to be in the past according to the given clock.
+	 * @param clock the clock to read the current time from
+	 * @return this constraint
+	 */
 	public C past(Clock clock) {
 		return this.before(() -> this.getNow(clock), false).message(TEMPORAL_PAST);
 	}
 
+	/**
+	 * Requires the value to be in the past or in the present according to the system
+	 * default time zone.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.pastOrPresent} and the
+	 * default message {@code "{0}" must be a date in the past or in the present}.
+	 * </p>
+	 * @return this constraint
+	 */
 	public C pastOrPresent() {
 		return this.pastOrPresent(Clock.systemDefaultZone());
 	}
 
+	/**
+	 * Requires the value to be in the past or in the present according to the given
+	 * clock.
+	 * @param clock the clock to read the current time from
+	 * @return this constraint
+	 */
 	public C pastOrPresent(Clock clock) {
 		return this.beforeOrEqual(() -> this.getNow(clock), false).message(TEMPORAL_PAST_OR_PRESENT);
 	}
 
+	/**
+	 * Requires the value to be in the future according to the system default time zone.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.future} and the
+	 * default message {@code "{0}" must be a future date}.
+	 * </p>
+	 * @return this constraint
+	 */
 	public C future() {
 		return this.future(Clock.systemDefaultZone());
 	}
 
+	/**
+	 * Requires the value to be in the future according to the given clock.
+	 * @param clock the clock to read the current time from
+	 * @return this constraint
+	 */
 	public C future(Clock clock) {
 		return this.after(() -> this.getNow(clock), false).message(TEMPORAL_FUTURE);
 	}
 
+	/**
+	 * Requires the value to be in the present or in the future according to the system
+	 * default time zone.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.futureOrPresent} and
+	 * the default message {@code "{0}" must be a date in the present or in the future}.
+	 * </p>
+	 * @return this constraint
+	 */
 	public C futureOrPresent() {
 		return this.futureOrPresent(Clock.systemDefaultZone());
 	}
 
+	/**
+	 * Requires the value to be in the present or in the future according to the given
+	 * clock.
+	 * @param clock the clock to read the current time from
+	 * @return this constraint
+	 */
 	public C futureOrPresent(Clock clock) {
 		return this.afterOrEqual(() -> this.getNow(clock), false).message(TEMPORAL_FUTURE_OR_PRESENT);
 	}
 
 	/**
-	 * Check if the given temporal is before the supplied {@code other} <br>
-	 * You can specify whether to memoize the result of the supplier by using the argument
-	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
-	 * supplier return value changes each time, be aware that the value used to compare
-	 * the input values and the value contained in the error message can be different.
-	 * @param other the supplier providing the other temporal that is before
-	 * @param memoize whether to memoize the result of supplier
+	 * Requires the value to be before the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * If {@code memoize} is {@code true}, the supplier is called at most once and the
+	 * same value is used for the comparison and the violation message. If it is
+	 * {@code false} and the supplier returns a different value on each call, the value
+	 * used for the comparison and the one in the message may differ.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.before} and the
+	 * default message {@code "{0}" has to be before {1}}, where {@code {1}} is the
+	 * supplied temporal.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be before
+	 * @param memoize whether to memoize the result of the supplier
+	 * @return this constraint
 	 * @since 0.11.1
 	 */
 	public C before(Supplier<V> other, boolean memoize) {
@@ -105,25 +194,39 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	/**
-	 * Check if the given temporal if before the supplied {@code other}. <br>
-	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
-	 * cached to always return the same value and is not available if you want to
-	 * dynamically return different values.<br>
-	 * If you don't want to memoize, use {@link #before(Supplier, boolean)} instead.
-	 * @param other the supplier providing the other temporal that is before
+	 * Requires the value to be before the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * The result of the supplier is memoized: it is called at most once and the same
+	 * value is used for the comparison and the violation message. To evaluate the
+	 * supplier on every validation, use {@link #before(Supplier, boolean)} instead.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be before
+	 * @return this constraint
 	 */
 	public C before(Supplier<V> other) {
 		return this.before(other, true);
 	}
 
 	/**
-	 * Check if the given temporal is before or equals to the supplied {@code other}<br>
-	 * You can specify whether to memoize the result of the supplier by using the argument
-	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
-	 * supplier return value changes each time, be aware that the value used to compare
-	 * the input values and the value contained in the error message can be different.
-	 * @param other the supplier providing the other temporal that is before or equals to
-	 * @param memoize whether to memoize the result of supplier
+	 * Requires the value to be before or equal to the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * If {@code memoize} is {@code true}, the supplier is called at most once and the
+	 * same value is used for the comparison and the violation message. If it is
+	 * {@code false} and the supplier returns a different value on each call, the value
+	 * used for the comparison and the one in the message may differ.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.beforeOrEqual} and the
+	 * default message {@code "{0}" has to be before or equals to {1}}, where {@code {1}}
+	 * is the supplied temporal.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be before or
+	 * equal to
+	 * @param memoize whether to memoize the result of the supplier
+	 * @return this constraint
 	 * @since 0.11.1
 	 */
 	public C beforeOrEqual(Supplier<V> other, boolean memoize) {
@@ -135,26 +238,40 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	/**
-	 * Check if the given temporal if before or equals to the supplied {@code other}. <br>
-	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
-	 * cached to always return the same value and is not available if you want to
-	 * dynamically return different values.<br>
-	 * If you don't want to memoize, use {@link #beforeOrEqual(Supplier, boolean)}
+	 * Requires the value to be before or equal to the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * The result of the supplier is memoized: it is called at most once and the same
+	 * value is used for the comparison and the violation message. To evaluate the
+	 * supplier on every validation, use {@link #beforeOrEqual(Supplier, boolean)}
 	 * instead.
-	 * @param other the supplier providing the other temporal that is before or equals to
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be before or
+	 * equal to
+	 * @return this constraint
 	 */
 	public C beforeOrEqual(Supplier<V> other) {
 		return beforeOrEqual(other, true);
 	}
 
 	/**
-	 * Check if the given temporal is after the supplied {@code other}<br>
-	 * You can specify whether to memoize the result of the supplier by using the argument
-	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
-	 * supplier return value changes each time, be aware that the value used to compare
-	 * the input values and the value contained in the error message can be different.
-	 * @param other the supplier providing the other temporal that is after
-	 * @param memoize whether to memoize the result of supplier
+	 * Requires the value to be after the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * If {@code memoize} is {@code true}, the supplier is called at most once and the
+	 * same value is used for the comparison and the violation message. If it is
+	 * {@code false} and the supplier returns a different value on each call, the value
+	 * used for the comparison and the one in the message may differ.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.after} and the default
+	 * message {@code "{0}" has to be after {1}}, where {@code {1}} is the supplied
+	 * temporal.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be after
+	 * @param memoize whether to memoize the result of the supplier
+	 * @return this constraint
 	 * @since 0.11.1
 	 */
 	public C after(Supplier<V> other, boolean memoize) {
@@ -166,25 +283,39 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	/**
-	 * Check if the given temporal if after the supplied {@code other}. <br>
-	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
-	 * cached to always return the same value and is not available if you want to
-	 * dynamically return different values.<br>
-	 * If you don't want to memoize, use {@link #after(Supplier, boolean)} instead.
-	 * @param other the supplier providing the other temporal that is after
+	 * Requires the value to be after the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * The result of the supplier is memoized: it is called at most once and the same
+	 * value is used for the comparison and the violation message. To evaluate the
+	 * supplier on every validation, use {@link #after(Supplier, boolean)} instead.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be after
+	 * @return this constraint
 	 */
 	public C after(Supplier<V> other) {
 		return this.after(other, true);
 	}
 
 	/**
-	 * Check if the given temporal is after or equals to the supplied {@code other}<br>
-	 * You can specify whether to memoize the result of the supplier by using the argument
-	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
-	 * supplier return value changes each time, be aware that the value used to compare
-	 * the input values and the value contained in the error message can be different.
-	 * @param other the supplier providing the other temporal that is after or equals to
-	 * @param memoize whether to memoize the result of supplier
+	 * Requires the value to be after or equal to the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * If {@code memoize} is {@code true}, the supplier is called at most once and the
+	 * same value is used for the comparison and the violation message. If it is
+	 * {@code false} and the supplier returns a different value on each call, the value
+	 * used for the comparison and the one in the message may differ.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.afterOrEqual} and the
+	 * default message {@code "{0}" has to be after or equals to {1}}, where {@code {1}}
+	 * is the supplied temporal.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be after or equal
+	 * to
+	 * @param memoize whether to memoize the result of the supplier
+	 * @return this constraint
 	 * @since 0.11.1
 	 */
 	public C afterOrEqual(Supplier<V> other, boolean memoize) {
@@ -196,29 +327,47 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	/**
-	 * Check if the given temporal if after or equals to the supplied {@code other}. <br>
-	 * <strong>The result of the supplier is memoized</strong>. That means the supplier is
-	 * cached to always return the same value and is not available if you want to
-	 * dynamically return different values.<br>
-	 * If you don't want to memoize, use {@link #afterOrEqual(Supplier, boolean)} instead.
-	 * @param other the supplier providing the other temporal that is after or equals to
+	 * Requires the value to be after or equal to the temporal supplied by {@code other}.
+	 *
+	 * <p>
+	 * The result of the supplier is memoized: it is called at most once and the same
+	 * value is used for the comparison and the violation message. To evaluate the
+	 * supplier on every validation, use {@link #afterOrEqual(Supplier, boolean)} instead.
+	 * </p>
+	 * @param other the supplier providing the temporal the value has to be after or equal
+	 * to
+	 * @return this constraint
 	 */
 	public C afterOrEqual(Supplier<V> other) {
 		return afterOrEqual(other, true);
 	}
 
 	/**
-	 * Is the given temporal between the supplied {@code rangeFrom} and {@code rangeTo}.
-	 * The range is not inclusive. This means if the dates are equal (rangeFrom = x =
-	 * rangeTo) it is invalid<br>
-	 * You can specify whether to memoize the result of the supplier by using the argument
-	 * <code>memoize</code>. If you set <code>memoize</code> to <code>false</code> and the
-	 * supplier return value changes each time, be aware that the value used to compare
-	 * the input values and the value contained in the error message can be different.
-	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
-	 * in
-	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
-	 * @param memoize whether to memoize the result of supplier
+	 * Requires the value to be between the temporals supplied by {@code rangeFrom} and
+	 * {@code rangeTo}.
+	 *
+	 * <p>
+	 * The range is exclusive on both ends: a value equal to either bound is invalid.
+	 * </p>
+	 *
+	 * <p>
+	 * If {@code memoize} is {@code true}, the suppliers are called at most once and the
+	 * same values are used for the comparison and the violation message. If it is
+	 * {@code false} and the suppliers return different values on each call, the values
+	 * used for the comparison and the ones in the message may differ.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.between} and the
+	 * default message {@code "{0}" has to be between {1} and {2}}, where {@code {1}} and
+	 * {@code {2}} are the supplied bounds.
+	 * </p>
+	 * @param rangeFrom the supplier providing the start of the range
+	 * @param rangeTo the supplier providing the end of the range
+	 * @param memoize whether to memoize the results of the suppliers
+	 * @return this constraint
+	 * @throws IllegalArgumentException if {@code rangeFrom} is after {@code rangeTo}; it
+	 * is thrown when the constraint is evaluated
 	 * @since 0.11.1
 	 */
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo, boolean memoize) {
@@ -236,21 +385,36 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 	}
 
 	/**
-	 * Is the given temporal between the supplied {@code rangeFrom} and {@code rangeTo}.
-	 * The range is not inclusive. This means if the dates are equal (rangeFrom = x =
-	 * rangeTo) it is invalid <strong>The result of the supplier is memoized</strong>.
-	 * That means the supplier is cached to always return the same value and is not
-	 * available if you want to dynamically return different values.<br>
-	 * If you don't want to memoize, use {@link #between(Supplier, Supplier, boolean)}
-	 * instead.
-	 * @param rangeFrom the supplier provide the start of the range the temporal has to be
-	 * in
-	 * @param rangeTo the supplier provide the end of the range the temporal has to be in
+	 * Requires the value to be between the temporals supplied by {@code rangeFrom} and
+	 * {@code rangeTo}.
+	 *
+	 * <p>
+	 * The range is exclusive on both ends. The results of the suppliers are memoized: the
+	 * suppliers are called at most once and the same values are used for the comparison
+	 * and the violation message. To evaluate the suppliers on every validation, use
+	 * {@link #between(Supplier, Supplier, boolean)} instead.
+	 * </p>
+	 * @param rangeFrom the supplier providing the start of the range
+	 * @param rangeTo the supplier providing the end of the range
+	 * @return this constraint
+	 * @throws IllegalArgumentException if {@code rangeFrom} is after {@code rangeTo}; it
+	 * is thrown when the constraint is evaluated
 	 */
 	public C between(Supplier<V> rangeFrom, Supplier<V> rangeTo) {
 		return this.between(rangeFrom, rangeTo, true);
 	}
 
+	/**
+	 * Requires the given predicate to accept the value of the field of the temporal.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code temporal.field} and the default
+	 * message {@code The {1} of "{0}" is invalid}, where {@code {1}} is {@code field}.
+	 * </p>
+	 * @param field the temporal field to read from the value
+	 * @param predicate the predicate that has to accept the field value
+	 * @return this constraint
+	 */
 	public C fieldPredicate(TemporalField field, LongPredicate predicate) {
 		this.predicates()
 			.add(ConstraintPredicate.of(x -> predicate.test(x.getLong(field)), TEMPORAL_FIELD,
@@ -258,6 +422,13 @@ public abstract class TemporalConstraintBase<T, V extends TemporalAccessor, C ex
 		return cast();
 	}
 
+	/**
+	 * Returns a supplier that calls the given supplier at most once and returns the
+	 * cached result afterwards.
+	 * @param delegate the supplier to memoize
+	 * @param <T> the type of the supplied value
+	 * @return the memoizing supplier
+	 */
 	static <T> Supplier<T> memoize(Supplier<T> delegate) {
 		final AtomicReference<T> supplier = new AtomicReference<>();
 		return () -> {

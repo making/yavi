@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.processor;
 
@@ -27,6 +16,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Builds the source of the metadata constants written by {@link ConstraintMetaProcessor}.
+ *
+ * <p>
+ * A constant is an anonymous implementation of the {@link am.ik.yavi.meta.ConstraintMeta}
+ * subtype that matches the property type, or of
+ * {@link am.ik.yavi.meta.ObjectConstraintMeta} for a type without a dedicated subtype.
+ *
  * @since 0.4.0
  */
 class ConstraintMetaTemplate {
@@ -53,6 +49,15 @@ class ConstraintMetaTemplate {
 		}
 	};
 
+	/**
+	 * Returns the source of a property metadata constant for a bean.
+	 * @param className the fully qualified name of the annotated type
+	 * @param type the type of the property value
+	 * @param target the property name and, without getter naming, the method name
+	 * @param method the method or getter that extracts the value
+	 * @param useField whether the extractor reads the field instead of the method
+	 * @return the source of the constant
+	 */
 	static String template(String className, String type, String target, String method, boolean useField) {
 		final String simpleType = simpleType(type);
 		final String metaType = "Object".equals(simpleType) ? className + ", " + type : className;
@@ -72,6 +77,14 @@ class ConstraintMetaTemplate {
 				useField ? "x  -> x." + target : className + "::" + method);
 	}
 
+	/**
+	 * Returns the source of a metadata constant for a constructor or method argument.
+	 * @param className the type of the {@code ArgumentsN} container
+	 * @param type the type of the argument value
+	 * @param target the property name
+	 * @param position the one-based position of the argument in the container
+	 * @return the source of the constant
+	 */
 	static String templateArgument(String className, String type, String target, int position) {
 		final String simpleType = simpleType(type);
 		final String metaType = "Object".equals(simpleType) ? className + ", " + type : className;

@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.builder;
 
@@ -20,16 +9,37 @@ import java.util.function.Function;
 import am.ik.yavi.core.ValueValidator;
 
 /**
- * Builder for ValueValidator
+ * Builds a {@link ValueValidator} that validates a single value and produces a value from
+ * it.
  *
- * @param <A> argument type
- * @param <R> result type
+ * <p>
+ * Implementations exist for the supported value types, for example
+ * {@link StringValidatorBuilder} and {@link IntegerValidatorBuilder}. They are used by
+ * {@link YaviArguments} to create validators for constructor or method arguments. The
+ * built validator reports constraint violations and produces no value when validation
+ * fails.
+ *
+ * @param <A> the type of the value to validate
+ * @param <R> the type of the value produced when validation succeeds
  * @since 0.14.0
+ * @see am.ik.yavi.core.ValueValidator
  */
 public interface ValueValidatorBuilder<A, R> {
 
+	/**
+	 * Builds the value validator. The produced value is the validated value itself or the
+	 * value defined by the implementation.
+	 * @return the value validator
+	 */
 	ValueValidator<? super A, ? extends R> build();
 
+	/**
+	 * Builds the value validator that maps the validated value with the given function.
+	 * The function is not applied when validation fails.
+	 * @param <T> the type of the mapped value
+	 * @param mapper function that maps the validated value
+	 * @return the value validator
+	 */
 	<T> ValueValidator<? super A, ? extends T> build(Function<? super R, ? extends T> mapper);
 
 }

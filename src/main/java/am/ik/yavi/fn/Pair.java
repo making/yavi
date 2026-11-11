@@ -1,28 +1,33 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.fn;
 
 import java.util.Objects;
 
+/**
+ * An immutable pair of two values.
+ *
+ * <p>
+ * Neither value is required to be non-{@code null}. Two pairs are equal if both of their
+ * values are equal.
+ *
+ * @param <F> type of the first value
+ * @param <S> type of the second value
+ * @since 0.0.18
+ */
 public final class Pair<F, S> {
 
 	private final F first;
 
 	private final S second;
 
+	/**
+	 * Creates a pair of the given values.
+	 * @param first the first value
+	 * @param second the second value
+	 */
 	public Pair(F first, S second) {
 		this.first = first;
 		this.second = second;
@@ -38,6 +43,10 @@ public final class Pair<F, S> {
 		return Objects.equals(first, pair.first) && Objects.equals(second, pair.second);
 	}
 
+	/**
+	 * Returns the first value.
+	 * @return the first value
+	 */
 	public F first() {
 		return this.first;
 	}
@@ -47,6 +56,10 @@ public final class Pair<F, S> {
 		return Objects.hash(first, second);
 	}
 
+	/**
+	 * Returns the second value.
+	 * @return the second value
+	 */
 	public S second() {
 		return this.second;
 	}

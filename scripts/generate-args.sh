@@ -12,9 +12,9 @@ for i in `seq 1 ${n}`;do
   for j in `seq 1 ${i}`; do
     arg_methods+="
 	/**
-	 * Returns the argument at position ${j}.
+	 * Returns the argument at position ${j}, which may be {@code null}.
 	 *
-	 * @return the argument at position ${j}
+	 * @return the argument at position ${j}, possibly {@code null}
 	 */
 	@Nullable
 	public A${j} arg${j}() {
@@ -48,7 +48,11 @@ for i in `seq 1 ${n}`;do
       # Add first method
       first_methods+="
 	/**
-	 * Returns a new Arguments${j} instance containing only the first ${j} arguments.
+	 * Returns a new {@link Arguments${j}} containing the arguments at positions 1 to
+	 * ${j} of this container.
+	 *
+	 * <p>
+	 * The returned container holds the same argument values; no validation is performed.
 	 *
 	 * @return an Arguments${j} instance with arguments from arg1 to arg${j}
 	 * @since 0.16.0
@@ -88,7 +92,11 @@ for i in `seq 1 ${n}`;do
       # Add last method
       last_methods+="
 	/**
-	 * Returns a new Arguments${j} instance containing only the last ${j} arguments.
+	 * Returns a new {@link Arguments${j}} containing the arguments at positions
+	 * ${start_pos} to ${i} of this container.
+	 *
+	 * <p>
+	 * The returned container holds the same argument values; no validation is performed.
 	 *
 	 * @return an Arguments${j} instance with arguments from arg${start_pos} to arg${i}
 	 * @since 0.16.0
@@ -106,10 +114,14 @@ for i in `seq 1 ${n}`;do
     new_size=$((${i} + 1))
     append_method="
 	/**
-	 * Appends an additional argument to create a new, larger Arguments instance.
+	 * Returns a new {@link Arguments${new_size}} with the given argument appended after
+	 * the existing arguments.
+	 *
+	 * <p>
+	 * The existing argument values are copied by reference; no validation is performed.
 	 *
 	 * @param <B> the type of the argument to append
-	 * @param arg the argument to append
+	 * @param arg the argument to append, possibly {@code null}
 	 * @return a new Arguments${new_size} instance with the additional argument
 	 * @since 0.16.0
 	 */
@@ -143,10 +155,14 @@ for i in `seq 1 ${n}`;do
     new_size=$((${i} + 1))
     prepend_method="
 	/**
-	 * Prepends an additional argument to create a new, larger Arguments instance.
+	 * Returns a new {@link Arguments${new_size}} with the given argument prepended before
+	 * the existing arguments.
+	 *
+	 * <p>
+	 * The existing argument values are copied by reference; no validation is performed.
 	 *
 	 * @param <B> the type of the argument to prepend
-	 * @param arg the argument to prepend
+	 * @param arg the argument to prepend, possibly {@code null}
 	 * @return a new Arguments${new_size} instance with the additional argument
 	 * @since 0.16.0
 	 */
@@ -198,7 +214,10 @@ for i in `seq 1 ${n}`;do
     # Add reverse method
     reverse_method="
 	/**
-	 * Returns a new Arguments${i} instance with the arguments in reverse order.
+	 * Returns a new {@link Arguments${i}} with the arguments in reverse order.
+	 *
+	 * <p>
+	 * The argument values are copied by reference; no validation is performed.
 	 *
 	 * @return an Arguments${i} instance with arguments in reverse order
 	 * @since 0.16.0
@@ -222,7 +241,7 @@ for i in `seq 1 ${n}`;do
   type_param_docs=""
   for j in `seq 1 ${i}`; do
     type_param_docs="${type_param_docs}
- * @param <A${j}> the type of argument at position ${j}"
+ * @param <A${j}> the type of the argument at position ${j}"
   done
 
   # Create field declarations for all arguments
@@ -305,21 +324,16 @@ for i in `seq 1 ${n}`;do
   # Build the class definition (no inheritance now)
   class_definition="${class}<${class_type_params}>"
 
+  if [ "${i}" == "1" ]; then
+    argument_suffix=""
+  else
+    argument_suffix="s"
+  fi
+
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -329,8 +343,19 @@ import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.jsr305.Nullable;
 
 /**
- * A container class that holds ${i} arguments, providing type-safe access
- * to each argument and mapping functionality to transform these arguments.
+ * An immutable container of ${i} argument${argument_suffix}.
+ *
+ * <p>
+ * Instances are created with {@link Arguments#of}. The {@code wrap()} and
+ * {@code unwrap(...)} methods of {@link Arguments${i}Validator} convert between
+ * validating the arguments individually and validating this container as a single
+ * value. This class only stores, compares and maps the argument values; it performs no
+ * validation, and an argument may be {@code null}.
+ *
+ * <p>
+ * The {@code first*}, {@code last*}, {@code append}, {@code prepend} and
+ * {@code reverse} methods derive another container from the same argument values.
+ * Equality and the hash code are based on the argument values and the concrete class.
  *
  * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh${type_param_docs}
  * @since 0.3.0
@@ -339,7 +364,8 @@ public final class ${class_definition} {
 ${field_declarations}
 
 	/**
-	 * Creates a new Arguments${i} instance with the provided arguments.
+	 * Creates a container with the given arguments. The arguments may be {@code null}
+	 * and are stored as is.
 	 *
 	 * @param ${param_docs}
 	 */
@@ -347,7 +373,12 @@ ${field_declarations}
 	}
 ${arg_methods}
 	/**
-	 * Applies the provided mapping function to all arguments contained in this instance.
+	 * Applies the given function to every argument contained in this container and
+	 * returns its result.
+	 *
+	 * <p>
+	 * No validation is performed and the arguments are passed as they are, possibly
+	 * {@code null}.
 	 *
 	 * @param <X> the type of the result
 	 * @param mapper the function to apply to the arguments
@@ -358,10 +389,12 @@ ${arg_methods}
 	}${first_methods}${last_methods}${append_method}${prepend_method}${reverse_method}
 
 	/**
-	 * Indicates whether some other object is "equal to" this one.
+	 * Returns whether the given object is an {@code Arguments${i}} with equal argument
+	 * values. Two containers are equal only if they have the same concrete class and
+	 * every argument is equal, using {@link java.util.Objects#equals(Object, Object)}.
 	 *
 	 * @param obj the reference object with which to compare
-	 * @return true if this object is the same as the obj argument; false otherwise
+	 * @return true if the given object holds equal argument values; false otherwise
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -377,7 +410,8 @@ ${arg_methods}
 	}
 
 	/**
-	 * Returns a hash code value for the object.
+	 * Returns a hash code consistent with {@link #equals(Object)}, computed from all
+	 * argument values.
 	 *
 	 * @return a hash code value for this object
 	 */
@@ -387,9 +421,9 @@ ${arg_methods}
 	}
 
 	/**
-	 * Returns a string representation of the object.
+	 * Returns a string representation of this container including all argument values.
 	 *
-	 * @return a string representation of the object
+	 * @return a string representation of this object
 	 */
 	@Override
 	public String toString() {
@@ -401,19 +435,8 @@ done
 
 cat << EOF > $(dirname $0)/../src/main/java/am/ik/yavi/builder/ArgumentsValidatorBuilder.java
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.builder;
 
@@ -432,13 +455,59 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+ * Builds arguments validators that validate a fixed number of arguments and map them to
+ * a result.
+ *
+ * <p>
+ * {@link #of} takes the function that creates the result (typically a constructor or a
+ * method reference) and returns the builder for the matching number of arguments. The
+ * validation rules are then added with the {@link ValidatorBuilder} of the wrapped
+ * arguments object. For example: <pre>{@code
+ * Arguments3Validator<String, String, Integer, User> validator = ArgumentsValidatorBuilder
+ *     .of(User::new)
+ *     .builder(b -> b._string(Arguments3::arg1, "name", c -> c.notNull())
+ *         ._string(Arguments3::arg2, "email", c -> c.email())
+ *         ._integer(Arguments3::arg3, "age", c -> c.notNull()))
+ *     .build();
+ * }</pre>
+ *
+ * <p>
+ * The built validator validates all arguments and reports a violation for each invalid
+ * argument. The mapper is applied only when no violation exists.
+ *
+ * <p>
+ * The source of this class is generated by
+ * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
  * @since 0.3.0
  */
 public final class ArgumentsValidatorBuilder {
+
+	/**
+	 * Creates a new builder.
+	 *
+	 * <p>
+	 * Builders are normally obtained with the static {@link #of} methods.
+	 * @since 0.3.0
+	 */
+	public ArgumentsValidatorBuilder() {
+	}
 $(for i in `seq 1 ${n}`;do
   cat <<EOJ
+	/**
+	 * Returns a builder for a validator that validates the arguments and maps them to
+	 * the result with the given function.
+	 *
+	 * <p>
+	 * The function is applied only after all arguments have been validated.
+	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
+	 * @param <X> type of the validated result
+	 * @param mapper function that creates the result from the validated arguments; must
+	 * not be {@code null}
+	 * @return a new builder
+	 * @throws NullPointerException if {@code mapper} is {@code null}
+	 * @since 0.3.0
+	 */
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> Arguments${i}ValidatorBuilder<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> of(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		return new Arguments${i}ValidatorBuilder<>(mapper);
 	}
@@ -450,22 +519,52 @@ $(for i in `seq 1 ${n}`;do
   arguments="${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>"
   cat <<EOJ
 	/**
+	 * Builds an {@link Arguments${i}Validator} that validates the arguments and maps
+	 * them to the result with the function given to
+	 * {@link ArgumentsValidatorBuilder#of}.
+	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
+	 * @param <X> type of the validated result
 	 * @since 0.3.0
 	 */
 	public static final class ${arguments} {
 		private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
 		private ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>> builder;
 
+		/**
+		 * Creates a builder that maps the validated arguments with the given function.
+		 * @param mapper function that creates the result from the validated arguments;
+		 * must not be {@code null}
+		 * @throws NullPointerException if {@code mapper} is {@code null}
+		 * @since 0.3.0
+		 */
 		public ${class}(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 			this.mapper = Objects.requireNonNull(mapper, "'mapper' must not be null.");
 		}
 
+		/**
+		 * Sets the validation rules of the arguments with the given function that
+		 * configures a new {@link ValidatorBuilder} for {@link Arguments${i}}.
+		 *
+		 * <p>
+		 * Calling this method replaces any rules set previously.
+		 * @param definition function that configures the validator builder; must not be
+		 * {@code null}
+		 * @return this builder
+		 * @throws NullPointerException if {@code definition} is {@code null}
+		 * @since 0.3.0
+		 */
 		public ${arguments} builder(
 				Function<? super ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>, ? extends ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>>> definition) {
 			this.builder = definition.apply(ValidatorBuilder.of());
 			return this;
 		}
 
+		/**
+		 * Builds the validator from the configured rules and the mapper.
+		 * @return a new arguments validator
+		 * @throws NullPointerException if no rules were set with {@link #builder}
+		 * @since 0.3.0
+		 */
 		public Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> build() {
 			return new DefaultArguments${i}Validator<>(this.builder.build(), this.mapper);
 		}
@@ -483,22 +582,16 @@ for i in `seq 1 ${n}`;do
   wrapArguments="Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>"
   args="$(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//')"
   as="$(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')"
+  if [ "${i}" == "1" ]; then
+    argument_suffix=""
+  else
+    argument_suffix="s"
+  fi
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -539,8 +632,25 @@ EOD
 fi)
 
 /**
- * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+ * Validates ${i} argument${argument_suffix} and produces a value of type {@code X}.
  *
+ * <p>
+ * Validation is applicative: all violations are accumulated in the returned
+ * {@link Validated} instead of stopping at the first one, and a value is produced only
+ * when every constraint succeeds. A {@code null} argument is accepted unless a configured
+ * constraint rejects it (for example {@code notNull()}); see
+ * {@link am.ik.yavi.core.NullAs}.
+ *
+ * <p>
+ * Instances are usually created with
+ * {@link am.ik.yavi.builder.ArgumentsValidatorBuilder#of} or a typed builder, and with
+ * the factories of {@link ArgumentsValidators}. The default methods adapt the input type
+ * with {@link #compose}, transform the validated value with {@link #map}, and add more
+ * validators through the splitting and combining factories.
+ *
+ * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+$(for j in `seq 1 ${i}`; do echo " * @param <A${j}> the type of the argument at position ${j}"; done)
+ * @param <X> the type of the value produced when validation succeeds
  * @since 0.3.0
  */
 @FunctionalInterface
@@ -549,11 +659,12 @@ cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> extends ValueValidator<A1, X> {
 
 	/**
-	 * Convert {@link Validatable} instance into {@link Arguments1Validator}
+	 * Returns an {@link Arguments1Validator} that validates the argument with the given
+	 * {@link Validatable} and returns the validated object.
 	 *
-	 * @param validator core validator
-	 * @param <X> target class
-	 * @return arguments1 validator
+	 * @param validator the core validator
+	 * @param <X> the type of the object to validate
+	 * @return an arguments1 validator for the given validatable
 	 * @since 0.8.0
 	 */
 	static <X> Arguments1Validator<X, X> from(Validatable<X> validator) {
@@ -561,12 +672,13 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	}
 
 	/**
-	 * Convert {@link ValueValidator} instance into {@link Arguments1Validator}
+	 * Returns an {@link Arguments1Validator} that delegates to the given
+	 * {@link ValueValidator}.
 	 *
-	 * @param valueValidator value validator
-	 * @param <A1> class of argument1
-	 * @param <X> target class
-	 * @return arguments1 validator
+	 * @param valueValidator the value validator to delegate to
+	 * @param <A1> the type of the argument
+	 * @param <X> the type of the value produced on success
+	 * @return an arguments1 validator for the given value validator
 	 * @since 0.8.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
@@ -574,11 +686,16 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	}
 
 	/**
-	 * Convert an Arguments1Validator that validates Arguments1&lt;A1&gt; to an Arguments1Validator&lt;A1, X&gt;
+	 * Returns an {@link Arguments1Validator} that takes the argument directly instead of
+	 * an {@link Arguments1} container.
 	 *
-	 * @param validator validator for Arguments1&lt;A1&gt;
-	 * @param <A1> class of argument1
-	 * @param <X> target class
+	 * <p>
+	 * The returned validator wraps the argument with {@link Arguments#of} before
+	 * delegating to the given validator.
+	 *
+	 * @param validator a validator for {@code Arguments1<A1>}
+	 * @param <A1> the type of the argument
+	 * @param <X> the type of the value produced on success
 	 * @return arguments1 validator that takes an A1 directly
 	 * @since 0.16.0
 	 */
@@ -601,12 +718,16 @@ cat <<EOD
 public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> {
 
 	/**
-	 * Convert an Arguments1Validator that validates Arguments${i} to an ${class}
+	 * Returns an {@link Arguments${i}Validator} that takes the arguments directly
+	 * instead of an {@link Arguments${i}} container.
 	 *
-	 * @param validator validator for Arguments${i}
-	 * @param <A1> type of first argument
-$(if [ ${i} -gt 1 ]; then for j in $(seq 2 ${i}); do echo "	 * @param <A${j}> type of argument at position ${j}"; done; fi)
-	 * @param <X> target result type
+	 * <p>
+	 * The returned validator wraps the arguments with {@link Arguments#of} before
+	 * delegating to the given validator.
+	 *
+	 * @param validator a validator for {@code Arguments${i}} and its argument types
+$(for j in `seq 1 ${i}`; do echo "	 * @param <A${j}> the type of the argument at position ${j}"; done)
+	 * @param <X> the type of the value produced on success
 	 * @return arguments${i} validator that takes arguments directly
 	 * @since 0.16.0
 	 */
@@ -629,20 +750,43 @@ fi)
 
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-  @Override
+	/**
+	 * Validates the argument and returns the validated value or the accumulated
+	 * violations.
+	 *
+	 * @param a1 the argument to validate, possibly {@code null}
+	 * @param locale the locale targeted for the violation messages
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the validated value or the constraint violations
+	 */
+	@Override
 	Validated<X> validate(${args},
 			Locale locale, ConstraintContext constraintContext);
 EOD
 fi)
 $(if [ "${i}" != "1" ];then
 cat <<EOD
+	/**
+	 * Validates the arguments and returns the validated value or the accumulated
+	 * violations.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param locale the locale targeted for the violation messages
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the validated value or the constraint violations
+	 */
 	Validated<X> validate(${args},
 			Locale locale, ConstraintContext constraintContext);
 EOD
 fi)
 
 	/**
-	 * Convert this validator to one that validates Arguments${i} as a single object.
+	 * Returns a validator that takes a single {@link Arguments${i}} and validates the
+	 * arguments it contains.
+	 *
+	 * <p>
+	 * This is the inverse of {@link #unwrap}. A {@code null} container is rejected with a
+	 * {@link NullPointerException} when the returned validator is applied.
 	 *
 	 * @return a validator that takes an Arguments${i}
 	 * @since 0.16.0
@@ -665,6 +809,11 @@ fi)
 	}
 
 	/**
+	 * Returns a validator that maps the validated value with the given function.
+	 *
+	 * @param mapper the function applied to the validated value
+	 * @param <X2> the type of the value produced after mapping
+	 * @return a validator with the mapped result type
 	 * @deprecated Use {@link #map(Function)} instead.
 	 * @since 0.7.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
@@ -674,11 +823,12 @@ fi)
 	}
 
 	/**
-	 * Maps the validated value to a new type using the provided mapper function. This is
-	 * a transformation operation that applies the function only if validation succeeds.
-	 * @param mapper function to transform the validated value
-	 * @param <X2> the type after transformation
-	 * @return a value validator that applies the mapping function after validation
+	 * Returns a validator that maps the value produced on success with the given
+	 * function. The function is not applied when validation fails.
+	 *
+	 * @param mapper the function applied to the validated value
+	 * @param <X2> the type of the value produced after mapping
+	 * @return a validator with the mapped result type
 	 * @since 0.17.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> map(Function<? super X, ? extends X2> mapper) {
@@ -697,6 +847,16 @@ fi)
 	}
 
 	/**
+	 * Returns a validator that passes the value produced on success to the given
+	 * validator.
+	 *
+	 * <p>
+	 * If this validator fails, the given validator is not invoked and its violations are
+	 * not collected.
+	 *
+	 * @param validator the validator applied to the validated value
+	 * @param <X2> the type of the value produced by the given validator
+	 * @return a chained validator
 	 * @since 0.11.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
@@ -717,6 +877,15 @@ fi)
 	}
 
 	/**
+	 * Returns a validator that converts its input with the given function before
+	 * validating it.
+	 *
+	 * <p>
+	 * The function is not validated; its result is passed to this validator.
+	 *
+	 * @param mapper the function that converts the input of the new validator
+	 * @param <A> the input type of the new validator
+	 * @return a validator with the adapted input type
 	 * @since 0.7.0
 	 */
 $(if [ "${i}" == "1" ];then
@@ -757,38 +926,104 @@ EOD
 fi)
 $(cat <<EOD
 	/**
+	 * Returns a validator that produces a {@link Supplier} of the validated value.
+	 *
+	 * <p>
+	 * The supplier is created only when validation succeeds; obtaining the value from it
+	 * applies the mapper at that time. The default implementation throws
+	 * {@link UnsupportedOperationException}; concrete validators override it.
+	 *
+	 * @return a validator that produces a supplier of the validated value
 	 * @since 0.10.0
 	 */
 	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
 		throw new UnsupportedOperationException("lazy is not implemented!");
 	}
 
+	/**
+	 * Validates the arguments with the default locale and
+	 * {@link ConstraintGroup#DEFAULT}.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @return the validated value or the constraint violations
+	 */
 	default Validated<X> validate(${args}) {
 		return this.validate(${as}, Locale.getDefault(), ConstraintGroup.DEFAULT);
 	}
 
+	/**
+	 * Validates the arguments with the given constraint context and the default locale.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the validated value or the constraint violations
+	 */
 	default Validated<X> validate(${args}, ConstraintContext constraintContext) {
 		return this.validate(${as}, Locale.getDefault(), constraintContext);
 	}
 
+	/**
+	 * Validates the arguments with the given locale and
+	 * {@link ConstraintGroup#DEFAULT}.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param locale the locale targeted for the violation messages
+	 * @return the validated value or the constraint violations
+	 */
 	default Validated<X> validate(${args}, Locale locale) {
 		return this.validate(${as}, locale, ConstraintGroup.DEFAULT);
 	}
 
+	/**
+	 * Validates the arguments with the default locale and
+	 * {@link ConstraintGroup#DEFAULT} and returns the validated value.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @return the validated value
+	 * @throws ConstraintViolationsException if validation fails
+	 */
 	default X validated(${args}) throws ConstraintViolationsException {
 		return this.validate(${as}).orElseThrow(ConstraintViolationsException::new);
 	}
 
+	/**
+	 * Validates the arguments with the given constraint context and the default locale
+	 * and returns the validated value.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the validated value
+	 * @throws ConstraintViolationsException if validation fails
+	 */
 	default X validated(${args}, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
 		return this.validate(${as}, constraintContext)
 				.orElseThrow(ConstraintViolationsException::new);
 	}
 
+	/**
+	 * Validates the arguments with the given locale and
+	 * {@link ConstraintGroup#DEFAULT} and returns the validated value.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param locale the locale targeted for the violation messages
+	 * @return the validated value
+	 * @throws ConstraintViolationsException if validation fails
+	 */
 	default X validated(${args}, Locale locale) throws ConstraintViolationsException {
 		return this.validate(${as}, locale).orElseThrow(ConstraintViolationsException::new);
 	}
 
+	/**
+	 * Validates the arguments with the given locale and constraint context and returns
+	 * the validated value.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param locale the locale targeted for the violation messages
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the validated value
+	 * @throws ConstraintViolationsException if validation fails
+	 */
 	default X validated(${args}, Locale locale, ConstraintContext constraintContext)
 			throws ConstraintViolationsException {
 		return this.validate(${as}, locale, constraintContext)
@@ -798,6 +1033,17 @@ EOD)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
 	/**
+	 * Returns an {@link Arguments2Splitting} that validates this argument and the
+	 * argument accepted by the given validator independently.
+	 *
+	 * <p>
+	 * Call {@link Arguments2Splitting#apply} on the returned instance to create a
+	 * validator that combines the validated values.
+	 *
+	 * @param validator the validator applied to the second argument
+	 * @param <A2> the type of the second argument
+	 * @param <Y> the type of the value produced by the given validator
+	 * @return an arguments2 splitting instance
 	 * @since 0.7.0
 	 */
 	default <A$((${i} + 1)), Y> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), X, Y> split(ValueValidator<A$((${i} + 1)), Y> validator) {
@@ -805,6 +1051,16 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns an {@link Arguments2Combining} that validates the same argument with this
+	 * validator and with the given validator.
+	 *
+	 * <p>
+	 * Call {@link Arguments2Combining#apply} on the returned instance to create a
+	 * validator that combines the validated values.
+	 *
+	 * @param validator the additional validator applied to the same argument
+	 * @param <Y> the type of the value produced by the given validator
+	 * @return an arguments2 combining instance
 	 * @since 0.7.0
 	 */
 	default <Y> Arguments$((${i} + 1))Combining<A${i}, X, Y> combine(ValueValidator<A${i}, Y> validator) {
@@ -812,6 +1068,11 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator that appends {@code [index]} to every violation name, so that
+	 * violations of elements in a collection can be told apart.
+	 *
+	 * @param index the index to append to violation names
+	 * @return a validator with indexed violation names
 	 * @since 0.7.0
 	 */
 	@Override
@@ -821,6 +1082,14 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator that validates every element of the input iterable with this
+	 * validator indexed by its position and collects the validated values into a
+	 * collection created by the given factory. Violations of all failing elements are
+	 * accumulated.
+	 *
+	 * @param factory supplier of the collection that receives the validated values
+	 * @param <C> the type of the resulting collection
+	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
 	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
@@ -829,6 +1098,11 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator that validates every element of the input iterable with this
+	 * validator indexed by its position and collects the validated values into a
+	 * {@link List}.
+	 *
+	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
@@ -836,6 +1110,11 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator that validates every element of the input iterable with this
+	 * validator indexed by its position and collects the validated values into a
+	 * {@link Set} that preserves the iteration order.
+	 *
+	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
@@ -843,6 +1122,11 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator that validates the value contained in the input
+	 * {@link Optional}, if any, and returns an {@link Optional} with the validated
+	 * value. An empty optional validates successfully.
+	 *
+	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
 	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
@@ -864,19 +1148,8 @@ for i in `seq 1 ${n}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -890,20 +1163,44 @@ import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.jsr305.Nullable;
 
 /**
- * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+ * Default {@link ${interface}} that applies a {@link Validator} to an
+ * {@link Arguments${i}} container and maps the validated arguments with a
+ * {@link Function${i}}.
  *
+ * <p>
+ * The validator is applied applicatively, so all violations are accumulated, and the
+ * mapper is applied only when validation succeeds. A {@code null} argument is accepted
+ * unless the configured constraints reject it.
+ *
+ * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+$(for j in `seq 1 ${i}`; do echo " * @param <A${j}> the type of the argument at position ${j}"; done)
+ * @param <X> the type of the value produced when validation succeeds
  * @since 0.7.0
  */
 public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> implements ${interface}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> {
+
+	/** The validator applied to the {@link Arguments${i}} container. */
   protected final Validator<${arguments}> validator;
+
+	/** The mapper applied to the validated arguments. */
 	protected final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
 
+	/**
+	 * Creates a validator that applies the given validator to an {@link Arguments${i}}
+	 * built from the arguments and maps the validated arguments with the given function.
+	 *
+	 * @param validator the validator applied to the arguments
+	 * @param mapper the mapper applied to the validated arguments
+	 */
 	public ${class}(Validator<${arguments}> validator, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 		this.validator = validator;
 		this.mapper = mapper;
 	}
 
 	/**
+	 * Returns a validator that produces a {@link Supplier} of the mapped value.
+	 *
+	 * @return a validator that produces a supplier of the validated value
 	 * @since 0.10.0
 	 */
 	@Override
@@ -911,6 +1208,15 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')));
 	}
 
+	/**
+	 * Validates the arguments with the given validator and maps them with the configured
+	 * mapper.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}, possibly {@code null}"; done)
+	 * @param locale the locale targeted for the violation messages
+	 * @param constraintContext constraint context used by conditional constraints
+	 * @return the mapped value or the constraint violations
+	 */
   @Override
 	public Validated<X> validate(${args},
 			Locale locale, ConstraintContext constraintContext) {
@@ -929,19 +1235,8 @@ for i in `seq 2 ${nn}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -956,18 +1251,47 @@ import am.ik.yavi.fn.Validations;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
+ * Combines ${i} validators that validate distinct arguments into a validator for those
+ * arguments.
+ *
+ * <p>
+ * Each argument is validated with its own {@link ValueValidator}. The validators are
+ * applied independently: all violations are accumulated, and the function passed to
+ * {@link #apply} is applied only when every validation succeeds. Instances are created
+ * with {@link ArgumentsValidators#split} or by chaining {@code split} on an existing
+ * instance.
+ *
  * Generated by
  * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
+$(for j in `seq 1 ${i}`; do echo " * @param <A${j}> the type of the argument at position ${j}"; done)
+$(for j in `seq 1 ${i}`; do echo " * @param <R${j}> the type of the value produced for the argument at position ${j}"; done)
  * @since 0.7.0
  */
 public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
-$(for j in `seq 1 ${i}`;do echo "	protected final ValueValidator<? super A${j}, ? extends R${j}> v${j};";echo;done)
+$(for j in `seq 1 ${i}`;do echo "	/** The validator applied to the argument at position ${j}. */"; echo "	protected final ValueValidator<? super A${j}, ? extends R${j}> v${j};";echo;done)
 
+	/**
+	 * Creates an instance with the given validators, one per argument.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param v${j} the validator applied to the argument at position ${j}"; done)
+	 */
 	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<? super A${j}, ? extends R${j}> v${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
+	/**
+	 * Returns a validator that applies the validators of this instance to the arguments
+	 * and combines the validated values with the given function.
+	 *
+	 * <p>
+	 * All violations are accumulated and the function is applied only when every
+	 * validation succeeds.
+	 *
+	 * @param f the function that combines the validated values
+	 * @param <X> the type of the value produced by the function
+	 * @return a validator for the ${i} arguments
+	 */
 	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(
 			Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return new Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>() {
@@ -987,7 +1311,21 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 			}
 		};
 	}
-$(if [ ${i} -lt ${nn} ];then echo;echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split(ValueValidator<? super A$((${i} + 1)), ? extends R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${nn} ];then
+  echo
+  echo "	/**"
+  echo "	 * Returns a new {@link Arguments$((${i} + 1))Splitting} that additionally validates the"
+  echo "	 * argument at position $((${i} + 1)) with the given validator."
+  echo "	 *"
+  echo "	 * @param v$((${i} + 1)) the validator applied to the argument at position $((${i} + 1))"
+  echo "	 * @param <A$((${i} + 1))> the type of the argument at position $((${i} + 1))"
+  echo "	 * @param <R$((${i} + 1))> the type of the value produced for the argument at position $((${i} + 1))"
+  echo "	 * @return an arguments$((${i} + 1)) splitting instance"
+  echo "	 */"
+  echo "	public <A$((${i} + 1)), R$((${i} + 1))> Arguments$((${i} + 1))Splitting<$(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> split(ValueValidator<? super A$((${i} + 1)), ? extends R$((${i} + 1))> v$((${i} + 1))) {"
+  echo "		return new Arguments$((${i} + 1))Splitting<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"
+  echo "	}"
+else echo -n "";fi)
 }
 EOF
 done
@@ -998,19 +1336,8 @@ for i in `seq 2 ${nn}`;do
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -1023,18 +1350,46 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
+ * Combines ${i} validators that validate the same input into a single validator.
+ *
+ * <p>
+ * This is useful for cross-field validation: every validator receives the same input.
+ * The validators are applied independently, all violations are accumulated, and the
+ * function passed to {@link #apply} is applied only when every validation succeeds.
+ * Instances are created with {@link ArgumentsValidators#combine} or by chaining
+ * {@code combine} on an existing instance.
+ *
  * Generated by https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
+ * @param <A> the type of the input validated by all validators
+$(for j in `seq 1 ${i}`; do echo " * @param <R${j}> the type of the value produced by the validator at position ${j}"; done)
  * @since 0.7.0
  */
 public class ${class}<A, $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
 
-$(for j in `seq 1 ${i}`;do echo "	protected final ValueValidator<? super A, ? extends R${j}> v${j};";done)
+$(for j in `seq 1 ${i}`;do echo "	/** The validator applied to the input at position ${j}. */"; echo "	protected final ValueValidator<? super A, ? extends R${j}> v${j};";done)
 
+	/**
+	 * Creates an instance with the given validators, which all receive the same input.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param v${j} the validator applied to the input at position ${j}"; done)
+	 */
 	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<? super A, ? extends R${j}> v${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	}
 
+	/**
+	 * Returns a validator that applies every validator of this instance to the input and
+	 * combines the validated values with the given function.
+	 *
+	 * <p>
+	 * All violations are accumulated and the function is applied only when every
+	 * validation succeeds.
+	 *
+	 * @param f the function that combines the validated values
+	 * @param <X> the type of the value produced by the function
+	 * @return a validator for the input
+	 */
 	public <X> Arguments1Validator<A, X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
@@ -1049,7 +1404,20 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 			}
 		};
 	}
-$(if [ ${i} -lt ${nn} ];then echo; echo "	public <R$((${i} + 1))> Arguments$((${i} + 1))Combining<A, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> combine(ValueValidator<? super A, ? extends R$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Arguments$((${i} + 1))Combining<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${nn} ];then
+  echo
+  echo "	/**"
+  echo "	 * Returns a new {@link Arguments$((${i} + 1))Combining} that additionally validates the"
+  echo "	 * input with the given validator."
+  echo "	 *"
+  echo "	 * @param v$((${i} + 1)) the additional validator applied to the input"
+  echo "	 * @param <R$((${i} + 1))> the type of the value produced by the additional validator"
+  echo "	 * @return an arguments$((${i} + 1)) combining instance"
+  echo "	 */"
+  echo "	public <R$((${i} + 1))> Arguments$((${i} + 1))Combining<A, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "R${j}, ";done) | sed 's/,$//')> combine(ValueValidator<? super A, ? extends R$((${i} + 1))> v$((${i} + 1))) {"
+  echo "		return new Arguments$((${i} + 1))Combining<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"
+  echo "	}"
+else echo -n "";fi)
 
 }
 EOF
@@ -1060,19 +1428,8 @@ file="$(dirname $0)/../src/main/java/am/ik/yavi/arguments/${class}.java"
 echo $file
 cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.arguments;
 
@@ -1089,6 +1446,19 @@ import am.ik.yavi.core.ValueValidator;
 import static java.util.function.Function.identity;
 
 /**
+ * Factory methods for validators that handle multiple arguments.
+ *
+ * <p>
+ * {@code split} validates distinct arguments with separate validators, while
+ * {@code combine} applies several validators to the same input, for example for
+ * cross-field validation. {@code traverseN} and {@code sequenceN} apply one or more
+ * {@code ArgumentsNValidator} instances to a collection of inputs and collect the
+ * results. The {@code lift*} methods lift a {@link ValueValidator} to collections or
+ * optionals. The returned validators accumulate all violations.
+ *
+ * <p>
+ * This class only provides static methods; it is not instantiated.
+ *
  * Generated by
  * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
@@ -1096,7 +1466,22 @@ import static java.util.function.Function.identity;
  */
 public class ${class} {
 
+	/**
+	 * Creates an instance. Use the static factory methods instead.
+	 */
+	public ${class}() {
+	}
+
 $(for i in `seq 2 ${nn}`;do cat <<EOD
+	/**
+	 * Returns an {@link Arguments${i}Splitting} that validates the ${i} arguments with the
+	 * given validators.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param v${j} the validator applied to the argument at position ${j}"; done)
+$(for j in `seq 1 ${i}`; do echo "	 * @param <A${j}> the type of the argument at position ${j}"; done)
+$(for j in `seq 1 ${i}`; do echo "	 * @param <R${j}> the type of the value produced for the argument at position ${j}"; done)
+	 * @return an arguments${i} splitting instance
+	 */
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> Arguments${i}Splitting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> split($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<? super A${j}, ? extends R${j}> v${j}, ";done) | sed 's/,$//')) {
 		return new Arguments${i}Splitting<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));
 	}
@@ -1104,6 +1489,15 @@ EOD
 done)
 
 $(for i in `seq 2 ${nn}`;do cat <<EOD
+	/**
+	 * Returns an {@link Arguments${i}Combining} that validates the same input with the
+	 * given validators.
+	 *
+$(for j in `seq 1 ${i}`; do echo "	 * @param v${j} the validator applied to the input at position ${j}"; done)
+	 * @param <A> the type of the input validated by all validators
+$(for j in `seq 1 ${i}`; do echo "	 * @param <R${j}> the type of the value produced by the validator at position ${j}"; done)
+	 * @return an arguments${i} combining instance
+	 */
 	public static <A, $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> Arguments${i}Combining<A, $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> combine($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<? super A, ? extends R${j}> v${j}, ";done) | sed 's/,$//')) {
 		return new Arguments${i}Combining<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));
 	}
@@ -1111,6 +1505,19 @@ EOD
 done)
 
 $(for i in `seq 1 ${nn}`;do cat <<EOD
+	/**
+	 * Returns a validator that validates each element of the given iterable with the
+	 * validator produced by the given function and collects the validated values into a
+	 * {@link List}. All elements are validated and the violations of all failing elements
+	 * are accumulated.
+	 *
+	 * @param values the values to validate
+	 * @param f the function that produces a validator for an element
+$(for j in `seq 1 ${i}`; do echo "	 * @param <A${j}> the type of the argument at position ${j}"; done)
+	 * @param <R> the type of the value produced for each element
+	 * @param <T> the type of the elements to validate
+	 * @return a validator that produces a list of validated values
+	 */
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R, T> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), List<R>> traverse${i}(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends R>> f) {
@@ -1121,6 +1528,16 @@ EOD
 done)
 
 $(for i in `seq 1 ${nn}`;do cat <<EOD
+	/**
+	 * Returns a validator that applies every given validator to the same arguments and
+	 * collects the results into a {@link List}. All validators are applied and the
+	 * violations of all failing validations are accumulated.
+	 *
+	 * @param values the validators to apply
+$(for j in `seq 1 ${i}`; do echo "	 * @param <A${j}> the type of the argument at position ${j}"; done)
+	 * @param <R> the type of the value produced for each validator
+	 * @return a validator that produces a list of validated values
+	 */
 	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), R> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), List<R>> sequence${i}(
 		Iterable<? extends Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends R>> values) {
 		return traverse${i}(values, identity());
@@ -1129,6 +1546,17 @@ EOD
 done)
 
 	/**
+	 * Returns a validator that validates every element of the input iterable with the
+	 * given validator indexed by its position and collects the validated values into a
+	 * collection created by the given factory. Violations of all failing elements are
+	 * accumulated.
+	 *
+	 * @param validator the validator applied to each element
+	 * @param factory supplier of the collection that receives the validated values
+	 * @param <A1> the element type of the input iterable
+	 * @param <R> the type produced for each element
+	 * @param <C> the type of the resulting collection
+	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
 	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
@@ -1137,12 +1565,30 @@ done)
 				.from(ValueValidator.liftCollection(validator, factory));
 	}
 
+	/**
+	 * Returns a validator that validates every element of the input iterable with the
+	 * given validator indexed by its position and collects the validated values into a
+	 * {@link List}.
+	 *
+	 * @param validator the validator applied to each element
+	 * @param <A1> the element type of the input iterable
+	 * @param <R> the type produced for each element
+	 * @return a validator for iterables
+	 */
 	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftList(validator));
 	}
 
 	/**
+	 * Returns a validator that validates every element of the input iterable with the
+	 * given validator indexed by its position and collects the validated values into a
+	 * {@link Set} that preserves the iteration order.
+	 *
+	 * @param validator the validator applied to each element
+	 * @param <A1> the element type of the input iterable
+	 * @param <R> the type produced for each element
+	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
 	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
@@ -1151,6 +1597,14 @@ done)
 	}
 
 	/**
+	 * Returns a validator that validates the value contained in the input
+	 * {@link Optional}, if any, and returns an {@link Optional} with the validated value.
+	 * An empty optional validates successfully.
+	 *
+	 * @param validator the validator applied to the contained value
+	 * @param <A1> the contained type of the input optional
+	 * @param <R> the type produced for the contained value
+	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
 	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
@@ -1172,19 +1626,8 @@ fi
   echo $file
   cat <<EOF > ${file}
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.builder;
 
@@ -1238,11 +1681,51 @@ EOD
 fi)
 
 /**
- * Generated by
+$(if [ "${i}" -gt 0 ];then
+cat <<EOD
+ * Builds an {@link Arguments${i}Validator} by adding one validated argument at a time.
+ *
+ * <p>
+ * Each {@code _xxx} method adds the next argument and returns the builder for the
+ * following argument. The arguments are validated together, so every violation is
+ * reported and the result is created only when all arguments are valid. The validator is
+ * created with {@code apply} after all arguments have been added. Instances are obtained
+ * from {@link YaviArguments} or from the builder of the previous argument count.
+ *
+ * <p>
+ * The source of this class is generated by
+ * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
+ *
+ * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
+ * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
+ * @since 0.14.0
+ */
+EOD
+else
+cat <<EOD
+ * Builds an arguments validator by adding one validated argument at a time.
+ *
+ * <p>
+ * Each {@code _xxx} method adds the next argument and returns the builder for the
+ * following argument. The arguments are validated together, so every violation is
+ * reported and the result is created only when all arguments are valid. The validator is
+ * created with {@code apply} after all arguments have been added. Instances are obtained
+ * from {@link am.ik.yavi.validator.Yavi#arguments()}. For example: <pre>{@code
+ * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+ *     ._string("manufacturer", c -> c.notNull())
+ *     ._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+ *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
+ *     .apply(Car::new);
+ * }</pre>
+ *
+ * <p>
+ * The source of this class is generated by
  * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
  * @since 0.14.0
  */
+EOD
+fi)
 public final class ${class}$(if [ "${i}" -gt 0 ];then
 cat <<EOD
 <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')>
@@ -1254,257 +1737,984 @@ $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 $(for j in `seq 1 ${i}`;do echo "	final ValueValidator<A${j}, R${j}> v${j};";echo;done)
 
+	/**
+	 * Creates a builder from the value validators of the already added arguments.
+	 * @param v1 value validator of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param v%s value validator of argument at position %s' "${j}" "${j}";fi;done)
+	 * @since 0.14.0
+	 */
 	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
+	}
+EOD
+else
+cat <<EOD
+	/**
+	 * Creates a new builder.
+	 *
+	 * <p>
+	 * Instances are normally obtained from
+	 * {@link am.ik.yavi.validator.Yavi#arguments()}.
+	 * @since 0.14.0
+	 */
+	public ${class}() {
 	}
 EOD
 fi)
 
 $(if [ "${i}" != "${n}" ];then
 cat <<EOD
+	/**
+	 * Adds the next argument, validated as a {@code BigDecimal} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code BigDecimal} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link BigDecimalConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return this._bigDecimal(BigDecimalValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code BigDecimal} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code BigInteger} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(ValueValidator<BigInteger, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code BigInteger} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link BigIntegerConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return this._bigInteger(BigIntegerValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code BigInteger} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Boolean} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(ValueValidator<Boolean, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Boolean} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link BooleanConstraint}, for example {@code boolean.isTrue}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return this._boolean(BooleanValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Boolean} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name) {
 		return this._boolean(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Double} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(ValueValidator<Double, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Double} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link DoubleConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return this._double(DoubleValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Double} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name) {
 		return this._double(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as an enum constant by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <E> the enum type of the argument
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <E extends Enum<E>, T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(ValueValidator<E, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as an enum constant with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param <E> the enum type of the argument
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return this._enum(EnumValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as an enum constant with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param <E> the enum type of the argument
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name) {
 		return this._enum(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Float} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(ValueValidator<Float, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Float} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link FloatConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return this._float(FloatValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Float} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name) {
 		return this._float(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as an {@code Instant} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(ValueValidator<Instant, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as an {@code Instant} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link InstantConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return this._instant(InstantValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as an {@code Instant} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name) {
 		return this._instant(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as an {@code Integer} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(ValueValidator<Integer, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as an {@code Integer} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link IntegerConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return this._integer(IntegerValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as an {@code Integer} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name) {
 		return this._integer(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code LocalDateTime} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalDateTime} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link LocalDateTimeConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return this._localDateTime(LocalDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalDateTime} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code LocalTime} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(ValueValidator<LocalTime, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalTime} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link LocalTimeConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return this._localTime(LocalTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalTime} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code LocalDate} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(ValueValidator<LocalDate, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalDate} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link LocalDateConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return this._localDate(LocalDateValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code LocalDate} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDate> _localDate(String name) {
 		return this._localDate(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Long} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(ValueValidator<Long, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Long} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link LongConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return this._long(LongValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Long} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name) {
 		return this._long(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as an object by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T1, T2> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(ValueValidator<T1, T2> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as an object with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link ObjectConstraint}, for example {@code object.notNull}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param <T> type of the argument
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return this._object(ObjectValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as an object with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param <T> type of the argument
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name) {
 		return this._object(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as an {@code OffsetDateTime} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(ValueValidator<OffsetDateTime, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as an {@code OffsetDateTime} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link OffsetDateTimeConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return this._offsetDateTime(OffsetDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as an {@code OffsetDateTime} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Short} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(ValueValidator<Short, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Short} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link ShortConstraint}, for example {@code numeric.greaterThan}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return this._short(ShortValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Short} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name) {
 		return this._short(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code String} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(ValueValidator<String, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code String} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link CharSequenceConstraint}, for example {@code charSequence.notBlank}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return this._string(StringValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code String} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name) {
 		return this._string(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code YearMonth} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(ValueValidator<YearMonth, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code YearMonth} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link YearMonthConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return this._yearMonth(YearMonthValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code YearMonth} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code Year} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(ValueValidator<Year, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code Year} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link YearConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return this._year(YearValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code Year} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name) {
 		return this._year(name, Function.identity());
 	}
 
+	/**
+	 * Adds the next argument, validated as a {@code ZonedDateTime} by the given value
+	 * validator.
+	 *
+	 * <p>
+	 * The validator defines both the validation and the result type of the
+	 * argument, so {@code validator} also provides the argument name and its
+	 * violations.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
 		return new ${next_class}<>($(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done); fi) validator);
 	}
 
+	/**
+	 * Adds the next argument as a {@code ZonedDateTime} with the given name and configured
+	 * constraints.
+	 *
+	 * <p>
+	 * Violations use {@code name} as the property name and the message ids of
+	 * {@link ZonedDateTimeConstraint}, for example {@code temporal.past}. A {@code null} value is
+	 * accepted unless the constraints require otherwise.
+	 * @param name the property name used in violation names and messages
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return this._zonedDateTime(ZonedDateTimeValidatorBuilder.of(name, constraints).build());
 	}
 
+	/**
+	 * Adds the next argument as a {@code ZonedDateTime} with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * {@code name} is recorded as the property name of the argument.
+	 * @param name the property name recorded for the argument
+	 * @return a builder for the next argument
+	 * @since 0.14.0
+	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
@@ -1513,6 +2723,17 @@ fi)
 
 $(if [ "${i}" -gt 1 ];then
 cat <<EOD
+	/**
+	 * Builds an {@link Arguments${i}Validator} from the added arguments and the given
+	 * function.
+	 *
+	 * <p>
+	 * The function is applied only when all arguments are valid.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values
+	 * @return a new arguments validator
+	 * @since 0.14.0
+	 */
 	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.v${j}, ";done) | sed 's/,$//')).apply(f);
 	}
@@ -1520,10 +2741,27 @@ EOD
 fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
+	/**
+	 * Builds an {@link Arguments1Validator} from the added argument and the given
+	 * function.
+	 *
+	 * <p>
+	 * The function is applied only when the argument is valid.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated value
+	 * @return a new arguments validator
+	 * @since 0.14.0
+	 */
 	public <X> Arguments1Validator<A1, X> apply(Function1<? super R1, ? extends X> f) {
 		return Arguments1Validator.from(this.v1.andThen(f::apply));
 	}
 
+	/**
+	 * Returns a validator that validates the added argument and returns its validated
+	 * value as the result.
+	 * @return a new arguments validator
+	 * @since 0.14.0
+	 */
 	public Arguments1Validator<A1, R1> get() {
 		return Arguments1Validator.from(this.v1);
 	}

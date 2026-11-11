@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.core;
 
@@ -19,17 +8,37 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * A {@link RuntimeException} that carries {@link ConstraintViolations}.
+ *
+ * <p>
+ * This is the exception type used by {@link ConstraintViolations#throwIfInvalid} when a
+ * caller wants to turn violations into an exception.
+ *
  * @since 0.3.0
  */
 public class ConstraintViolationsException extends RuntimeException {
 
+	/** The constraint violations carried by this exception */
 	private final ConstraintViolations violations;
 
+	/**
+	 * Creates a new instance with the given message and violations.
+	 * @param message the exception message
+	 * @param violations the constraint violations
+	 */
 	public ConstraintViolationsException(String message, List<ConstraintViolation> violations) {
 		super(message);
 		this.violations = ConstraintViolations.of(violations);
 	}
 
+	/**
+	 * Creates a new instance and derives the exception message from the given violations.
+	 *
+	 * <p>
+	 * The message starts with {@code Constraint violations found!} followed by one
+	 * formatted violation message per line, each prefixed with {@code "* "}.
+	 * @param violations the constraint violations
+	 */
 	public ConstraintViolationsException(List<ConstraintViolation> violations) {
 		this("Constraint violations found!" + System.lineSeparator()
 				+ ConstraintViolations.of(violations)
@@ -41,6 +50,10 @@ public class ConstraintViolationsException extends RuntimeException {
 				violations);
 	}
 
+	/**
+	 * Returns the constraint violations carried by this exception.
+	 * @return the constraint violations
+	 */
 	public ConstraintViolations violations() {
 		return violations;
 	}

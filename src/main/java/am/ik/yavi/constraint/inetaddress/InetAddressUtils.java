@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.constraint.inetaddress;
 
@@ -21,10 +10,24 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
+ * Utilities that validate IPv4 and IPv6 address literals without resolving them.
+ *
+ * <p>
+ * The methods back the {@link am.ik.yavi.constraint.CharSequenceConstraint#ipv4()} and
+ * {@link am.ik.yavi.constraint.CharSequenceConstraint#ipv6()} constraints and can also be
+ * called directly. They only inspect the textual form of the address; no name resolution
+ * or route lookup is performed.
+ * </p>
+ *
  * @since 0.7.0
  */
 public class InetAddressUtils {
 
+	/**
+	 * Regular expression that matches an IPv4 address of four decimal octets, each in the
+	 * range 0 to 255. An octet has no leading zero unless it is the single digit
+	 * {@code 0}.
+	 */
 	public static final String IPV4_REGEX = "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$";
 
 	private static final Pattern IPV4_PATTERN = Pattern.compile(IPV4_REGEX);
@@ -41,11 +44,35 @@ public class InetAddressUtils {
 	// Max hex digits in each IPv6 group
 	private static final int IPV6_MAX_HEX_DIGITS_PER_GROUP = 4;
 
+	/**
+	 * Creates an instance. The class has no state beyond the static patterns.
+	 */
+	public InetAddressUtils() {
+	}
+
+	/**
+	 * Returns whether the given string is an IPv4 address in dotted decimal notation.
+	 * @param s the string to check
+	 * @return {@code true} if the whole string matches {@link #IPV4_REGEX}
+	 */
 	public static boolean isIpv4(String s) {
 		return IPV4_PATTERN.matcher(s).matches();
 	}
 
-	// https://github.com/apache/commons-validator/blob/master/src/main/java/org/apache/commons/validator/routines/InetAddressValidator.java
+	/**
+	 * Returns whether the given string is an IPv6 address.
+	 *
+	 * <p>
+	 * The compressed form with {@code ::} is accepted, as is an embedded IPv4 address in
+	 * the last group. A zone id may follow the address after {@code '%'} and a prefix
+	 * length after {@code '/'}; the prefix length must be between 0 and 128.
+	 * </p>
+	 * @param s the string to check
+	 * @return {@code true} if the string is a valid IPv6 address
+	 * @see <a href=
+	 * "https://github.com/apache/commons-validator/blob/master/src/main/java/org/apache/commons/validator/routines/InetAddressValidator.java">Apache
+	 * Commons Validator</a>
+	 */
 	public static boolean isIpv6(String s) {
 		// remove prefix size. This will appear after the zone id (if any)
 		final String[] parts = s.split("/", -1);

@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.constraint;
 
@@ -20,7 +9,25 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
+/**
+ * Constraints on a {@link BigDecimal} value.
+ *
+ * <p>
+ * A {@code null} value is considered valid and the checks are skipped. The comparisons
+ * use {@link BigDecimal#compareTo(BigDecimal)} and therefore ignore the scale: for
+ * example {@code 1.0} and {@code 1.00} are considered equal.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @since 0.0.1
+ */
 public class BigDecimalConstraint<T> extends NumericConstraintBase<T, BigDecimal, BigDecimalConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public BigDecimalConstraint() {
+	}
 
 	@Override
 	public BigDecimalConstraint<T> cast() {

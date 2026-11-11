@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.constraint.array;
 
@@ -24,13 +13,41 @@ import static am.ik.yavi.core.ViolationMessage.Default.ARRAY_CONTAINS;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
+/**
+ * Constraints on an {@code int[]} value.
+ *
+ * <p>
+ * Besides {@link #contains(int)}, the size constraints of {@link ContainerConstraintBase}
+ * are available. A {@code null} array is considered valid and the checks are skipped,
+ * except for {@link ContainerConstraintBase#notEmpty()}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @since 0.0.1
+ */
 public class IntArrayConstraint<T> extends ContainerConstraintBase<T, int[], IntArrayConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public IntArrayConstraint() {
+	}
 
 	@Override
 	public IntArrayConstraint<T> cast() {
 		return this;
 	}
 
+	/**
+	 * Requires the array to contain the given value.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code array.contains} and the default
+	 * message {@code "{0}" must contain {1}}, where {@code {1}} is the value.
+	 * </p>
+	 * @param v the value the array has to contain
+	 * @return this constraint
+	 */
 	public IntArrayConstraint<T> contains(int v) {
 		this.predicates()
 			.add(ConstraintPredicate.of(x -> Arrays.stream(x).anyMatch(e -> e == v), ARRAY_CONTAINS,

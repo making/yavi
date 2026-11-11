@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.processor;
 
@@ -61,16 +50,50 @@ import am.ik.yavi.meta.ConstraintArguments;
 import am.ik.yavi.meta.ConstraintTarget;
 
 /**
+ * Annotation processor that generates constraint metadata classes from
+ * {@link ConstraintTarget} and {@link ConstraintArguments}.
+ *
+ * <p>
+ * For a type {@code com.example.Foo} with {@link ConstraintTarget} members, the processor
+ * writes {@code com.example._FooMeta}, with one {@link am.ik.yavi.meta.ConstraintMeta}
+ * constant per annotated member. For {@link ConstraintArguments} on a constructor it
+ * writes {@code _FooArgumentsMeta}, and on a method {@code bar} it writes
+ * {@code _FooBarArgumentsMeta}. The generated sources are written to the annotation
+ * processor output directory, for example {@code target/generated-sources/annotations}.
+ *
+ * <p>
+ * The processor is registered in
+ * {@code META-INF/services/javax.annotation.processing.Processor} and runs during
+ * compilation. It produces sources only and has no effect at runtime.
+ *
  * @since 0.4.0
  */
 @SupportedAnnotationTypes({ "am.ik.yavi.meta.ConstraintTarget", "am.ik.yavi.meta.ConstraintArguments" })
 public class ConstraintMetaProcessor extends AbstractProcessor {
 
+	/**
+	 * Creates a new processor. The annotation processing framework instantiates it
+	 * through this constructor.
+	 */
+	public ConstraintMetaProcessor() {
+	}
+
+	/**
+	 * Returns {@link SourceVersion#latest()}.
+	 * @return the latest source version
+	 */
 	@Override
 	public SourceVersion getSupportedSourceVersion() {
 		return SourceVersion.latest();
 	}
 
+	/**
+	 * Processes the {@link ConstraintTarget} and {@link ConstraintArguments} annotations
+	 * of this round and writes the metadata classes for the annotated members.
+	 * @param annotations the annotation types to process
+	 * @param roundEnv the environment for this round
+	 * @return {@code true}, claiming both annotation types
+	 */
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		for (TypeElement typeElement : annotations) {

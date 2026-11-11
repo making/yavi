@@ -1,17 +1,28 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * Base classes for the constraint types in {@code am.ik.yavi.constraint}.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * <p>
+ * Each base class implements the fluent methods of the corresponding value category and
+ * leaves the concrete comparison to its subclasses:
+ * </p>
+ * <ul>
+ * <li>{@link am.ik.yavi.constraint.base.NumericConstraintBase} for numeric values</li>
+ * <li>{@link am.ik.yavi.constraint.base.ContainerConstraintBase} for collections, maps
+ * and arrays</li>
+ * <li>{@link am.ik.yavi.constraint.base.TemporalConstraintBase} and its subclasses for
+ * temporal values</li>
+ * <li>{@link am.ik.yavi.constraint.base.ConstraintBase} for all other values</li>
+ * </ul>
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * <p>
+ * The classes are public so that the constraint types of this library can extend them;
+ * they are not meant to be used directly.
+ * </p>
+ * @since 0.0.1
  */
 @NonNullApi
 package am.ik.yavi.constraint.base;

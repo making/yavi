@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.message;
 
@@ -19,8 +8,15 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 /**
- * A simple implementation of {@link MessageFormatter} that formats messages using
- * {@link MessageFormat}. This class is a singleton to optimize resource usage.
+ * A {@link MessageFormatter} that formats the default message format with
+ * {@link MessageFormat}.
+ *
+ * <p>
+ * The message id is ignored; no localized message lookup is performed. This is the
+ * formatter used by default. Since a new {@link MessageFormat} instance is created for
+ * every call, the shared {@link #getInstance() instance} is thread-safe.
+ *
+ * @since 0.0.1
  */
 public class SimpleMessageFormatter implements MessageFormatter {
 
@@ -44,6 +40,16 @@ public class SimpleMessageFormatter implements MessageFormatter {
 		// Public constructor kept for backward compatibility
 	}
 
+	/**
+	 * Formats the given default message format with {@link MessageFormat}, ignoring the
+	 * message id.
+	 * @param messageKey the message id, which is ignored
+	 * @param defaultMessageFormat the message format containing {@link MessageFormat}
+	 * placeholders
+	 * @param args the arguments referenced by placeholders in the message format
+	 * @param locale the locale used for formatting
+	 * @return the formatted message
+	 */
 	@Override
 	public String format(String messageKey, String defaultMessageFormat, Object[] args, Locale locale) {
 		return new MessageFormat(defaultMessageFormat, locale).format(args);

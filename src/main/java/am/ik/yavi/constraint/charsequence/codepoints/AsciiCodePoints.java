@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2018-2025 Toshiaki Maki <makingx@gmail.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.constraint.charsequence.codepoints;
 
@@ -22,15 +11,37 @@ import java.util.Set;
 
 import am.ik.yavi.constraint.charsequence.CodePoints;
 
+/**
+ * Common groups of ASCII code points for the code point constraints.
+ *
+ * <p>
+ * Use a constant as the {@link CodePoints} argument of
+ * {@link am.ik.yavi.constraint.CharSequenceConstraint#codePoints(CodePoints)}, for
+ * example {@code c.codePoints(AsciiCodePoints.ASCII_PRINTABLE_CHARS).asWhiteList()} or
+ * {@code c.codePoints(AsciiCodePoints.CRLF).asBlackList()}.
+ * </p>
+ *
+ * @since 0.0.10
+ */
 public enum AsciiCodePoints implements CodePoints<String> {
 
+	/**
+	 * The printable ASCII characters, from U+0020 (space) to U+007E (tilde).
+	 */
 	ASCII_PRINTABLE_CHARS((CodePointsRanges<String>) () -> {
 		return Collections.singletonList(Range.of(0x0020 /*   */, 0x007E /* ~ */));
 	}), //
+	/**
+	 * The ASCII control characters, from U+0000 (null) to U+001F (unit separator) and
+	 * U+007F (delete).
+	 */
 	ASCII_CONTROL_CHARS((CodePointsRanges<String>) () -> {
 		return Arrays.asList(Range.of(0x0000 /* NULL */, 0x001F /* UNIT SEPARATOR */),
 				Range.single(0x007F /* DELETE */));
 	}), //
+	/**
+	 * Carriage return (U+000D) and line feed (U+000A).
+	 */
 	CRLF((CodePointsSet<String>) () -> {
 		return new HashSet<>(
 				Arrays.asList(0x000A /* LINE FEED */, 0x000D /* CARRIAGE RETURN */));
@@ -42,6 +53,12 @@ public enum AsciiCodePoints implements CodePoints<String> {
 		this.delegate = delegate;
 	}
 
+	/**
+	 * Returns the code points of the given value that are not in this group.
+	 * @param s the value, possibly {@code null}
+	 * @return the code points outside of the group, empty if {@code s} is {@code null} or
+	 * empty
+	 */
 	@Override
 	public Set<Integer> allExcludedCodePoints(String s) {
 		return this.delegate.allExcludedCodePoints(s);
