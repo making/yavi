@@ -16,6 +16,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Builds the source of the metadata constants written by {@link ConstraintMetaProcessor}.
+ *
+ * <p>
+ * A constant is an anonymous implementation of the {@link am.ik.yavi.meta.ConstraintMeta}
+ * subtype that matches the property type, or of
+ * {@link am.ik.yavi.meta.ObjectConstraintMeta} for a type without a dedicated subtype.
+ *
  * @since 0.4.0
  */
 class ConstraintMetaTemplate {
@@ -42,6 +49,15 @@ class ConstraintMetaTemplate {
 		}
 	};
 
+	/**
+	 * Returns the source of a property metadata constant for a bean.
+	 * @param className the fully qualified name of the annotated type
+	 * @param type the type of the property value
+	 * @param target the property name and, without getter naming, the method name
+	 * @param method the method or getter that extracts the value
+	 * @param useField whether the extractor reads the field instead of the method
+	 * @return the source of the constant
+	 */
 	static String template(String className, String type, String target, String method, boolean useField) {
 		final String simpleType = simpleType(type);
 		final String metaType = "Object".equals(simpleType) ? className + ", " + type : className;
@@ -61,6 +77,14 @@ class ConstraintMetaTemplate {
 				useField ? "x  -> x." + target : className + "::" + method);
 	}
 
+	/**
+	 * Returns the source of a metadata constant for a constructor or method argument.
+	 * @param className the type of the {@code ArgumentsN} container
+	 * @param type the type of the argument value
+	 * @param target the property name
+	 * @param position the one-based position of the argument in the container
+	 * @return the source of the constant
+	 */
 	static String templateArgument(String className, String type, String target, int position) {
 		final String simpleType = simpleType(type);
 		final String metaType = "Object".equals(simpleType) ? className + ", " + type : className;

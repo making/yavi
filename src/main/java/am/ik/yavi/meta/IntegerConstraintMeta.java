@@ -5,6 +5,16 @@
 package am.ik.yavi.meta;
 
 /**
+ * Meta object for a property that holds an {@code Integer} or {@code int} value.
+ *
+ * <p>
+ * The annotation processor generates a constant of this type for a member annotated with
+ * {@link ConstraintTarget} or {@link ConstraintArguments}. The constant returns the
+ * property name and a function that extracts the value, and is passed to a
+ * {@code constraint(...)} method of {@link am.ik.yavi.builder.ValidatorBuilder}.
+ *
+ * @param <T> the type from which the value is extracted: a bean type or an
+ * {@code am.ik.yavi.arguments.ArgumentsN} container
  * @since 0.4.0
  */
 public interface IntegerConstraintMeta<T> extends ConstraintMeta<T, Integer> {
