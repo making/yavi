@@ -11,9 +11,22 @@ import java.util.function.Function;
 import am.ik.yavi.jsr305.Nullable;
 
 /**
- * Constraint Context that contains the name and attributes.
+ * Context values that are passed to validation and read by {@link ConstraintCondition}s.
+ *
+ * <p>
+ * A context exposes named attributes. Use {@link #from(Map)} or {@link #from(Function)}
+ * to create a context backed by a map or by a lookup function, or implement this
+ * interface directly. {@link ConstraintGroup} is a context that only carries a name.
+ *
+ * <p>
+ * Example: <pre>{@code
+ * ConstraintContext context = ConstraintContext.from(Map.of("country", "IT"));
+ * validator.validate(target, context);
+ * }</pre>
  *
  * @since 0.11.0
+ * @see ConstraintCondition
+ * @see ConstraintGroup
  */
 public interface ConstraintContext {
 
@@ -25,7 +38,9 @@ public interface ConstraintContext {
 	Attribute attribute(String key);
 
 	/**
-	 * Returns the context name.<br>
+	 * Returns the context name.
+	 *
+	 * <p>
 	 * This method exists on this interface for backwards compatibility with YAVI 0.10 and
 	 * earlier. <br>
 	 * It is effectively used in the lower interface <code>ConstraintGroup</code>.
@@ -33,6 +48,12 @@ public interface ConstraintContext {
 	 */
 	String name();
 
+	/**
+	 * Returns a context whose attributes are read from the given map. Looking up a key
+	 * that is not in the map yields an attribute with a {@code null} value.
+	 * @param map the map that backs the attributes
+	 * @return a context backed by the map
+	 */
 	static ConstraintContext from(Map<String, ?> map) {
 		return new ConstraintContext() {
 			@Override
@@ -47,6 +68,13 @@ public interface ConstraintContext {
 		};
 	}
 
+	/**
+	 * Returns a context whose attributes are read by applying the given function to the
+	 * attribute key. The function returns the attribute value, or {@code null} when the
+	 * attribute does not exist.
+	 * @param function the function that looks up attribute values
+	 * @return a context backed by the function
+	 */
 	static ConstraintContext from(Function<String, ?> function) {
 		return new ConstraintContext() {
 			@Override
@@ -61,6 +89,9 @@ public interface ConstraintContext {
 		};
 	}
 
+	/**
+	 * An attribute value of a {@link ConstraintContext}.
+	 */
 	@FunctionalInterface
 	interface Attribute {
 
@@ -73,9 +104,12 @@ public interface ConstraintContext {
 		Object value();
 
 		/**
-		 * Returns the typed attribute value
+		 * Returns the typed attribute value.
 		 * @param clazz the type of the attribute value
+		 * @param <T> the type of the attribute value
 		 * @return value
+		 * @throws ClassCastException if the attribute value is not an instance of the
+		 * given class
 		 */
 		@Nullable
 		default <T> T value(Class<T> clazz) {
@@ -83,7 +117,7 @@ public interface ConstraintContext {
 		}
 
 		/**
-		 * Returns whether the attribute value exists
+		 * Returns whether the attribute value exists.
 		 * @return whether the attribute value exists
 		 */
 		default boolean exists() {

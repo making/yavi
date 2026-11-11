@@ -9,6 +9,20 @@ import java.util.function.BiConsumer;
 
 import am.ik.yavi.fn.Validation;
 
+/**
+ * Validates a target object and reports constraint violations.
+ *
+ * <p>
+ * Implementations are normally obtained from {@link am.ik.yavi.builder.ValidatorBuilder};
+ * {@link Validator} is the standard implementation. A {@code Validatable} can be applied
+ * to an object directly, converted to an {@link ApplicativeValidator} or to a
+ * {@link BiConsumer} for error handlers.
+ *
+ * @param <T> the type of the object to validate
+ * @since 0.10.0
+ * @see Validator
+ * @see am.ik.yavi.builder.ValidatorBuilder
+ */
 @FunctionalInterface
 public interface Validatable<T> {
 
@@ -23,9 +37,11 @@ public interface Validatable<T> {
 	ConstraintViolations validate(T target, Locale locale, ConstraintContext constraintContext);
 
 	/**
-	 * Validates all constraints on {@code target}. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
+	 * Validates all constraints on {@code target}.
+	 *
+	 * <p>
+	 * {@link Locale#getDefault()} is used to locate the violation messages and
+	 * {@link ConstraintGroup#DEFAULT} is used as a constraint context.
 	 * @param target target to validate
 	 * @return constraint violations
 	 * @throws IllegalArgumentException if target is {@code null}
@@ -35,8 +51,10 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Validates all constraints on {@code target}.<br>
-	 * {@code ConstraintGroup.DEFAULT} is used as a constraint context.
+	 * Validates all constraints on {@code target}.
+	 *
+	 * <p>
+	 * {@link ConstraintGroup#DEFAULT} is used as a constraint context.
 	 * @param target target to validate
 	 * @param locale the locale targeted for the violation messages.
 	 * @return constraint violations
@@ -47,8 +65,10 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Validates all constraints on {@code target}. <br>
-	 * {@code Locale.getDefault()} is used to locate the violation messages.
+	 * Validates all constraints on {@code target}.
+	 *
+	 * <p>
+	 * {@link Locale#getDefault()} is used to locate the violation messages.
 	 * @param target target to validate
 	 * @param constraintContext constraint context to validate
 	 * @return constraint violations
@@ -59,7 +79,8 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Returns the corresponding applicative validator
+	 * Returns an {@link ApplicativeValidator} that applies the same constraints as this
+	 * validator and wraps the result in a {@link Validated}.
 	 * @return applicative validator
 	 * @since 0.6.0
 	 */
@@ -76,8 +97,11 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Converts given applicative validator to a regular validator.
+	 * Converts the given value validator to a regular validator. The value produced by
+	 * the value validator is discarded; only the constraint violations are reported.
 	 * @param applicative applicative validator to convert
+	 * @param <A1> the type of the input to validate
+	 * @param <R> the type of the value produced by the value validator
 	 * @return regular validator
 	 * @since 0.11.0
 	 */
@@ -87,7 +111,9 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Convert the validator to a biconsumer
+	 * Converts the validator to a {@link BiConsumer} that validates the first argument
+	 * with the default locale and constraint group and passes each violation to the given
+	 * error handler. The consumer does nothing when validation succeeds.
 	 * @param errorHandler error handler
 	 * @param <E> error type
 	 * @return bi consumer
@@ -104,9 +130,18 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Set whether to enable fail fast mode. If enabled, Validatable returns from the
-	 * current validation as soon as the first constraint violation occurs.
+	 * Returns a validator with fail-fast mode enabled or disabled. If enabled, the
+	 * validator returns from the current validation as soon as the first constraint
+	 * violation occurs.
+	 *
+	 * <p>
+	 * The default implementation does not support this operation and throws
+	 * {@link UnsupportedOperationException}; implementations that support fail-fast mode
+	 * override it and return a new instance.
 	 * @param failFast whether to enable fail fast mode
+	 * @return a validator with the specified fail-fast mode
+	 * @throws UnsupportedOperationException if the implementation does not support
+	 * fail-fast mode
 	 * @since 0.13.0
 	 */
 	default Validatable<T> failFast(boolean failFast) {
@@ -114,7 +149,8 @@ public interface Validatable<T> {
 	}
 
 	/**
-	 * Returns whether it is failFast.
+	 * Returns whether this validator is in fail-fast mode. The default implementation
+	 * returns {@code false}.
 	 * @return whether it is failFast
 	 * @since 0.13.0
 	 */
