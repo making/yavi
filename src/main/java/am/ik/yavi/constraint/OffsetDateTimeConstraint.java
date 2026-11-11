@@ -10,12 +10,25 @@ import java.time.OffsetDateTime;
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
 /**
- * This is the actual class for constraints on OffsetDateTime.
+ * Constraints on an {@link OffsetDateTime} value.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * comparisons use the instant-based ordering of {@link OffsetDateTime}: the offset is
+ * taken into account.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
  * @since 0.10.0
  */
 public class OffsetDateTimeConstraint<T>
 		extends TemporalConstraintBase<T, OffsetDateTime, OffsetDateTimeConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public OffsetDateTimeConstraint() {
+	}
 
 	@Override
 	protected boolean isAfter(OffsetDateTime a, OffsetDateTime b) {

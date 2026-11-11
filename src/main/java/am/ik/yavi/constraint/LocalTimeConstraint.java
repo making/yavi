@@ -10,12 +10,24 @@ import java.time.LocalTime;
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
 /**
- * This is the actual class for constraints on LocalTime.
+ * Constraints on a {@link LocalTime} value.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * comparisons use the time-of-day ordering of {@link LocalTime}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
  * @author Diego Krupitza
  * @since 0.10.0
  */
 public class LocalTimeConstraint<T> extends TemporalConstraintBase<T, LocalTime, LocalTimeConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public LocalTimeConstraint() {
+	}
 
 	@Override
 	protected boolean isAfter(LocalTime a, LocalTime b) {

@@ -10,11 +10,23 @@ import java.time.Year;
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
 /**
- * This is the actual class for constraints on Year.
+ * Constraints on a {@link Year} value.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * comparisons use the chronological ordering of {@link Year}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
  * @since 0.11.0
  */
 public class YearConstraint<T> extends TemporalConstraintBase<T, Year, YearConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public YearConstraint() {
+	}
 
 	@Override
 	protected boolean isAfter(Year a, Year b) {

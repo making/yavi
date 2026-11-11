@@ -8,7 +8,24 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
+/**
+ * Constraints on a {@link Long} value.
+ *
+ * <p>
+ * A {@code null} value is considered valid and the checks are skipped. The comparisons
+ * use the primitive {@code long} ordering.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @since 0.0.1
+ */
 public class LongConstraint<T> extends NumericConstraintBase<T, Long, LongConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public LongConstraint() {
+	}
 
 	@Override
 	public LongConstraint<T> cast() {

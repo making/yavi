@@ -10,11 +10,23 @@ import java.time.Instant;
 import am.ik.yavi.constraint.base.TemporalConstraintBase;
 
 /**
- * This is the actual class for constraints on Instant.
+ * Constraints on an {@link Instant} value.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * comparisons use the chronological ordering of {@link Instant}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
  * @since 0.10.0
  */
 public class InstantConstraint<T> extends TemporalConstraintBase<T, Instant, InstantConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public InstantConstraint() {
+	}
 
 	@Override
 	protected boolean isAfter(Instant a, Instant b) {

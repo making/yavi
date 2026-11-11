@@ -10,13 +10,25 @@ import java.time.LocalDateTime;
 import am.ik.yavi.constraint.base.ChronoLocalDateTimeConstraintBase;
 
 /**
- * This is the actual class for constraints on LocalDateTime.
+ * Constraints on a {@link LocalDateTime} value.
  *
+ * <p>
+ * A {@code null} value is considered valid and the temporal checks are skipped. The
+ * comparisons use the chronological ordering of {@link LocalDateTime}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
  * @author Diego Krupitza
  * @since 0.10.0
  */
 public class LocalDateTimeConstraint<T>
 		extends ChronoLocalDateTimeConstraintBase<T, LocalDateTime, LocalDateTimeConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public LocalDateTimeConstraint() {
+	}
 
 	@Override
 	public LocalDateTimeConstraint<T> cast() {

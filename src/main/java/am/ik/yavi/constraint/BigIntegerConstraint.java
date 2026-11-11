@@ -9,7 +9,24 @@ import java.util.function.Predicate;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 
+/**
+ * Constraints on a {@link BigInteger} value.
+ *
+ * <p>
+ * A {@code null} value is considered valid and the checks are skipped. The comparisons
+ * use {@link BigInteger#compareTo(BigInteger)}.
+ * </p>
+ *
+ * @param <T> the type of the object that owns the property
+ * @since 0.0.1
+ */
 public class BigIntegerConstraint<T> extends NumericConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
+
+	/**
+	 * Creates a new constraint without any predicate.
+	 */
+	public BigIntegerConstraint() {
+	}
 
 	@Override
 	public BigIntegerConstraint<T> cast() {
