@@ -204,6 +204,7 @@
                     </headerDefinitions>
                     <includes>
                         <include>src/**/*.java</include>
+                        <include>src/**/*.kt</include>
                     </includes>
                     <excludes>
                         <exclude>src/main/java/am/ik/yavi/jsr305/*.java</exclude>
