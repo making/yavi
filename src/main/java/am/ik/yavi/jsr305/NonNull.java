@@ -30,6 +30,7 @@ import javax.annotation.meta.TypeQualifierNickname;
  *
  * @author Sebastien Deleuze
  * @author Juergen Hoeller
+ * @since 0.0.17
  * @see NonNullApi
  * @see Nullable
  */

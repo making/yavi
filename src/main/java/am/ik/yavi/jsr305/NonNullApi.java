@@ -25,6 +25,7 @@ import javax.annotation.meta.TypeQualifierDefault;
  *
  * @author Sebastien Deleuze
  * @author Juergen Hoeller
+ * @since 0.0.17
  * @see Nullable
  * @see NonNull
  */
