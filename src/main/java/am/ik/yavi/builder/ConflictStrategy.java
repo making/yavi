@@ -9,24 +9,35 @@ import java.util.List;
 import am.ik.yavi.core.ConstraintPredicates;
 
 /**
- * Conflict Strategy that defines the behavior when a constraint name conflicts when
- * adding a constraint.
+ * Defines how a repeated constraint name is resolved when a validator is built.
+ *
+ * <p>
+ * A strategy is set with {@link ValidatorBuilder#conflictStrategy(ConflictStrategy)} and
+ * is applied by {@link ValidatorBuilder#build()} for each constraint whose name is
+ * already present. The strategy may modify the list of existing predicates; the resulting
+ * list is used for the built validator.
  *
  * @since 0.13.0
+ * @see ValidatorBuilder#conflictStrategy(ConflictStrategy)
  */
 @FunctionalInterface
 public interface ConflictStrategy {
 
 	/**
-	 * Define how to resolve conflicts of a constraint name when adding a constraint.
-	 * @param predicatesList existing predicates list
-	 * @param predicates new (conflicting) predicate
-	 * @param <T> target type
+	 * Resolves a name conflict between existing predicates and a new predicate.
+	 *
+	 * <p>
+	 * This method is called with the mutable list of existing predicates for the name.
+	 * Implementations may clear it, replace its entries or leave it unchanged; the new
+	 * predicate is appended after this method returns.
+	 * @param <T> the type of the target object
+	 * @param predicatesList the mutable list of existing predicates with the same name
+	 * @param predicates the new predicate whose name conflicts
 	 */
 	<T> void resolveConflict(List<ConstraintPredicates<T, ?>> predicatesList, ConstraintPredicates<T, ?> predicates);
 
 	/**
-	 * Do nothing if a conflict occurs. That means simply appending the predicate.
+	 * Keeps the existing predicates and appends the new predicate.
 	 */
 	ConflictStrategy NOOP = new ConflictStrategy() {
 		@Override
@@ -37,7 +48,7 @@ public interface ConflictStrategy {
 	};
 
 	/**
-	 * If there is a conflict, remove the existing predicates and adopt the new predicate.
+	 * Removes the existing predicates so that only the new predicate is used.
 	 */
 	ConflictStrategy OVERRIDE = new ConflictStrategy() {
 		@Override
