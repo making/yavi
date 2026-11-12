@@ -158,7 +158,8 @@ public interface ValueValidator<T, X> {
 	 * {@code Float}), whatever the type of the number is, as long as the value is kept:
 	 * an integral type takes only an integral value in its range (so {@code 1.0} is an
 	 * {@code Integer} and {@code 1.5} is not), a floating-point type takes any value in
-	 * its range,</li>
+	 * its range; a number written with an exponent above 10000 is not taken as a
+	 * {@code BigInteger}, whose digits would exhaust the memory,</li>
 	 * <li>the name of a constant for an enum type,</li>
 	 * <li>an ISO-8601 string for {@code LocalDate}, {@code LocalTime},
 	 * {@code LocalDateTime}, {@code OffsetDateTime}, {@code ZonedDateTime},
@@ -167,12 +168,14 @@ public interface ValueValidator<T, X> {
 	 * <li>a map whose keys are all strings for {@code Map}.</li>
 	 * </ul>
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
-	 * string. To accept such an input, write a validator that takes an {@code Object} and
-	 * give it {@code Object.class}.
+	 * string. An input whose values are all strings, such as request parameters, is read
+	 * with {@link InputReader#coercingStrings()}, which takes {@code "1"} as a number
+	 * where a number is expected. For any other conversion, write a validator that takes
+	 * an {@code Object} and give it {@code Object.class}.
 	 *
 	 * <p>
-	 * With another reader, the checked input is the {@linkplain InputReader#value value}
-	 * of the node.
+	 * With another reader, the checked input is the
+	 * {@linkplain InputReader#value(Object, Class) value} of the node.
 	 *
 	 * <p>
 	 * Any other input is reported with the message key {@code object.type}, or

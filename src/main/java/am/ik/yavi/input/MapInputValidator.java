@@ -51,7 +51,8 @@ import org.jspecify.annotations.Nullable;
  * violations for {@code null}. An explicit {@code null} is reported by the constraints of
  * the property, for example {@code object.notNull}.</li>
  * <li>A value that does not represent the type of the property is reported with
- * {@code object.type}. Nothing is coerced.</li>
+ * {@code object.type}. Nothing is coerced unless the map is read with
+ * {@link InputReader#coercingStrings()}.</li>
  * <li>A key that no property is defined for is ignored. With
  * {@link #rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}.</li>
@@ -73,6 +74,16 @@ import org.jspecify.annotations.Nullable;
  *
  * The reader is applied to the nested validators too, so they are built with
  * {@code fromMap} whatever input is read in the end.
+ *
+ * <p>
+ * A map of strings, such as request parameters or a submitted form, is read with
+ * {@link #coercingStrings()}: {@code "30"} is then an {@code Integer}, {@code "true"} a
+ * {@code Boolean} and an empty string {@code null}.
+ *
+ * <pre>{@code
+ * ValueValidator<Map<String, String>, User> formValidator = validator.coercingStrings();
+ * Validated<User> validated = formValidator.validate(requestParameters);
+ * }</pre>
  *
  * @param <X> the type of the created object
  * @since 0.18.0
@@ -143,6 +154,31 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 */
 	public MapInputValidator<X> rejectingUnknownProperties() {
 		return new MapInputValidator<>(this.properties, this.mapper, true);
+	}
+
+	/**
+	 * Returns a validator that reads the same properties from a map whose values are
+	 * strings, such as request parameters or a submitted form, and takes a string as text
+	 * that stands for a value of the type of its property. The rules are those of
+	 * {@link InputReader#coercingStrings()}, and they apply to the nested validators too.
+	 * This is {@code readingWith(InputReader.ofJdkTypes().coercingStrings())} with the
+	 * type of the map, which is the one the result is assigned to:
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
+	 *     ._string("q", c -> c.notBlank())
+	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+	 *     .fromMap(SearchForm::new)
+	 *     .coercingStrings();
+	 * }</pre>
+	 * @param <M> the type of the map
+	 * @return a validator of a map that coerces strings
+	 * @see InputReader#coercingStrings()
+	 */
+	@SuppressWarnings("unchecked")
+	public <M extends Map<String, ?>> ValueValidator<M, X> coercingStrings() {
+		return (ValueValidator<M, X>) (ValueValidator<?, X>) this
+			.readingWith(InputReader.ofJdkTypes().coercingStrings());
 	}
 
 	@Override

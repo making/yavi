@@ -109,6 +109,20 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		return new DiscriminatedUnionValidator<>(this.discriminator, Collections.unmodifiableMap(alternatives));
 	}
 
+	/**
+	 * Returns a validator that selects and applies the same alternatives for a map whose
+	 * values are strings, such as request parameters, as
+	 * {@link MapInputValidator#coercingStrings()} states.
+	 * @param <M> the type of the map
+	 * @return a validator of a map that coerces strings
+	 * @see InputReader#coercingStrings()
+	 */
+	@SuppressWarnings("unchecked")
+	public <M extends Map<String, ?>> ValueValidator<M, X> coercingStrings() {
+		return (ValueValidator<M, X>) (ValueValidator<?, X>) this
+			.readingWith(InputReader.ofJdkTypes().coercingStrings());
+	}
+
 	@Override
 	public Validated<X> validate(@Nullable Map<String, Object> input, Locale locale,
 			ConstraintContext constraintContext) {
@@ -274,6 +288,11 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		@Override
 		public Object value(Object node) {
 			return this.reader.value(this.node(node));
+		}
+
+		@Override
+		public Object value(Object node, Class<?> type) {
+			return this.reader.value(this.node(node), type);
 		}
 
 		@Override

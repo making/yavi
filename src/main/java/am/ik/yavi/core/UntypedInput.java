@@ -32,6 +32,12 @@ final class UntypedInput {
 	/** The result of a conversion that the input does not allow. */
 	private static final Object MISMATCH = new Object();
 
+	/**
+	 * The largest exponent of a number taken as a {@code BigInteger}. Writing out the
+	 * digits of {@code 1e1000000000} would exhaust the memory.
+	 */
+	private static final int MAX_INTEGER_EXPONENT = 10_000;
+
 	private static final Map<Class<?>, Function<String, Object>> PARSERS = Map.of(LocalDate.class, LocalDate::parse,
 			LocalTime.class, LocalTime::parse, LocalDateTime.class, LocalDateTime::parse, OffsetDateTime.class,
 			OffsetDateTime::parse, ZonedDateTime.class, ZonedDateTime::parse, Instant.class, Instant::parse, Year.class,
@@ -56,9 +62,11 @@ final class UntypedInput {
 		@Override
 		public Validated<X> validate(@Nullable N node, Locale locale, ConstraintContext constraintContext) {
 			final N present = orNull(this.reader, node);
-			final Object value = present == null ? null : this.reader.value(present);
-			final Object converted = value == null ? null : convert(value, this.type);
-			if (converted == MISMATCH) {
+			final Object converted = present == null ? null : convert(this.reader.value(present, this.type), this.type);
+			if (present != null && converted == MISMATCH) {
+				// the violated value is the node as it is, not as it was read for the
+				// type
+				final Object value = this.reader.value(present);
 				final Object[] constants = this.type.getEnumConstants();
 				return Validated.failureWith(constants != null
 						? violation(ViolationMessage.Default.OBJECT_ONE_OF, List.of(constants), value, locale)
@@ -167,7 +175,7 @@ final class UntypedInput {
 				return decimal.byteValueExact();
 			}
 			if (type == BigInteger.class) {
-				return decimal.toBigIntegerExact();
+				return decimal.scale() < -MAX_INTEGER_EXPONENT ? MISMATCH : decimal.toBigIntegerExact();
 			}
 			if (type == Year.class) {
 				return Year.of(decimal.intValueExact());
