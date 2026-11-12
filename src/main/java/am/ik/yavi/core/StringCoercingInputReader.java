@@ -10,14 +10,15 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Reads the strings of another reader as text, as {@link InputReader#coercingStrings()}
- * states.
+ * Reads the strings of another reader as text, as
+ * {@link InputReader#coercingStrings(StringCoercion)} states.
  */
-record StringCoercingInputReader<N> (InputReader<N> reader) implements InputReader<N> {
+record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coercion) implements InputReader<N> {
 
 	@Override
 	public boolean isNull(N node) {
-		return this.reader.isNull(node) || "".equals(this.reader.value(node));
+		return this.reader.isNull(node)
+				|| (this.reader.value(node) instanceof String string && this.coercion.isNull(string));
 	}
 
 	@Override
@@ -28,21 +29,23 @@ record StringCoercingInputReader<N> (InputReader<N> reader) implements InputRead
 	@Override
 	public Object value(N node, Class<?> type) {
 		final Object value = this.reader.value(node, type);
-		if (!(value instanceof String string)) {
+		if (!(value instanceof String string) || type.isInstance(value)) {
 			return value;
 		}
+		final String text = this.coercion.text(string);
 		if (type == Boolean.class) {
-			return string.equals("true") ? Boolean.TRUE : string.equals("false") ? Boolean.FALSE : value;
+			final Boolean bool = this.coercion.toBoolean(text);
+			return bool != null ? bool : text;
 		}
 		if (Number.class.isAssignableFrom(type)) {
 			try {
-				return new BigDecimal(string);
+				return new BigDecimal(text);
 			}
 			catch (NumberFormatException e) {
-				return value;
+				return text;
 			}
 		}
-		return value;
+		return text;
 	}
 
 	@Override
@@ -76,8 +79,8 @@ record StringCoercingInputReader<N> (InputReader<N> reader) implements InputRead
 	}
 
 	@Override
-	public InputReader<N> coercingStrings() {
-		return this;
+	public InputReader<N> coercingStrings(StringCoercion coercion) {
+		return coercion == this.coercion ? this : new StringCoercingInputReader<>(this.reader, coercion);
 	}
 
 }

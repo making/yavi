@@ -5,6 +5,7 @@
 package am.ik.yavi.jsonschema;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,10 +53,12 @@ import org.jspecify.annotations.Nullable;
  * {@code notNull}, {@code notBlank}, {@code notEmpty} and the size constraints
  * ({@code minLength}, {@code maxLength}, {@code minItems}, {@code maxItems},
  * {@code minProperties}, {@code maxProperties}), the numeric ranges ({@code minimum},
- * {@code maximum}, {@code exclusiveMinimum}, {@code exclusiveMaximum}), {@code pattern},
- * {@code email}, {@code url}, {@code uuid}, {@code ipv4}, {@code ipv6} ({@code format}),
- * {@code unique} ({@code uniqueItems}), {@code oneOf} ({@code enum}), and
- * {@code equalTo}, {@code isTrue} and {@code isFalse} ({@code const}).</li>
+ * {@code maximum}, {@code exclusiveMinimum}, {@code exclusiveMaximum}),
+ * {@code fractionDigits} ({@code multipleOf}), {@code integerDigits}
+ * ({@code exclusiveMinimum}, {@code exclusiveMaximum}), {@code pattern}, {@code email},
+ * {@code url}, {@code uuid}, {@code ipv4}, {@code ipv6} ({@code format}), {@code unique}
+ * ({@code uniqueItems}), {@code oneOf} ({@code enum}), and {@code equalTo},
+ * {@code isTrue} and {@code isFalse} ({@code const}).</li>
  * <li>Any other constraint and an unknown value add no restriction, so the schema may
  * accept input that the validator rejects, but not the other way around. One exception is
  * {@code notBlank}, which is written as {@code minLength: 1}.</li>
@@ -240,6 +243,18 @@ public final class JsonSchema {
 			case "numeric.positiveOrZero" -> number(schema, numeric, "minimum", 0);
 			case "numeric.negative" -> number(schema, numeric, "exclusiveMaximum", 0);
 			case "numeric.negativeOrZero" -> number(schema, numeric, "maximum", 0);
+			case "numeric.fractionDigits" -> {
+				if (arg instanceof Integer digits) {
+					number(schema, numeric, "multipleOf", new BigDecimal(BigInteger.ONE, digits));
+				}
+			}
+			case "numeric.integerDigits" -> {
+				if (arg instanceof Integer digits) {
+					final BigInteger bound = BigInteger.TEN.pow(digits);
+					number(schema, numeric, "exclusiveMinimum", bound.negate());
+					number(schema, numeric, "exclusiveMaximum", bound);
+				}
+			}
 			case "charSequence.pattern" -> {
 				// YAVI matches the whole value, JSON Schema searches for a match
 				if (arg instanceof String regex && !schema.containsKey("pattern")) {

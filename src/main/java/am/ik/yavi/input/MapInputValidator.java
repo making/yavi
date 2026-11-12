@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -425,7 +426,25 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * @see ParameterTree
 	 */
 	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters() {
-		return ParameterTree.reading(this);
+		return this.readingParameters(StringCoercion.strict());
+	}
+
+	/**
+	 * Returns a validator like {@link #readingParameters()} that takes the text of a
+	 * value by the given rules, for example to read {@code on}, which a checked checkbox
+	 * of a form sends, as {@code true}:
+	 *
+	 * <pre>{@code
+	 * validator.readingParameters(StringCoercion.strict().trimming().booleanWords());
+	 * }</pre>
+	 * @param coercion the rules by which a string is taken as text
+	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
+	 * strings
+	 * @return a validator of a map of parameters
+	 * @see InputReader#coercingStrings(StringCoercion)
+	 */
+	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters(StringCoercion coercion) {
+		return ParameterTree.reading(this, coercion);
 	}
 
 	@Override

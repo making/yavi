@@ -77,8 +77,8 @@ public interface InputReader<N> {
 	 * <p>
 	 * The default implementation returns {@link #value(Object) value(node)} whatever the
 	 * type is. Override this method if the representation of a node depends on what it is
-	 * read as, for example to read {@code "on"} as a {@code Boolean}; return the value as
-	 * it is for a node that the reader does not convert.
+	 * read as, for example to read a string in a format of your own as a number; return
+	 * the value as it is for a node that the reader does not convert.
 	 * @param node the node, which is not a null node
 	 * @param type the type the value is checked as
 	 * @return the value of the node
@@ -176,12 +176,32 @@ public interface InputReader<N> {
 	 * temporal types are read from a string by every reader.
 	 *
 	 * <p>
-	 * To take other strings, such as {@code "on"} for a {@code Boolean}, override
-	 * {@link #value(Object, Class)} in a reader of your own.
+	 * {@link #coercingStrings(StringCoercion)} takes more strings, such as {@code " 42 "}
+	 * for a number or {@code "on"} for a {@code Boolean}.
 	 * @return a reader that coerces strings
 	 */
 	default InputReader<N> coercingStrings() {
-		return new StringCoercingInputReader<>(this);
+		return this.coercingStrings(StringCoercion.strict());
+	}
+
+	/**
+	 * Returns a reader like {@link #coercingStrings()} that takes strings by the given
+	 * rules, for an input whose text is written by a person or another loose source: the
+	 * cells of a CSV file, the fields of a form.
+	 *
+	 * <pre>{@code
+	 * InputReader<Object> cells = InputReader.ofJdkTypes()
+	 *     .coercingStrings(StringCoercion.strict().trimming().booleanWords());
+	 * Yavi._boolean(c -> c.notNull()).readingWith(cells).validate(" Yes "); // true
+	 * }</pre>
+	 *
+	 * The rules of a reader that already coerces strings are replaced.
+	 * @param coercion the rules by which a string is taken as text
+	 * @return a reader that coerces strings
+	 * @see StringCoercion
+	 */
+	default InputReader<N> coercingStrings(StringCoercion coercion) {
+		return new StringCoercingInputReader<>(this, coercion);
 	}
 
 	/**

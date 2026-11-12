@@ -4,9 +4,16 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ValueDescription;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +29,10 @@ import org.jspecify.annotations.Nullable;
  * (for example {@code notNull()}).
  *
  * <p>
+ * A validator that knows its enum type reads the name of a constant from an untyped
+ * input, and with {@link #ignoringCase()} whatever the case of the name is.
+ *
+ * <p>
  * The mapper passed to the constructor or to the builder's {@code build(Function)} method
  * is applied only when validation succeeds.
  *
@@ -30,6 +41,10 @@ import org.jspecify.annotations.Nullable;
  * @since 0.14.0
  */
 public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Validator<E, T> {
+
+	private final @Nullable Class<E> enumType;
+
+	private final boolean ignoringCase;
 
 	/**
 	 * Returns a new validator that applies the given function to the result of this
@@ -41,12 +56,10 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 * @param mapper the function applied to the validated value
 	 * @return a new validator with the mapped result type
 	 */
-	private final @Nullable Class<E> enumType;
-
 	@Override
 	public <T2> EnumValidator<E, T2> map(Function<? super T, ? extends T2> mapper) {
 		final Function1<E, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
-		return new EnumValidator<>(super.validator, mapped, this.enumType, super.transform);
+		return new EnumValidator<>(super.validator, mapped, this.enumType, super.transform, this.ignoringCase);
 	}
 
 	/**
@@ -60,13 +73,116 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 */
 	@Override
 	public EnumValidator<E, T> preprocess(Function<? super E, ? extends @Nullable E> transform) {
-		return new EnumValidator<>(super.validator, super.mapper, this.enumType, composed(transform, super.transform));
+		return new EnumValidator<>(super.validator, super.mapper, this.enumType, composed(transform, super.transform),
+				this.ignoringCase);
+	}
+
+	/**
+	 * Returns a validator that produces a {@link Supplier} of the mapped value.
+	 * @return a validator that produces a supplier of the validated value
+	 */
+	@Override
+	public EnumValidator<E, Supplier<T>> lazy() {
+		final Function1<E, Supplier<T>> lazy = e -> () -> super.mapper.apply(e);
+		return new EnumValidator<>(super.validator, lazy, this.enumType, super.transform, this.ignoringCase);
+	}
+
+	/**
+	 * Returns a new validator that reads the name of a constant from an untyped input
+	 * whatever its case is: {@code "admin"} and {@code "Admin"} are {@code ADMIN}. A name
+	 * that differs from the names of several constants only by its case is not taken.
+	 *
+	 * <p>
+	 * This is how the validator reads with any reader ({@link #untyped()},
+	 * {@link #readingWith(InputReader)}, an argument of {@code fromMap}). The validation
+	 * of a constant and the description do not change: the description, and so a JSON
+	 * Schema, holds the names of the constants as they are declared.
+	 *
+	 * <pre>{@code
+	 * Yavi.arguments()
+	 *     ._enum(Yavi._enum("role", Role.class).ignoringCase())
+	 *     .fromMap(role -> role)
+	 *     .validate(Map.of("role", "admin")); // ADMIN
+	 * }</pre>
+	 * @return a new validator that ignores the case of the name of a constant
+	 * @throws IllegalStateException if the enum type of this validator is unknown
+	 * @since 0.18.0
+	 */
+	public EnumValidator<E, T> ignoringCase() {
+		if (this.enumType == null) {
+			throw new IllegalStateException(
+					"The enum type of this validator is unknown. Create it with the type, for example _enum(name, type).");
+		}
+		return new EnumValidator<>(super.validator, super.mapper, this.enumType, super.transform, true);
+	}
+
+	/**
+	 * Returns a validator that accepts an untyped input read with the given reader, as
+	 * {@link DefaultArguments1Validator#readingWith(InputReader)} states, and takes the
+	 * name of a constant in any case if this validator is {@link #ignoringCase()}.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
+	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the enum type is unknown
+	 * @since 0.18.0
+	 */
+	@Override
+	public <N> ValueValidator<N, T> readingWith(InputReader<N> reader) {
+		final ValueValidator<N, T> exact = super.readingWith(reader);
+		final Class<E> type = this.enumType;
+		if (!this.ignoringCase || type == null) {
+			return exact;
+		}
+		return new ValueValidator<>() {
+			@Override
+			public Validated<T> validate(@Nullable N node, Locale locale, ConstraintContext constraintContext) {
+				if (node != null && !reader.isNull(node) && reader.value(node, type) instanceof String name) {
+					final E constant = constant(type, name);
+					if (constant != null) {
+						return EnumValidator.this.validate(constant, locale, constraintContext);
+					}
+				}
+				return exact.validate(node, locale, constraintContext);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return EnumValidator.this.description();
+			}
+
+			@Override
+			public <M> ValueValidator<M, T> readingWith(InputReader<M> other) {
+				return EnumValidator.this.readingWith(other);
+			}
+		};
+	}
+
+	/**
+	 * Returns the only constant whose name is the given one without regard to case, or
+	 * {@code null} if there is none or more than one.
+	 */
+	private static <E extends Enum<E>> @Nullable E constant(Class<E> type, String name) {
+		E found = null;
+		for (E constant : type.getEnumConstants()) {
+			if (constant.name().equals(name)) {
+				return constant;
+			}
+			if (constant.name().equalsIgnoreCase(name)) {
+				if (found != null) {
+					return null;
+				}
+				found = constant;
+			}
+		}
+		return found;
 	}
 
 	private EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
-			@Nullable Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform) {
+			@Nullable Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform,
+			boolean ignoringCase) {
 		super(validator, mapper, enumType == null ? Enum.class : enumType, transform);
 		this.enumType = enumType;
+		this.ignoringCase = ignoringCase;
 	}
 
 	/**
@@ -78,6 +194,7 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper) {
 		super(validator, mapper, Enum.class);
 		this.enumType = null;
+		this.ignoringCase = false;
 	}
 
 	/**
@@ -93,6 +210,7 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 			Class<E> enumType) {
 		super(validator, mapper, enumType);
 		this.enumType = enumType;
+		this.ignoringCase = false;
 	}
 
 }

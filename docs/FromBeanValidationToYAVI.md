@@ -454,7 +454,23 @@ Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
 
 ### `@Digits`
 
-Not Implemented yet
+```java
+public class Foo {
+  @Digits(integer = 6, fraction = 2)
+  private BigDecimal price;
+  // omitted setter/getter 
+}
+```
+
+to
+
+```java
+Validator<Foo> validator = ValidatorBuilder.of(Foo.class)
+  .constraint(Foo::getPrice, "price", c -> c.integerDigits(6).fractionDigits(2))
+  .build();
+```
+
+Trailing zeros of the fraction are not counted: `1.500` has one fraction digit. The constraints are available for a `BigDecimal` only.
 
 ### `@AssertTrue`
 

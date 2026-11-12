@@ -69,7 +69,7 @@ compiler checks that the arguments match it.
 | --- | --- |
 | `z.string()`, `z.number()`, `z.boolean()`, `z.date()` ... as a property | `_string(name, c -> ...)`, `_integer`, `_long`, `_double`, `_bigDecimal`, `_boolean`, `_localDate`, `_instant` ... |
 | the same as a schema of its own | `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)` ... |
-| `z.enum([...])` | `_enum(name, Role.class)` |
+| `z.enum([...])` | `_enum(name, Role.class)`; `_enum(Yavi._enum(name, Role.class).ignoringCase())` reads the name in any case |
 | `z.object({...})` nested | `_object(name, anotherMapInputValidator)` |
 | `z.array(schema)` | `_list(name, elementValidator)`, `validator.liftList()` |
 | `z.record(z.string(), schema)` | `_map(name, valueValidator)`, `validator.liftMap()` |
@@ -235,10 +235,16 @@ Both follow the same rules, which are stricter than `z.coerce`:
 | Input | `z.coerce` | YAVI |
 | --- | --- | --- |
 | `""` for a number | `0` | `null`, so `optional()` and `defaultValue` apply |
-| `" 30 "`, `"0x1e"` for a number | `30` | `object.type` |
+| `" 30 "` for a number | `30` | `object.type`; `30` with `trimming()` |
+| `"0x1e"` for a number | `30` | `object.type` |
 | `"false"` for a boolean | `true` | `false` |
-| `"on"`, `"1"` for a boolean | `true` | `object.type` (`z.stringbool()` takes them) |
+| `"on"`, `"1"` for a boolean | `true` | `object.type`; `true` with `booleanWords()`, like `z.stringbool()` |
 | `30` for a string | `"30"` | `object.type` |
+
+`trimming()` and `booleanWords()` are options of `StringCoercion`, given to
+`readingParameters(coercion)` or `coercingStrings(coercion)`:
+`validator.readingParameters(StringCoercion.strict().trimming().booleanWords())` reads a
+submitted form, whose checked checkbox sends `on`.
 
 An empty string is `null` for a string argument too. Any other coercion is a validator
 that takes an `Object`, or a reader that overrides `InputReader#value(node, type)`:
