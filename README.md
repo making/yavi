@@ -474,6 +474,22 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 
 The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`.
 
+#### Describing a validator and generating a JSON Schema
+
+A validator describes the input it expects. `description()` returns a read-only tree (`ValueDescription`) of objects with properties, lists, maps, alternatives and values with their constraints, which tools can walk. `JsonSchema` is one consumer.
+
+```java
+ValueDescription description = validator.description();
+Map<String, Object> schema = JsonSchema.of(description);
+String json = JsonSchema.toJson(description);
+// {"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"email":{"type":"string","minLength":1,"format":"email"},...},"required":["email","address","roles"]}
+```
+
+* A constraint is described by its message key and arguments, for example `container.lessThanOrEqual` with `[14]`.
+* A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or has no constraint that rejects `null` such as `notNull()`.
+* The combinators carry the description. A lambda and the result of `ValueValidator.compose` are unknown; describe them with `describedAs(...)`.
+* Conditional constraints and `constraintOnTarget` rules are not described. Constraints without a JSON Schema keyword are omitted from the schema.
+
 #### Where to go next?
 
 That concludes the 5 minutes tour through the world of YAVI. If you want a more complete

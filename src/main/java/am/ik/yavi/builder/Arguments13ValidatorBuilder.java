@@ -227,8 +227,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, BigDecimal.class,
-						BigDecimalValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -282,8 +282,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, BigInteger.class,
-						BigIntegerValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -338,7 +338,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -391,7 +391,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -445,7 +445,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Enum.class, EnumValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, EnumValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -498,7 +498,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -552,7 +552,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -607,7 +607,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -662,8 +662,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, LocalDateTime.class,
-						LocalDateTimeValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -717,8 +717,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, LocalTime.class,
-						LocalTimeValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -772,8 +772,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, LocalDate.class,
-						LocalDateValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -826,7 +826,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -879,7 +879,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Object.class, ObjectValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, ObjectValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -934,8 +934,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, OffsetDateTime.class,
-						OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -988,7 +988,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1041,7 +1041,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1094,8 +1094,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, YearMonth.class,
-						YearMonthValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1148,7 +1148,7 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10, this.d11, this.d12, this.d13,
-				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1202,8 +1202,8 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
-				this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name, ZonedDateTime.class,
-						ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
+				this.d9, this.d10, this.d11, this.d12, this.d13,
+				ArgumentDefinition.value(name, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1298,7 +1298,10 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * function.
 	 *
 	 * <p>
-	 * The function is applied only when all arguments are valid.
+	 * The function is applied only when all arguments are valid. The validator describes
+	 * its arguments as {@link am.ik.yavi.core.ValueDescription.Properties} with one
+	 * property per argument; an argument added without a name is named as
+	 * {@link am.ik.yavi.core.ValueDescription.Properties#ofArguments} states.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
 	 * @return a new arguments validator
@@ -1311,7 +1314,9 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 					this.d5.validator(), this.d6.validator(), this.d7.validator(), this.d8.validator(),
 					this.d9.validator(), this.d10.validator(), this.d11.validator(), this.d12.validator(),
 					this.d13.validator())
-			.apply(f);
+			.<X>apply(f)
+			.describedAs(ArgumentDefinition.describe(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13));
 	}
 
 }

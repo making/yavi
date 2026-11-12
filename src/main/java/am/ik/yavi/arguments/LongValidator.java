@@ -51,7 +51,7 @@ public class LongValidator<T> extends DefaultArguments1Validator<Long, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public LongValidator(Validator<Arguments1<Long>> validator, Function1<? super Long, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Long.class);
 	}
 
 }

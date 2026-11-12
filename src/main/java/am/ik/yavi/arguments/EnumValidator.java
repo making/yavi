@@ -52,7 +52,7 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 * @param mapper the function applied to the validated value
 	 */
 	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Enum.class);
 	}
 
 }

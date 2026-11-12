@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -36,6 +37,8 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	/** The mapper applied to the validated arguments. */
 	protected final Function1<? super A1, ? extends X> mapper;
 
+	private final Class<?> valueType;
+
 	/**
 	 * Creates a validator that applies the given validator to an {@link Arguments1} built
 	 * from the arguments and maps the validated arguments with the given function.
@@ -43,8 +46,34 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 * @param mapper the mapper applied to the validated arguments
 	 */
 	public DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper) {
+		this(validator, mapper, Object.class);
+	}
+
+	/**
+	 * Creates a validator like {@link #DefaultArguments1Validator(Validator, Function1)}
+	 * that also knows the raw type of the argument, which is reported by
+	 * {@link #description()}.
+	 * @param validator the validator applied to the argument
+	 * @param mapper the mapper applied to the validated argument
+	 * @param valueType the raw type of the argument
+	 * @since 0.18.0
+	 */
+	protected DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
+			Class<?> valueType) {
 		this.validator = validator;
 		this.mapper = mapper;
+		this.valueType = valueType;
+	}
+
+	/**
+	 * Describes the argument as a {@link ValueDescription.Value} with its raw type and
+	 * the constraints of the validator.
+	 * @return the description of the argument
+	 * @since 0.18.0
+	 */
+	@Override
+	public ValueDescription description() {
+		return ValueDescription.Value.of(this.valueType, this.validator);
 	}
 
 	/**
@@ -54,7 +83,7 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, Supplier<X>> lazy() {
-		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1));
+		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1), this.valueType);
 	}
 
 	/**

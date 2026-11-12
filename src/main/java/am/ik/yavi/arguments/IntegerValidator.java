@@ -51,7 +51,7 @@ public class IntegerValidator<T> extends DefaultArguments1Validator<Integer, T> 
 	 * @param mapper the function applied to the validated value
 	 */
 	public IntegerValidator(Validator<Arguments1<Integer>> validator, Function1<? super Integer, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Integer.class);
 	}
 
 }

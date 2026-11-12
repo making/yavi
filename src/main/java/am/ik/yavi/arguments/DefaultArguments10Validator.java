@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function10;
 import org.jspecify.annotations.Nullable;

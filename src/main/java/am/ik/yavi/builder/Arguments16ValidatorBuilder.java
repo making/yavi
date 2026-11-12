@@ -213,7 +213,10 @@ public final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * function.
 	 *
 	 * <p>
-	 * The function is applied only when all arguments are valid.
+	 * The function is applied only when all arguments are valid. The validator describes
+	 * its arguments as {@link am.ik.yavi.core.ValueDescription.Properties} with one
+	 * property per argument; an argument added without a name is named as
+	 * {@link am.ik.yavi.core.ValueDescription.Properties#ofArguments} states.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
 	 * @return a new arguments validator
@@ -226,7 +229,9 @@ public final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 					this.d5.validator(), this.d6.validator(), this.d7.validator(), this.d8.validator(),
 					this.d9.validator(), this.d10.validator(), this.d11.validator(), this.d12.validator(),
 					this.d13.validator(), this.d14.validator(), this.d15.validator(), this.d16.validator())
-			.apply(f);
+			.<X>apply(f)
+			.describedAs(ArgumentDefinition.describe(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14, this.d15, this.d16));
 	}
 
 }

@@ -53,7 +53,7 @@ public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth,
 	 */
 	public YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
 			Function1<? super YearMonth, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, YearMonth.class);
 	}
 
 }
