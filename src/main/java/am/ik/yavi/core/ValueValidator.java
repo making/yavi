@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -34,13 +35,14 @@ import java.util.function.Supplier;
  * accepted with {@link #optional()}, {@link #nullable()} or
  * {@link #defaultValue(Object)}, any failure is replaced with a fallback with
  * {@link #recover(Object)}, alternatives are combined with
- * {@link #anyOf(ValueValidator[])}, and a rule that spans several properties of the
- * produced value is added with {@link #constraintOnTarget}. What a validator expects as
- * input is available from {@link #description()}; the combinators carry it. An input of
- * unknown type, such as a node of a parsed JSON document, is validated with
- * {@link #untyped()}, or with {@link #readingWith(InputReader)} if it is not a tree of
- * JDK types. The generated {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend
- * this interface to validate constructor arguments and create only valid objects.
+ * {@link #anyOf(ValueValidator[])}, a validator that is not built yet is referred to with
+ * {@link #lazy(Supplier)}, and a rule that spans several properties of the produced value
+ * is added with {@link #constraintOnTarget}. What a validator expects as input is
+ * available from {@link #description()}; the combinators carry it. An input of unknown
+ * type, such as a node of a parsed JSON document, is validated with {@link #untyped()},
+ * or with {@link #readingWith(InputReader)} if it is not a tree of JDK types. The
+ * generated {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this interface
+ * to validate constructor arguments and create only valid objects.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
@@ -77,8 +79,8 @@ public interface ValueValidator<T, X> {
 	 * {@link #preprocess(Function)} keep it because they do not change the type of the
 	 * input, the {@code lift*} methods, {@link #optional()}, {@link #nullable()},
 	 * {@link #defaultValue(Object)}, {@link #recover(Object)} and
-	 * {@link #anyOf(ValueValidator[])} wrap it, and {@link #compose(Function)} resets it
-	 * to unknown because it changes the input.
+	 * {@link #anyOf(ValueValidator[])} wrap it, {@link #lazy(Supplier)} refers to it, and
+	 * {@link #compose(Function)} resets it to unknown because it changes the input.
 	 * @return the description of the input
 	 * @since 0.18.0
 	 * @see #describedAs(ValueDescription)
@@ -289,6 +291,127 @@ public interface ValueValidator<T, X> {
 						ValueValidator.liftOptional(validator.readingWith(reader))),
 				() -> new ValueDescription.Optional(validator.description(), null),
 				other -> untypedOptional(other, validator));
+	}
+
+	/**
+	 * Returns a validator that refers to the validator of the given supplier, which is
+	 * asked for it on first use. This is the way to refer to a validator that is not
+	 * built yet, which a structure that contains itself needs:
+	 *
+	 * <pre>{@code
+	 * record Comment(String body, List<Comment> replies) {
+	 *     static final MapInputValidator<Comment> VALIDATOR = Yavi.arguments()
+	 *         ._string("body", c -> c.notBlank())
+	 *         ._list("replies", ValueValidator.lazy(() -> Comment.VALIDATOR)).defaultValue(List.of())
+	 *         .fromMap(Comment::new);
+	 * }
+	 * }</pre>
+	 *
+	 * <p>
+	 * The supplier is not called while validators are built with the returned validator.
+	 * It is called when the returned validator, or a validator built with it, validates
+	 * for the first time or resolves its description, and the validator it returns is
+	 * kept. The returned validator is used like the one it refers to:
+	 * <ul>
+	 * <li>{@link #readingWith(InputReader)} is passed on to it, on first use too. An
+	 * unknown input type is therefore reported by the first validation, not when the
+	 * reader is given.</li>
+	 * <li>The {@linkplain #description() description} is a
+	 * {@link ValueDescription.Reference} to its description, which
+	 * {@code am.ik.yavi.jsonschema.JsonSchema} writes as {@code $ref}.</li>
+	 * <li>A builder that inspects the description of a validator while it is built sees
+	 * only the reference: a lazy validator has no name of its own, so an argument is
+	 * added with a name, and {@code _embedded} embeds it as a validator whose properties
+	 * are unknown.</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * The depth of a recursive structure is the depth of the input. Limiting it against
+	 * hostile input is the task of the parser that reads the input, and a map that
+	 * contains itself is never validated to the end.
+	 *
+	 * <p>
+	 * This is unrelated to {@code lazy()} of the {@code ArgumentsNValidator} types, which
+	 * defers the creation of the validated object.
+	 * @param supplier the supplier of the validator referred to; it may return
+	 * {@code null} as long as the returned validator is not used
+	 * @param <T> the type of the object to be validated
+	 * @param <X> the type of the validated and transformed result
+	 * @return a value validator that validates like the supplied one
+	 * @throws IllegalStateException when the returned validator is used and the supplier
+	 * returns {@code null}
+	 * @since 0.18.0
+	 * @see #recursive(Function)
+	 */
+	static <T, X> ValueValidator<T, X> lazy(Supplier<? extends @Nullable ValueValidator<T, X>> supplier) {
+		return lazy("", supplier);
+	}
+
+	/**
+	 * Returns a validator like {@link #lazy(Supplier)} whose
+	 * {@linkplain ValueDescription.Reference#name() reference} has the given name, under
+	 * which a JSON Schema defines the structure in {@code $defs}.
+	 * @param name the name of the structure that the supplied validator validates, such
+	 * as {@code Comment}
+	 * @param supplier the supplier of the validator referred to
+	 * @param <T> the type of the object to be validated
+	 * @param <X> the type of the validated and transformed result
+	 * @return a value validator that validates like the supplied one
+	 * @since 0.18.0
+	 */
+	static <T, X> ValueValidator<T, X> lazy(String name, Supplier<? extends @Nullable ValueValidator<T, X>> supplier) {
+		return new LazyValueValidator<>(name, supplier);
+	}
+
+	/**
+	 * Returns the validator that the given function builds from a reference to that very
+	 * validator. This is {@link #lazy(Supplier)} without a variable to refer to, so it
+	 * also defines a recursive validator in a local variable:
+	 *
+	 * <pre>{@code
+	 * MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
+	 *     ._string("body", c -> c.notBlank())
+	 *     ._list("replies", self).defaultValue(List.of())
+	 *     .fromMap(Comment::new));
+	 * }</pre>
+	 *
+	 * <p>
+	 * The function is called once, at once. The reference it is given is a lazy
+	 * validator, so it is to be built into the returned validator and not used before the
+	 * function returns. The types are inferred from the type that the result is assigned
+	 * to.
+	 * @param definition the function that builds the validator from a reference to it
+	 * @param <T> the type of the object to be validated
+	 * @param <X> the type of the validated and transformed result
+	 * @param <V> the type of the built validator
+	 * @return the validator built by the function
+	 * @since 0.18.0
+	 * @see #lazy(Supplier)
+	 */
+	static <T, X, V extends ValueValidator<T, X>> V recursive(
+			Function<? super ValueValidator<T, X>, ? extends V> definition) {
+		return recursive("", definition);
+	}
+
+	/**
+	 * Returns a validator like {@link #recursive(Function)} whose
+	 * {@linkplain ValueDescription.Reference#name() reference} to itself has the given
+	 * name, under which a JSON Schema defines the structure in {@code $defs}.
+	 * @param name the name of the structure that the built validator validates, such as
+	 * {@code Comment}
+	 * @param definition the function that builds the validator from a reference to it
+	 * @param <T> the type of the object to be validated
+	 * @param <X> the type of the validated and transformed result
+	 * @param <V> the type of the built validator
+	 * @return the validator built by the function
+	 * @since 0.18.0
+	 */
+	static <T, X, V extends ValueValidator<T, X>> V recursive(String name,
+			Function<? super ValueValidator<T, X>, ? extends V> definition) {
+		final AtomicReference<@Nullable V> built = new AtomicReference<>();
+		final V validator = definition.apply(lazy(name, built::get));
+		built.set(validator);
+		return validator;
 	}
 
 	/**

@@ -7,6 +7,8 @@ package am.ik.yavi.jsonschema;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -15,11 +17,14 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ValueDescription;
@@ -46,6 +51,12 @@ import org.jspecify.annotations.Nullable;
  * constraints of a list or a map are written like those of a value ({@code minItems},
  * {@code maxItems}, {@code uniqueItems}, {@code minProperties},
  * {@code maxProperties}).</li>
+ * <li>A {@link ValueDescription.Reference}, which a recursive structure holds where it
+ * contains itself, is written with {@code $ref}: to {@code #} if it refers to the
+ * described input itself, and otherwise to a schema in {@code $defs} under the name of
+ * the reference, or {@code ref1}, {@code ref2}, ... if it has none. A description equal
+ * to a referenced one is written as a reference too, so that a structure is defined
+ * once.</li>
  * <li>The properties that an object does not define are written with
  * {@code additionalProperties}: their schema if they are validated, and {@code false} if
  * they are rejected.</li>
@@ -82,9 +93,15 @@ public final class JsonSchema {
 	 * @return a modifiable schema whose first entry is {@code $schema}
 	 */
 	public static Map<String, Object> of(ValueDescription description) {
+		final ValueDescription root = Definitions.target(description);
+		final Definitions definitions = new Definitions(root);
 		final Map<String, Object> schema = new LinkedHashMap<>();
 		schema.put("$schema", DIALECT);
-		schema.putAll(schema(description, description.acceptsNull()));
+		schema.putAll(definitions.schema(root, root.acceptsNull(), true));
+		final Map<String, Object> defs = definitions.defs();
+		if (!defs.isEmpty()) {
+			schema.put("$defs", defs);
+		}
 		return schema;
 	}
 
@@ -99,72 +116,234 @@ public final class JsonSchema {
 		return json.toString();
 	}
 
-	private static Map<String, Object> schema(ValueDescription description, boolean nullable) {
-		final Map<String, Object> schema = new LinkedHashMap<>();
-		switch (description) {
-			case ValueDescription.Value value -> value(schema, value, nullable);
-			case ValueDescription.Properties properties -> {
-				final Map<String, Object> schemas = new LinkedHashMap<>();
-				final List<Object> required = new ArrayList<>();
-				for (ValueDescription.Property property : properties.properties()) {
-					final boolean optional = property.value().acceptsNull();
-					schemas.put(property.name(), schema(property.value(), optional));
-					if (!optional) {
-						required.add(property.name());
-					}
-				}
-				schema.put("type", type("object", nullable));
-				schema.put("properties", schemas);
-				if (!required.isEmpty()) {
-					schema.put("required", required);
-				}
-				switch (properties.rest()) {
-					case null -> {
-					}
-					case ValueDescription.Unknown unknown -> {
-					}
-					case ValueDescription.Never never -> schema.put("additionalProperties", false);
-					case ValueDescription rest ->
-						schema.put("additionalProperties", schema(rest, rest.acceptsNull()));
-				}
+	/**
+	 * The descriptions that the references of a description refer to, each written once
+	 * and referred to with {@code $ref} wherever it appears.
+	 */
+	private static final class Definitions {
+
+		private final ValueDescription root;
+
+		private final Map<ValueDescription.Reference, Definition> byReference = new IdentityHashMap<>();
+
+		private final List<Definition> definitions = new ArrayList<>();
+
+		private static final class Definition {
+
+			private final ValueDescription target;
+
+			/** The name given by a reference, then the key in {@code $defs}. */
+			private String name;
+
+			private Definition(ValueDescription target, String name) {
+				this.target = target;
+				this.name = name;
 			}
-			case ValueDescription.Elements elements -> {
-				schema.put("type", type("array", nullable));
-				schema.put("items", schema(elements.element(), elements.element().acceptsNull()));
-				elements.constraints().forEach(constraint -> constraint(schema, "array", constraint));
-			}
-			case ValueDescription.Entries entries -> {
-				schema.put("type", type("object", nullable));
-				schema.put("additionalProperties", schema(entries.value(), entries.value().acceptsNull()));
-				entries.constraints().forEach(constraint -> constraint(schema, "object", constraint));
-			}
-			case ValueDescription.AnyOf anyOf -> {
-				final List<Object> alternatives = new ArrayList<>();
-				boolean nullAllowed = false;
-				for (ValueDescription alternative : anyOf.alternatives()) {
-					final boolean alternativeNullable = nullable && alternative.acceptsNull();
-					nullAllowed |= alternativeNullable;
-					alternatives.add(schema(alternative, alternativeNullable));
-				}
-				if (nullable && !nullAllowed) {
-					alternatives.add(Map.of("type", "null"));
-				}
-				schema.put("anyOf", alternatives);
-			}
-			// the caller has decided whether null is accepted here
-			case ValueDescription.NotNull notNull -> schema.putAll(schema(notNull.value(), nullable));
-			case ValueDescription.Optional optional -> {
-				schema.putAll(schema(optional.value(), true));
-				final Object defaultValue = optional.defaultValue();
-				if (defaultValue != null) {
-					schema.put("default", Objects.requireNonNull(jsonValue(defaultValue)));
-				}
-			}
-			case ValueDescription.Unknown unknown -> {
-			}
-			case ValueDescription.Never never -> schema.put("not", new LinkedHashMap<>());
+
 		}
-		return schema;
+
+		private Definitions(ValueDescription root) {
+			this.root = root;
+			this.collect(root);
+			final Set<String> keys = new HashSet<>();
+			for (Definition definition : this.definitions) {
+				final String name = definition.name;
+				String key = name.isEmpty() ? "ref1" : name;
+				for (int i = 2; !keys.add(key); i++) {
+					key = (name.isEmpty() ? "ref" : name) + i;
+				}
+				definition.name = key;
+			}
+		}
+
+		/**
+		 * Returns the description that the given one stands for: itself unless it is a
+		 * reference, and unknown for a reference that leads back to itself.
+		 */
+		private static ValueDescription target(ValueDescription description) {
+			final Set<ValueDescription> seen = new HashSet<>();
+			ValueDescription target = description;
+			while (target instanceof ValueDescription.Reference reference) {
+				if (!seen.add(reference)) {
+					return new ValueDescription.Unknown();
+				}
+				target = reference.target();
+			}
+			return target;
+		}
+
+		/**
+		 * Finds the targets of the references in the given description. References with
+		 * equal targets share a definition.
+		 */
+		private void collect(@Nullable ValueDescription description) {
+			switch (description) {
+				case ValueDescription.Properties properties -> {
+					properties.properties().forEach(property -> this.collect(property.value()));
+					this.collect(properties.rest());
+				}
+				case ValueDescription.Elements elements -> this.collect(elements.element());
+				case ValueDescription.Entries entries -> this.collect(entries.value());
+				case ValueDescription.AnyOf anyOf -> anyOf.alternatives().forEach(this::collect);
+				case ValueDescription.NotNull notNull -> this.collect(notNull.value());
+				case ValueDescription.Optional optional -> this.collect(optional.value());
+				case ValueDescription.Reference reference -> {
+					if (this.byReference.containsKey(reference)) {
+						return;
+					}
+					final ValueDescription target = target(reference);
+					Definition definition = this.definitionOf(target);
+					if (definition == null) {
+						definition = new Definition(target, reference.name());
+						this.definitions.add(definition);
+						this.byReference.put(reference, definition);
+						this.collect(target);
+					}
+					else {
+						this.byReference.put(reference, definition);
+						if (definition.name.isEmpty()) {
+							definition.name = reference.name();
+						}
+					}
+				}
+				case ValueDescription.Value value -> {
+				}
+				case ValueDescription.Unknown unknown -> {
+				}
+				case ValueDescription.Never never -> {
+				}
+				case null -> {
+				}
+			}
+		}
+
+		private @Nullable Definition definitionOf(ValueDescription description) {
+			for (Definition definition : this.definitions) {
+				if (definition.target.equals(description)) {
+					return definition;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Returns the schemas of the definitions other than the root, which is referred
+		 * to as {@code #}, by their keys.
+		 */
+		private Map<String, Object> defs() {
+			final Map<String, Object> defs = new LinkedHashMap<>();
+			for (Definition definition : this.definitions) {
+				if (!definition.target.equals(this.root)) {
+					defs.put(definition.name, this.schema(definition.target, definition.target.acceptsNull(), true));
+				}
+			}
+			return defs;
+		}
+
+		private Map<String, Object> reference(Definition definition, boolean nullable) {
+			final Map<String, Object> reference = new LinkedHashMap<>();
+			reference.put("$ref", definition.target.equals(this.root) ? "#" : "#/$defs/" + pointer(definition.name));
+			if (!nullable || definition.target.acceptsNull()) {
+				return reference;
+			}
+			final Map<String, Object> schema = new LinkedHashMap<>();
+			schema.put("anyOf", List.of(reference, Map.of("type", "null")));
+			return schema;
+		}
+
+		/**
+		 * Returns the schema of the given description.
+		 * @param nullable whether {@code null} is accepted, which the caller has decided
+		 * @param defined whether the schema is the place where the description is
+		 * written, so that it is not a reference to itself
+		 */
+		private Map<String, Object> schema(ValueDescription description, boolean nullable, boolean defined) {
+			final Definition definition = description instanceof ValueDescription.Reference reference
+					? this.byReference.get(reference) : defined ? null : this.definitionOf(description);
+			if (definition != null) {
+				return this.reference(definition, nullable);
+			}
+			final Map<String, Object> schema = new LinkedHashMap<>();
+			switch (description) {
+				case ValueDescription.Value value -> value(schema, value, nullable);
+				case ValueDescription.Properties properties -> {
+					final Map<String, Object> schemas = new LinkedHashMap<>();
+					final List<Object> required = new ArrayList<>();
+					for (ValueDescription.Property property : properties.properties()) {
+						final boolean optional = property.value().acceptsNull();
+						schemas.put(property.name(), this.schema(property.value(), optional));
+						if (!optional) {
+							required.add(property.name());
+						}
+					}
+					schema.put("type", type("object", nullable));
+					schema.put("properties", schemas);
+					if (!required.isEmpty()) {
+						schema.put("required", required);
+					}
+					switch (properties.rest()) {
+						case null -> {
+						}
+						case ValueDescription.Unknown unknown -> {
+						}
+						case ValueDescription.Never never -> schema.put("additionalProperties", false);
+						case ValueDescription rest ->
+							schema.put("additionalProperties", this.schema(rest, rest.acceptsNull()));
+					}
+				}
+				case ValueDescription.Elements elements -> {
+					schema.put("type", type("array", nullable));
+					schema.put("items", this.schema(elements.element(), elements.element().acceptsNull()));
+					elements.constraints().forEach(constraint -> constraint(schema, "array", constraint));
+				}
+				case ValueDescription.Entries entries -> {
+					schema.put("type", type("object", nullable));
+					schema.put("additionalProperties", this.schema(entries.value(), entries.value().acceptsNull()));
+					entries.constraints().forEach(constraint -> constraint(schema, "object", constraint));
+				}
+				case ValueDescription.AnyOf anyOf -> {
+					final List<Object> alternatives = new ArrayList<>();
+					boolean nullAllowed = false;
+					for (ValueDescription alternative : anyOf.alternatives()) {
+						final boolean alternativeNullable = nullable && alternative.acceptsNull();
+						nullAllowed |= alternativeNullable;
+						alternatives.add(this.schema(alternative, alternativeNullable));
+					}
+					if (nullable && !nullAllowed) {
+						alternatives.add(Map.of("type", "null"));
+					}
+					schema.put("anyOf", alternatives);
+				}
+				// the caller has decided whether null is accepted here
+				case ValueDescription.NotNull notNull -> schema.putAll(this.schema(notNull.value(), nullable));
+				case ValueDescription.Optional optional -> {
+					schema.putAll(this.schema(optional.value(), true));
+					final Object defaultValue = optional.defaultValue();
+					if (defaultValue != null) {
+						schema.put("default", Objects.requireNonNull(jsonValue(defaultValue)));
+					}
+				}
+				case ValueDescription.Unknown unknown -> {
+				}
+				case ValueDescription.Never never -> schema.put("not", new LinkedHashMap<>());
+				// a reference that is not in the description that was collected
+				case ValueDescription.Reference reference -> {
+				}
+			}
+			return schema;
+		}
+
+		private Map<String, Object> schema(ValueDescription description, boolean nullable) {
+			return this.schema(description, nullable, false);
+		}
+
+	}
+
+	/**
+	 * Escapes a key for a JSON Pointer in a URI fragment.
+	 */
+	private static String pointer(String key) {
+		return URLEncoder.encode(key.replace("~", "~0").replace("/", "~1"), StandardCharsets.UTF_8).replace("+", "%20");
 	}
 
 	private static void value(Map<String, Object> schema, ValueDescription.Value value, boolean nullable) {

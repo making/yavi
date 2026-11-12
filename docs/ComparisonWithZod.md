@@ -82,6 +82,7 @@ compiler checks that the arguments match it.
 | `.catch(ctx => ...)` | `.recoverWith(violations -> ...)` |
 | `z.union([a, b])` | `ValueValidator.anyOf(a, b)` |
 | `z.discriminatedUnion("type", [...])` | `DiscriminatedUnionValidator.<X>of("type").when("circle", a).when("square", b)` |
+| `z.lazy(() => schema)`, a getter that refers to the schema | `ValueValidator.lazy(() -> validator)`, `ValueValidator.recursive(self -> ...)` |
 | `.refine(predicate)` on a value | a constraint (`c -> c.predicate(...)`) |
 | `.refine(predicate)` on an object | `.constraintOnTarget(predicate, name, violationMessage)` |
 | `.transform(f)` | `.map(f)` |
@@ -285,8 +286,7 @@ nested values instead.
 
 * Object schema operations that derive a schema: `pick`, `omit`, `partial`. `extend` and
   `merge` are `_embedded`, which keeps the object of the embedded validator.
-* `z.tuple`, `z.lazy` (recursive schemas) and `z.literal` as a schema (use the `equalTo` /
-  `oneOf` constraints).
+* `z.tuple` and `z.literal` as a schema (use the `equalTo` / `oneOf` constraints).
 * Asynchronous refinements and transforms.
 * More than 16 arguments in one builder; group them with `_embedded`, or use
   `MapInputValidator.of(parts, mapper)`.

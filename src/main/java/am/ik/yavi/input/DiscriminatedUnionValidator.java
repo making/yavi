@@ -6,6 +6,7 @@ package am.ik.yavi.input;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -52,7 +53,10 @@ import org.jspecify.annotations.Nullable;
  * A {@code null} map is rejected with {@code object.notNull} and a map with a key that is
  * not a string with {@code object.type}. The validator describes itself as
  * {@link ValueDescription.AnyOf} whose alternatives hold the discriminator as a property
- * equal to their value.
+ * equal to their value. An alternative that is a
+ * {@linkplain ValueValidator#lazy(java.util.function.Supplier) lazy validator} is
+ * described by a reference to such an alternative, and is asked whether it defines the
+ * discriminator when it is first used.
  *
  * <p>
  * The tree model of a JSON library is read with {@link #readingWith(InputReader)}, like a
@@ -67,6 +71,13 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	private final String discriminator;
 
 	private final Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives;
+
+	/**
+	 * The descriptions of the alternatives that are lazy validators, by their value: a
+	 * reference to the description of the alternative with the discriminator. It is one
+	 * reference per alternative, by which a recursive description is recognized.
+	 */
+	private final Map<String, ValueDescription.Reference> references;
 
 	private final Reading<Object> reading;
 
@@ -85,8 +96,16 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 			Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives) {
 		this.discriminator = discriminator;
 		this.alternatives = alternatives;
+		final Map<String, ValueDescription.Reference> references = new HashMap<>();
 		final Map<String, ValueValidator<Object, ? extends X>> ofMaps = new LinkedHashMap<>();
-		alternatives.forEach((value, alternative) -> ofMaps.put(value, this.ofMap(alternative)));
+		alternatives.forEach((value, alternative) -> {
+			if (alternative.description() instanceof ValueDescription.Reference reference) {
+				references.put(value, new ValueDescription.Reference(reference.name(),
+						() -> this.describe(value, target(reference))));
+			}
+			ofMaps.put(value, this.ofMap(alternative));
+		});
+		this.references = references;
 		this.reading = new Reading<>(InputReader.ofJdkTypes(), ofMaps);
 	}
 
@@ -145,22 +164,39 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	public ValueDescription description() {
 		final List<ValueDescription> descriptions = new ArrayList<>();
 		this.alternatives.forEach((value, alternative) -> {
-			final ValueDescription description = alternative.description();
-			if (description instanceof ValueDescription.Properties described
-					&& !defines(described, this.discriminator)) {
-				final List<ValueDescription.Property> properties = new ArrayList<>();
-				properties.add(new ValueDescription.Property(this.discriminator,
-						new ValueDescription.Value(this.discriminator, String.class,
-								List.of(new ConstraintDescription(ViolationMessage.Default.OBJECT_EQUAL_TO.messageKey(),
-										List.of(value), true)))));
-				properties.addAll(described.properties());
-				descriptions.add(new ValueDescription.Properties(properties, described.rest()));
-			}
-			else {
-				descriptions.add(description);
-			}
+			final ValueDescription reference = this.references.get(value);
+			descriptions.add(reference != null ? reference : this.describe(value, alternative.description()));
 		});
 		return new ValueDescription.AnyOf(descriptions);
+	}
+
+	/**
+	 * Returns the description of the alternative of the given value: the given one, with
+	 * the discriminator as a property equal to the value unless it is defined.
+	 */
+	private ValueDescription describe(String value, ValueDescription description) {
+		if (!(description instanceof ValueDescription.Properties described) || defines(described, this.discriminator)) {
+			return description;
+		}
+		final List<ValueDescription.Property> properties = new ArrayList<>();
+		properties.add(new ValueDescription.Property(this.discriminator,
+				new ValueDescription.Value(this.discriminator, String.class,
+						List.of(new ConstraintDescription(ViolationMessage.Default.OBJECT_EQUAL_TO.messageKey(),
+								List.of(value), true)))));
+		properties.addAll(described.properties());
+		return new ValueDescription.Properties(properties, described.rest());
+	}
+
+	/**
+	 * Returns the description that the given one stands for: itself unless it is a
+	 * reference.
+	 */
+	private static ValueDescription target(ValueDescription description) {
+		ValueDescription target = description;
+		while (target instanceof ValueDescription.Reference reference) {
+			target = reference.target();
+		}
+		return target;
 	}
 
 	/**
@@ -186,41 +222,62 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 
 	/**
 	 * Returns the alternative as a validator of a checked map. It is given a copy of the
-	 * map without the discriminator if it does not define it.
+	 * map without the discriminator if it does not define it, which a lazy alternative
+	 * tells on first use.
 	 */
+	private <Y extends X> ValueValidator<Object, Y> ofMap(ValueValidator<? super Map<String, Object>, Y> alternative) {
+		return isLazy(alternative) ? ValueValidator.lazy(() -> this.ofMap(alternative, this.isHiddenFrom(alternative)))
+				: this.ofMap(alternative, this.isHiddenFrom(alternative));
+	}
+
 	@SuppressWarnings("unchecked")
-	private ValueValidator<Object, ? extends X> ofMap(
-			ValueValidator<? super Map<String, Object>, ? extends X> alternative) {
-		final boolean hidden = this.isHiddenFrom(alternative);
+	private <Y extends X> ValueValidator<Object, Y> ofMap(ValueValidator<? super Map<String, Object>, Y> alternative,
+			boolean hidden) {
 		return (input, locale, constraintContext) -> {
 			Map<String, Object> properties = (Map<String, Object>) input;
 			if (hidden && properties != null) {
 				properties = Projection.of(properties, this::isShown);
 			}
-			return Validated.of(alternative.validate(properties, locale, constraintContext));
+			return alternative.validate(properties, locale, constraintContext);
 		};
 	}
 
 	/**
 	 * Returns the alternative as a validator of an object of the given reader. If it does
-	 * not define the discriminator, it reads the object with a reader that hides it.
+	 * not define the discriminator, which a lazy alternative tells on first use, it reads
+	 * the object with a reader that hides it.
 	 */
-	private <N> ValueValidator<N, ? extends X> of(InputReader<N> reader,
-			ValueValidator<? super Map<String, Object>, ? extends X> alternative) {
-		if (!this.isHiddenFrom(alternative)) {
+	private <N, Y extends X> ValueValidator<N, Y> of(InputReader<N> reader,
+			ValueValidator<? super Map<String, Object>, Y> alternative) {
+		return isLazy(alternative)
+				? ValueValidator.lazy(() -> this.of(reader, alternative, this.isHiddenFrom(alternative)))
+				: this.of(reader, alternative, this.isHiddenFrom(alternative));
+	}
+
+	private <N, Y extends X> ValueValidator<N, Y> of(InputReader<N> reader,
+			ValueValidator<? super Map<String, Object>, Y> alternative, boolean hidden) {
+		if (!hidden) {
 			return alternative.readingWith(reader);
 		}
-		final ValueValidator<Object, ? extends X> hiding = alternative.readingWith(new Projection.Reader<>(reader));
-		return (input, locale, constraintContext) -> Validated.of(hiding
-			.validate(new Projection<>(Objects.requireNonNull(input), this::isShown), locale, constraintContext));
+		final ValueValidator<Object, Y> hiding = alternative.readingWith(new Projection.Reader<>(reader));
+		return (input, locale, constraintContext) -> hiding
+			.validate(new Projection<>(Objects.requireNonNull(input), this::isShown), locale, constraintContext);
 	}
 
 	private boolean isShown(String name) {
 		return !this.discriminator.equals(name);
 	}
 
+	/**
+	 * Returns whether the alternative refers to a validator that may not be built yet, so
+	 * that its properties are known only when it is used.
+	 */
+	private static boolean isLazy(ValueValidator<?, ?> alternative) {
+		return alternative.description() instanceof ValueDescription.Reference;
+	}
+
 	private boolean isHiddenFrom(ValueValidator<?, ?> alternative) {
-		return alternative.description() instanceof ValueDescription.Properties described
+		return target(alternative.description()) instanceof ValueDescription.Properties described
 				&& !defines(described, this.discriminator);
 	}
 

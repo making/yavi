@@ -6,6 +6,8 @@ package am.ik.yavi.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -19,6 +21,11 @@ import org.jspecify.annotations.Nullable;
  * an {@code ArgumentsNValidator}. A validator that does not know its input, such as a
  * lambda, is described as {@link Unknown}; a description can be supplied with
  * {@link ValueValidator#describedAs(ValueDescription)}.
+ *
+ * <p>
+ * The description of a recursive structure is not an endless tree: where the structure
+ * refers to itself, the description holds a {@link Reference}, whose target is described
+ * only when it is asked for.
  *
  * <p>
  * The description covers the constraints that always apply to the input. Constraints that
@@ -259,6 +266,64 @@ public sealed interface ValueDescription {
 	}
 
 	/**
+	 * A value described elsewhere: the input of a validator that is referred to before it
+	 * is built, as {@link ValueValidator#lazy(java.util.function.Supplier)} and
+	 * {@link ValueValidator#recursive(java.util.function.Function)} do for a structure
+	 * that contains itself. The target is described when it is asked for, so that the
+	 * description of such a structure ends here instead of repeating itself.
+	 *
+	 * <p>
+	 * Unlike the other descriptions, a reference is equal only to itself: the one
+	 * reference of a lazy validator stands for that validator wherever its description
+	 * appears, which is how a tool that walks the description recognizes a target it has
+	 * already seen.
+	 *
+	 * @see ValueValidator#lazy(String, java.util.function.Supplier)
+	 */
+	final class Reference implements ValueDescription {
+
+		private final String name;
+
+		private final Supplier<? extends ValueDescription> target;
+
+		/**
+		 * Creates a reference.
+		 * @param name the name of the target, for a tool that lists the targets by name,
+		 * such as the {@code $defs} of a JSON Schema; empty if it has none
+		 * @param target the supplier of the description of the target, called every time
+		 * the target is asked for
+		 */
+		public Reference(String name, Supplier<? extends ValueDescription> target) {
+			this.name = Objects.requireNonNull(name, "'name' must not be null.");
+			this.target = Objects.requireNonNull(target, "'target' must not be null.");
+		}
+
+		/**
+		 * Returns the name of the target.
+		 * @return the name; empty if the target has none
+		 */
+		public String name() {
+			return this.name;
+		}
+
+		/**
+		 * Returns the description of the target, which may hold this reference again.
+		 * @return the description of the target
+		 * @throws IllegalStateException if the target is a validator that is not built
+		 * yet
+		 */
+		public ValueDescription target() {
+			return this.target.get();
+		}
+
+		@Override
+		public String toString() {
+			return "Reference[name=" + this.name + "]";
+		}
+
+	}
+
+	/**
 	 * A named property of an object.
 	 *
 	 * @param name the property name
@@ -274,7 +339,8 @@ public sealed interface ValueDescription {
 	 * <p>
 	 * A {@link Value} accepts {@code null} unless one of its constraints rejects it,
 	 * {@link Elements} and {@link Entries} accept {@code null} as an empty list or map
-	 * unless one of their constraints rejects it, and an object with {@link Properties} does not accept {@code null}.
+	 * unless one of their constraints rejects it, an object with {@link Properties} does
+	 * not accept {@code null}, and a {@link Reference} accepts what its target accepts.
 	 * @return {@code true} if {@code null} is accepted or nothing is known about the
 	 * input
 	 */
@@ -289,6 +355,7 @@ public sealed interface ValueDescription {
 			case Optional optional -> true;
 			case Unknown unknown -> true;
 			case Never never -> false;
+			case Reference reference -> reference.target().acceptsNull();
 		};
 	}
 
