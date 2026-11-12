@@ -395,8 +395,10 @@ apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100, "extra"
 
 ### Recursive structures
 
-There is no `lazy`. A lambda that refers to the validator serves a map, and must be given
-its input type:
+Raoh's `lazy(() -> decoder)` refers to a decoder that is not built yet. YAVI has no
+counterpart: `lazy()` of `ArgumentsNValidator` is unrelated, it defers the creation of the
+object (`Supplier<X>`), for a validator called from a constructor. A lambda that refers to
+the validator serves a map, and must be given its input type:
 
 ```java
 record Comment(String body, List<Comment> replies) {}
@@ -785,7 +787,8 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 
 * Three states of a field (`Presence`: absent, `null`, value).
 * `recover`, other than the lambda above for a map.
-* `lazy` for a recursive structure read from a JSON tree or described as a JSON Schema.
+* A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
+  structure read from a JSON tree or described as a JSON Schema.
 * A combination of validators of the same input (`flat`) that keeps the input type, and
   the collection of the remaining fields with a known type.
 * Constraints on the list or map of `_list` and `_map`.

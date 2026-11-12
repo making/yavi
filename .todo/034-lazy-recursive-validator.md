@@ -31,6 +31,12 @@ static <T, X> ValueValidator<T, X> lazy(Supplier<? extends ValueValidator<T, X>>
 
 ## Design questions
 
+* Name: `ArgumentsNValidator#lazy()` already exists with another meaning (it returns a
+  validator of `Supplier<X>` that defers the creation of the object, used in record
+  constructors). A static `ValueValidator.lazy(supplier)` does not clash for the compiler
+  but does for the reader; consider `ValueValidator.deferred(supplier)` or
+  `ValueValidator.of(supplier)`.
+
 * How a reference is named in the description (`$defs` key): given by the caller
   (`lazy("Comment", supplier)`) or generated.
 * `DiscriminatedUnionValidator#isHiddenFrom` and `ArgumentDefinition` call
