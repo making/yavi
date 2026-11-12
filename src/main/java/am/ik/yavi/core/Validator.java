@@ -351,6 +351,7 @@ public class Validator<T> implements Validatable<T> {
 						.defaultMessageFormat(constraintPredicate.defaultMessageFormat())
 						.argsWithPrependedNameAndAppendedViolatedValue(args, violatedValue)
 						.path(path)
+						.separator(this.messageKeySeparator)
 						.messageFormatter(this.messageFormatter)
 						.locale(locale)
 						.build();
@@ -415,6 +416,7 @@ public class Validator<T> implements Validatable<T> {
 			.defaultMessageFormat(OBJECT_NOT_NULL.defaultMessageFormat())
 			.argsWithPrependedName()
 			.path(path)
+			.separator(this.messageKeySeparator)
 			.messageFormatter(this.messageFormatter)
 			.locale(locale)
 			.build();

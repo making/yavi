@@ -7,6 +7,7 @@ package am.ik.yavi.core;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
@@ -16,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ValidatedTest {
 
@@ -82,12 +84,31 @@ class ValidatedTest {
 		assertThat(orderValidator.prefixed("order/").validate(new Order("1", new Address("", "JP"), List.of())))
 			.extracting(ConstraintViolation::path)
 			.containsExactly(List.of(new Property("order"), new Property("address"), new Property("street")));
-		assertThat(StringValidatorBuilder.of("email", c -> c.notBlank().email())
-			.build()
+		// the violations of a lifted element are located under its index
+		final Order valid = new Order("1", new Address("a", "JP"), List.of());
+		final ConstraintViolations lifted = orderValidator.applicative()
 			.liftList()
-			.validate(List.of("a@example.com", "b"))
-			.errors()).extracting(ConstraintViolation::path)
-			.containsExactly(List.of(new Property("email"), new Index(1)));
+			.prefixed("orders")
+			.validate(List.of(valid, new Order("1", new Address("", "JP"), List.of())))
+			.errors();
+		assertThat(lifted).extracting(ConstraintViolation::name).containsExactly("orders[1]/address/street");
+		assertThat(lifted).extracting(violation -> violation.args()[0]).containsExactly("orders[1]/address/street");
+		assertThat(lifted).extracting(ConstraintViolation::path)
+			.containsExactly(
+					List.of(new Property("orders"), new Index(1), new Property("address"), new Property("street")));
+		final ValueValidator<Iterable<String>, Set<String>> emails = StringValidatorBuilder
+			.of("email", c -> c.notBlank().email())
+			.build()
+			.liftSet()
+			.prefixed("emails");
+		assertThat(emails.validate(List.of("a@example.com", "b")).errors()).extracting(ConstraintViolation::name)
+			.containsExactly("emails[1].email");
+		final ConstraintViolations untyped = emails.readingWith(InputReader.ofJdkTypes())
+			.validate(List.of("a@example.com", 1, "b"))
+			.errors();
+		assertThat(untyped).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("emails[1].email", "object.type"), tuple("emails[2].email", "charSequence.email"));
+		assertThat(untyped.get(0).path()).containsExactly(new Property("emails"), new Index(1), new Property("email"));
 	}
 
 	@Test

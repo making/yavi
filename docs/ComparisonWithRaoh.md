@@ -570,19 +570,13 @@ Validated<Employee> employee = Validated.of(name.combine(department).apply(Emplo
 
 ### Result.traverse
 
-`Result.traverse(rows, decoder::decode, Path.of("orders"))` is `Validated.traverseIndexed`
-with `prefixed`:
+`Result.traverse(rows, decoder::decode, Path.of("orders"))` is `liftList` with `prefixed`.
+The violations of a row are located under its index:
 
 ```java
-Validated<List<Order>> orders = Validated
-        .traverseIndexed(rows, (row, index) -> orderValidator.validate(row).prefixed(index))
-        .prefixed("orders");
+Validated<List<Order>> orders = orderValidator.liftList().prefixed("orders").validate(rows);
 // orders[1].order_id, orders[1].total
 ```
-
-`orderValidator.liftList().prefixed("orders")` validates the same rows but appends the
-index to the name of the property (`orders.order_id[1]`), so it suits elements without a
-name only.
 
 A one-to-many JOIN is validated row by row and grouped after:
 
@@ -591,9 +585,9 @@ Arguments1Validator<Map<String, Object>, Map.Entry<OrderHeader, OrderLine>> rowV
         .combine(headerValidator, lineValidator)
         .apply((header, line) -> Map.entry(header, line));
 
-Validated<List<OrderWithLines>> orders = Validated
-        .traverseIndexed(joinRows, (row, index) -> rowValidator.validate(row).prefixed(index))
+Validated<List<OrderWithLines>> orders = rowValidator.liftList()
         .prefixed("rows")
+        .validate(joinRows)
         .map(entries -> entries.stream()
             .collect(Collectors.groupingBy(Map.Entry::getKey, LinkedHashMap::new,
                     Collectors.mapping(Map.Entry::getValue, Collectors.toList())))
@@ -716,7 +710,7 @@ pageRequestValidator.validate(Map.of("page", "-1")); // page: "page" must be gre
 ### CSV import
 
 The cells of a CSV file are strings too, so a row is read with `readingParameters()`, and
-the rows with `traverseIndexed`:
+the rows with `liftList`:
 
 ```java
 record MemberImport(String email, String name, int age) {}
@@ -728,9 +722,7 @@ ValueValidator<Map<String, String>, MemberImport> rowValidator = Yavi.arguments(
         .fromMap(MemberImport::new)
         .readingParameters();
 
-Validated<List<MemberImport>> members = Validated
-        .traverseIndexed(rows, (row, index) -> rowValidator.validate(row).prefixed(index))
-        .prefixed("rows");
+Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows").validate(rows);
 // rows[1].email, rows[1].name, rows[1].age, rows[3].email, rows[3].age
 ```
 

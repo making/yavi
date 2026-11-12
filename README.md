@@ -472,7 +472,7 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 * `ValueValidator.anyOf(a, b)` tries the alternatives in order. If all of them fail, it reports `object.anyOf` followed by the violations of every alternative.
 * `constraintOnTarget` adds a rule that spans several arguments. It is evaluated only when all arguments are valid.
 
-The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`.
+The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`. `liftList()` locates the violations of an element under its index like `_list` does, so `orderValidator.liftList().prefixed("orders")` reports `orders[1].id`.
 
 #### Validating a map such as a parsed JSON object
 

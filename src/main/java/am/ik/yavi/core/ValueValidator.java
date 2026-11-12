@@ -71,9 +71,9 @@ public interface ValueValidator<T, X> {
 	 * a lambda is described as. The validators created by the builders describe
 	 * themselves, and the combinators of this interface carry the description:
 	 * {@link #map(Function)}, {@link #andThen(ValueValidator)},
-	 * {@link #constraintOnTarget}, {@link #indexed(int)} and {@link #prefixed(String)}
-	 * keep it because they do not change the input, the {@code lift*} methods,
-	 * {@link #optional()}, {@link #nullable()}, {@link #defaultValue(Object)} and
+	 * {@link #constraintOnTarget} and {@link #prefixed(String)} keep it because they do
+	 * not change the input, the {@code lift*} methods, {@link #optional()},
+	 * {@link #nullable()}, {@link #defaultValue(Object)} and
 	 * {@link #anyOf(ValueValidator[])} wrap it, and {@link #compose(Function)} resets it
 	 * to unknown because it changes the input.
 	 * @return the description of the input
@@ -225,7 +225,7 @@ public interface ValueValidator<T, X> {
 			}
 			return Validated.traverseIndexed(array == null ? null : reader.elements(array),
 					(value, index) -> element.validate(UntypedInput.orNull(reader, value), locale, constraintContext)
-						.indexed(index),
+						.prefixed(index),
 					factory);
 		}, () -> new ValueDescription.Elements(validator.description()),
 				other -> untypedCollection(other, validator, factory));
@@ -557,18 +557,6 @@ public interface ValueValidator<T, X> {
 	}
 
 	/**
-	 * Returns a validator that appends {@code [index]} to every violation name, so that
-	 * violations of elements in a collection can be told apart.
-	 * @param index the index to append to violation names
-	 * @return a validator with indexed violation names
-	 * @since 0.8.0
-	 */
-	default ValueValidator<T, X> indexed(int index) {
-		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.indexed(index), this::description, reader -> this.readingWith(reader).indexed(index));
-	}
-
-	/**
 	 * Returns a validator that locates every violation under the property with the given
 	 * name, so that the violations of a nested value can be told apart. For example the
 	 * violation name {@code street} becomes {@code address.street}.
@@ -584,9 +572,9 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * collection created by the given factory. All elements are validated and the
-	 * violations of all failing elements are accumulated.
+	 * validator and collects the validated values into a collection created by the given
+	 * factory. The violations of an element are located under its index ({@code [0]},
+	 * {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @param factory supplier of the collection that receives the validated values
 	 * @param <C> the type of the resulting collection
 	 * @return a value validator for iterables
@@ -597,8 +585,9 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * {@link List}.
+	 * validator and collects the validated values into a {@link List}. The violations of
+	 * an element are located under its index ({@code [0]}, {@code [0].name}) and the
+	 * violations of all failing elements are accumulated.
 	 * @return a value validator for iterables
 	 */
 	default ValueValidator<Iterable<T>, List<X>> liftList() {
@@ -607,8 +596,9 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * {@link Set} that preserves the iteration order.
+	 * validator and collects the validated values into a {@link Set} that preserves the
+	 * iteration order. The violations of an element are located under its index ({@code
+	 * [0]}, {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @return a value validator for iterables
 	 */
 	default ValueValidator<Iterable<T>, Set<X>> liftSet() {
@@ -655,8 +645,9 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * collection created by the given factory.
+	 * given validator and collects the validated values into a collection created by the
+	 * given factory. The violations of an element are located under its index ({@code
+	 * [0]}, {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @param validator the validator applied to each element
 	 * @param factory supplier of the collection that receives the validated values
 	 * @param <A1> the element type of the input iterable
@@ -669,15 +660,16 @@ public interface ValueValidator<T, X> {
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return described(
 				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
-						(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory),
+						(v, index) -> validator.validate(v, locale, constraintContext).prefixed(index), factory),
 				() -> new ValueDescription.Elements(validator.description()),
 				reader -> untypedCollection(reader, validator, factory));
 	}
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * {@link List}.
+	 * given validator and collects the validated values into a {@link List}. The
+	 * violations of an element are located under its index ({@code [0]}, {@code
+	 * [0].name}) and the violations of all failing elements are accumulated.
 	 * @param validator the validator applied to each element
 	 * @param <A1> the element type of the input iterable
 	 * @param <R> the type produced for each element
@@ -691,8 +683,10 @@ public interface ValueValidator<T, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * {@link Set} that preserves the iteration order.
+	 * given validator and collects the validated values into a {@link Set} that preserves
+	 * the iteration order. The violations of an element are located under its index
+	 * ({@code [0]}, {@code [0].name}) and the violations of all failing elements are
+	 * accumulated.
 	 * @param validator the validator applied to each element
 	 * @param <A1> the element type of the input iterable
 	 * @param <R> the type produced for each element

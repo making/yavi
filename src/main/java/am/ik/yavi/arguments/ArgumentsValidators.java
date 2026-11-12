@@ -1916,8 +1916,9 @@ public class ArgumentsValidators {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * collection created by the given factory. Violations of all failing elements are
+	 * given validator and collects the validated values into a collection created by the
+	 * given factory. The violations of an element are located under its index
+	 * ({@code [0]}, {@code [0].name}) and the violations of all failing elements are
 	 * accumulated.
 	 * @param validator the validator applied to each element
 	 * @param factory supplier of the collection that receives the validated values
@@ -1934,8 +1935,9 @@ public class ArgumentsValidators {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * {@link List}.
+	 * given validator and collects the validated values into a {@link List}. The
+	 * violations of an element are located under its index ({@code [0]}, {@code
+	 * [0].name}) and the violations of all failing elements are accumulated.
 	 * @param validator the validator applied to each element
 	 * @param <A1> the element type of the input iterable
 	 * @param <R> the type produced for each element
@@ -1948,8 +1950,10 @@ public class ArgumentsValidators {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with the
-	 * given validator indexed by its position and collects the validated values into a
-	 * {@link Set} that preserves the iteration order.
+	 * given validator and collects the validated values into a {@link Set} that preserves
+	 * the iteration order. The violations of an element are located under its index
+	 * ({@code [0]}, {@code [0].name}) and the violations of all failing elements are
+	 * accumulated.
 	 * @param validator the validator applied to each element
 	 * @param <A1> the element type of the input iterable
 	 * @param <R> the type produced for each element
