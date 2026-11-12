@@ -114,23 +114,27 @@ A mismatch is reported with `object.type` (`"age" must be of type integer`).
 `z.coerce` is chosen per schema and converts with the JavaScript constructors
 (`Number(input)`, `Boolean(input)`). In YAVI the coercion of strings is a property of the
 input, not of an argument: an input that holds nothing but strings, such as request
-parameters, is read with `coercingStrings()` and the arguments are written as for a JSON
-document. It is `readingWith(InputReader.ofJdkTypes().coercingStrings())`, a decorator
-that every `InputReader` has.
+parameters, is read with `readingParameters()` and the arguments are written as for a JSON
+document. The strings of any other tree are coerced in the same way with
+`coercingStrings()`, a decorator that every `InputReader` has.
 
 ```java
 ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
         .fromMap(SearchForm::new)
-        .coercingStrings();
+        .readingParameters();
 
 validator.validate(Map.of("page", "2", "includeArchived", "true"));
 ```
 
+`readingParameters()` also reads the keys as paths (`address.city`, `items[0].name`) and a
+key with several values as a list, which is what `zod-form-data` adds to Zod for a
+`FormData`.
+
 The conversion is stricter than `z.coerce`:
 
-| Input | `z.coerce` | `coercingStrings()` |
+| Input | `z.coerce` | `readingParameters()`, `coercingStrings()` |
 | --- | --- | --- |
 | `""` for a number | `0` | `null`, so `optional()` and `defaultValue` apply |
 | `" 30 "`, `"0x1e"` for a number | `30` | `object.type` |

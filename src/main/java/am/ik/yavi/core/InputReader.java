@@ -35,6 +35,11 @@ import org.jspecify.annotations.Nullable;
  * {@code null} reference is never given to a reader.
  *
  * <p>
+ * A validator asks only for the shape it expects, so a node of an input that does not
+ * tell its shapes apart may be more than one of them: a request parameter is a scalar and
+ * a list of one element.
+ *
+ * <p>
  * An input whose scalars are all text, such as request parameters, is read with
  * {@link #coercingStrings()}.
  *
@@ -144,8 +149,9 @@ public interface InputReader<N> {
 	 * Validated<Integer> validated = page.validate("2");
 	 * }</pre>
 	 *
-	 * A validator of maps built with {@code fromMap} has {@code coercingStrings()}
-	 * itself, which keeps the type of the map.
+	 * Request parameters, whose keys are paths and may have several values, are read with
+	 * {@code readingParameters()} of a validator of maps built with {@code fromMap},
+	 * which coerces strings in this way.
 	 *
 	 * The following is added to the rules of {@link ValueValidator#untyped(Class)}:
 	 * <ul>

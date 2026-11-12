@@ -76,12 +76,13 @@ import org.jspecify.annotations.Nullable;
  * {@code fromMap} whatever input is read in the end.
  *
  * <p>
- * A map of strings, such as request parameters or a submitted form, is read with
- * {@link #coercingStrings()}: {@code "30"} is then an {@code Integer}, {@code "true"} a
- * {@code Boolean} and an empty string {@code null}.
+ * Request parameters or a submitted form are read with {@link #readingParameters()}:
+ * {@code "30"} is then an {@code Integer}, {@code "true"} a {@code Boolean}, an empty
+ * string {@code null} and {@code address.city} the property {@code city} of the property
+ * {@code address}.
  *
  * <pre>{@code
- * ValueValidator<Map<String, String>, User> formValidator = validator.coercingStrings();
+ * ValueValidator<Map<String, String>, User> formValidator = validator.readingParameters();
  * Validated<User> validated = formValidator.validate(requestParameters);
  * }</pre>
  *
@@ -157,28 +158,28 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	}
 
 	/**
-	 * Returns a validator that reads the same properties from a map whose values are
-	 * strings, such as request parameters or a submitted form, and takes a string as text
-	 * that stands for a value of the type of its property. The rules are those of
-	 * {@link InputReader#coercingStrings()}, and they apply to the nested validators too.
-	 * This is {@code readingWith(InputReader.ofJdkTypes().coercingStrings())} with the
-	 * type of the map, which is the one the result is assigned to:
+	 * Returns a validator that reads the same properties from a flat map of parameters,
+	 * such as request parameters or a submitted form. The map is read as the
+	 * {@link ParameterTree} it stands for: a key such as {@code address.city} or
+	 * {@code items[0].name} is a path to a nested property, a key may have several values
+	 * and a value is text that stands for a value of the type of its property, as
+	 * {@link InputReader#coercingStrings()} states. This applies to the nested validators
+	 * too. The type of the map is the one the result is assigned to:
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
 	 *     ._string("q", c -> c.notBlank())
 	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
 	 *     .fromMap(SearchForm::new)
-	 *     .coercingStrings();
+	 *     .readingParameters();
 	 * }</pre>
-	 * @param <M> the type of the map
-	 * @return a validator of a map that coerces strings
-	 * @see InputReader#coercingStrings()
+	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
+	 * strings
+	 * @return a validator of a map of parameters
+	 * @see ParameterTree
 	 */
-	@SuppressWarnings("unchecked")
-	public <M extends Map<String, ?>> ValueValidator<M, X> coercingStrings() {
-		return (ValueValidator<M, X>) (ValueValidator<?, X>) this
-			.readingWith(InputReader.ofJdkTypes().coercingStrings());
+	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters() {
+		return ParameterTree.reading(this);
 	}
 
 	@Override
