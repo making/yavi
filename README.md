@@ -514,6 +514,8 @@ ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionVa
 
 Only the selected alternative is validated. An absent discriminator is reported with `object.required` and an unexpected one with `object.oneOf`.
 
+See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
+
 #### Describing a validator and generating a JSON Schema
 
 A validator describes the input it expects. `description()` returns a read-only tree (`ValueDescription`) of objects with properties, lists, maps, alternatives and values with their constraints, which tools can walk. `JsonSchema` is one consumer.
