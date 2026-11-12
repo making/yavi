@@ -6,6 +6,7 @@ package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.function.Function;
@@ -42,7 +43,7 @@ public class ZonedDateTimeValidator<T> extends DefaultArguments1Validator<ZonedD
 	 */
 	@Override
 	public <T2> ZonedDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new ZonedDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new ZonedDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -54,6 +55,27 @@ public class ZonedDateTimeValidator<T> extends DefaultArguments1Validator<ZonedD
 	public ZonedDateTimeValidator(Validator<Arguments1<ZonedDateTime>> validator,
 			Function1<? super ZonedDateTime, ? extends T> mapper) {
 		super(validator, mapper, ZonedDateTime.class);
+	}
+
+	private ZonedDateTimeValidator(Validator<Arguments1<ZonedDateTime>> validator,
+			Function1<? super ZonedDateTime, ? extends T> mapper,
+			@Nullable Function<? super ZonedDateTime, ? extends @Nullable ZonedDateTime> transform) {
+		super(validator, mapper, ZonedDateTime.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public ZonedDateTimeValidator<T> preprocess(
+			Function<? super ZonedDateTime, ? extends @Nullable ZonedDateTime> transform) {
+		return new ZonedDateTimeValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

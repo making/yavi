@@ -38,6 +38,7 @@ import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
@@ -1096,14 +1097,20 @@ public final class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link CharSequenceConstraint}, for example {@code charSequence.notBlank}. A
 	 * {@code null} value is accepted unless the constraints require otherwise.
+	 *
+	 * <p>
+	 * The value can be transformed before it is constrained with the transforms of
+	 * {@link StringValueConstraint}, for example
+	 * {@code c -> c.trim().toLowerCase().notBlank().email()}. The constraints and the
+	 * validated value of the argument see the transformed value.
 	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
+	 * @param constraints function that configures the transforms and the constraints
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
 	public Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, String> _string(
 			String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new Arguments10ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9,
 				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));

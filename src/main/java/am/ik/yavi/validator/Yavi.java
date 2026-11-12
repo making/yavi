@@ -60,6 +60,7 @@ import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
@@ -125,6 +126,17 @@ import java.util.function.Function;
  * StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
  * StringValidator<Email> named = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
  * ValueValidator<Object, Integer> age = Yavi._integer(c -> c.notNull().positiveOrZero()).untyped();
+ * }</pre>
+ *
+ * <p>
+ * A value is brought into shape before it is constrained: a {@code String} with the
+ * transforms written before its constraints, any other value with {@code preprocess}. The
+ * constraints and the produced value see the transformed value.
+ *
+ * <pre>{@code
+ * StringValidator<String> email = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
+ * BigDecimalValidator<BigDecimal> price = Yavi._bigDecimal("price", c -> c.notNull().positive())
+ *     .preprocess(BigDecimal::stripTrailingZeros);
  * }</pre>
  *
  * <p>
@@ -661,7 +673,7 @@ public final class Yavi {
 	 * @see #_string(String, Function)
 	 */
 	public static StringValidator<String> _string(
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return _string("", constraints);
 	}
 
@@ -672,13 +684,19 @@ public final class Yavi {
 	 * A {@code null} value is accepted unless the constraints require otherwise.
 	 * Violations use {@code name} as their name and the message ids of
 	 * {@link CharSequenceConstraint}.
+	 *
+	 * <p>
+	 * The value can be transformed before it is constrained with the transforms of
+	 * {@link StringValueConstraint}, for example
+	 * {@code c -> c.trim().toLowerCase().notBlank().email()}. The constraints and the
+	 * produced value see the transformed value.
 	 * @param name the name used in violation names and messages
-	 * @param constraints function that configures the constraints
+	 * @param constraints function that configures the transforms and the constraints
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
 	public static StringValidator<String> _string(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return StringValidatorBuilder.of(name, constraints).build();
 	}
 

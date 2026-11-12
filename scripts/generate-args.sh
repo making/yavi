@@ -587,16 +587,31 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).map(mapper);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).map(mapper);
 			}"
     untyped_and_then="
 			@Override
 			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).andThen(validator);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).andThen(validator);
 			}"
     untyped_described_as="
 			@Override
 			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).describedAs(description);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).describedAs(description);
 			}"
   fi
   class="Arguments${i}Validator"
@@ -726,6 +741,11 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			@Override
 			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 				return valueValidator.readingWith(reader);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.from(valueValidator.preprocess(transform));
 			}
 		};
 	}
@@ -1085,6 +1105,40 @@ ${untyped_described_as}
 		};
 	}
 
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+	/**
+	 * Returns a validator that applies the given function to an argument other than
+	 * {@code null} and validates the result with this validator, as
+	 * {@link ValueValidator#preprocess(Function)} states. The description is kept.
+	 *
+	 * @param transform the function applied to an argument other than {@code null}
+	 * @return a validator that transforms its argument first
+	 * @since 0.18.0
+	 */
+	@Override
+	default Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return Arguments1Validator.this.validate(a1 == null ? null : transform.apply(a1), locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return Arguments1Validator.this.lazy().preprocess(transform);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
+			}
+		};
+	}
+
+EOD
+fi)
 $(cat <<EOD
 	/**
 	 * Returns a validator that produces a {@link Supplier} of the validated value.
@@ -1300,6 +1354,7 @@ for i in `seq 1 ${n}`;do
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+$(if [ "${i}" == "1" ];then echo "import java.util.function.Function;"; fi)
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.InputReader;'; fi)
@@ -1337,6 +1392,14 @@ $(if [ "${i}" == "1" ];then
 cat <<EOD
 	private final Class<?> valueType;
 
+	/**
+	 * The function applied to an argument other than {@code null} before it is
+	 * validated, or {@code null} if the argument is validated as it is.
+	 *
+	 * @since 0.18.0
+	 */
+	protected final @Nullable Function<? super A1, ? extends @Nullable A1> transform;
+
 EOD
 fi)
 	/**
@@ -1364,9 +1427,67 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	protected ${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<?> valueType) {
+		this(validator, mapper, valueType, null);
+	}
+
+	/**
+	 * Creates a validator like
+	 * {@link #DefaultArguments1Validator(Validator, Function1, Class)} that applies the
+	 * given function to an argument other than {@code null} before it validates it.
+	 *
+	 * @param validator the validator applied to the argument
+	 * @param mapper the mapper applied to the validated argument
+	 * @param valueType the raw type of the argument; {@code Object} or {@code Enum} if
+	 * it is unknown
+	 * @param transform the function applied to the argument before it is validated, or
+	 * {@code null} to validate it as it is
+	 * @since 0.18.0
+	 */
+	protected ${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<?> valueType,
+			@Nullable Function<? super A1, ? extends @Nullable A1> transform) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.valueType = valueType;
+		this.transform = transform;
+	}
+
+	/**
+	 * Returns a validator that applies the given function to an argument other than
+	 * {@code null} before the function of this validator, if any, and then validates
+	 * the result, as {@link ValueValidator#preprocess(Function)} states. The type of
+	 * the argument is kept, so an untyped input is transformed after its type is
+	 * checked.
+	 *
+	 * @param transform the function applied to an argument other than {@code null}
+	 * @return a validator that transforms its argument first
+	 * @since 0.18.0
+	 */
+	@Override
+	public DefaultArguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType,
+				composed(transform, this.transform));
+	}
+
+	/**
+	 * Returns the function that applies the first function and then, unless the result
+	 * is {@code null}, the second one.
+	 *
+	 * @param first the function applied first
+	 * @param second the function applied to the result, or {@code null} for none
+	 * @param <A1> the type of the argument
+	 * @return the composed function
+	 * @since 0.18.0
+	 */
+	protected static <A1> Function<? super A1, ? extends @Nullable A1> composed(
+			Function<? super A1, ? extends @Nullable A1> first,
+			@Nullable Function<? super A1, ? extends @Nullable A1> second) {
+		if (second == null) {
+			return first;
+		}
+		return a1 -> {
+			final A1 transformed = first.apply(a1);
+			return transformed == null ? null : second.apply(transformed);
+		};
 	}
 
 	/**
@@ -1425,7 +1546,7 @@ fi)
 	 */
 	@Override
 	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'))$(if [ "${i}" == "1" ];then echo -n ", this.valueType"; fi));
+		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'))$(if [ "${i}" == "1" ];then echo -n ", this.valueType, this.transform"; fi));
 	}
 
 	/**
@@ -1440,9 +1561,20 @@ $(for j in `seq 1 ${i}`; do echo "	 * @param a${j} the argument at position ${j}
   @Override
 	public Validated<X> validate(${args},
 			Locale locale, ConstraintContext constraintContext) {
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+		final A1 value = a1 == null || this.transform == null ? a1 : this.transform.apply(a1);
+		return this.validator.applicative()
+			.validate(Arguments.of(value), locale, constraintContext)
+			.map(values -> values.map(this.mapper));
+EOD
+else
+cat <<EOD
 		return this.validator.applicative()
 		    .validate(Arguments.of(${as}), locale, constraintContext)
 				.map(values -> values.map(this.mapper));
+EOD
+fi)
 	}
 }
 EOF
@@ -1927,6 +2059,7 @@ import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.InputReader;'; fi)
@@ -2945,13 +3078,19 @@ cat <<EOD
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link CharSequenceConstraint}, for example {@code charSequence.notBlank}. A {@code null} value is
 	 * accepted unless the constraints require otherwise.
+	 *
+	 * <p>
+	 * The value can be transformed before it is constrained with the transforms of
+	 * {@link StringValueConstraint}, for example
+	 * {@code c -> c.trim().toLowerCase().notBlank().email()}. The constraints and the
+	 * validated value of the argument see the transformed value.
 	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
+	 * @param constraints function that configures the transforms and the constraints
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
 

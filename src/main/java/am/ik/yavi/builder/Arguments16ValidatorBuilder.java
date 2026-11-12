@@ -37,6 +37,7 @@ import am.ik.yavi.constraint.LongConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
+import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;

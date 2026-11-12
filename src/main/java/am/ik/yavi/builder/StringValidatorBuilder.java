@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.core.Validator;
 
 /**
@@ -21,6 +22,12 @@ import am.ik.yavi.core.Validator;
  * with that name and the message key of the violated constraint, for example
  * {@code charSequence.notBlank}. A {@code null} value is accepted unless the configured
  * constraints require otherwise (for example {@code notNull()}).
+ *
+ * <p>
+ * The value can be transformed before it is constrained with the transforms of
+ * {@link StringValueConstraint}, for example
+ * {@code c -> c.trim().toLowerCase().notBlank().email()}. The constraints and the built
+ * validator see the transformed value.
  *
  * <p>
  * Example: <pre>{@code
@@ -35,6 +42,8 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 
 	private final Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder;
 
+	private final @Nullable Function<String, @Nullable String> transform;
+
 	/**
 	 * Returns a builder that validates the value under the given name with the given
 	 * constraints.
@@ -42,13 +51,21 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
 	 * value is accepted unless the constraints require otherwise.
+	 *
+	 * <p>
+	 * The function is applied once, when this method is called. The transforms it adds
+	 * are applied to a value other than {@code null} before the constraints.
 	 * @param name the property name used as the violation name
-	 * @param constraints the function that configures the constraints
+	 * @param constraints the function that configures the transforms and the constraints
 	 * @return a new builder
 	 */
 	public static StringValidatorBuilder of(String name,
-			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
+			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
+		final StringValueConstraint<Arguments1<String>> constraint = new StringValueConstraint<>();
+		// not necessarily the given instance: normalizer() and variant() return a copy
+		final CharSequenceConstraint<Arguments1<String>, String> configured = constraints.apply(constraint);
+		return new StringValidatorBuilder(b -> b._string(Arguments1::arg1, name, unused -> configured),
+				constraint.transformation());
 	}
 
 	/**
@@ -65,12 +82,13 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 */
 	public static StringValidatorBuilder wrap(
 			Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder) {
-		return new StringValidatorBuilder(builder);
+		return new StringValidatorBuilder(builder, null);
 	}
 
-	StringValidatorBuilder(
-			Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder) {
+	StringValidatorBuilder(Function<ValidatorBuilder<Arguments1<String>>, ValidatorBuilder<Arguments1<String>>> builder,
+			@Nullable Function<String, @Nullable String> transform) {
 		this.builder = builder;
+		this.transform = transform;
 	}
 
 	/**
@@ -85,7 +103,8 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	@Override
 	public <T> StringValidator<T> build(Function<@Nullable String, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new StringValidator<>(validator, value -> mapper.apply(value));
+		final StringValidator<T> built = new StringValidator<>(validator, value -> mapper.apply(value));
+		return this.transform == null ? built : built.preprocess(this.transform);
 	}
 
 	/**

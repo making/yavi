@@ -124,14 +124,14 @@ class MapInputValidatorTest {
 		.rejectingUnknownProperties();
 
 	static final ValueValidator<Map<String, Object>, User> userValidator = Yavi.arguments()
-		._string("email", c -> c.notBlank().email())
+		._string("email", c -> c.trim().toLowerCase().notBlank().email())
 		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
 		._enum("role", Role.class, c -> c.notNull())
 		._localDate("birthday")
 		._object("address", addressValidator)
 		._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build())
 		._map("scores", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build())
-		._string("nickname", c -> c.notBlank())
+		._string("nickname", c -> c.trim().notBlank())
 		.optional()
 		._double("rate")
 		.defaultValue(1.5)
@@ -203,13 +203,14 @@ class MapInputValidatorTest {
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void validMapCreatesTheObject(Model model) {
-		// numbers are taken whatever their type is, as long as the value is kept
+		// numbers are taken whatever their type is, as long as the value is kept; a
+		// string is transformed before it is constrained
 		final Validated<User> validated = model.validate(userValidator,
-				input("email", "a@example.com", "age", 30L, "role", "ADMIN", "birthday", "2000-02-29", "address",
+				input("email", " A@example.com ", "age", 30L, "role", "ADMIN", "birthday", "2000-02-29", "address",
 						map("street", "1-2-3", "city", "Tokyo"), "tags", List.of("a", "b"), "scores",
-						map("math", new BigDecimal("90.0")), "rate", 2));
+						map("math", new BigDecimal("90.0")), "nickname", " yavi", "rate", 2));
 		assertThat(validated.value()).isEqualTo(new User("a@example.com", 30, Role.ADMIN, LocalDate.of(2000, 2, 29),
-				new Address("1-2-3", "Tokyo"), List.of("a", "b"), Map.of("math", 90), Optional.empty(), 2.0));
+				new Address("1-2-3", "Tokyo"), List.of("a", "b"), Map.of("math", 90), Optional.of("yavi"), 2.0));
 		// an absent key is validated like null
 		final Validated<User> defaulted = model.validate(userValidator,
 				input("email", "a@example.com", "age", 0, "role", "USER", "address",

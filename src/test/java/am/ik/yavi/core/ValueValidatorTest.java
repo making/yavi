@@ -5,16 +5,21 @@
 package am.ik.yavi.core;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.util.Objects;
 import java.util.Optional;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
+import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.validator.Yavi;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -114,6 +119,61 @@ class ValueValidatorTest {
 			.containsExactly("charSequence.notBlank");
 		assertThat(name.nullable().validate(" ").isValid()).isFalse();
 		assertThat(name.defaultValue("anonymous").validate(" ").isValid()).isFalse();
+	}
+
+	@Test
+	void inputIsTransformedBeforeItIsConstrained() {
+		// a string is transformed where its constraints are written, in the order of
+		// writing
+		final StringValidator<String> code = Yavi._string("code",
+				c -> c.trim().toUpperCase().transform(s -> s.replace("-", "")).notBlank().lessThanOrEqual(4));
+		assertThat(code.validated(" ab-cd\u3000")).isEqualTo("ABCD");
+		assertThat(code.validated("\u0041\u030a")).isEqualTo("\u0041\u030a");
+		assertThat(Yavi._string(c -> c.toNormalForm(Normalizer.Form.NFC).fixedSize(1)).validated("\u0041\u030a"))
+			.isEqualTo("\u00c5");
+		assertThat(Yavi._string(c -> c.toLowerCase()).map(String::length).validated("I")).isEqualTo(1);
+		// null is not transformed, the violated value is the transformed one
+		assertThat(code.validate(null).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("charSequence.notBlank");
+		assertThat(Yavi._string(c -> c.trim().email()).validate(" a ").errors())
+			.extracting(ConstraintViolation::violatedValue)
+			.containsExactly("a");
+		// the transform is kept by the combinators, with the description and the input
+		// type: an untyped input is transformed after its type is checked
+		final ValueValidator<String, Optional<Integer>> length = code.map(String::length)
+			.constraintOnTarget(n -> n > 1, "code", ViolationMessage.of("code.length", "too short"))
+			.prefixed("item")
+			.optional();
+		assertThat(length.validated(" a-b ")).contains(2);
+		assertThat(length.description()).isEqualTo(new ValueDescription.Optional(ValueDescription.Value.of(String.class,
+				ValidatorBuilder.<Arguments1<String>>of()
+					._string(Arguments1::arg1, "code", c -> c.notBlank().lessThanOrEqual(4))
+					.build()),
+				null));
+		assertThat(length.untyped().validated(" a-b ")).contains(2);
+		assertThat(length.untyped().validate(1).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.type");
+
+		// any other type is transformed with preprocess; the function added last is
+		// applied first
+		final IntegerValidator<Integer> percent = Yavi._integer("percent", c -> c.lessThanOrEqual(100))
+			.preprocess(i -> i * 10)
+			.preprocess(Math::abs);
+		assertThat(percent.validated(-5)).isEqualTo(50);
+		assertThat(percent.validated(null)).isNull();
+		assertThat(percent.validate(-50).errors()).extracting(ConstraintViolation::violatedValue).containsExactly(500);
+		assertThat(percent.map(String::valueOf).nullable().preprocess(i -> i + 1).untyped().validated(4.0))
+			.isEqualTo("50");
+		assertThat(code.preprocess(s -> s + "-x").validated("ab ")).isEqualTo("AB X");
+
+		// the input type of a lambda stays unknown
+		final ValueValidator<String, String> lambda = (s, locale, context) -> Validated.successWith(s);
+		final ValueValidator<String, String> stripped = lambda.describedAs(code.description())
+			.preprocess(String::strip);
+		assertThat(stripped.validated(" a ")).isEqualTo("a");
+		assertThat(stripped.description()).isEqualTo(code.description());
+		assertThatThrownBy(stripped::untyped).isInstanceOf(UnsupportedOperationException.class);
+		assertThat(stripped.untyped(String.class).validated(" a ")).isEqualTo("a");
 	}
 
 	@Test

@@ -28,7 +28,8 @@ import java.util.function.Supplier;
  * This is the applicative counterpart of {@link Validatable}: instead of stopping at the
  * first violation, the returned {@link Validated} carries all violations. Validators can
  * be chained with {@link #andThen(ValueValidator)}, mapped with {@link #map(Function)},
- * adapted to another input type with {@link #compose(Function)}, and lifted to
+ * adapted to another input type with {@link #compose(Function)}, given an input
+ * transformed within its type with {@link #preprocess(Function)}, and lifted to
  * collections, maps or optionals with {@code lift*} methods. A {@code null} input can be
  * accepted with {@link #optional()}, {@link #nullable()} or
  * {@link #defaultValue(Object)}, alternatives are combined with
@@ -71,11 +72,11 @@ public interface ValueValidator<T, X> {
 	 * a lambda is described as. The validators created by the builders describe
 	 * themselves, and the combinators of this interface carry the description:
 	 * {@link #map(Function)}, {@link #andThen(ValueValidator)},
-	 * {@link #constraintOnTarget} and {@link #prefixed(String)} keep it because they do
-	 * not change the input, the {@code lift*} methods, {@link #optional()},
-	 * {@link #nullable()}, {@link #defaultValue(Object)} and
-	 * {@link #anyOf(ValueValidator[])} wrap it, and {@link #compose(Function)} resets it
-	 * to unknown because it changes the input.
+	 * {@link #constraintOnTarget}, {@link #prefixed(String)} and
+	 * {@link #preprocess(Function)} keep it because they do not change the type of the
+	 * input, the {@code lift*} methods, {@link #optional()}, {@link #nullable()},
+	 * {@link #defaultValue(Object)} and {@link #anyOf(ValueValidator[])} wrap it, and
+	 * {@link #compose(Function)} resets it to unknown because it changes the input.
 	 * @return the description of the input
 	 * @since 0.18.0
 	 * @see #describedAs(ValueDescription)
@@ -94,7 +95,8 @@ public interface ValueValidator<T, X> {
 	 * @see #description()
 	 */
 	default ValueValidator<T, X> describedAs(ValueDescription description) {
-		return described(this, () -> description, reader -> this.readingWith(reader).describedAs(description));
+		return described(this, () -> description, reader -> this.readingWith(reader).describedAs(description),
+				transform -> this.preprocess(transform).describedAs(description));
 	}
 
 	/**
@@ -193,7 +195,17 @@ public interface ValueValidator<T, X> {
 
 	private static <T, X> ValueValidator<T, X> described(ValueValidator<T, X> validator,
 			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
-		return new DescribedValueValidator<>(validator, description, untyped);
+		return new DescribedValueValidator<>(validator, description, untyped, null);
+	}
+
+	/**
+	 * Returns a described validator that does not change the input of another validator,
+	 * so a transform of its input is a transform of the input of that validator.
+	 */
+	private static <T, X> ValueValidator<T, X> described(ValueValidator<T, X> validator,
+			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
+		return new DescribedValueValidator<>(validator, description, untyped, preprocessed);
 	}
 
 	/**
@@ -307,8 +319,11 @@ public interface ValueValidator<T, X> {
 	 * @since 0.17.0
 	 */
 	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
-		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.map(mapper), this::description, reader -> this.readingWith(reader).map(mapper));
+		return described(
+				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+					.map(mapper),
+				this::description, reader -> this.readingWith(reader).map(mapper),
+				transform -> this.preprocess(transform).map(mapper));
 	}
 
 	/**
@@ -324,7 +339,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext)),
-				this::description, reader -> this.readingWith(reader).andThen(validator));
+				this::description, reader -> this.readingWith(reader).andThen(validator),
+				transform -> this.preprocess(transform).andThen(validator));
 	}
 
 	/**
@@ -340,6 +356,46 @@ public interface ValueValidator<T, X> {
 			Function<@Nullable A, ? extends @Nullable T> mapper) {
 		return (a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
 				constraintContext);
+	}
+
+	/**
+	 * Returns a validator that applies the given function to an input other than
+	 * {@code null} and validates the result with this validator: the constraints, the
+	 * violated value of a violation and the produced value see the transformed input.
+	 * This is the place to trim a text, to convert it to lower case or to bring a value
+	 * into its canonical form before it is constrained.
+	 *
+	 * <pre>{@code
+	 * Yavi._bigDecimal("price", c -> c.notNull().positive()).preprocess(BigDecimal::stripTrailingZeros)
+	 * }</pre>
+	 *
+	 * <p>
+	 * Unlike {@link #compose(Function)}, the input type does not change, so the
+	 * {@linkplain #description() description} is kept. The input type is kept too, and
+	 * with {@link #readingWith(InputReader)} the function is applied to the typed value
+	 * after the type check, by the validators created by the builders of single values
+	 * and by {@link #map(Function)}, {@link #andThen(ValueValidator)},
+	 * {@link #constraintOnTarget}, {@link #prefixed(String)},
+	 * {@link #describedAs(ValueDescription)}, {@link #optional()}, {@link #nullable()}
+	 * and {@link #defaultValue(Object)} of them. The input type of any other validator is
+	 * unknown afterwards; give it with {@link #untyped(Class)}.
+	 *
+	 * <p>
+	 * A function added later is applied earlier: {@code v.preprocess(f).preprocess(g)}
+	 * applies {@code g} and then {@code f}. A {@code String} is transformed where its
+	 * constraints are written, in the order of writing, with the transforms of
+	 * {@code am.ik.yavi.constraint.StringValueConstraint}.
+	 * @param transform the function applied to an input other than {@code null}; it may
+	 * return {@code null}
+	 * @return a value validator that transforms its input first
+	 * @since 0.18.0
+	 */
+	default ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
+		return described((t, locale, constraintContext) -> ValueValidator.this
+			.validate(t == null ? null : transform.apply(t), locale, constraintContext), this::description, reader -> {
+				throw new UnsupportedOperationException(
+						"The input type of this validator is unknown. Use untyped(Class) to give it.");
+			});
 	}
 
 	/**
@@ -360,7 +416,8 @@ public interface ValueValidator<T, X> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
 						: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable),
 				() -> new ValueDescription.Optional(this.description(), null),
-				nullAware(reader -> this.readingWith(reader).optional()));
+				nullAware(reader -> this.readingWith(reader).optional()),
+				transform -> this.preprocess(transform).optional());
 	}
 
 	/**
@@ -380,7 +437,8 @@ public interface ValueValidator<T, X> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(null)
 						: ValueValidator.this.validate(t, locale, constraintContext),
 				() -> new ValueDescription.Optional(this.description(), null),
-				nullAware(reader -> this.readingWith(reader).nullable()));
+				nullAware(reader -> this.readingWith(reader).nullable()),
+				transform -> this.preprocess(transform).nullable());
 	}
 
 	/**
@@ -399,7 +457,8 @@ public interface ValueValidator<T, X> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
 						: ValueValidator.this.validate(t, locale, constraintContext),
 				() -> new ValueDescription.Optional(this.description(), defaultValue),
-				nullAware(reader -> this.readingWith(reader).defaultValue(defaultValue)));
+				nullAware(reader -> this.readingWith(reader).defaultValue(defaultValue)),
+				transform -> this.preprocess(transform).defaultValue(defaultValue));
 	}
 
 	/**
@@ -566,8 +625,11 @@ public interface ValueValidator<T, X> {
 	 * @see ConstraintViolation#prefixed(String)
 	 */
 	default ValueValidator<T, X> prefixed(String name) {
-		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.prefixed(name), this::description, reader -> this.readingWith(reader).prefixed(name));
+		return described(
+				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+					.prefixed(name),
+				this::description, reader -> this.readingWith(reader).prefixed(name),
+				transform -> this.preprocess(transform).prefixed(name));
 	}
 
 	/**

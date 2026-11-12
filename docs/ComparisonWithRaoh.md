@@ -112,26 +112,37 @@ date.validate("2025-13-15"); // object.type: The value must be of type LocalDate
 
 ### Transforms and normalization
 
-Raoh chains transforms with constraints (`string().trim().toLowerCase().email()`). A YAVI
-constraint never changes the value, so a transform is a `map` between two validators:
+Raoh chains transforms with constraints (`string().trim().toLowerCase().email()`). So
+does the validator of a `String` value in YAVI: the transforms are written before the
+constraints and applied in that order, and the constraints and the produced value see the
+transformed value.
 
 ```java
-StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
-ValueValidator<String, String> normalizedEmail = Yavi._string(c -> c.notNull())
-        .map(s -> s.trim().toLowerCase(Locale.ROOT))
-        .andThen(email);
+StringValidator<String> normalizedEmail = Yavi._string(c -> c.trim().toLowerCase().notBlank().email());
 
 normalizedEmail.validate("  USER@Example.COM  "); // Valid[user@example.com]
 ```
 
-`map` and `andThen` keep the input type, so the result can be an argument of `fromMap`.
-`compose` does not: `email.compose(String::trim)` must be given its type again with
-`untyped(String.class)`.
+| Raoh | YAVI |
+| --- | --- |
+| `trim()` | `c.trim()` (white space of `Character.isWhitespace`, as for `notBlank()`) |
+| `toLowerCase()`, `toUpperCase()` | `c.toLowerCase()`, `c.toUpperCase()` (`Locale.ROOT`) |
+| `normalize()` | `c.toNormalForm(Normalizer.Form.NFC)` |
+| `map(f)` before the constraints | `c.transform(f)` |
+
+* A transform is written before the first constraint; `c.notBlank().trim()` does not
+  compile. `null` is not transformed.
+* A value of another type is transformed with `preprocess` on its validator:
+  `Yavi._bigDecimal("price", c -> c.positive()).preprocess(BigDecimal::stripTrailingZeros)`.
+* A transform keeps the description and the input type, so the validator is an argument of
+  `fromMap`, where the transform runs after the type check. `compose` keeps neither:
+  `email.compose(String::trim)` must be given its type again with `untyped(String.class)`.
+* The constraints of a property (`ValidatorBuilder#constraint`) have no transforms: that
+  validator checks an object and does not produce a value.
 
 The size constraints count code points of the NFC form by default, so `lessThanOrEqual(1)`
-accepts a decomposed が (U+304B U+3099) without `normalize()`. The value itself is not
-normalized; do it with `map(s -> Normalizer.normalize(s, Normalizer.Form.NFC))`.
-`c.normalizer(form)` selects another form for counting, and `c.normalizer(null)` none.
+accepts a decomposed が (U+304B U+3099) without `normalize()`. `c.normalizer(form)` selects
+another form for counting, and `c.normalizer(null)` none; neither changes the value.
 
 ### String-to-type conversions (coerce)
 
@@ -155,7 +166,7 @@ The rules are stricter than those of Raoh:
 | Input | Raoh | YAVI |
 | --- | --- | --- |
 | `"1"`, `"yes"`, `"on"` for a boolean | `true` (`toBool()`) | `object.type`; only `"true"` and `"false"` are taken |
-| `"  42  "` for a number | `string().trim().toInt()` | `object.type`; a string is not trimmed |
+| `"  42  "` for a number | `string().trim().toInt()` | `object.type`; the text of a number is not trimmed |
 | `""` | an error of `toInt()` | `null`, so `optional()` and `defaultValue` apply |
 
 Other strings are taken by a reader that overrides `InputReader#value(node, type)`.
@@ -195,8 +206,9 @@ userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300))
 // age: "age" must be less than or equal to 150
 ```
 
-An argument is also written in place (`._string("email", c -> c.notBlank().email())`), and
-a validator without a name is given one with `_object(name, validator)`:
+An argument is also written in place
+(`._string("email", c -> c.trim().toLowerCase().notBlank().email())`), and a validator
+without a name is given one with `_object(name, validator)`:
 `._object("email", normalizedEmail.map(Email::new))`.
 
 ### Nested objects
@@ -732,7 +744,8 @@ Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows")
 // rows[1].email, rows[1].name, rows[1].age, rows[3].email, rows[3].age
 ```
 
-A header that holds `.` or `[` is read as a path, and a cell is not trimmed.
+A header that holds `.` or `[` is read as a path, and a cell is not trimmed
+(a `String` argument is, with `c.trim()`).
 
 ### Configuration files
 
@@ -789,7 +802,6 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 * A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
   structure read from a JSON tree or described as a JSON Schema.
 * Constraints on the list or map of `_list` and `_map`.
-* Transforms in the chain of constraints (`trim()`, `toLowerCase()`, `normalize()`).
 * Enum constants read without regard to case, booleans read from `1`, `yes`, `on`, and a
   `scale` constraint of a `BigDecimal`.
 * Encoders (a domain object to a map).

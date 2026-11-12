@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single {@link String} value and maps it to a result.
@@ -41,7 +42,7 @@ public class StringValidator<T> extends DefaultArguments1Validator<String, T> {
 	 */
 	@Override
 	public <T2> StringValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new StringValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new StringValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -52,6 +53,25 @@ public class StringValidator<T> extends DefaultArguments1Validator<String, T> {
 	 */
 	public StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper) {
 		super(validator, mapper, String.class);
+	}
+
+	private StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper,
+			@Nullable Function<? super String, ? extends @Nullable String> transform) {
+		super(validator, mapper, String.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public StringValidator<T> preprocess(Function<? super String, ? extends @Nullable String> transform) {
+		return new StringValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

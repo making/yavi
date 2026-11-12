@@ -444,6 +444,18 @@ These small validators can also be used for generating other objects, which prev
 
 `Yavi._string`, `Yavi._integer`, `Yavi._localDate` and so on have the names of the arguments of `Yavi.arguments()`. The name can be omitted for a value that is not a property, such as the element of a list: `Yavi._string(c -> c.notBlank())`. Its violations are named by the place where the validator is used (`roles[0]`); validated by itself, they have the empty name and a message that says "The value" in place of the name (`The value must not be blank`).
 
+A value can be transformed before it is constrained. The transforms of a `String` are written before its constraints and applied in that order; any other value is transformed with `preprocess`. The constraints and the produced value see the transformed value, and `null` is not transformed.
+
+```java
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
+emailValidator.validate("  USER@Example.COM "); // Valid[user@example.com]
+
+BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.notNull().positive())
+        .preprocess(BigDecimal::stripTrailingZeros);
+```
+
+`c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.toNormalForm(form)` and `c.transform(f)` are available wherever the constraints of a `String` value are written, such as `Yavi.arguments()._string("email", c -> ...)`.
+
 #### Nested objects, collections and optional arguments
 
 An argument can also be a nested object, a list or a map. Their violations are located under the argument name (`address.street`, `roles[0]`, `scores.math`), both in `name()` and in the structured `path()`.
@@ -646,7 +658,7 @@ The values are text:
 * An empty string is validated like `null` whatever the type of its argument is, because text has no other way to say that a value is not given. `optional()`, `nullable()` and `defaultValue(...)` apply to it; give `defaultValue("")` to a string argument that must receive `""`.
 * A string is a number if it is a decimal number: an optional sign, digits, an optional fraction and an optional exponent (the grammar of `new BigDecimal(String)`), without surrounding whitespace or grouping separators. It is then checked like any other number: `"30"` and `"30.0"` are an `Integer`, `"30.5"`, `" 30"` and `"1,000"` are not.
 * A string is a boolean if it is `"true"` or `"false"`.
-* A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. A string is not trimmed and nothing is converted to a string.
+* A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. The text of a number, a boolean or a date is not trimmed (`" 42 "` is not an integer; a `String` argument is trimmed with `c.trim()`) and nothing is converted to a string.
 
 The keys are paths, and a key is whatever its argument expects:
 
