@@ -138,13 +138,14 @@ public interface InputReader<N> {
 	 * file, environment variables or properties.
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Object, SearchForm> validator = Yavi.arguments()
-	 *     ._string("q", c -> c.notBlank())
-	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
-	 *     ._boolean("includeArchived").defaultValue(false)
-	 *     .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
-	 * Validated<SearchForm> validated = validator.validate(Map.of("q", "yavi", "page", "2"));
+	 * ValueValidator<Object, Integer> page = IntegerValidatorBuilder.of("page", c -> c.greaterThanOrEqual(1))
+	 *     .build()
+	 *     .readingWith(InputReader.ofJdkTypes().coercingStrings());
+	 * Validated<Integer> validated = page.validate("2");
 	 * }</pre>
+	 *
+	 * A validator of maps built with {@code fromMap} has {@code coercingStrings()}
+	 * itself, which keeps the type of the map.
 	 *
 	 * The following is added to the rules of {@link ValueValidator#untyped(Class)}:
 	 * <ul>

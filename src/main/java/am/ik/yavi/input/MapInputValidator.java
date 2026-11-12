@@ -76,14 +76,12 @@ import org.jspecify.annotations.Nullable;
  * {@code fromMap} whatever input is read in the end.
  *
  * <p>
- * A map of strings, such as request parameters or a submitted form, is read with the
- * reader that {@linkplain InputReader#coercingStrings() coerces strings}: {@code "30"} is
- * then an {@code Integer}, {@code "true"} a {@code Boolean} and an empty string
- * {@code null}. The returned validator takes any map, including a
- * {@code Map<String, String>}:
+ * A map of strings, such as request parameters or a submitted form, is read with
+ * {@link #coercingStrings()}: {@code "30"} is then an {@code Integer}, {@code "true"} a
+ * {@code Boolean} and an empty string {@code null}.
  *
  * <pre>{@code
- * ValueValidator<Object, User> formValidator = validator.readingWith(InputReader.ofJdkTypes().coercingStrings());
+ * ValueValidator<Map<String, String>, User> formValidator = validator.coercingStrings();
  * Validated<User> validated = formValidator.validate(requestParameters);
  * }</pre>
  *
@@ -156,6 +154,31 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 */
 	public MapInputValidator<X> rejectingUnknownProperties() {
 		return new MapInputValidator<>(this.properties, this.mapper, true);
+	}
+
+	/**
+	 * Returns a validator that reads the same properties from a map whose values are
+	 * strings, such as request parameters or a submitted form, and takes a string as text
+	 * that stands for a value of the type of its property. The rules are those of
+	 * {@link InputReader#coercingStrings()}, and they apply to the nested validators too.
+	 * This is {@code readingWith(InputReader.ofJdkTypes().coercingStrings())} with the
+	 * type of the map, which is the one the result is assigned to:
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
+	 *     ._string("q", c -> c.notBlank())
+	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+	 *     .fromMap(SearchForm::new)
+	 *     .coercingStrings();
+	 * }</pre>
+	 * @param <M> the type of the map
+	 * @return a validator of a map that coerces strings
+	 * @see InputReader#coercingStrings()
+	 */
+	@SuppressWarnings("unchecked")
+	public <M extends Map<String, ?>> ValueValidator<M, X> coercingStrings() {
+		return (ValueValidator<M, X>) (ValueValidator<?, X>) this
+			.readingWith(InputReader.ofJdkTypes().coercingStrings());
 	}
 
 	@Override

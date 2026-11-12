@@ -593,15 +593,16 @@ A validator that does not know its input type (a lambda) is read only from JDK t
 
 ##### Validating a map of strings such as request parameters
 
-Request parameters, a submitted form, a row of a CSV file, environment variables and properties hold nothing but strings. `InputReader.ofJdkTypes().coercingStrings()` reads such a map with the same arguments: a string is taken as text that stands for a value of the type of its argument.
+Request parameters, a submitted form, a row of a CSV file, environment variables and properties hold nothing but strings. `coercingStrings()` of a validator built with `fromMap` reads such a map with the same arguments: a string is taken as text that stands for a value of the type of its argument.
 
 ```java
-ValueValidator<Object, SearchForm> searchFormValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, SearchForm> searchFormValidator = Yavi.arguments()
         ._string("q", c -> c.notBlank())
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
         ._localDate("since")
-        .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
+        .fromMap(SearchForm::new)
+        .coercingStrings();
 
 @GetMapping("/search")
 Object search(@RequestParam Map<String, String> params) { // ?q=yavi&page=2&since=
@@ -616,7 +617,7 @@ Object search(@RequestParam Map<String, String> params) { // ?q=yavi&page=2&sinc
 * A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. A string is not trimmed and nothing is converted to a string.
 * It is opt-in and applies to everything that is read: nested objects, the elements of a list and the values of a map. The rules of absent and unknown keys do not change.
 
-`coercingStrings()` is available on every reader, so `JsonNodeReader.INSTANCE.coercingStrings()` reads a JSON document whose numbers are sent as strings, and `mapValidator.readingWith(reader)` reads a map of strings with a validator built with `fromMap`. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
+The type of the map is the one the validator is assigned to, `Map<String, String>` or `Map<String, Object>`. `mapValidator.coercingStrings()` is `mapValidator.readingWith(InputReader.ofJdkTypes().coercingStrings())`: the coercion is a decorator available on every reader, so any validator reads strings with it (`pageValidator.readingWith(...)` takes `"2"`), and `JsonNodeReader.INSTANCE.coercingStrings()` reads a JSON document whose numbers are sent as strings. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 

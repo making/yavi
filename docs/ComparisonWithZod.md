@@ -114,14 +114,16 @@ A mismatch is reported with `object.type` (`"age" must be of type integer`).
 `z.coerce` is chosen per schema and converts with the JavaScript constructors
 (`Number(input)`, `Boolean(input)`). In YAVI the coercion of strings is a property of the
 input, not of an argument: an input that holds nothing but strings, such as request
-parameters, is read with `InputReader#coercingStrings()` and the arguments are written as
-for a JSON document.
+parameters, is read with `coercingStrings()` and the arguments are written as for a JSON
+document. It is `readingWith(InputReader.ofJdkTypes().coercingStrings())`, a decorator
+that every `InputReader` has.
 
 ```java
-ValueValidator<Object, SearchForm> validator = Yavi.arguments()
+ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
-        .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
+        .fromMap(SearchForm::new)
+        .coercingStrings();
 
 validator.validate(Map.of("page", "2", "includeArchived", "true"));
 ```

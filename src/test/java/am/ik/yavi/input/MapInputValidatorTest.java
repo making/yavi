@@ -128,8 +128,7 @@ class MapInputValidatorTest {
 		.constraintOnTarget(User::hasTagIfAdmin, "tags",
 				ViolationMessage.of("user.adminTags", "An admin must have a tag"));
 
-	static final ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator
-		.<Shape>of("type")
+	static final DiscriminatedUnionValidator<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
 		// the discriminator is not an unknown property of an alternative that rejects
 		// them
 		.when("circle",
@@ -272,6 +271,13 @@ class MapInputValidatorTest {
 			.containsExactly("object.oneOf");
 		assertThat(model.validate(shapeValidator, input("radius", 2)).errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"type\" is required");
+		// a map of strings is read with the type it has
+		final ValueValidator<Map<String, String>, Shape> ofStrings = shapeValidator.coercingStrings();
+		assertThat(ofStrings.validated(Map.of("type", "circle", "radius", "2"))).isEqualTo(new Circle(2));
+		final ValueValidator<Map<String, ?>, Address> address = addressValidator.coercingStrings();
+		assertThat(address.validate(Map.of("street", "1-2-3", "city", "")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("city", "charSequence.notBlank"));
 		// a union is nested like any other validator
 		final MapInputValidator<Optional<List<Shape>>> drawing = Yavi.arguments()
 			._list("shapes", shapeValidator)
