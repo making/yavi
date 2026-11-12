@@ -431,30 +431,36 @@ apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100, "extra"
 
 ### Recursive structures
 
-Raoh's `lazy(() -> decoder)` refers to a decoder that is not built yet. YAVI has no
-counterpart: `lazy()` of `ArgumentsNValidator` is unrelated, it defers the creation of the
-object (`Supplier<X>`), for a validator called from a constructor. A lambda that refers to
-the validator serves a map, and must be given its input type:
+Raoh's `lazy(() -> decoder)` refers to a decoder that is not built yet.
+`ValueValidator.lazy(() -> validator)` is the counterpart, and
+`ValueValidator.recursive(self -> ...)` gives the reference to the function that builds
+the validator, so that no variable is referred to before it is assigned:
 
 ```java
 record Comment(String body, List<Comment> replies) {}
 
-@SuppressWarnings("unchecked")
-ValueValidator<Map<String, Object>, Comment>[] self = new ValueValidator[1];
-ValueValidator<Map<String, Object>, Comment> lazy = (map, locale, context) -> self[0].validate(map, locale, context);
-@SuppressWarnings({ "unchecked", "rawtypes" })
-ValueValidator<Object, Comment> reply = lazy.untyped((Class) Map.class);
-
-MapInputValidator<Comment> commentValidator = Yavi.arguments()
+MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
         ._string("body", c -> c.notBlank())
-        ._list("replies", reply).defaultValue(List.of())
-        .fromMap(Comment::new);
-self[0] = commentValidator;
+        ._list("replies", self).defaultValue(List.of())
+        .fromMap(Comment::new));
 ```
 
-It reads a map and request parameters. It does not read a JSON tree
-(`readingWith(reader)` reports `replies[0]` with `object.type`), and the JSON Schema of
-`replies` has no item schema.
+A field refers to itself, or to a field declared later, by its qualified name:
+
+```java
+static final MapInputValidator<Comment> VALIDATOR = Yavi.arguments()
+        ._string("body", c -> c.notBlank())
+        ._list("replies", ValueValidator.lazy("Comment", () -> Comment.VALIDATOR)).defaultValue(List.of())
+        .fromMap(Comment::new);
+```
+
+The validator reads a map, request parameters and a JSON tree (`readingWith(reader)`), and
+`JsonSchema` writes the reference as `$ref`: to `#` for the validator itself, and to
+`$defs` under the given name (`Comment`) where the validator is nested in another. The
+depth of the input is not limited; that is the task of the JSON parser.
+
+`lazy()` of `ArgumentsNValidator` is unrelated: it defers the creation of the object
+(`Supplier<X>`), for a validator called from a constructor.
 
 ## Unions
 
@@ -871,6 +877,4 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 ## Not available
 
 * Three states of a field (`Presence`: absent, `null`, value).
-* A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
-  structure read from a JSON tree or described as a JSON Schema.
 * Encoders (a domain object to a map).

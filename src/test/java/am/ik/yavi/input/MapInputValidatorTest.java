@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import am.ik.yavi.arguments.Arguments2;
@@ -427,6 +429,152 @@ class MapInputValidatorTest {
 				"additionalProperties":false},\
 				{"type":"object","properties":{"type":{"type":["string","null"]},\
 				"side":{"type":"integer"}},"required":["side"]}]}}},"required":["shapes"]}""");
+	}
+
+	record Comment(@Nullable String body, @Nullable List<Comment> replies) {
+	}
+
+	sealed interface Expr {
+
+	}
+
+	record Num(@Nullable Integer value) implements Expr {
+	}
+
+	record Add(@Nullable Expr left, @Nullable Expr right) implements Expr {
+	}
+
+	record Formula(@Nullable String name, @Nullable Expr expr, @Nullable List<Comment> comments) {
+	}
+
+	static final MapInputValidator<Comment> commentValidator = ValueValidator.recursive("Comment",
+			self -> Yavi.arguments()
+				._string("body", c -> c.notBlank())
+				._list("replies", self)
+				.defaultValue(List.of())
+				.fromMap(Comment::new));
+
+	static final AtomicInteger addSupplied = new AtomicInteger();
+
+	// an alternative that is built later, and that rejects unknown properties
+	static final DiscriminatedUnionValidator<Expr> exprValidator = DiscriminatedUnionValidator.<Expr>of("op")
+		.when("num", Yavi.arguments()._integer("value", c -> c.notNull()).fromMap(Num::new))
+		.when("add", ValueValidator.lazy("Add", () -> {
+			addSupplied.incrementAndGet();
+			return MapInputValidatorTest.addValidator;
+		}));
+
+	static final MapInputValidator<Add> addValidator = Yavi.arguments()
+		._object("left", exprValidator)
+		._object("right", exprValidator)
+		.fromMap(Add::new)
+		.rejectingUnknownProperties();
+
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void recursiveStructureRefersToItsValidator(Model model) {
+		assertThat(model
+			.validate(commentValidator,
+					input("body", "a", "replies",
+							List.of(map("body", "b", "replies", List.of(map("body", "c"))), map("body", "d"))))
+			.value())
+			.isEqualTo(new Comment("a",
+					List.of(new Comment("b", List.of(new Comment("c", List.of()))), new Comment("d", List.of()))));
+		assertThat(
+				model
+					.validate(commentValidator,
+							input("body", "a", "replies",
+									List.of(map("body", "b", "replies", List.of(map("body", ""), "c")),
+											map("body", " "))))
+					.errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("replies[0].replies[0].body", "charSequence.notBlank"),
+					tuple("replies[0].replies[1]", "object.type"), tuple("replies[1].body", "charSequence.notBlank"));
+		// the validator itself is referred to as the root of the schema
+		assertThat(JsonSchema.toJson(commentValidator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"body":{"type":"string","minLength":1},\
+				"replies":{"type":["array","null"],"items":{"$ref":"#"},"default":[]}},"required":["body"]}""");
+
+		// validators that refer to each other, one of them before it is built
+		final Map<String, Object> sum = input("op", "add", "left", map("op", "num", "value", 1), "right",
+				map("op", "add", "left", map("op", "num", "value", 2), "right", map("op", "num", "value", 3)));
+		assertThat(model.validate(exprValidator, sum).value())
+			.isEqualTo(new Add(new Num(1), new Add(new Num(2), new Num(3))));
+		assertThat(model
+			.validate(exprValidator, input("op", "add", "left", map("op", "add", "left", map("op", "num"), "extra", 1)))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("left.left.value", "object.required"), tuple("left.right", "object.required"),
+					tuple("left.extra", "object.unknownProperty"), tuple("right", "object.required"));
+		// the supplier is asked once, whatever reader the validator is given
+		assertThat(addSupplied.get()).isOne();
+
+		// a structure that is referred to from elsewhere is defined once, under the name
+		// of its reference
+		final MapInputValidator<Formula> formulaValidator = Yavi.arguments()
+			._string("name", c -> c.notBlank())
+			._object("expr", exprValidator)
+			.nullable()
+			._list("comments", commentValidator)
+			.defaultValue(List.of())
+			.fromMap(Formula::new);
+		assertThat(model
+			.validate(formulaValidator, input("name", "sum", "expr", sum, "comments", List.of(map("body", "ok"))))
+			.value())
+			.isEqualTo(new Formula("sum", new Add(new Num(1), new Add(new Num(2), new Num(3))),
+					List.of(new Comment("ok", List.of()))));
+		assertThat(JsonSchema.toJson(formulaValidator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"name":{"type":"string","minLength":1},\
+				"expr":{"anyOf":[{"type":"object","properties":{"op":{"type":"string","const":"num"},\
+				"value":{"type":"integer"}},"required":["op","value"]},{"$ref":"#/$defs/Add"},{"type":"null"}]},\
+				"comments":{"type":["array","null"],"items":{"$ref":"#/$defs/Comment"},"default":[]}},\
+				"required":["name"],"$defs":{\
+				"Add":{"type":"object","properties":{"op":{"type":"string","const":"add"},\
+				"left":{"anyOf":[{"type":"object","properties":{"op":{"type":"string","const":"num"},\
+				"value":{"type":"integer"}},"required":["op","value"]},{"$ref":"#/$defs/Add"}]},\
+				"right":{"anyOf":[{"type":"object","properties":{"op":{"type":"string","const":"num"},\
+				"value":{"type":"integer"}},"required":["op","value"]},{"$ref":"#/$defs/Add"}]}},\
+				"required":["op","left","right"],"additionalProperties":false},\
+				"Comment":{"type":"object","properties":{"body":{"type":"string","minLength":1},\
+				"replies":{"type":["array","null"],"items":{"$ref":"#/$defs/Comment"},"default":[]}},\
+				"required":["body"]}}}""");
+	}
+
+	@Test
+	void lazyValidatorIsResolvedOnFirstUse() {
+		final List<ValueValidator<Map<String, Object>, Comment>> built = new ArrayList<>();
+		final ValueValidator<Map<String, Object>, Comment> lazy = ValueValidator
+			.lazy(() -> built.isEmpty() ? null : built.get(0));
+		// it is built into other validators and given a reader before it can be resolved
+		final ValueValidator<JsonNode, Optional<Comment>> reading = lazy.optional()
+			.readingWith(JsonNodeReader.INSTANCE);
+		assertThat(lazy.description()).isInstanceOf(ValueDescription.Reference.class)
+			.isSameAs(lazy.readingWith(JsonNodeReader.INSTANCE).description())
+			.hasToString("Reference[name=]");
+		assertThatThrownBy(() -> reading.validate(jsonMapper.valueToTree(Map.of("body", "a"))))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("is not built yet");
+		assertThatThrownBy(() -> JsonSchema.of(lazy.description())).isInstanceOf(IllegalStateException.class);
+		built.add(commentValidator);
+		assertThat(reading.validated(jsonMapper.valueToTree(Map.of("body", "a"))))
+			.contains(new Comment("a", List.of()));
+		// the reference is the schema of what it refers to
+		assertThat(JsonSchema.of(lazy.description())).isEqualTo(JsonSchema.of(commentValidator.description()));
+		assertThat(lazy.description().acceptsNull()).isFalse();
+		// a validator that reads with a reader refers to itself with the same reader
+		final ValueValidator<JsonNode, Comment> self = lazy.readingWith(JsonNodeReader.INSTANCE);
+		assertThat(lazy.readingWith(JsonNodeReader.INSTANCE)).isSameAs(self);
+		// a reference that leads only to itself describes nothing
+		final List<ValueValidator<String, String>> loop = new ArrayList<>();
+		loop.add(ValueValidator.lazy(() -> loop.get(0)));
+		// a transform of the input is one of the validator referred to, which keeps its
+		// input type
+		final ValueValidator<String, String> name = ValueValidator
+			.lazy(() -> StringValidatorBuilder.of("name", c -> c.notBlank()).build());
+		assertThat(name.preprocess(String::trim).untyped().validated(" a ")).isEqualTo("a");
+		assertThat(JsonSchema.toJson(loop.get(0).description()))
+			.isEqualTo("{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}");
 	}
 
 	record UserName(@Nullable String first, @Nullable String last) {
