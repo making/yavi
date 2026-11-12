@@ -99,6 +99,13 @@ public interface ViolationMessage {
 		 */
 		OBJECT_NOT_ONE_OF("object.notOneOf", "\"{0}\" must not be one of the following values: {1}"), //
 		/**
+		 * Message id {@code object.anyOf}. Default message: {@code "{0}" must satisfy at
+		 * least one of the {1} alternatives}. {@code {0}} is the property name and
+		 * {@code {1}} is the number of alternatives.
+		 * @since 0.18.0
+		 */
+		OBJECT_ANY_OF("object.anyOf", "\"{0}\" must satisfy at least one of the {1} alternatives"), //
+		/**
 		 * Message id {@code container.notEmpty}. Default message: {@code "{0}" must not
 		 * be empty}. {@code {0}} is the property name.
 		 */

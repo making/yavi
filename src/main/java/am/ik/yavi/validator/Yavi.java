@@ -25,6 +25,25 @@ import am.ik.yavi.builder.YaviArguments;
  * }</pre>
  *
  * <p>
+ * Arguments can be composed: {@code _object(name, validator)} nests another validator,
+ * {@code _list} and {@code _map} validate elements, and {@code optional()},
+ * {@code nullable()} and {@code defaultValue} make the last added argument accept
+ * {@code null}. The violations of nested values are located under the argument name, for
+ * example {@code address.street} or {@code roles[0]}. A rule that spans several arguments
+ * is added to the created validator with {@code constraintOnTarget}:
+ *
+ * <pre>{@code
+ * Arguments4Validator<String, String, AddressForm, List<String>, User> validator = Yavi.arguments()
+ *     ._string("email", c -> c.notBlank().email())
+ *     ._string("nickname", c -> c.notBlank()).optional()
+ *     ._object("address", addressValidator)
+ *     ._list("roles", StringValidatorBuilder.of("", c -> c.notBlank()).build())
+ *     .apply(User::new)
+ *     .constraintOnTarget(user -> !user.roles().isEmpty() || user.nickname().isEmpty(), "roles",
+ *         ViolationMessage.of("user.roles", "\"{0}\" must not be empty when a nickname is given"));
+ * }</pre>
+ *
+ * <p>
  * This class only provides the entry point; {@link YaviArguments} and the returned
  * builders do the work.
  *

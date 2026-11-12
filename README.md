@@ -445,6 +445,35 @@ After defining validators for `manufacturer`, `licensePlate`, and `seatCount`, i
 
 These small validators can also be used for generating other objects, which prevents domain rules from being scattered throughout the code.
 
+#### Nested objects, collections and optional arguments
+
+An argument can also be a nested object, a list or a map. Their violations are located under the argument name (`address.street`, `roles[0]`, `scores.math`), both in `name()` and in the structured `path()`.
+
+```java
+ValueValidator<AddressForm, Address> addressValidator = Yavi.arguments()
+        ._string("street", c -> c.notBlank())
+        ._string("city", c -> c.notBlank())
+        .apply(Address::new)
+        .compose(form -> Arguments.of(form.street(), form.city()));
+
+Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> validator = Yavi.arguments()
+        ._string("email", c -> c.notBlank().email())
+        ._string("nickname", c -> c.notBlank()).optional() // Optional<String>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+        ._object("address", addressValidator) // address.street
+        ._list("roles", StringValidatorBuilder.of("", c -> c.notBlank()).build()) // roles[0]
+        .apply(User::new)
+        .constraintOnTarget(user -> user.age() >= 18 || !user.roles().contains("admin"), "roles",
+                ViolationMessage.of("user.adultAdmin", "\"{0}\" must not contain \"admin\" for a minor"));
+```
+
+* `optional()`, `nullable()` and `defaultValue(...)` apply to the last added argument. A `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
+* `_object(name, validator)`, `_list(name, elementValidator)` and `_map(name, valueValidator)` reject `null` with `object.notNull` unless one of the above is applied. Give an element validator an empty name to report a violation on the element itself.
+* `ValueValidator.anyOf(a, b)` tries the alternatives in order. If all of them fail, it reports `object.anyOf` followed by the violations of every alternative.
+* `constraintOnTarget` adds a rule that spans several arguments. It is evaluated only when all arguments are valid.
+
+The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`.
+
 #### Where to go next?
 
 That concludes the 5 minutes tour through the world of YAVI. If you want a more complete

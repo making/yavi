@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
@@ -14,6 +15,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -181,6 +183,27 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 						.map(x2 -> () -> x2));
 			}
 		};
+	}
+
+	/**
+	 * Returns a validator that additionally checks the value produced by this validator
+	 * with the given predicate. This is the place for a rule that spans several
+	 * arguments, such as a password confirmation or a date range.
+	 *
+	 * <p>
+	 * The predicate is evaluated only when this validator succeeds. If it returns
+	 * {@code false}, a violation with the given name and message is reported; its last
+	 * message argument is the produced value.
+	 * @param predicate the rule that the produced value must satisfy
+	 * @param name the name of the reported violation
+	 * @param violationMessage the message key and the default message format of the
+	 * reported violation
+	 * @return a validator with the additional rule
+	 * @since 0.18.0
+	 */
+	default Arguments3Validator<A1, A2, A3, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage) {
+		return this.andThen(ValueValidator.<X>passThrough().constraintOnTarget(predicate, name, violationMessage));
 	}
 
 	/**

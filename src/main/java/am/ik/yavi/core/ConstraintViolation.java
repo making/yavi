@@ -296,6 +296,29 @@ public class ConstraintViolation {
 	}
 
 	/**
+	 * Returns a new ConstraintViolation located under the property with the given name. A
+	 * property segment is prepended to the {@link #path()} and the name is prefixed
+	 * accordingly: {@code street} becomes {@code address.street}, {@code [0]} becomes
+	 * {@code address[0]} and an empty name becomes {@code address}.
+	 *
+	 * <p>
+	 * The flat name is joined with {@code .}, the default message key separator. An empty
+	 * property name leaves the violation unchanged.
+	 * @param name the name of the property that contains the violated value
+	 * @return a new ConstraintViolation under the given property
+	 * @since 0.18.0
+	 */
+	public ConstraintViolation prefixed(String name) {
+		if (name.isEmpty()) {
+			return this;
+		}
+		final boolean joined = this.name.isEmpty()
+				|| (!this.path.isEmpty() && this.path.get(0) instanceof PathSegment.Index);
+		return this.relocate(joined ? name + this.name : name + "." + this.name,
+				PathSegment.concat(PathSegment.of(name), this.path));
+	}
+
+	/**
 	 * Returns a new ConstraintViolation with the given name and path. If the arguments
 	 * array is not empty, the first element will be updated with the new name.
 	 * @param newName the new flat name

@@ -8,13 +8,16 @@ import am.ik.yavi.fn.Validation;
 import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -26,7 +29,11 @@ import java.util.function.Supplier;
  * first violation, the returned {@link Validated} carries all violations. Validators can
  * be chained with {@link #andThen(ValueValidator)}, mapped with {@link #map(Function)},
  * adapted to another input type with {@link #compose(Function)}, and lifted to
- * collections or optionals with {@code lift*} methods. The generated
+ * collections, maps or optionals with {@code lift*} methods. A {@code null} input can be
+ * accepted with {@link #optional()}, {@link #nullable()} or
+ * {@link #defaultValue(Object)}, alternatives are combined with
+ * {@link #anyOf(ValueValidator[])}, and a rule that spans several properties of the
+ * produced value is added with {@link #constraintOnTarget}. The generated
  * {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this interface to
  * validate constructor arguments and create only valid objects.
  *
@@ -111,6 +118,129 @@ public interface ValueValidator<T, X> {
 			Function<@Nullable A, ? extends @Nullable T> mapper) {
 		return (a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
 				constraintContext);
+	}
+
+	/**
+	 * Returns a validator that accepts a {@code null} input as an absent value.
+	 *
+	 * <p>
+	 * A {@code null} input succeeds with an empty {@link Optional} without invoking this
+	 * validator, so constraints such as {@code notNull()} are not applied to it. Any
+	 * other input is validated by this validator and its value is wrapped in an
+	 * {@link Optional}.
+	 * @return a value validator that produces an optional value
+	 * @since 0.18.0
+	 * @see #nullable()
+	 * @see #defaultValue(Object)
+	 */
+	default ValueValidator<T, Optional<X>> optional() {
+		return (t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
+				: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable);
+	}
+
+	/**
+	 * Returns a validator that accepts a {@code null} input and produces {@code null} for
+	 * it.
+	 *
+	 * <p>
+	 * A {@code null} input succeeds with {@code null} without invoking this validator, so
+	 * constraints such as {@code notNull()} are not applied to it. Any other input is
+	 * validated by this validator.
+	 * @return a value validator that produces {@code null} for a {@code null} input
+	 * @since 0.18.0
+	 * @see #optional()
+	 */
+	default ValueValidator<T, X> nullable() {
+		return (t, locale, constraintContext) -> t == null ? Validated.successWith(null)
+				: ValueValidator.this.validate(t, locale, constraintContext);
+	}
+
+	/**
+	 * Returns a validator that produces the given value for a {@code null} input.
+	 *
+	 * <p>
+	 * A {@code null} input succeeds with the default value without invoking this
+	 * validator; the default value itself is not validated. Any other input is validated
+	 * by this validator.
+	 * @param defaultValue the value produced for a {@code null} input
+	 * @return a value validator that falls back to the default value
+	 * @since 0.18.0
+	 */
+	default ValueValidator<T, X> defaultValue(X defaultValue) {
+		return (t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
+				: ValueValidator.this.validate(t, locale, constraintContext);
+	}
+
+	/**
+	 * Returns a validator that tries the given validators in order and produces the value
+	 * of the first one that succeeds.
+	 *
+	 * <p>
+	 * If every alternative fails, the result holds one violation with the message key
+	 * {@code object.anyOf} followed by the violations of all alternatives in the given
+	 * order. The leading violation has an empty name, so it is reported on the validated
+	 * value itself and takes the name of the property the validator is applied to.
+	 * @param validators the alternatives, tried in the given order
+	 * @param <T> the type of the object to be validated
+	 * @param <X> the common type of the values produced by the alternatives
+	 * @return a value validator that succeeds if any alternative succeeds
+	 * @throws IllegalArgumentException if no alternative is given
+	 * @since 0.18.0
+	 */
+	@SafeVarargs
+	static <T, X> ValueValidator<T, X> anyOf(ValueValidator<? super T, ? extends X>... validators) {
+		if (validators.length == 0) {
+			throw new IllegalArgumentException("'validators' must not be empty.");
+		}
+		final List<ValueValidator<? super T, ? extends X>> alternatives = List.of(validators);
+		return (t, locale, constraintContext) -> {
+			final List<ConstraintViolation> violations = new ArrayList<>();
+			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
+				final Validated<? extends X> validated = alternative.validate(t, locale, constraintContext);
+				if (validated.isValid()) {
+					return Validated.successWith(validated.value());
+				}
+				violations.addAll(validated.errors());
+			}
+			violations.add(0,
+					ConstraintViolation.builder()
+						.name("")
+						.messageKey(ViolationMessage.Default.OBJECT_ANY_OF.messageKey())
+						.defaultMessageFormat(ViolationMessage.Default.OBJECT_ANY_OF.defaultMessageFormat())
+						.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { alternatives.size() },
+								new ViolatedValue(t))
+						.locale(locale)
+						.build());
+			return Validated.failureWith(violations);
+		};
+	}
+
+	/**
+	 * Returns a validator that additionally checks the value produced by this validator
+	 * with the given predicate. This is the place for a rule that spans several
+	 * properties of the produced value, such as a password confirmation or a date range.
+	 *
+	 * <p>
+	 * The predicate is evaluated only when this validator succeeds. If it returns
+	 * {@code false}, a violation with the given name and message is reported; its last
+	 * message argument is the produced value.
+	 * @param predicate the rule that the produced value must satisfy
+	 * @param name the name of the reported violation
+	 * @param violationMessage the message key and the default message format of the
+	 * reported violation
+	 * @return a value validator with the additional rule
+	 * @since 0.18.0
+	 */
+	default ValueValidator<T, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage) {
+		return this.andThen((x, locale, constraintContext) -> predicate.test(x) ? Validated.successWith(x)
+				: Validated.failureWith(ConstraintViolation.builder()
+					.name(name)
+					.messageKey(violationMessage.messageKey())
+					.defaultMessageFormat(violationMessage.defaultMessageFormat())
+					.argsWithPrependedNameAndAppendedViolatedValue(new Object[0], new ViolatedValue(x))
+					.locale(locale)
+					.build()));
 	}
 
 	/**
@@ -203,6 +333,20 @@ public interface ValueValidator<T, X> {
 	}
 
 	/**
+	 * Returns a validator that locates every violation under the property with the given
+	 * name, so that the violations of a nested value can be told apart. For example the
+	 * violation name {@code street} becomes {@code address.street}.
+	 * @param name the name of the property that contains the validated value
+	 * @return a validator with prefixed violation names and paths
+	 * @since 0.18.0
+	 * @see ConstraintViolation#prefixed(String)
+	 */
+	default ValueValidator<T, X> prefixed(String name) {
+		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.prefixed(name);
+	}
+
+	/**
 	 * Returns a validator that validates every element of the input iterable with this
 	 * validator indexed by its position and collects the validated values into a
 	 * collection created by the given factory. All elements are validated and the
@@ -234,6 +378,34 @@ public interface ValueValidator<T, X> {
 	 */
 	default ValueValidator<Iterable<T>, Set<X>> liftSet() {
 		return ValueValidator.liftSet(this);
+	}
+
+	/**
+	 * Returns a validator that validates every value of the input map with this validator
+	 * and collects the validated values into a {@link Map} with the same keys in
+	 * iteration order. The violations of a value are located under its key and the
+	 * violations of all failing values are accumulated. A {@code null} map validates
+	 * successfully with an empty map.
+	 * @return a value validator for maps
+	 * @since 0.18.0
+	 */
+	default ValueValidator<Map<String, T>, Map<String, X>> liftMap() {
+		return (values, locale, constraintContext) -> {
+			final Map<String, X> results = new LinkedHashMap<>();
+			final List<ConstraintViolation> violations = new ArrayList<>();
+			if (values != null) {
+				values.forEach((key, value) -> {
+					final Validated<X> validated = this.validate(value, locale, constraintContext);
+					if (validated.isValid()) {
+						results.put(key, validated.value());
+					}
+					else {
+						validated.errors().forEach(violation -> violations.add(violation.prefixed(key)));
+					}
+				});
+			}
+			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
+		};
 	}
 
 	/**
