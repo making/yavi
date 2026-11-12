@@ -2,6 +2,7 @@
   {
     "name": "am.ik.yavi.core.ViolationDetail",
     "allDeclaredConstructors": true,
+    "allRecordComponents": true,
     "allDeclaredMethods": true
   }
 ]

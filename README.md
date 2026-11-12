@@ -678,6 +678,29 @@ A tree whose scalars are all strings, such as a JSON document whose numbers are 
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
 
+#### Returning the violations
+
+`ConstraintViolations` has the forms that a form and an API response need, so that they are not written as a stream pipeline at every call site:
+
+```java
+ConstraintViolations violations = validated.errors();
+
+// for a form: the messages next to each field, the root being the empty name
+Map<String, List<String>> byName = violations.messagesByName();
+// {"email": ["\"email\" must not be blank"], "items[1].name": ["\"items[1].name\" must not be blank"]}
+
+// the same with JSON Pointers (RFC 6901) as the keys
+Map<String, List<String>> byPointer = violations.messagesByPointer();
+// {"/email": [...], "/items/1/name": [...]}
+
+// for an API response: records that a JSON library serializes as they are
+List<ViolationDetail> details = violations.details();
+// [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
+//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}, ...]
+```
+
+`pointer` is what the `errors[].pointer` of an RFC 9457 problem detail holds; a single violation has it as `violation.pointer()`. `args` ends with the violated value by convention, so map the details to a type of your own if that value must not be sent back.
+
 #### Describing a validator and generating a JSON Schema
 
 A validator describes the input it expects. `description()` returns a read-only tree (`ValueDescription`) of objects with properties, lists, maps, alternatives and values with their constraints, which tools can walk. `JsonSchema` is one consumer.

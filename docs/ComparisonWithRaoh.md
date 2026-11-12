@@ -35,7 +35,7 @@ import am.ik.yavi.validator.Yavi;
 | `decoder.decode(input)` returns `Result<T>` | `validator.validate(input)` returns `Validated<T>` |
 | `Ok(value)` / `Err(issues)` | `Validated.Valid(value)` / `Validated.Invalid(violations)`, a sealed interface |
 | `Issue` (`path`, `code`, `message`, `meta`) | `ConstraintViolation` (`path()` / `name()`, `messageKey()`, `message()`, `args()`) |
-| path `/address/zip`, `/items/1/name` | name `address.zip`, `items[1].name` |
+| path `/address/zip`, `/items/1/name` | `pointer()` `/address/zip`, `/items/1/name`; `name()` `address.zip`, `items[1].name` |
 | `combine(field(...), ...).map(f)` | `Yavi.arguments()._xxx(...).fromMap(f)` (`MapInputValidator<X>`) |
 | `ObjectDecoders` (input `Object`) | `validator.untyped()` |
 | `MapDecoders` / `JsonDecoders` / `JooqRecordDecoders` | `fromMap(f)` / `from(reader, f)` with an `InputReader` |
@@ -667,8 +667,8 @@ ConstraintViolations violations = validated.errors();
 
 | Raoh | YAVI |
 | --- | --- |
-| `issues.flatten()` | `violations.stream().collect(Collectors.groupingBy(ConstraintViolation::name, Collectors.mapping(ConstraintViolation::message, Collectors.toList())))` |
-| `issues.toJsonList()` | `violations.stream().map(v -> Map.of("path", v.name(), "code", v.messageKey(), "message", v.message())).toList()` |
+| `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
+| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`) |
 | `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to
