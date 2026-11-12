@@ -1890,12 +1890,14 @@ fi
   prev_definitions=""
   init_definitions=""
   init_results=""
+  init_arguments=""
   if [ "${i}" -gt 0 ];then
     prev_definitions="$(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done)"
   fi
   if [ "${i}" -gt 1 ];then
     init_definitions="$(for j in `seq 1 $((i - 1))`;do echo -n "this.d${j}, ";done)"
     init_results="$(for j in `seq 1 $((i - 1))`;do echo -n "R${j}, ";done)"
+    init_arguments="$(for j in `seq 1 $((i - 1))`;do echo -n "A${j}, ";done)"
   fi
   file="$(dirname $0)/../src/main/java/am/ik/yavi/builder/${class}.java"
   echo $file
@@ -1968,7 +1970,7 @@ import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
-import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.Validated;'; fi)
+import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
 import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
@@ -1996,7 +1998,8 @@ cat <<EOD
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. {@code optional()},
  * {@code nullable()} and {@code defaultValue} apply to the last added argument and make
- * it accept {@code null}; {@code recover} makes it accept any value.
+ * it accept {@code null}; {@code recover} makes it accept any value, and
+ * {@code presence()} tells an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2034,7 +2037,8 @@ cat <<EOD
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. On the returned builders,
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
- * argument and make it accept {@code null}; {@code recover} makes it accept any value.
+ * argument and make it accept {@code null}; {@code recover} makes it accept any value,
+ * and {@code presence()} tells an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2144,6 +2148,34 @@ $(for j in `seq 1 ${i}`;do echo "		this.d${j} = d${j};";done)
 	 */
 	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
 		return new ${class}<>(${init_definitions}this.d${i}.recoveringWith(fallback));
+	}
+
+	/**
+	 * Tells an absent value of the last added argument from {@code null}, which a
+	 * partial update such as a PATCH request needs to leave a property unchanged or to
+	 * clear it.
+	 *
+	 * <p>
+	 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and
+	 * the argument is not validated, so the key is not required. A key that is present
+	 * is validated as before, an explicit {@code null} included, and its value is
+	 * given as {@link Presence#ofNullable(Object)}: the argument still decides
+	 * whether {@code null} is accepted, with {@code notNull()} or {@code nullable()}.
+	 * A parameter with an empty value, which is read as {@code null}, is present.
+	 *
+	 * <p>
+	 * With {@code apply}, the argument is a {@link Presence} that is validated in the
+	 * same way. This is the last modifier of an argument: {@code optional()},
+	 * {@code nullable()}, {@code defaultValue} and {@code recover} are written before
+	 * it and apply to the value of a key that is present.
+	 * @return a builder whose last argument is a value that may be absent
+	 * @throws IllegalStateException if the argument is added with {@code _embedded} or
+	 * {@code _rest}, or if this is applied twice
+	 * @since 0.18.0
+	 * @see ValueValidator#liftPresence()
+	 */
+	public ${class}<${init_arguments}Presence<A${i}>, ${init_results}Presence<R${i}>> presence() {
+		return new ${class}<>(${init_definitions}this.d${i}.withPresence());
 	}
 EOD
 else
@@ -3474,7 +3506,8 @@ cat <<EOD
 	 * <p>
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
-	 * absent key is validated like {@code null} and an unknown key is ignored; see
+	 * absent key is validated like {@code null}, unless the argument is added with
+	 * {@code presence()}, and an unknown key is ignored; see
 	 * {@link MapInputValidator} for the violations of absent keys and for rejecting
 	 * unknown keys. An {@code _embedded} argument reads the map itself and a
 	 * {@code _rest} argument the keys that no other argument defines. A nested

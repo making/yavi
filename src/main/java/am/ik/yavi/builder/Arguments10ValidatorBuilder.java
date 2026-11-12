@@ -47,6 +47,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function10;
@@ -68,7 +69,8 @@ import am.ik.yavi.input.MapInputValidator;
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. {@code optional()}, {@code nullable()}
  * and {@code defaultValue} apply to the last added argument and make it accept
- * {@code null}; {@code recover} makes it accept any value.
+ * {@code null}; {@code recover} makes it accept any value, and {@code presence()} tells
+ * an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -226,6 +228,34 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			Function<? super ConstraintViolations, ? extends R10> fallback) {
 		return new Arguments10ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 				this.d9, this.d10.recoveringWith(fallback));
+	}
+
+	/**
+	 * Tells an absent value of the last added argument from {@code null}, which a partial
+	 * update such as a PATCH request needs to leave a property unchanged or to clear it.
+	 *
+	 * <p>
+	 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and the
+	 * argument is not validated, so the key is not required. A key that is present is
+	 * validated as before, an explicit {@code null} included, and its value is given as
+	 * {@link Presence#ofNullable(Object)}: the argument still decides whether
+	 * {@code null} is accepted, with {@code notNull()} or {@code nullable()}. A parameter
+	 * with an empty value, which is read as {@code null}, is present.
+	 *
+	 * <p>
+	 * With {@code apply}, the argument is a {@link Presence} that is validated in the
+	 * same way. This is the last modifier of an argument: {@code optional()},
+	 * {@code nullable()}, {@code defaultValue} and {@code recover} are written before it
+	 * and apply to the value of a key that is present.
+	 * @return a builder whose last argument is a value that may be absent
+	 * @throws IllegalStateException if the argument is added with {@code _embedded} or
+	 * {@code _rest}, or if this is applied twice
+	 * @since 0.18.0
+	 * @see ValueValidator#liftPresence()
+	 */
+	public Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, Presence<A10>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Presence<R10>> presence() {
+		return new Arguments10ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+				this.d9, this.d10.withPresence());
 	}
 
 	/**
@@ -1587,14 +1617,14 @@ public final class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * <p>
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
-	 * absent key is validated like {@code null} and an unknown key is ignored; see
-	 * {@link MapInputValidator} for the violations of absent keys and for rejecting
-	 * unknown keys. An {@code _embedded} argument reads the map itself and a
-	 * {@code _rest} argument the keys that no other argument defines. A nested
-	 * {@code _object}, {@code _list} or {@code _map} argument reads a map or a list whose
-	 * content is checked by the {@linkplain ValueValidator#untyped() untyped} counterpart
-	 * of its validator, so a nested object is added with another
-	 * {@code MapInputValidator}.
+	 * absent key is validated like {@code null}, unless the argument is added with
+	 * {@code presence()}, and an unknown key is ignored; see {@link MapInputValidator}
+	 * for the violations of absent keys and for rejecting unknown keys. An
+	 * {@code _embedded} argument reads the map itself and a {@code _rest} argument the
+	 * keys that no other argument defines. A nested {@code _object}, {@code _list} or
+	 * {@code _map} argument reads a map or a list whose content is checked by the
+	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
+	 * nested object is added with another {@code MapInputValidator}.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
 	 * @return a new map input validator

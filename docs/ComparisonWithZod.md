@@ -77,6 +77,7 @@ compiler checks that the arguments match it.
 | `z.record(z.string(), schema)` with a size | `_map(name, valueValidator, c -> c.notEmpty())`, `Yavi._map(valueValidator, c -> ...)` |
 | `.optional()` | `.optional()` (produces `Optional<X>`) |
 | `.nullable()` | `.nullable()` |
+| `.optional()` that rejects `null`, `.nullable().optional()` / `.nullish()` with the two told apart | `.presence()` (produces `Presence<X>`), after `notNull()` or `nullable()` |
 | `.default(value)` | `.defaultValue(value)` |
 | `.catch(value)` | `.recover(value)` (also for `null` and an absent key) |
 | `.catch(ctx => ...)` | `.recoverWith(violations -> ...)` |
@@ -185,6 +186,26 @@ validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and an
 without `notNull()` accept both. Only the violation differs when the argument rejects
 `null`: an absent key is reported with `object.required` and an explicit `null` with the
 violation of the constraint, such as `object.notNull`.
+
+`presence()` tells them apart, for a partial update (PATCH). The argument is a
+`Presence<X>`: `Absent` for an absent key, which is not validated, and otherwise what the
+argument makes of the value, `null` included.
+
+```ts
+const ProfilePatch = z.object({
+  nickname: z.string().max(50).optional(), // undefined or a string
+  bio: z.string().max(500).nullable().optional(), // undefined, null or a string
+});
+```
+
+```java
+record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
+
+MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence()
+        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        .fromMap(ProfilePatch::new);
+```
 
 A value is not required unless a constraint says so. `z.string()` rejects `undefined`,
 whereas `_string("name")` without `notNull()` or `notBlank()` accepts an absent key.

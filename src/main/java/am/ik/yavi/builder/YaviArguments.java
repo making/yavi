@@ -66,7 +66,8 @@ import am.ik.yavi.core.ValueValidator;
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. On the returned builders,
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
- * argument and make it accept {@code null}; {@code recover} makes it accept any value.
+ * argument and make it accept {@code null}; {@code recover} makes it accept any value,
+ * and {@code presence()} tells an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same

@@ -28,6 +28,7 @@ import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
+import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -955,6 +956,86 @@ class MapInputValidatorTest {
 			.containsExactly(tuple("age", "object.type"), tuple("subscribed", "object.type"));
 		assertThatThrownBy(() -> StringCoercion.strict().booleanWords(List.of("on"), List.of("ON")))
 			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	record ProfilePatch(Presence<String> nickname, Presence<String> bio, Presence<Address> address,
+			Presence<Integer> age) {
+	}
+
+	// the arguments of a function are nullable, and a Presence never is
+	@SuppressWarnings("NullAway")
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void absentKeyIsToldFromNull(Model model) {
+		final var arguments = Yavi.arguments()
+			._string("nickname", c -> c.notNull().lessThanOrEqual(5))
+			.presence()
+			._string("bio")
+			.presence()
+			._object("address", addressValidator)
+			.nullable()
+			.presence()
+			._integer("age", c -> c.greaterThanOrEqual(0))
+			.defaultValue(20)
+			.presence();
+		final MapInputValidator<ProfilePatch> validator = arguments.fromMap(ProfilePatch::new)
+			.rejectingUnknownProperties();
+		// an absent key is not validated, so it is not required
+		assertThat(model.validate(validator, input()).value())
+			.isEqualTo(new ProfilePatch(Presence.absent(), Presence.absent(), Presence.absent(), Presence.absent()));
+		// a key that is present is validated as it was before presence(), null included
+		assertThat(
+				model.validate(validator, input("nickname", "yavi", "bio", null, "address", null, "age", null)).value())
+			.isEqualTo(new ProfilePatch(Presence.of("yavi"), Presence.presentNull(), Presence.presentNull(),
+					Presence.of(20)));
+		assertThat(model
+			.validate(validator, input("nickname", null, "bio", "", "address", map("street", "1-2-3"), "age", -1))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("nickname", "object.notNull"), tuple("address.city", "object.required"),
+					tuple("age", "numeric.greaterThanOrEqual"));
+		// a partial update is merged into the current values
+		final ProfilePatch patch = model.validate(validator, input("bio", null, "age", 30)).value();
+		assertThat(patch.nickname().orElse("current")).isEqualTo("current");
+		assertThat(patch.bio().orElse("current")).isNull();
+		assertThat(patch.age().map(age -> age + 1)).isEqualTo(Presence.of(31));
+		final List<@Nullable Object> given = new ArrayList<>();
+		patch.nickname().ifPresent(given::add);
+		patch.bio().ifPresent(given::add);
+		patch.age().ifPresent(given::add);
+		assertThat(given).containsExactly(null, 30);
+		// a parameter with an empty value is present and null
+		assertThat(validator.readingParameters().validated(Map.of("bio", "")).bio()).isEqualTo(Presence.presentNull());
+		// the property is not required, and nullable only if it accepts null
+		assertThat(JsonSchema.toJson(validator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"nickname":{"type":"string","maxLength":5},\
+				"bio":{"type":["string","null"]},\
+				"address":{"type":["object","null"],"properties":{"street":{"type":"string","minLength":1},\
+				"city":{"type":"string","minLength":1}},"required":["street","city"],"additionalProperties":false},\
+				"age":{"type":["integer","null"],"minimum":0,"default":20}},\
+				"additionalProperties":false}""");
+		// typed arguments are given the three states
+		final var typed = arguments.apply(ProfilePatch::new);
+		assertThat(typed.validated(Presence.of("yavi"), Presence.presentNull(), null, Presence.absent())).isEqualTo(
+				new ProfilePatch(Presence.of("yavi"), Presence.presentNull(), Presence.absent(), Presence.absent()));
+		assertThat(
+				typed.validate(Presence.presentNull(), Presence.absent(), Presence.absent(), Presence.of(-1)).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("nickname", "age");
+		// a part defined without the builders
+		final MapInputValidator<Object> bio = MapInputValidator.of(
+				List.of(new MapInputValidator.PresenceProperty<>("bio",
+						StringValidatorBuilder.of("bio", c -> c.notBlank()).build().liftPresence().untyped())),
+				values -> values.get(0));
+		assertThat(model.validate(bio, input()).value()).isEqualTo(Presence.absent());
+		assertThat(model.validate(bio, input("bio", null)).errors()).extracting(ConstraintViolation::name)
+			.containsExactly("bio");
+		// another modifier would apply to the Presence, and only a key can be absent
+		assertThatThrownBy(() -> Yavi.arguments()._string("bio").presence().nullable())
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("presence() is the last modifier");
+		assertThatThrownBy(() -> Yavi.arguments()._embedded(addressValidator).presence())
+			.isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test
