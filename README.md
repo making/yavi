@@ -494,7 +494,13 @@ MapInputValidator<User> userValidator = Yavi.arguments()
         ._string("nickname").optional()
         .fromMap(User::new);
 
-Map<String, Object> map = objectMapper.readValue(json, new TypeReference<>() {});
+Map<String, Object> map = Map.of(
+        "email", "jd@example.com",
+        "age", 30,
+        "role", "ADMIN",
+        "birthday", "2000-01-01",
+        "address", Map.of("street", "1-2-3", "city", "Tokyo"),
+        "tags", List.of("java", "yavi"));
 Validated<User> validated = userValidator.validate(map);
 ```
 
