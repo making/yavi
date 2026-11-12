@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function16;
 import am.ik.yavi.fn.Validations;
@@ -163,7 +164,9 @@ public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 *
 	 * <p>
 	 * All violations are accumulated and the function is applied only when every
-	 * validation succeeds.
+	 * validation succeeds. The validator describes its arguments as
+	 * {@link ValueDescription.Properties} with one property per argument, named as
+	 * {@link ValueDescription.Properties#ofArguments} states.
 	 * @param f the function that combines the validated values
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 16 arguments
@@ -207,6 +210,14 @@ public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 						v12.validate(a12, locale, constraintContext), v13.validate(a13, locale, constraintContext),
 						v14.validate(a14, locale, constraintContext), v15.validate(a15, locale, constraintContext),
 						v16.validate(a16, locale, constraintContext));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
+						v4.description(), v5.description(), v6.description(), v7.description(), v8.description(),
+						v9.description(), v10.description(), v11.description(), v12.description(), v13.description(),
+						v14.description(), v15.description(), v16.description());
 			}
 		};
 	}

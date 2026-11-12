@@ -53,7 +53,7 @@ public class BigIntegerValidator<T> extends DefaultArguments1Validator<BigIntege
 	 */
 	public BigIntegerValidator(Validator<Arguments1<BigInteger>> validator,
 			Function1<? super BigInteger, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, BigInteger.class);
 	}
 
 }

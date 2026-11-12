@@ -51,7 +51,7 @@ public class BooleanValidator<T> extends DefaultArguments1Validator<Boolean, T> 
 	 * @param mapper the function applied to the validated value
 	 */
 	public BooleanValidator(Validator<Arguments1<Boolean>> validator, Function1<? super Boolean, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Boolean.class);
 	}
 
 }

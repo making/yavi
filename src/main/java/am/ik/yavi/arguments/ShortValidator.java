@@ -51,7 +51,7 @@ public class ShortValidator<T> extends DefaultArguments1Validator<Short, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public ShortValidator(Validator<Arguments1<Short>> validator, Function1<? super Short, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Short.class);
 	}
 
 }

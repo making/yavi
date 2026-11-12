@@ -51,7 +51,7 @@ public class FloatValidator<T> extends DefaultArguments1Validator<Float, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public FloatValidator(Validator<Arguments1<Float>> validator, Function1<? super Float, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Float.class);
 	}
 
 }

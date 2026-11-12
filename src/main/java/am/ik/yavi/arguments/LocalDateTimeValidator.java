@@ -53,7 +53,7 @@ public class LocalDateTimeValidator<T> extends DefaultArguments1Validator<LocalD
 	 */
 	public LocalDateTimeValidator(Validator<Arguments1<LocalDateTime>> validator,
 			Function1<? super LocalDateTime, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, LocalDateTime.class);
 	}
 
 }

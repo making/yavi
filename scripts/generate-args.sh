@@ -609,6 +609,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
@@ -631,6 +632,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
@@ -679,7 +681,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 
 	/**
 	 * Returns an {@link Arguments1Validator} that delegates to the given
-	 * {@link ValueValidator}.
+	 * {@link ValueValidator} and keeps its description.
 	 *
 	 * @param valueValidator the value validator to delegate to
 	 * @param <A1> the type of the argument
@@ -688,7 +690,17 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	 * @since 0.8.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
-		return valueValidator::validate;
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return valueValidator.validate(a1, locale, constraintContext);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return valueValidator.description();
+			}
+		};
 	}
 
 	/**
@@ -715,6 +727,11 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			@Override
 			public Arguments1Validator<A1, Supplier<X>> lazy() {
 				return Arguments1Validator.unwrap(validator.lazy());
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
 			}
 		};
 	}
@@ -748,6 +765,11 @@ $(for j in `seq 1 ${i}`; do echo "	 * @param <A${j}> the type of the argument at
 			@Override
 			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
 				return ${class}.unwrap(validator.lazy());
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
 			}
 		};
 	}
@@ -811,6 +833,11 @@ fi)
 			public Arguments1Validator<${wrapArguments}, Supplier<X>> lazy() {
 				return ${class}.this.lazy().wrap();
 			}
+
+			@Override
+			public ValueDescription description() {
+				return ${class}.this.description();
+			}
 		};
 	}
 
@@ -849,6 +876,11 @@ fi)
 				return ${class}.this.lazy()
 					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
+
+			@Override
+			public ValueDescription description() {
+				return ${class}.this.description();
+			}
 		};
 	}
 
@@ -878,6 +910,11 @@ fi)
 				return ${class}.this.lazy().andThen((xSupplier, locale, constraintContext) -> validator
 					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
 					.map(x2 -> () -> x2));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return ${class}.this.description();
 			}
 		};
 	}
@@ -910,6 +947,17 @@ fi)
 	 *
 	 * <p>
 	 * The function is not validated; its result is passed to this validator.
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+	 * The {@linkplain #description() description} of the new validator is unknown
+	 * because the input changes.
+EOD
+else
+cat <<EOD
+	 * The new validator keeps the {@linkplain #description() description} of this
+	 * validator: its input is the object that provides the arguments.
+EOD
+fi)
 	 *
 	 * @param mapper the function that converts the input of the new validator
 	 * @param <A> the input type of the new validator
@@ -948,10 +996,65 @@ cat <<EOD
 			public Arguments1Validator<A, Supplier<X>> lazy() {
 				return ${class}.this.lazy().compose(mapper);
 			}
+
+			@Override
+			public ValueDescription description() {
+				return ${class}.this.description();
+			}
 		};
 	}
 EOD
 fi)
+$(if [ "${i}" != "1" ];then
+cat <<EOD
+	/**
+	 * Returns a description of the arguments that this validator expects.
+	 *
+	 * <p>
+	 * A validator created by an {@code ArgumentsNValidatorBuilder} is described as
+	 * {@link ValueDescription.Properties} with one property per argument. The default
+	 * implementation returns {@link ValueDescription.Unknown}. {@link #map},
+	 * {@link #andThen(ValueValidator)}, {@link #constraintOnTarget}, {@link #wrap} and
+	 * {@link #compose} keep the description.
+	 *
+	 * @return the description of the arguments
+	 * @since 0.18.0
+	 * @see #describedAs(ValueDescription)
+	 */
+	default ValueDescription description() {
+		return new ValueDescription.Unknown();
+	}
+
+EOD
+fi)
+	/**
+	 * Returns a validator that validates like this validator and describes its
+	 * argument${argument_suffix} with the given description.
+	 *
+	 * @param description the description of the argument${argument_suffix}
+	 * @return a validator with the given description
+	 * @since 0.18.0
+	 * @see #description()
+	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
+	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> describedAs(ValueDescription description) {
+		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X>() {
+			@Override
+			public Validated<X> validate(${args}, Locale locale, ConstraintContext constraintContext) {
+				return ${class}.this.validate(${as}, locale, constraintContext);
+			}
+
+			@Override
+			public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
+				return ${class}.this.lazy().describedAs(description);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description;
+			}
+		};
+	}
+
 $(cat <<EOD
 	/**
 	 * Returns a validator that produces a {@link Supplier} of the validated value.
@@ -1105,8 +1208,7 @@ cat <<EOD
 	 */
 	@Override
 	default Arguments1Validator<A1, X> indexed(int index) {
-		return (a1, locale, constraintContext) -> Arguments1Validator.this
-				.validate(a1, locale, constraintContext).indexed(index);
+		return Arguments1Validator.from(ValueValidator.super.indexed(index));
 	}
 
 	/**
@@ -1186,6 +1288,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+$(if [ "${i}" == "1" ];then echo "import am.ik.yavi.core.ValueDescription;"; fi)
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function${i};
 import org.jspecify.annotations.Nullable;
@@ -1213,6 +1316,12 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 	/** The mapper applied to the validated arguments. */
 	protected final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
 
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+	private final Class<?> valueType;
+
+EOD
+fi)
 	/**
 	 * Creates a validator that applies the given validator to an {@link Arguments${i}}
 	 * built from the arguments and maps the validated arguments with the given function.
@@ -1221,9 +1330,46 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 	 * @param mapper the mapper applied to the validated arguments
 	 */
 	public ${class}(Validator<${arguments}> validator, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
+$(if [ "${i}" == "1" ];then
+cat <<EOD
+		this(validator, mapper, Object.class);
+	}
+
+	/**
+	 * Creates a validator like
+	 * {@link #DefaultArguments1Validator(Validator, Function1)} that also knows the raw
+	 * type of the argument, which is reported by {@link #description()}.
+	 *
+	 * @param validator the validator applied to the argument
+	 * @param mapper the mapper applied to the validated argument
+	 * @param valueType the raw type of the argument
+	 * @since 0.18.0
+	 */
+	protected ${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<?> valueType) {
+		this.validator = validator;
+		this.mapper = mapper;
+		this.valueType = valueType;
+	}
+
+	/**
+	 * Describes the argument as a {@link ValueDescription.Value} with its raw type and
+	 * the constraints of the validator.
+	 *
+	 * @return the description of the argument
+	 * @since 0.18.0
+	 */
+	@Override
+	public ValueDescription description() {
+		return ValueDescription.Value.of(this.valueType, this.validator);
+	}
+EOD
+else
+cat <<EOD
 		this.validator = validator;
 		this.mapper = mapper;
 	}
+EOD
+fi)
 
 	/**
 	 * Returns a validator that produces a {@link Supplier} of the mapped value.
@@ -1233,7 +1379,7 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 	 */
 	@Override
 	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')));
+		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'))$(if [ "${i}" == "1" ];then echo -n ", this.valueType"; fi));
 	}
 
 	/**
@@ -1273,6 +1419,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.fn.Validations;
@@ -1315,6 +1462,9 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	 * <p>
 	 * All violations are accumulated and the function is applied only when every
 	 * validation succeeds.
+	 * The validator describes its arguments as
+	 * {@link ValueDescription.Properties} with one property per argument, named as
+	 * {@link ValueDescription.Properties#ofArguments} states.
 	 *
 	 * @param f the function that combines the validated values
 	 * @param <X> the type of the value produced by the function
@@ -1336,6 +1486,11 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 					ConstraintContext constraintContext) {
 				return Validations.apply(f::apply,
 						$(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//'));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return ValueDescription.Properties.ofArguments($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.description(), ";done) | sed 's/,$//'));
 			}
 		};
 	}
@@ -1903,7 +2058,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1953,7 +2108,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2003,7 +2158,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2053,7 +2208,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2105,7 +2260,7 @@ cat <<EOD
 	 */
 	public <E extends Enum<E>> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Enum.class, EnumValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, EnumValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2156,7 +2311,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2206,7 +2361,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2256,7 +2411,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2306,7 +2461,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2356,7 +2511,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2406,7 +2561,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2456,7 +2611,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2508,7 +2663,7 @@ cat <<EOD
 	 */
 	public <T> ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Object.class, ObjectValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, ObjectValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2559,7 +2714,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2609,7 +2764,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2659,7 +2814,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2709,7 +2864,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2759,7 +2914,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2809,7 +2964,7 @@ cat <<EOD
 	 */
 	public ${next_class}<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}<>(${prev_definitions}ArgumentDefinition.value(name, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2901,14 +3056,18 @@ cat <<EOD
 	 * function.
 	 *
 	 * <p>
-	 * The function is applied only when all arguments are valid.
+	 * The function is applied only when all arguments are valid. The validator describes
+	 * its arguments as {@link am.ik.yavi.core.ValueDescription.Properties} with one
+	 * property per argument; an argument added without a name is named as
+	 * {@link am.ik.yavi.core.ValueDescription.Properties#ofArguments} states.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
 	 * @return a new arguments validator
 	 * @since 0.14.0
 	 */
 	public <X> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
-		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.validator(), ";done) | sed 's/,$//')).apply(f);
+		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.validator(), ";done) | sed 's/,$//')).<X>apply(f)
+			.describedAs(ArgumentDefinition.describe($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done) | sed 's/,$//')));
 	}
 EOD
 fi)

@@ -19,6 +19,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
@@ -63,7 +64,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
 	 * Returns an {@link Arguments1Validator} that delegates to the given
-	 * {@link ValueValidator}.
+	 * {@link ValueValidator} and keeps its description.
 	 * @param valueValidator the value validator to delegate to
 	 * @param <A1> the type of the argument
 	 * @param <X> the type of the value produced on success
@@ -71,7 +72,17 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.8.0
 	 */
 	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
-		return valueValidator::validate;
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return valueValidator.validate(a1, locale, constraintContext);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return valueValidator.description();
+			}
+		};
 	}
 
 	/**
@@ -97,6 +108,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public Arguments1Validator<A1, Supplier<X>> lazy() {
 				return Arguments1Validator.unwrap(validator.lazy());
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
 			}
 		};
 	}
@@ -134,6 +150,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public Arguments1Validator<Arguments1<A1>, Supplier<X>> lazy() {
 				return Arguments1Validator.this.lazy().wrap();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
 			}
 		};
 	}
@@ -173,6 +194,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 				return Arguments1Validator.this.lazy()
 					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
+			}
 		};
 	}
 
@@ -204,6 +230,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
 						.map(x2 -> () -> x2));
 			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
+			}
 		};
 	}
 
@@ -234,7 +265,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * validating it.
 	 *
 	 * <p>
-	 * The function is not validated; its result is passed to this validator.
+	 * The function is not validated; its result is passed to this validator. The
+	 * {@linkplain #description() description} of the new validator is unknown because the
+	 * input changes.
 	 * @param mapper the function that converts the input of the new validator
 	 * @param <A> the input type of the new validator
 	 * @return a validator with the adapted input type
@@ -252,6 +285,34 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
 				return Arguments1Validator.this.lazy().compose(mapper);
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates like this validator and describes its argument
+	 * with the given description.
+	 * @param description the description of the argument
+	 * @return a validator with the given description
+	 * @since 0.18.0
+	 * @see #description()
+	 */
+	@Override
+	default Arguments1Validator<A1, X> describedAs(ValueDescription description) {
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return Arguments1Validator.this.validate(a1, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return Arguments1Validator.this.lazy().describedAs(description);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description;
 			}
 		};
 	}
@@ -391,8 +452,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	@Override
 	default Arguments1Validator<A1, X> indexed(int index) {
-		return (a1, locale, constraintContext) -> Arguments1Validator.this.validate(a1, locale, constraintContext)
-			.indexed(index);
+		return Arguments1Validator.from(ValueValidator.super.indexed(index));
 	}
 
 	/**

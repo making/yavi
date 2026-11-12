@@ -12,12 +12,14 @@ import java.util.Optional;
 
 import am.ik.yavi.arguments.Arguments;
 import am.ik.yavi.arguments.Arguments7Validator;
-import am.ik.yavi.builder.ArgumentDefinition.Kind;
+import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.jsonschema.JsonSchema;
 import am.ik.yavi.validator.Yavi;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -121,18 +123,56 @@ class YaviArgumentsTest {
 	}
 
 	@Test
-	void definitionsDescribeTheArguments() {
-		final Arguments8ValidatorBuilder<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> extended = builder
-			._string(StringValidatorBuilder.of("unnamed", c -> c.notBlank()).build());
-		assertThat(List.of(extended.d1, extended.d2, extended.d3, extended.d4, extended.d5, extended.d6, extended.d7,
-				extended.d8))
-			.extracting(ArgumentDefinition::name, ArgumentDefinition::kind, ArgumentDefinition::type,
-					ArgumentDefinition::optional)
-			.containsExactly(tuple("contact", Kind.OBJECT, Object.class, false),
-					tuple("nickname", Kind.VALUE, String.class, true), tuple("age", Kind.VALUE, Integer.class, true),
-					tuple("address", Kind.OBJECT, Object.class, false),
-					tuple("billing", Kind.OBJECT, Object.class, true), tuple("roles", Kind.LIST, List.class, false),
-					tuple("scores", Kind.MAP, Map.class, false), tuple(null, Kind.VALUE, String.class, false));
+	void descriptionDescribesTheArguments() {
+		final ConstraintDescription notBlank = new ConstraintDescription("charSequence.notBlank", List.of(), true);
+		final ConstraintDescription notNegative = new ConstraintDescription("numeric.greaterThanOrEqual", List.of(0),
+				false);
+		final ValueDescription address = new ValueDescription.NotNull(new ValueDescription.Properties(List.of(
+				new ValueDescription.Property("street",
+						new ValueDescription.Value("street", String.class, List.of(notBlank))),
+				new ValueDescription.Property("city",
+						new ValueDescription.Value("city", String.class, List.of(notBlank))))));
+		// constraintOnTarget keeps the description and is not part of it
+		assertThat(validator.description()).isEqualTo(
+				new ValueDescription.Properties(List.of(
+						new ValueDescription.Property("contact",
+								new ValueDescription.NotNull(new ValueDescription.AnyOf(List.of(
+										new ValueDescription.Value("", String.class,
+												List.of(new ConstraintDescription("charSequence.email", List.of(),
+														false))),
+										new ValueDescription.Value("", String.class,
+												List.of(new ConstraintDescription("charSequence.pattern",
+														List.of("[0-9]{10,11}"), false))))))),
+						new ValueDescription.Property("nickname",
+								new ValueDescription.Optional(
+										new ValueDescription.Value("nickname", String.class, List.of(notBlank)), null)),
+						new ValueDescription.Property("age",
+								new ValueDescription.Optional(new ValueDescription.Value("age", Integer.class,
+										List.of(new ConstraintDescription("object.notNull", List.of(), true),
+												notNegative)),
+										20)),
+						new ValueDescription.Property("address", address),
+						new ValueDescription.Property("billing", new ValueDescription.Optional(address, null)),
+						new ValueDescription.Property("roles",
+								new ValueDescription.NotNull(new ValueDescription.Elements(
+										new ValueDescription.Value("", String.class, List.of(notBlank))))),
+						new ValueDescription.Property("scores",
+								new ValueDescription.NotNull(new ValueDescription.Entries(
+										new ValueDescription.Value("", Integer.class, List.of(notNegative))))))));
+		final String addressSchema = """
+				"properties":{"street":{"type":"string","minLength":1},"city":{"type":"string","minLength":1}},\
+				"required":["street","city"]}""";
+		assertThat(JsonSchema.toJson(validator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"contact":{"anyOf":[{"type":"string","format":"email"},\
+				{"type":"string","pattern":"^(?:[0-9]{10,11})$"}]},\
+				"nickname":{"type":["string","null"],"minLength":1},\
+				"age":{"type":["integer","null"],"minimum":0,"default":20},\
+				"address":{"type":"object",%s,\
+				"billing":{"type":["object","null"],%s,\
+				"roles":{"type":"array","items":{"type":"string","minLength":1}},\
+				"scores":{"type":"object","additionalProperties":{"type":["integer","null"],"minimum":0}}},\
+				"required":["contact","address","roles","scores"]}""".formatted(addressSchema, addressSchema));
 	}
 
 }

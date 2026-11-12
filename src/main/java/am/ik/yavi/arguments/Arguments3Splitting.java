@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function3;
 import am.ik.yavi.fn.Validations;
@@ -65,7 +66,9 @@ public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
 	 *
 	 * <p>
 	 * All violations are accumulated and the function is applied only when every
-	 * validation succeeds.
+	 * validation succeeds. The validator describes its arguments as
+	 * {@link ValueDescription.Properties} with one property per argument, named as
+	 * {@link ValueDescription.Properties#ofArguments} states.
 	 * @param f the function that combines the validated values
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 3 arguments
@@ -85,6 +88,11 @@ public class Arguments3Splitting<A1, A2, A3, R1, R2, R3> {
 					ConstraintContext constraintContext) {
 				return Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
 						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description());
 			}
 		};
 	}

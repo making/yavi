@@ -53,7 +53,7 @@ public class BigDecimalValidator<T> extends DefaultArguments1Validator<BigDecima
 	 */
 	public BigDecimalValidator(Validator<Arguments1<BigDecimal>> validator,
 			Function1<? super BigDecimal, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, BigDecimal.class);
 	}
 
 }

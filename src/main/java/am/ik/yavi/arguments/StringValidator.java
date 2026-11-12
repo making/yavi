@@ -51,7 +51,7 @@ public class StringValidator<T> extends DefaultArguments1Validator<String, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, String.class);
 	}
 
 }

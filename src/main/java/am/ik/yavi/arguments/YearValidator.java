@@ -52,7 +52,7 @@ public class YearValidator<T> extends DefaultArguments1Validator<Year, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public YearValidator(Validator<Arguments1<Year>> validator, Function1<? super Year, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Year.class);
 	}
 
 }

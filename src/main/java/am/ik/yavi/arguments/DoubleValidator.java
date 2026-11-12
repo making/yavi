@@ -51,7 +51,7 @@ public class DoubleValidator<T> extends DefaultArguments1Validator<Double, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public DoubleValidator(Validator<Arguments1<Double>> validator, Function1<? super Double, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Double.class);
 	}
 
 }

@@ -33,7 +33,8 @@ import java.util.function.Supplier;
  * accepted with {@link #optional()}, {@link #nullable()} or
  * {@link #defaultValue(Object)}, alternatives are combined with
  * {@link #anyOf(ValueValidator[])}, and a rule that spans several properties of the
- * produced value is added with {@link #constraintOnTarget}. The generated
+ * produced value is added with {@link #constraintOnTarget}. What a validator expects as
+ * input is available from {@link #description()}; the combinators carry it. The generated
  * {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this interface to
  * validate constructor arguments and create only valid objects.
  *
@@ -59,6 +60,45 @@ public interface ValueValidator<T, X> {
 	 * @return the validated value or the constraint violations
 	 */
 	Validated<X> validate(@Nullable T t, Locale locale, ConstraintContext constraintContext);
+
+	/**
+	 * Returns a description of the input that this validator expects.
+	 *
+	 * <p>
+	 * The default implementation returns {@link ValueDescription.Unknown}, which is what
+	 * a lambda is described as. The validators created by the builders describe
+	 * themselves, and the combinators of this interface carry the description:
+	 * {@link #map(Function)}, {@link #andThen(ValueValidator)},
+	 * {@link #constraintOnTarget}, {@link #indexed(int)} and {@link #prefixed(String)}
+	 * keep it because they do not change the input, the {@code lift*} methods,
+	 * {@link #optional()}, {@link #nullable()}, {@link #defaultValue(Object)} and
+	 * {@link #anyOf(ValueValidator[])} wrap it, and {@link #compose(Function)} resets it
+	 * to unknown because it changes the input.
+	 * @return the description of the input
+	 * @since 0.18.0
+	 * @see #describedAs(ValueDescription)
+	 */
+	default ValueDescription description() {
+		return new ValueDescription.Unknown();
+	}
+
+	/**
+	 * Returns a validator that validates like this validator and describes its input with
+	 * the given description. This is the way to describe a lambda or the result of
+	 * {@link #compose(Function)}.
+	 * @param description the description of the input
+	 * @return a value validator with the given description
+	 * @since 0.18.0
+	 * @see #description()
+	 */
+	default ValueValidator<T, X> describedAs(ValueDescription description) {
+		return new DescribedValueValidator<>(this, () -> description);
+	}
+
+	private static <T, X> ValueValidator<T, X> described(ValueValidator<T, X> validator,
+			Supplier<ValueDescription> description) {
+		return new DescribedValueValidator<>(validator, description);
+	}
 
 	/**
 	 * Returns a validator that always succeeds and returns the input unchanged.
@@ -90,7 +130,8 @@ public interface ValueValidator<T, X> {
 	 * @since 0.17.0
 	 */
 	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
-		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext).map(mapper);
+		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.map(mapper), this::description);
 	}
 
 	/**
@@ -103,13 +144,15 @@ public interface ValueValidator<T, X> {
 	 * @since 0.11.0
 	 */
 	default <X2> ValueValidator<T, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.flatMap(v -> validator.validate(v, locale, constraintContext));
+		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.flatMap(v -> validator.validate(v, locale, constraintContext)), this::description);
 	}
 
 	/**
 	 * Returns a validator that applies the given function to the input before validating
-	 * it. The function is not validated and its result is passed to this validator.
+	 * it. The function is not validated and its result is passed to this validator. The
+	 * {@linkplain #description() description} of the new validator is unknown because the
+	 * input changes.
 	 * @param mapper function that converts the input of the new validator
 	 * @param <A> the input type of the new validator
 	 * @return a value validator with the adapted input type
@@ -134,8 +177,10 @@ public interface ValueValidator<T, X> {
 	 * @see #defaultValue(Object)
 	 */
 	default ValueValidator<T, Optional<X>> optional() {
-		return (t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
-				: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable);
+		return described(
+				(t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
+						: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable),
+				() -> new ValueDescription.Optional(this.description(), null));
 	}
 
 	/**
@@ -151,8 +196,10 @@ public interface ValueValidator<T, X> {
 	 * @see #optional()
 	 */
 	default ValueValidator<T, X> nullable() {
-		return (t, locale, constraintContext) -> t == null ? Validated.successWith(null)
-				: ValueValidator.this.validate(t, locale, constraintContext);
+		return described(
+				(t, locale, constraintContext) -> t == null ? Validated.successWith(null)
+						: ValueValidator.this.validate(t, locale, constraintContext),
+				() -> new ValueDescription.Optional(this.description(), null));
 	}
 
 	/**
@@ -167,8 +214,10 @@ public interface ValueValidator<T, X> {
 	 * @since 0.18.0
 	 */
 	default ValueValidator<T, X> defaultValue(X defaultValue) {
-		return (t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
-				: ValueValidator.this.validate(t, locale, constraintContext);
+		return described(
+				(t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
+						: ValueValidator.this.validate(t, locale, constraintContext),
+				() -> new ValueDescription.Optional(this.description(), defaultValue));
 	}
 
 	/**
@@ -193,7 +242,7 @@ public interface ValueValidator<T, X> {
 			throw new IllegalArgumentException("'validators' must not be empty.");
 		}
 		final List<ValueValidator<? super T, ? extends X>> alternatives = List.of(validators);
-		return (t, locale, constraintContext) -> {
+		return described((t, locale, constraintContext) -> {
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
 				final Validated<? extends X> validated = alternative.validate(t, locale, constraintContext);
@@ -212,7 +261,7 @@ public interface ValueValidator<T, X> {
 						.locale(locale)
 						.build());
 			return Validated.failureWith(violations);
-		};
+		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()));
 	}
 
 	/**
@@ -328,8 +377,8 @@ public interface ValueValidator<T, X> {
 	 * @since 0.8.0
 	 */
 	default ValueValidator<T, X> indexed(int index) {
-		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.indexed(index);
+		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.indexed(index), this::description);
 	}
 
 	/**
@@ -342,8 +391,8 @@ public interface ValueValidator<T, X> {
 	 * @see ConstraintViolation#prefixed(String)
 	 */
 	default ValueValidator<T, X> prefixed(String name) {
-		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.prefixed(name);
+		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+			.prefixed(name), this::description);
 	}
 
 	/**
@@ -356,8 +405,7 @@ public interface ValueValidator<T, X> {
 	 * @return a value validator for iterables
 	 */
 	default <C extends Collection<X>> ValueValidator<Iterable<T>, C> liftCollection(Supplier<C> factory) {
-		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
-				(v, index) -> this.indexed(index).validate(v, locale, constraintContext), factory);
+		return ValueValidator.liftCollection(this, factory);
 	}
 
 	/**
@@ -390,7 +438,7 @@ public interface ValueValidator<T, X> {
 	 * @since 0.18.0
 	 */
 	default ValueValidator<Map<String, T>, Map<String, X>> liftMap() {
-		return (values, locale, constraintContext) -> {
+		return described((values, locale, constraintContext) -> {
 			final Map<String, X> results = new LinkedHashMap<>();
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			if (values != null) {
@@ -405,7 +453,7 @@ public interface ValueValidator<T, X> {
 				});
 			}
 			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
-		};
+		}, () -> new ValueDescription.Entries(this.description()));
 	}
 
 	/**
@@ -432,8 +480,10 @@ public interface ValueValidator<T, X> {
 	 */
 	static <A1, R, C extends Collection<R>> ValueValidator<Iterable<A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
-		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
-				(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory);
+		return described(
+				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
+						(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory),
+				() -> new ValueDescription.Elements(validator.description()));
 	}
 
 	/**
@@ -478,8 +528,10 @@ public interface ValueValidator<T, X> {
 	 */
 	static <A1, R> ValueValidator<Optional<A1>, Optional<R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
-		return (value, locale, constraintContext) -> Validated.traverseOptional(value,
-				v -> validator.validate(v, locale, constraintContext));
+		return described(
+				(value, locale, constraintContext) -> Validated.traverseOptional(value,
+						v -> validator.validate(v, locale, constraintContext)),
+				() -> new ValueDescription.Optional(validator.description(), null));
 	}
 
 	/**

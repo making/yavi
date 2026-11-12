@@ -53,7 +53,7 @@ public class ZonedDateTimeValidator<T> extends DefaultArguments1Validator<ZonedD
 	 */
 	public ZonedDateTimeValidator(Validator<Arguments1<ZonedDateTime>> validator,
 			Function1<? super ZonedDateTime, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, ZonedDateTime.class);
 	}
 
 }

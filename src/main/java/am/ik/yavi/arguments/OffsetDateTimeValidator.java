@@ -53,7 +53,7 @@ public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<Offse
 	 */
 	public OffsetDateTimeValidator(Validator<Arguments1<OffsetDateTime>> validator,
 			Function1<? super OffsetDateTime, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, OffsetDateTime.class);
 	}
 
 }

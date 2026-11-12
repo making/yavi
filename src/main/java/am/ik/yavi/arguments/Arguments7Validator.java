@@ -14,6 +14,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
@@ -83,6 +84,11 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy() {
 				return Arguments7Validator.unwrap(validator.lazy());
 			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
 		};
 	}
 
@@ -129,6 +135,11 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 			public Arguments1Validator<Arguments7<A1, A2, A3, A4, A5, A6, A7>, Supplier<X>> lazy() {
 				return Arguments7Validator.this.lazy().wrap();
 			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments7Validator.this.description();
+			}
 		};
 	}
 
@@ -169,6 +180,11 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 				return Arguments7Validator.this.lazy()
 					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
 			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments7Validator.this.description();
+			}
 		};
 	}
 
@@ -201,6 +217,11 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
 						.map(x2 -> () -> x2));
 			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments7Validator.this.description();
+			}
 		};
 	}
 
@@ -230,7 +251,9 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 	 * validating it.
 	 *
 	 * <p>
-	 * The function is not validated; its result is passed to this validator.
+	 * The function is not validated; its result is passed to this validator. The new
+	 * validator keeps the {@linkplain #description() description} of this validator: its
+	 * input is the object that provides the arguments.
 	 * @param mapper the function that converts the input of the new validator
 	 * @param <A> the input type of the new validator
 	 * @return a validator with the adapted input type
@@ -250,6 +273,57 @@ public interface Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> {
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
 				return Arguments7Validator.this.lazy().compose(mapper);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments7Validator.this.description();
+			}
+		};
+	}
+
+	/**
+	 * Returns a description of the arguments that this validator expects.
+	 *
+	 * <p>
+	 * A validator created by an {@code ArgumentsNValidatorBuilder} is described as
+	 * {@link ValueDescription.Properties} with one property per argument. The default
+	 * implementation returns {@link ValueDescription.Unknown}. {@link #map},
+	 * {@link #andThen(ValueValidator)}, {@link #constraintOnTarget}, {@link #wrap} and
+	 * {@link #compose} keep the description.
+	 * @return the description of the arguments
+	 * @since 0.18.0
+	 * @see #describedAs(ValueDescription)
+	 */
+	default ValueDescription description() {
+		return new ValueDescription.Unknown();
+	}
+
+	/**
+	 * Returns a validator that validates like this validator and describes its arguments
+	 * with the given description.
+	 * @param description the description of the arguments
+	 * @return a validator with the given description
+	 * @since 0.18.0
+	 * @see #description()
+	 */
+	default Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> describedAs(ValueDescription description) {
+		return new Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, Locale locale,
+					ConstraintContext constraintContext) {
+				return Arguments7Validator.this.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy() {
+				return Arguments7Validator.this.lazy().describedAs(description);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description;
 			}
 		};
 	}

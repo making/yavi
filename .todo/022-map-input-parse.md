@@ -101,24 +101,33 @@ Schema<Map<String, Object>, Shape> shapeSchema =
   `ValueValidator.prefixed(name)` are the public path-aware prefix operations.
 - Every generated `ArgumentsNValidatorBuilder` keeps one package-private
   `am.ik.yavi.builder.ArgumentDefinition` per argument (`d1` ... `dN`): `name` (`null`
-  for `_xxx(ValueValidator)`), `kind` (`VALUE` / `OBJECT` / `LIST` / `MAP`), `type` (the
-  raw argument type known from the builder method: `String.class` for `_string`,
-  `List.class` for `_list`, `Object.class` when unknown) and `optional`. This is what a
-  map-input terminal on the builder needs to look up each key, check its type and accept
-  an absent key. It is package-private on purpose: reshape it freely.
-- Not provided: the element type of `_list` / `_map` and the type of `_object` /
-  `_enum` arguments are unknown to the definition (`type` is the container or
-  `Object`). Checking them against untyped input needs either a type token on those
-  builder methods or element validators that accept `Object` and check the type
-  themselves. An unnamed argument cannot be read from a map; reject it when the
-  map-input validator is created.
+  for `_xxx(ValueValidator)`) and `validator`. Everything else is the description of the
+  validator (see "What 025 provides").
+
+## What 025 provides
+
+- `ValueValidator.description()` and `ArgumentsNValidator.description()` return an
+  `am.ik.yavi.core.ValueDescription`: `Value(name, type, constraints)`,
+  `Properties(List<Property(name, value)>)`, `Elements(element)`, `Entries(value)`,
+  `AnyOf(alternatives)`, `NotNull(value)`, `Optional(value, defaultValue)` and
+  `Unknown`. `acceptsNull()` tells whether a key may be absent.
+- A validator built by `ArgumentsNValidatorBuilder.apply(...)` or
+  `ArgumentsValidators.split(...).apply(...)` is `Properties`, one property per argument
+  in order. `ArgumentsNValidator.compose` keeps it, so a nested `_object(name, validator)`
+  shows its properties; `_list` / `_map` show the element description.
+- Every property has a name. An argument added without a name takes the name of its
+  value validator (`Value.name()`), or `argN` if that is unknown; decide whether the
+  map-input terminal accepts `argN` or rejects it.
+- `Value.type()` is the raw type known to the typed validator (`String.class` for
+  `_string`); it is `Enum.class` for `_enum` and `Object.class` for `_object(name,
+  constraints)`, and a lambda is `Unknown`. Checking those against untyped input still
+  needs a type token or a validator that accepts `Object`.
+- `am.ik.yavi.jsonschema.JsonSchema` is the first consumer and shows how to walk the
+  tree.
 
 ## Notes
 
 - Depends on 021 (done).
-- Do 025 first. It turns the per-argument metadata into a public description that
-  travels with the validators and knows nested and element types, which closes the "Not
-  provided" item above.
 - Do not add reflection; the schema already knows its field names and constructor.
 - This is the closest analogue of `schema.safeParse(JSON.parse(input))` in Java, but it
   remains optional for users who validate DTOs bound by Jackson.
