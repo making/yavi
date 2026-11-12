@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
@@ -19,6 +20,7 @@ import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -203,6 +205,28 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 						.map(x2 -> () -> x2));
 			}
 		};
+	}
+
+	/**
+	 * Returns a validator that additionally checks the value produced by this validator
+	 * with the given predicate. This is the place for a rule that spans several
+	 * arguments, such as a password confirmation or a date range.
+	 *
+	 * <p>
+	 * The predicate is evaluated only when this validator succeeds. If it returns
+	 * {@code false}, a violation with the given name and message is reported; its last
+	 * message argument is the produced value.
+	 * @param predicate the rule that the produced value must satisfy
+	 * @param name the name of the reported violation
+	 * @param violationMessage the message key and the default message format of the
+	 * reported violation
+	 * @return a validator with the additional rule
+	 * @since 0.18.0
+	 */
+	@Override
+	default Arguments1Validator<A1, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage) {
+		return this.andThen(ValueValidator.<X>passThrough().constraintOnTarget(predicate, name, violationMessage));
 	}
 
 	/**

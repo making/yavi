@@ -4,12 +4,15 @@
  */
 package am.ik.yavi.core;
 
+import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import org.assertj.core.api.Assertions;
@@ -19,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ValueValidatorTest {
 
@@ -91,6 +95,43 @@ class ValueValidatorTest {
 		final Validated<LocalDate> localDateValidated = localDateValidator.validate("31/01/2022");
 		Assertions.assertThat(localDateValidated.isValid()).isTrue();
 		Assertions.assertThat(localDateValidated.value()).isEqualTo(LocalDate.of(2022, 1, 31));
+	}
+
+	@Test
+	void nullInputIsAcceptedWithoutApplyingConstraints() {
+		final ValueValidator<String, String> name = StringValidatorBuilder.of("name", c -> c.notBlank()).build();
+		assertThat(name.validate(null).isValid()).isFalse();
+
+		assertThat(name.optional().validated(null)).isEmpty();
+		assertThat(name.optional().validated("yavi")).isEqualTo(Optional.of("yavi"));
+		assertThat(name.nullable().validated(null)).isNull();
+		assertThat(name.nullable().validated("yavi")).isEqualTo("yavi");
+		assertThat(name.defaultValue("anonymous").validated(null)).isEqualTo("anonymous");
+		assertThat(name.defaultValue("anonymous").validated("yavi")).isEqualTo("yavi");
+
+		// a value that is present is still validated
+		assertThat(name.optional().validate(" ").errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("charSequence.notBlank");
+		assertThat(name.nullable().validate(" ").isValid()).isFalse();
+		assertThat(name.defaultValue("anonymous").validate(" ").isValid()).isFalse();
+	}
+
+	@Test
+	void anyOfProducesTheValueOfTheFirstValidAlternative() {
+		final ValueValidator<String, Number> number = ValueValidator.anyOf(
+				StringValidatorBuilder.of("", c -> c.isInteger()).build(Integer::valueOf),
+				StringValidatorBuilder.of("", c -> c.isBigDecimal()).build(BigDecimal::new));
+		assertThat(number.validated("1")).isEqualTo(1);
+		assertThat(number.validated("1.5")).isEqualTo(new BigDecimal("1.5"));
+
+		final ConstraintViolations violations = number.prefixed("amount").validate("x").errors();
+		assertThat(violations).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.anyOf", "charSequence.integer", "charSequence.bigdecimal");
+		assertThat(violations).extracting(ConstraintViolation::name).containsOnly("amount");
+		assertThat(violations.get(0).message()).isEqualTo("\"amount\" must satisfy at least one of the 2 alternatives");
+		assertThat(violations.get(0).args()).containsExactly("amount", 2, "x");
+
+		assertThatThrownBy(ValueValidator::anyOf).isInstanceOf(IllegalArgumentException.class);
 	}
 
 }

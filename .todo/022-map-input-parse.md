@@ -79,9 +79,43 @@ Schema<Map<String, Object>, Shape> shapeSchema =
   with `ConstraintViolation.builder()....path(...)`.
 - Use YAVI's terms rather than Zod's (see "Vocabulary" in 021).
 
+## What 021 provides
+
+021 kept `Yavi.arguments()` as the only entry and added no `Schema` type, so read
+`Yavi.schema(...)`, `_optional(...)` and `S.string()` in "Proposed API" as placeholders.
+
+- Field kinds on the generated builders: `_object(name, validator)` (nested, path
+  `address.street`), `_list(name, elementValidator)` (`roles[0]`) and
+  `_map(name, valueValidator)` (`scores.math`). They reject `null` with `object.notNull`.
+  A nested object is any `ValueValidator`, so a nested map-input validator
+  (`ValueValidator<Map<String, Object>, X>`) is nested with `_object` as is.
+- `optional()`, `nullable()` and `defaultValue(...)` on the builders modify the last added
+  argument; the same combinators exist on `ValueValidator`. `null` is the only "missing"
+  value in typed input. Decide here whether an absent key and an explicit `null` differ.
+- `ValueValidator.anyOf(...)` reports `object.anyOf` followed by the violations of every
+  alternative. Report an unmatched discriminator the same way: one violation with a
+  dedicated message key, then the details.
+- `constraintOnTarget(predicate, name, violationMessage)` on `ValueValidator` and every
+  `ArgumentsNValidator` is the cross-field rule.
+- `ConstraintViolation.prefixed(name)`, `Validated.prefixed(name)` and
+  `ValueValidator.prefixed(name)` are the public path-aware prefix operations.
+- Every generated `ArgumentsNValidatorBuilder` keeps one package-private
+  `am.ik.yavi.builder.ArgumentDefinition` per argument (`d1` ... `dN`): `name` (`null`
+  for `_xxx(ValueValidator)`), `kind` (`VALUE` / `OBJECT` / `LIST` / `MAP`), `type` (the
+  raw argument type known from the builder method: `String.class` for `_string`,
+  `List.class` for `_list`, `Object.class` when unknown) and `optional`. This is what a
+  map-input terminal on the builder needs to look up each key, check its type and accept
+  an absent key. It is package-private on purpose: reshape it freely.
+- Not provided: the element type of `_list` / `_map` and the type of `_object` /
+  `_enum` arguments are unknown to the definition (`type` is the container or
+  `Object`). Checking them against untyped input needs either a type token on those
+  builder methods or element validators that accept `Object` and check the type
+  themselves. An unnamed argument cannot be read from a map; reject it when the
+  map-input validator is created.
+
 ## Notes
 
-- Depends on 021.
+- Depends on 021 (done).
 - Do not add reflection; the schema already knows its field names and constructor.
 - This is the closest analogue of `schema.safeParse(JSON.parse(input))` in Java, but it
   remains optional for users who validate DTOs bound by Jackson.
