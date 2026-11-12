@@ -22,9 +22,13 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 
 	private final Supplier<ValueDescription> description;
 
-	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description) {
+	private final Supplier<ValueValidator<Object, X>> untyped;
+
+	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
+			Supplier<ValueValidator<Object, X>> untyped) {
 		this.delegate = delegate;
 		this.description = description;
+		this.untyped = untyped;
 	}
 
 	@Override
@@ -35,6 +39,11 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 	@Override
 	public ValueDescription description() {
 		return this.description.get();
+	}
+
+	@Override
+	public ValueValidator<Object, X> untyped() {
+		return this.untyped.get();
 	}
 
 }

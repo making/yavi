@@ -251,6 +251,18 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	}
 
 	/**
+	 * Returns a validation result in which every constraint violation is located under
+	 * the element at the given index.
+	 * @param index the index of the element that contains the validated value
+	 * @return a validation result with prefixed violation names and paths
+	 * @since 0.18.0
+	 * @see ConstraintViolation#prefixed(int)
+	 */
+	default Validated<T> prefixed(int index) {
+		return Validated.of(this.mapError(violation -> violation.prefixed(index)));
+	}
+
+	/**
 	 * Combines the given validation results into a validation result that holds a list of
 	 * the values in iteration order. The violations of all failed validations are
 	 * accumulated.

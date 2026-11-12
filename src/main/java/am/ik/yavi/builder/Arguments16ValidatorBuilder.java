@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
-
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -42,6 +42,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function16;
+import am.ik.yavi.input.MapInputValidator;
 
 /**
  * Builds an {@link Arguments16Validator} by adding one validated argument at a time.
@@ -50,8 +51,9 @@ import am.ik.yavi.fn.Function16;
  * Each {@code _xxx} method adds the next argument and returns the builder for the
  * following argument. The arguments are validated together, so every violation is
  * reported and the result is created only when all arguments are valid. The validator is
- * created with {@code apply} after all arguments have been added. Instances are obtained
- * from {@link YaviArguments} or from the builder of the previous argument count.
+ * created with {@code apply} after all arguments have been added, or with {@code fromMap}
+ * to read the arguments from a {@code Map<String, Object>} by their names. Instances are
+ * obtained from {@link YaviArguments} or from the builder of the previous argument count.
  *
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
@@ -232,6 +234,41 @@ public final class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			.<X>apply(f)
 			.describedAs(ArgumentDefinition.describe(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14, this.d15, this.d16));
+	}
+
+	/**
+	 * Builds a {@link MapInputValidator} that reads the added arguments from a
+	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
+	 * creates the result with the given function.
+	 *
+	 * <p>
+	 * Each value of the map must represent the type of its argument (see
+	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
+	 * absent key is validated like {@code null}; see {@link MapInputValidator} for the
+	 * violations of absent and unknown keys. A nested {@code _object}, {@code _list} or
+	 * {@code _map} argument reads a map or a list whose content is checked by the
+	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
+	 * nested object is added with another {@code MapInputValidator}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values
+	 * @return a new map input validator
+	 * @throws IllegalStateException if an argument has no name, or if its input type is
+	 * unknown: an {@code _enum} or {@code _object} argument added without a type, or a
+	 * value validator that does not know its input type
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> MapInputValidator<X> fromMap(
+			Function16<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? super R16, ? extends X> f) {
+		return MapInputValidator.of(
+				List.of(this.d1.property(1), this.d2.property(2), this.d3.property(3), this.d4.property(4),
+						this.d5.property(5), this.d6.property(6), this.d7.property(7), this.d8.property(8),
+						this.d9.property(9), this.d10.property(10), this.d11.property(11), this.d12.property(12),
+						this.d13.property(13), this.d14.property(14), this.d15.property(15), this.d16.property(16)),
+				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2), (R4) values.get(3),
+						(R5) values.get(4), (R6) values.get(5), (R7) values.get(6), (R8) values.get(7),
+						(R9) values.get(8), (R10) values.get(9), (R11) values.get(10), (R12) values.get(11),
+						(R13) values.get(12), (R14) values.get(13), (R15) values.get(14), (R16) values.get(15)));
 	}
 
 }

@@ -82,6 +82,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			public ValueDescription description() {
 				return valueValidator.description();
 			}
+
+			@Override
+			public ValueValidator<Object, X> untyped() {
+				return valueValidator.untyped();
+			}
 		};
 	}
 
@@ -199,6 +204,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			public ValueDescription description() {
 				return Arguments1Validator.this.description();
 			}
+
+			@Override
+			public ValueValidator<Object, X2> untyped() {
+				return Arguments1Validator.this.untyped().map(mapper);
+			}
 		};
 	}
 
@@ -234,6 +244,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public ValueDescription description() {
 				return Arguments1Validator.this.description();
+			}
+
+			@Override
+			public ValueValidator<Object, X2> untyped() {
+				return Arguments1Validator.this.untyped().andThen(validator);
 			}
 		};
 	}
@@ -313,6 +328,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public ValueDescription description() {
 				return description;
+			}
+
+			@Override
+			public ValueValidator<Object, X> untyped() {
+				return Arguments1Validator.this.untyped().describedAs(description);
 			}
 		};
 	}

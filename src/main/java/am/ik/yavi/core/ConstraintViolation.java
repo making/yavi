@@ -319,6 +319,27 @@ public class ConstraintViolation {
 	}
 
 	/**
+	 * Returns a new ConstraintViolation located under the element at the given index. An
+	 * index segment is prepended to the {@link #path()} and the name is prefixed
+	 * accordingly: {@code street} becomes {@code [0].street} and an empty name becomes
+	 * {@code [0]}.
+	 *
+	 * <p>
+	 * Unlike {@link #indexed(int)}, which appends the index to a name that stands for the
+	 * collection, this treats the name as located inside the element.
+	 * @param index the index of the element that contains the violated value
+	 * @return a new ConstraintViolation under the given element
+	 * @since 0.18.0
+	 */
+	public ConstraintViolation prefixed(int index) {
+		final boolean joined = this.name.isEmpty()
+				|| (!this.path.isEmpty() && this.path.get(0) instanceof PathSegment.Index);
+		final String prefix = "[" + index + "]";
+		return this.relocate(joined ? prefix + this.name : prefix + "." + this.name,
+				PathSegment.concat(List.of(new PathSegment.Index(index)), this.path));
+	}
+
+	/**
 	 * Returns a new ConstraintViolation with the given name and path. If the arguments
 	 * array is not empty, the first element will be updated with the new name.
 	 * @param newName the new flat name

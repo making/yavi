@@ -35,6 +35,8 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 
 	private final Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder;
 
+	private final @Nullable Class<E> type;
+
 	/**
 	 * Returns a builder that validates the value under the given name with the given
 	 * constraints.
@@ -50,6 +52,22 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	public static <E extends Enum<E>> EnumValidatorBuilder<E> of(String name,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
+	}
+
+	/**
+	 * Creates a builder like {@link #of(String, Function)} that also knows the enum type
+	 * of the value. The built validator reports it in its description and can validate an
+	 * untyped input with {@code untyped()}.
+	 * @param name the property name used in violation names and messages
+	 * @param type the enum type of the value
+	 * @param constraints function that configures the constraints
+	 * @param <E> the type of the value to validate
+	 * @return a new builder
+	 * @since 0.18.0
+	 */
+	public static <E extends Enum<E>> EnumValidatorBuilder<E> of(String name, Class<E> type,
+			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
+		return new EnumValidatorBuilder<>(b -> b.constraint(Arguments1::arg1, name, constraints), type);
 	}
 
 	/**
@@ -70,7 +88,13 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	}
 
 	EnumValidatorBuilder(Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder) {
+		this(builder, null);
+	}
+
+	private EnumValidatorBuilder(Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder,
+			@Nullable Class<E> type) {
 		this.builder = builder;
+		this.type = type;
 	}
 
 	/**
@@ -85,7 +109,9 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	@Override
 	public <T> EnumValidator<E, T> build(Function<@Nullable E, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new EnumValidator<>(validator, value -> mapper.apply(value));
+		final Class<E> type = this.type;
+		return type == null ? new EnumValidator<>(validator, value -> mapper.apply(value))
+				: new EnumValidator<>(validator, value -> mapper.apply(value), type);
 	}
 
 	/**

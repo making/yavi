@@ -178,6 +178,7 @@ public interface Arguments6Validator<A1, A2, A3, A4, A5, A6, X> {
 			public ValueDescription description() {
 				return Arguments6Validator.this.description();
 			}
+
 		};
 	}
 
@@ -214,6 +215,7 @@ public interface Arguments6Validator<A1, A2, A3, A4, A5, A6, X> {
 			public ValueDescription description() {
 				return Arguments6Validator.this.description();
 			}
+
 		};
 	}
 
@@ -316,6 +318,7 @@ public interface Arguments6Validator<A1, A2, A3, A4, A5, A6, X> {
 			public ValueDescription description() {
 				return description;
 			}
+
 		};
 	}
 

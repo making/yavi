@@ -11,6 +11,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
@@ -55,7 +56,8 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 * {@link #description()}.
 	 * @param validator the validator applied to the argument
 	 * @param mapper the mapper applied to the validated argument
-	 * @param valueType the raw type of the argument
+	 * @param valueType the raw type of the argument; {@code Object} or {@code Enum} if it
+	 * is unknown
 	 * @since 0.18.0
 	 */
 	protected DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
@@ -74,6 +76,29 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	@Override
 	public ValueDescription description() {
 		return ValueDescription.Value.of(this.valueType, this.validator);
+	}
+
+	/**
+	 * Returns a validator that accepts an untyped input and checks that it represents the
+	 * raw type of the argument, as {@link ValueValidator#untyped(Class)} states. A
+	 * mismatch is reported under the name of the argument.
+	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the raw type of the argument is unknown
+	 * ({@code Object} or {@code Enum})
+	 * @since 0.18.0
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public ValueValidator<Object, X> untyped() {
+		if (this.valueType == Object.class || this.valueType == Enum.class) {
+			return Arguments1Validator.super.untyped();
+		}
+		final ValueDescription.Value description = ValueDescription.Value.of(this.valueType, this.validator);
+		return ValueValidator.<A1>passThrough()
+			.untyped((Class<A1>) this.valueType)
+			.prefixed(description.name())
+			.andThen(this)
+			.describedAs(description);
 	}
 
 	/**

@@ -189,6 +189,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 			public ValueDescription description() {
 				return Arguments8Validator.this.description();
 			}
+
 		};
 	}
 
@@ -227,6 +228,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 			public ValueDescription description() {
 				return Arguments8Validator.this.description();
 			}
+
 		};
 	}
 
@@ -330,6 +332,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 			public ValueDescription description() {
 				return description;
 			}
+
 		};
 	}
 
