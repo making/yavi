@@ -51,6 +51,9 @@
     .build();</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Unless stated otherwise, a <code>null</code> value is valid and the check is skipped in the following constraints.</p>
+</div>
 <div class="sect3">
 <h4 id="_notnull"><code>notNull()</code></h4>
 <div class="paragraph">
@@ -463,7 +466,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
 ConstraintViolations violations = validator.validate(new Country(null)); // Valid
-ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to to 4. The given size is 5)</code></pre>
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to 4. The given size is 5)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -554,6 +557,106 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 </table>
 </div>
 <div class="sect3">
+<h4 id="_startswithcharsequence"><code>startsWith(CharSequence)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value starts with the specified prefix</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Code&gt; validator = ValidatorBuilder.&lt;Code&gt; of()
+    .constraint(Code::asString, "code", c -&gt; c.startsWith("JP-"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Code("JP-1234")); // Valid
+ConstraintViolations violations = validator.validate(new Code(null)); // Valid
+ConstraintViolations violations = validator.validate(new Code("US-1234")); // Invalid ("code" must start with "JP-")</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.startsWith</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must start with "{1}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified prefix</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_endswithcharsequence"><code>endsWith(CharSequence)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value ends with the specified suffix</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Domain&gt; validator = ValidatorBuilder.&lt;Domain&gt; of()
+    .constraint(Domain::asString, "domain", c -&gt; c.endsWith(".example.com"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Domain("www.example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Domain(null)); // Valid
+ConstraintViolations violations = validator.validate(new Domain("example.com")); // Invalid ("domain" must end with ".example.com")</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.endsWith</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must end with "{1}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified suffix</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="_patternstring"><code>pattern(String)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value matches the specified regular expression</p>
@@ -562,6 +665,62 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
     .constraint(ZipCode::asString, "zipCode", c -&gt; c.pattern("[0-9]{3}-[0-9]{4}"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Invalid ("zipCode" must match [0-9]{3}-[0-9]{4})</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.pattern</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must match {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified regular expression</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_patternpattern_patternsupplierpattern"><code>pattern(Pattern)</code> / <code>pattern(Supplier&lt;Pattern&gt;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value matches the specified regular expression, in the same way as <code>pattern(String)</code>.
+The <code>Supplier&lt;Pattern&gt;</code> overload invokes the supplier for every validation, which is intended for regular expressions that are built dynamically at validation time.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Pattern zipCode = Pattern.compile("[0-9]{3}-[0-9]{4}");
+Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, "zipCode", c -&gt; c.pattern(zipCode))
+    .build();
+
+Validator&lt;ZipCode&gt; dynamicValidator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, "zipCode", c -&gt; c.pattern(() -&gt; Pattern.compile("[0-9]{3}-[0-9]{4}")))
     .build();
 
 ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
@@ -616,7 +775,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
 ConstraintViolations violations = validator.validate(new Email(null)); // Valid
-ConstraintViolations violations = validator.validate(new Email("example.com")); // Invalid ("email" must not be a valid email address)</code></pre>
+ConstraintViolations violations = validator.validate(new Email("example.com")); // Invalid ("email" must be a valid email address)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -636,6 +795,54 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.email</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid email address</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_uuid"><code>uuid()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is a valid UUID in the 8-4-4-4-12 hexadecimal format. The version and the variant are not checked, and an empty value is valid.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getId, "id", c -&gt; c.uuid())
+    .build();
+
+ConstraintViolations violations = validator.validate(new User("123e4567-e89b-12d3-a456-426614174000")); // Valid
+ConstraintViolations violations = validator.validate(new User(null)); // Valid
+ConstraintViolations violations = validator.validate(new User("")); // Valid
+ConstraintViolations violations = validator.validate(new User("1234")); // Invalid ("id" must be a valid UUID)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.uuid</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid UUID</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
 <li>
@@ -802,7 +1009,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 
 ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Valid
 ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
-ConstraintViolations violations = validator.validate(new IpAddress("example.com")); // Invalid ("ipAddress" must not be a valid IPv4)</code></pre>
+ConstraintViolations violations = validator.validate(new IpAddress("example.com")); // Invalid ("ipAddress" must be a valid IPv4)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -849,7 +1056,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 
 ConstraintViolations violations = validator.validate(new IpAddress("2001:0db8:bd05:01d2:288a:1fc0:0001:10ee")); // Valid
 ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
-ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must not be a valid IPv6)</code></pre>
+ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must be a valid IPv6)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -886,7 +1093,19 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 <div class="sect3">
 <h4 id="_url"><code>url()</code></h4>
 <div class="paragraph">
-<p>Check if the target value is a valid URL</p>
+<p>Check if the target value is a valid URL. An empty value is valid.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Since 0.17.0 the value is parsed as a <code>java.net.URI</code> instead of the deprecated <code>URL(String)</code> constructor, which silently strips leading and trailing characters. Values that only passed because of that trimming, values that contain unencoded characters, and values with an empty authority are now rejected.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -896,7 +1115,10 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 
 ConstraintViolations violations = validator.validate(new Url("https://yavi.ik.am")); // Valid
 ConstraintViolations violations = validator.validate(new Url(null)); // Valid
-ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // Invalid ("url" must be a valid URL)</code></pre>
+ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url(" https://yavi.ik.am ")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url("https://yavi.ik.am/path with space")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url("https://")); // Invalid ("url" must be a valid URL)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -923,6 +1145,117 @@ ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // 
 </li>
 <li>
 <p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_url_2"><code>url(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Check if the target value is a valid URL and restrict its protocol, host and/or port.
+The value is first required to be a valid URL, and an unexpected attribute is reported in addition to any URL violation.
+This is the equivalent of Bean Validation&#8217;s <code>@URL(protocol = "https", host = "example.com", port = 8443)</code>.
+An empty value is valid.</p>
+</div>
+<div class="paragraph">
+<p>Hosts are compared case-insensitively but matched as written, so <code>host("example.com")</code> does not accept <code><a href="https://www.example.com" class="bare">https://www.example.com</a></code>.
+A URL without an explicit port is matched against the default port of its protocol, so <code>port(443)</code> accepts <code><a href="https://example.com" class="bare">https://example.com</a></code>.
+If the value cannot be parsed as a URL, only <code>charSequence.url</code> is reported.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Url&gt; validator = ValidatorBuilder.&lt;Url&gt; of()
+    .constraint(Url::asString, "url", c -&gt; c.url(url -&gt; url
+            .protocol("https")
+            .host("example.com")
+            .port(8443)
+            .build()))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Url("https://example.com:8443/app")); // Valid
+ConstraintViolations violations = validator.validate(new Url("http://example.com:8443/app")); // Invalid (The protocol of "url" must be one of the following values: [https])
+ConstraintViolations violations = validator.validate(new Url("https://other.example.com:8443/app")); // Invalid (The host of "url" must be one of the following values: [example.com])
+ConstraintViolations violations = validator.validate(new Url("https://example.com:9999/app")); // Invalid (The port of "url" must be one of the following values: [8443])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid URL</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.protocol</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The protocol of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified protocols</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.host</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The host of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified hosts</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.port</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The port of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified ports</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
 </li>
 </ul>
 </div></div></td>
@@ -1290,7 +1623,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigInteger</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.biginteger</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big integer</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -1337,7 +1670,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigDecimal</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigdecimal</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big decimal</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -1346,6 +1679,63 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </li>
 <li>
 <p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_isolocaldate_localdatestring_pattern"><code>isoLocalDate()</code> / <code>localDate(String pattern)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is a valid local date in the given pattern, resolved with <code>ResolverStyle.STRICT</code>.
+<code>isoLocalDate()</code> uses the pattern <code>uuuu-MM-dd</code>.
+The formatter is created each time a value is validated.
+An empty value is valid.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;BirthDate&gt; validator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, "birthDate", c -&gt; c.isoLocalDate())
+    .build();
+Validator&lt;BirthDate&gt; customValidator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, "birthDate", c -&gt; c.localDate("dd/MM/uuuu"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new BirthDate("2024-12-31")); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate(null)); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate("2024-02-30")); // Invalid ("birthDate" must be a valid representation of a local date using the pattern: uuuu-MM-dd. The give value is: 2024-02-30)
+ConstraintViolations violations = customValidator.validate(new BirthDate("31/12/2024")); // Valid</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.localdate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a local date using the pattern: {1}. The give value is: {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified date pattern</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
 </li>
 </ul>
 </div></div></td>
@@ -1484,7 +1874,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 </div>
 </div>
 <div class="sect3">
-<h4 id="_advanced_character_length_check">Advanced character length check</h4>
+<h4 id="advanced-character-length-check">Advanced character length check</h4>
 <div class="paragraph">
 <p>YAVI counts the input characters as the number of characters as it looks in the constraints on the number of characters. Recently, as a result of defining various characters on Unicode, the visual size and the return value of <code>String#length</code> method are quite different.</p>
 </div>
@@ -1545,7 +1935,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
     .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(3))
     .build();
 
-ConstraintViolations = validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
 </div>
 </div>
 </div>
@@ -1568,7 +1958,7 @@ ConstraintViolations = validator.validate(new Message("𠮷野屋")); // Valid</
     .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(2))
     .build();
 
-ConstraintViolations = validator.validate(new Message("モジ")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("モジ")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1602,7 +1992,7 @@ It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 D
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
 		.constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(1))
 		.build();
-ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1615,7 +2005,7 @@ This way you can regard this string as just a surrogate pair.</p>
 		.constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
 				.lessThanOrEqual(1))
 		.build();
-ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1650,13 +2040,34 @@ System.out.println("🏴󠁧󠁢󠁥󠁮󠁧󠁿".length()); // 14 (WTH!)</code>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
     .constraint(Message::getText, "text", c -&gt; c.emoji().lessThanOrEqual(1))
     .build();
-ConstraintViolations = validator.validate(new Message("❤️")); // Valid
-ConstraintViolations = validator.validate(new Message("🤴🏻")); // Valid
-ConstraintViolations = validator.validate(new Message("👨‍👦")); // Valid
-ConstraintViolations = validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
-ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("❤️")); // Valid
+violations = validator.validate(new Message("🤴🏻")); // Valid
+violations = validator.validate(new Message("👨‍👦")); // Valid
+violations = validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
+violations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_variant"><code>variant(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Returns a constraint that removes the selected variation selectors before the size is measured.
+This does not change the value itself; it only affects how the size is counted.
+See <a href="#advanced-character-length-check">Advanced character length check</a> for the details of IVS, SVS and FVS.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.fvs(MongolianFreeVariationSelector.IGNORE))
+            .fixedSize(1))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message("ᠠ᠋")); // Valid</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>variant(&#8230;&#8203;)</code> is not a constraint itself and has no message of its own; the message of the size constraint applied to its result is reported.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1671,8 +2082,8 @@ ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧�
             .asByteArray().lessThanOrEqual(16))
     .build();
 
-ConstraintViolations = validator.validate(new Message("I❤️☕️️")); // Valid
-ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
+ConstraintViolations violations = validator.validate(new Message("I❤️☕️️")); // Valid
+violations = validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1973,7 +2384,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 
 ConstraintViolations violations = validator.validate(new Age(20)); // Valid
 ConstraintViolations violations = validator.validate(new Age(null)); // Valid
-ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("age" must be greater than or equal to 10)</code></pre>
+ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("age" must be greater than or equal to 20)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -1991,7 +2402,7 @@ ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThanOrEqual</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be greater than or equal to {1}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2073,7 +2484,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 
 ConstraintViolations violations = validator.validate(new Age(19)); // Valid
 ConstraintViolations violations = validator.validate(new Age(null)); // Valid
-ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("age" must be less than or equal to 10)</code></pre>
+ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("age" must be less than or equal to 20)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2091,7 +2502,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThanOrEqual</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be less than or equal to {1}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2100,6 +2511,508 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </li>
 <li>
 <p><code>{1}</code> &#8230;&#8203; the specified size</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_positive_positiveorzero_negative_negativeorzero"><code>positive()</code> / <code>positiveOrZero()</code> / <code>negative()</code> / <code>negativeOrZero()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is positive, positive or zero, negative, or negative or zero, respectively.
+These constraints apply to <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, <code>Double</code>, <code>BigInteger</code> and <code>BigDecimal</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, "age", c -&gt; c.positive())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(1)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(0)); // Invalid ("age" must be positive)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>positiveOrZero</code>, <code>negative</code> and <code>negativeOrZero</code> are used in the same way.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.positive</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be positive</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.positiveOrZero</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be positive or zero</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.negative</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be negative</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.negativeOrZero</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be negative or zero</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_temporal">Temporal</h3>
+<div class="paragraph">
+<p>YAVI provides temporal constraints for the following types, with the corresponding builder shortcuts:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Constraint</th>
+<th class="tableblock halign-left valign-top">Builder shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalDateConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localDate</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localDateTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>OffsetDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.OffsetDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_offsetDateTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Instant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.InstantConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_instant</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Year</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.YearConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_year</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>YearMonth</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.YearMonthConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_yearMonth</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ZonedDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.ZonedDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_zonedDateTime</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Custom <code>TemporalAccessor</code> types can be supported by extending <code>TemporalConstraintBase</code> through <code>ChronoLocalDateConstraintBase</code>, <code>ChronoLocalDateTimeConstraintBase</code> or <code>ChronoZonedDateTimeConstraintBase</code>.
+The Kotlin DSL provides matching property overloads (see the Kotlin Support section).</p>
+</div>
+<div class="paragraph">
+<p>The following constraints apply to every type above:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.past())
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A <code>null</code> value is valid and skips all temporal checks.</p>
+</div>
+<div class="paragraph">
+<p><code>before</code> and <code>after</code> reject a value that is equal to the boundary; use <code>beforeOrEqual</code> and <code>afterOrEqual</code> for inclusive checks.
+The arguments are always suppliers.</p>
+</div>
+<div class="paragraph">
+<p><code>before</code>, <code>beforeOrEqual</code>, <code>after</code>, <code>afterOrEqual</code> and <code>between</code> have an overload that takes a <code>boolean memoize</code> argument.
+When <code>memoize</code> is <code>true</code>, which is the default, the supplier is called at most once and the same value is used for both the comparison and the violation message.
+When it is <code>false</code>, the supplier is called on every use, so a supplier that returns a different value on each call may compare against one value and report another in the message.
+Use <code>false</code> for suppliers that must be evaluated at validation time.</p>
+</div>
+<div class="paragraph">
+<p>The <code>past</code>, <code>pastOrPresent</code>, <code>future</code> and <code>futureOrPresent</code> methods also have overloads that take a <code>java.time.Clock</code>.
+These overloads exist for deterministic tests and for validating against a time source other than the system default zone.</p>
+</div>
+<div class="sect3">
+<h4 id="_past_pastorpresent_future_futureorpresent"><code>past()</code> / <code>pastOrPresent()</code> / <code>future()</code> / <code>futureOrPresent()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is in the past, in the past or present, in the future, or in the present or future, respectively.
+The overloads take a <code>Clock</code> used as the current time.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Clock clock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"));
+Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.past(clock))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2023, 12, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid ("date" must be a past date)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 2))); // Invalid ("date" must be a past date)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.past</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a past date</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.pastOrPresent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a date in the past or in the present</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.future</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a future date</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.futureOrPresent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a date in the present or in the future</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_before_beforeorequal_after_afterorequal"><code>before(&#8230;&#8203;)</code> / <code>beforeOrEqual(&#8230;&#8203;)</code> / <code>after(&#8230;&#8203;)</code> / <code>afterOrEqual(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is before, before or equal to, after, or after or equal to the temporal supplied by the given supplier.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.before(() -&gt; LocalDate.of(2024, 6, 1)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 5, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid ("date" has to be before 2024-06-01)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 2))); // Invalid ("date" has to be before 2024-06-01)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>beforeOrEqual</code>, <code>after</code> and <code>afterOrEqual</code> variants are used in the same way.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.before</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be before {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.beforeOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be before or equals to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.after</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be after {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.afterOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be after or equals to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_between"><code>between(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is between the temporals supplied by the given suppliers.
+The range is exclusive on both ends: a value equal to either bound is invalid.
+<code>IllegalArgumentException</code> is thrown at validation time if <code>rangeFrom</code> is after <code>rangeTo</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.between(
+            () -&gt; LocalDate.of(2024, 1, 1), () -&gt; LocalDate.of(2024, 12, 31)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid ("date" has to be between 2024-01-01 and 2024-12-31)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2025, 1, 1))); // Invalid ("date" has to be between 2024-01-01 and 2024-12-31)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.between</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be between {1} and {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied start of the range</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the supplied end of the range</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_fieldpredicate"><code>fieldPredicate(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the given predicate accepts the value of the given <code>java.time.temporal.TemporalField</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.fieldPredicate(ChronoField.DAY_OF_WEEK, d -&gt; d &gt;= 1 &amp;&amp; d &lt;= 5))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 3))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid (The DayOfWeek of "date" is invalid)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.field</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The {1} of "{0}" is invalid</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the temporal field</p>
 </li>
 <li>
 <p><code>{2}</code> &#8230;&#8203; the given value</p>
@@ -2796,6 +3709,158 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </tbody>
 </table>
 </div>
+<div class="sect3">
+<h4 id="_unique"><code>unique()</code></h4>
+<div class="paragraph">
+<p>Checks if the elements of the target value are unique.
+The violation includes the duplicated elements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, "histories", c -&gt; c.unique())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(1)))); // Invalid ("histories" must be unique. [History{revision=1}] is/are duplicated.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>collection.unique</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be unique. {1} is/are duplicated.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the duplicated elements</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_containsallcollection"><code>containsAll(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains all of the given elements.
+The violation includes the missing elements.
+A <code>Set</code> and a non-<code>Set</code> collection are handled with the same semantics.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, "histories", c -&gt; c.containsAll(List.of(new History(1), new History(2))))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2), new History(3)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1)))); // Invalid ("histories" must be have of all of the following values: [History{revision=1}, History{revision=2}], missing values: [History{revision=2}])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>collection.containsAll</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be have of all of the following values: {1}, missing values: {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the required elements</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the missing elements</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_foreach_foreachifpresent"><code>forEach(&#8230;&#8203;)</code> / <code>forEachIfPresent(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p><code>forEach</code> applies an element validator to each element of a collection property, and <code>forEachIfPresent</code> does the same but treats a <code>null</code> collection as valid.
+A <code>null</code> element inside the collection is reported with the element index in the property name, for example <code>histories[1]</code>, and the <code>object.notNull</code> message.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, "histories",
+            ValidatorBuilder.&lt;History&gt; of()
+                .constraint(History::getRevision, "revision", c -&gt; c.notNull())
+                .build())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(Arrays.asList(new History(1), null))); // Invalid ("histories[1]" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; the indexed field name</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_map">Map</h3>
@@ -3347,7 +4412,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="paragraph">
-<p>If you want to apply constraints on target class itself (e.g. <a href="#cross-filed-validation">[cross-filed-validation]</a>), you can use <code>constraintOnTarget</code> as follows:</p>
+<p>If you want to apply constraints on target class itself (e.g. <a href="#cross-field-validation">[cross-field-validation]</a>), you can use <code>constraintOnTarget</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3460,6 +4525,124 @@ ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now()
 </table>
 </div>
 <div class="sect3">
+<h4 id="_equaltoobject"><code>equalTo(Object)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is equal to the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.equalTo("expected"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("expected")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("other")); // Invalid ("value" must be equal to expected)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_oneofcollection"><code>oneOf(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is one of the specified values</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.oneOf(List.of("a", "b")))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("a")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("c")); // Invalid ("value" must be one of the following values: [a, b])</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_notoneofcollection"><code>notOneOf(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is not one of the specified values</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.notOneOf(List.of("a", "b")))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("c")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("a")); // Invalid ("value" must not be one of the following values: [a, b])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.equalTo</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be equal to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.oneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the allowed values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notOneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the forbidden values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="_password_2"><code>password()</code></h4>
 <div class="paragraph">
 <p>Check if the target value meets the specified custom password policy (e.g. Cross-field check)</p>
@@ -3541,12 +4724,201 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_enum">Enum</h3>
+<div class="paragraph">
+<p>Apply constraints on an enum as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
+    ._enum(Account::getStatus, "status", c -&gt; c.oneOf(Status.ACTIVE))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Account(Status.ACTIVE)); // Valid
+ConstraintViolations violations = validator.validate(new Account(null)); // Valid
+ConstraintViolations violations = validator.validate(new Account(Status.INACTIVE)); // Invalid ("status" must be one of the following values: [ACTIVE])</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>_enum</code> is an alias of <code>constraint(ToEnum, String, Function)</code>.
+The same <code>_enum</code> method is available on <code>ArgumentsValidatorBuilder</code> and <code>YaviArguments</code> to validate an enum argument.</p>
+</div>
+<div class="paragraph">
+<p><code>EnumConstraint#oneOf(E&#8230;&#8203;)</code> requires the value to be one of the given enum constants.
+An empty argument list is rejected with <code>IllegalArgumentException</code>.
+A <code>null</code> value is valid unless <code>notNull()</code> is added.
+The violation uses the <code>object.oneOf</code> message key.</p>
+</div>
+<div class="paragraph">
+<p>A single enum value can be validated with <code>EnumValidatorBuilder</code> and <code>EnumValidator</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">EnumValidator&lt;Status, Status&gt; validator = EnumValidatorBuilder.&lt;Status&gt; of("status",
+        c -&gt; c.oneOf(Status.ACTIVE)).build();
+
+Validated&lt;Status&gt; result = validator.validate(Status.INACTIVE); // Invalid ("status" must be one of the following values: [ACTIVE])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.oneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the allowed values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_array">Array</h3>
+<div class="paragraph">
+<p>Apply the constraints on arrays as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._objectArray(/* Function from TargetClass to an object array  */, /* Field Name */, /* Constraints */)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following constraints and builder shortcuts are available:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Array type</th>
+<th class="tableblock halign-left valign-top">Builder shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>E[]</code> (<code>ObjectArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_objectArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean[]</code> (<code>BooleanArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_booleanArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>byte[]</code> (<code>ByteArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_byteArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>char[]</code> (<code>CharArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_charArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>short[]</code> (<code>ShortArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_shortArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>int[]</code> (<code>IntArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_intArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>long[]</code> (<code>LongArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_longArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>float[]</code> (<code>FloatArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_floatArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>double[]</code> (<code>DoubleArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_doubleArray</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The constraints in <code>am.ik.yavi.constraint.array</code> provide <code>notNull</code>, <code>isNull</code>, <code>notEmpty</code>, <code>fixedSize</code>, <code>greaterThan</code>, <code>greaterThanOrEqual</code>, <code>lessThan</code>, <code>lessThanOrEqual</code> and <code>contains</code>.
+A <code>null</code> array is valid and the checks are skipped, except for <code>notEmpty()</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Values&gt; validator = ValidatorBuilder.&lt;Values&gt; of()
+    ._intArray(Values::getNumbers, "numbers", c -&gt; c.contains(3).fixedSize(3))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2, 3 })); // Valid
+ConstraintViolations violations = validator.validate(new Values(null)); // Valid
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2 })); // Invalid ("numbers" must contain 3, The size of "numbers" must be 3. The given size is 2)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The size and null checks report the <code>object.notNull</code>, <code>object.isNull</code> and <code>container.*</code> message keys documented in the Collection section.
+<code>contains</code> reports <code>array.contains</code>.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>array.contains</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

@@ -242,12 +242,13 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 <div class="sect2">
 <h3 id="_applying_constraints_only_to_specific_conditions">Applying constraints only to specific conditions</h3>
 <div class="paragraph">
-<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code> interface:</p>
+<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code>.
+Since 0.11.0 a condition receives an <code>am.ik.yavi.core.ConstraintContext</code> instead of a <code>ConstraintGroup</code>, so it can read arbitrary attributes of the validation call:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
-    .constraintOnCondition((user, constraintGroup) -&gt; !user.getName().isEmpty(),
+    .constraintOnCondition((user, context) -&gt; !user.getName().isEmpty(),
         b -&gt; b.constraint(User::getEmail, "email", c -&gt; c.email().notEmpty()))
     .build();</code></pre>
 </div>
@@ -255,11 +256,43 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 <div class="paragraph">
 <p>The constraint above on email will only be activated if the name is not empty.</p>
 </div>
+<div class="paragraph">
+<p>A <code>ConstraintContext</code> can be created from a <code>Map</code> or from a lookup function, and passed to the validation method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintContext context = ConstraintContext.from(Map.of("country", "IT"));
+// or
+ConstraintContext context = ConstraintContext.from(key -&gt; lookupAttribute(key));
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, ctx) -&gt; "IT".equals(ctx.attribute("country").value()),
+        b -&gt; b.constraint(User::getTaxId, "taxId", c -&gt; c.notBlank()))
+    .build();
+
+ConstraintViolations violations = validator.validate(user, context);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintCondition.hasAttribute(String)</code> and <code>ConstraintCondition.hasAttributeWithValue(String, Object)</code> are shortcuts for the common attribute checks:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(ConstraintCondition.hasAttributeWithValue("country", "IT"),
+        b -&gt; b.constraint(User::getTaxId, "taxId", c -&gt; c.notBlank()))
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the attribute is absent, <code>context.attribute("key").value()</code> returns <code>null</code>.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_applying_constraints_only_to_specific_groups">Applying constraints only to specific groups</h3>
 <div class="paragraph">
-<p>You can apply constraints only to specific groups with <code>am.ik.yavi.core.ConstraintGroup</code> as a part of <code>ConstraintCondition</code> as well:</p>
+<p>A <code>ConstraintGroup</code> is a <code>ConstraintContext</code> that only carries a name.
+You can apply constraints only to specific groups as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -274,11 +307,21 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 </div>
 </div>
 <div class="paragraph">
+<p>A group can also be created from a name without declaring an enum:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintGroup create = ConstraintGroup.of("CREATE");</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>The group to validate can be specified in <code>validate</code> method:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolations violations = validator.validate(user, Group.CREATE);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolations violations = validator.validate(user, ConstraintGroup.of("CREATE"));
+// or, with the enum above
+violations = validator.validate(user, Group.CREATE);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -301,7 +344,8 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 <td class="content">
 <div class="paragraph">
 <p>Note that all constraints without conditions will be validated for any constraint group.
-Also, if no group is specified in the <code>validate</code> method, it will be treated as <code>DEFAULT</code> group.</p>
+Also, if no group is specified in the <code>validate</code> method, <code>ConstraintGroup.DEFAULT</code> is used.
+Groups match by name; two groups are equal when their names are equal.</p>
 </div>
 </td>
 </tr>
@@ -459,8 +503,87 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
     .constraint(User::getName, "name", c -&gt; c.notNull().message("{0} is required!")
         .greaterThanOrEqual(1).message("{0} is too small!")
         .lessThanOrEqual(20).message("{0} is too large!"))
-    .build()</code></pre>
+    .build();</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p><code>message</code> also accepts an <code>am.ik.yavi.core.ViolationMessage</code> that carries the message key and the default message format, for example <code>ViolationMessage.of("string.isbn13", "\"{0}\" must be ISBN13 format")</code>.
+Since 0.17.2, overriding the message of a constraint preserves the violated value in the message arguments.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_value_validators">Value validators</h3>
+<div class="paragraph">
+<p><code>am.ik.yavi.core.ValueValidator</code> validates an input and produces a validated value.
+It is the applicative counterpart of <code>Validator</code>; see "<a href="#combining-validators">[combining-validators]</a>" for combining value validators and "<a href="#combining-validation-results">[combining-validation-results]</a>" for the <code>Validated</code> result type.</p>
+</div>
+<div class="paragraph">
+<p>A value validator maps the validated value with <code>map</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ValueValidator&lt;String, String&gt; trimmed = ValueValidator.&lt;String&gt; passThrough().map(String::trim);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>andThen(Function)</code> is deprecated since 0.17.0; use <code>map(Function)</code> instead.
+<code>andThen(ValueValidator)</code> is still supported and chains validators, applying the next validator to the value produced by the previous one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ValueValidator&lt;String, Integer&gt; length = trimmed
+    .andThen(ValueValidator.&lt;String&gt; passThrough().map(String::length));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>validated(&#8230;&#8203;)</code> validates the input and returns the value, throwing <code>am.ik.yavi.core.ConstraintViolationsException</code> when a violation exists.
+The same behavior is available through <code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">try {
+    String value = trimmed.validated(input);
+}
+catch (ConstraintViolationsException e) {
+    // handle the violations
+}
+
+ConstraintViolations violations = validator.validate(user);
+violations.throwIfInvalid(ConstraintViolationsException::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A value validator can be converted to a regular <code>Validator</code> with <code>Validatable.from(ValueValidator)</code>, which discards the produced value and only reports the violations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validatable&lt;String&gt; validator = Validatable.from(trimmed);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_violation_results">Handling violation results</h3>
+<div class="paragraph">
+<p><code>ConstraintViolation</code> has a staged builder since 0.15.0.
+The <code>name</code>, <code>messageKey</code> and <code>defaultMessageFormat</code> stages are required; the argument, formatter and locale methods are optional:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolation violation = ConstraintViolation.builder()
+    .name("email")
+    .messageKey("email.invalid")
+    .defaultMessageFormat("\"{0}\" must be a valid email address")
+    .argsWithPrependedNameAndAppendedViolatedValue(new Object[] {}, new ViolatedValue(input))
+    .messageFormatter(SimpleMessageFormatter.getInstance())
+    .locale(Locale.JAPAN)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintViolation#violatedValue()</code> returns the value that violated the constraint.</p>
+</div>
+<div class="paragraph">
+<p><code>SimpleMessageFormatter</code> can be obtained with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is still available but is deprecated since 0.16.0.</p>
 </div>
 </div>
 <div class="sect2">
@@ -469,7 +592,8 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
 <p>YAVI provides <code>am.ik.yavi.message.MessageFormatter</code> interface for constructing violation messages.</p>
 </div>
 <div class="paragraph">
-<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormatter</code> to interpolate the message.
+<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormat</code> to interpolate the message.
+A shared instance is available with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is kept for backward compatibility but is deprecated.
 A list of message keys and default message formats is given in "<a href="#built-in-constraints">[built-in-constraints]</a>".</p>
 </div>
 <div class="admonitionblock note">
@@ -581,6 +705,19 @@ This can be useful for the validation of large object graphs where you are only 
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; failFastValidator = validator.failFast(true);</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The <code>failFast(boolean)</code> and <code>isFailFast()</code> methods are also declared on <code>am.ik.yavi.core.Validatable</code>, so the mode can be read and switched through that interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">boolean failFast = failFastValidator.isFailFast();
+Validatable&lt;User&gt; validatable = validator.failFast(true);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since 0.13.0 nested, collection and conditional validators honor the parent&#8217;s fail-fast mode.
+The mode is passed down to nested validators and element validators, so the validation stops at the first violation in those validators as well.</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -595,9 +732,43 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 </div>
 <div class="sect2">
+<h3 id="_resolving_conflicting_constraint_names">Resolving conflicting constraint names</h3>
+<div class="paragraph">
+<p>When the same constraint name is registered more than once, <code>ValidatorBuilder#conflictStrategy(ConflictStrategy)</code> decides what happens when the validator is built.
+The default, <code>am.ik.yavi.builder.ConflictStrategy.NOOP</code>, keeps the existing constraints and appends the new one, so the target is validated by all of them.
+<code>ConflictStrategy.OVERRIDE</code> removes the existing constraints and keeps only the new one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .conflictStrategy(ConflictStrategy.OVERRIDE)
+    .constraint(User::getName, "name", c -&gt; c.notNull())
+    .constraint(User::getName, "name", c -&gt; c.notBlank()) // replaces the previous "name" constraint
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A custom strategy can mutate the list of existing predicates; the new predicate is appended after the strategy returns:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConflictStrategy keepFirst = new ConflictStrategy() {
+    @Override
+    public &lt;T&gt; void resolveConflict(List&lt;ConstraintPredicates&lt;T, ?&gt;&gt; predicatesList,
+            ConstraintPredicates&lt;T, ?&gt; predicates) {
+        while (predicatesList.size() &gt; 1) {
+            predicatesList.remove(predicatesList.size() - 1);
+        }
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_kotlin_support">Kotlin Support</h3>
 <div class="paragraph">
-<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows:</p>
+<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows.
+The DSL obtains property names with Kotlin reflection, so <code>kotlin-reflect</code> must be on the runtime classpath.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -684,13 +855,91 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p><code>nestIfPresent</code> and <code>forEachIfPresent</code> validate nullable nested objects, collections, maps and arrays only when they are present:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;Order&gt; {
+    Order::customer nestIfPresent {
+        Customer::name {
+            notBlank()
+        }
+    }
+    Order::items forEachIfPresent {
+        OrderItem::name {
+            notBlank()
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Temporal and enum properties have their own overloads.
+For example, <code>LocalDate</code>, <code>LocalTime</code>, <code>LocalDateTime</code>, <code>ZonedDateTime</code>, <code>OffsetDateTime</code>, <code>Instant</code>, <code>Year</code> and <code>YearMonth</code> properties can use the date and time constraints, and enum properties can use <code>oneOf</code>.
+See "<a href="#built-in-constraints">[built-in-constraints]</a>" for the available constraints:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">enum class Status { ACTIVE, INACTIVE }
+
+val validator = validator&lt;Account&gt; {
+    Account::createdAt {
+        notNull()
+        past()
+    }
+    Account::status {
+        notNull()
+        oneOf(Status.ACTIVE)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>onCondition</code> and <code>onGroup</code> add conditional and group-specific constraints, and <code>unwrap</code> gives access to the underlying <code>ValidatorBuilder</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;User&gt; {
+    onCondition({ _, context -&gt; "IT".equals(context.attribute("country").value()) }) {
+        User::taxId {
+            notNull()
+        }
+    }
+    onGroup(ConstraintGroup.of("CREATE")) {
+        User::id {
+            isNull()
+        }
+    }
+    unwrap().failFast(true)
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_coroutines_support">Coroutines support</h4>
+<div class="paragraph">
+<p>The extensions in <code>am.ik.yavi.fn.ValidationExtensions</code> suspend the validation result handling.
+<code>awaitFold</code>, <code>awaitBimap</code>, <code>awaitMap</code>, <code>awaitMapErrors</code> and <code>awaitMapError</code> correspond to <code>fold</code>, <code>bimap</code>, <code>map</code>, <code>mapErrors</code> and <code>mapError</code>.
+They require <code>kotlinx-coroutines-core</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">import am.ik.yavi.fn.awaitFold
+
+suspend fun createUser(validated: Validated&lt;User&gt;): HttpStatus = validated.awaitFold(
+    errorsMapper = { violations -&gt; HttpStatus.BAD_REQUEST },
+    mapper = { user -&gt; HttpStatus.OK },
+)</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

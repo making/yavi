@@ -22,8 +22,6 @@
 <div class="paragraph">
 <p>This is one of YAVI&#8217;s unique features.</p>
 </div>
-<div class="sect2">
-<h3 id="_defining_and_obtaining_an_arguments_validator_instance">Defining and obtaining an Arguments Validator instance</h3>
 <div class="paragraph">
 <p>Arguments Validator, as the name implies, is a Validator for arguments.</p>
 </div>
@@ -36,22 +34,30 @@ For example, even if the constraint of <code>notNull()</code> is imposed on the 
 if the <code>null</code> check is implemented in the constructor, this <code>null</code> check will work before the validation by Validator is executed.</p>
 </div>
 <div class="paragraph">
-<p>The Arguments Validator <strong>creates an object after validation</strong>, so you don&#8217;t have to worry about an incomplete object.</p>
+<p>The Arguments Validator <strong>creates an object after validation</strong>, so you don&#8217;t have to worry about an incomplete object.
+<a href="#gs-always-valid">[gs-always-valid]</a> shows how to combine this with a private constructor or a record to make invalid objects impossible to create.</p>
+</div>
+<div class="sect2">
+<h3 id="_defining_an_arguments_validator">Defining an arguments validator</h3>
+<div class="paragraph">
+<p>Use <code>am.ik.yavi.validator.Yavi#arguments()</code> to build an arguments validator.
+Each <code>_xxx</code> method adds one argument with its name and constraints, and <code>apply</code> creates the validator:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Person {
-    public Person(String name, String email, Integer age) {
-        // ...
-    }
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
 
-    public static Arguments3Validator&lt;String, String, Integer, Person&gt; validator = ArgumentsValidatorBuilder
-        .of(Person::new)
-        .builder(b -&gt; b
-            ._string(Arguments1::arg1, "name", c -&gt; c.notBlank().lessThanOrEqual(100)) // Constrains onf the first argument of Person::new
-            ._string(Arguments2::arg2, "email", c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constrains onf the second argument of Person::new
-            ._integer(Arguments3::arg3, "age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))) // Constrains onf the third argument of Person::new
-        .build();
+public class Person {
+
+    public static final Arguments3Validator&lt;String, String, Integer, Person&gt; validator = Yavi.arguments()
+        ._string("name", c -&gt; c.notBlank().lessThanOrEqual(100)) // Constraint on the first argument of Person::new
+        ._string("email", c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constraint on the second argument of Person::new
+        ._integer("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200)) // Constraint on the third argument of Person::new
+        .apply(Person::new);
+
+    // ...
 }</code></pre>
 </div>
 </div>
@@ -60,15 +66,65 @@ if the <code>null</code> check is implemented in the constructor, this <code>nul
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("Jone Doe", "jdoe@example.com", 30);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("John Doe", "jdoe@example.com", 30);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available.</p>
+<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available.
+The maximum number of arguments is 16.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_available_argument_kinds">Available argument kinds</h3>
+<div class="paragraph">
+<p>The following argument kinds are available, each with a constraint type for that kind:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>_string</code></p>
+</li>
+<li>
+<p><code>_boolean</code></p>
+</li>
+<li>
+<p><code>_short</code>, <code>_integer</code>, <code>_long</code>, <code>_float</code>, <code>_double</code></p>
+</li>
+<li>
+<p><code>_bigInteger</code>, <code>_bigDecimal</code></p>
+</li>
+<li>
+<p><code>_localDate</code>, <code>_localTime</code>, <code>_localDateTime</code>, <code>_offsetDateTime</code>, <code>_instant</code>, <code>_year</code>, <code>_yearMonth</code>, <code>_zonedDateTime</code></p>
+</li>
+<li>
+<p><code>_enum</code></p>
+</li>
+<li>
+<p><code>_object</code></p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
-Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Defining a Validator for a single value</a>" and "<a href="#combining-validators">[combining-validators]</a>".</p>
+<p><code>_object</code> accepts any reference type, including arrays, collections and maps:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;LocalDate, LocalDate&gt; dateValidator = Yavi.arguments()
+    ._localDate("date", c -&gt; c.notNull())
+    .apply(date -&gt; date);
+
+Arguments1ValidatorBuilder&lt;Color, Color&gt; colorValidatorBuilder = Yavi.arguments()
+    ._enum("color", c -&gt; c.notNull());
+Arguments1Validator&lt;Color, Color&gt; colorValidator = colorValidatorBuilder.apply(color -&gt; color);
+
+Arguments1Validator&lt;List&lt;String&gt;, List&lt;String&gt;&gt; tagsValidator = Yavi.arguments()
+    ._object(ObjectValidatorBuilder.&lt;List&lt;String&gt;&gt;of("tags", c -&gt; c.notNull()).build())
+    .apply(tags -&gt; tags);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>_collection</code>, <code>_map</code> and <code>_objectArray</code> are not argument kinds; they are <code>ValidatorBuilder</code> methods for validating a collection, map or array property of an object.
+See <a href="#using-yavi">[using-yavi]</a> for details.</p>
 </div>
 </div>
 <div class="sect2">
@@ -81,28 +137,33 @@ Building the Arguments Validator can be simplified by "<a href="#define-validato
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">// From https://beanvalidation.org/
 public class UserService {
     public User createUser(/* @Email */ String email,
-                         /* @NotNull */ String name) {
+                           /* @NotNull */ String name) {
         // ...
     }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The arguments for <code>UserService.createUser</code> in the above example can be validated as follows:</p>
+<p>The arguments for <code>UserService.createUser</code> in the above example can be validated with <code>ArgumentsValidatorBuilder</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3Validator&lt;UserService, String, String, User&gt; validator = ArgumentsValidatorBuilder
     .of(UserService::createUser)
     .builder(b -&gt; b
-        ._object(Arguments1::arg1, "userService", c -&gt; c.notNull())
-        ._string(Arguments2::arg2, "email", c -&gt; c.email())
-        ._string(Arguments3::arg3, "name", c -&gt; c.notNull()))
+        ._object(Arguments3::arg1, "userService", c -&gt; c.notNull())
+        ._string(Arguments3::arg2, "email", c -&gt; c.email())
+        ._string(Arguments3::arg3, "name", c -&gt; c.notBlank()))
     .build();
 
 UserService userService = new UserService();
 Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@example.com", "John Doe");</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Use this form when the values come from an instance method reference, because the receiver is validated as the first argument.
+It is also the form generated by the annotation processor meta constants described in <a href="#annotation-processor">[annotation-processor]</a>.
+The <code>_xxx</code> methods of the builder take the accessor for the argument position (<code>Arguments3::arg1</code> etc.) instead of just a name; <code>Arguments1Validator</code>..<code>Arguments16Validator</code> do not inherit from each other, so use the accessor that matches the arity of the builder.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -126,44 +187,98 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;String&gt; nameValidator = StringValidatorBuilder
     .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
-    .build();  // -&gt; extends Arguments1Validator&lt;String, String&gt;
-
-StringValidator&lt;String&gt; emailValidator = StringValidatorBuilder
-    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
-    .build();  // -&gt; extends Arguments1Validator&lt;String, String&gt;
+    .build();
 
 IntegerValidator&lt;Integer&gt; ageValidator = IntegerValidatorBuilder
     .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
-    .build();  // -&gt; extends Arguments1Validator&lt;Integer, Integer&gt;
+    .build();
 
-Validated&lt;String&gt; nameValidated = nameValidator.validate("Jone Doe");
-Validated&lt;String&gt; emailValidated = nameValidator.validate("jdoe@example.com");
-Validated&lt;Integer&gt; ageValidated = nameValidator.validate(30);</code></pre>
+Validated&lt;String&gt; nameValidated = nameValidator.validate("John Doe");
+Validated&lt;Integer&gt; ageValidated = ageValidator.validate(30);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can convert it to a Value Object after validation by using the <code>andThen</code> method as follows:</p>
+<p><code>build(Function)</code> converts the validated value into a Value Object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
+    .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build(Name::new);
+
+StringValidator&lt;Email&gt; emailValidator = StringValidatorBuilder
+    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
+    .build(Email::new);
+
+IntegerValidator&lt;Age&gt; ageValidator = IntegerValidatorBuilder
+    .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
+    .build(Age::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also map an existing validator with <code>map(Function)</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
     .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
     .build()
-    .andThen(name -&gt; new Name(name)); // -&gt; extends Arguments1Validator&lt;String, Name&gt;
+    .map(Name::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>andThen(Function)</code> produces the same result and is deprecated since 0.17.0 in favor of <code>map(Function)</code>.
+<code>andThen(ValueValidator)</code> is not deprecated; it chains another validator on the produced value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ObjectValidator&lt;Name, Name&gt; nonNullNameValidator = ObjectValidatorBuilder
+    .&lt;Name&gt;of("name", c -&gt; c.notNull())
+    .build();
 
-StringValidator&lt;Email&gt; emailValidator = StringValidatorBuilder
-    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
-    .build()
-    .andThen(email -&gt; new Email(email)); // -&gt; extends Arguments1Validator&lt;String, Email&gt;
-
-IntegerValidator&lt;Age&gt; ageValidator = IntegerValidatorBuilder
-    .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
-    .build()
-    .andThen(age -&gt; new Age(age)); // -&gt; extends Arguments1Validator&lt;Integer, Age&gt;
-
-Validated&lt;Name&gt; nameValidated = nameValidator.validate("Jone Doe");
-Validated&lt;Email&gt; emailValidated = nameValidator.validate("jdoe@example.com");
-Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
+Arguments1Validator&lt;String, Name&gt; checkedNameValidator = nameValidator
+    .andThen(nonNullNameValidator);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_composing_and_adapting_validators">Composing and adapting validators</h3>
+<div class="paragraph">
+<p><code>compose(Function)</code> converts the source object before validation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Integer, Name&gt; nameFromIdValidator = nameValidator.compose(Object::toString);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>wrap()</code> turns an arguments validator into one that validates an <code>ArgumentsN</code> container, and <code>Arguments1Validator.unwrap(&#8230;&#8203;)</code> (or <code>ArgumentsNValidator.unwrap(&#8230;&#8203;)</code>) turns it back:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Arguments1&lt;String&gt;, Name&gt; wrappedValidator = nameValidator.wrap();
+Arguments1Validator&lt;String, Name&gt; unwrappedValidator = Arguments1Validator.unwrap(wrappedValidator);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>lazy()</code> returns a validator that produces a <code>Supplier</code> of the validated value.
+The value is created only when the supplier is used, which lets you validate arguments inside a constructor without recursing into the constructor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Supplier&lt;Name&gt;&gt; lazyValidator = nameValidator.lazy();
+Supplier&lt;Name&gt; nameSupplier = lazyValidator.validated("John Doe");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#gs-always-valid">[gs-always-valid]</a> for the <code>lazy()</code> usage in a record constructor.</p>
+</div>
+<div class="paragraph">
+<p><code>indexed(int)</code> appends <code>[index]</code> to violation names so that violations of collection elements can be told apart:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; indexedEmailValidator = emailValidator.indexed(0);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -171,17 +286,71 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators.liftList(emailValidator);
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = emailValidator.liftList();
 Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
-// or
-Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
+
+Arguments1Validator&lt;Iterable&lt;String&gt;, Set&lt;Email&gt;&gt; emailSetValidator = emailValidator.liftSet();
+Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailCollectionValidator = emailValidator
+    .liftCollection(ArrayList::new);
+Arguments1Validator&lt;Optional&lt;String&gt;, Optional&lt;Email&gt;&gt; emailOptionalValidator = emailValidator.liftOptional();</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>liftSet()</code>, <code>listCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
+<p><code>liftList()</code>, <code>liftSet()</code>, <code>liftCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
+</div>
+<div class="paragraph">
+<p><code>split(&#8230;&#8203;)</code> validates separate arguments with separate validators, and <code>combine(&#8230;&#8203;)</code> validates the same input with multiple validators.
+<code>ArgumentsValidators.split(&#8230;&#8203;)</code> and <code>ArgumentsValidators.combine(&#8230;&#8203;)</code> are described in <a href="#combining-validators">[combining-validators]</a>.</p>
+</div>
+<div class="paragraph">
+<p><code>ArgumentsValidators.traverseN(&#8230;&#8203;)</code> validates each element of a given collection with a validator produced by a function and collects the results.
+<code>sequenceN(&#8230;&#8203;)</code> applies multiple validators to the same arguments and collects the results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, List&lt;Name&gt;&gt; namesValidator = ArgumentsValidators
+    .traverse1(List.of("John", "Jane"), value -&gt; nameValidator);
+
+Arguments1Validator&lt;String, List&lt;String&gt;&gt; sequencedValidator = ArgumentsValidators
+    .sequence1(List.of(nameValidator.map(Name::value), nameValidator.map(Name::value)));</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>These "small Validators" can be very powerful parts by using the Validator combinators described in "<a href="#combining-validators">[combining-validators]</a>".</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_arguments_containers">Arguments containers</h3>
+<div class="paragraph">
+<p><code>Arguments1</code> to <code>Arguments16</code> are immutable containers of validated arguments.
+Use <code>Arguments.of(&#8230;&#8203;)</code> to create one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3&lt;String, String, Integer&gt; arguments = Arguments.of("John Doe", "jdoe@example.com", 30);
+String name = arguments.arg1();
+String email = arguments.arg2();
+Integer age = arguments.arg3();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>argN()</code> returns the argument at position <code>N</code>. <code>firstN()</code> and <code>lastN()</code> return the leading or trailing <code>N</code> arguments as a new container, and <code>append</code>, <code>prepend</code> and <code>reverse</code> return a modified copy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1&lt;String&gt; first = arguments.first1();
+Arguments2&lt;String, String&gt; firstTwo = arguments.first2();
+Arguments1&lt;Integer&gt; last = arguments.last1();
+Arguments2&lt;String, Integer&gt; lastTwo = arguments.last2();
+
+Arguments4&lt;String, String, Integer, String&gt; appended = arguments.append("extra");
+Arguments4&lt;String, String, String, Integer&gt; prepended = arguments.prepend("extra");
+Arguments3&lt;Integer, String, String&gt; reversed = arguments.reverse();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>equals</code> and <code>hashCode</code> are implemented for the contents of the container.
+<code>Arguments</code> is final, and <code>ArgumentsN</code> does not inherit from <code>ArgumentsM</code>; the concrete container class is part of the equality check.</p>
 </div>
 </div>
 </div>
@@ -189,7 +358,7 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().v
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

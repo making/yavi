@@ -72,12 +72,63 @@ Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolatio
 </div>
 </div>
 <div class="paragraph">
+<p><code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code> throw the exception supplied by their function argument instead of returning a value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">emailValidated.throwIfInvalid(ConstraintViolationsException::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p><code>fold</code> method is convenient if you want to create an instance of the same type regardless of the success or failure of the validation.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, email -&gt; HttpStatus.OK);</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>For <code>Validated</code>, the error type of <code>fold</code> is <code>List&lt;ConstraintViolation&gt;</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_and_inspecting_validation_results">Mapping and inspecting validation results</h3>
+<div class="paragraph">
+<p><code>Validation</code> provides <code>map</code>, <code>flatMap</code>, <code>mapError</code>, <code>mapErrors</code>, <code>bimap</code>, <code>orElseThrow</code> and <code>throwIfInvalid</code> to transform or unwrap the result:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validation&lt;ConstraintViolation, String&gt; mapped = emailValidated.map(Email::value);
+Validation&lt;String, Email&gt; mappedErrors = emailValidated.mapError(ConstraintViolation::messageKey);
+Validation&lt;String, String&gt; bimapped = emailValidated
+    .bimap(violations -&gt; List.of("invalid"), Email::value);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>am.ik.yavi.core.Validated</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code>.
+It can be created with <code>Validated.successWith</code>, <code>Validated.failureWith</code> and <code>Validated.of</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Email&gt; success = Validated.successWith(new Email("yavi@example.com"));
+Validated&lt;Email&gt; failure = Validated.failureWith(violations); // ConstraintViolations is a List&lt;ConstraintViolation&gt;
+Validated&lt;Email&gt; fromValidation = Validated.of(Validation.success(new Email("yavi@example.com")));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Multiple results can be combined with <code>Validated.sequence</code>, <code>Validated.traverse</code>, <code>Validated.traverseIndexed</code> and <code>Validated.traverseOptional</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;List&lt;Email&gt;&gt; emails = Validated.sequence(List.of(emailValidated, anotherEmailValidated));
+Validated&lt;List&lt;Email&gt;&gt; traversed = Validated.traverse(inputs, emailValidator::validate);
+Validated&lt;List&lt;Email&gt;&gt; indexed = Validated.traverseIndexed(inputs,
+    (input, index) -&gt; emailValidator.indexed(index).validate(input));
+Validated&lt;Optional&lt;Email&gt;&gt; optional = Validated.traverseOptional(optionalInput, emailValidator::validate);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintViolations#of(List&lt;ConstraintViolation&gt;)</code> creates a <code>ConstraintViolations</code> from a list of violations.</p>
 </div>
 </div>
 <div class="sect2">
@@ -96,10 +147,13 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 </div>
 </div>
 <div class="paragraph">
+<p><code>Validations.combine(&#8230;&#8203;)</code> supports 2 to 16 validations.</p>
+</div>
+<div class="paragraph">
 <p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are accumulated without shortcuts in the middle.</p>
 </div>
 <div class="paragraph">
-<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ContraintViolation</code> s:</p>
+<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ConstraintViolation</code> s:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -155,7 +209,7 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

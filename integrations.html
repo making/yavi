@@ -241,57 +241,69 @@ public class OrderController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_obtaining_a_bivalidator">Obtaining a <code>BiValidator</code></h3>
+<h3 id="_obtaining_a_biconsumer">Obtaining a <code>BiConsumer</code></h3>
 <div class="paragraph">
-<p><code>am.ik.yavi.core.BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
-<code>T</code> is the type of target object as usual and <code>E</code> is the type of errors object.</p>
+<p>Since 0.16.0, a validator is exposed as a <code>java.util.function.BiConsumer&lt;T, E&gt;</code> instead of a dedicated type, where <code>T</code> is the type of the target object and <code>E</code> is the type of the errors object.</p>
 </div>
 <div class="paragraph">
-<p>This class is helpful for libraries or apps to adapt both YAVI and other validation framework that accepts these two arguments like Spring Framework&#8217;s <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
+<p>This is helpful for libraries or apps to adapt both YAVI and other validation frameworks that accept these two arguments, like Spring Framework&#8217;s <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>BiValidator</code> can be obtained as below:</p>
+<p><code>Validatable#toBiConsumer</code> and <code>ValueValidator#toBiConsumer</code> take an <code>am.ik.yavi.core.ErrorHandler&lt;E&gt;</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
-    .constraint(...)
-    .build(Errors::rejectValue);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>There is a factory for <code>BiValidator</code> as well</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
-public BiValidatorFactory&lt;Errors&gt; biValidatorFactory() {
-    return new BiValidatorFactory&lt;&gt;(Errors::rejectValues);
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public interface ErrorHandler&lt;E&gt; {
+    void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>or, if you want to customize the builder</p>
+<p>For Spring Framework&#8217;s <code>Errors</code>, the handler can record the violation with <code>Errors#rejectValue</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CartItem&gt; cartItemValidator = ...;
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator
+    .toBiConsumer((errors, name, messageKey, args, defaultMessage) -&gt;
+        errors.rejectValue(name, messageKey, args, defaultMessage));
+// or
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator.toBiConsumer(Errors::rejectValue);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is a factory for <code>BiConsumer</code> as well:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
-public BiValidatorFactory&lt;Errors&gt; biValidatorFactory(MessageSource messageSource) {
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory() {
+    return new BiConsumerFactory&lt;&gt;(Errors::rejectValue);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or, if you want to customize the message configuration</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory(MessageSource messageSource) {
     MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
-    return new BiValidatorFactory&lt;&gt;("." /* Message Key Separator */, messageFormatter, Errors::rejectValues);
+    return new BiConsumerFactory&lt;&gt;("." /* Message Key Separator */, messageFormatter, Errors::rejectValue);
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The usage of a <code>BiValidator</code> would look like following:</p>
+<p>The usage of a <code>BiConsumer</code> would look like following:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
 public class OrderController {
-    private final BiValidator&lt;CartItem, Errors&gt; validator;
+    private final BiConsumer&lt;CartItem, Errors&gt; validator;
 
-    public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
+    public OrderController(BiConsumerFactory&lt;Errors&gt; factory) {
         this.validator = factory.validator(builder -&gt; builder.constraint(...));
     }
 }</code></pre>
@@ -303,7 +315,7 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

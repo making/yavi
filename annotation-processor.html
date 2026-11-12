@@ -20,6 +20,30 @@
 <p>YAVI provides Annotation Processor to generates classes which defines meta classes
 that implement <code>am.ik.yavi.meta.ConstraintMeta</code> for each target which is annotated with <code>am.ik.yavi.meta.ConstraintTarget</code> or <code>am.ik.yavi.meta.ConstraintArguments</code>.</p>
 </div>
+<div class="sect2">
+<h3 id="_enabling_the_annotation_processor">Enabling the annotation processor</h3>
+<div class="paragraph">
+<p>The annotation processor is packaged in the <code>yavi</code> artifact.
+With JDK 21 and earlier, <code>mvn clean compile</code> discovers it on the compile classpath automatically.
+JDK 23 and later no longer run annotation processors found on the classpath implicitly, so declare the processor explicitly in <code>pom.xml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;annotationProcessorPaths&gt;
+            &lt;path&gt;
+                &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+                &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+                &lt;version&gt;0.17.3&lt;/version&gt;
+            &lt;/path&gt;
+        &lt;/annotationProcessorPaths&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>When you have a class as following, run <code>mvn clean compile</code>:</p>
 </div>
@@ -84,6 +108,7 @@ public class UserForm {
 </tr>
 </table>
 </div>
+</div>
 <div class="sect2">
 <h3 id="_annotating_constrainttarget">Annotating <code>@ConstraintTarget</code></h3>
 <div class="paragraph">
@@ -99,8 +124,8 @@ public class UserForm {
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt; of()
-    .constraint(_UserFormMeta.NAME, c -&gt; c.notEmpty())
-    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notEmpty().email())
+    .constraint(_UserFormMeta.NAME, c -&gt; c.notBlank())
+    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notBlank().email())
     .constraint(_UserFormMeta.AGE, c -&gt; c.greaterThan(0))
     .build();</code></pre>
 </div>
@@ -166,7 +191,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T17:37:47.866300+09:00
+// Generated at 2026-11-12T12:52:16.335171+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -260,7 +285,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T17:59:03.892823+09:00
+// Generated at 2026-11-12T12:52:16.335171+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -358,7 +383,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:00:37.868495+09:00
+// Generated at 2026-11-12T12:52:16.333598+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -439,7 +464,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:02:47.124191+09:00
+// Generated at 2026-11-12T12:52:16.331344+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -492,10 +517,10 @@ public class _UserFormMeta {
 + It can be annotated on constructors or methods.</p>
 </div>
 <div class="paragraph">
-<p>The constructor of <code>Xyz</code> class that is annotated with <code>@ConstraintTarget</code> will generate <code>_XyzArgumentsMeta</code>.</p>
+<p>The constructor of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzArgumentsMeta</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>doSomething</code> method of <code>Xyz</code> class that is annotated with <code>@ConstraintTarget</code> will generate <code>_XyzDoSomethingArgumentsMeta</code>.</p>
+<p><code>doSomething</code> method of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzDoSomethingArgumentsMeta</code>.</p>
 </div>
 <div class="sect3">
 <h4 id="_validating_constructor_arguments">Validating Constructor Arguments</h4>
@@ -529,7 +554,7 @@ public class User {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:22:15.164882+09:00
+// Generated at 2026-11-12T12:52:16.325765+09:00
 public class _UserArgumentsMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
@@ -541,7 +566,7 @@ public class _UserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments1::arg1;
+            return am.ik.yavi.arguments.Arguments3::arg1;
         }
     };
 
@@ -554,7 +579,7 @@ public class _UserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments2::arg2;
+            return am.ik.yavi.arguments.Arguments3::arg2;
         }
     };
 
@@ -581,8 +606,8 @@ public class _UserArgumentsMeta {
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3Validator&lt;String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
     .of(User::new)
     .builder(b -&gt; b
-        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notEmpty())
-        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notEmpty().email())
+        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
         .constraint(_UserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
     )
     .build();</code></pre>
@@ -613,7 +638,7 @@ public class UserService {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:40:53.554587+09:00
+// Generated at 2026-11-12T12:52:16.329116+09:00
 public class _UserServiceCreateUserArgumentsMeta {
 
     public static final am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; USERSERVICE = new am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt;() {
@@ -625,7 +650,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments1::arg1;
+            return am.ik.yavi.arguments.Arguments4::arg1;
         }
     };
 
@@ -638,7 +663,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments2::arg2;
+            return am.ik.yavi.arguments.Arguments4::arg2;
         }
     };
 
@@ -651,7 +676,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments3::arg3;
+            return am.ik.yavi.arguments.Arguments4::arg3;
         }
     };
 
@@ -679,8 +704,8 @@ public class _UserServiceCreateUserArgumentsMeta {
     .of(UserService::createUser)
     .builder(b -&gt; b
         .constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE, c -&gt; c.notNull())
-        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notEmpty())
-        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notEmpty().email())
+        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
         .constraint(_UserServiceCreateUserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
     )
     .build();</code></pre>
@@ -688,12 +713,41 @@ public class _UserServiceCreateUserArgumentsMeta {
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_supported_meta_types">Supported meta types</h3>
+<div class="paragraph">
+<p>The processor generates a meta for the declared type of the annotated target.
+The following meta types are available in <code>am.ik.yavi.meta</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>StringConstraintMeta</code></p>
+</li>
+<li>
+<p><code>BooleanConstraintMeta</code>, <code>CharacterConstraintMeta</code>, <code>ByteConstraintMeta</code>, <code>ShortConstraintMeta</code>, <code>IntegerConstraintMeta</code>, <code>LongConstraintMeta</code>, <code>FloatConstraintMeta</code>, <code>DoubleConstraintMeta</code></p>
+</li>
+<li>
+<p><code>BigIntegerConstraintMeta</code>, <code>BigDecimalConstraintMeta</code></p>
+</li>
+<li>
+<p><code>ObjectConstraintMeta</code></p>
+</li>
+<li>
+<p><code>LocalDateConstraintMeta</code>, <code>LocalTimeConstraintMeta</code>, <code>LocalDateTimeConstraintMeta</code>, <code>OffsetDateTimeConstraintMeta</code>, <code>InstantConstraintMeta</code>, <code>YearConstraintMeta</code>, <code>YearMonthConstraintMeta</code>, <code>ZonedDateTimeConstraintMeta</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There is no dedicated meta type for enums; an enum target uses <code>ObjectConstraintMeta</code>.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

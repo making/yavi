@@ -57,7 +57,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
     &lt;artifactId&gt;yavi&lt;/artifactId&gt;
-    &lt;version&gt;0.9.1&lt;/version&gt;
+    &lt;version&gt;0.17.3&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -70,13 +70,13 @@ Add the following dependencies as needed:</p>
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
     &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
-    &lt;version&gt;5.8.1&lt;/version&gt;
+    &lt;version&gt;5.14.4&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.assertj&lt;/groupId&gt;
     &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
-    &lt;version&gt;3.21.0&lt;/version&gt;
+    &lt;version&gt;3.27.7&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
@@ -245,12 +245,127 @@ The first three test methods show some expected constraint violations:</p>
 You can also check if the validation was successful with the <code>ConstraintViolations.isValid</code> method.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="gs-always-valid">The Always Valid model</h3>
+<div class="paragraph">
+<p>The examples above create a <code>Car</code> instance and then validate it, so an invalid <code>Car</code> can exist temporarily.
+YAVI can also make invalid objects impossible to create by validating the arguments before the constructor runs and returning the result only when all arguments are valid.</p>
+</div>
+<div class="paragraph">
+<p>Make the constructor private and expose a static factory method that returns <code>Validated&lt;Car&gt;</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public final class Car {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string("manufacturer", c -&gt; c.notNull())
+        ._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final Integer seatCount;
+
+    public static Validated&lt;Car&gt; of(String manufacturer, String licensePlate, Integer seatCount) {
+        return validator.validate(manufacturer, licensePlate, seatCount);
+    }
+
+    private Car(String manufacturer, String licensePlate, Integer seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licensePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String manufacturer() {
+        return manufacturer;
+    }
+
+    public String licensePlate() {
+        return licensePlate;
+    }
+
+    public Integer seatCount() {
+        return seatCount;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Car.of(&#8230;&#8203;)</code> validates the arguments and returns the result wrapped in <code>Validated</code>.
+Because the constructor is private, a <code>Car</code> can only be obtained from the validated result.
+When validation fails, inspect the violations with <code>Validated#errors()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Car&gt; validated = Car.of(null, "DD-AB-123", 4);
+if (!validated.isValid()) {
+    ConstraintViolations violations = validated.errors();
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you prefer a record and want validation inside the constructor, use <code>lazy()</code> and call <code>validated(&#8230;&#8203;)</code> from the compact constructor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string("manufacturer", c -&gt; c.notNull())
+        ._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    public Car {
+        validator.lazy().validated(manufacturer, licensePlate, seatCount);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>lazy()</code> returns a validator that produces a <code>Supplier</code> instead of invoking the mapper, so the validation runs without calling <code>Car::new</code> again.
+Without <code>lazy()</code>, the validator would construct a <code>Car</code> while the constructor is still running and recurse until a <code>StackOverflowError</code>.</p>
+</div>
+<div class="paragraph">
+<p>Invalid arguments make the compact constructor throw <code>ConstraintViolationsException</code>.
+Its <code>violations()</code> method returns the violations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">assertThatThrownBy(() -&gt; new Car(null, "DD-AB-123", 4))
+    .isInstanceOf(ConstraintViolationsException.class)
+    .satisfies(e -&gt; {
+        ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+        assertThat(violations).hasSize(1);
+    });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#validating-arguments">[validating-arguments]</a> for the <code>Yavi.arguments()</code> builder and the other ways to define arguments validators.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

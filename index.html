@@ -13,7 +13,7 @@
 <div id="header">
 <h1>YAVI (<em>Y</em>et <em>A</em>nother <em>V</em>al<em>I</em>dation) Reference Documentation</h1>
 <div class="details">
-<span id="revnumber">version 0.9.1</span>
+<span id="revnumber">version 0.17.3</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -25,6 +25,7 @@
 <li><a href="#gs-project-setup">2.2. Project set up</a></li>
 <li><a href="#gs-applying-constraints">2.3. Applying constraints</a></li>
 <li><a href="#gs-validating-constraints">2.4. Validating constraints</a></li>
+<li><a href="#gs-always-valid">2.5. The Always Valid model</a></li>
 </ul>
 </li>
 <li><a href="#using-yavi">3. Using YAVI</a>
@@ -37,28 +38,41 @@
 <li><a href="#creating-a-custom-constraint">3.6. Creating a custom constraint</a></li>
 <li><a href="#cross-field-validation">3.7. Cross-field validation</a></li>
 <li><a href="#overriding-violation-messages">3.8. Overriding violation messages</a></li>
-<li><a href="#message-formatter">3.9. Message Formatter</a></li>
-<li><a href="#fail-fast-mode">3.10. Fail fast mode</a></li>
-<li><a href="#kotlin-support">3.11. Kotlin Support</a></li>
+<li><a href="#value-validators">3.9. Value validators</a></li>
+<li><a href="#handling-violation-results">3.10. Handling violation results</a></li>
+<li><a href="#message-formatter">3.11. Message Formatter</a></li>
+<li><a href="#fail-fast-mode">3.12. Fail fast mode</a></li>
+<li><a href="#resolving-conflicting-constraint-names">3.13. Resolving conflicting constraint names</a></li>
+<li><a href="#kotlin-support">3.14. Kotlin Support</a>
+<ul class="sectlevel3">
+<li><a href="#coroutines-support">3.14.1. Coroutines support</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#combining-validation-results">4. Combining validation results</a>
 <ul class="sectlevel2">
 <li><a href="#validating-with-applicative-functor">4.1. Validating with Applicative Functor</a></li>
-<li><a href="#combining-validation-validated-objects">4.2. Combining <code>Validation</code> / <code>Validated</code> objects</a></li>
+<li><a href="#mapping-and-inspecting-validation-results">4.2. Mapping and inspecting validation results</a></li>
+<li><a href="#combining-validation-validated-objects">4.3. Combining <code>Validation</code> / <code>Validated</code> objects</a></li>
 </ul>
 </li>
 <li><a href="#validating-arguments">5. Validating arguments</a>
 <ul class="sectlevel2">
-<li><a href="#defining-and-obtaining-an-arguments-validator-instance">5.1. Defining and obtaining an Arguments Validator instance</a></li>
-<li><a href="#validating-method-arguments">5.2. Validating method arguments</a></li>
-<li><a href="#define-validator-for-a-single-value">5.3. Defining a Validator for a single value</a></li>
+<li><a href="#defining-an-arguments-validator">5.1. Defining an arguments validator</a></li>
+<li><a href="#available-argument-kinds">5.2. Available argument kinds</a></li>
+<li><a href="#validating-method-arguments">5.3. Validating method arguments</a></li>
+<li><a href="#define-validator-for-a-single-value">5.4. Defining a Validator for a single value</a></li>
+<li><a href="#composing-and-adapting-validators">5.5. Composing and adapting validators</a></li>
+<li><a href="#arguments-containers">5.6. Arguments containers</a></li>
 </ul>
 </li>
 <li><a href="#combining-validators">6. Combining validators</a>
 <ul class="sectlevel2">
 <li><a href="#splitting-a-validator-for-an-object-into-small-pieces">6.1. Splitting a validator for an object into small pieces</a></li>
-<li><a href="#validating-the-source-object-before-creating-the-target-object">6.2. Validating the source object before creating the target object</a></li>
+<li><a href="#chaining-and-mapping-value-validators">6.2. Chaining and mapping value validators</a></li>
+<li><a href="#validating-every-element-of-an-iterable">6.3. Validating every element of an iterable</a></li>
+<li><a href="#validating-the-source-object-before-creating-the-target-object">6.4. Validating the source object before creating the target object</a></li>
 </ul>
 </li>
 <li><a href="#built-in-constraints">7. Built-in Constraints</a>
@@ -75,23 +89,29 @@
 <li><a href="#lessthanint">7.1.8. <code>lessThan(int)</code></a></li>
 <li><a href="#lessthanorequalint">7.1.9. <code>lessThanOrEqual(int)</code></a></li>
 <li><a href="#containscharsequence">7.1.10. <code>contains(CharSequence)</code></a></li>
-<li><a href="#patternstring">7.1.11. <code>pattern(String)</code></a></li>
-<li><a href="#email">7.1.12. <code>email()</code></a></li>
-<li><a href="#password">7.1.13. <code>password(&#8230;&#8203;)</code></a></li>
-<li><a href="#ipv4">7.1.14. <code>ipv4()</code></a></li>
-<li><a href="#ipv6">7.1.15. <code>ipv6()</code></a></li>
-<li><a href="#url">7.1.16. <code>url()</code></a></li>
-<li><a href="#luhn">7.1.17. <code>luhn()</code></a></li>
-<li><a href="#isbyte">7.1.18. <code>isByte()</code></a></li>
-<li><a href="#isshort">7.1.19. <code>isShort()</code></a></li>
-<li><a href="#isinteger">7.1.20. <code>isInteger()</code></a></li>
-<li><a href="#islong">7.1.21. <code>isLong()</code></a></li>
-<li><a href="#isfloat">7.1.22. <code>isFloat()</code></a></li>
-<li><a href="#isdouble">7.1.23. <code>isDouble()</code></a></li>
-<li><a href="#isbiginteger">7.1.24. <code>isBigInteger()</code></a></li>
-<li><a href="#isbigdecimal">7.1.25. <code>isBigDecimal()</code></a></li>
-<li><a href="#codepoints">7.1.26. <code>codePoints(&#8230;&#8203;)</code></a></li>
-<li><a href="#advanced-character-length-check">7.1.27. Advanced character length check</a>
+<li><a href="#startswithcharsequence">7.1.11. <code>startsWith(CharSequence)</code></a></li>
+<li><a href="#endswithcharsequence">7.1.12. <code>endsWith(CharSequence)</code></a></li>
+<li><a href="#patternstring">7.1.13. <code>pattern(String)</code></a></li>
+<li><a href="#patternpattern-patternsupplierpattern">7.1.14. <code>pattern(Pattern)</code> / <code>pattern(Supplier&lt;Pattern&gt;)</code></a></li>
+<li><a href="#email">7.1.15. <code>email()</code></a></li>
+<li><a href="#uuid">7.1.16. <code>uuid()</code></a></li>
+<li><a href="#password">7.1.17. <code>password(&#8230;&#8203;)</code></a></li>
+<li><a href="#ipv4">7.1.18. <code>ipv4()</code></a></li>
+<li><a href="#ipv6">7.1.19. <code>ipv6()</code></a></li>
+<li><a href="#url">7.1.20. <code>url()</code></a></li>
+<li><a href="#url-2">7.1.21. <code>url(&#8230;&#8203;)</code></a></li>
+<li><a href="#luhn">7.1.22. <code>luhn()</code></a></li>
+<li><a href="#isbyte">7.1.23. <code>isByte()</code></a></li>
+<li><a href="#isshort">7.1.24. <code>isShort()</code></a></li>
+<li><a href="#isinteger">7.1.25. <code>isInteger()</code></a></li>
+<li><a href="#islong">7.1.26. <code>isLong()</code></a></li>
+<li><a href="#isfloat">7.1.27. <code>isFloat()</code></a></li>
+<li><a href="#isdouble">7.1.28. <code>isDouble()</code></a></li>
+<li><a href="#isbiginteger">7.1.29. <code>isBigInteger()</code></a></li>
+<li><a href="#isbigdecimal">7.1.30. <code>isBigDecimal()</code></a></li>
+<li><a href="#isolocaldate-localdatestring-pattern">7.1.31. <code>isoLocalDate()</code> / <code>localDate(String pattern)</code></a></li>
+<li><a href="#codepoints">7.1.32. <code>codePoints(&#8230;&#8203;)</code></a></li>
+<li><a href="#advanced-character-length-check">7.1.33. Advanced character length check</a>
 <ul class="sectlevel4">
 <li><a href="#surrogate-pair">Surrogate pair</a></li>
 <li><a href="#combining-character">Combining character</a></li>
@@ -99,7 +119,8 @@
 <li><a href="#emoji">Emoji</a></li>
 </ul>
 </li>
-<li><a href="#asbytearray">7.1.28. <code>asByteArray()</code></a></li>
+<li><a href="#variant">7.1.34. <code>variant(&#8230;&#8203;)</code></a></li>
+<li><a href="#asbytearray">7.1.35. <code>asByteArray()</code></a></li>
 </ul>
 </li>
 <li><a href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal">7.2. Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</a>
@@ -110,68 +131,87 @@
 <li><a href="#greaterthanorequal">7.2.4. <code>greaterThanOrEqual(&#8230;&#8203;)</code></a></li>
 <li><a href="#lessthan">7.2.5. <code>lessThan(&#8230;&#8203;)</code></a></li>
 <li><a href="#lessthanorequal">7.2.6. <code>lessThanOrEqual(&#8230;&#8203;)</code></a></li>
+<li><a href="#positive-positiveorzero-negative-negativeorzero">7.2.7. <code>positive()</code> / <code>positiveOrZero()</code> / <code>negative()</code> / <code>negativeOrZero()</code></a></li>
 </ul>
 </li>
-<li><a href="#boolean">7.3. Boolean</a>
+<li><a href="#temporal">7.3. Temporal</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-3">7.3.1. <code>notNull()</code></a></li>
-<li><a href="#isnull-3">7.3.2. <code>isNull()</code></a></li>
-<li><a href="#istrue">7.3.3. <code>isTrue()</code></a></li>
-<li><a href="#isfalse">7.3.4. <code>isFalse()</code></a></li>
+<li><a href="#past-pastorpresent-future-futureorpresent">7.3.1. <code>past()</code> / <code>pastOrPresent()</code> / <code>future()</code> / <code>futureOrPresent()</code></a></li>
+<li><a href="#before-beforeorequal-after-afterorequal">7.3.2. <code>before(&#8230;&#8203;)</code> / <code>beforeOrEqual(&#8230;&#8203;)</code> / <code>after(&#8230;&#8203;)</code> / <code>afterOrEqual(&#8230;&#8203;)</code></a></li>
+<li><a href="#between">7.3.3. <code>between(&#8230;&#8203;)</code></a></li>
+<li><a href="#fieldpredicate">7.3.4. <code>fieldPredicate(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#collection">7.4. Collection</a>
+<li><a href="#boolean">7.4. Boolean</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-4">7.4.1. <code>notNull()</code></a></li>
-<li><a href="#isnull-4">7.4.2. <code>isNull()</code></a></li>
-<li><a href="#notempty-2">7.4.3. <code>notEmpty()</code></a></li>
-<li><a href="#fixedsizeint-2">7.4.4. <code>fixedSize(int)</code></a></li>
-<li><a href="#greaterthanint-2">7.4.5. <code>greaterThan(int)</code></a></li>
-<li><a href="#greaterthanorequalint-2">7.4.6. <code>greaterThanOrEqual(int)</code></a></li>
-<li><a href="#lessthanint-2">7.4.7. <code>lessThan(int)</code></a></li>
-<li><a href="#lessthanorequalint-2">7.4.8. <code>lessThanOrEqual(int)</code></a></li>
-<li><a href="#contains">7.4.9. <code>contains(&#8230;&#8203;)</code></a></li>
+<li><a href="#notnull-3">7.4.1. <code>notNull()</code></a></li>
+<li><a href="#isnull-3">7.4.2. <code>isNull()</code></a></li>
+<li><a href="#istrue">7.4.3. <code>isTrue()</code></a></li>
+<li><a href="#isfalse">7.4.4. <code>isFalse()</code></a></li>
 </ul>
 </li>
-<li><a href="#map">7.5. Map</a>
+<li><a href="#collection">7.5. Collection</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-5">7.5.1. <code>notNull()</code></a></li>
-<li><a href="#isnull-5">7.5.2. <code>isNull()</code></a></li>
-<li><a href="#notempty-3">7.5.3. <code>notEmpty()</code></a></li>
-<li><a href="#fixedsizeint-3">7.5.4. <code>fixedSize(int)</code></a></li>
-<li><a href="#greaterthanint-3">7.5.5. <code>greaterThan(int)</code></a></li>
-<li><a href="#greaterthanorequalint-3">7.5.6. <code>greaterThanOrEqual(int)</code></a></li>
-<li><a href="#lessthanint-3">7.5.7. <code>lessThan(int)</code></a></li>
-<li><a href="#lessthanorequalint-3">7.5.8. <code>lessThanOrEqual(int)</code></a></li>
-<li><a href="#containskey">7.5.9. <code>containsKey(&#8230;&#8203;)</code></a></li>
-<li><a href="#containsvalue">7.5.10. <code>containsValue(&#8230;&#8203;)</code></a></li>
+<li><a href="#notnull-4">7.5.1. <code>notNull()</code></a></li>
+<li><a href="#isnull-4">7.5.2. <code>isNull()</code></a></li>
+<li><a href="#notempty-2">7.5.3. <code>notEmpty()</code></a></li>
+<li><a href="#fixedsizeint-2">7.5.4. <code>fixedSize(int)</code></a></li>
+<li><a href="#greaterthanint-2">7.5.5. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint-2">7.5.6. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint-2">7.5.7. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint-2">7.5.8. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#contains">7.5.9. <code>contains(&#8230;&#8203;)</code></a></li>
+<li><a href="#unique">7.5.10. <code>unique()</code></a></li>
+<li><a href="#containsallcollection">7.5.11. <code>containsAll(Collection)</code></a></li>
+<li><a href="#foreach-foreachifpresent">7.5.12. <code>forEach(&#8230;&#8203;)</code> / <code>forEachIfPresent(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
-<li><a href="#object">7.6. Object</a>
+<li><a href="#map">7.6. Map</a>
 <ul class="sectlevel3">
-<li><a href="#notnull-6">7.6.1. <code>notNull()</code></a></li>
-<li><a href="#isnull-6">7.6.2. <code>isNull()</code></a></li>
-<li><a href="#password-2">7.6.3. <code>password()</code></a></li>
+<li><a href="#notnull-5">7.6.1. <code>notNull()</code></a></li>
+<li><a href="#isnull-5">7.6.2. <code>isNull()</code></a></li>
+<li><a href="#notempty-3">7.6.3. <code>notEmpty()</code></a></li>
+<li><a href="#fixedsizeint-3">7.6.4. <code>fixedSize(int)</code></a></li>
+<li><a href="#greaterthanint-3">7.6.5. <code>greaterThan(int)</code></a></li>
+<li><a href="#greaterthanorequalint-3">7.6.6. <code>greaterThanOrEqual(int)</code></a></li>
+<li><a href="#lessthanint-3">7.6.7. <code>lessThan(int)</code></a></li>
+<li><a href="#lessthanorequalint-3">7.6.8. <code>lessThanOrEqual(int)</code></a></li>
+<li><a href="#containskey">7.6.9. <code>containsKey(&#8230;&#8203;)</code></a></li>
+<li><a href="#containsvalue">7.6.10. <code>containsValue(&#8230;&#8203;)</code></a></li>
 </ul>
 </li>
+<li><a href="#object">7.7. Object</a>
+<ul class="sectlevel3">
+<li><a href="#notnull-6">7.7.1. <code>notNull()</code></a></li>
+<li><a href="#isnull-6">7.7.2. <code>isNull()</code></a></li>
+<li><a href="#equaltoobject">7.7.3. <code>equalTo(Object)</code></a></li>
+<li><a href="#oneofcollection">7.7.4. <code>oneOf(Collection)</code></a></li>
+<li><a href="#notoneofcollection">7.7.5. <code>notOneOf(Collection)</code></a></li>
+<li><a href="#password-2">7.7.6. <code>password()</code></a></li>
+</ul>
+</li>
+<li><a href="#enum">7.8. Enum</a></li>
+<li><a href="#array">7.9. Array</a></li>
 </ul>
 </li>
 <li><a href="#annotation-processor">8. Annotation Processor</a>
 <ul class="sectlevel2">
-<li><a href="#annotating-constrainttarget">8.1. Annotating <code>@ConstraintTarget</code></a>
+<li><a href="#enabling-the-annotation-processor">8.1. Enabling the annotation processor</a></li>
+<li><a href="#annotating-constrainttarget">8.2. Annotating <code>@ConstraintTarget</code></a>
 <ul class="sectlevel3">
-<li><a href="#constrainttarget-on-getters">8.1.1. <code>@ConstraintTarget</code> on getters</a></li>
-<li><a href="#on-constructor-arguments-getters">8.1.2. on constructor arguments + getters</a></li>
-<li><a href="#on-constructor-arguments-non-getters">8.1.3. on constructor arguments + non-getters</a></li>
-<li><a href="#on-constructor-arguments-field-access">8.1.4. on constructor arguments + field access</a></li>
+<li><a href="#constrainttarget-on-getters">8.2.1. <code>@ConstraintTarget</code> on getters</a></li>
+<li><a href="#on-constructor-arguments-getters">8.2.2. on constructor arguments + getters</a></li>
+<li><a href="#on-constructor-arguments-non-getters">8.2.3. on constructor arguments + non-getters</a></li>
+<li><a href="#on-constructor-arguments-field-access">8.2.4. on constructor arguments + field access</a></li>
 </ul>
 </li>
-<li><a href="#annotating-constraintarguments">8.2. Annotating <code>@ConstraintArguments</code></a>
+<li><a href="#annotating-constraintarguments">8.3. Annotating <code>@ConstraintArguments</code></a>
 <ul class="sectlevel3">
-<li><a href="#validating-constructor-arguments">8.2.1. Validating Constructor Arguments</a></li>
-<li><a href="#validating-method-arguments-2">8.2.2. Validating Method Arguments</a></li>
+<li><a href="#validating-constructor-arguments">8.3.1. Validating Constructor Arguments</a></li>
+<li><a href="#validating-method-arguments-2">8.3.2. Validating Method Arguments</a></li>
 </ul>
 </li>
+<li><a href="#supported-meta-types">8.4. Supported meta types</a></li>
 </ul>
 </li>
 <li><a href="#integrations">9. Integrations</a>
@@ -181,7 +221,7 @@
 <li><a href="#integration-with-spring-webflux-fn">9.3. Integration with Spring WebFlux.fn</a></li>
 <li><a href="#integration-with-messagesource-in-spring-framework">9.4. Integration with <code>MessageSource</code> in Spring Framework</a></li>
 <li><a href="#managing-validatorbuilder-in-an-ioc-container">9.5. Managing <code>ValidatorBuilder</code> in an IoC Container</a></li>
-<li><a href="#obtaining-a-bivalidator">9.6. Obtaining a <code>BiValidator</code></a></li>
+<li><a href="#obtaining-a-biconsumer">9.6. Obtaining a <code>BiConsumer</code></a></li>
 </ul>
 </li>
 </ul>
@@ -242,16 +282,19 @@ If you use YAVI, you will surely understand that it means the former.</p>
 <p>Constraints on any object. Java Beans, <a href="https://openjdk.java.net/jeps/395">Records</a>, <a href="https://developers.google.com/protocol-buffers">Protocol Buffers</a>, <a href="https://immutables.github.io/">Immutables</a> and anything else.</p>
 </li>
 <li>
-<p>Lots of powerful built-in constraints</p>
+<p>Lots of powerful built-in constraints, including temporal and enum constraints</p>
 </li>
 <li>
 <p>Easy custom constraints</p>
 </li>
 <li>
-<p>Validation for groups, conditional validation</p>
+<p>Validation for constraint groups and contexts, conditional validation, and conflict strategy</p>
 </li>
 <li>
-<p>Validation for arguments before creating an object</p>
+<p>Validation for arguments before creating an object, and the "Always Valid model" that makes invalid objects impossible to create</p>
+</li>
+<li>
+<p>Kotlin integration, including coroutine extensions</p>
 </li>
 <li>
 <p>Support for API and combination of validation results and validators that incorporate the concept of functional programming</p>
@@ -307,7 +350,7 @@ This content is derived from <a href="https://hibernate.org/validator/documentat
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
     &lt;artifactId&gt;yavi&lt;/artifactId&gt;
-    &lt;version&gt;0.9.1&lt;/version&gt;
+    &lt;version&gt;0.17.3&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -320,13 +363,13 @@ Add the following dependencies as needed:</p>
 <pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;dependency&gt;
     &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
     &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
-    &lt;version&gt;5.8.1&lt;/version&gt;
+    &lt;version&gt;5.14.4&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.assertj&lt;/groupId&gt;
     &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
-    &lt;version&gt;3.21.0&lt;/version&gt;
+    &lt;version&gt;3.27.7&lt;/version&gt;
     &lt;scope&gt;test&lt;/scope&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
@@ -493,6 +536,121 @@ The first three test methods show some expected constraint violations:</p>
 <div class="paragraph">
 <p>If the object validates successfully, <code>validate()</code> returns an empty <code>ConstraintViolations</code> as you can see in <code>carIsValid()</code>.
 You can also check if the validation was successful with the <code>ConstraintViolations.isValid</code> method.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="gs-always-valid"><a class="anchor" href="#gs-always-valid"></a>2.5. The Always Valid model</h3>
+<div class="paragraph">
+<p>The examples above create a <code>Car</code> instance and then validate it, so an invalid <code>Car</code> can exist temporarily.
+YAVI can also make invalid objects impossible to create by validating the arguments before the constructor runs and returning the result only when all arguments are valid.</p>
+</div>
+<div class="paragraph">
+<p>Make the constructor private and expose a static factory method that returns <code>Validated&lt;Car&gt;</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public final class Car {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string("manufacturer", c -&gt; c.notNull())
+        ._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final Integer seatCount;
+
+    public static Validated&lt;Car&gt; of(String manufacturer, String licensePlate, Integer seatCount) {
+        return validator.validate(manufacturer, licensePlate, seatCount);
+    }
+
+    private Car(String manufacturer, String licensePlate, Integer seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licensePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String manufacturer() {
+        return manufacturer;
+    }
+
+    public String licensePlate() {
+        return licensePlate;
+    }
+
+    public Integer seatCount() {
+        return seatCount;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Car.of(&#8230;&#8203;)</code> validates the arguments and returns the result wrapped in <code>Validated</code>.
+Because the constructor is private, a <code>Car</code> can only be obtained from the validated result.
+When validation fails, inspect the violations with <code>Validated#errors()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Car&gt; validated = Car.of(null, "DD-AB-123", 4);
+if (!validated.isValid()) {
+    ConstraintViolations violations = validated.errors();
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you prefer a record and want validation inside the constructor, use <code>lazy()</code> and call <code>validated(&#8230;&#8203;)</code> from the compact constructor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string("manufacturer", c -&gt; c.notNull())
+        ._string("licensePlate", c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer("seatCount", c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    public Car {
+        validator.lazy().validated(manufacturer, licensePlate, seatCount);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>lazy()</code> returns a validator that produces a <code>Supplier</code> instead of invoking the mapper, so the validation runs without calling <code>Car::new</code> again.
+Without <code>lazy()</code>, the validator would construct a <code>Car</code> while the constructor is still running and recurse until a <code>StackOverflowError</code>.</p>
+</div>
+<div class="paragraph">
+<p>Invalid arguments make the compact constructor throw <code>ConstraintViolationsException</code>.
+Its <code>violations()</code> method returns the violations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">assertThatThrownBy(() -&gt; new Car(null, "DD-AB-123", 4))
+    .isInstanceOf(ConstraintViolationsException.class)
+    .satisfies(e -&gt; {
+        ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+        assertThat(violations).hasSize(1);
+    });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#validating-arguments">Validating arguments</a> for the <code>Yavi.arguments()</code> builder and the other ways to define arguments validators.</p>
 </div>
 </div>
 </div>
@@ -726,12 +884,13 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 <div class="sect2">
 <h3 id="applying-constraints-only-to-specific-conditions"><a class="anchor" href="#applying-constraints-only-to-specific-conditions"></a>3.4. Applying constraints only to specific conditions</h3>
 <div class="paragraph">
-<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code> interface:</p>
+<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code>.
+Since 0.11.0 a condition receives an <code>am.ik.yavi.core.ConstraintContext</code> instead of a <code>ConstraintGroup</code>, so it can read arbitrary attributes of the validation call:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
-    .constraintOnCondition((user, constraintGroup) -&gt; !user.getName().isEmpty(),
+    .constraintOnCondition((user, context) -&gt; !user.getName().isEmpty(),
         b -&gt; b.constraint(User::getEmail, "email", c -&gt; c.email().notEmpty()))
     .build();</code></pre>
 </div>
@@ -739,11 +898,43 @@ Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
 <div class="paragraph">
 <p>The constraint above on email will only be activated if the name is not empty.</p>
 </div>
+<div class="paragraph">
+<p>A <code>ConstraintContext</code> can be created from a <code>Map</code> or from a lookup function, and passed to the validation method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintContext context = ConstraintContext.from(Map.of("country", "IT"));
+// or
+ConstraintContext context = ConstraintContext.from(key -&gt; lookupAttribute(key));
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, ctx) -&gt; "IT".equals(ctx.attribute("country").value()),
+        b -&gt; b.constraint(User::getTaxId, "taxId", c -&gt; c.notBlank()))
+    .build();
+
+ConstraintViolations violations = validator.validate(user, context);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintCondition.hasAttribute(String)</code> and <code>ConstraintCondition.hasAttributeWithValue(String, Object)</code> are shortcuts for the common attribute checks:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(ConstraintCondition.hasAttributeWithValue("country", "IT"),
+        b -&gt; b.constraint(User::getTaxId, "taxId", c -&gt; c.notBlank()))
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the attribute is absent, <code>context.attribute("key").value()</code> returns <code>null</code>.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="applying-constraints-only-to-specific-groups"><a class="anchor" href="#applying-constraints-only-to-specific-groups"></a>3.5. Applying constraints only to specific groups</h3>
 <div class="paragraph">
-<p>You can apply constraints only to specific groups with <code>am.ik.yavi.core.ConstraintGroup</code> as a part of <code>ConstraintCondition</code> as well:</p>
+<p>A <code>ConstraintGroup</code> is a <code>ConstraintContext</code> that only carries a name.
+You can apply constraints only to specific groups as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -758,11 +949,21 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 </div>
 </div>
 <div class="paragraph">
+<p>A group can also be created from a name without declaring an enum:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintGroup create = ConstraintGroup.of("CREATE");</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>The group to validate can be specified in <code>validate</code> method:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolations violations = validator.validate(user, Group.CREATE);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolations violations = validator.validate(user, ConstraintGroup.of("CREATE"));
+// or, with the enum above
+violations = validator.validate(user, Group.CREATE);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -785,7 +986,8 @@ Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
 <td class="content">
 <div class="paragraph">
 <p>Note that all constraints without conditions will be validated for any constraint group.
-Also, if no group is specified in the <code>validate</code> method, it will be treated as <code>DEFAULT</code> group.</p>
+Also, if no group is specified in the <code>validate</code> method, <code>ConstraintGroup.DEFAULT</code> is used.
+Groups match by name; two groups are equal when their names are equal.</p>
 </div>
 </td>
 </tr>
@@ -943,17 +1145,97 @@ Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
     .constraint(User::getName, "name", c -&gt; c.notNull().message("{0} is required!")
         .greaterThanOrEqual(1).message("{0} is too small!")
         .lessThanOrEqual(20).message("{0} is too large!"))
-    .build()</code></pre>
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>message</code> also accepts an <code>am.ik.yavi.core.ViolationMessage</code> that carries the message key and the default message format, for example <code>ViolationMessage.of("string.isbn13", "\"{0}\" must be ISBN13 format")</code>.
+Since 0.17.2, overriding the message of a constraint preserves the violated value in the message arguments.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="value-validators"><a class="anchor" href="#value-validators"></a>3.9. Value validators</h3>
+<div class="paragraph">
+<p><code>am.ik.yavi.core.ValueValidator</code> validates an input and produces a validated value.
+It is the applicative counterpart of <code>Validator</code>; see "<a href="#combining-validators">Combining validators</a>" for combining value validators and "<a href="#combining-validation-results">Combining validation results</a>" for the <code>Validated</code> result type.</p>
+</div>
+<div class="paragraph">
+<p>A value validator maps the validated value with <code>map</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ValueValidator&lt;String, String&gt; trimmed = ValueValidator.&lt;String&gt; passThrough().map(String::trim);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>andThen(Function)</code> is deprecated since 0.17.0; use <code>map(Function)</code> instead.
+<code>andThen(ValueValidator)</code> is still supported and chains validators, applying the next validator to the value produced by the previous one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ValueValidator&lt;String, Integer&gt; length = trimmed
+    .andThen(ValueValidator.&lt;String&gt; passThrough().map(String::length));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>validated(&#8230;&#8203;)</code> validates the input and returns the value, throwing <code>am.ik.yavi.core.ConstraintViolationsException</code> when a violation exists.
+The same behavior is available through <code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">try {
+    String value = trimmed.validated(input);
+}
+catch (ConstraintViolationsException e) {
+    // handle the violations
+}
+
+ConstraintViolations violations = validator.validate(user);
+violations.throwIfInvalid(ConstraintViolationsException::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A value validator can be converted to a regular <code>Validator</code> with <code>Validatable.from(ValueValidator)</code>, which discards the produced value and only reports the violations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validatable&lt;String&gt; validator = Validatable.from(trimmed);</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="message-formatter"><a class="anchor" href="#message-formatter"></a>3.9. Message Formatter</h3>
+<h3 id="handling-violation-results"><a class="anchor" href="#handling-violation-results"></a>3.10. Handling violation results</h3>
+<div class="paragraph">
+<p><code>ConstraintViolation</code> has a staged builder since 0.15.0.
+The <code>name</code>, <code>messageKey</code> and <code>defaultMessageFormat</code> stages are required; the argument, formatter and locale methods are optional:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConstraintViolation violation = ConstraintViolation.builder()
+    .name("email")
+    .messageKey("email.invalid")
+    .defaultMessageFormat("\"{0}\" must be a valid email address")
+    .argsWithPrependedNameAndAppendedViolatedValue(new Object[] {}, new ViolatedValue(input))
+    .messageFormatter(SimpleMessageFormatter.getInstance())
+    .locale(Locale.JAPAN)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintViolation#violatedValue()</code> returns the value that violated the constraint.</p>
+</div>
+<div class="paragraph">
+<p><code>SimpleMessageFormatter</code> can be obtained with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is still available but is deprecated since 0.16.0.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="message-formatter"><a class="anchor" href="#message-formatter"></a>3.11. Message Formatter</h3>
 <div class="paragraph">
 <p>YAVI provides <code>am.ik.yavi.message.MessageFormatter</code> interface for constructing violation messages.</p>
 </div>
 <div class="paragraph">
-<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormatter</code> to interpolate the message.
+<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormat</code> to interpolate the message.
+A shared instance is available with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is kept for backward compatibility but is deprecated.
 A list of message keys and default message formats is given in "<a href="#built-in-constraints">Built-in Constraints</a>".</p>
 </div>
 <div class="admonitionblock note">
@@ -1042,7 +1324,7 @@ public enum ResourceBundleMessageFormatter implements MessageFormatter {
 </div>
 </div>
 <div class="sect2">
-<h3 id="fail-fast-mode"><a class="anchor" href="#fail-fast-mode"></a>3.10. Fail fast mode</h3>
+<h3 id="fail-fast-mode"><a class="anchor" href="#fail-fast-mode"></a>3.12. Fail fast mode</h3>
 <div class="paragraph">
 <p>Using the fail fast mode, YAVI allows to return from the current validation as soon as the first constraint violation occurs.
 This can be useful for the validation of large object graphs where you are only interested in a quick check whether there is any constraint violation at all.</p>
@@ -1065,6 +1347,19 @@ This can be useful for the validation of large object graphs where you are only 
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; failFastValidator = validator.failFast(true);</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The <code>failFast(boolean)</code> and <code>isFailFast()</code> methods are also declared on <code>am.ik.yavi.core.Validatable</code>, so the mode can be read and switched through that interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">boolean failFast = failFastValidator.isFailFast();
+Validatable&lt;User&gt; validatable = validator.failFast(true);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since 0.13.0 nested, collection and conditional validators honor the parent&#8217;s fail-fast mode.
+The mode is passed down to nested validators and element validators, so the validation stops at the first violation in those validators as well.</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -1079,9 +1374,43 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 </div>
 </div>
 <div class="sect2">
-<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.11. Kotlin Support</h3>
+<h3 id="resolving-conflicting-constraint-names"><a class="anchor" href="#resolving-conflicting-constraint-names"></a>3.13. Resolving conflicting constraint names</h3>
 <div class="paragraph">
-<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows:</p>
+<p>When the same constraint name is registered more than once, <code>ValidatorBuilder#conflictStrategy(ConflictStrategy)</code> decides what happens when the validator is built.
+The default, <code>am.ik.yavi.builder.ConflictStrategy.NOOP</code>, keeps the existing constraints and appends the new one, so the target is validated by all of them.
+<code>ConflictStrategy.OVERRIDE</code> removes the existing constraints and keeps only the new one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .conflictStrategy(ConflictStrategy.OVERRIDE)
+    .constraint(User::getName, "name", c -&gt; c.notNull())
+    .constraint(User::getName, "name", c -&gt; c.notBlank()) // replaces the previous "name" constraint
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A custom strategy can mutate the list of existing predicates; the new predicate is appended after the strategy returns:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ConflictStrategy keepFirst = new ConflictStrategy() {
+    @Override
+    public &lt;T&gt; void resolveConflict(List&lt;ConstraintPredicates&lt;T, ?&gt;&gt; predicatesList,
+            ConstraintPredicates&lt;T, ?&gt; predicates) {
+        while (predicatesList.size() &gt; 1) {
+            predicatesList.remove(predicatesList.size() - 1);
+        }
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="kotlin-support"><a class="anchor" href="#kotlin-support"></a>3.14. Kotlin Support</h3>
+<div class="paragraph">
+<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows.
+The DSL obtains property names with Kotlin reflection, so <code>kotlin-reflect</code> must be on the runtime classpath.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1168,6 +1497,84 @@ This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validat
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p><code>nestIfPresent</code> and <code>forEachIfPresent</code> validate nullable nested objects, collections, maps and arrays only when they are present:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;Order&gt; {
+    Order::customer nestIfPresent {
+        Customer::name {
+            notBlank()
+        }
+    }
+    Order::items forEachIfPresent {
+        OrderItem::name {
+            notBlank()
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Temporal and enum properties have their own overloads.
+For example, <code>LocalDate</code>, <code>LocalTime</code>, <code>LocalDateTime</code>, <code>ZonedDateTime</code>, <code>OffsetDateTime</code>, <code>Instant</code>, <code>Year</code> and <code>YearMonth</code> properties can use the date and time constraints, and enum properties can use <code>oneOf</code>.
+See "<a href="#built-in-constraints">Built-in Constraints</a>" for the available constraints:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">enum class Status { ACTIVE, INACTIVE }
+
+val validator = validator&lt;Account&gt; {
+    Account::createdAt {
+        notNull()
+        past()
+    }
+    Account::status {
+        notNull()
+        oneOf(Status.ACTIVE)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>onCondition</code> and <code>onGroup</code> add conditional and group-specific constraints, and <code>unwrap</code> gives access to the underlying <code>ValidatorBuilder</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">val validator = validator&lt;User&gt; {
+    onCondition({ _, context -&gt; "IT".equals(context.attribute("country").value()) }) {
+        User::taxId {
+            notNull()
+        }
+    }
+    onGroup(ConstraintGroup.of("CREATE")) {
+        User::id {
+            isNull()
+        }
+    }
+    unwrap().failFast(true)
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="coroutines-support"><a class="anchor" href="#coroutines-support"></a>3.14.1. Coroutines support</h4>
+<div class="paragraph">
+<p>The extensions in <code>am.ik.yavi.fn.ValidationExtensions</code> suspend the validation result handling.
+<code>awaitFold</code>, <code>awaitBimap</code>, <code>awaitMap</code>, <code>awaitMapErrors</code> and <code>awaitMapError</code> correspond to <code>fold</code>, <code>bimap</code>, <code>map</code>, <code>mapErrors</code> and <code>mapError</code>.
+They require <code>kotlinx-coroutines-core</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="kotlin" class="language-kotlin hljs">import am.ik.yavi.fn.awaitFold
+
+suspend fun createUser(validated: Validated&lt;User&gt;): HttpStatus = validated.awaitFold(
+    errorsMapper = { violations -&gt; HttpStatus.BAD_REQUEST },
+    mapper = { user -&gt; HttpStatus.OK },
+)</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -1230,6 +1637,14 @@ Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolatio
 </div>
 </div>
 <div class="paragraph">
+<p><code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code> throw the exception supplied by their function argument instead of returning a value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">emailValidated.throwIfInvalid(ConstraintViolationsException::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p><code>fold</code> method is convenient if you want to create an instance of the same type regardless of the success or failure of the validation.</p>
 </div>
 <div class="listingblock">
@@ -1237,9 +1652,52 @@ Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolatio
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, email -&gt; HttpStatus.OK);</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>For <code>Validated</code>, the error type of <code>fold</code> is <code>List&lt;ConstraintViolation&gt;</code>.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="combining-validation-validated-objects"><a class="anchor" href="#combining-validation-validated-objects"></a>4.2. Combining <code>Validation</code> / <code>Validated</code> objects</h3>
+<h3 id="mapping-and-inspecting-validation-results"><a class="anchor" href="#mapping-and-inspecting-validation-results"></a>4.2. Mapping and inspecting validation results</h3>
+<div class="paragraph">
+<p><code>Validation</code> provides <code>map</code>, <code>flatMap</code>, <code>mapError</code>, <code>mapErrors</code>, <code>bimap</code>, <code>orElseThrow</code> and <code>throwIfInvalid</code> to transform or unwrap the result:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validation&lt;ConstraintViolation, String&gt; mapped = emailValidated.map(Email::value);
+Validation&lt;String, Email&gt; mappedErrors = emailValidated.mapError(ConstraintViolation::messageKey);
+Validation&lt;String, String&gt; bimapped = emailValidated
+    .bimap(violations -&gt; List.of("invalid"), Email::value);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>am.ik.yavi.core.Validated</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code>.
+It can be created with <code>Validated.successWith</code>, <code>Validated.failureWith</code> and <code>Validated.of</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Email&gt; success = Validated.successWith(new Email("yavi@example.com"));
+Validated&lt;Email&gt; failure = Validated.failureWith(violations); // ConstraintViolations is a List&lt;ConstraintViolation&gt;
+Validated&lt;Email&gt; fromValidation = Validated.of(Validation.success(new Email("yavi@example.com")));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Multiple results can be combined with <code>Validated.sequence</code>, <code>Validated.traverse</code>, <code>Validated.traverseIndexed</code> and <code>Validated.traverseOptional</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;List&lt;Email&gt;&gt; emails = Validated.sequence(List.of(emailValidated, anotherEmailValidated));
+Validated&lt;List&lt;Email&gt;&gt; traversed = Validated.traverse(inputs, emailValidator::validate);
+Validated&lt;List&lt;Email&gt;&gt; indexed = Validated.traverseIndexed(inputs,
+    (input, index) -&gt; emailValidator.indexed(index).validate(input));
+Validated&lt;Optional&lt;Email&gt;&gt; optional = Validated.traverseOptional(optionalInput, emailValidator::validate);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>ConstraintViolations#of(List&lt;ConstraintViolation&gt;)</code> creates a <code>ConstraintViolations</code> from a list of violations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="combining-validation-validated-objects"><a class="anchor" href="#combining-validation-validated-objects"></a>4.3. Combining <code>Validation</code> / <code>Validated</code> objects</h3>
 <div class="paragraph">
 <p><code>Validation</code> / <code>Validated</code> objects can be combined to produce a new object.
 In the bellow example, <code>ContactInfo</code> instance is created using <code>Email</code> and <code>PhoneNumber</code> after validating them.</p>
@@ -1254,10 +1712,13 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailVal
 </div>
 </div>
 <div class="paragraph">
+<p><code>Validations.combine(&#8230;&#8203;)</code> supports 2 to 16 validations.</p>
+</div>
+<div class="paragraph">
 <p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are accumulated without shortcuts in the middle.</p>
 </div>
 <div class="paragraph">
-<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ContraintViolation</code> s:</p>
+<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ConstraintViolation</code> s:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1319,8 +1780,6 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 <div class="paragraph">
 <p>This is one of YAVI&#8217;s unique features.</p>
 </div>
-<div class="sect2">
-<h3 id="defining-and-obtaining-an-arguments-validator-instance"><a class="anchor" href="#defining-and-obtaining-an-arguments-validator-instance"></a>5.1. Defining and obtaining an Arguments Validator instance</h3>
 <div class="paragraph">
 <p>Arguments Validator, as the name implies, is a Validator for arguments.</p>
 </div>
@@ -1333,22 +1792,30 @@ For example, even if the constraint of <code>notNull()</code> is imposed on the 
 if the <code>null</code> check is implemented in the constructor, this <code>null</code> check will work before the validation by Validator is executed.</p>
 </div>
 <div class="paragraph">
-<p>The Arguments Validator <strong>creates an object after validation</strong>, so you don&#8217;t have to worry about an incomplete object.</p>
+<p>The Arguments Validator <strong>creates an object after validation</strong>, so you don&#8217;t have to worry about an incomplete object.
+<a href="#gs-always-valid">The Always Valid model</a> shows how to combine this with a private constructor or a record to make invalid objects impossible to create.</p>
+</div>
+<div class="sect2">
+<h3 id="defining-an-arguments-validator"><a class="anchor" href="#defining-an-arguments-validator"></a>5.1. Defining an arguments validator</h3>
+<div class="paragraph">
+<p>Use <code>am.ik.yavi.validator.Yavi#arguments()</code> to build an arguments validator.
+Each <code>_xxx</code> method adds one argument with its name and constraints, and <code>apply</code> creates the validator:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Person {
-    public Person(String name, String email, Integer age) {
-        // ...
-    }
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
 
-    public static Arguments3Validator&lt;String, String, Integer, Person&gt; validator = ArgumentsValidatorBuilder
-        .of(Person::new)
-        .builder(b -&gt; b
-            ._string(Arguments1::arg1, "name", c -&gt; c.notBlank().lessThanOrEqual(100)) // Constrains onf the first argument of Person::new
-            ._string(Arguments2::arg2, "email", c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constrains onf the second argument of Person::new
-            ._integer(Arguments3::arg3, "age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))) // Constrains onf the third argument of Person::new
-        .build();
+public class Person {
+
+    public static final Arguments3Validator&lt;String, String, Integer, Person&gt; validator = Yavi.arguments()
+        ._string("name", c -&gt; c.notBlank().lessThanOrEqual(100)) // Constraint on the first argument of Person::new
+        ._string("email", c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constraint on the second argument of Person::new
+        ._integer("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200)) // Constraint on the third argument of Person::new
+        .apply(Person::new);
+
+    // ...
 }</code></pre>
 </div>
 </div>
@@ -1357,19 +1824,69 @@ if the <code>null</code> check is implemented in the constructor, this <code>nul
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("Jone Doe", "jdoe@example.com", 30);</code></pre>
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validated&lt;Person&gt; personValidated = Person.validator.validate("John Doe", "jdoe@example.com", 30);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available.</p>
-</div>
-<div class="paragraph">
-<p>Arguments Validator is useful, but it can be a bit verbose to define. Since it is Type-Safe, it is not possible to define something that does not fit the type, but it feels like a puzzle that fits the type.
-Building the Arguments Validator can be simplified by "<a href="#define-validator-for-a-single-value">Defining a Validator for a single value</a>" and "<a href="#combining-validators">Combining validators</a>".</p>
+<p><code>am.ik.yavi.arguments.Arguments1Validator</code> to <code>am.ik.yavi.arguments.Arguments16Validator</code> are available.
+The maximum number of arguments is 16.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="validating-method-arguments"><a class="anchor" href="#validating-method-arguments"></a>5.2. Validating method arguments</h3>
+<h3 id="available-argument-kinds"><a class="anchor" href="#available-argument-kinds"></a>5.2. Available argument kinds</h3>
+<div class="paragraph">
+<p>The following argument kinds are available, each with a constraint type for that kind:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>_string</code></p>
+</li>
+<li>
+<p><code>_boolean</code></p>
+</li>
+<li>
+<p><code>_short</code>, <code>_integer</code>, <code>_long</code>, <code>_float</code>, <code>_double</code></p>
+</li>
+<li>
+<p><code>_bigInteger</code>, <code>_bigDecimal</code></p>
+</li>
+<li>
+<p><code>_localDate</code>, <code>_localTime</code>, <code>_localDateTime</code>, <code>_offsetDateTime</code>, <code>_instant</code>, <code>_year</code>, <code>_yearMonth</code>, <code>_zonedDateTime</code></p>
+</li>
+<li>
+<p><code>_enum</code></p>
+</li>
+<li>
+<p><code>_object</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>_object</code> accepts any reference type, including arrays, collections and maps:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;LocalDate, LocalDate&gt; dateValidator = Yavi.arguments()
+    ._localDate("date", c -&gt; c.notNull())
+    .apply(date -&gt; date);
+
+Arguments1ValidatorBuilder&lt;Color, Color&gt; colorValidatorBuilder = Yavi.arguments()
+    ._enum("color", c -&gt; c.notNull());
+Arguments1Validator&lt;Color, Color&gt; colorValidator = colorValidatorBuilder.apply(color -&gt; color);
+
+Arguments1Validator&lt;List&lt;String&gt;, List&lt;String&gt;&gt; tagsValidator = Yavi.arguments()
+    ._object(ObjectValidatorBuilder.&lt;List&lt;String&gt;&gt;of("tags", c -&gt; c.notNull()).build())
+    .apply(tags -&gt; tags);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>_collection</code>, <code>_map</code> and <code>_objectArray</code> are not argument kinds; they are <code>ValidatorBuilder</code> methods for validating a collection, map or array property of an object.
+See <a href="#using-yavi">Using YAVI</a> for details.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="validating-method-arguments"><a class="anchor" href="#validating-method-arguments"></a>5.3. Validating method arguments</h3>
 <div class="paragraph">
 <p>Arguments Validator can be used for validating method arguments as well.</p>
 </div>
@@ -1378,28 +1895,33 @@ Building the Arguments Validator can be simplified by "<a href="#define-validato
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">// From https://beanvalidation.org/
 public class UserService {
     public User createUser(/* @Email */ String email,
-                         /* @NotNull */ String name) {
+                           /* @NotNull */ String name) {
         // ...
     }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The arguments for <code>UserService.createUser</code> in the above example can be validated as follows:</p>
+<p>The arguments for <code>UserService.createUser</code> in the above example can be validated with <code>ArgumentsValidatorBuilder</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3Validator&lt;UserService, String, String, User&gt; validator = ArgumentsValidatorBuilder
     .of(UserService::createUser)
     .builder(b -&gt; b
-        ._object(Arguments1::arg1, "userService", c -&gt; c.notNull())
-        ._string(Arguments2::arg2, "email", c -&gt; c.email())
-        ._string(Arguments3::arg3, "name", c -&gt; c.notNull()))
+        ._object(Arguments3::arg1, "userService", c -&gt; c.notNull())
+        ._string(Arguments3::arg2, "email", c -&gt; c.email())
+        ._string(Arguments3::arg3, "name", c -&gt; c.notBlank()))
     .build();
 
 UserService userService = new UserService();
 Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@example.com", "John Doe");</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Use this form when the values come from an instance method reference, because the receiver is validated as the first argument.
+It is also the form generated by the annotation processor meta constants described in <a href="#annotation-processor">Annotation Processor</a>.
+The <code>_xxx</code> methods of the builder take the accessor for the argument position (<code>Arguments3::arg1</code> etc.) instead of just a name; <code>Arguments1Validator</code>..<code>Arguments16Validator</code> do not inherit from each other, so use the accessor that matches the arity of the builder.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1415,7 +1937,7 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 </div>
 </div>
 <div class="sect2">
-<h3 id="define-validator-for-a-single-value"><a class="anchor" href="#define-validator-for-a-single-value"></a>5.3. Defining a Validator for a single value</h3>
+<h3 id="define-validator-for-a-single-value"><a class="anchor" href="#define-validator-for-a-single-value"></a>5.4. Defining a Validator for a single value</h3>
 <div class="paragraph">
 <p>If you just want to define <code>Arguments1Validator</code> for a single <code>String</code> or <code>Integer</code> etc, you can write:</p>
 </div>
@@ -1423,44 +1945,98 @@ Validated&lt;User&gt; userValidated = validator.validate(userService, "jdoe@exam
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;String&gt; nameValidator = StringValidatorBuilder
     .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
-    .build();  // -&gt; extends Arguments1Validator&lt;String, String&gt;
-
-StringValidator&lt;String&gt; emailValidator = StringValidatorBuilder
-    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
-    .build();  // -&gt; extends Arguments1Validator&lt;String, String&gt;
+    .build();
 
 IntegerValidator&lt;Integer&gt; ageValidator = IntegerValidatorBuilder
     .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
-    .build();  // -&gt; extends Arguments1Validator&lt;Integer, Integer&gt;
+    .build();
 
-Validated&lt;String&gt; nameValidated = nameValidator.validate("Jone Doe");
-Validated&lt;String&gt; emailValidated = nameValidator.validate("jdoe@example.com");
-Validated&lt;Integer&gt; ageValidated = nameValidator.validate(30);</code></pre>
+Validated&lt;String&gt; nameValidated = nameValidator.validate("John Doe");
+Validated&lt;Integer&gt; ageValidated = ageValidator.validate(30);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can convert it to a Value Object after validation by using the <code>andThen</code> method as follows:</p>
+<p><code>build(Function)</code> converts the validated value into a Value Object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
+    .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build(Name::new);
+
+StringValidator&lt;Email&gt; emailValidator = StringValidatorBuilder
+    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
+    .build(Email::new);
+
+IntegerValidator&lt;Age&gt; ageValidator = IntegerValidatorBuilder
+    .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
+    .build(Age::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also map an existing validator with <code>map(Function)</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
     .of("name", c -&gt; c.notBlank().lessThanOrEqual(100))
     .build()
-    .andThen(name -&gt; new Name(name)); // -&gt; extends Arguments1Validator&lt;String, Name&gt;
+    .map(Name::new);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>andThen(Function)</code> produces the same result and is deprecated since 0.17.0 in favor of <code>map(Function)</code>.
+<code>andThen(ValueValidator)</code> is not deprecated; it chains another validator on the produced value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">ObjectValidator&lt;Name, Name&gt; nonNullNameValidator = ObjectValidatorBuilder
+    .&lt;Name&gt;of("name", c -&gt; c.notNull())
+    .build();
 
-StringValidator&lt;Email&gt; emailValidator = StringValidatorBuilder
-    .of("email", c -&gt; c.notBlank().lessThanOrEqual(100).email())
-    .build()
-    .andThen(email -&gt; new Email(email)); // -&gt; extends Arguments1Validator&lt;String, Email&gt;
-
-IntegerValidator&lt;Age&gt; ageValidator = IntegerValidatorBuilder
-    .of("age", c -&gt; c.greaterThanOrEqual(0).lessThan(200))
-    .build()
-    .andThen(age -&gt; new Age(age)); // -&gt; extends Arguments1Validator&lt;Integer, Age&gt;
-
-Validated&lt;Name&gt; nameValidated = nameValidator.validate("Jone Doe");
-Validated&lt;Email&gt; emailValidated = nameValidator.validate("jdoe@example.com");
-Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
+Arguments1Validator&lt;String, Name&gt; checkedNameValidator = nameValidator
+    .andThen(nonNullNameValidator);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="composing-and-adapting-validators"><a class="anchor" href="#composing-and-adapting-validators"></a>5.5. Composing and adapting validators</h3>
+<div class="paragraph">
+<p><code>compose(Function)</code> converts the source object before validation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Integer, Name&gt; nameFromIdValidator = nameValidator.compose(Object::toString);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>wrap()</code> turns an arguments validator into one that validates an <code>ArgumentsN</code> container, and <code>Arguments1Validator.unwrap(&#8230;&#8203;)</code> (or <code>ArgumentsNValidator.unwrap(&#8230;&#8203;)</code>) turns it back:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Arguments1&lt;String&gt;, Name&gt; wrappedValidator = nameValidator.wrap();
+Arguments1Validator&lt;String, Name&gt; unwrappedValidator = Arguments1Validator.unwrap(wrappedValidator);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>lazy()</code> returns a validator that produces a <code>Supplier</code> of the validated value.
+The value is created only when the supplier is used, which lets you validate arguments inside a constructor without recursing into the constructor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Supplier&lt;Name&gt;&gt; lazyValidator = nameValidator.lazy();
+Supplier&lt;Name&gt; nameSupplier = lazyValidator.validated("John Doe");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#gs-always-valid">The Always Valid model</a> for the <code>lazy()</code> usage in a record constructor.</p>
+</div>
+<div class="paragraph">
+<p><code>indexed(int)</code> appends <code>[index]</code> to violation names so that violations of collection elements can be told apart:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; indexedEmailValidator = emailValidator.indexed(0);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1468,17 +2044,71 @@ Validated&lt;Age&gt; ageValidated = nameValidator.validate(30);</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators.liftList(emailValidator);
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = emailValidator.liftList();
 Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of("foo@example.com", "bar@example.com"));
-// or
-Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().validate(List.of("foo@example.com", "bar@example.com"));</code></pre>
+
+Arguments1Validator&lt;Iterable&lt;String&gt;, Set&lt;Email&gt;&gt; emailSetValidator = emailValidator.liftSet();
+Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailCollectionValidator = emailValidator
+    .liftCollection(ArrayList::new);
+Arguments1Validator&lt;Optional&lt;String&gt;, Optional&lt;Email&gt;&gt; emailOptionalValidator = emailValidator.liftOptional();</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>liftSet()</code>, <code>listCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
+<p><code>liftList()</code>, <code>liftSet()</code>, <code>liftCollection(Supplier)</code> and <code>liftOptional()</code> are available as well.</p>
+</div>
+<div class="paragraph">
+<p><code>split(&#8230;&#8203;)</code> validates separate arguments with separate validators, and <code>combine(&#8230;&#8203;)</code> validates the same input with multiple validators.
+<code>ArgumentsValidators.split(&#8230;&#8203;)</code> and <code>ArgumentsValidators.combine(&#8230;&#8203;)</code> are described in <a href="#combining-validators">Combining validators</a>.</p>
+</div>
+<div class="paragraph">
+<p><code>ArgumentsValidators.traverseN(&#8230;&#8203;)</code> validates each element of a given collection with a validator produced by a function and collects the results.
+<code>sequenceN(&#8230;&#8203;)</code> applies multiple validators to the same arguments and collects the results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, List&lt;Name&gt;&gt; namesValidator = ArgumentsValidators
+    .traverse1(List.of("John", "Jane"), value -&gt; nameValidator);
+
+Arguments1Validator&lt;String, List&lt;String&gt;&gt; sequencedValidator = ArgumentsValidators
+    .sequence1(List.of(nameValidator.map(Name::value), nameValidator.map(Name::value)));</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>These "small Validators" can be very powerful parts by using the Validator combinators described in "<a href="#combining-validators">Combining validators</a>".</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="arguments-containers"><a class="anchor" href="#arguments-containers"></a>5.6. Arguments containers</h3>
+<div class="paragraph">
+<p><code>Arguments1</code> to <code>Arguments16</code> are immutable containers of validated arguments.
+Use <code>Arguments.of(&#8230;&#8203;)</code> to create one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3&lt;String, String, Integer&gt; arguments = Arguments.of("John Doe", "jdoe@example.com", 30);
+String name = arguments.arg1();
+String email = arguments.arg2();
+Integer age = arguments.arg3();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>argN()</code> returns the argument at position <code>N</code>. <code>firstN()</code> and <code>lastN()</code> return the leading or trailing <code>N</code> arguments as a new container, and <code>append</code>, <code>prepend</code> and <code>reverse</code> return a modified copy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1&lt;String&gt; first = arguments.first1();
+Arguments2&lt;String, String&gt; firstTwo = arguments.first2();
+Arguments1&lt;Integer&gt; last = arguments.last1();
+Arguments2&lt;String, Integer&gt; lastTwo = arguments.last2();
+
+Arguments4&lt;String, String, Integer, String&gt; appended = arguments.append("extra");
+Arguments4&lt;String, String, String, Integer&gt; prepended = arguments.prepend("extra");
+Arguments3&lt;Integer, String, String&gt; reversed = arguments.reverse();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>equals</code> and <code>hashCode</code> are implemented for the contents of the container.
+<code>Arguments</code> is final, and <code>ArgumentsN</code> does not inherit from <code>ArgumentsM</code>; the concrete container class is part of the equality check.</p>
 </div>
 </div>
 </div>
@@ -1495,6 +2125,10 @@ Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailValidator.liftList().v
 </div>
 <div class="paragraph">
 <p>Multiple <code>ValueValidator</code> s can be combined to validate a larger object.</p>
+</div>
+<div class="paragraph">
+<p><code>ArgumentsValidators#split</code> and <code>ArgumentsValidators#combine</code> support up to 16 arguments since 0.10.0.
+The <code>apply</code> method consumes <code>Function1</code> to <code>Function16</code> accordingly.</p>
 </div>
 <div class="sect2">
 <h3 id="splitting-a-validator-for-an-object-into-small-pieces"><a class="anchor" href="#splitting-a-validator-for-an-object-into-small-pieces"></a>6.1. Splitting a validator for an object into small pieces</h3>
@@ -1583,7 +2217,44 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 </div>
 <div class="sect2">
-<h3 id="validating-the-source-object-before-creating-the-target-object"><a class="anchor" href="#validating-the-source-object-before-creating-the-target-object"></a>6.2. Validating the source object before creating the target object</h3>
+<h3 id="chaining-and-mapping-value-validators"><a class="anchor" href="#chaining-and-mapping-value-validators"></a>6.2. Chaining and mapping value validators</h3>
+<div class="paragraph">
+<p><code>ValueValidator#andThen(ValueValidator)</code> applies the value produced by one validator to the next validator.
+<code>ValueValidator#map(Function)</code> maps the validated value without applying further validation.
+<code>andThen(Function)</code> is deprecated since 0.17.0 and is equivalent to <code>map(Function)</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+ValueValidator&lt;String, String&gt; emailValue = emailValidator.map(Email::value);
+ValueValidator&lt;String, String&gt; checked = emailValidator
+    .andThen(ValueValidator.&lt;Email&gt; passThrough().map(Email::value));</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="validating-every-element-of-an-iterable"><a class="anchor" href="#validating-every-element-of-an-iterable"></a>6.3. Validating every element of an iterable</h3>
+<div class="paragraph">
+<p><code>ArgumentsValidators#sequenceN</code> applies every given validator to the same arguments and collects the validated values into a <code>List</code>.
+<code>ArgumentsValidators#traverseN</code> builds a validator from an iterable of values and a function that produces a validator for each value.
+Both are available for 1 to 16 arguments since 0.10.0.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+Arguments1Validator&lt;String, Email&gt; adminEmailValidator = /* see examples above */;
+Arguments1Validator&lt;String, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators
+    .sequence1(List.of(emailValidator, adminEmailValidator));
+
+Validated&lt;List&lt;Email&gt;&gt; emails = emailsValidator.validate("yavi@example.com");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#validating-arguments">Validating arguments</a> for constructing arguments validators.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="validating-the-source-object-before-creating-the-target-object"><a class="anchor" href="#validating-the-source-object-before-creating-the-target-object"></a>6.4. Validating the source object before creating the target object</h3>
 <div class="paragraph">
 <p>In a web application, you often get values from a <code>Map</code>, Form Object, or <code>HttpServletRequest</code> to create a Domain Object.</p>
 </div>
@@ -1595,11 +2266,11 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Argument1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
     .compose(req -&gt; req.getParameter("name"));
-Argument1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
+Arguments1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
     .compose(req -&gt; req.getParameter("email"));
-Argument1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
+Arguments1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
     .compose(req -&gt; Integer.valueOf(req.getParameter("age")));
 
 HttpServletRequest request = ...;
@@ -1679,6 +2350,9 @@ Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = p
     ._charSequence(/* Function from TargetClass to CharSequence  */, /* Field Name */, /* Constraints */)
     .build();</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Unless stated otherwise, a <code>null</code> value is valid and the check is skipped in the following constraints.</p>
 </div>
 <div class="sect3">
 <h4 id="notnull"><a class="anchor" href="#notnull"></a>7.1.1. <code>notNull()</code></h4>
@@ -2092,7 +2766,7 @@ ConstraintViolations violations = validator.validate(new Country("Japan")); // I
 
 ConstraintViolations violations = validator.validate(new Country("JP")); // Valid
 ConstraintViolations violations = validator.validate(new Country(null)); // Valid
-ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to to 4. The given size is 5)</code></pre>
+ConstraintViolations violations = validator.validate(new Country("Japan")); // Invalid (The size of "country" must be less than or equal to 4. The given size is 5)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2183,7 +2857,107 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="patternstring"><a class="anchor" href="#patternstring"></a>7.1.11. <code>pattern(String)</code></h4>
+<h4 id="startswithcharsequence"><a class="anchor" href="#startswithcharsequence"></a>7.1.11. <code>startsWith(CharSequence)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value starts with the specified prefix</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Code&gt; validator = ValidatorBuilder.&lt;Code&gt; of()
+    .constraint(Code::asString, "code", c -&gt; c.startsWith("JP-"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Code("JP-1234")); // Valid
+ConstraintViolations violations = validator.validate(new Code(null)); // Valid
+ConstraintViolations violations = validator.validate(new Code("US-1234")); // Invalid ("code" must start with "JP-")</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.startsWith</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must start with "{1}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified prefix</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="endswithcharsequence"><a class="anchor" href="#endswithcharsequence"></a>7.1.12. <code>endsWith(CharSequence)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value ends with the specified suffix</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Domain&gt; validator = ValidatorBuilder.&lt;Domain&gt; of()
+    .constraint(Domain::asString, "domain", c -&gt; c.endsWith(".example.com"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Domain("www.example.com")); // Valid
+ConstraintViolations violations = validator.validate(new Domain(null)); // Valid
+ConstraintViolations violations = validator.validate(new Domain("example.com")); // Invalid ("domain" must end with ".example.com")</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.endsWith</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must end with "{1}"</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified suffix</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="patternstring"><a class="anchor" href="#patternstring"></a>7.1.13. <code>pattern(String)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value matches the specified regular expression</p>
 </div>
@@ -2233,7 +3007,63 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="email"><a class="anchor" href="#email"></a>7.1.12. <code>email()</code></h4>
+<h4 id="patternpattern-patternsupplierpattern"><a class="anchor" href="#patternpattern-patternsupplierpattern"></a>7.1.14. <code>pattern(Pattern)</code> / <code>pattern(Supplier&lt;Pattern&gt;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value matches the specified regular expression, in the same way as <code>pattern(String)</code>.
+The <code>Supplier&lt;Pattern&gt;</code> overload invokes the supplier for every validation, which is intended for regular expressions that are built dynamically at validation time.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Pattern zipCode = Pattern.compile("[0-9]{3}-[0-9]{4}");
+Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, "zipCode", c -&gt; c.pattern(zipCode))
+    .build();
+
+Validator&lt;ZipCode&gt; dynamicValidator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, "zipCode", c -&gt; c.pattern(() -&gt; Pattern.compile("[0-9]{3}-[0-9]{4}")))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode("123-4567")); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode("1234567")); // Invalid ("zipCode" must match [0-9]{3}-[0-9]{4})</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.pattern</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must match {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified regular expression</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="email"><a class="anchor" href="#email"></a>7.1.15. <code>email()</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is a valid email address</p>
 </div>
@@ -2245,7 +3075,7 @@ ConstraintViolations violations = validator.validate(new ZipCode("1234567")); //
 
 ConstraintViolations violations = validator.validate(new Email("yavi@example.com")); // Valid
 ConstraintViolations violations = validator.validate(new Email(null)); // Valid
-ConstraintViolations violations = validator.validate(new Email("example.com")); // Invalid ("email" must not be a valid email address)</code></pre>
+ConstraintViolations violations = validator.validate(new Email("example.com")); // Invalid ("email" must be a valid email address)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2280,7 +3110,55 @@ ConstraintViolations violations = validator.validate(new Email("example.com")); 
 </table>
 </div>
 <div class="sect3">
-<h4 id="password"><a class="anchor" href="#password"></a>7.1.13. <code>password(&#8230;&#8203;)</code></h4>
+<h4 id="uuid"><a class="anchor" href="#uuid"></a>7.1.16. <code>uuid()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is a valid UUID in the 8-4-4-4-12 hexadecimal format. The version and the variant are not checked, and an empty value is valid.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getId, "id", c -&gt; c.uuid())
+    .build();
+
+ConstraintViolations violations = validator.validate(new User("123e4567-e89b-12d3-a456-426614174000")); // Valid
+ConstraintViolations violations = validator.validate(new User(null)); // Valid
+ConstraintViolations violations = validator.validate(new User("")); // Valid
+ConstraintViolations violations = validator.validate(new User("1234")); // Invalid ("id" must be a valid UUID)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.uuid</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid UUID</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="password"><a class="anchor" href="#password"></a>7.1.17. <code>password(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Check if the target value meets the specified password policy</p>
 </div>
@@ -2419,7 +3297,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 </div>
 </div>
 <div class="sect3">
-<h4 id="ipv4"><a class="anchor" href="#ipv4"></a>7.1.14. <code>ipv4()</code></h4>
+<h4 id="ipv4"><a class="anchor" href="#ipv4"></a>7.1.18. <code>ipv4()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid IPv4 address</p>
 </div>
@@ -2431,7 +3309,7 @@ Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
 
 ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Valid
 ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
-ConstraintViolations violations = validator.validate(new IpAddress("example.com")); // Invalid ("ipAddress" must not be a valid IPv4)</code></pre>
+ConstraintViolations violations = validator.validate(new IpAddress("example.com")); // Invalid ("ipAddress" must be a valid IPv4)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2466,7 +3344,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 </table>
 </div>
 <div class="sect3">
-<h4 id="ipv6"><a class="anchor" href="#ipv6"></a>7.1.15. <code>ipv6()</code></h4>
+<h4 id="ipv6"><a class="anchor" href="#ipv6"></a>7.1.19. <code>ipv6()</code></h4>
 <div class="paragraph">
 <p>Check if the target value is a valid IPv6 address</p>
 </div>
@@ -2478,7 +3356,7 @@ ConstraintViolations violations = validator.validate(new IpAddress("example.com"
 
 ConstraintViolations violations = validator.validate(new IpAddress("2001:0db8:bd05:01d2:288a:1fc0:0001:10ee")); // Valid
 ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
-ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must not be a valid IPv6)</code></pre>
+ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1")); // Invalid ("ipAddress" must be a valid IPv6)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2513,9 +3391,21 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 </table>
 </div>
 <div class="sect3">
-<h4 id="url"><a class="anchor" href="#url"></a>7.1.16. <code>url()</code></h4>
+<h4 id="url"><a class="anchor" href="#url"></a>7.1.20. <code>url()</code></h4>
 <div class="paragraph">
-<p>Check if the target value is a valid URL</p>
+<p>Check if the target value is a valid URL. An empty value is valid.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Since 0.17.0 the value is parsed as a <code>java.net.URI</code> instead of the deprecated <code>URL(String)</code> constructor, which silently strips leading and trailing characters. Values that only passed because of that trimming, values that contain unencoded characters, and values with an empty authority are now rejected.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2525,7 +3415,10 @@ ConstraintViolations violations = validator.validate(new IpAddress("192.0.2.1"))
 
 ConstraintViolations violations = validator.validate(new Url("https://yavi.ik.am")); // Valid
 ConstraintViolations violations = validator.validate(new Url(null)); // Valid
-ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // Invalid ("url" must be a valid URL)</code></pre>
+ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url(" https://yavi.ik.am ")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url("https://yavi.ik.am/path with space")); // Invalid ("url" must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url("https://")); // Invalid ("url" must be a valid URL)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2560,7 +3453,118 @@ ConstraintViolations violations = validator.validate(new Url("yavi.ik.am")); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="luhn"><a class="anchor" href="#luhn"></a>7.1.17. <code>luhn()</code></h4>
+<h4 id="url-2"><a class="anchor" href="#url-2"></a>7.1.21. <code>url(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Check if the target value is a valid URL and restrict its protocol, host and/or port.
+The value is first required to be a valid URL, and an unexpected attribute is reported in addition to any URL violation.
+This is the equivalent of Bean Validation&#8217;s <code>@URL(protocol = "https", host = "example.com", port = 8443)</code>.
+An empty value is valid.</p>
+</div>
+<div class="paragraph">
+<p>Hosts are compared case-insensitively but matched as written, so <code>host("example.com")</code> does not accept <code><a href="https://www.example.com" class="bare">https://www.example.com</a></code>.
+A URL without an explicit port is matched against the default port of its protocol, so <code>port(443)</code> accepts <code><a href="https://example.com" class="bare">https://example.com</a></code>.
+If the value cannot be parsed as a URL, only <code>charSequence.url</code> is reported.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Url&gt; validator = ValidatorBuilder.&lt;Url&gt; of()
+    .constraint(Url::asString, "url", c -&gt; c.url(url -&gt; url
+            .protocol("https")
+            .host("example.com")
+            .port(8443)
+            .build()))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Url("https://example.com:8443/app")); // Valid
+ConstraintViolations violations = validator.validate(new Url("http://example.com:8443/app")); // Invalid (The protocol of "url" must be one of the following values: [https])
+ConstraintViolations violations = validator.validate(new Url("https://other.example.com:8443/app")); // Invalid (The host of "url" must be one of the following values: [example.com])
+ConstraintViolations violations = validator.validate(new Url("https://example.com:9999/app")); // Invalid (The port of "url" must be one of the following values: [8443])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid URL</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.protocol</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The protocol of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified protocols</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.host</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The host of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified hosts</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.url.port</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The port of "{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified ports</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="luhn"><a class="anchor" href="#luhn"></a>7.1.22. <code>luhn()</code></h4>
 <div class="paragraph">
 <p>Checks if the digits within the target value pass the Luhn checksum algorithm (see also <a href="http://en.wikipedia.org/wiki/Luhn_algorithm">Luhn algorithm</a>).</p>
 </div>
@@ -2607,7 +3611,7 @@ ConstraintViolations violations = validator.validate(new CreditCard("41111111111
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbyte"><a class="anchor" href="#isbyte"></a>7.1.18. <code>isByte()</code></h4>
+<h4 id="isbyte"><a class="anchor" href="#isbyte"></a>7.1.23. <code>isByte()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Byte</code> value</p>
 </div>
@@ -2654,7 +3658,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isshort"><a class="anchor" href="#isshort"></a>7.1.19. <code>isShort()</code></h4>
+<h4 id="isshort"><a class="anchor" href="#isshort"></a>7.1.24. <code>isShort()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Short</code> value</p>
 </div>
@@ -2701,7 +3705,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isinteger"><a class="anchor" href="#isinteger"></a>7.1.20. <code>isInteger()</code></h4>
+<h4 id="isinteger"><a class="anchor" href="#isinteger"></a>7.1.25. <code>isInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as an <code>Integer</code> value</p>
 </div>
@@ -2748,7 +3752,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="islong"><a class="anchor" href="#islong"></a>7.1.21. <code>isLong()</code></h4>
+<h4 id="islong"><a class="anchor" href="#islong"></a>7.1.26. <code>isLong()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Long</code> value</p>
 </div>
@@ -2795,7 +3799,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isfloat"><a class="anchor" href="#isfloat"></a>7.1.22. <code>isFloat()</code></h4>
+<h4 id="isfloat"><a class="anchor" href="#isfloat"></a>7.1.27. <code>isFloat()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Float</code> value</p>
 </div>
@@ -2842,7 +3846,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="isdouble"><a class="anchor" href="#isdouble"></a>7.1.23. <code>isDouble()</code></h4>
+<h4 id="isdouble"><a class="anchor" href="#isdouble"></a>7.1.28. <code>isDouble()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>Double</code> value</p>
 </div>
@@ -2889,7 +3893,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbiginteger"><a class="anchor" href="#isbiginteger"></a>7.1.24. <code>isBigInteger()</code></h4>
+<h4 id="isbiginteger"><a class="anchor" href="#isbiginteger"></a>7.1.29. <code>isBigInteger()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigInteger</code> value</p>
 </div>
@@ -2919,7 +3923,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigInteger</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.biginteger</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big integer</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2936,7 +3940,7 @@ ConstraintViolations violations = validator.validate(UserId.valueOf("a")); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isbigdecimal"><a class="anchor" href="#isbigdecimal"></a>7.1.25. <code>isBigDecimal()</code></h4>
+<h4 id="isbigdecimal"><a class="anchor" href="#isbigdecimal"></a>7.1.30. <code>isBigDecimal()</code></h4>
 <div class="paragraph">
 <p>Check if the target value can be parsed as a <code>BigDecimal</code> value</p>
 </div>
@@ -2966,7 +3970,7 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigDecimal</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.bigdecimal</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a big decimal</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -2983,7 +3987,64 @@ ConstraintViolations violations = validator.validate(Money.valueOf("a")); // Inv
 </table>
 </div>
 <div class="sect3">
-<h4 id="codepoints"><a class="anchor" href="#codepoints"></a>7.1.26. <code>codePoints(&#8230;&#8203;)</code></h4>
+<h4 id="isolocaldate-localdatestring-pattern"><a class="anchor" href="#isolocaldate-localdatestring-pattern"></a>7.1.31. <code>isoLocalDate()</code> / <code>localDate(String pattern)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is a valid local date in the given pattern, resolved with <code>ResolverStyle.STRICT</code>.
+<code>isoLocalDate()</code> uses the pattern <code>uuuu-MM-dd</code>.
+The formatter is created each time a value is validated.
+An empty value is valid.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;BirthDate&gt; validator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, "birthDate", c -&gt; c.isoLocalDate())
+    .build();
+Validator&lt;BirthDate&gt; customValidator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, "birthDate", c -&gt; c.localDate("dd/MM/uuuu"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new BirthDate("2024-12-31")); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate(null)); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate("2024-02-30")); // Invalid ("birthDate" must be a valid representation of a local date using the pattern: uuuu-MM-dd. The give value is: 2024-02-30)
+ConstraintViolations violations = customValidator.validate(new BirthDate("31/12/2024")); // Valid</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>charSequence.localdate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a valid representation of a local date using the pattern: {1}. The give value is: {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified date pattern</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="codepoints"><a class="anchor" href="#codepoints"></a>7.1.32. <code>codePoints(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value is in the specified set of code points.
 Code points can be specified as allowed characters (whitelist) or prohibited characters (blacklist).</p>
@@ -3113,7 +4174,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
 </div>
 </div>
 <div class="sect3">
-<h4 id="advanced-character-length-check"><a class="anchor" href="#advanced-character-length-check"></a>7.1.27. Advanced character length check</h4>
+<h4 id="advanced-character-length-check"><a class="anchor" href="#advanced-character-length-check"></a>7.1.33. Advanced character length check</h4>
 <div class="paragraph">
 <p>YAVI counts the input characters as the number of characters as it looks in the constraints on the number of characters. Recently, as a result of defining various characters on Unicode, the visual size and the return value of <code>String#length</code> method are quite different.</p>
 </div>
@@ -3174,7 +4235,7 @@ ConstraintViolations violations = validator.validate(new Message("hallo")); // I
     .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(3))
     .build();
 
-ConstraintViolations = validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮷野屋")); // Valid</code></pre>
 </div>
 </div>
 </div>
@@ -3197,7 +4258,7 @@ ConstraintViolations = validator.validate(new Message("𠮷野屋")); // Valid</
     .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(2))
     .build();
 
-ConstraintViolations = validator.validate(new Message("モジ")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("モジ")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3231,7 +4292,7 @@ It looks like 1 character, but when expressed in UTF-16, it is "D842 DF9F DB40 D
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
         .constraint(Message::getText, "text", c -&gt; c.lessThanOrEqual(1))
         .build();
-ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮟󠄀")); // Invalid (The size of "text" must be less than or equal to 1. The given size is 2)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3244,7 +4305,7 @@ This way you can regard this string as just a surrogate pair.</p>
         .constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
                 .lessThanOrEqual(1))
         .build();
-ConstraintViolations = validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("𠮟󠄀")); // Valid</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3279,17 +4340,38 @@ System.out.println("🏴󠁧󠁢󠁥󠁮󠁧󠁿".length()); // 14 (WTH!)</code>
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
     .constraint(Message::getText, "text", c -&gt; c.emoji().lessThanOrEqual(1))
     .build();
-ConstraintViolations = validator.validate(new Message("❤️")); // Valid
-ConstraintViolations = validator.validate(new Message("🤴🏻")); // Valid
-ConstraintViolations = validator.validate(new Message("👨‍👦")); // Valid
-ConstraintViolations = validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
-ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
+ConstraintViolations violations = validator.validate(new Message("❤️")); // Valid
+violations = validator.validate(new Message("🤴🏻")); // Valid
+violations = validator.validate(new Message("👨‍👦")); // Valid
+violations = validator.validate(new Message("️👨‍👨‍👧‍👦")); // Valid
+violations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧󠁿")); // Valid</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="asbytearray"><a class="anchor" href="#asbytearray"></a>7.1.28. <code>asByteArray()</code></h4>
+<h4 id="variant"><a class="anchor" href="#variant"></a>7.1.34. <code>variant(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Returns a constraint that removes the selected variation selectors before the size is measured.
+This does not change the value itself; it only affects how the size is counted.
+See <a href="#advanced-character-length-check">Advanced character length check</a> for the details of IVS, SVS and FVS.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, "text", c -&gt; c.variant(opts -&gt; opts.fvs(MongolianFreeVariationSelector.IGNORE))
+            .fixedSize(1))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message("ᠠ᠋")); // Valid</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>variant(&#8230;&#8203;)</code> is not a constraint itself and has no message of its own; the message of the size constraint applied to its result is reported.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="asbytearray"><a class="anchor" href="#asbytearray"></a>7.1.35. <code>asByteArray()</code></h4>
 <div class="paragraph">
 <p>If there is a discrepancy between the apparent character length and the actual code point length, the appearance restrictions are OK, but the size stored in the database may be exceeded. In YAVI, you can check the byte length in addition to the visual size.</p>
 </div>
@@ -3300,8 +4382,8 @@ ConstraintViolations = validator.validate(new Message("🏴󠁧󠁢󠁥󠁮󠁧�
             .asByteArray().lessThanOrEqual(16))
     .build();
 
-ConstraintViolations = validator.validate(new Message("I❤️☕️️")); // Valid
-ConstraintViolations = validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
+ConstraintViolations violations = validator.validate(new Message("I❤️☕️️")); // Valid
+violations = validator.validate(new Message("❤️❤️❤️️️")); // Invalid (The byte size of "text" must be less than or equal to 16. The given size is 24)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -3602,7 +4684,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 
 ConstraintViolations violations = validator.validate(new Age(20)); // Valid
 ConstraintViolations violations = validator.validate(new Age(null)); // Valid
-ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("age" must be greater than or equal to 10)</code></pre>
+ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("age" must be greater than or equal to 20)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -3620,7 +4702,7 @@ ConstraintViolations violations = validator.validate(new Age(19)); // Invalid ("
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.greaterThanOrEqual</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be greater than or equal to {1}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -3702,7 +4784,7 @@ ConstraintViolations violations = validator.validate(new Age(20)); // Invalid ("
 
 ConstraintViolations violations = validator.validate(new Age(19)); // Valid
 ConstraintViolations violations = validator.validate(new Age(null)); // Valid
-ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("age" must be less than or equal to 10)</code></pre>
+ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("age" must be less than or equal to 20)</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -3720,7 +4802,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThan</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.lessThanOrEqual</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be less than or equal to {1}</code></p></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
 <ul>
@@ -3739,9 +4821,511 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </tbody>
 </table>
 </div>
+<div class="sect3">
+<h4 id="positive-positiveorzero-negative-negativeorzero"><a class="anchor" href="#positive-positiveorzero-negative-negativeorzero"></a>7.2.7. <code>positive()</code> / <code>positiveOrZero()</code> / <code>negative()</code> / <code>negativeOrZero()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is positive, positive or zero, negative, or negative or zero, respectively.
+These constraints apply to <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, <code>Double</code>, <code>BigInteger</code> and <code>BigDecimal</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, "age", c -&gt; c.positive())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(1)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(0)); // Invalid ("age" must be positive)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>positiveOrZero</code>, <code>negative</code> and <code>negativeOrZero</code> are used in the same way.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.positive</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be positive</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.positiveOrZero</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be positive or zero</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.negative</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be negative</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>numeric.negativeOrZero</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be negative or zero</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
-<h3 id="boolean"><a class="anchor" href="#boolean"></a>7.3. Boolean</h3>
+<h3 id="temporal"><a class="anchor" href="#temporal"></a>7.3. Temporal</h3>
+<div class="paragraph">
+<p>YAVI provides temporal constraints for the following types, with the corresponding builder shortcuts:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Constraint</th>
+<th class="tableblock halign-left valign-top">Builder shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalDateConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localDate</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LocalDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.LocalDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_localDateTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>OffsetDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.OffsetDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_offsetDateTime</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Instant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.InstantConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_instant</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Year</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.YearConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_year</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>YearMonth</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.YearMonthConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_yearMonth</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ZonedDateTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>am.ik.yavi.constraint.ZonedDateTimeConstraint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_zonedDateTime</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Custom <code>TemporalAccessor</code> types can be supported by extending <code>TemporalConstraintBase</code> through <code>ChronoLocalDateConstraintBase</code>, <code>ChronoLocalDateTimeConstraintBase</code> or <code>ChronoZonedDateTimeConstraintBase</code>.
+The Kotlin DSL provides matching property overloads (see the Kotlin Support section).</p>
+</div>
+<div class="paragraph">
+<p>The following constraints apply to every type above:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.past())
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A <code>null</code> value is valid and skips all temporal checks.</p>
+</div>
+<div class="paragraph">
+<p><code>before</code> and <code>after</code> reject a value that is equal to the boundary; use <code>beforeOrEqual</code> and <code>afterOrEqual</code> for inclusive checks.
+The arguments are always suppliers.</p>
+</div>
+<div class="paragraph">
+<p><code>before</code>, <code>beforeOrEqual</code>, <code>after</code>, <code>afterOrEqual</code> and <code>between</code> have an overload that takes a <code>boolean memoize</code> argument.
+When <code>memoize</code> is <code>true</code>, which is the default, the supplier is called at most once and the same value is used for both the comparison and the violation message.
+When it is <code>false</code>, the supplier is called on every use, so a supplier that returns a different value on each call may compare against one value and report another in the message.
+Use <code>false</code> for suppliers that must be evaluated at validation time.</p>
+</div>
+<div class="paragraph">
+<p>The <code>past</code>, <code>pastOrPresent</code>, <code>future</code> and <code>futureOrPresent</code> methods also have overloads that take a <code>java.time.Clock</code>.
+These overloads exist for deterministic tests and for validating against a time source other than the system default zone.</p>
+</div>
+<div class="sect3">
+<h4 id="past-pastorpresent-future-futureorpresent"><a class="anchor" href="#past-pastorpresent-future-futureorpresent"></a>7.3.1. <code>past()</code> / <code>pastOrPresent()</code> / <code>future()</code> / <code>futureOrPresent()</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is in the past, in the past or present, in the future, or in the present or future, respectively.
+The overloads take a <code>Clock</code> used as the current time.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Clock clock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"));
+Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.past(clock))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2023, 12, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid ("date" must be a past date)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 2))); // Invalid ("date" must be a past date)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.past</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a past date</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.pastOrPresent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a date in the past or in the present</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.future</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a future date</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.futureOrPresent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be a date in the present or in the future</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the current date used for the comparison</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="before-beforeorequal-after-afterorequal"><a class="anchor" href="#before-beforeorequal-after-afterorequal"></a>7.3.2. <code>before(&#8230;&#8203;)</code> / <code>beforeOrEqual(&#8230;&#8203;)</code> / <code>after(&#8230;&#8203;)</code> / <code>afterOrEqual(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is before, before or equal to, after, or after or equal to the temporal supplied by the given supplier.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.before(() -&gt; LocalDate.of(2024, 6, 1)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 5, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid ("date" has to be before 2024-06-01)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 2))); // Invalid ("date" has to be before 2024-06-01)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>beforeOrEqual</code>, <code>after</code> and <code>afterOrEqual</code> variants are used in the same way.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.before</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be before {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.beforeOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be before or equals to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.after</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be after {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.afterOrEqual</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be after or equals to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied boundary value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="between"><a class="anchor" href="#between"></a>7.3.3. <code>between(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is between the temporals supplied by the given suppliers.
+The range is exclusive on both ends: a value equal to either bound is invalid.
+<code>IllegalArgumentException</code> is thrown at validation time if <code>rangeFrom</code> is after <code>rangeTo</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.between(
+            () -&gt; LocalDate.of(2024, 1, 1), () -&gt; LocalDate.of(2024, 12, 31)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid ("date" has to be between 2024-01-01 and 2024-12-31)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2025, 1, 1))); // Invalid ("date" has to be between 2024-01-01 and 2024-12-31)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.between</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" has to be between {1} and {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the supplied start of the range</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the supplied end of the range</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="fieldpredicate"><a class="anchor" href="#fieldpredicate"></a>7.3.4. <code>fieldPredicate(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p>Checks if the given predicate accepts the value of the given <code>java.time.temporal.TemporalField</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, "date", c -&gt; c.fieldPredicate(ChronoField.DAY_OF_WEEK, d -&gt; d &gt;= 1 &amp;&amp; d &lt;= 5))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 3))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid (The DayOfWeek of "date" is invalid)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>temporal.field</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>The {1} of "{0}" is invalid</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the temporal field</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="boolean"><a class="anchor" href="#boolean"></a>7.4. Boolean</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Boolean</code> as follows:</p>
 </div>
@@ -3763,7 +5347,7 @@ ConstraintViolations violations = validator.validate(new Age(21)); // Invalid ("
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>7.3.1. <code>notNull()</code></h4>
+<h4 id="notnull-3"><a class="anchor" href="#notnull-3"></a>7.4.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -3809,7 +5393,7 @@ ConstraintViolations violations = validator.validate(new Confirmation(null)); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="isnull-3"><a class="anchor" href="#isnull-3"></a>7.3.2. <code>isNull()</code></h4>
+<h4 id="isnull-3"><a class="anchor" href="#isnull-3"></a>7.4.2. <code>isNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>null</code></p>
 </div>
@@ -3855,7 +5439,7 @@ ConstraintViolations violations = validator.validate(new Confirmation(true)); //
 </table>
 </div>
 <div class="sect3">
-<h4 id="istrue"><a class="anchor" href="#istrue"></a>7.3.3. <code>isTrue()</code></h4>
+<h4 id="istrue"><a class="anchor" href="#istrue"></a>7.4.3. <code>isTrue()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>true</code></p>
 </div>
@@ -3902,7 +5486,7 @@ ConstraintViolations violations = validator.validate(new Confirmation(false)); /
 </table>
 </div>
 <div class="sect3">
-<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>7.3.4. <code>isFalse()</code></h4>
+<h4 id="isfalse"><a class="anchor" href="#isfalse"></a>7.4.4. <code>isFalse()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>false</code></p>
 </div>
@@ -3950,7 +5534,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect2">
-<h3 id="collection"><a class="anchor" href="#collection"></a>7.4. Collection</h3>
+<h3 id="collection"><a class="anchor" href="#collection"></a>7.5. Collection</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Collection</code> as follows:</p>
 </div>
@@ -3972,7 +5556,7 @@ ConstraintViolations violations = validator.validate(new Rented(true)); // Inval
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-4"><a class="anchor" href="#notnull-4"></a>7.4.1. <code>notNull()</code></h4>
+<h4 id="notnull-4"><a class="anchor" href="#notnull-4"></a>7.5.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -4018,7 +5602,7 @@ ConstraintViolations violations = validator.validate(new Histories(null)); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isnull-4"><a class="anchor" href="#isnull-4"></a>7.4.2. <code>isNull()</code></h4>
+<h4 id="isnull-4"><a class="anchor" href="#isnull-4"></a>7.5.2. <code>isNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>null</code></p>
 </div>
@@ -4064,7 +5648,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="notempty-2"><a class="anchor" href="#notempty-2"></a>7.4.3. <code>notEmpty()</code></h4>
+<h4 id="notempty-2"><a class="anchor" href="#notempty-2"></a>7.5.3. <code>notEmpty()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not empty</p>
 </div>
@@ -4111,7 +5695,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of())); 
 </table>
 </div>
 <div class="sect3">
-<h4 id="fixedsizeint-2"><a class="anchor" href="#fixedsizeint-2"></a>7.4.4. <code>fixedSize(int)</code></h4>
+<h4 id="fixedsizeint-2"><a class="anchor" href="#fixedsizeint-2"></a>7.5.4. <code>fixedSize(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is the specified size</p>
 </div>
@@ -4164,7 +5748,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanint-2"><a class="anchor" href="#greaterthanint-2"></a>7.4.5. <code>greaterThan(int)</code></h4>
+<h4 id="greaterthanint-2"><a class="anchor" href="#greaterthanint-2"></a>7.5.5. <code>greaterThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than the specified size</p>
 </div>
@@ -4217,7 +5801,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequalint-2"><a class="anchor" href="#greaterthanorequalint-2"></a>7.4.6. <code>greaterThanOrEqual(int)</code></h4>
+<h4 id="greaterthanorequalint-2"><a class="anchor" href="#greaterthanorequalint-2"></a>7.5.6. <code>greaterThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
 </div>
@@ -4270,7 +5854,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanint-2"><a class="anchor" href="#lessthanint-2"></a>7.4.7. <code>lessThan(int)</code></h4>
+<h4 id="lessthanint-2"><a class="anchor" href="#lessthanint-2"></a>7.5.7. <code>lessThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than the specified size</p>
 </div>
@@ -4323,7 +5907,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequalint-2"><a class="anchor" href="#lessthanorequalint-2"></a>7.4.8. <code>lessThanOrEqual(int)</code></h4>
+<h4 id="lessthanorequalint-2"><a class="anchor" href="#lessthanorequalint-2"></a>7.5.8. <code>lessThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
 </div>
@@ -4376,7 +5960,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </table>
 </div>
 <div class="sect3">
-<h4 id="contains"><a class="anchor" href="#contains"></a>7.4.9. <code>contains(&#8230;&#8203;)</code></h4>
+<h4 id="contains"><a class="anchor" href="#contains"></a>7.5.9. <code>contains(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified value</p>
 </div>
@@ -4425,9 +6009,161 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </tbody>
 </table>
 </div>
+<div class="sect3">
+<h4 id="unique"><a class="anchor" href="#unique"></a>7.5.10. <code>unique()</code></h4>
+<div class="paragraph">
+<p>Checks if the elements of the target value are unique.
+The violation includes the duplicated elements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, "histories", c -&gt; c.unique())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(1)))); // Invalid ("histories" must be unique. [History{revision=1}] is/are duplicated.)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>collection.unique</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be unique. {1} is/are duplicated.</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the duplicated elements</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="containsallcollection"><a class="anchor" href="#containsallcollection"></a>7.5.11. <code>containsAll(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value contains all of the given elements.
+The violation includes the missing elements.
+A <code>Set</code> and a non-<code>Set</code> collection are handled with the same semantics.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, "histories", c -&gt; c.containsAll(List.of(new History(1), new History(2))))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2), new History(3)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1)))); // Invalid ("histories" must be have of all of the following values: [History{revision=1}, History{revision=2}], missing values: [History{revision=2}])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>collection.containsAll</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be have of all of the following values: {1}, missing values: {2}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the required elements</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the missing elements</p>
+</li>
+<li>
+<p><code>{3}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="foreach-foreachifpresent"><a class="anchor" href="#foreach-foreachifpresent"></a>7.5.12. <code>forEach(&#8230;&#8203;)</code> / <code>forEachIfPresent(&#8230;&#8203;)</code></h4>
+<div class="paragraph">
+<p><code>forEach</code> applies an element validator to each element of a collection property, and <code>forEachIfPresent</code> does the same but treats a <code>null</code> collection as valid.
+A <code>null</code> element inside the collection is reported with the element index in the property name, for example <code>histories[1]</code>, and the <code>object.notNull</code> message.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, "histories",
+            ValidatorBuilder.&lt;History&gt; of()
+                .constraint(History::getRevision, "revision", c -&gt; c.notNull())
+                .build())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(Arrays.asList(new History(1), null))); // Invalid ("histories[1]" must not be null)</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notNull</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be null</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; the indexed field name</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="sect2">
-<h3 id="map"><a class="anchor" href="#map"></a>7.5. Map</h3>
+<h3 id="map"><a class="anchor" href="#map"></a>7.6. Map</h3>
 <div class="paragraph">
 <p>Apply the constraints on the <code>Map</code> as follows:</p>
 </div>
@@ -4449,7 +6185,7 @@ ConstraintViolations violations = validator.validate(new Histories(List.of(new H
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-5"><a class="anchor" href="#notnull-5"></a>7.5.1. <code>notNull()</code></h4>
+<h4 id="notnull-5"><a class="anchor" href="#notnull-5"></a>7.6.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -4495,7 +6231,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(null)); // Inva
 </table>
 </div>
 <div class="sect3">
-<h4 id="isnull-5"><a class="anchor" href="#isnull-5"></a>7.5.2. <code>isNull()</code></h4>
+<h4 id="isnull-5"><a class="anchor" href="#isnull-5"></a>7.6.2. <code>isNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>null</code></p>
 </div>
@@ -4541,7 +6277,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="notempty-3"><a class="anchor" href="#notempty-3"></a>7.5.3. <code>notEmpty()</code></h4>
+<h4 id="notempty-3"><a class="anchor" href="#notempty-3"></a>7.6.3. <code>notEmpty()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not empty</p>
 </div>
@@ -4588,7 +6324,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="fixedsizeint-3"><a class="anchor" href="#fixedsizeint-3"></a>7.5.4. <code>fixedSize(int)</code></h4>
+<h4 id="fixedsizeint-3"><a class="anchor" href="#fixedsizeint-3"></a>7.6.4. <code>fixedSize(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is the specified size</p>
 </div>
@@ -4641,7 +6377,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // 
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanint-3"><a class="anchor" href="#greaterthanint-3"></a>7.5.5. <code>greaterThan(int)</code></h4>
+<h4 id="greaterthanint-3"><a class="anchor" href="#greaterthanint-3"></a>7.6.5. <code>greaterThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than the specified size</p>
 </div>
@@ -4694,7 +6430,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="greaterthanorequalint-3"><a class="anchor" href="#greaterthanorequalint-3"></a>7.5.6. <code>greaterThanOrEqual(int)</code></h4>
+<h4 id="greaterthanorequalint-3"><a class="anchor" href="#greaterthanorequalint-3"></a>7.6.6. <code>greaterThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is greater than or equals to the specified size</p>
 </div>
@@ -4747,7 +6483,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanint-3"><a class="anchor" href="#lessthanint-3"></a>7.5.7. <code>lessThan(int)</code></h4>
+<h4 id="lessthanint-3"><a class="anchor" href="#lessthanint-3"></a>7.6.7. <code>lessThan(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than the specified size</p>
 </div>
@@ -4800,7 +6536,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="lessthanorequalint-3"><a class="anchor" href="#lessthanorequalint-3"></a>7.5.8. <code>lessThanOrEqual(int)</code></h4>
+<h4 id="lessthanorequalint-3"><a class="anchor" href="#lessthanorequalint-3"></a>7.6.8. <code>lessThanOrEqual(int)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value&#8217;s size is less than or equals to the specified size</p>
 </div>
@@ -4853,7 +6589,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("a", "A"
 </table>
 </div>
 <div class="sect3">
-<h4 id="containskey"><a class="anchor" href="#containskey"></a>7.5.9. <code>containsKey(&#8230;&#8203;)</code></h4>
+<h4 id="containskey"><a class="anchor" href="#containskey"></a>7.6.9. <code>containsKey(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified key</p>
 </div>
@@ -4903,7 +6639,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </table>
 </div>
 <div class="sect3">
-<h4 id="containsvalue"><a class="anchor" href="#containsvalue"></a>7.5.10. <code>containsValue(&#8230;&#8203;)</code></h4>
+<h4 id="containsvalue"><a class="anchor" href="#containsvalue"></a>7.6.10. <code>containsValue(&#8230;&#8203;)</code></h4>
 <div class="paragraph">
 <p>Checks if the target value contains the specified value</p>
 </div>
@@ -4954,7 +6690,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="sect2">
-<h3 id="object"><a class="anchor" href="#object"></a>7.6. Object</h3>
+<h3 id="object"><a class="anchor" href="#object"></a>7.7. Object</h3>
 <div class="paragraph">
 <p>Apply the constraints on any <code>Object</code> as follows:</p>
 </div>
@@ -4976,7 +6712,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="paragraph">
-<p>If you want to apply constraints on target class itself (e.g. <a href="#cross-filed-validation">[cross-filed-validation]</a>), you can use <code>constraintOnTarget</code> as follows:</p>
+<p>If you want to apply constraints on target class itself (e.g. <a href="#cross-field-validation">Cross-field validation</a>), you can use <code>constraintOnTarget</code> as follows:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4996,7 +6732,7 @@ ConstraintViolations violations = validator.validate(new CodeMap(Map.of("c", "C"
 </div>
 </div>
 <div class="sect3">
-<h4 id="notnull-6"><a class="anchor" href="#notnull-6"></a>7.6.1. <code>notNull()</code></h4>
+<h4 id="notnull-6"><a class="anchor" href="#notnull-6"></a>7.7.1. <code>notNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is not <code>null</code></p>
 </div>
@@ -5042,7 +6778,7 @@ ConstraintViolations violations = validator.validate(new CreatedAt(null)); // In
 </table>
 </div>
 <div class="sect3">
-<h4 id="isnull-6"><a class="anchor" href="#isnull-6"></a>7.6.2. <code>isNull()</code></h4>
+<h4 id="isnull-6"><a class="anchor" href="#isnull-6"></a>7.7.2. <code>isNull()</code></h4>
 <div class="paragraph">
 <p>Checks that the target value is <code>null</code></p>
 </div>
@@ -5089,7 +6825,125 @@ ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now()
 </table>
 </div>
 <div class="sect3">
-<h4 id="password-2"><a class="anchor" href="#password-2"></a>7.6.3. <code>password()</code></h4>
+<h4 id="equaltoobject"><a class="anchor" href="#equaltoobject"></a>7.7.3. <code>equalTo(Object)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is equal to the specified value</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.equalTo("expected"))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("expected")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("other")); // Invalid ("value" must be equal to expected)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="oneofcollection"><a class="anchor" href="#oneofcollection"></a>7.7.4. <code>oneOf(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is one of the specified values</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.oneOf(List.of("a", "b")))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("a")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("c")); // Invalid ("value" must be one of the following values: [a, b])</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="notoneofcollection"><a class="anchor" href="#notoneofcollection"></a>7.7.5. <code>notOneOf(Collection)</code></h4>
+<div class="paragraph">
+<p>Checks if the target value is not one of the specified values</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, "value", c -&gt; c.notOneOf(List.of("a", "b")))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box("c")); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box("a")); // Invalid ("value" must not be one of the following values: [a, b])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.equalTo</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be equal to {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.oneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the allowed values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.notOneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must not be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the forbidden values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="password-2"><a class="anchor" href="#password-2"></a>7.7.6. <code>password()</code></h4>
 <div class="paragraph">
 <p>Check if the target value meets the specified custom password policy (e.g. Cross-field check)</p>
 </div>
@@ -5170,6 +7024,195 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="enum"><a class="anchor" href="#enum"></a>7.8. Enum</h3>
+<div class="paragraph">
+<p>Apply constraints on an enum as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
+    ._enum(Account::getStatus, "status", c -&gt; c.oneOf(Status.ACTIVE))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Account(Status.ACTIVE)); // Valid
+ConstraintViolations violations = validator.validate(new Account(null)); // Valid
+ConstraintViolations violations = validator.validate(new Account(Status.INACTIVE)); // Invalid ("status" must be one of the following values: [ACTIVE])</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>_enum</code> is an alias of <code>constraint(ToEnum, String, Function)</code>.
+The same <code>_enum</code> method is available on <code>ArgumentsValidatorBuilder</code> and <code>YaviArguments</code> to validate an enum argument.</p>
+</div>
+<div class="paragraph">
+<p><code>EnumConstraint#oneOf(E&#8230;&#8203;)</code> requires the value to be one of the given enum constants.
+An empty argument list is rejected with <code>IllegalArgumentException</code>.
+A <code>null</code> value is valid unless <code>notNull()</code> is added.
+The violation uses the <code>object.oneOf</code> message key.</p>
+</div>
+<div class="paragraph">
+<p>A single enum value can be validated with <code>EnumValidatorBuilder</code> and <code>EnumValidator</code> as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">EnumValidator&lt;Status, Status&gt; validator = EnumValidatorBuilder.&lt;Status&gt; of("status",
+        c -&gt; c.oneOf(Status.ACTIVE)).build();
+
+Validated&lt;Status&gt; result = validator.validate(Status.INACTIVE); // Invalid ("status" must be one of the following values: [ACTIVE])</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>object.oneOf</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must be one of the following values: {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the allowed values</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="array"><a class="anchor" href="#array"></a>7.9. Array</h3>
+<div class="paragraph">
+<p>Apply the constraints on arrays as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._objectArray(/* Function from TargetClass to an object array  */, /* Field Name */, /* Constraints */)
+    .build();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following constraints and builder shortcuts are available:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Array type</th>
+<th class="tableblock halign-left valign-top">Builder shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>E[]</code> (<code>ObjectArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_objectArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>boolean[]</code> (<code>BooleanArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_booleanArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>byte[]</code> (<code>ByteArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_byteArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>char[]</code> (<code>CharArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_charArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>short[]</code> (<code>ShortArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_shortArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>int[]</code> (<code>IntArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_intArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>long[]</code> (<code>LongArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_longArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>float[]</code> (<code>FloatArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_floatArray</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>double[]</code> (<code>DoubleArrayConstraint</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>_doubleArray</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The constraints in <code>am.ik.yavi.constraint.array</code> provide <code>notNull</code>, <code>isNull</code>, <code>notEmpty</code>, <code>fixedSize</code>, <code>greaterThan</code>, <code>greaterThanOrEqual</code>, <code>lessThan</code>, <code>lessThanOrEqual</code> and <code>contains</code>.
+A <code>null</code> array is valid and the checks are skipped, except for <code>notEmpty()</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;Values&gt; validator = ValidatorBuilder.&lt;Values&gt; of()
+    ._intArray(Values::getNumbers, "numbers", c -&gt; c.contains(3).fixedSize(3))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2, 3 })); // Valid
+ConstraintViolations violations = validator.validate(new Values(null)); // Valid
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2 })); // Invalid ("numbers" must contain 3, The size of "numbers" must be 3. The given size is 2)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The size and null checks report the <code>object.notNull</code>, <code>object.isNull</code> and <code>container.*</code> message keys documented in the Collection section.
+<code>contains</code> reports <code>array.contains</code>.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Message Key</th>
+<th class="tableblock halign-left valign-top">Default Message Format</th>
+<th class="tableblock halign-left valign-top">Args</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>array.contains</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>"{0}" must contain {1}</code></p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p><code>{0}</code> &#8230;&#8203; field name</p>
+</li>
+<li>
+<p><code>{1}</code> &#8230;&#8203; the specified value</p>
+</li>
+<li>
+<p><code>{2}</code> &#8230;&#8203; the given value</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -5178,6 +7221,30 @@ ConstraintViolations violations = validator.validate(new Account("foo", "Foo1234
 <div class="paragraph">
 <p>YAVI provides Annotation Processor to generates classes which defines meta classes
 that implement <code>am.ik.yavi.meta.ConstraintMeta</code> for each target which is annotated with <code>am.ik.yavi.meta.ConstraintTarget</code> or <code>am.ik.yavi.meta.ConstraintArguments</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="enabling-the-annotation-processor"><a class="anchor" href="#enabling-the-annotation-processor"></a>8.1. Enabling the annotation processor</h3>
+<div class="paragraph">
+<p>The annotation processor is packaged in the <code>yavi</code> artifact.
+With JDK 21 and earlier, <code>mvn clean compile</code> discovers it on the compile classpath automatically.
+JDK 23 and later no longer run annotation processors found on the classpath implicitly, so declare the processor explicitly in <code>pom.xml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;annotationProcessorPaths&gt;
+            &lt;path&gt;
+                &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+                &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+                &lt;version&gt;0.17.3&lt;/version&gt;
+            &lt;/path&gt;
+        &lt;/annotationProcessorPaths&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>When you have a class as following, run <code>mvn clean compile</code>:</p>
@@ -5243,8 +7310,9 @@ public class UserForm {
 </tr>
 </table>
 </div>
+</div>
 <div class="sect2">
-<h3 id="annotating-constrainttarget"><a class="anchor" href="#annotating-constrainttarget"></a>8.1. Annotating <code>@ConstraintTarget</code></h3>
+<h3 id="annotating-constrainttarget"><a class="anchor" href="#annotating-constrainttarget"></a>8.2. Annotating <code>@ConstraintTarget</code></h3>
 <div class="paragraph">
 <p><code>@ConstraintTarget</code> is used to generate meta classes that can be used with <code>ValidatorBuilder#constraint</code>.
 + It can be annotated on methods or constructor arguments.</p>
@@ -5258,8 +7326,8 @@ public class UserForm {
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt; of()
-    .constraint(_UserFormMeta.NAME, c -&gt; c.notEmpty())
-    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notEmpty().email())
+    .constraint(_UserFormMeta.NAME, c -&gt; c.notBlank())
+    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notBlank().email())
     .constraint(_UserFormMeta.AGE, c -&gt; c.greaterThan(0))
     .build();</code></pre>
 </div>
@@ -5271,7 +7339,7 @@ public class UserForm {
 <p>The example above is available for the following 4 ways of generation.</p>
 </div>
 <div class="sect3">
-<h4 id="constrainttarget-on-getters"><a class="anchor" href="#constrainttarget-on-getters"></a>8.1.1. <code>@ConstraintTarget</code> on getters</h4>
+<h4 id="constrainttarget-on-getters"><a class="anchor" href="#constrainttarget-on-getters"></a>8.2.1. <code>@ConstraintTarget</code> on getters</h4>
 <div class="paragraph">
 <p>If you like "Java Beans" style, this way would be straightforward.</p>
 </div>
@@ -5325,7 +7393,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T17:37:47.866300+09:00
+// Generated at 2026-11-12T12:52:16.335171+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -5371,7 +7439,7 @@ public class _UserFormMeta {
 </div>
 </div>
 <div class="sect3">
-<h4 id="on-constructor-arguments-getters"><a class="anchor" href="#on-constructor-arguments-getters"></a>8.1.2. on constructor arguments + getters</h4>
+<h4 id="on-constructor-arguments-getters"><a class="anchor" href="#on-constructor-arguments-getters"></a>8.2.2. on constructor arguments + getters</h4>
 <div class="paragraph">
 <p>If you prefer an immutable class like Value Object, annotate <code>@ConstraintTarget</code> on constructor arguments.</p>
 </div>
@@ -5419,7 +7487,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T17:59:03.892823+09:00
+// Generated at 2026-11-12T12:52:16.335171+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -5468,7 +7536,7 @@ public class _UserFormMeta {
 </div>
 </div>
 <div class="sect3">
-<h4 id="on-constructor-arguments-non-getters"><a class="anchor" href="#on-constructor-arguments-non-getters"></a>8.1.3. on constructor arguments + non-getters</h4>
+<h4 id="on-constructor-arguments-non-getters"><a class="anchor" href="#on-constructor-arguments-non-getters"></a>8.2.3. on constructor arguments + non-getters</h4>
 <div class="paragraph">
 <p>You may not like "getter" style for immutable objects.
 You can use filed name as method name using <code>getter = false</code>. This will be a great fit for <a href="https://openjdk.java.net/jeps/395">Records</a>.</p>
@@ -5517,7 +7585,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:00:37.868495+09:00
+// Generated at 2026-11-12T12:52:16.333598+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -5563,7 +7631,7 @@ public class _UserFormMeta {
 </div>
 </div>
 <div class="sect3">
-<h4 id="on-constructor-arguments-field-access"><a class="anchor" href="#on-constructor-arguments-field-access"></a>8.1.4. on constructor arguments + field access</h4>
+<h4 id="on-constructor-arguments-field-access"><a class="anchor" href="#on-constructor-arguments-field-access"></a>8.2.4. on constructor arguments + field access</h4>
 <div class="paragraph">
 <p>You may prefer accessing fields directly rather than accessors, then use <code>field = true</code>.</p>
 </div>
@@ -5598,7 +7666,7 @@ public class UserForm {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:02:47.124191+09:00
+// Generated at 2026-11-12T12:52:16.331344+09:00
 public class _UserFormMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
@@ -5645,19 +7713,19 @@ public class _UserFormMeta {
 </div>
 </div>
 <div class="sect2">
-<h3 id="annotating-constraintarguments"><a class="anchor" href="#annotating-constraintarguments"></a>8.2. Annotating <code>@ConstraintArguments</code></h3>
+<h3 id="annotating-constraintarguments"><a class="anchor" href="#annotating-constraintarguments"></a>8.3. Annotating <code>@ConstraintArguments</code></h3>
 <div class="paragraph">
 <p><code>@ConstraintArguments</code> is used to generate meta classes that can be used with <code>ArgumentsValidatorBuilder</code>.
 + It can be annotated on constructors or methods.</p>
 </div>
 <div class="paragraph">
-<p>The constructor of <code>Xyz</code> class that is annotated with <code>@ConstraintTarget</code> will generate <code>_XyzArgumentsMeta</code>.</p>
+<p>The constructor of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzArgumentsMeta</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>doSomething</code> method of <code>Xyz</code> class that is annotated with <code>@ConstraintTarget</code> will generate <code>_XyzDoSomethingArgumentsMeta</code>.</p>
+<p><code>doSomething</code> method of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzDoSomethingArgumentsMeta</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="validating-constructor-arguments"><a class="anchor" href="#validating-constructor-arguments"></a>8.2.1. Validating Constructor Arguments</h4>
+<h4 id="validating-constructor-arguments"><a class="anchor" href="#validating-constructor-arguments"></a>8.3.1. Validating Constructor Arguments</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
@@ -5688,7 +7756,7 @@ public class User {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:22:15.164882+09:00
+// Generated at 2026-11-12T12:52:16.325765+09:00
 public class _UserArgumentsMeta {
 
     public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
@@ -5700,7 +7768,7 @@ public class _UserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments1::arg1;
+            return am.ik.yavi.arguments.Arguments3::arg1;
         }
     };
 
@@ -5713,7 +7781,7 @@ public class _UserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments2::arg2;
+            return am.ik.yavi.arguments.Arguments3::arg2;
         }
     };
 
@@ -5740,8 +7808,8 @@ public class _UserArgumentsMeta {
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments3Validator&lt;String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
     .of(User::new)
     .builder(b -&gt; b
-        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notEmpty())
-        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notEmpty().email())
+        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
         .constraint(_UserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
     )
     .build();</code></pre>
@@ -5749,7 +7817,7 @@ public class _UserArgumentsMeta {
 </div>
 </div>
 <div class="sect3">
-<h4 id="validating-method-arguments-2"><a class="anchor" href="#validating-method-arguments-2"></a>8.2.2. Validating Method Arguments</h4>
+<h4 id="validating-method-arguments-2"><a class="anchor" href="#validating-method-arguments-2"></a>8.3.2. Validating Method Arguments</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
@@ -5772,7 +7840,7 @@ public class UserService {
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package com.example;
 
-// Generated at 2020-02-11T18:40:53.554587+09:00
+// Generated at 2026-11-12T12:52:16.329116+09:00
 public class _UserServiceCreateUserArgumentsMeta {
 
     public static final am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; USERSERVICE = new am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt;() {
@@ -5784,7 +7852,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments1::arg1;
+            return am.ik.yavi.arguments.Arguments4::arg1;
         }
     };
 
@@ -5797,7 +7865,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments2::arg2;
+            return am.ik.yavi.arguments.Arguments4::arg2;
         }
     };
 
@@ -5810,7 +7878,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 
         @Override
         public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
-            return am.ik.yavi.arguments.Arguments3::arg3;
+            return am.ik.yavi.arguments.Arguments4::arg3;
         }
     };
 
@@ -5838,13 +7906,42 @@ public class _UserServiceCreateUserArgumentsMeta {
     .of(UserService::createUser)
     .builder(b -&gt; b
         .constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE, c -&gt; c.notNull())
-        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notEmpty())
-        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notEmpty().email())
+        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
         .constraint(_UserServiceCreateUserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
     )
     .build();</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="supported-meta-types"><a class="anchor" href="#supported-meta-types"></a>8.4. Supported meta types</h3>
+<div class="paragraph">
+<p>The processor generates a meta for the declared type of the annotated target.
+The following meta types are available in <code>am.ik.yavi.meta</code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>StringConstraintMeta</code></p>
+</li>
+<li>
+<p><code>BooleanConstraintMeta</code>, <code>CharacterConstraintMeta</code>, <code>ByteConstraintMeta</code>, <code>ShortConstraintMeta</code>, <code>IntegerConstraintMeta</code>, <code>LongConstraintMeta</code>, <code>FloatConstraintMeta</code>, <code>DoubleConstraintMeta</code></p>
+</li>
+<li>
+<p><code>BigIntegerConstraintMeta</code>, <code>BigDecimalConstraintMeta</code></p>
+</li>
+<li>
+<p><code>ObjectConstraintMeta</code></p>
+</li>
+<li>
+<p><code>LocalDateConstraintMeta</code>, <code>LocalTimeConstraintMeta</code>, <code>LocalDateTimeConstraintMeta</code>, <code>OffsetDateTimeConstraintMeta</code>, <code>InstantConstraintMeta</code>, <code>YearConstraintMeta</code>, <code>YearMonthConstraintMeta</code>, <code>ZonedDateTimeConstraintMeta</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There is no dedicated meta type for enums; an enum target uses <code>ObjectConstraintMeta</code>.</p>
 </div>
 </div>
 </div>
@@ -6077,57 +8174,69 @@ public class OrderController {
 </div>
 </div>
 <div class="sect2">
-<h3 id="obtaining-a-bivalidator"><a class="anchor" href="#obtaining-a-bivalidator"></a>9.6. Obtaining a <code>BiValidator</code></h3>
+<h3 id="obtaining-a-biconsumer"><a class="anchor" href="#obtaining-a-biconsumer"></a>9.6. Obtaining a <code>BiConsumer</code></h3>
 <div class="paragraph">
-<p><code>am.ik.yavi.core.BiValidator&lt;T, E&gt;</code> is a <code>BiConsumer&lt;T, E&gt;</code>.
-<code>T</code> is the type of target object as usual and <code>E</code> is the type of errors object.</p>
+<p>Since 0.16.0, a validator is exposed as a <code>java.util.function.BiConsumer&lt;T, E&gt;</code> instead of a dedicated type, where <code>T</code> is the type of the target object and <code>E</code> is the type of the errors object.</p>
 </div>
 <div class="paragraph">
-<p>This class is helpful for libraries or apps to adapt both YAVI and other validation framework that accepts these two arguments like Spring Framework&#8217;s <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
+<p>This is helpful for libraries or apps to adapt both YAVI and other validation frameworks that accept these two arguments, like Spring Framework&#8217;s <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>BiValidator</code> can be obtained as below:</p>
+<p><code>Validatable#toBiConsumer</code> and <code>ValueValidator#toBiConsumer</code> take an <code>am.ik.yavi.core.ErrorHandler&lt;E&gt;</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">BiValidator&lt;CartItem, Errors&gt; validator = ValidatorBuilder.&lt;CartItem&gt; of()
-    .constraint(...)
-    .build(Errors::rejectValue);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>There is a factory for <code>BiValidator</code> as well</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
-public BiValidatorFactory&lt;Errors&gt; biValidatorFactory() {
-    return new BiValidatorFactory&lt;&gt;(Errors::rejectValues);
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public interface ErrorHandler&lt;E&gt; {
+    void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>or, if you want to customize the builder</p>
+<p>For Spring Framework&#8217;s <code>Errors</code>, the handler can record the violation with <code>Errors#rejectValue</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Validator&lt;CartItem&gt; cartItemValidator = ...;
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator
+    .toBiConsumer((errors, name, messageKey, args, defaultMessage) -&gt;
+        errors.rejectValue(name, messageKey, args, defaultMessage));
+// or
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator.toBiConsumer(Errors::rejectValue);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is a factory for <code>BiConsumer</code> as well:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
-public BiValidatorFactory&lt;Errors&gt; biValidatorFactory(MessageSource messageSource) {
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory() {
+    return new BiConsumerFactory&lt;&gt;(Errors::rejectValue);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or, if you want to customize the message configuration</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory(MessageSource messageSource) {
     MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
-    return new BiValidatorFactory&lt;&gt;("." /* Message Key Separator */, messageFormatter, Errors::rejectValues);
+    return new BiConsumerFactory&lt;&gt;("." /* Message Key Separator */, messageFormatter, Errors::rejectValue);
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The usage of a <code>BiValidator</code> would look like following:</p>
+<p>The usage of a <code>BiConsumer</code> would look like following:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
 public class OrderController {
-    private final BiValidator&lt;CartItem, Errors&gt; validator;
+    private final BiConsumer&lt;CartItem, Errors&gt; validator;
 
-    public OrderController(BiValidatorFactory&lt;Errors&gt; factory) {
+    public OrderController(BiConsumerFactory&lt;Errors&gt; factory) {
         this.validator = factory.validator(builder -&gt; builder.constraint(...));
     }
 }</code></pre>
@@ -6139,8 +8248,8 @@ public class OrderController {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.1<br>
-Last updated 2022-05-07 06:20:09 UTC
+Version 0.17.3<br>
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">

@@ -26,6 +26,10 @@
 <div class="paragraph">
 <p>Multiple <code>ValueValidator</code> s can be combined to validate a larger object.</p>
 </div>
+<div class="paragraph">
+<p><code>ArgumentsValidators#split</code> and <code>ArgumentsValidators#combine</code> support up to 16 arguments since 0.10.0.
+The <code>apply</code> method consumes <code>Function1</code> to <code>Function16</code> accordingly.</p>
+</div>
 <div class="sect2">
 <h3 id="_splitting_a_validator_for_an_object_into_small_pieces">Splitting a validator for an object into small pieces</h3>
 <div class="paragraph">
@@ -113,6 +117,43 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 </div>
 <div class="sect2">
+<h3 id="_chaining_and_mapping_value_validators">Chaining and mapping value validators</h3>
+<div class="paragraph">
+<p><code>ValueValidator#andThen(ValueValidator)</code> applies the value produced by one validator to the next validator.
+<code>ValueValidator#map(Function)</code> maps the validated value without applying further validation.
+<code>andThen(Function)</code> is deprecated since 0.17.0 and is equivalent to <code>map(Function)</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+ValueValidator&lt;String, String&gt; emailValue = emailValidator.map(Email::value);
+ValueValidator&lt;String, String&gt; checked = emailValidator
+    .andThen(ValueValidator.&lt;Email&gt; passThrough().map(Email::value));</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_validating_every_element_of_an_iterable">Validating every element of an iterable</h3>
+<div class="paragraph">
+<p><code>ArgumentsValidators#sequenceN</code> applies every given validator to the same arguments and collects the validated values into a <code>List</code>.
+<code>ArgumentsValidators#traverseN</code> builds a validator from an iterable of values and a function that produces a validator for each value.
+Both are available for 1 to 16 arguments since 0.10.0.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+Arguments1Validator&lt;String, Email&gt; adminEmailValidator = /* see examples above */;
+Arguments1Validator&lt;String, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators
+    .sequence1(List.of(emailValidator, adminEmailValidator));
+
+Validated&lt;List&lt;Email&gt;&gt; emails = emailsValidator.validate("yavi@example.com");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <a href="#validating-arguments">[validating-arguments]</a> for constructing arguments validators.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_validating_the_source_object_before_creating_the_target_object">Validating the source object before creating the target object</h3>
 <div class="paragraph">
 <p>In a web application, you often get values from a <code>Map</code>, Form Object, or <code>HttpServletRequest</code> to create a Domain Object.</p>
@@ -125,11 +166,11 @@ Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validat
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Argument1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">Arguments1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
     .compose(req -&gt; req.getParameter("name"));
-Argument1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
+Arguments1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
     .compose(req -&gt; req.getParameter("email"));
-Argument1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
+Arguments1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
     .compose(req -&gt; Integer.valueOf(req.getParameter("age")));
 
 HttpServletRequest request = ...;
@@ -175,7 +216,7 @@ Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = p
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-05-07 06:20:09 UTC
+Last updated 2026-11-12 04:25:54 UTC
 </div>
 </div>
 <link rel="stylesheet" href="js/highlight/styles/github.min.css">
