@@ -35,6 +35,8 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 
 	private final Function<ValidatorBuilder<Arguments1<X>>, ValidatorBuilder<Arguments1<X>>> builder;
 
+	private final @Nullable Class<X> type;
+
 	/**
 	 * Returns a builder that validates the value under the given name with the given
 	 * constraints.
@@ -50,6 +52,22 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	public static <X> ObjectValidatorBuilder<X> of(String name,
 			Function<ObjectConstraint<Arguments1<X>, X>, ObjectConstraint<Arguments1<X>, X>> constraints) {
 		return wrap(b -> b.constraintOnObject(Arguments1::arg1, name, constraints));
+	}
+
+	/**
+	 * Creates a builder like {@link #of(String, Function)} that also knows the type of
+	 * the value. The built validator reports it in its description and can validate an
+	 * untyped input with {@code untyped()}.
+	 * @param name the property name used in violation names and messages
+	 * @param type the type of the value
+	 * @param constraints function that configures the constraints
+	 * @param <X> the type of the value to validate
+	 * @return a new builder
+	 * @since 0.18.0
+	 */
+	public static <X> ObjectValidatorBuilder<X> of(String name, Class<X> type,
+			Function<ObjectConstraint<Arguments1<X>, X>, ObjectConstraint<Arguments1<X>, X>> constraints) {
+		return new ObjectValidatorBuilder<>(b -> b.constraintOnObject(Arguments1::arg1, name, constraints), type);
 	}
 
 	/**
@@ -71,7 +89,13 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	}
 
 	ObjectValidatorBuilder(Function<ValidatorBuilder<Arguments1<X>>, ValidatorBuilder<Arguments1<X>>> builder) {
+		this(builder, null);
+	}
+
+	private ObjectValidatorBuilder(Function<ValidatorBuilder<Arguments1<X>>, ValidatorBuilder<Arguments1<X>>> builder,
+			@Nullable Class<X> type) {
 		this.builder = builder;
+		this.type = type;
 	}
 
 	/**
@@ -86,7 +110,9 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	@Override
 	public <T> ObjectValidator<X, T> build(Function<@Nullable X, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ObjectValidator<>(validator, value -> mapper.apply(value));
+		final Class<X> type = this.type;
+		return type == null ? new ObjectValidator<>(validator, value -> mapper.apply(value))
+				: new ObjectValidator<>(validator, value -> mapper.apply(value), type);
 	}
 
 	/**

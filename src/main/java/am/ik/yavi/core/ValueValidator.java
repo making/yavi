@@ -34,9 +34,11 @@ import java.util.function.Supplier;
  * {@link #defaultValue(Object)}, alternatives are combined with
  * {@link #anyOf(ValueValidator[])}, and a rule that spans several properties of the
  * produced value is added with {@link #constraintOnTarget}. What a validator expects as
- * input is available from {@link #description()}; the combinators carry it. The generated
- * {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this interface to
- * validate constructor arguments and create only valid objects.
+ * input is available from {@link #description()}; the combinators carry it. An input of
+ * unknown type, such as a node of a parsed JSON document, is validated with
+ * {@link #untyped()}. The generated {@code am.ik.yavi.arguments.ArgumentsNValidator}
+ * types extend this interface to validate constructor arguments and create only valid
+ * objects.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
@@ -92,12 +94,84 @@ public interface ValueValidator<T, X> {
 	 * @see #description()
 	 */
 	default ValueValidator<T, X> describedAs(ValueDescription description) {
-		return new DescribedValueValidator<>(this, () -> description);
+		return described(this, () -> description, () -> this.untyped().describedAs(description));
+	}
+
+	/**
+	 * Returns a validator that accepts an input of unknown type, such as a node of a
+	 * parsed JSON document, checks that it represents the input type of this validator
+	 * and then validates it with this validator.
+	 *
+	 * <p>
+	 * The validators created by the builders of single values know their input type, the
+	 * combinators of this interface carry it as they carry the {@linkplain #description()
+	 * description}, and the {@code lift*} methods expect an {@link Iterable} or a
+	 * {@link Map} and check every element or value. The input type of a lambda and of the
+	 * result of {@link #compose(Function)} is unknown; give it with
+	 * {@link #untyped(Class)}.
+	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the input type of this validator is
+	 * unknown
+	 * @since 0.18.0
+	 * @see #untyped(Class)
+	 */
+	default ValueValidator<Object, X> untyped() {
+		throw new UnsupportedOperationException(
+				"The input type of this validator is unknown. Use untyped(Class) to give it.");
+	}
+
+	/**
+	 * Returns a validator that accepts an input of unknown type, checks that it
+	 * represents the given type and then validates it with this validator.
+	 *
+	 * <p>
+	 * {@code null} is passed to this validator as is. Any other input must be an instance
+	 * of the given type or its representation in a JSON document:
+	 * <ul>
+	 * <li>a number for a numeric type ({@code Integer}, {@code Long}, {@code Short},
+	 * {@code Byte}, {@code BigInteger}, {@code BigDecimal}, {@code Double},
+	 * {@code Float}), whatever the type of the number is, as long as the value is kept:
+	 * an integral type takes only an integral value in its range (so {@code 1.0} is an
+	 * {@code Integer} and {@code 1.5} is not), a floating-point type takes any value in
+	 * its range,</li>
+	 * <li>the name of a constant for an enum type,</li>
+	 * <li>an ISO-8601 string for {@code LocalDate}, {@code LocalTime},
+	 * {@code LocalDateTime}, {@code OffsetDateTime}, {@code ZonedDateTime},
+	 * {@code Instant}, {@code Year} and {@code YearMonth}, or an integral number for
+	 * {@code Year},</li>
+	 * <li>a map whose keys are all strings for {@code Map}.</li>
+	 * </ul>
+	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
+	 * string. To accept such an input, write a validator that takes an {@code Object} and
+	 * give it {@code Object.class}.
+	 *
+	 * <p>
+	 * Any other input is reported with the message key {@code object.type}, or
+	 * {@code object.oneOf} with the constants for an enum type. The violation has an
+	 * empty name, so it is reported on the validated value itself and takes the name of
+	 * the property the validator is applied to.
+	 * @param inputType the raw input type of this validator
+	 * @return a value validator for an untyped input
+	 * @since 0.18.0
+	 * @see #untyped()
+	 */
+	default ValueValidator<Object, X> untyped(Class<T> inputType) {
+		return UntypedInput.checked(inputType, this);
 	}
 
 	private static <T, X> ValueValidator<T, X> described(ValueValidator<T, X> validator,
-			Supplier<ValueDescription> description) {
-		return new DescribedValueValidator<>(validator, description);
+			Supplier<ValueDescription> description, Supplier<ValueValidator<Object, X>> untyped) {
+		return new DescribedValueValidator<>(validator, description, untyped);
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of containers: the input must be an
+	 * instance of the given container type, and the given validator checks its content.
+	 */
+	@SuppressWarnings("unchecked")
+	private static <C, X> ValueValidator<Object, X> untypedContainer(Class<?> containerType,
+			ValueValidator<C, X> validator) {
+		return validator.untyped((Class<C>) containerType);
 	}
 
 	/**
@@ -131,7 +205,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.map(mapper), this::description);
+			.map(mapper), this::description, () -> this.untyped().map(mapper));
 	}
 
 	/**
@@ -144,15 +218,17 @@ public interface ValueValidator<T, X> {
 	 * @since 0.11.0
 	 */
 	default <X2> ValueValidator<T, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.flatMap(v -> validator.validate(v, locale, constraintContext)), this::description);
+		return described(
+				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+				this::description, () -> this.untyped().andThen(validator));
 	}
 
 	/**
 	 * Returns a validator that applies the given function to the input before validating
 	 * it. The function is not validated and its result is passed to this validator. The
-	 * {@linkplain #description() description} of the new validator is unknown because the
-	 * input changes.
+	 * {@linkplain #description() description} and the input type of the new validator are
+	 * unknown because the input changes.
 	 * @param mapper function that converts the input of the new validator
 	 * @param <A> the input type of the new validator
 	 * @return a value validator with the adapted input type
@@ -180,7 +256,7 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
 						: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable),
-				() -> new ValueDescription.Optional(this.description(), null));
+				() -> new ValueDescription.Optional(this.description(), null), () -> this.untyped().optional());
 	}
 
 	/**
@@ -199,7 +275,7 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(null)
 						: ValueValidator.this.validate(t, locale, constraintContext),
-				() -> new ValueDescription.Optional(this.description(), null));
+				() -> new ValueDescription.Optional(this.description(), null), () -> this.untyped().nullable());
 	}
 
 	/**
@@ -217,7 +293,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
 						: ValueValidator.this.validate(t, locale, constraintContext),
-				() -> new ValueDescription.Optional(this.description(), defaultValue));
+				() -> new ValueDescription.Optional(this.description(), defaultValue),
+				() -> this.untyped().defaultValue(defaultValue));
 	}
 
 	/**
@@ -237,12 +314,15 @@ public interface ValueValidator<T, X> {
 	 * @since 0.18.0
 	 */
 	@SafeVarargs
+	@SuppressWarnings("unchecked")
 	static <T, X> ValueValidator<T, X> anyOf(ValueValidator<? super T, ? extends X>... validators) {
 		if (validators.length == 0) {
 			throw new IllegalArgumentException("'validators' must not be empty.");
 		}
 		final List<ValueValidator<? super T, ? extends X>> alternatives = List.of(validators);
-		return described((t, locale, constraintContext) -> {
+		final Supplier<ValueValidator<Object, X>> untyped = () -> ValueValidator
+			.anyOf(alternatives.stream().map(ValueValidator::untyped).toArray(ValueValidator[]::new));
+		return ValueValidator.<T, X>described((t, locale, constraintContext) -> {
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
 				final Validated<? extends X> validated = alternative.validate(t, locale, constraintContext);
@@ -261,7 +341,7 @@ public interface ValueValidator<T, X> {
 						.locale(locale)
 						.build());
 			return Validated.failureWith(violations);
-		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()));
+		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()), untyped);
 	}
 
 	/**
@@ -378,7 +458,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default ValueValidator<T, X> indexed(int index) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.indexed(index), this::description);
+			.indexed(index), this::description, () -> this.untyped().indexed(index));
 	}
 
 	/**
@@ -392,7 +472,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default ValueValidator<T, X> prefixed(String name) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.prefixed(name), this::description);
+			.prefixed(name), this::description, () -> this.untyped().prefixed(name));
 	}
 
 	/**
@@ -453,7 +533,8 @@ public interface ValueValidator<T, X> {
 				});
 			}
 			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
-		}, () -> new ValueDescription.Entries(this.description()));
+		}, () -> new ValueDescription.Entries(this.description()),
+				() -> untypedContainer(Map.class, this.untyped().liftMap()));
 	}
 
 	/**
@@ -483,7 +564,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
 						(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory),
-				() -> new ValueDescription.Elements(validator.description()));
+				() -> new ValueDescription.Elements(validator.description()),
+				() -> untypedContainer(Iterable.class, ValueValidator.liftCollection(validator.untyped(), factory)));
 	}
 
 	/**
@@ -531,7 +613,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(value, locale, constraintContext) -> Validated.traverseOptional(value,
 						v -> validator.validate(v, locale, constraintContext)),
-				() -> new ValueDescription.Optional(validator.description(), null));
+				() -> new ValueDescription.Optional(validator.description(), null),
+				() -> untypedContainer(Optional.class, ValueValidator.liftOptional(validator.untyped())));
 	}
 
 	/**

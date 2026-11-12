@@ -43,6 +43,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function2;
+import am.ik.yavi.input.MapInputValidator;
 
 /**
  * Builds an {@link Arguments2Validator} by adding one validated argument at a time.
@@ -51,8 +52,9 @@ import am.ik.yavi.fn.Function2;
  * Each {@code _xxx} method adds the next argument and returns the builder for the
  * following argument. The arguments are validated together, so every violation is
  * reported and the result is created only when all arguments are valid. The validator is
- * created with {@code apply} after all arguments have been added. Instances are obtained
- * from {@link YaviArguments} or from the builder of the previous argument count.
+ * created with {@code apply} after all arguments have been added, or with {@code fromMap}
+ * to read the arguments from a {@code Map<String, Object>} by their names. Instances are
+ * obtained from {@link YaviArguments} or from the builder of the previous argument count.
  *
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
@@ -162,8 +164,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, BigDecimal, R1, R2, BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, BigDecimalValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, BigDecimal.class,
+				BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -214,8 +216,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, BigInteger, R1, R2, BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, BigIntegerValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, BigInteger.class,
+				BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -265,7 +267,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Boolean, R1, R2, Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, BooleanValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -313,7 +315,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Double, R1, R2, Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, DoubleValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -383,6 +385,44 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	}
 
 	/**
+	 * Adds the next argument as a constant of the given enum type with the given name and
+	 * configured constraints.
+	 *
+	 * <p>
+	 * Unlike {@link #_enum(String, Function)}, the argument knows its enum type: its
+	 * description holds the constants, and {@code fromMap} reads it from the name of a
+	 * constant.
+	 * @param <E> the enum type of the argument
+	 * @param name the property name used in violation names and messages
+	 * @param type the enum type of the argument
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <E extends Enum<E>> Arguments3ValidatorBuilder<A1, A2, E, R1, R2, E> _enum(String name, Class<E> type,
+			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
+				ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
+	}
+
+	/**
+	 * Adds the next argument as a constant of the given enum type with the given name and
+	 * no constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * @param <E> the enum type of the argument
+	 * @param name the property name recorded for the argument
+	 * @param type the enum type of the argument
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 * @see #_enum(String, Class, Function)
+	 */
+	public <E extends Enum<E>> Arguments3ValidatorBuilder<A1, A2, E, R1, R2, E> _enum(String name, Class<E> type) {
+		return this._enum(name, type, Function.identity());
+	}
+
+	/**
 	 * Adds the next argument, validated as a {@code Float} by the given value validator.
 	 *
 	 * <p>
@@ -413,7 +453,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Float, R1, R2, Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, FloatValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -462,7 +502,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Instant, R1, R2, Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, InstantValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -512,7 +552,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Integer, R1, R2, Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, IntegerValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -563,8 +603,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, LocalDateTime, R1, R2, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, LocalDateTime.class,
+				LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -614,8 +654,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, LocalTime, R1, R2, LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, LocalTimeValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, LocalTime.class,
+				LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -665,8 +705,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, LocalDate, R1, R2, LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, LocalDateValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, LocalDate.class,
+				LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -715,7 +755,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Long, R1, R2, Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, LongValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -783,6 +823,44 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	}
 
 	/**
+	 * Adds the next argument as an object of the given type with the given name and
+	 * configured constraints.
+	 *
+	 * <p>
+	 * Unlike {@link #_object(String, Function)}, the argument knows its type, so
+	 * {@code fromMap} can read it: the value in the map must be an instance of the type
+	 * or represent it. Give {@code Object.class} to take any value as it is.
+	 * @param <T> type of the argument
+	 * @param name the property name used in violation names and messages
+	 * @param type the type of the argument
+	 * @param constraints function that configures the constraints
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, T> _object(String name, Class<T> type,
+			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
+				ArgumentDefinition.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
+	}
+
+	/**
+	 * Adds the next argument as an object of the given type with the given name and no
+	 * constraints.
+	 *
+	 * <p>
+	 * Without constraints every value, including {@code null}, is accepted.
+	 * @param <T> type of the argument
+	 * @param name the property name recorded for the argument
+	 * @param type the type of the argument
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 * @see #_object(String, Class, Function)
+	 */
+	public <T> Arguments3ValidatorBuilder<A1, A2, T, R1, R2, T> _object(String name, Class<T> type) {
+		return this._object(name, type, Function.identity());
+	}
+
+	/**
 	 * Adds the next argument, validated as an {@code OffsetDateTime} by the given value
 	 * validator.
 	 *
@@ -815,8 +893,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, OffsetDateTime, R1, R2, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, OffsetDateTime.class,
+				OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -865,7 +943,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Short, R1, R2, Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, ShortValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -913,7 +991,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, String, R1, R2, String> _string(String name,
 			Function<CharSequenceConstraint<Arguments1<String>, String>, CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, StringValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -962,8 +1040,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, YearMonth, R1, R2, YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, YearMonthValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, YearMonth.class,
+				YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1012,7 +1090,7 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	public Arguments3ValidatorBuilder<A1, A2, Year, R1, R2, Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, YearValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1062,8 +1140,8 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, ZonedDateTime, R1, R2, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
-				ArgumentDefinition.value(name, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.value(name, ZonedDateTime.class,
+				ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1109,11 +1187,11 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 	 *
 	 * <p>
 	 * Every element is validated and the violations of all elements are accumulated. The
-	 * violations of the element at position {@code i} are located under {@code name[i]};
-	 * give {@code elementValidator} an empty name to report a violation on the element
-	 * itself. A {@code null} list is rejected with {@code object.notNull} unless
-	 * {@code optional()}, {@code nullable()} or {@code defaultValue} is applied to the
-	 * argument.
+	 * violations of the element at position {@code i} are located under {@code name[i]}:
+	 * a violation named {@code street} is reported as {@code name[i].street}, and one
+	 * with an empty name on the element itself as {@code name[i]}. A {@code null} list is
+	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
+	 * or {@code defaultValue} is applied to the argument.
 	 * @param <E> type of the elements validated by {@code elementValidator}
 	 * @param <T> type of the values produced by {@code elementValidator}
 	 * @param name the property name that prefixes the violations of the elements
@@ -1167,6 +1245,33 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 		return ArgumentsValidators.split(this.d1.validator(), this.d2.validator())
 			.<X>apply(f)
 			.describedAs(ArgumentDefinition.describe(this.d1, this.d2));
+	}
+
+	/**
+	 * Builds a {@link MapInputValidator} that reads the added arguments from a
+	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
+	 * creates the result with the given function.
+	 *
+	 * <p>
+	 * Each value of the map must represent the type of its argument (see
+	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
+	 * absent key is validated like {@code null}; see {@link MapInputValidator} for the
+	 * violations of absent and unknown keys. A nested {@code _object}, {@code _list} or
+	 * {@code _map} argument reads a map or a list whose content is checked by the
+	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
+	 * nested object is added with another {@code MapInputValidator}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values
+	 * @return a new map input validator
+	 * @throws IllegalStateException if an argument has no name, or if its input type is
+	 * unknown: an {@code _enum} or {@code _object} argument added without a type, or a
+	 * value validator that does not know its input type
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> MapInputValidator<X> fromMap(Function2<? super R1, ? super R2, ? extends X> f) {
+		return MapInputValidator.of(List.of(this.d1.property(1), this.d2.property(2)),
+				values -> f.apply((R1) values.get(0), (R2) values.get(1)));
 	}
 
 }

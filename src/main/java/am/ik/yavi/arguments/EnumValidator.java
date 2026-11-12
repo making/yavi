@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single enum constant and maps it to a result.
@@ -40,9 +41,14 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 * @param mapper the function applied to the validated value
 	 * @return a new validator with the mapped result type
 	 */
+	private final @Nullable Class<E> enumType;
+
 	@Override
 	public <T2> EnumValidator<E, T2> map(Function<? super T, ? extends T2> mapper) {
-		return new EnumValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		final Class<E> enumType = this.enumType;
+		final Function1<E, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
+		return enumType == null ? new EnumValidator<>(super.validator, mapped)
+				: new EnumValidator<>(super.validator, mapped, enumType);
 	}
 
 	/**
@@ -53,6 +59,22 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 */
 	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper) {
 		super(validator, mapper, Enum.class);
+		this.enumType = null;
+	}
+
+	/**
+	 * Creates a validator like {@link #EnumValidator(Validator, Function1)} that also
+	 * knows the enum type, which is reported by {@link #description()} and lets
+	 * {@link #untyped()} accept the name of a constant.
+	 * @param validator the validator applied to the value
+	 * @param mapper the function applied to the validated value
+	 * @param enumType the enum type of the value
+	 * @since 0.18.0
+	 */
+	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
+			Class<E> enumType) {
+		super(validator, mapper, enumType);
+		this.enumType = enumType;
 	}
 
 }

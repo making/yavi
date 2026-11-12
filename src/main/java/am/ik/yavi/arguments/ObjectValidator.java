@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single object value and maps it to a result.
@@ -40,9 +41,14 @@ public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
 	 * @param mapper the function applied to the validated value
 	 * @return a new validator with the mapped result type
 	 */
+	private final @Nullable Class<X> type;
+
 	@Override
 	public <T2> ObjectValidator<X, T2> map(Function<? super T, ? extends T2> mapper) {
-		return new ObjectValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		final Class<X> type = this.type;
+		final Function1<X, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
+		return type == null ? new ObjectValidator<>(super.validator, mapped)
+				: new ObjectValidator<>(super.validator, mapped, type);
 	}
 
 	/**
@@ -52,7 +58,23 @@ public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
 	 * @param mapper the function applied to the validated value
 	 */
 	public ObjectValidator(Validator<Arguments1<X>> validator, Function1<? super X, ? extends T> mapper) {
-		super(validator, mapper);
+		super(validator, mapper, Object.class);
+		this.type = null;
+	}
+
+	/**
+	 * Creates a validator like {@link #ObjectValidator(Validator, Function1)} that also
+	 * knows the type of the value, which is reported by {@link #description()} and lets
+	 * {@link #untyped()} check an untyped input against it.
+	 * @param validator the validator applied to the value
+	 * @param mapper the function applied to the validated value
+	 * @param type the type of the value
+	 * @since 0.18.0
+	 */
+	public ObjectValidator(Validator<Arguments1<X>> validator, Function1<? super X, ? extends T> mapper,
+			Class<X> type) {
+		super(validator, mapper, type);
+		this.type = type;
 	}
 
 }

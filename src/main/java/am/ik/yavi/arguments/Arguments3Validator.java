@@ -167,6 +167,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 			public ValueDescription description() {
 				return Arguments3Validator.this.description();
 			}
+
 		};
 	}
 
@@ -203,6 +204,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 			public ValueDescription description() {
 				return Arguments3Validator.this.description();
 			}
+
 		};
 	}
 
@@ -304,6 +306,7 @@ public interface Arguments3Validator<A1, A2, A3, X> {
 			public ValueDescription description() {
 				return description;
 			}
+
 		};
 	}
 

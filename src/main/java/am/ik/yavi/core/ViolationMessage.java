@@ -106,6 +106,28 @@ public interface ViolationMessage {
 		 */
 		OBJECT_ANY_OF("object.anyOf", "\"{0}\" must satisfy at least one of the {1} alternatives"), //
 		/**
+		 * Message id {@code object.type}. Default message: {@code "{0}" must be of type
+		 * {1}}. {@code {0}} is the property name and {@code {1}} is the name of the
+		 * expected type, such as {@code string}, {@code integer} or {@code object}.
+		 * Reported when an untyped input does not represent the expected type.
+		 * @since 0.18.0
+		 */
+		OBJECT_TYPE("object.type", "\"{0}\" must be of type {1}"), //
+		/**
+		 * Message id {@code object.required}. Default message: {@code "{0}" is required}.
+		 * {@code {0}} is the property name. Reported when an input map has no key for a
+		 * property that does not accept {@code null}.
+		 * @since 0.18.0
+		 */
+		OBJECT_REQUIRED("object.required", "\"{0}\" is required"), //
+		/**
+		 * Message id {@code object.unknownProperty}. Default message: {@code "{0}" is not
+		 * a known property}. {@code {0}} is the key of the input map that no property is
+		 * defined for.
+		 * @since 0.18.0
+		 */
+		OBJECT_UNKNOWN_PROPERTY("object.unknownProperty", "\"{0}\" is not a known property"), //
+		/**
 		 * Message id {@code container.notEmpty}. Default message: {@code "{0}" must not
 		 * be empty}. {@code {0}} is the property name.
 		 */

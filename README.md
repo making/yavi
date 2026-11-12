@@ -468,11 +468,59 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 ```
 
 * `optional()`, `nullable()` and `defaultValue(...)` apply to the last added argument. A `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
-* `_object(name, validator)`, `_list(name, elementValidator)` and `_map(name, valueValidator)` reject `null` with `object.notNull` unless one of the above is applied. Give an element validator an empty name to report a violation on the element itself.
+* `_object(name, validator)`, `_list(name, elementValidator)` and `_map(name, valueValidator)` reject `null` with `object.notNull` unless one of the above is applied. The violations of a list element are located under its index (`roles[0]`, `addresses[0].street`); give an element validator an empty name to report a violation on the element itself.
 * `ValueValidator.anyOf(a, b)` tries the alternatives in order. If all of them fail, it reports `object.anyOf` followed by the violations of every alternative.
 * `constraintOnTarget` adds a rule that spans several arguments. It is evaluated only when all arguments are valid.
 
 The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`.
+
+#### Validating a map such as a parsed JSON object
+
+`fromMap` builds a validator from the same arguments that reads them from a `Map<String, Object>` by their names, checks their types and creates the object. No cast is needed and nothing is read by reflection.
+
+```java
+MapInputValidator<Address> addressValidator = Yavi.arguments()
+        ._string("street", c -> c.notBlank())
+        ._string("city", c -> c.notBlank())
+        .fromMap(Address::new);
+
+MapInputValidator<User> userValidator = Yavi.arguments()
+        ._string("email", c -> c.notBlank().email())
+        ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+        ._enum("role", Role.class, c -> c.notNull()) // "ADMIN"
+        ._localDate("birthday") // "2000-01-01"
+        ._object("address", addressValidator) // a nested map
+        ._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build()) // a list
+        ._string("nickname").optional()
+        .fromMap(User::new);
+
+Map<String, Object> map = Map.of(
+        "email", "jd@example.com",
+        "age", 30,
+        "role", "ADMIN",
+        "birthday", "2000-01-01",
+        "address", Map.of("street", "1-2-3", "city", "Tokyo"),
+        "tags", List.of("java", "yavi"));
+Validated<User> validated = userValidator.validate(map);
+```
+
+* A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number.
+* An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
+* A key that no argument is defined for is reported with `object.unknownProperty`. `ignoringUnknownProperties()` accepts such keys.
+* An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
+* `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
+
+`DiscriminatedUnionValidator` selects the validator of a map by the value of a key, which reads the subtypes of a sealed interface:
+
+```java
+ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
+        .when("circle", Yavi.arguments()._integer("radius", c -> c.notNull().positive()).fromMap(Circle::new))
+        .when("square", Yavi.arguments()._integer("side", c -> c.notNull().positive()).fromMap(Square::new));
+```
+
+Only the selected alternative is validated. An absent discriminator is reported with `object.required` and an unexpected one with `object.oneOf`.
+
+See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 
 #### Describing a validator and generating a JSON Schema
 
