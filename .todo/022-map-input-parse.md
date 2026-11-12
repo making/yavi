@@ -30,7 +30,7 @@ Schema<Map<String, Object>, User> userSchema = Yavi.schema(User::new)
     ._optional("nickname", S.string())
     .unknownKeys(UnknownKeys.STRIP);
 
-ParseResult<User> result = userSchema.safeParse(map);
+Validated<User> validated = userSchema.validate(map);
 ```
 
 Discriminated union for polymorphic input (for example a `type` field):
@@ -44,13 +44,14 @@ Schema<Map<String, Object>, Shape> shapeSchema =
 
 ## Scope
 
-- Add `safeParse(Map<String, Object>)` and a throwing `parse(...)` to the schema API;
+- Add `validate(Map<String, Object>)` and the throwing `validated(...)` to the schema API;
   derive field values by the names declared in the schema.
-- Report missing fields, type mismatches and unknown keys as `Issue` values. Make the
+- Report missing fields, type mismatches and unknown keys as `ConstraintViolation`s
+  with dedicated message keys. Make the
   unknown-key policy explicit (strict / strip / passthrough) with a safe default.
 - Support the optional/default fields from 021 when a key is absent.
 - Add a discriminated-union combinator keyed by a field value. When no branch matches,
-  report an issue that lists the branch failures.
+  report a violation that lists the branch failures.
 - Work with Java sealed types and records for the branch result types.
 - Keep the implementation dependency-free: `Map`, `List` and JDK types only.
 
@@ -61,10 +62,21 @@ Schema<Map<String, Object>, Shape> shapeSchema =
   types and make coercion explicit.
 - Default unknown-key policy: `STRIP` is the common Zod default, but silent stripping can
   hide typos; `STRICT` is safer for API input. Decide and document.
-- Whether `parse` throws the existing `ConstraintViolationsException` or a new
-  exception carrying `List<Issue>`.
 - How nested maps and lists are represented and validated without reflection.
 - How the discriminator behaves when the field is missing or not a string.
+
+## What 020 provides
+
+- `Validated` is sealed (`Validated.Valid<T>` / `Validated.Invalid<T>`), so the result
+  of `validate(map)` can be handled with an exhaustive `switch`. `ValueValidator` already
+  has the throwing counterpart `validated(...)`, which throws
+  `ConstraintViolationsException`.
+- There is no separate issue type. A `ConstraintViolation` carries `path()`
+  (`PathSegment.Property` / `PathSegment.Index`), `messageKey()` and `message()`. Report
+  missing fields, type mismatches and unknown keys as violations with dedicated message
+  keys, which keeps i18n and the `ConstraintViolations` API working, and set their path
+  with `ConstraintViolation.builder()....path(...)`.
+- Use YAVI's terms rather than Zod's (see "Vocabulary" in 021).
 
 ## Notes
 

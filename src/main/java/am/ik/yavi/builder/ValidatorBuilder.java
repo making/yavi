@@ -48,6 +48,7 @@ import am.ik.yavi.core.NestedConstraintCondition;
 import am.ik.yavi.core.NestedConstraintPredicates;
 import am.ik.yavi.core.NestedValidator;
 import am.ik.yavi.core.NullAs;
+import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValueValidator;
@@ -1668,7 +1669,7 @@ public class ValidatorBuilder<T> {
 	 */
 	public ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			ValidatorBuilderConverter<T> converter) {
-		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>());
+		ValidatorBuilder<T> builder = converter.apply(new ValidatorBuilder<>(this.messageKeySeparator));
 		Validator<T> validator = builder.build();
 		return this.constraintOnCondition(condition, validator);
 	}
@@ -2320,7 +2321,7 @@ public class ValidatorBuilder<T> {
 	 */
 	protected <L extends Collection<E>, E> ValidatorBuilder<T> forEach(ToCollection<T, L, E> toCollection, String name,
 			ValidatorBuilderConverter<E> converter, NullAs nullAs) {
-		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>());
+		ValidatorBuilder<E> builder = converter.apply(new ValidatorBuilder<>(this.messageKeySeparator));
 		return this.forEach(toCollection, name, builder.build(), nullAs);
 	}
 
@@ -2359,7 +2360,7 @@ public class ValidatorBuilder<T> {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
 		}
-		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>());
+		ValidatorBuilder<N> builder = converter.apply(new ValidatorBuilder<>(this.messageKeySeparator));
 		builder.predicatesList.forEach(this.appendNestedPredicates(nested, name, false));
 		builder.conditionalValidators.forEach(this.appendNestedConditionalValidator(nested, name));
 		builder.collectionValidators.forEach(appendNestedCollectionValidator(nested, name));
@@ -2393,7 +2394,8 @@ public class ValidatorBuilder<T> {
 		return predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
-					this.toNestedValue(nested, predicates), nestedName, predicates.predicates(),
+					this.toNestedValue(nested, predicates), nestedName,
+					PathSegment.concat(PathSegment.of(name), predicates.path()), predicates.predicates(),
 					this.toNestedFunction(nested, predicates), failFast);
 			this.predicatesList.add(constraintPredicates);
 		};
@@ -2421,7 +2423,9 @@ public class ValidatorBuilder<T> {
 					conditionalValidator.first());
 			final Validatable<N> validator = conditionalValidator.second();
 			final String nestedPrefix = toNestedPrefix(name, validator);
-			final Validatable<T> v = new NestedValidator<>(nested, validator, nestedPrefix);
+			final List<PathSegment> nestedPrefixPath = (validator instanceof NestedValidator<?, ?>nestedValidator)
+					? PathSegment.concat(PathSegment.of(name), nestedValidator.getPrefixPath()) : PathSegment.of(name);
+			final Validatable<T> v = new NestedValidator<>(nested, validator, nestedPrefix, nestedPrefixPath);
 			this.conditionalValidators.add(new Pair<>(condition, v));
 		};
 	}
@@ -2440,8 +2444,9 @@ public class ValidatorBuilder<T> {
 		return collectionValidator -> {
 			String nestedName = name + this.messageKeySeparator + collectionValidator.name();
 			CollectionValidator<T, ?, ?> validator = new NestedCollectionValidator(
-					toNestedCollection(nested, collectionValidator), nestedName, collectionValidator.validator(),
-					nested);
+					toNestedCollection(nested, collectionValidator), nestedName,
+					PathSegment.concat(PathSegment.of(name), collectionValidator.path()),
+					collectionValidator.validator(), nested);
 			this.collectionValidators.add(validator);
 		};
 	}

@@ -37,12 +37,21 @@ import org.jspecify.annotations.Nullable;
  * }
  * }</pre>
  *
+ * <p>
+ * The class is sealed: an instance is either a {@link Valid} or an {@link Invalid}, so
+ * both cases can be handled exhaustively with pattern matching: <pre>{@code
+ * switch (Car.of("Morris", "DD-AB-123", 2)) {
+ *     case Validated.Valid<Car> valid -> save(valid.value());
+ *     case Validated.Invalid<Car> invalid -> report(invalid.errors());
+ * }
+ * }</pre>
+ *
  * @param <T> value type in the case of success
  * @since 0.6.0
  * @see Validation
  * @see ConstraintViolations
  */
-public class Validated<T> extends Validation<ConstraintViolation, T> {
+public abstract sealed class Validated<T> extends Validation<ConstraintViolation, T> {
 
 	/**
 	 * The validation result that this instance delegates to.
@@ -61,7 +70,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 		if (delegate instanceof Validated) {
 			return ((Validated<T>) delegate);
 		}
-		return new Validated<>(delegate);
+		return wrap(delegate);
 	}
 
 	/**
@@ -77,7 +86,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @since 0.12.0
 	 */
 	public static <T> Validated<T> successWith(@Nullable T value) {
-		return new Validated<>(Validation.success(value));
+		return wrap(Validation.success(value));
 	}
 
 	/**
@@ -89,7 +98,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @since 0.12.0
 	 */
 	public static <T> Validated<T> failureWith(List<ConstraintViolation> errors) {
-		return new Validated<>(Validation.failure(errors));
+		return wrap(Validation.failure(errors));
 	}
 
 	/**
@@ -100,11 +109,45 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @since 0.12.0
 	 */
 	public static <T> Validated<T> failureWith(ConstraintViolation... errors) {
-		return new Validated<>(Validation.failure(errors));
+		return wrap(Validation.failure(errors));
 	}
 
-	Validated(Validation<ConstraintViolation, ? extends T> delegate) {
+	private Validated(Validation<ConstraintViolation, ? extends T> delegate) {
 		this.delegate = delegate;
+	}
+
+	private static <T> Validated<T> wrap(Validation<ConstraintViolation, ? extends T> delegate) {
+		return delegate.isValid() ? new Valid<>(delegate) : new Invalid<>(delegate);
+	}
+
+	/**
+	 * A successful validation result. {@link #value()} returns the validated value and
+	 * {@link #errors()} throws {@link java.util.NoSuchElementException}.
+	 *
+	 * @param <T> value type
+	 * @since 0.18.0
+	 */
+	public static final class Valid<T> extends Validated<T> {
+
+		private Valid(Validation<ConstraintViolation, ? extends T> delegate) {
+			super(delegate);
+		}
+
+	}
+
+	/**
+	 * A failed validation result. {@link #errors()} returns the constraint violations and
+	 * {@link #value()} throws {@link java.util.NoSuchElementException}.
+	 *
+	 * @param <T> value type in the case of success
+	 * @since 0.18.0
+	 */
+	public static final class Invalid<T> extends Validated<T> {
+
+		private Invalid(Validation<ConstraintViolation, ? extends T> delegate) {
+			super(delegate);
+		}
+
 	}
 
 	/**

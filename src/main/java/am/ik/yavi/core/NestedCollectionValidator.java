@@ -5,6 +5,7 @@
 package am.ik.yavi.core;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -32,14 +33,15 @@ public class NestedCollectionValidator<T, C extends Collection<E>, E, N> extends
 	/**
 	 * Creates a nested collection validator.
 	 * @param toCollection function that extracts the collection from the target
-	 * @param name the property name used in violation names
+	 * @param name the flat property name used in violation names
+	 * @param path the structured path of the collection, relative to the target
 	 * @param validator the validator applied to each element
 	 * @param nested function that extracts the object containing the collection from the
 	 * target
 	 */
 	public NestedCollectionValidator(Function<T, ? extends @Nullable C> toCollection, String name,
-			Validator<E> validator, Function<T, ? extends @Nullable N> nested) {
-		super((Function<T, @Nullable C>) toCollection, name, validator);
+			List<PathSegment> path, Validator<E> validator, Function<T, ? extends @Nullable N> nested) {
+		super((Function<T, @Nullable C>) toCollection, name, path, validator);
 		this.nested = nested;
 	}
 

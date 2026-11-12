@@ -5,6 +5,7 @@
 package am.ik.yavi.core;
 
 import java.util.Deque;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -34,15 +35,16 @@ public class NestedConstraintPredicates<T, V, N> extends ConstraintPredicates<T,
 	/**
 	 * Creates the constraint predicates of a property of a nested object.
 	 * @param toValue function that extracts the property value from the target
-	 * @param name the property name used in violation names
+	 * @param name the flat property name used in violation names
+	 * @param path the structured path of the property, relative to the target
 	 * @param constraintPredicates the predicates to apply to the property value
 	 * @param nested function that extracts the nested object from the target
 	 * @param failFast whether the validator of the nested object is in fail-fast mode
 	 */
-	public NestedConstraintPredicates(Function<T, ? extends @Nullable V> toValue, String name,
+	public NestedConstraintPredicates(Function<T, ? extends @Nullable V> toValue, String name, List<PathSegment> path,
 			Deque<ConstraintPredicate<V>> constraintPredicates, Function<T, ? extends @Nullable N> nested,
 			boolean failFast) {
-		super(toValue, name, constraintPredicates);
+		super(toValue, name, path, constraintPredicates);
 		this.nested = nested;
 		this.failFast = failFast;
 	}
