@@ -12,43 +12,43 @@ import org.jspecify.annotations.Nullable;
 
 public class AllTypesField {
 
-	final @Nullable String stringValue;
+	final String stringValue;
 
-	final @Nullable Boolean booleanValue;
+	final Boolean booleanValue;
 
 	final boolean booleanPrimitiveValue;
 
-	final @Nullable Character characterValue;
+	final Character characterValue;
 
 	final char characterPrimitiveValue;
 
-	final @Nullable Byte byteValue;
+	final Byte byteValue;
 
 	final byte bytePrimitiveValue;
 
-	final @Nullable Short shortValue;
+	final Short shortValue;
 
 	final short shortPrimitiveValue;
 
-	final @Nullable Integer integerValue;
+	final Integer integerValue;
 
 	final int integerPrimitiveValue;
 
-	final @Nullable Long longValue;
+	final Long longValue;
 
 	final long longPrimitiveValue;
 
-	final @Nullable Float floatValue;
+	final Float floatValue;
 
 	final float floatPrimitiveValue;
 
-	final @Nullable Double doubleValue;
+	final Double doubleValue;
 
 	final double doublePrimitiveValue;
 
-	final @Nullable BigInteger bigIntegerValue;
+	final BigInteger bigIntegerValue;
 
-	final @Nullable BigDecimal bigDecimalValue;
+	final BigDecimal bigDecimalValue;
 
 	final @Nullable LocalDate localDateValue;
 
