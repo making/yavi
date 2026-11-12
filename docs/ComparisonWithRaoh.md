@@ -99,7 +99,7 @@ a named one shows the name. The name is given by the place where the validator i
 | `url()` (returns `URI`, `http` / `https` only) | `c.url()` (any protocol of `java.net.URL`), then `.map(URI::create)` |
 | `int_().range(0, 150)` | `c.greaterThanOrEqual(0).lessThanOrEqual(150)` |
 | `positive()`, `nonNegative()` | `c.positive()`, `c.positiveOrZero()` |
-| `decimal().scale(4)` | `c.predicate(d -> d.scale() <= 4, key, message)` |
+| `decimal().scale(4)` | `c.fractionDigits(4)`; `c.integerDigits(n)` bounds the digits before the decimal point |
 | `date().after(d)`, `before(d)`, `between(a, b)` | `c.after(() -> d)`, `c.before(() -> d)`, `c.between(() -> a, () -> b)` |
 | a bound taken from a clock by the caller | `c.past()`, `c.future()`, `c.past(clock)` ... |
 | `string().date()`, `string().iso8601()` | not needed: a temporal validator reads an ISO-8601 string |
@@ -164,15 +164,26 @@ age.validate(""); // object.notNull, an empty string is null
 ```
 
 For a whole map of strings use `readingParameters()`; see [Pagination](#pagination-and-query-parameters).
-The rules are stricter than those of Raoh:
+The rules are stricter than those of Raoh unless the reader is given others
+(`StringCoercion`):
 
-| Input | Raoh | YAVI |
-| --- | --- | --- |
-| `"1"`, `"yes"`, `"on"` for a boolean | `true` (`toBool()`) | `object.type`; only `"true"` and `"false"` are taken |
-| `"  42  "` for a number | `string().trim().toInt()` | `object.type`; the text of a number is not trimmed |
-| `""` | an error of `toInt()` | `null`, so `optional()` and `defaultValue` apply |
+| Input | Raoh | YAVI | YAVI with `StringCoercion.strict().trimming().booleanWords()` |
+| --- | --- | --- | --- |
+| `"1"`, `"yes"`, `"on"` for a boolean | `true` (`toBool()`) | `object.type`; only `"true"` and `"false"` are taken | `true`, in any case |
+| `"  42  "` for a number | `string().trim().toInt()` | `object.type` | `42` |
+| `""` | an error of `toInt()` | `null`, so `optional()` and `defaultValue` apply | `null`, and so is a blank string |
 
-Other strings are taken by a reader that overrides `InputReader#value(node, type)`.
+```java
+InputReader<Object> lenient = InputReader.ofJdkTypes()
+        .coercingStrings(StringCoercion.strict().trimming().booleanWords());
+
+age.readingWith(lenient).validate("  25  "); // Valid[25]
+Yavi._boolean(c -> c.notNull()).readingWith(lenient).validate("Yes"); // Valid[true]
+```
+
+The rules belong to the reader, so they are chosen once per input
+(`readingParameters(coercion)` for a form or a CSV row) and not per field. A `String`
+value is not trimmed by the reader; `c.trim()` does it.
 
 ### Domain primitives
 
@@ -391,6 +402,17 @@ roleValidator.validate(Map.of("role", "admin")); // object.oneOf: must be one of
 ```
 
 The name of the constant is matched exactly, whereas `enumOf` ignores the ASCII case.
+`ignoringCase()` of the validator of the enum does the same for every reader:
+
+```java
+MapInputValidator<Role> lenientRoleValidator = Yavi.arguments()
+        ._enum(Yavi._enum("role", Role.class).ignoringCase()).defaultValue(Role.MEMBER)
+        .fromMap(role -> role);
+
+lenientRoleValidator.validate(Map.of("role", "admin")); // Valid[ADMIN]
+```
+
+The JSON Schema of the argument keeps `"enum": ["ADMIN", "MEMBER", "GUEST"]`.
 
 ### Strict mode
 
@@ -793,8 +815,10 @@ Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows")
 // rows[1].email, rows[1].name, rows[1].age, rows[3].email, rows[3].age
 ```
 
-A header that holds `.` or `[` is read as a path, and a cell is not trimmed
-(a `String` argument is, with `c.trim()`).
+A header that holds `.` or `[` is read as a path. A cell is not trimmed unless the row is
+read with `readingParameters(StringCoercion.strict().trimming())`, which trims the cell of
+a number, a boolean, an enum or a date and takes a blank cell as `null` (a `String`
+argument is trimmed with `c.trim()`).
 
 ### Configuration files
 
@@ -849,6 +873,4 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 * Three states of a field (`Presence`: absent, `null`, value).
 * A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
   structure read from a JSON tree or described as a JSON Schema.
-* Enum constants read without regard to case, booleans read from `1`, `yes`, `on`, and a
-  `scale` constraint of a `BigDecimal`.
 * Encoders (a domain object to a map).

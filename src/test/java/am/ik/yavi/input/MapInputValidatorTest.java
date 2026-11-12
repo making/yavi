@@ -18,12 +18,15 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import am.ik.yavi.arguments.Arguments2;
+import am.ik.yavi.arguments.EnumValidator;
+import am.ik.yavi.builder.EnumValidatorBuilder;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
+import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -661,45 +664,67 @@ class MapInputValidatorTest {
 				exact(Map.class, Map.of(1, 2), null), exact(Object.class, List.of(1), List.of(1)),
 				// a string is a number or a boolean only when strings are coerced
 				coerced(Integer.class, "1", 1), coerced(Integer.class, "+1.0e1", 10),
-				coerced(Integer.class, "1.5", null), coerced(Integer.class, " 1", null),
-				coerced(Integer.class, "0x1", null), coerced(Integer.class, "2147483648", null),
-				coerced(Long.class, "2147483648", 2147483648L), coerced(Short.class, "-1", (short) -1),
-				coerced(Byte.class, "128", null), coerced(BigInteger.class, "1e3", new BigInteger("1000")),
+				coerced(Integer.class, "1.5", null), coerced(Integer.class, "0x1", null),
+				coerced(Integer.class, "2147483648", null), coerced(Long.class, "2147483648", 2147483648L),
+				coerced(Short.class, "-1", (short) -1), coerced(Byte.class, "128", null),
+				coerced(BigInteger.class, "1e3", new BigInteger("1000")),
 				coerced(BigInteger.class, "1e1000000000", null), coerced(BigDecimal.class, "1,000", null),
 				coerced(BigDecimal.class, "0.10", new BigDecimal("0.10")), coerced(Double.class, "0.1", 0.1),
 				coerced(Double.class, "NaN", null), coerced(Double.class, "1e400", null),
 				coerced(Float.class, "0.1", 0.1f), coerced(Boolean.class, "true", true),
-				coerced(Boolean.class, "false", false), coerced(Boolean.class, "TRUE", null),
-				coerced(Boolean.class, "on", null),
+				coerced(Boolean.class, "false", false), coerced(Boolean.class, "maybe", null),
+				// surrounding white space and the words of a boolean are taken only by
+				// the rules that say so
+				lenient(Integer.class, " 1", 1), lenient(Integer.class, "\t1 0\n", null),
+				lenient(BigDecimal.class, "\u30001.5 ", new BigDecimal("1.5")), lenient(Boolean.class, "TRUE", true),
+				lenient(Boolean.class, "on", true), lenient(Boolean.class, " Yes ", true),
+				lenient(Boolean.class, "1", true), lenient(Boolean.class, "OFF", false),
+				lenient(Boolean.class, "no", false), lenient(Boolean.class, "0", false),
+				lenient(Boolean.class, "2", null), lenient(Role.class, " USER ", Role.USER),
+				lenient(Year.class, " 2026 ", Year.of(2026)),
 				// a string stays a string
-				Arguments.of(String.class, "1", "1", "1"), Arguments.of(Object.class, "1", "1", "1"));
+				Arguments.of(String.class, " 1 ", " 1 ", " 1 ", " 1 "),
+				Arguments.of(Object.class, " 1 ", " 1 ", " 1 ", " 1 "));
 	}
 
 	/**
 	 * An input that is read in the same way whether strings are coerced or not.
 	 */
 	static Arguments exact(Class<?> type, Object input, @Nullable Object expected) {
-		return Arguments.of(type, input, expected, expected);
+		return Arguments.of(type, input, expected, expected, expected);
 	}
 
 	/**
 	 * A string that represents the type only when strings are coerced.
 	 */
 	static Arguments coerced(Class<?> type, String input, @Nullable Object expected) {
-		return Arguments.of(type, input, null, expected);
+		return Arguments.of(type, input, null, expected, expected);
+	}
+
+	/**
+	 * A string that represents the type only when strings are trimmed and the words of a
+	 * boolean are taken.
+	 */
+	static Arguments lenient(Class<?> type, String input, @Nullable Object expected) {
+		return Arguments.of(type, input, null, null, expected);
 	}
 
 	@ParameterizedTest
 	@MethodSource("untypedInputs")
 	<T> void untypedInputMustRepresentTheType(Class<T> type, Object input, @Nullable Object expected,
-			@Nullable Object coerced) {
+			@Nullable Object coerced, @Nullable Object lenient) {
 		final ValueValidator<Object, T> validator = ValueValidator.<T>passThrough().untyped(type);
 		final Map<ValueValidator<Object, T>, @Nullable Object> expectations = new LinkedHashMap<>();
 		expectations.put(validator, expected);
 		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
+		// the rules of a reader that coerces are replaced
+		expectations.put(validator.readingWith(InputReader.ofJdkTypes()
+			.coercingStrings()
+			.coercingStrings(StringCoercion.strict().trimming().booleanWords())), lenient);
 		expectations.forEach((untyped, value) -> {
 			final Validated<T> validated = untyped.validate(input);
 			if (value == null) {
+				// the violated value is the input as it was given
 				assertThat(validated.errors())
 					.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
 					.containsExactly(tuple(type.isEnum() ? "object.oneOf" : "object.type", input));
@@ -708,6 +733,80 @@ class MapInputValidatorTest {
 				assertThat(validated.value()).isEqualTo(value);
 			}
 		});
+	}
+
+	record Signup(@Nullable String name, @Nullable Integer age, @Nullable Boolean subscribed, @Nullable Role role) {
+	}
+
+	enum Unit {
+
+		KG, Kg, G
+
+	}
+
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void lenientReadingsAreOptions(Model model) {
+		// the name of a constant is read in any case by an argument that says so,
+		// whatever the reader is
+		final EnumValidator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
+		final MapInputValidator<Signup> validator = Yavi.arguments()
+			._string("name")
+			._integer("age")
+			.defaultValue(20)
+			._boolean("subscribed")
+			.defaultValue(false)
+			._enum(role)
+			.fromMap(Signup::new);
+		assertThat(
+				model.validate(validator, input("name", "a", "age", 30, "subscribed", true, "role", "Admin")).value())
+			.isEqualTo(new Signup("a", 30, true, Role.ADMIN));
+		assertThat(model.validate(validator, input("role", "root")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("role", "object.oneOf", "root"));
+		assertThat(model.validate(validator, input()).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("role", "object.required"));
+		// the option is kept by the validators derived from the validator, and the
+		// description holds the names as they are declared
+		assertThat(role.map(Role::ordinal).preprocess(r -> Role.USER).lazy().untyped().validated("admin").get())
+			.isEqualTo(1);
+		assertThat(role.optional().untyped().validated("user")).contains(Role.USER);
+		assertThat(role.description()).isEqualTo(Yavi._enum("role", Role.class, c -> c.notNull()).description());
+		assertThat(JsonSchema.toJson(validator.description())).contains("\"enum\":[\"ADMIN\",\"USER\"]");
+		// a name that differs from several constants only by its case is none of them
+		final ValueValidator<Object, Unit> unit = Yavi._enum(Unit.class).ignoringCase().untyped();
+		assertThat(unit.validated("Kg")).isEqualTo(Unit.Kg);
+		assertThat(unit.validated("g")).isEqualTo(Unit.G);
+		assertThat(unit.validate("kG").errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.oneOf");
+		assertThatThrownBy(() -> EnumValidatorBuilder.<Role>of("role", c -> c).build().ignoringCase())
+			.isInstanceOf(IllegalStateException.class);
+		// a form: the fields are trimmed, a blank one is not given, and a checkbox is
+		// "on" or absent
+		final StringCoercion form = StringCoercion.strict().trimming().booleanWords();
+		final ValueValidator<Map<String, String>, Signup> ofForm = validator.readingParameters(form);
+		assertThat(ofForm.validated(Map.of("name", " a ", "age", " 30 ", "subscribed", "on", "role", " admin ")))
+			.isEqualTo(new Signup(" a ", 30, true, Role.ADMIN));
+		assertThat(ofForm.validated(Map.of("name", " ", "age", " \t", "role", "USER")))
+			.isEqualTo(new Signup(null, 20, false, Role.USER));
+		assertThat(validator.readingParameters()
+			.validate(Map.of("age", " 30 ", "subscribed", "on", "role", "USER"))
+			.errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("age", "object.type", " 30 "), tuple("subscribed", "object.type", "on"));
+		// the words of a boolean are replaced by those of the application
+		final InputReader<ParameterTree> words = ParameterTree
+			.reader(StringCoercion.strict().booleanWords(List.of("Y", "はい"), List.of("N")));
+		final ValueValidator<ParameterTree, Signup> ofWords = validator.readingWith(words);
+		assertThat(ofWords.validated(ParameterTree.of(Map.of("subscribed", "y", "role", "USER"))).subscribed())
+			.isTrue();
+		assertThat(
+				ofWords.validate(ParameterTree.of(Map.of("subscribed", "true", "age", " 1", "role", "USER"))).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("age", "object.type"), tuple("subscribed", "object.type"));
+		assertThatThrownBy(() -> StringCoercion.strict().booleanWords(List.of("on"), List.of("ON")))
+			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test

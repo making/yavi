@@ -6,6 +6,7 @@ package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.NumericConstraintBase;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BigDecimalConstraintTest {
 
@@ -126,6 +128,28 @@ class BigDecimalConstraintTest {
 	void validNegativeOrZero(BigDecimal value) {
 		Predicate<BigDecimal> predicate = retrievePredicate(NumericConstraintBase::negativeOrZero);
 		assertThat(predicate.test(value)).isTrue();
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "0, true", "0.00, true", "1.5, true", "1.50, true", "-1.25, true", "1.250, true", "1.255, false",
+			"1E+3, true", "1E-3, false", "0.001, false" })
+	void fractionDigits(BigDecimal value, boolean valid) {
+		// trailing zeros are not counted
+		assertThat(retrievePredicate(c -> c.fractionDigits(2)).test(value)).isEqualTo(valid);
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "0, true", "0.00, true", "0.5, true", "999.99, true", "-999, true", "9.99E+2, true", "1000, false",
+			"-1000.0, false", "1E+3, false", "0100, true" })
+	void integerDigits(BigDecimal value, boolean valid) {
+		assertThat(retrievePredicate(c -> c.integerDigits(3)).test(value)).isEqualTo(valid);
+		// a number below one has no integer digit
+		assertThat(retrievePredicate(c -> c.integerDigits(0)).test(value))
+			.isEqualTo(value.abs().compareTo(BigDecimal.ONE) < 0);
+		assertThatThrownBy(() -> new BigDecimalConstraint<BigDecimal>().integerDigits(-1))
+			.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> new BigDecimalConstraint<BigDecimal>().fractionDigits(-1))
+			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	private static Predicate<BigDecimal> retrievePredicate(

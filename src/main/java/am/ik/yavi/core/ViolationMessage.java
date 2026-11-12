@@ -214,6 +214,22 @@ public interface ViolationMessage {
 		 */
 		NUMERIC_NEGATIVE_OR_ZERO("numeric.negativeOrZero", "\"{0}\" must be negative or zero"), //
 		/**
+		 * Message id {@code numeric.fractionDigits}. Default message: {@code "{0}" must
+		 * have at most {1} fraction digits}. {@code {0}} is the property name and
+		 * {@code {1}} is the largest number of digits after the decimal point.
+		 *
+		 * @since 0.18.0
+		 */
+		NUMERIC_FRACTION_DIGITS("numeric.fractionDigits", "\"{0}\" must have at most {1} fraction digits"), //
+		/**
+		 * Message id {@code numeric.integerDigits}. Default message: {@code "{0}" must
+		 * have at most {1} integer digits}. {@code {0}} is the property name and
+		 * {@code {1}} is the largest number of digits before the decimal point.
+		 *
+		 * @since 0.18.0
+		 */
+		NUMERIC_INTEGER_DIGITS("numeric.integerDigits", "\"{0}\" must have at most {1} integer digits"), //
+		/**
 		 * Message id {@code boolean.isTrue}. Default message: {@code "{0}" must be true}.
 		 * {@code {0}} is the property name.
 		 */

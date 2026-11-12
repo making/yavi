@@ -521,6 +521,7 @@ Validated<User> validated = userValidator.validate(map);
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
+* The name of an enum constant is matched exactly. `ignoringCase()` of its validator reads it in any case, whatever the input is read with: `._enum(Yavi._enum("role", Role.class).ignoringCase())` takes `"admin"`. The description and the JSON Schema keep the names of the constants.
 * `flatFromMap(f)` takes a function that creates the object itself and can fail: it returns a `Validated`, for example `Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, locale)`, and is applied only when all arguments are valid. `flatApply(f)` is its counterpart for arguments.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
@@ -674,7 +675,24 @@ The keys are paths, and a key is whatever its argument expects:
 
 `readingParameters()` validates the `ParameterTree` of the map, which any validator reads with `readingWith(ParameterTree.reader())`; `ParameterTree.of(map, maxIndex)` gives another limit to the indexes.
 
-A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
+A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. 
+The rules are strict on purpose. `StringCoercion` relaxes them for text written by a person, such as the fields of a form or the cells of a CSV file:
+
+```java
+StringCoercion form = StringCoercion.strict().trimming().booleanWords();
+
+ValueValidator<Map<String, String>, Signup> validator = Yavi.arguments()
+        ._integer("age", c -> c.notNull())
+        ._boolean("subscribed").defaultValue(false) // an unchecked checkbox sends nothing
+        .fromMap(Signup::new)
+        .readingParameters(form);
+
+validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30, subscribed=true]
+```
+
+* `trimming()`: a blank string is validated like `null`, and a string read as a number, a boolean, an enum constant or a temporal value is read without its surrounding white space. A `String` value is left as it is (`c.trim()` trims it).
+* `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` are booleans in any case. `booleanWords(trueWords, falseWords)` takes the words of the application instead.
+* The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. For any other text, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
 

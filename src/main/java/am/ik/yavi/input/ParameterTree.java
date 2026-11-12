@@ -14,6 +14,7 @@ import java.util.Map;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -188,11 +189,22 @@ public final class ParameterTree {
 	}
 
 	/**
-	 * Returns a validator of a map of parameters that validates its tree with the given
-	 * validator.
+	 * Returns the reader of the nodes of a tree, which reads their strings by the given
+	 * rules.
+	 * @param coercion the rules by which a string is taken as text
+	 * @return the reader of parameter trees
 	 */
-	static <M extends Map<String, ?>, X> ValueValidator<M, X> reading(ValueValidator<?, X> validator) {
-		final ValueValidator<ParameterTree, X> ofTree = validator.readingWith(READER);
+	public static InputReader<ParameterTree> reader(StringCoercion coercion) {
+		return READER.coercingStrings(coercion);
+	}
+
+	/**
+	 * Returns a validator of a map of parameters that validates its tree with the given
+	 * validator, whose strings are read by the given rules.
+	 */
+	static <M extends Map<String, ?>, X> ValueValidator<M, X> reading(ValueValidator<?, X> validator,
+			StringCoercion coercion) {
+		final ValueValidator<ParameterTree, X> ofTree = validator.readingWith(reader(coercion));
 		return new ValueValidator<>() {
 			@Override
 			public Validated<X> validate(@Nullable M parameters, Locale locale, ConstraintContext constraintContext) {

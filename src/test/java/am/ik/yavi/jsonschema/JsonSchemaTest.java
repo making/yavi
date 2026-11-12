@@ -36,7 +36,7 @@ class JsonSchemaTest {
 			.build()
 			.recover(4);
 		final ValueValidator<BigDecimal, BigDecimal> price = BigDecimalValidatorBuilder
-			.of("price", c -> c.notNull().positive())
+			.of("price", c -> c.notNull().positive().fractionDigits(2).integerDigits(6))
 			.build();
 		final ValueValidator<Color, Color> color = EnumValidatorBuilder
 			.<Color>of("color", c -> c.notNull().oneOf(List.of(Color.RED)))
@@ -55,7 +55,7 @@ class JsonSchemaTest {
 				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
 				"code":{"type":"string","minLength":2,"maxLength":9,"pattern":"^(?:[A-Z]+)$"},\
 				"seats":{"type":["integer","null"],"exclusiveMinimum":0,"maximum":8,"default":4},\
-				"price":{"type":"number","exclusiveMinimum":0},\
+				"price":{"type":"number","exclusiveMinimum":0,"multipleOf":0.01,"exclusiveMaximum":1000000},\
 				"color":{"type":["string","null"],"enum":["RED",null],"default":"BLUE"},\
 				"arg5":{},\
 				"flag":{"type":["boolean","null"]}},\
