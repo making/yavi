@@ -520,6 +520,7 @@ Validated<User> validated = userValidator.validate(map);
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
+* `flatFromMap(f)` takes a function that creates the object itself and can fail: it returns a `Validated`, for example `Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, locale)`, and is applied only when all arguments are valid. `flatApply(f)` is its counterpart for arguments.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
 

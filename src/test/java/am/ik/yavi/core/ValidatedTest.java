@@ -7,12 +7,14 @@ package am.ik.yavi.core;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.PathSegment.Index;
 import am.ik.yavi.core.PathSegment.Property;
+import am.ik.yavi.fn.Validation;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -119,6 +121,33 @@ class ValidatedTest {
 		assertThat(validated.errors()).hasSize(1);
 		assertThat(validated.errors().get(0).message()).isEqualTo("\"name\" must not be blank.");
 		assertThat(describe(validated)).isEqualTo("invalid 1");
+		// the short form of a violation on the validated value itself
+		final ViolationMessage outOfRange = ViolationMessage.of("port.range", "\"{0}\" must be in {1}-{2} but was {3}");
+		final Validated<Integer> port = Validated.failureWith(outOfRange, 0, Locale.ENGLISH, 1, 999);
+		final ConstraintViolation violation = port.errors().get(0);
+		assertThat(violation.name()).isEmpty();
+		assertThat(violation.path()).isEmpty();
+		assertThat(violation.messageKey()).isEqualTo("port.range");
+		assertThat(violation.violatedValue()).isEqualTo(0);
+		assertThat(violation.locale()).isEqualTo(Locale.ENGLISH);
+		assertThat(port.prefixed("port").errors().get(0).message()).isEqualTo("\"port\" must be in 1-999 but was 0");
+		assertThat(ConstraintViolation.of(outOfRange, null, Locale.ENGLISH, 1, 999).violatedValue()).isNull();
+	}
+
+	@Test
+	void mapAndFlatMapReturnValidated() {
+		// usable as an argument and with var, without a target type
+		final Validated<String> validated = Validated.successWith("80");
+		assertThat(describe(validated.map(Integer::valueOf))).isEqualTo("valid 80");
+		assertThat(describe(validated.flatMap(s -> Validated.successWith(s.length())))).isEqualTo("valid 2");
+		final var failed = validated.<Integer>flatMap(
+				s -> Validated.failureWith(ViolationMessage.of("port.invalid", "invalid"), s, Locale.ENGLISH));
+		assertThat(describe(failed)).isEqualTo("invalid 1");
+		assertThat(failed.map(i -> i + 1)).isSameAs(failed);
+		assertThat(failed.flatMap(i -> Validated.successWith(i + 1))).isSameAs(failed);
+		// a validation that is not a Validated is converted
+		assertThat(validated.flatMap(s -> Validation.<ConstraintViolation, Integer>success(s.length())))
+			.isEqualTo(Validated.successWith(2));
 	}
 
 	@Test

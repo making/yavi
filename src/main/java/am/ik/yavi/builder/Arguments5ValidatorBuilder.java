@@ -16,6 +16,7 @@ import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -45,6 +46,7 @@ import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function5;
 import am.ik.yavi.input.MapInputValidator;
@@ -1439,6 +1441,33 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, R1, R2, R3, R4
 	}
 
 	/**
+	 * Builds an {@link Arguments5Validator} from the added arguments and the given
+	 * function, which validates the arguments together and returns the result or the
+	 * violations. This is {@link #apply} for a function that can fail, such as a factory
+	 * method that checks a rule across the arguments.
+	 *
+	 * <p>
+	 * The function is applied only when all arguments are valid. A violation it reports
+	 * is located relative to the arguments: one with an empty name, as
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * creates, is reported on the arguments as a whole.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations
+	 * @return a new arguments validator
+	 * @since 0.18.0
+	 */
+	public <X> Arguments5Validator<A1, A2, A3, A4, A5, X> flatApply(
+			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends Validated<? extends X>> f) {
+		return ArgumentsValidators
+			.split(this.d1.validator(), this.d2.validator(), this.d3.validator(), this.d4.validator(),
+					this.d5.validator())
+			.<Validated<? extends X>>apply(f)
+			.<X>andThen((validated, locale, constraintContext) -> Validated.of(Objects.requireNonNull(validated)))
+			.describedAs(ArgumentDefinition.describe(this.d1, this.d2, this.d3, this.d4, this.d5));
+	}
+
+	/**
 	 * Builds a {@link MapInputValidator} that reads the added arguments from a
 	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
 	 * creates the result with the given function.
@@ -1469,6 +1498,37 @@ public final class Arguments5ValidatorBuilder<A1, A2, A3, A4, A5, R1, R2, R3, R4
 	public <X> MapInputValidator<X> fromMap(
 			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends X> f) {
 		return MapInputValidator.of(
+				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5)),
+				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2), (R4) values.get(3),
+						(R5) values.get(4)));
+	}
+
+	/**
+	 * Builds a {@link MapInputValidator} that reads the added arguments like
+	 * {@link #fromMap} and creates the result with the given function, which validates
+	 * the arguments together and returns the result or the violations. This is
+	 * {@code fromMap} for a function that can fail, such as a factory method that checks
+	 * a rule across the properties.
+	 *
+	 * <p>
+	 * The function is applied only when all arguments are valid. A violation it reports
+	 * is located relative to the map: one with an empty name, as
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * creates, is reported on the map itself and takes the name of the property the
+	 * validator is applied to. Read another tree model with
+	 * {@code flatFromMap(f).readingWith(reader)}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations
+	 * @return a new map input validator
+	 * @throws IllegalStateException as {@link #fromMap} does
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> MapInputValidator<X> flatFromMap(
+			Function5<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? extends Validated<? extends X>> f) {
+		return MapInputValidator.flatOf(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5)),
 				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2), (R4) values.get(3),
 						(R5) values.get(4)));

@@ -108,13 +108,7 @@ final class UntypedInput {
 
 	private static ConstraintViolation violation(ViolationMessage message, Object arg, @Nullable Object value,
 			Locale locale) {
-		return ConstraintViolation.builder()
-			.name("")
-			.messageKey(message.messageKey())
-			.defaultMessageFormat(message.defaultMessageFormat())
-			.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { arg }, new ViolatedValue(value))
-			.locale(locale)
-			.build();
+		return ConstraintViolation.of(message, value, locale, arg);
 	}
 
 	private static Object convert(Object value, Class<?> type) {

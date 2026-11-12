@@ -87,30 +87,36 @@ public interface Validation<E, T> extends Serializable {
 	/**
 	 * Returns a validation holding the result of applying the given function to the value
 	 * of this validation. The function is not applied if this validation is a failure; in
-	 * that case this instance is returned unchanged.
+	 * that case the errors are kept.
+	 *
+	 * <p>
+	 * An implementation with its own type overrides this method to return that type, as
+	 * {@link am.ik.yavi.core.Validated} does.
 	 * @param mapper mapper applied to the value of a successful validation
 	 * @param <T2> type of the mapped value
-	 * @param <V> the concrete validation type returned
 	 * @return the mapped successful validation or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	default <T2, V extends Validation<E, T2>> V map(Function<? super T, ? extends T2> mapper) {
-		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (V) this;
+	default <T2> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
+		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (Validation<E, T2>) this;
 	}
 
 	/**
 	 * Returns the validation produced by the given function from the value of this
 	 * validation. The function is not applied if this validation is a failure; in that
-	 * case this instance is returned unchanged.
+	 * case the errors are kept.
+	 *
+	 * <p>
+	 * An implementation with its own type overrides this method to return that type, as
+	 * {@link am.ik.yavi.core.Validated} does.
 	 * @param mapper mapper from the value of a successful validation to the next
 	 * validation
 	 * @param <T2> type of the value of the next validation
-	 * @param <V> the concrete validation type returned
 	 * @return the validation produced by the mapper or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	default <T2, V extends Validation<E, T2>> V flatMap(Function<? super T, V> mapper) {
-		return isValid() ? mapper.apply(value()) : (V) this;
+	default <T2> Validation<E, T2> flatMap(Function<? super T, ? extends Validation<E, ? extends T2>> mapper) {
+		return isValid() ? (Validation<E, T2>) mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
 	/**

@@ -42,6 +42,9 @@ import am.ik.yavi.validator.Yavi;
 | `decoder.map(f)` | `validator.map(f)` |
 | `decoder.pipe(next)` | `validator.andThen(next)` |
 | `decoder.flatMap(f)` | `validator.andThen(next)`, or `constraintOnTarget` for a predicate |
+| `combine(field(...), ...).flatMap(f)` | `Yavi.arguments()._xxx(...).flatFromMap(f)` (`flatApply(f)` for arguments) |
+| `Result.fail(code, message)` | `Validated.failureWith(ViolationMessage.of(key, format), value, locale)` |
+| `result.map(f)` / `result.flatMap(f)` | `validated.map(f)` / `validated.flatMap(f)` |
 
 In Raoh the kind of input is chosen first, with the static import (`MapDecoders.*` or
 `JsonDecoders.*`). In YAVI the arguments are written once and the input is chosen last:
@@ -338,13 +341,7 @@ ValueValidator<String, Map<String, Object>> parseJson = (s, locale, context) -> 
         return Validated.successWith(objectMapper.readValue(s, new TypeReference<>() {}));
     }
     catch (JacksonException e) {
-        return Validated.failureWith(ConstraintViolation.builder()
-            .name("")
-            .messageKey("json.invalid")
-            .defaultMessageFormat("\"{0}\" cannot be parsed as JSON")
-            .argsWithPrependedName()
-            .locale(locale)
-            .build());
+        return Validated.failureWith(ViolationMessage.of("json.invalid", "\"{0}\" cannot be parsed as JSON"), s, locale);
     }
 };
 
@@ -539,8 +536,30 @@ ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.arguments()
                 ViolationMessage.of("money.scale", "\"{0}\" has too many decimal places for the currency"));
 ```
 
-A rule that creates another value, or reports several violations, is a validator given to
-`andThen`, as `parseJson` above.
+A step that creates the result itself and can fail, such as a factory method, is given to
+`flatFromMap` (`flatApply` for arguments) in place of `fromMap`. It receives the validated
+arguments and returns a `Validated`:
+
+```java
+record DateRange(LocalDate start, LocalDate end) {
+
+    static Validated<DateRange> parse(LocalDate start, LocalDate end) {
+        return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
+                : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start,
+                        Locale.getDefault());
+    }
+}
+
+MapInputValidator<DateRange> dateRangeValidator = Yavi.arguments()
+        ._localDate("start", c -> c.notNull())
+        ._localDate("end", c -> c.notNull())
+        .flatFromMap(DateRange::parse);
+```
+
+`Validated.failureWith(message, value, locale, args...)` creates a violation with the empty
+name; `ConstraintViolation.of(message, value, locale).prefixed("end")` locates it on a
+property. A step on a single value, or one that needs the locale of the validation, is a
+validator given to `andThen`, as `parseJson` above.
 
 ## Defaults and recovery
 
@@ -616,8 +635,20 @@ Validated<List<OrderWithLines>> orders = rowValidator.liftList()
 ### Tuples
 
 `combine(...).map(Tuple2::new)` is `fromMap(Arguments::of)`, which produces an
-`Arguments2<String, Integer>` with `arg1()` and `arg2()`. It is a class, not a record, so
-it is not deconstructed in a `switch`.
+`Arguments2<String, Integer>` with `arg1()` and `arg2()`. It is a record, so it is
+deconstructed in a `switch`:
+
+```java
+MapInputValidator<Arguments2<String, Integer>> validator = Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._integer("age", c -> c.notNull())
+        .fromMap(Arguments::of);
+
+switch (validator.validate(input)) {
+    case Validated.Valid(Arguments2(var name, var age)) -> System.out.println(name + " is " + age);
+    case Validated.Invalid(var violations) -> System.out.println(violations);
+}
+```
 
 ## Errors
 
