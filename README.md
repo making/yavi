@@ -635,7 +635,7 @@ The keys are paths, and a key is whatever its argument expects:
 
 A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
 
-See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
+See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
 
 #### Describing a validator and generating a JSON Schema
 
