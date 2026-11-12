@@ -36,9 +36,9 @@ import java.util.function.Supplier;
  * produced value is added with {@link #constraintOnTarget}. What a validator expects as
  * input is available from {@link #description()}; the combinators carry it. An input of
  * unknown type, such as a node of a parsed JSON document, is validated with
- * {@link #untyped()}. The generated {@code am.ik.yavi.arguments.ArgumentsNValidator}
- * types extend this interface to validate constructor arguments and create only valid
- * objects.
+ * {@link #untyped()}, or with {@link #untyped(InputReader)} if it is not a tree of JDK
+ * types. The generated {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this
+ * interface to validate constructor arguments and create only valid objects.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
@@ -94,35 +94,60 @@ public interface ValueValidator<T, X> {
 	 * @see #description()
 	 */
 	default ValueValidator<T, X> describedAs(ValueDescription description) {
-		return described(this, () -> description, () -> this.untyped().describedAs(description));
+		return described(this, () -> description, reader -> this.untyped(reader).describedAs(description));
 	}
 
 	/**
-	 * Returns a validator that accepts an input of unknown type, such as a node of a
+	 * Returns a validator that accepts a tree of JDK types of unknown type, such as a
 	 * parsed JSON document, checks that it represents the input type of this validator
-	 * and then validates it with this validator.
+	 * and then validates it with this validator. This is {@link #untyped(InputReader)
+	 * untyped(InputReader.ofJdkTypes())}.
+	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the input type of this validator is
+	 * unknown
+	 * @since 0.18.0
+	 * @see #untyped(InputReader)
+	 * @see #untyped(Class)
+	 */
+	default ValueValidator<Object, X> untyped() {
+		return this.untyped(InputReader.ofJdkTypes());
+	}
+
+	/**
+	 * Returns a validator that accepts a node of unknown type read with the given reader,
+	 * such as a node of the tree model of a JSON library, checks that it represents the
+	 * input type of this validator and then validates it with this validator.
 	 *
 	 * <p>
 	 * The validators created by the builders of single values know their input type, the
 	 * combinators of this interface carry it as they carry the {@linkplain #description()
-	 * description}, and the {@code lift*} methods expect an {@link Iterable} or a
-	 * {@link Map} and check every element or value. The input type of a lambda and of the
+	 * description}, and the {@code lift*} methods expect an array or an object of the
+	 * reader and check every element or value. The input type of a lambda and of the
 	 * result of {@link #compose(Function)} is unknown; give it with
 	 * {@link #untyped(Class)}.
+	 *
+	 * <p>
+	 * The reader is applied to the whole validator: the nested validators read with it
+	 * too, whatever reader they were built for, so the returned validator can itself be
+	 * given another reader. A null node of the reader is validated like {@code null}.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
 	 * @throws UnsupportedOperationException if the input type of this validator is
 	 * unknown
 	 * @since 0.18.0
 	 * @see #untyped(Class)
 	 */
-	default ValueValidator<Object, X> untyped() {
+	default <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
 		throw new UnsupportedOperationException(
 				"The input type of this validator is unknown. Use untyped(Class) to give it.");
 	}
 
 	/**
 	 * Returns a validator that accepts an input of unknown type, checks that it
-	 * represents the given type and then validates it with this validator.
+	 * represents the given type and then validates it with this validator. The returned
+	 * validator knows its input type, so it reads the nodes of another tree model with
+	 * {@link #untyped(InputReader)}.
 	 *
 	 * <p>
 	 * {@code null} is passed to this validator as is. Any other input must be an instance
@@ -146,6 +171,10 @@ public interface ValueValidator<T, X> {
 	 * give it {@code Object.class}.
 	 *
 	 * <p>
+	 * With another reader, the checked input is the {@linkplain InputReader#value value}
+	 * of the node.
+	 *
+	 * <p>
 	 * Any other input is reported with the message key {@code object.type}, or
 	 * {@code object.oneOf} with the constants for an enum type. The violation has an
 	 * empty name, so it is reported on the validated value itself and takes the name of
@@ -156,22 +185,93 @@ public interface ValueValidator<T, X> {
 	 * @see #untyped()
 	 */
 	default ValueValidator<Object, X> untyped(Class<T> inputType) {
-		return UntypedInput.checked(inputType, this);
+		return UntypedInput.checked(InputReader.ofJdkTypes(), inputType, this);
 	}
 
 	private static <T, X> ValueValidator<T, X> described(ValueValidator<T, X> validator,
-			Supplier<ValueDescription> description, Supplier<ValueValidator<Object, X>> untyped) {
+			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
 		return new DescribedValueValidator<>(validator, description, untyped);
 	}
 
 	/**
-	 * Returns the untyped counterpart of a validator of containers: the input must be an
-	 * instance of the given container type, and the given validator checks its content.
+	 * Returns the untyped counterpart of a combinator that treats {@code null}: the
+	 * result of the given function, which additionally takes a null node of its reader as
+	 * {@code null}.
+	 */
+	private static <X> Function<InputReader<Object>, ValueValidator<Object, X>> nullAware(
+			Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
+		return reader -> {
+			final ValueValidator<Object, X> validator = untyped.apply(reader);
+			return described((node, locale, constraintContext) -> validator.validate(UntypedInput.orNull(reader, node),
+					locale, constraintContext), validator::description, nullAware(untyped));
+		};
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of iterables: the node must be an
+	 * array of the reader, and every element is validated with the untyped counterpart of
+	 * the given validator.
+	 */
+	private static <N, A1, R, C extends Collection<R>> ValueValidator<N, C> untypedCollection(InputReader<N> reader,
+			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
+		final ValueValidator<N, ? extends R> element = validator.untyped(reader);
+		return described((node, locale, constraintContext) -> {
+			final N array = UntypedInput.orNull(reader, node);
+			if (array != null && !reader.isArray(array)) {
+				return Validated.failureWith(UntypedInput.mismatch("array", reader, array, locale));
+			}
+			return Validated.traverseIndexed(array == null ? null : reader.elements(array),
+					(value, index) -> element.validate(UntypedInput.orNull(reader, value), locale, constraintContext)
+						.indexed(index),
+					factory);
+		}, () -> new ValueDescription.Elements(validator.description()),
+				other -> untypedCollection(other, validator, factory));
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of maps: the node must be an object
+	 * of the reader, and every value is validated with the untyped counterpart of the
+	 * given validator.
+	 */
+	private static <N, T, X> ValueValidator<N, Map<String, X>> untypedMap(InputReader<N> reader,
+			ValueValidator<T, X> validator) {
+		final ValueValidator<N, X> element = validator.untyped(reader);
+		return described((node, locale, constraintContext) -> {
+			final N object = UntypedInput.orNull(reader, node);
+			if (object != null && !reader.isObject(object)) {
+				return Validated.failureWith(UntypedInput.mismatch("object", reader, object, locale));
+			}
+			final Map<String, X> results = new LinkedHashMap<>();
+			final List<ConstraintViolation> violations = new ArrayList<>();
+			if (object != null) {
+				for (Map.Entry<String, ? extends @Nullable N> property : reader.properties(object)) {
+					final Validated<X> validated = element.validate(UntypedInput.orNull(reader, property.getValue()),
+							locale, constraintContext);
+					if (validated.isValid()) {
+						results.put(property.getKey(), validated.value());
+					}
+					else {
+						validated.errors().forEach(violation -> violations.add(violation.prefixed(property.getKey())));
+					}
+				}
+			}
+			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
+		}, () -> new ValueDescription.Entries(validator.description()), other -> untypedMap(other, validator));
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of optionals: the value of the node
+	 * must be an {@link Optional}, whose content is validated with the untyped
+	 * counterpart of the given validator.
 	 */
 	@SuppressWarnings("unchecked")
-	private static <C, X> ValueValidator<Object, X> untypedContainer(Class<?> containerType,
-			ValueValidator<C, X> validator) {
-		return validator.untyped((Class<C>) containerType);
+	private static <N, A1, R> ValueValidator<N, Optional<R>> untypedOptional(InputReader<N> reader,
+			ValueValidator<? super A1, ? extends R> validator) {
+		return described(
+				UntypedInput.checked(reader, (Class<Optional<N>>) (Class<?>) Optional.class,
+						ValueValidator.liftOptional(validator.untyped(reader))),
+				() -> new ValueDescription.Optional(validator.description(), null),
+				other -> untypedOptional(other, validator));
 	}
 
 	/**
@@ -205,7 +305,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.map(mapper), this::description, () -> this.untyped().map(mapper));
+			.map(mapper), this::description, reader -> this.untyped(reader).map(mapper));
 	}
 
 	/**
@@ -221,7 +321,7 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext)),
-				this::description, () -> this.untyped().andThen(validator));
+				this::description, reader -> this.untyped(reader).andThen(validator));
 	}
 
 	/**
@@ -256,7 +356,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
 						: ValueValidator.this.validate(t, locale, constraintContext).map(Optional::ofNullable),
-				() -> new ValueDescription.Optional(this.description(), null), () -> this.untyped().optional());
+				() -> new ValueDescription.Optional(this.description(), null),
+				nullAware(reader -> this.untyped(reader).optional()));
 	}
 
 	/**
@@ -275,7 +376,8 @@ public interface ValueValidator<T, X> {
 		return described(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(null)
 						: ValueValidator.this.validate(t, locale, constraintContext),
-				() -> new ValueDescription.Optional(this.description(), null), () -> this.untyped().nullable());
+				() -> new ValueDescription.Optional(this.description(), null),
+				nullAware(reader -> this.untyped(reader).nullable()));
 	}
 
 	/**
@@ -294,7 +396,7 @@ public interface ValueValidator<T, X> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
 						: ValueValidator.this.validate(t, locale, constraintContext),
 				() -> new ValueDescription.Optional(this.description(), defaultValue),
-				() -> this.untyped().defaultValue(defaultValue));
+				nullAware(reader -> this.untyped(reader).defaultValue(defaultValue)));
 	}
 
 	/**
@@ -320,8 +422,8 @@ public interface ValueValidator<T, X> {
 			throw new IllegalArgumentException("'validators' must not be empty.");
 		}
 		final List<ValueValidator<? super T, ? extends X>> alternatives = List.of(validators);
-		final Supplier<ValueValidator<Object, X>> untyped = () -> ValueValidator
-			.anyOf(alternatives.stream().map(ValueValidator::untyped).toArray(ValueValidator[]::new));
+		final Function<InputReader<Object>, ValueValidator<Object, X>> untyped = reader -> ValueValidator.anyOf(
+				alternatives.stream().map(alternative -> alternative.untyped(reader)).toArray(ValueValidator[]::new));
 		return ValueValidator.<T, X>described((t, locale, constraintContext) -> {
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
@@ -458,7 +560,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default ValueValidator<T, X> indexed(int index) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.indexed(index), this::description, () -> this.untyped().indexed(index));
+			.indexed(index), this::description, reader -> this.untyped(reader).indexed(index));
 	}
 
 	/**
@@ -472,7 +574,7 @@ public interface ValueValidator<T, X> {
 	 */
 	default ValueValidator<T, X> prefixed(String name) {
 		return described((t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-			.prefixed(name), this::description, () -> this.untyped().prefixed(name));
+			.prefixed(name), this::description, reader -> this.untyped(reader).prefixed(name));
 	}
 
 	/**
@@ -533,8 +635,7 @@ public interface ValueValidator<T, X> {
 				});
 			}
 			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
-		}, () -> new ValueDescription.Entries(this.description()),
-				() -> untypedContainer(Map.class, this.untyped().liftMap()));
+		}, () -> new ValueDescription.Entries(this.description()), reader -> untypedMap(reader, this));
 	}
 
 	/**
@@ -565,7 +666,7 @@ public interface ValueValidator<T, X> {
 				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
 						(v, index) -> validator.indexed(index).validate(v, locale, constraintContext), factory),
 				() -> new ValueDescription.Elements(validator.description()),
-				() -> untypedContainer(Iterable.class, ValueValidator.liftCollection(validator.untyped(), factory)));
+				reader -> untypedCollection(reader, validator, factory));
 	}
 
 	/**
@@ -614,7 +715,7 @@ public interface ValueValidator<T, X> {
 				(value, locale, constraintContext) -> Validated.traverseOptional(value,
 						v -> validator.validate(v, locale, constraintContext)),
 				() -> new ValueDescription.Optional(validator.description(), null),
-				() -> untypedContainer(Optional.class, ValueValidator.liftOptional(validator.untyped())));
+				reader -> untypedOptional(reader, validator));
 	}
 
 	/**

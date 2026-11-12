@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -57,8 +58,21 @@ import org.jspecify.annotations.Nullable;
  * </ul>
  *
  * <p>
- * A {@code null} map is rejected with {@code object.notNull}. The validator describes
- * itself as {@link ValueDescription.Properties}.
+ * A {@code null} map is rejected with {@code object.notNull} and a map with a key that is
+ * not a string with {@code object.type}. The validator describes itself as
+ * {@link ValueDescription.Properties}.
+ *
+ * <p>
+ * The same properties are read from the tree model of a JSON library, without copying it
+ * to a map, with an {@link InputReader} implemented for that model:
+ *
+ * <pre>{@code
+ * ValueValidator<JsonNode, User> nodeValidator = validator.untyped(jsonNodeReader);
+ * Validated<User> validated = nodeValidator.validate(node);
+ * }</pre>
+ *
+ * The reader is applied to the nested validators too, so they are built with
+ * {@code fromMap} whatever input is read in the end.
  *
  * @param <X> the type of the created object
  * @since 0.18.0
@@ -74,12 +88,16 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 
 	private final boolean ignoreUnknownProperties;
 
+	private final Reading<Object> reading;
+
 	/**
 	 * A property read from the input map.
 	 *
 	 * @param name the key of the property in the map
 	 * @param validator the validator of the value, which reports its violations under
-	 * {@code name}; an absent key is validated as {@code null}
+	 * {@code name}; an absent key is validated as {@code null}. To read the property with
+	 * another {@link InputReader}, the validator must know its input type (see
+	 * {@link ValueValidator#untyped(InputReader)})
 	 * @param <R> the type of the validated value
 	 */
 	public record Property<R> (String name, ValueValidator<Object, R> validator) {
@@ -113,6 +131,8 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 		this.names = names;
 		this.mapper = mapper;
 		this.ignoreUnknownProperties = ignoreUnknownProperties;
+		this.reading = new Reading<>(InputReader.ofJdkTypes(),
+				properties.stream().<ValueValidator<Object, ?>>map(Property::validator).toList());
 	}
 
 	/**
@@ -127,40 +147,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	@Override
 	public Validated<X> validate(@Nullable Map<String, Object> input, Locale locale,
 			ConstraintContext constraintContext) {
-		if (input == null) {
-			return Validated
-				.failureWith(violation("", ViolationMessage.Default.OBJECT_NOT_NULL, new ViolatedValue(null), locale));
-		}
-		final List<@Nullable Object> values = new ArrayList<>(this.properties.size());
-		final List<ConstraintViolation> violations = new ArrayList<>();
-		for (Property<?> property : this.properties) {
-			final String name = property.name();
-			final boolean present = input.containsKey(name);
-			final Validated<?> validated = property.validator()
-				.validate(present ? input.get(name) : null, locale, constraintContext);
-			if (validated.isValid()) {
-				values.add(validated.value());
-			}
-			else if (present) {
-				violations.addAll(validated.errors());
-			}
-			else {
-				violations
-					.add(violation(name, ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
-			}
-		}
-		if (!this.ignoreUnknownProperties) {
-			// a map that was not checked may hold a key that is not a string
-			for (Map.Entry<?, ?> entry : input.entrySet()) {
-				if (!(entry.getKey() instanceof String key && this.names.contains(key))) {
-					violations
-						.add(violation(String.valueOf(entry.getKey()), ViolationMessage.Default.OBJECT_UNKNOWN_PROPERTY,
-								new ViolatedValue(entry.getValue()), locale));
-				}
-			}
-		}
-		return violations.isEmpty() ? Validated.successWith(this.mapper.apply(Collections.unmodifiableList(values)))
-				: Validated.failureWith(violations);
+		return this.reading.validate(input, locale, constraintContext);
 	}
 
 	@Override
@@ -171,18 +158,98 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	}
 
 	/**
-	 * Returns a validator that accepts an untyped input and rejects anything but a map
-	 * whose keys are strings with {@code object.type}.
+	 * Returns a validator that reads the same properties from an object of the given
+	 * reader instead of a map, and rejects any other node with {@code object.type}. The
+	 * reader is applied to the validators of the properties too.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the reader is not the one of JDK types and
+	 * the validator of a property does not know its input type
 	 */
 	@Override
-	public ValueValidator<Object, X> untyped() {
-		return this.untyped(mapType());
+	@SuppressWarnings("unchecked")
+	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+		if (reader == InputReader.ofJdkTypes()) {
+			return (ValueValidator<N, X>) this.reading;
+		}
+		return new Reading<>(reader,
+				this.properties.stream()
+					.<ValueValidator<N, ?>>map(property -> property.validator().untyped(reader))
+					.toList());
 	}
 
-	@SuppressWarnings("unchecked")
-	static Class<Map<String, Object>> mapType() {
-		return (Class<Map<String, Object>>) (Class<?>) Map.class;
+	/**
+	 * Reads the properties from an object of a reader.
+	 */
+	private final class Reading<N> implements ValueValidator<N, X> {
+
+		private final InputReader<N> reader;
+
+		/** The validators of the properties, in their order. */
+		private final List<ValueValidator<N, ?>> validators;
+
+		private Reading(InputReader<N> reader, List<ValueValidator<N, ?>> validators) {
+			this.reader = reader;
+			this.validators = validators;
+		}
+
+		@Override
+		public Validated<X> validate(@Nullable N input, Locale locale, ConstraintContext constraintContext) {
+			if (input == null || this.reader.isNull(input)) {
+				return Validated.failureWith(
+						violation("", ViolationMessage.Default.OBJECT_NOT_NULL, new ViolatedValue(null), locale));
+			}
+			if (!this.reader.isObject(input)) {
+				return Validated.failureWith(violation("", ViolationMessage.Default.OBJECT_TYPE,
+						new ViolatedValue(this.reader.value(input)), locale, "object"));
+			}
+			final List<Property<?>> properties = MapInputValidator.this.properties;
+			final List<@Nullable Object> values = new ArrayList<>(properties.size());
+			final List<ConstraintViolation> violations = new ArrayList<>();
+			for (int i = 0; i < properties.size(); i++) {
+				final String name = properties.get(i).name();
+				final N value = this.reader.property(input, name);
+				final boolean present = value != null || this.reader.hasProperty(input, name);
+				final Validated<?> validated = this.validators.get(i)
+					.validate(value == null || this.reader.isNull(value) ? null : value, locale, constraintContext);
+				if (validated.isValid()) {
+					values.add(validated.value());
+				}
+				else if (present) {
+					violations.addAll(validated.errors());
+				}
+				else {
+					violations.add(
+							violation(name, ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
+				}
+			}
+			if (!MapInputValidator.this.ignoreUnknownProperties) {
+				for (Map.Entry<String, ? extends @Nullable N> property : this.reader.properties(input)) {
+					if (!MapInputValidator.this.names.contains(property.getKey())) {
+						final N value = property.getValue();
+						violations.add(violation(property.getKey(), ViolationMessage.Default.OBJECT_UNKNOWN_PROPERTY,
+								new ViolatedValue(
+										value == null || this.reader.isNull(value) ? null : this.reader.value(value)),
+								locale));
+					}
+				}
+			}
+			return violations.isEmpty()
+					? Validated.successWith(MapInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+					: Validated.failureWith(violations);
+		}
+
+		@Override
+		public ValueDescription description() {
+			return MapInputValidator.this.description();
+		}
+
+		@Override
+		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
+			return MapInputValidator.this.untyped(reader);
+		}
+
 	}
 
 	/**

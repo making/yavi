@@ -67,12 +67,13 @@ The default stays exact. Names are placeholders; use YAVI's vocabulary.
 
 ## Design questions to settle
 
-- How the mode reaches the type checks. `untyped()` is resolved when the validator is
-  built (`ArgumentDefinition.untyped` is a supplier of a `ValueValidator<Object, R>`), and
-  the combinators carry it. Options: a parameter of `untyped(...)` / `fromMap(...)` that
-  the combinators pass down, or a setting carried at validation time (for example in the
-  `ConstraintContext`). A switch on `MapInputValidator` alone does not reach a nested
-  validator that was built before.
+- How the mode reaches the type checks. A validator is bound to an
+  `am.ik.yavi.core.InputReader` with `untyped(reader)`, and the reader reaches every
+  nested validator, including one that was built before (026). The type check reads a
+  node with `InputReader#value(node)` and does not tell the reader the type it checks, so
+  a reader alone cannot convert `"30"` for an `Integer` argument and leave it for a
+  `String` argument. Options: a type-directed method on the reader (a default method that
+  returns the value as is), or a mode of `UntypedInput` selected by the reader.
 - Whether the mode is all-or-nothing or a set of conversions, and whether it also covers
   the opposite direction (`30` for a `_string` argument). Zod's `z.coerce` is per schema.
 - Which strings are a boolean (`true` / `false` only, or also `on`, `1`, `yes` as HTML
@@ -93,6 +94,7 @@ The default stays exact. Names are placeholders; use YAVI's vocabulary.
 
 ## Notes
 
-- Depends on 022 (done). Related to 026 (reading a tree model through an adapter): if 026
-  introduces a reader interface, a coercing reader may be the way to implement this mode,
-  so settle the two designs together.
+- Depends on 022 and 026 (done). `MapInputValidator` and `DiscriminatedUnionValidator`
+  take the fast path of the JDK reader by identity (`reader == InputReader.ofJdkTypes()`);
+  a coercing reader takes the general path, in which every property and alternative must
+  know its input type.

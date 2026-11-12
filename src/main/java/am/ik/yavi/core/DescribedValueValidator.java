@@ -5,13 +5,15 @@
 package am.ik.yavi.core;
 
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link ValueValidator} that delegates the validation and carries a description of its
- * input. The description is created when it is first requested.
+ * input and the way to read it from an untyped input. The description is created when it
+ * is requested.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
@@ -22,10 +24,10 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 
 	private final Supplier<ValueDescription> description;
 
-	private final Supplier<ValueValidator<Object, X>> untyped;
+	private final Function<InputReader<Object>, ValueValidator<Object, X>> untyped;
 
 	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
-			Supplier<ValueValidator<Object, X>> untyped) {
+			Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
 		this.delegate = delegate;
 		this.description = description;
 		this.untyped = untyped;
@@ -41,9 +43,12 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 		return this.description.get();
 	}
 
+	// the node type is erased: the function is written for any reader
 	@Override
-	public ValueValidator<Object, X> untyped() {
-		return this.untyped.get();
+	@SuppressWarnings("unchecked")
+	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+		return (ValueValidator<N, X>) (ValueValidator<?, X>) this.untyped
+			.apply((InputReader<Object>) (InputReader<?>) reader);
 	}
 
 }

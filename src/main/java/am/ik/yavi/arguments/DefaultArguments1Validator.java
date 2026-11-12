@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.Validator;
@@ -79,9 +80,12 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	}
 
 	/**
-	 * Returns a validator that accepts an untyped input and checks that it represents the
-	 * raw type of the argument, as {@link ValueValidator#untyped(Class)} states. A
-	 * mismatch is reported under the name of the argument.
+	 * Returns a validator that accepts an untyped input read with the given reader and
+	 * checks that it represents the raw type of the argument, as
+	 * {@link ValueValidator#untyped(Class)} states. A mismatch is reported under the name
+	 * of the argument.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
 	 * @throws UnsupportedOperationException if the raw type of the argument is unknown
 	 * ({@code Object} or {@code Enum})
@@ -89,13 +93,14 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public ValueValidator<Object, X> untyped() {
+	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
 		if (this.valueType == Object.class || this.valueType == Enum.class) {
-			return Arguments1Validator.super.untyped();
+			return Arguments1Validator.super.untyped(reader);
 		}
 		final ValueDescription.Value description = ValueDescription.Value.of(this.valueType, this.validator);
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
+			.untyped(reader)
 			.prefixed(description.name())
 			.andThen(this)
 			.describedAs(description);

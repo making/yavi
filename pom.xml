@@ -109,6 +109,12 @@
             <version>0.19</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.2.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <pluginManagement>

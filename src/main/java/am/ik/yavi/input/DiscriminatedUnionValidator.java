@@ -10,9 +10,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.StreamSupport;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintDescription;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -41,14 +44,19 @@ import org.jspecify.annotations.Nullable;
  * {@code object.oneOf} and the values of the alternatives.
  *
  * <p>
- * An alternative does not have to define the discriminator: the key is removed from the
- * map given to an alternative that describes its properties without it, so that it is not
- * an unknown property there. An alternative that defines it receives it.
+ * An alternative does not have to define the discriminator: the key is hidden from an
+ * alternative that describes its properties without it, so that it is not an unknown
+ * property there. An alternative that defines it receives it.
  *
  * <p>
- * A {@code null} map is rejected with {@code object.notNull}. The validator describes
- * itself as {@link ValueDescription.AnyOf} whose alternatives hold the discriminator as a
- * property equal to their value.
+ * A {@code null} map is rejected with {@code object.notNull} and a map with a key that is
+ * not a string with {@code object.type}. The validator describes itself as
+ * {@link ValueDescription.AnyOf} whose alternatives hold the discriminator as a property
+ * equal to their value.
+ *
+ * <p>
+ * The tree model of a JSON library is read with {@link #untyped(InputReader)}, like a
+ * {@link MapInputValidator}.
  *
  * @param <X> the common type of the objects created by the alternatives
  * @since 0.18.0
@@ -59,6 +67,8 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	private final String discriminator;
 
 	private final Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives;
+
+	private final Reading<Object> reading;
 
 	/**
 	 * Returns a validator without alternatives that selects by the given key. Add the
@@ -75,6 +85,9 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 			Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives) {
 		this.discriminator = discriminator;
 		this.alternatives = alternatives;
+		final Map<String, ValueValidator<Object, ? extends X>> ofMaps = new LinkedHashMap<>();
+		alternatives.forEach((value, alternative) -> ofMaps.put(value, this.ofMap(alternative)));
+		this.reading = new Reading<>(InputReader.ofJdkTypes(), ofMaps);
 	}
 
 	/**
@@ -98,29 +111,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	@Override
 	public Validated<X> validate(@Nullable Map<String, Object> input, Locale locale,
 			ConstraintContext constraintContext) {
-		if (input == null) {
-			return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL,
-					new ViolatedValue(null), locale));
-		}
-		if (!input.containsKey(this.discriminator)) {
-			return Validated.failureWith(MapInputValidator.violation(this.discriminator,
-					ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
-		}
-		final Object value = input.get(this.discriminator);
-		final ValueValidator<? super Map<String, Object>, ? extends X> alternative = value instanceof String
-				? this.alternatives.get(value) : null;
-		if (alternative == null) {
-			return Validated
-				.failureWith(MapInputValidator.violation(this.discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
-						new ViolatedValue(value), locale, List.copyOf(this.alternatives.keySet())));
-		}
-		Map<String, Object> properties = input;
-		if (alternative.description() instanceof ValueDescription.Properties described
-				&& !defines(described, this.discriminator)) {
-			properties = new LinkedHashMap<>(input);
-			properties.remove(this.discriminator);
-		}
-		return Validated.of(alternative.validate(properties, locale, constraintContext));
+		return this.reading.validate(input, locale, constraintContext);
 	}
 
 	@Override
@@ -146,13 +137,182 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	}
 
 	/**
-	 * Returns a validator that accepts an untyped input and rejects anything but a map
-	 * whose keys are strings with {@code object.type}.
+	 * Returns a validator that selects the alternative of an object of the given reader
+	 * instead of a map, and rejects any other node with {@code object.type}. The reader
+	 * is applied to the alternatives too.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
+	 * @throws UnsupportedOperationException if the reader is not the one of JDK types and
+	 * an alternative does not know its input type
 	 */
 	@Override
-	public ValueValidator<Object, X> untyped() {
-		return this.untyped(MapInputValidator.mapType());
+	@SuppressWarnings("unchecked")
+	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+		if (reader == InputReader.ofJdkTypes()) {
+			return (ValueValidator<N, X>) this.reading;
+		}
+		final Map<String, ValueValidator<N, ? extends X>> alternatives = new LinkedHashMap<>();
+		this.alternatives.forEach((value, alternative) -> alternatives.put(value, this.of(reader, alternative)));
+		return new Reading<>(reader, alternatives);
+	}
+
+	/**
+	 * Returns the alternative as a validator of a checked map. It is given a copy of the
+	 * map without the discriminator if it does not define it.
+	 */
+	@SuppressWarnings("unchecked")
+	private ValueValidator<Object, ? extends X> ofMap(
+			ValueValidator<? super Map<String, Object>, ? extends X> alternative) {
+		final boolean hidden = this.isHiddenFrom(alternative);
+		return (input, locale, constraintContext) -> {
+			Map<String, Object> properties = (Map<String, Object>) input;
+			if (hidden && properties != null) {
+				properties = new LinkedHashMap<>(properties);
+				properties.remove(this.discriminator);
+			}
+			return Validated.of(alternative.validate(properties, locale, constraintContext));
+		};
+	}
+
+	/**
+	 * Returns the alternative as a validator of an object of the given reader. If it does
+	 * not define the discriminator, it reads the object with a reader that hides it.
+	 */
+	private <N> ValueValidator<N, ? extends X> of(InputReader<N> reader,
+			ValueValidator<? super Map<String, Object>, ? extends X> alternative) {
+		if (!this.isHiddenFrom(alternative)) {
+			return alternative.untyped(reader);
+		}
+		final ValueValidator<Object, ? extends X> hiding = alternative
+			.untyped(new HidingReader<>(reader, this.discriminator));
+		return (input, locale, constraintContext) -> Validated
+			.of(hiding.validate(new Hidden<>(Objects.requireNonNull(input)), locale, constraintContext));
+	}
+
+	private boolean isHiddenFrom(ValueValidator<?, ?> alternative) {
+		return alternative.description() instanceof ValueDescription.Properties described
+				&& !defines(described, this.discriminator);
+	}
+
+	/**
+	 * Selects the alternative of an object of a reader.
+	 */
+	private final class Reading<N> implements ValueValidator<N, X> {
+
+		private final InputReader<N> reader;
+
+		private final Map<String, ValueValidator<N, ? extends X>> alternatives;
+
+		private Reading(InputReader<N> reader, Map<String, ValueValidator<N, ? extends X>> alternatives) {
+			this.reader = reader;
+			this.alternatives = alternatives;
+		}
+
+		@Override
+		public Validated<X> validate(@Nullable N input, Locale locale, ConstraintContext constraintContext) {
+			final String discriminator = DiscriminatedUnionValidator.this.discriminator;
+			if (input == null || this.reader.isNull(input)) {
+				return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL,
+						new ViolatedValue(null), locale));
+			}
+			if (!this.reader.isObject(input)) {
+				return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_TYPE,
+						new ViolatedValue(this.reader.value(input)), locale, "object"));
+			}
+			final N node = this.reader.property(input, discriminator);
+			if (node == null && !this.reader.hasProperty(input, discriminator)) {
+				return Validated.failureWith(MapInputValidator.violation(discriminator,
+						ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
+			}
+			final Object value = node == null || this.reader.isNull(node) ? null : this.reader.value(node);
+			final ValueValidator<N, ? extends X> alternative = value instanceof String ? this.alternatives.get(value)
+					: null;
+			if (alternative == null) {
+				return Validated
+					.failureWith(MapInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
+							new ViolatedValue(value), locale, List.copyOf(this.alternatives.keySet())));
+			}
+			return Validated.of(alternative.validate(input, locale, constraintContext));
+		}
+
+		@Override
+		public ValueDescription description() {
+			return DiscriminatedUnionValidator.this.description();
+		}
+
+		@Override
+		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
+			return DiscriminatedUnionValidator.this.untyped(reader);
+		}
+
+	}
+
+	/**
+	 * An object given to an alternative that does not see one of its properties.
+	 */
+	private record Hidden<N> (N object) {
+	}
+
+	/**
+	 * Reads a {@link Hidden} object without the hidden property and any other node with
+	 * the given reader.
+	 */
+	private record HidingReader<N> (InputReader<N> reader, String hidden) implements InputReader<Object> {
+
+		@SuppressWarnings("unchecked")
+		private N node(Object node) {
+			return (N) (node instanceof Hidden<?>object ? object.object() : node);
+		}
+
+		@Override
+		public boolean isNull(Object node) {
+			return this.reader.isNull(this.node(node));
+		}
+
+		@Override
+		public Object value(Object node) {
+			return this.reader.value(this.node(node));
+		}
+
+		@Override
+		public boolean isObject(Object node) {
+			return this.reader.isObject(this.node(node));
+		}
+
+		@Override
+		public @Nullable Object property(Object object, String name) {
+			return this.hides(object, name) ? null : this.reader.property(this.node(object), name);
+		}
+
+		@Override
+		public boolean hasProperty(Object object, String name) {
+			return !this.hides(object, name) && this.reader.hasProperty(this.node(object), name);
+		}
+
+		@Override
+		public Iterable<? extends Map.Entry<String, ? extends @Nullable Object>> properties(Object object) {
+			final Iterable<? extends Map.Entry<String, ? extends @Nullable N>> properties = this.reader
+				.properties(this.node(object));
+			return object instanceof Hidden ? StreamSupport.stream(properties.spliterator(), false)
+				.filter(property -> !this.hidden.equals(property.getKey()))
+				.toList() : properties;
+		}
+
+		@Override
+		public boolean isArray(Object node) {
+			return this.reader.isArray(this.node(node));
+		}
+
+		@Override
+		public Iterable<? extends @Nullable Object> elements(Object array) {
+			return this.reader.elements(this.node(array));
+		}
+
+		private boolean hides(Object object, String name) {
+			return object instanceof Hidden && this.hidden.equals(name);
+		}
+
 	}
 
 	private static boolean defines(ValueDescription.Properties properties, String name) {

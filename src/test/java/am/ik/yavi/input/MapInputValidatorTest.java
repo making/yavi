@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
@@ -28,7 +29,10 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +57,34 @@ class MapInputValidatorTest {
 			return this.role != Role.ADMIN || (this.tags != null && !this.tags.isEmpty());
 		}
 	}
+
+	/**
+	 * The form in which an input is given to a validator of maps.
+	 */
+	enum Model {
+
+		MAP {
+			@Override
+			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+					@Nullable Map<String, Object> input) {
+				return validator.validate(input);
+			}
+		},
+		// the same input as the tree model of Jackson, which is read without a copy
+		JSON_NODE {
+			@Override
+			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+					@Nullable Map<String, Object> input) {
+				return validator.untyped(JsonNodeReader.INSTANCE).validate(jsonMapper.valueToTree(input));
+			}
+		};
+
+		abstract <X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+				@Nullable Map<String, Object> input);
+
+	}
+
+	static final JsonMapper jsonMapper = new JsonMapper();
 
 	sealed interface Shape {
 
@@ -104,27 +136,31 @@ class MapInputValidatorTest {
 		return (Map<String, Object>) (Map<String, ?>) map(keysAndValues);
 	}
 
-	@Test
-	void validMapCreatesTheObject() {
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void validMapCreatesTheObject(Model model) {
 		// numbers are taken whatever their type is, as long as the value is kept
-		final Validated<User> validated = userValidator.validate(input("email", "a@example.com", "age", 30L, "role",
-				"ADMIN", "birthday", "2000-02-29", "address", map("street", "1-2-3", "city", "Tokyo"), "tags",
-				List.of("a", "b"), "scores", map("math", new BigDecimal("90.0")), "rate", 2));
+		final Validated<User> validated = model.validate(userValidator,
+				input("email", "a@example.com", "age", 30L, "role", "ADMIN", "birthday", "2000-02-29", "address",
+						map("street", "1-2-3", "city", "Tokyo"), "tags", List.of("a", "b"), "scores",
+						map("math", new BigDecimal("90.0")), "rate", 2));
 		assertThat(validated.value()).isEqualTo(new User("a@example.com", 30, Role.ADMIN, LocalDate.of(2000, 2, 29),
 				new Address("1-2-3", "Tokyo"), List.of("a", "b"), Map.of("math", 90), Optional.empty(), 2.0));
 		// an absent key is validated like null
-		assertThat(userValidator
-			.validated(input("email", "a@example.com", "age", 0, "role", "USER", "address",
+		assertThat(model
+			.validate(userValidator, input("email", "a@example.com", "age", 0, "role", "USER", "address",
 					map("street", "1-2-3", "city", "Tokyo"), "tags", List.of(), "scores", map(), "nickname", null))
+			.value()
 			.rate()).isEqualTo(1.5);
 	}
 
-	@Test
-	void violationsOfTheMapAreAccumulated() {
-		final Validated<User> validated = userValidator
-			.validate(input("email", null, "age", "30", "role", "GUEST", "birthday", "2001-02-29", "address",
-					map("street", "", "zip", "100"), "tags", Arrays.asList("a", 1, " "), "scores",
-					map("math", -1, "art", 1.5), "nickname", 1, "rate", "high", "name", "x"));
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void violationsOfTheMapAreAccumulated(Model model) {
+		final Validated<User> validated = model.validate(userValidator,
+				input("email", null, "age", "30", "role", "GUEST", "birthday", "2001-02-29", "address",
+						map("street", "", "zip", "100"), "tags", Arrays.asList("a", 1, " "), "scores",
+						map("math", -1, "art", 1.5), "nickname", 1, "rate", "high", "name", "x"));
 		assertThat(validated.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(
 					// an explicit null is reported by the constraints of the property
@@ -147,17 +183,19 @@ class MapInputValidatorTest {
 				new PathSegment.Index(1));
 		// a nested object, list or map must be one, and the rule on the target is checked
 		// only when the map is valid
-		assertThat(userValidator
-			.validate(input("email", "a@example.com", "age", 1, "role", "ADMIN", "address", "Tokyo", "tags", "a",
-					"scores", List.of()))
+		assertThat(model
+			.validate(userValidator,
+					input("email", "a@example.com", "age", 1, "role", "ADMIN", "address", "Tokyo", "tags", "a",
+							"scores", List.of()))
 			.errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"address\" must be of type object", "\"tags\" must be of type array",
 					"\"scores\" must be of type object");
-		assertThat(userValidator
-			.validate(input("email", "a@example.com", "age", 1, "role", "ADMIN", "address",
-					map("street", "1-2-3", "city", "Tokyo"), "tags", List.of(), "scores", map()))
+		assertThat(model
+			.validate(userValidator,
+					input("email", "a@example.com", "age", 1, "role", "ADMIN", "address",
+							map("street", "1-2-3", "city", "Tokyo"), "tags", List.of(), "scores", map()))
 			.errors()).extracting(ConstraintViolation::messageKey).containsExactly("user.adminTags");
-		assertThat(userValidator.validate(null).errors()).extracting(ConstraintViolation::messageKey)
+		assertThat(model.validate(userValidator, null).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
 		// unknown properties are ignored on request, and any input is taken once untyped
 		final ValueValidator<Object, Address> lenient = addressValidator.ignoringUnknownProperties().untyped();
@@ -167,25 +205,30 @@ class MapInputValidatorTest {
 			.containsExactly("\"\" must be of type object");
 	}
 
-	@Test
-	void discriminatorSelectsTheAlternative() {
-		assertThat(shapeValidator.validated(input("type", "circle", "radius", 2))).isEqualTo(new Circle(2));
-		assertThat(shapeValidator.validated(input("type", "square", "side", 3))).isEqualTo(new Square("square", 3));
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void discriminatorSelectsTheAlternative(Model model) {
+		assertThat(model.validate(shapeValidator, input("type", "circle", "radius", 2)).value())
+			.isEqualTo(new Circle(2));
+		assertThat(model.validate(shapeValidator, input("type", "square", "side", 3)).value())
+			.isEqualTo(new Square("square", 3));
 		// only the selected alternative is validated
-		assertThat(shapeValidator.validate(input("type", "circle", "radius", 0, "side", 3)).errors())
+		assertThat(model.validate(shapeValidator, input("type", "circle", "radius", 0, "side", 3)).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("radius", "numeric.positive"), tuple("side", "object.unknownProperty"));
-		assertThat(shapeValidator.validate(input("type", "triangle")).errors()).extracting(ConstraintViolation::message)
+		assertThat(model.validate(shapeValidator, input("type", "triangle")).errors())
+			.extracting(ConstraintViolation::message)
 			.containsExactly("\"type\" must be one of the following values: [circle, square]");
-		assertThat(shapeValidator.validate(input("type", 1)).errors()).extracting(ConstraintViolation::messageKey)
+		assertThat(model.validate(shapeValidator, input("type", 1)).errors())
+			.extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.oneOf");
-		assertThat(shapeValidator.validate(input("radius", 2)).errors()).extracting(ConstraintViolation::message)
+		assertThat(model.validate(shapeValidator, input("radius", 2)).errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"type\" is required");
 		// a union is nested like any other validator
 		final MapInputValidator<Optional<List<Shape>>> drawing = Yavi.arguments()
 			._list("shapes", shapeValidator)
 			.fromMap(Optional::ofNullable);
-		assertThat(drawing.validate(input("shapes", List.of(map("type", "circle"), "square"))).errors())
+		assertThat(model.validate(drawing, input("shapes", List.of(map("type", "circle"), "square"))).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("shapes[0].radius", "object.required"), tuple("shapes[1]", "object.type"));
 		assertThat(JsonSchema.toJson(drawing.description())).isEqualTo("""
@@ -257,6 +300,26 @@ class MapInputValidatorTest {
 			.hasMessageContaining("The argument at position 1 has no name");
 		assertThatThrownBy(() -> Yavi.arguments()._string("a")._integer("a").fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class);
+		// another reader is applied to the same validator: a validator that takes an
+		// Object is given the value of the node, a null node is null wherever it is, and
+		// the result can be given yet another reader
+		final ValueValidator<JsonNode, List<Object>> nodeValidator = validator.untyped(JsonNodeReader.INSTANCE);
+		final JsonNode node = jsonMapper.readTree("""
+				{"count":"10","id":7,"payload":[1]}""");
+		assertThat(nodeValidator.validated(node)).containsExactly(10, 7, node.get("payload"));
+		assertThat(nodeValidator.untyped(InputReader.ofJdkTypes())
+			.validated(input("count", "10", "id", 7, "payload", List.of(1)))).containsExactly(10, 7, List.of(1));
+		assertThat(StringValidatorBuilder.of("name", c -> c.notBlank())
+			.build()
+			.optional()
+			.untyped(JsonNodeReader.INSTANCE)
+			.validated(jsonMapper.nullNode())).isEmpty();
+		// a property or an alternative that is a lambda is read only from JDK types
+		final MapInputValidator<Object> lambda = MapInputValidator
+			.of(List.of(new MapInputValidator.Property<>("count", coerced)), values -> values.get(0));
+		assertThat(lambda.untyped().validated(map("count", "10"))).isEqualTo(10);
+		assertThatThrownBy(() -> lambda.untyped(JsonNodeReader.INSTANCE))
+			.isInstanceOf(UnsupportedOperationException.class);
 	}
 
 }

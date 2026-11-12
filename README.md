@@ -509,6 +509,7 @@ Validated<User> validated = userValidator.validate(map);
 * A key that no argument is defined for is reported with `object.unknownProperty`. `ignoringUnknownProperties()` accepts such keys.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
+* A map with a key that is not a string is reported with `object.type`.
 
 `DiscriminatedUnionValidator` selects the validator of a map by the value of a key, which reads the subtypes of a sealed interface:
 
@@ -519,6 +520,72 @@ ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionVa
 ```
 
 Only the selected alternative is validated. An absent discriminator is reported with `object.required` and an unexpected one with `object.oneOf`.
+
+##### Validating the tree model of a JSON library
+
+The same validators read the tree model of a JSON library, such as Jackson's `JsonNode`, as it is: `untyped(reader)` binds a validator to an `InputReader`, which tells how to read a node. The tree is not copied to a map, and the rules above and the violations are the same.
+
+```java
+ValueValidator<JsonNode, User> nodeValidator = userValidator.untyped(JsonNodeReader.INSTANCE);
+
+Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
+```
+
+The reader is applied to the whole validator, so nested validators such as `addressValidator` are built with `fromMap` whatever input is read in the end, and one validator serves both a map and a node. YAVI has no dependency on a JSON library; a reader is a small stateless class written once per tree model and shared by all validators. This is the one for Jackson 3:
+
+```java
+public final class JsonNodeReader implements InputReader<JsonNode> {
+
+    public static final JsonNodeReader INSTANCE = new JsonNodeReader();
+
+    @Override
+    public boolean isNull(JsonNode node) {
+        return node.isNull() || node.isMissingNode();
+    }
+
+    @Override
+    public Object value(JsonNode node) { // a scalar as a JDK type
+        if (node.isString()) {
+            return node.stringValue();
+        }
+        if (node.isNumber()) {
+            return node.numberValue();
+        }
+        if (node.isBoolean()) {
+            return node.booleanValue();
+        }
+        return node;
+    }
+
+    @Override
+    public boolean isObject(JsonNode node) {
+        return node.isObject();
+    }
+
+    @Override
+    public @Nullable JsonNode property(JsonNode object, String name) {
+        return object.get(name); // null if absent
+    }
+
+    @Override
+    public Iterable<Map.Entry<String, JsonNode>> properties(JsonNode object) {
+        return object.properties();
+    }
+
+    @Override
+    public boolean isArray(JsonNode node) {
+        return node.isArray();
+    }
+
+    @Override
+    public Iterable<JsonNode> elements(JsonNode array) {
+        return array;
+    }
+
+}
+```
+
+A validator that does not know its input type (a lambda) is read only from JDK types; `untyped(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 

@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -84,8 +85,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return valueValidator.untyped();
+			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+				return valueValidator.untyped(reader);
 			}
 		};
 	}
@@ -206,8 +207,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().map(mapper);
+			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).map(mapper);
 			}
 		};
 	}
@@ -247,8 +248,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().andThen(validator);
+			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).andThen(validator);
 			}
 		};
 	}
@@ -331,8 +332,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return Arguments1Validator.this.untyped().describedAs(description);
+			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).describedAs(description);
 			}
 		};
 	}

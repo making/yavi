@@ -18,15 +18,14 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
 
 /**
  * Converts an input of unknown type, such as a node of a parsed JSON document, to the
- * type a validator expects. The rules are stated in
- * {@link ValueValidator#untyped(Class)}.
+ * type a validator expects. The node is read with an {@link InputReader} and the rules
+ * are stated in {@link ValueValidator#untyped(Class)}.
  */
 final class UntypedInput {
 
@@ -42,21 +41,28 @@ final class UntypedInput {
 	}
 
 	/**
-	 * Returns a validator that converts its input to the given type and passes it to the
-	 * given validator. {@code null} is passed as is. It keeps the description of the
-	 * given validator.
+	 * Returns a validator that reads its input with the given reader, converts the value
+	 * to the given type and passes it to the given validator. A null node is passed as
+	 * {@code null}. It keeps the description of the given validator.
 	 */
-	static <T, X> ValueValidator<Object, X> checked(Class<T> type, ValueValidator<T, X> validator) {
-		return new Checked<>(type, validator);
+	static <N, T, X> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
+			ValueValidator<T, X> validator) {
+		return new Checked<>(reader, type, validator);
 	}
 
-	private record Checked<T, X> (Class<T> type, ValueValidator<T, X> validator) implements ValueValidator<Object, X> {
+	private record Checked<N, T, X> (InputReader<N> reader, Class<T> type,
+			ValueValidator<T, X> validator) implements ValueValidator<N, X> {
 
 		@Override
-		public Validated<X> validate(@Nullable Object value, Locale locale, ConstraintContext constraintContext) {
+		public Validated<X> validate(@Nullable N node, Locale locale, ConstraintContext constraintContext) {
+			final N present = orNull(this.reader, node);
+			final Object value = present == null ? null : this.reader.value(present);
 			final Object converted = value == null ? null : convert(value, this.type);
 			if (converted == MISMATCH) {
-				return Validated.failureWith(mismatch(Objects.requireNonNull(value), this.type, locale));
+				final Object[] constants = this.type.getEnumConstants();
+				return Validated.failureWith(constants != null
+						? violation(ViolationMessage.Default.OBJECT_ONE_OF, List.of(constants), value, locale)
+						: mismatch(typeName(this.type), value, locale));
 			}
 			return this.validator.validate(this.type.cast(converted), locale, constraintContext);
 		}
@@ -67,22 +73,38 @@ final class UntypedInput {
 		}
 
 		@Override
-		public ValueValidator<Object, X> untyped() {
-			return this;
+		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
+			return new Checked<>(reader, this.type, this.validator);
 		}
 
 	}
 
-	private static ConstraintViolation mismatch(Object value, Class<?> type, Locale locale) {
-		final Object[] constants = type.getEnumConstants();
-		final ViolationMessage message = constants != null ? ViolationMessage.Default.OBJECT_ONE_OF
-				: ViolationMessage.Default.OBJECT_TYPE;
+	/**
+	 * Returns the node unless it is {@code null} or a null node of the reader.
+	 */
+	static <N> @Nullable N orNull(InputReader<N> reader, @Nullable N node) {
+		return node == null || reader.isNull(node) ? null : node;
+	}
+
+	/**
+	 * Returns the violation of a node that is not of the type with the given name. It is
+	 * reported on the validated value itself.
+	 */
+	static <N> ConstraintViolation mismatch(String typeName, InputReader<N> reader, N node, Locale locale) {
+		return mismatch(typeName, reader.value(node), locale);
+	}
+
+	private static ConstraintViolation mismatch(String typeName, @Nullable Object value, Locale locale) {
+		return violation(ViolationMessage.Default.OBJECT_TYPE, typeName, value, locale);
+	}
+
+	private static ConstraintViolation violation(ViolationMessage message, Object arg, @Nullable Object value,
+			Locale locale) {
 		return ConstraintViolation.builder()
 			.name("")
 			.messageKey(message.messageKey())
 			.defaultMessageFormat(message.defaultMessageFormat())
-			.argsWithPrependedNameAndAppendedViolatedValue(
-					new Object[] { constants != null ? List.of(constants) : typeName(type) }, new ViolatedValue(value))
+			.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { arg }, new ViolatedValue(value))
 			.locale(locale)
 			.build();
 	}

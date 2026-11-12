@@ -585,18 +585,18 @@ for i in `seq 1 ${n}`;do
   if [ "${i}" == "1" ];then
     untyped_map="
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().map(mapper);
+			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).map(mapper);
 			}"
     untyped_and_then="
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().andThen(validator);
+			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).andThen(validator);
 			}"
     untyped_described_as="
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return Arguments1Validator.this.untyped().describedAs(description);
+			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+				return Arguments1Validator.this.untyped(reader).describedAs(description);
 			}"
   fi
   class="Arguments${i}Validator"
@@ -651,6 +651,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -723,8 +724,8 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			}
 
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return valueValidator.untyped();
+			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+				return valueValidator.untyped(reader);
 			}
 		};
 	}
@@ -1315,7 +1316,7 @@ package am.ik.yavi.arguments;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.InputReader;'; fi)
 import am.ik.yavi.core.Validated;
 $(if [ "${i}" == "1" ];then echo "import am.ik.yavi.core.ValueDescription;"; fi)
 import am.ik.yavi.core.Validator;
@@ -1395,9 +1396,12 @@ cat <<EOD
 	}
 
 	/**
-	 * Returns a validator that accepts an untyped input and checks that it represents the
-	 * raw type of the argument, as {@link ValueValidator#untyped(Class)} states. A
-	 * mismatch is reported under the name of the argument.
+	 * Returns a validator that accepts an untyped input read with the given reader and
+	 * checks that it represents the raw type of the argument, as
+	 * {@link ValueValidator#untyped(Class)} states. A mismatch is reported under the name
+	 * of the argument.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 *
 	 * @return a value validator for an untyped input
 	 * @throws UnsupportedOperationException if the raw type of the argument is unknown
@@ -1406,13 +1410,14 @@ cat <<EOD
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public ValueValidator<Object, X> untyped() {
+	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
 		if (this.valueType == Object.class || this.valueType == Enum.class) {
-			return Arguments1Validator.super.untyped();
+			return Arguments1Validator.super.untyped(reader);
 		}
 		final ValueDescription.Value description = ValueDescription.Value.of(this.valueType, this.validator);
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
+			.untyped(reader)
 			.prefixed(description.name())
 			.andThen(this)
 			.describedAs(description);

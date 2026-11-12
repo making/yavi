@@ -137,14 +137,23 @@ The input type must be known when the validator is built. `fromMap` and `untyped
 for a lambda or an `_enum` / `_object` argument added without a type; give it with
 `untyped(type)`, `_enum(name, type)` or `_object(name, type)`.
 
+Zod reads JavaScript values, which is what `JSON.parse` returns. In Java a parsed JSON
+document is a map or the tree model of a library. `untyped(reader)` binds a validator to
+an `InputReader` of such a model, so the tree is validated without being copied to a map:
+
+```java
+ValueValidator<JsonNode, User> nodeValidator = userValidator.untyped(JsonNodeReader.INSTANCE);
+```
+
+The README shows the reader for Jackson.
+
 ### Unions
 
 `z.union` and `ValueValidator.anyOf` try the alternatives in order and report the failures
 of all of them (`object.anyOf` followed by the violations of every alternative).
 `DiscriminatedUnionValidator` applies only the alternative selected by the discriminator,
 like `z.discriminatedUnion`. An alternative does not have to define the discriminator as
-`z.literal(...)`: the key is removed from the map given to an alternative that does not
-define it.
+`z.literal(...)`: the key is hidden from an alternative that does not define it.
 
 ### Errors
 
@@ -160,5 +169,3 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
   (use the `equalTo` / `oneOf` constraints).
 * Asynchronous refinements and transforms.
 * More than 16 properties with the builders; use `MapInputValidator.of(properties, mapper)`.
-* A tree model of a JSON library as input. Convert it first:
-  `userValidator.untyped().compose(node -> objectMapper.convertValue(node, Object.class))`.
