@@ -12,20 +12,24 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EmojiTest {
+class EmojiConstraintTest {
+
+	private static final int FIRST_SKIN_TONE = 0x1F3FB;
+
+	private static final int LAST_SKIN_TONE = 0x1F3FF;
 
 	@Test
 	void elf() {
 		String emoji = "🧝🧝🏻🧝🏼🧝🏽🧝🏾🧝🏿";
 		assertThat(emoji.length()).isEqualTo(22);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+		assertThat(EmojiConstraint.graphemeClusterCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
 	void emoji() {
 		String emoji = "I am 👱🏿";
 		assertThat(emoji.length()).isEqualTo(9);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+		assertThat(EmojiConstraint.graphemeClusterCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
@@ -47,21 +51,21 @@ class EmojiTest {
 	void family() {
 		String emoji = "👩‍❤️‍💋‍👩👪👩‍👩‍👧‍👦👨‍👦‍👦👨‍👧👩‍👧";
 		assertThat(emoji.length()).isEqualTo(42);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(6);
+		assertThat(EmojiConstraint.graphemeClusterCount(emoji)).isEqualTo(6);
 	}
 
 	@Test
 	void heart() {
 		String emoji = "❤️💙💚💛🧡💜🖤";
 		assertThat(emoji.length()).isEqualTo(14);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(7);
+		assertThat(EmojiConstraint.graphemeClusterCount(emoji)).isEqualTo(7);
 	}
 
 	@Test
 	void subdivisionFlags() {
 		String emoji = "🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢󠁷󠁬󠁳󠁿";
 		assertThat(emoji.length()).isEqualTo(42);
-		assertThat(Emoji.bestEffortCount(emoji)).isEqualTo(3);
+		assertThat(EmojiConstraint.graphemeClusterCount(emoji)).isEqualTo(3);
 	}
 
 	void verifyEmojiAll(String file) throws Exception {
@@ -78,8 +82,13 @@ class EmojiTest {
 				int[] codePoints = Arrays.stream(line.split(";")[0].trim().split(" "))
 					.mapToInt(x -> Integer.parseInt(x, 16))
 					.toArray();
+				// A bare skin tone modifier is not an emoji on its own and extends the
+				// preceding space into the same grapheme cluster.
+				if (codePoints.length == 1 && codePoints[0] >= FIRST_SKIN_TONE && codePoints[0] <= LAST_SKIN_TONE) {
+					continue;
+				}
 				String emoji = new String(codePoints, 0, codePoints.length);
-				int len = Emoji.bestEffortCount("This is " + emoji + ".");
+				int len = EmojiConstraint.graphemeClusterCount("This is " + emoji + ".");
 				assertThat(len).describedAs(emoji + " L" + n).isEqualTo(10);
 
 			}

@@ -503,7 +503,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * Returns a constraint that measures the value in emoji instead of code points.
+	 * Returns a constraint that measures the value in extended grapheme clusters instead
+	 * of code points. An emoji sequence such as a ZWJ sequence counts as one.
 	 * @return the emoji constraint, configured with the current normalizer and variation
 	 * selector settings
 	 */
