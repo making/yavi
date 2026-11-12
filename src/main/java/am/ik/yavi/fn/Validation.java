@@ -48,22 +48,14 @@ import static java.util.stream.Collectors.toList;
  * @param <T> type of the value in the case of success
  * @since 0.6.0
  */
-public abstract class Validation<E, T> implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Creates a validation result. Intended for subclasses.
-	 */
-	public Validation() {
-	}
+public interface Validation<E, T> extends Serializable {
 
 	/**
 	 * Returns whether this validation is successful.
 	 * @return {@code true} if this validation holds a value, {@code false} if it holds
 	 * errors
 	 */
-	public abstract boolean isValid();
+	boolean isValid();
 
 	/**
 	 * Returns the value of this validation.
@@ -75,7 +67,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws NoSuchElementException if this validation is a failure or the value is
 	 * {@code null}
 	 */
-	public abstract T value();
+	T value();
 
 	/**
 	 * Returns the value of this validation, which may be {@code null}.
@@ -83,14 +75,14 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws NoSuchElementException if this validation is a failure
 	 * @since 0.8.3
 	 */
-	@Nullable public abstract T valueNullable();
+	@Nullable T valueNullable();
 
 	/**
 	 * Returns the errors of this validation. The returned list is unmodifiable.
 	 * @return the errors of a failed validation
 	 * @throws NoSuchElementException if this validation is successful
 	 */
-	public abstract List<E> errors();
+	List<E> errors();
 
 	/**
 	 * Returns a validation holding the result of applying the given function to the value
@@ -102,7 +94,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @return the mapped successful validation or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	public <T2, V extends Validation<E, T2>> V map(Function<? super T, ? extends T2> mapper) {
+	default <T2, V extends Validation<E, T2>> V map(Function<? super T, ? extends T2> mapper) {
 		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (V) this;
 	}
 
@@ -117,7 +109,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @return the validation produced by the mapper or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	public <T2, V extends Validation<E, T2>> V flatMap(Function<? super T, V> mapper) {
+	default <T2, V extends Validation<E, T2>> V flatMap(Function<? super T, V> mapper) {
 		return isValid() ? mapper.apply(value()) : (V) this;
 	}
 
@@ -128,7 +120,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param consumer consumer of the value of a successful validation
 	 * @return this validation
 	 */
-	public Validation<E, T> peek(Consumer<? super T> consumer) {
+	default Validation<E, T> peek(Consumer<? super T> consumer) {
 		if (isValid()) {
 			consumer.accept(value());
 		}
@@ -144,7 +136,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @return the mapped failure or this successful validation
 	 */
 	@SuppressWarnings("unchecked")
-	public <E2> Validation<E2, T> mapErrors(Function<? super List<E>, ? extends List<E2>> errorsMapper) {
+	default <E2> Validation<E2, T> mapErrors(Function<? super List<E>, ? extends List<E2>> errorsMapper) {
 		return isValid() ? (Validation<E2, T>) this : Validation.failure(errorsMapper.apply(errors()));
 	}
 
@@ -158,7 +150,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @since 0.8.2
 	 */
 	@SuppressWarnings("unchecked")
-	public <E2> Validation<E2, T> mapError(Function<? super E, ? extends E2> errorMapper) {
+	default <E2> Validation<E2, T> mapError(Function<? super E, ? extends E2> errorMapper) {
 		return isValid() ? (Validation<E2, T>) this
 				: Validation.failure(errors().stream().map(errorMapper).collect(toList()));
 	}
@@ -173,7 +165,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <T2> type of the mapped value
 	 * @return the mapped successful validation or the mapped failure
 	 */
-	public <E2, T2> Validation<E2, T2> bimap(Function<? super List<E>, ? extends List<E2>> errorsMapper,
+	default <E2, T2> Validation<E2, T2> bimap(Function<? super List<E>, ? extends List<E2>> errorsMapper,
 			Function<? super T, ? extends T2> mapper) {
 		return isValid() ? Validation.success(mapper.apply(value())) : Validation.failure(errorsMapper.apply(errors()));
 	}
@@ -185,7 +177,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param consumer consumer of the errors of a failed validation
 	 * @return this validation
 	 */
-	public Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
+	default Validation<E, T> peekErrors(Consumer<? super List<E>> consumer) {
 		if (!isValid()) {
 			consumer.accept(errors());
 		}
@@ -202,7 +194,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws NoSuchElementException if this validation is successful and its value is
 	 * {@code null}
 	 */
-	public <X extends Throwable> T orElseThrow(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+	default <X extends Throwable> T orElseThrow(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (isValid()) {
 			return value();
 		}
@@ -219,7 +211,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws X if this validation is a failure
 	 * @since 0.10.0
 	 */
-	public <X extends Throwable> void throwIfInvalid(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
+	default <X extends Throwable> void throwIfInvalid(Function<? super List<E>, ? extends X> exceptionMapper) throws X {
 		if (!isValid()) {
 			throw exceptionMapper.apply(errors());
 		}
@@ -231,7 +223,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param other function producing an alternative value from the errors
 	 * @return the value of a successful validation or the alternative value
 	 */
-	public T orElseGet(Function<? super List<E>, ? extends T> other) {
+	default T orElseGet(Function<? super List<E>, ? extends T> other) {
 		if (isValid()) {
 			return value();
 		}
@@ -249,33 +241,33 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <U> type of the result
 	 * @return the result produced by the applied mapper
 	 */
-	public <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
+	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
 	/**
-	 * Returns a successful validation holding the given value. Subclasses can override
-	 * this to return their own type, as {@link am.ik.yavi.core.Validated} does.
+	 * Returns a successful validation holding the given value. Implementations can
+	 * override this to return their own type, as {@link am.ik.yavi.core.Validated} does.
 	 * @param value the value, possibly {@code null}
 	 * @param <U> type of the value
 	 * @param <V> the concrete validation type returned
 	 * @return a successful validation
 	 */
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<E, U>> V yieldSuccess(@Nullable U value) {
+	default <U, V extends Validation<E, U>> V yieldSuccess(@Nullable U value) {
 		return (V) Validation.success(value);
 	}
 
 	/**
-	 * Returns a failed validation holding the given errors. Subclasses can override this
-	 * to return their own type, as {@link am.ik.yavi.core.Validated} does.
+	 * Returns a failed validation holding the given errors. Implementations can override
+	 * this to return their own type, as {@link am.ik.yavi.core.Validated} does.
 	 * @param errors the errors
 	 * @param <U> type of the value in the case of success
 	 * @param <V> the concrete validation type returned
 	 * @return a failed validation
 	 */
 	@SuppressWarnings("unchecked")
-	protected <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
+	default <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
 		return (V) Validation.failure(errors);
 	}
 
@@ -294,7 +286,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result or the accumulated errors
 	 */
-	public <U, V extends Validation<E, U>> V apply(
+	default <U, V extends Validation<E, U>> V apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
@@ -328,7 +320,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <T2> type of the value of the given validation
 	 * @return the combination of the two validations
 	 */
-	public <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
+	default <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
 		return new Combining2<>(this, validation);
 	}
 
@@ -339,7 +331,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <T> type of the value
 	 * @return a successful validation
 	 */
-	public static <E, T> Validation<E, T> success(@Nullable T value) {
+	static <E, T> Validation<E, T> success(@Nullable T value) {
 		return new Success<>(value);
 	}
 
@@ -352,7 +344,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @return a failed validation
 	 * @throws IllegalArgumentException if {@code errors} is {@code null} or empty
 	 */
-	public static <E, T> Validation<E, T> failure(List<E> errors) {
+	static <E, T> Validation<E, T> failure(List<E> errors) {
 		return new Failure<>(errors);
 	}
 
@@ -365,7 +357,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws IllegalArgumentException if no error is given
 	 */
 	@SuppressWarnings("unchecked")
-	public static <E, T> Validation<E, T> failure(E... errors) {
+	static <E, T> Validation<E, T> failure(E... errors) {
 		return new Failure<>(Arrays.asList(errors));
 	}
 
@@ -380,7 +372,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <T> type of the value
 	 * @since 0.6.0
 	 */
-	public static class Success<E, T> extends Validation<E, T> {
+	class Success<E, T> implements Validation<E, T> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -443,7 +435,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @param <T> type of the value in the case of success
 	 * @since 0.6.0
 	 */
-	public static class Failure<E, T> extends Validation<E, T> {
+	class Failure<E, T> implements Validation<E, T> {
 
 		private static final long serialVersionUID = 1L;
 

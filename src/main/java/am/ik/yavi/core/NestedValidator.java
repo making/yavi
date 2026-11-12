@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -34,30 +35,36 @@ public class NestedValidator<T, N> implements Validatable<T> {
 
 	private final String prefix;
 
+	private final List<PathSegment> prefixPath;
+
 	/**
 	 * Creates a validator for a nested value.
 	 *
 	 * <p>
 	 * If the given validator is a {@link Validator}, the prefix is applied to it with
 	 * {@link Validator#prefixed(String)}. If it is a {@code NestedValidator}, the given
-	 * prefix replaces its prefix.
+	 * prefix and path replace its prefix and path.
 	 * @param nested function that extracts the nested value from the target
 	 * @param validator validator applied to the nested value
 	 * @param prefix prefix for the names of the reported violations
+	 * @param prefixPath prefix for the paths of the reported violations
 	 */
-	public NestedValidator(Function<T, @Nullable N> nested, Validatable<N> validator, String prefix) {
+	public NestedValidator(Function<T, @Nullable N> nested, Validatable<N> validator, String prefix,
+			List<PathSegment> prefixPath) {
 		this.nested = nested;
 		this.prefix = prefix;
-		this.validator = prefixedValidatorIfNeeded(validator, prefix);
+		this.prefixPath = prefixPath;
+		this.validator = prefixedValidatorIfNeeded(validator, prefix, prefixPath);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Validatable<N> prefixedValidatorIfNeeded(Validatable<N> validator, String prefix) {
+	private Validatable<N> prefixedValidatorIfNeeded(Validatable<N> validator, String prefix,
+			List<PathSegment> prefixPath) {
 		if (validator instanceof NestedValidator) {
 			final NestedValidator<?, N> nestedValidator = (NestedValidator<?, N>) validator;
-			return new NestedValidator(nestedValidator.nested, nestedValidator.validator, prefix);
+			return new NestedValidator(nestedValidator.nested, nestedValidator.validator, prefix, prefixPath);
 		}
-		return (validator instanceof Validator) ? ((Validator<N>) validator).prefixed(prefix) : validator;
+		return (validator instanceof Validator) ? ((Validator<N>) validator).prefixed(prefix, prefixPath) : validator;
 	}
 
 	/**
@@ -88,6 +95,15 @@ public class NestedValidator<T, N> implements Validatable<T> {
 	}
 
 	/**
+	 * Returns the prefix applied to violation paths.
+	 * @return the path prefix
+	 * @since 0.18.0
+	 */
+	public List<PathSegment> getPrefixPath() {
+		return this.prefixPath;
+	}
+
+	/**
 	 * Returns a new nested validator whose nested validator is in the specified fail-fast
 	 * mode.
 	 * @param failFast whether to enable fail fast mode
@@ -97,7 +113,7 @@ public class NestedValidator<T, N> implements Validatable<T> {
 	@Override
 	public Validatable<T> failFast(boolean failFast) {
 		final Validatable<N> validatable = this.validator.failFast(failFast);
-		return new NestedValidator<>(this.nested, validatable, prefix);
+		return new NestedValidator<>(this.nested, validatable, this.prefix, this.prefixPath);
 	}
 
 	/**

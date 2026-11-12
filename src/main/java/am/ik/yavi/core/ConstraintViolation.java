@@ -7,7 +7,10 @@ package am.ik.yavi.core;
 import org.jspecify.annotations.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
@@ -70,7 +73,16 @@ public class ConstraintViolation {
 	private final String name;
 
 	/**
+	 * The structured path to the value that this constraint violation applies to. Unlike
+	 * the name, it does not depend on the message key separator.
+	 */
+	private final List<PathSegment> path;
+
+	/**
 	 * Creates a new constraint violation.
+	 *
+	 * <p>
+	 * The {@link #path()} of the violation is a single property segment holding the name.
 	 * @param name the field or property name that this constraint violation applies to
 	 * @param messageKey the id used to look up localized messages
 	 * @param defaultMessageFormat the default message format to use when no localized
@@ -85,7 +97,14 @@ public class ConstraintViolation {
 	@Deprecated
 	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, Object @Nullable [] args,
 			@Nullable MessageFormatter messageFormatter, @Nullable Locale locale) {
+		this(name, null, messageKey, defaultMessageFormat, args, messageFormatter, locale);
+	}
+
+	private ConstraintViolation(String name, @Nullable List<PathSegment> path, String messageKey,
+			String defaultMessageFormat, Object @Nullable [] args, @Nullable MessageFormatter messageFormatter,
+			@Nullable Locale locale) {
 		this.name = name;
+		this.path = path == null ? PathSegment.of(name) : path;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		if (args != null) {
@@ -203,6 +222,23 @@ public class ConstraintViolation {
 	}
 
 	/**
+	 * Returns the structured path to the value that this constraint violation applies to.
+	 *
+	 * <p>
+	 * The path carries the same information as {@link #name()} as a list of segments. For
+	 * example the name {@code forms[0].street} corresponds to the path
+	 * {@code [Property("forms"), Index(0), Property("street")]}. It is built where the
+	 * violation is created, not by parsing the name, so it is independent of the message
+	 * key separator. A violation on the validated value itself, which has an empty name,
+	 * has an empty path.
+	 * @return the unmodifiable path
+	 * @since 0.18.0
+	 */
+	public List<PathSegment> path() {
+		return this.path;
+	}
+
+	/**
 	 * Returns a string representation of this constraint violation.
 	 *
 	 * <p>
@@ -233,29 +269,46 @@ public class ConstraintViolation {
 	 * Returns a new ConstraintViolation with the name transformed using the provided
 	 * function. If the arguments array is not empty, the first element will be updated
 	 * with the new name.
+	 *
+	 * <p>
+	 * The structure of an arbitrary new name is unknown, so the {@link #path()} of the
+	 * returned violation is a single property segment holding the new name. The path is
+	 * kept if the name does not change.
 	 * @param rename the function to transform the current name
 	 * @return a new ConstraintViolation with the renamed name
 	 * @since 0.7.0
 	 */
 	public ConstraintViolation rename(Function<? super String, String> rename) {
 		final String newName = rename.apply(name);
-		final Object[] newArgs = this.args().clone();
-		if (newArgs.length > 0) {
-			newArgs[0] = newName;
-		}
-		return new ConstraintViolation(newName, this.messageKey, this.defaultMessageFormat, newArgs,
-				this.messageFormatter, this.locale);
+		return this.relocate(newName, newName.equals(this.name) ? this.path : PathSegment.of(newName));
 	}
 
 	/**
 	 * Returns a new ConstraintViolation with the name indexed by appending "[index]" to
-	 * the current name.
+	 * the current name. An index segment is appended to the {@link #path()} accordingly.
 	 * @param index the index to append to the name
 	 * @return a new ConstraintViolation with the indexed name
 	 * @since 0.7.0
 	 */
 	public ConstraintViolation indexed(int index) {
-		return this.rename(name -> name + "[" + index + "]");
+		return this.relocate(this.name + "[" + index + "]",
+				PathSegment.concat(this.path, List.of(new PathSegment.Index(index))));
+	}
+
+	/**
+	 * Returns a new ConstraintViolation with the given name and path. If the arguments
+	 * array is not empty, the first element will be updated with the new name.
+	 * @param newName the new flat name
+	 * @param newPath the new structured path
+	 * @return a new ConstraintViolation with the given name and path
+	 */
+	ConstraintViolation relocate(String newName, List<PathSegment> newPath) {
+		final Object[] newArgs = this.args().clone();
+		if (newArgs.length > 0) {
+			newArgs[0] = newName;
+		}
+		return new ConstraintViolation(newName, newPath, this.messageKey, this.defaultMessageFormat, newArgs,
+				this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -281,6 +334,9 @@ public class ConstraintViolation {
 
 		/** The field name that the constraint violation applies to */
 		private @Nullable String name;
+
+		/** The structured path to the value that the constraint violation applies to */
+		private @Nullable List<PathSegment> path;
 
 		/** The message id for internationalization */
 		private @Nullable String messageKey;
@@ -390,6 +446,18 @@ public class ConstraintViolation {
 		}
 
 		/**
+		 * Sets the structured path to the value that the constraint violation applies to.
+		 * If not specified, the path is a single property segment holding the name.
+		 * @param path the structured path
+		 * @return this builder for method chaining
+		 * @since 0.18.0
+		 */
+		public Builder path(List<PathSegment> path) {
+			this.path = Collections.unmodifiableList(new ArrayList<>(path));
+			return this;
+		}
+
+		/**
 		 * Sets the message formatter to be used for message formatting. If not specified,
 		 * a default {@link SimpleMessageFormatter} will be used.
 		 * @param messageFormatter the message formatter to use
@@ -417,8 +485,9 @@ public class ConstraintViolation {
 		 * @return a new {@link ConstraintViolation} instance
 		 */
 		public ConstraintViolation build() {
-			return new ConstraintViolation(Objects.requireNonNull(this.name), Objects.requireNonNull(this.messageKey),
-					Objects.requireNonNull(this.defaultMessageFormat), this.args, this.messageFormatter, this.locale);
+			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path,
+					Objects.requireNonNull(this.messageKey), Objects.requireNonNull(this.defaultMessageFormat),
+					this.args, this.messageFormatter, this.locale);
 		}
 
 	}
@@ -630,6 +699,21 @@ public class ConstraintViolation {
 			 * @return this builder for method chaining
 			 */
 			Optionals argsWithPrependedNameAndAppendedViolatedValue(Object[] args, ViolatedValue violatedValue);
+
+			/**
+			 * Sets the structured path to the value that the constraint violation applies
+			 * to.
+			 *
+			 * <p>
+			 * The name stays the flat representation used in messages; the path is the
+			 * machine-readable counterpart exposed by {@link ConstraintViolation#path()}.
+			 * If not specified, the path is a single property segment holding the name,
+			 * or an empty path if the name is empty.
+			 * @param path the structured path
+			 * @return this builder for method chaining
+			 * @since 0.18.0
+			 */
+			Optionals path(List<PathSegment> path);
 
 			/**
 			 * Sets the message formatter to be used for message formatting.

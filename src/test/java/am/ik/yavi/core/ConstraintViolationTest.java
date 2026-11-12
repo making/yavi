@@ -6,6 +6,7 @@ package am.ik.yavi.core;
 
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
+import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
@@ -132,6 +133,9 @@ class ConstraintViolationTest {
 		assertThat(renamed.name()).isEqualTo("user.username");
 		assertThat(renamed.args()[0]).isEqualTo("user.username");
 		assertThat(renamed.message()).contains("user.username");
+		// The structure of a renamed violation is unknown
+		assertThat(original.path()).containsExactly(new PathSegment.Property("username"));
+		assertThat(renamed.path()).containsExactly(new PathSegment.Property("user.username"));
 	}
 
 	@Test
@@ -146,6 +150,7 @@ class ConstraintViolationTest {
 			.messageKey(messageKey)
 			.defaultMessageFormat(defaultMessage)
 			.argsWithPrependedName()
+			.path(List.of(new PathSegment.Property("order"), new PathSegment.Property("items")))
 			.build();
 
 		ConstraintViolation indexed = original.indexed(3);
@@ -153,6 +158,8 @@ class ConstraintViolationTest {
 		assertThat(indexed.name()).isEqualTo("items[3]");
 		assertThat(indexed.args()[0]).isEqualTo("items[3]");
 		assertThat(indexed.message()).isEqualTo("items[3] must not be empty");
+		assertThat(indexed.path()).containsExactly(new PathSegment.Property("order"), new PathSegment.Property("items"),
+				new PathSegment.Index(3));
 	}
 
 }

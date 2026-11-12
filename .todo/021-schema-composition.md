@@ -4,7 +4,7 @@ Difficulty: High
 
 ## Background
 
-After the result/issue model in 020, the next gap against Zod is schema composition.
+After the sealed `Validated` and the violation path in 020, the next gap against Zod is schema composition.
 The current YAVI APIs are:
 
 - `am.ik.yavi.core.ValueValidator<T, X>` with `map`, `andThen`, `compose`, `indexed`,
@@ -72,14 +72,47 @@ ValueValidator<Object, Shape> shape = S.or(circleSchema, squareSchema);
   positional constructor cannot omit an argument, so an "optional field" is mostly
   meaningful for 022's `Map` input and for `null` handling.
 - Semantics of `or`: how to aggregate the failures of all branches (Zod reports a
-  union-level issue with nested issues) and how to keep messages readable.
+  union-level error with the nested errors of each branch) and how to keep messages readable.
 - Default values: whether a default applies to a missing key only or also to `null`.
 - Naming: `_optional` / `_default` versus combinators on the value schema.
 
+## What 020 provides
+
+- `Validated` is a sealed interface with the records `Validated.Valid<T>(T value)` and
+  `Validated.Invalid<T>(ConstraintViolations errors)`. Every validator that returns a
+  `Validated` can be used in an exhaustive `switch` with record patterns; there is no
+  separate result type and no conversion step. `Validation` became an interface for
+  this. `Valid.value()` returns `null` for a `null` success (it threw before), which is
+  what a `nullable` combinator needs.
+- `ConstraintViolation.path()` is a `List<PathSegment>` (`PathSegment.Property` /
+  `PathSegment.Index`) built where the violation is created. There is no separate issue
+  type: a `ConstraintViolation` with its `path()`, `messageKey()` and `message()` is the
+  machine-readable error.
+- `ValidatorBuilder.nest` / `forEach`, `Validator.prefixed` and
+  `ConstraintViolation.indexed` already extend the path. A violation created outside
+  `Validator` sets it with `ConstraintViolation.builder()....path(...)`.
+- Prefixing the violations of an arbitrary `ValueValidator` with a property (needed by
+  `_object(name, schema)`) has no public operation yet: `ConstraintViolation.relocate`
+  is package-private because the flat name needs the message key separator. Expose a
+  path-aware operation instead of using `rename`, which resets the path to one segment.
+- A map key needs no new `PathSegment`; use `Property`.
+
+## Vocabulary
+
+020 settled on YAVI's existing terms instead of Zod's, and this todo should too. The
+names in "Proposed API" are placeholders for the shape, not decisions:
+
+- Prefer `ValueValidator<T, X>` over a new `Schema` type, and `validate` / `validated`
+  over `safeParse` / `parse`.
+- Errors are `ConstraintViolation`s identified by `messageKey()`. Report an `or` failure
+  as violations (for example one violation with a dedicated message key plus the branch
+  violations), not as a new error type.
+- Name new combinators after existing YAVI conventions where one exists (for example
+  `constraintOnTarget` for a cross-field rule) before borrowing `refine` and the like.
+
 ## Notes
 
-- Depends on 020: the path and issue model must exist before composition can report
-  prefixed paths.
+- Depends on 020 (done).
 - Keep the existing `Yavi.arguments()` call sites source-compatible.
 - This todo is the largest of the sequence; split it if the generator change grows
   beyond a reasonable review size.

@@ -7,6 +7,7 @@ package am.ik.yavi.core;
 import am.ik.yavi.fn.Pair;
 import am.ik.yavi.message.MessageFormatter;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +72,8 @@ public class Validator<T> implements Validatable<T> {
 
 	private final String prefix;
 
+	private final List<PathSegment> prefixPath;
+
 	private final boolean failFast;
 
 	private final ApplicativeValidator<T> applicativeValidator = Validatable.super.applicative();
@@ -117,13 +120,13 @@ public class Validator<T> implements Validatable<T> {
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators, MessageFormatter messageFormatter,
 			boolean failFast) {
 		this(messageKeySeparator, predicatesList, collectionValidators, conditionalValidators, messageFormatter,
-				failFast, "");
+				failFast, "", List.of());
 	}
 
 	private Validator(String messageKeySeparator, List<ConstraintPredicates<T, ?>> predicatesList,
 			List<CollectionValidator<T, ?, ?>> collectionValidators,
 			List<Pair<ConstraintCondition<T>, Validatable<T>>> conditionalValidators, MessageFormatter messageFormatter,
-			boolean failFast, String prefix) {
+			boolean failFast, String prefix, List<PathSegment> prefixPath) {
 		this.messageKeySeparator = messageKeySeparator;
 		this.predicatesList = Collections.unmodifiableList(predicatesList);
 		this.collectionValidators = Collections.unmodifiableList(collectionValidators);
@@ -132,6 +135,7 @@ public class Validator<T> implements Validatable<T> {
 		this.failFast = failFast;
 		this.prefix = (prefix == null || prefix.isEmpty() || prefix.endsWith(this.messageKeySeparator)) ? prefix
 				: prefix + this.messageKeySeparator;
+		this.prefixPath = prefixPath;
 	}
 
 	/**
@@ -141,7 +145,8 @@ public class Validator<T> implements Validatable<T> {
 	 * This is useful when the validator is applied to an object nested in another object,
 	 * so that violations identify the path to the invalid property. The prefix is joined
 	 * to the names with the configured message key separator. An empty prefix leaves the
-	 * names unchanged.
+	 * names unchanged. The prefix becomes a single leading property segment of the
+	 * violation paths.
 	 *
 	 * <p>
 	 * Example: <pre>{@code
@@ -155,8 +160,15 @@ public class Validator<T> implements Validatable<T> {
 	 * @return a new validator instance with the specified prefix
 	 */
 	public Validator<T> prefixed(String prefix) {
+		final boolean separated = !this.messageKeySeparator.isEmpty() && prefix.endsWith(this.messageKeySeparator);
+		final String name = separated ? prefix.substring(0, prefix.length() - this.messageKeySeparator.length())
+				: prefix;
+		return this.prefixed(prefix, PathSegment.of(name));
+	}
+
+	Validator<T> prefixed(String prefix, List<PathSegment> prefixPath) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList, this.collectionValidators,
-				this.conditionalValidators, this.messageFormatter, this.failFast, prefix);
+				this.conditionalValidators, this.messageFormatter, this.failFast, prefix, prefixPath);
 	}
 
 	/**
@@ -180,7 +192,7 @@ public class Validator<T> implements Validatable<T> {
 	@Override
 	public Validator<T> failFast(boolean failFast) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList, this.collectionValidators,
-				this.conditionalValidators, this.messageFormatter, failFast, this.prefix);
+				this.conditionalValidators, this.messageFormatter, failFast, this.prefix, this.prefixPath);
 	}
 
 	/**
@@ -255,7 +267,7 @@ public class Validator<T> implements Validatable<T> {
 	 */
 	@Override
 	public ConstraintViolations validate(T target, Locale locale, ConstraintContext constraintContext) {
-		return this.validate(target, "", -1, locale, constraintContext);
+		return this.validate(target, "", List.of(), -1, locale, constraintContext);
 	}
 
 	/**
@@ -293,9 +305,20 @@ public class Validator<T> implements Validatable<T> {
 		return collectionName + "[" + index + "]" + this.messageKeySeparator + name;
 	}
 
+	private List<PathSegment> indexedPath(List<PathSegment> path, List<PathSegment> collectionPath, int index) {
+		if (index < 0) {
+			return path;
+		}
+		final List<PathSegment> indexed = new ArrayList<>(collectionPath.size() + 1 + path.size());
+		indexed.addAll(collectionPath);
+		indexed.add(new PathSegment.Index(index));
+		indexed.addAll(path);
+		return Collections.unmodifiableList(indexed);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ConstraintViolations validate(T target, String collectionName, int index, Locale locale,
-			ConstraintContext constraintContext) {
+	private ConstraintViolations validate(T target, String collectionName, List<PathSegment> collectionPath, int index,
+			Locale locale, ConstraintContext constraintContext) {
 		if (target == null) {
 			throw new IllegalArgumentException("target must not be null");
 		}
@@ -320,11 +343,14 @@ public class Validator<T> implements Validatable<T> {
 					final Supplier<Object[]> argsSupplier = constraintPredicate.args();
 					final Object[] args = (argsSupplier instanceof ViolatedArguments)
 							? ((ViolatedArguments) argsSupplier).arguments(violatedValue.value()) : argsSupplier.get();
+					final List<PathSegment> path = PathSegment.concat(this.prefixPath,
+							this.indexedPath(predicates.path(), collectionPath, index));
 					final ConstraintViolation violation = ConstraintViolation.builder()
 						.name(name)
 						.messageKey(constraintPredicate.messageKey())
 						.defaultMessageFormat(constraintPredicate.defaultMessageFormat())
 						.argsWithPrependedNameAndAppendedViolatedValue(args, violatedValue)
+						.path(path)
 						.messageFormatter(this.messageFormatter)
 						.locale(locale)
 						.build();
@@ -341,17 +367,20 @@ public class Validator<T> implements Validatable<T> {
 			if (collection != null) {
 				final Validator validator = this.failFast ? collectionValidator.validator().failFast(true)
 						: collectionValidator.validator();
+				final String nestedName = this.indexedName(collectionValidator.name(), collectionName, index);
+				final List<PathSegment> nestedPath = this.indexedPath(collectionValidator.path(), collectionPath,
+						index);
 				int i = 0;
 				for (Object element : collection) {
-					final String nestedName = this.indexedName(collectionValidator.name(), collectionName, index);
 					if (element != null) {
-						final ConstraintViolations v = validator.validate(element, nestedName, i++, locale,
+						final ConstraintViolations v = validator.validate(element, nestedName, nestedPath, i++, locale,
 								constraintContext);
 						violations.addAll(v);
 					}
 					else {
+						final List<PathSegment> path = this.indexedPath(List.of(), nestedPath, i);
 						final String name = this.indexedName("", nestedName, i++);
-						final ConstraintViolation v = notNullViolation(name, locale);
+						final ConstraintViolation v = notNullViolation(name, path, locale);
 						violations.add(v);
 					}
 					if (!violations.isEmpty() && (this.failFast || validator.isFailFast())) {
@@ -367,7 +396,8 @@ public class Validator<T> implements Validatable<T> {
 				final ConstraintViolations constraintViolations = validator.validate(target, locale, constraintContext);
 				for (ConstraintViolation violation : constraintViolations) {
 					final ConstraintViolation renamed = violation
-						.rename(name -> this.prefix + this.indexedName(name, collectionName, index));
+						.relocate(this.prefix + this.indexedName(violation.name(), collectionName, index), PathSegment
+							.concat(this.prefixPath, this.indexedPath(violation.path(), collectionPath, index)));
 					violations.add(renamed);
 					if (!violations.isEmpty() && (this.failFast || validator.isFailFast())) {
 						return violations;
@@ -378,12 +408,13 @@ public class Validator<T> implements Validatable<T> {
 		return violations;
 	}
 
-	private ConstraintViolation notNullViolation(String name, Locale locale) {
+	private ConstraintViolation notNullViolation(String name, List<PathSegment> path, Locale locale) {
 		return ConstraintViolation.builder()
 			.name(name)
 			.messageKey(OBJECT_NOT_NULL.messageKey())
 			.defaultMessageFormat(OBJECT_NOT_NULL.defaultMessageFormat())
 			.argsWithPrependedName()
+			.path(path)
 			.messageFormatter(this.messageFormatter)
 			.locale(locale)
 			.build();
