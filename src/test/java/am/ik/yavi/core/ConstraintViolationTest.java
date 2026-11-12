@@ -139,27 +139,21 @@ class ConstraintViolationTest {
 	}
 
 	@Test
-	void testIndexed() {
-		// Test indexed method
-		String name = "items";
-		String messageKey = "notEmpty";
-		String defaultMessage = "{0} must not be empty";
-
+	void testPrefixed() {
 		ConstraintViolation original = ConstraintViolation.builder()
-			.name(name)
-			.messageKey(messageKey)
-			.defaultMessageFormat(defaultMessage)
+			.name("name")
+			.messageKey("notEmpty")
+			.defaultMessageFormat("{0} must not be empty")
 			.argsWithPrependedName()
-			.path(List.of(new PathSegment.Property("order"), new PathSegment.Property("items")))
 			.build();
 
-		ConstraintViolation indexed = original.indexed(3);
+		ConstraintViolation prefixed = original.prefixed(3).prefixed("items").prefixed(0).prefixed("");
 
-		assertThat(indexed.name()).isEqualTo("items[3]");
-		assertThat(indexed.args()[0]).isEqualTo("items[3]");
-		assertThat(indexed.message()).isEqualTo("items[3] must not be empty");
-		assertThat(indexed.path()).containsExactly(new PathSegment.Property("order"), new PathSegment.Property("items"),
-				new PathSegment.Index(3));
+		assertThat(prefixed.name()).isEqualTo("[0].items[3].name");
+		assertThat(prefixed.args()[0]).isEqualTo("[0].items[3].name");
+		assertThat(prefixed.message()).isEqualTo("[0].items[3].name must not be empty");
+		assertThat(prefixed.path()).containsExactly(new PathSegment.Index(0), new PathSegment.Property("items"),
+				new PathSegment.Index(3), new PathSegment.Property("name"));
 	}
 
 }

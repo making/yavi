@@ -465,22 +465,10 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	}
 
 	/**
-	 * Returns a validator that appends {@code [index]} to every violation name, so that
-	 * violations of elements in a collection can be told apart.
-	 * @param index the index to append to violation names
-	 * @return a validator with indexed violation names
-	 * @since 0.7.0
-	 */
-	@Override
-	default Arguments1Validator<A1, X> indexed(int index) {
-		return Arguments1Validator.from(ValueValidator.super.indexed(index));
-	}
-
-	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * collection created by the given factory. Violations of all failing elements are
-	 * accumulated.
+	 * validator and collects the validated values into a collection created by the given
+	 * factory. The violations of an element are located under its index ({@code [0]},
+	 * {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @param factory supplier of the collection that receives the validated values
 	 * @param <C> the type of the resulting collection
 	 * @return a validator for iterables
@@ -492,8 +480,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * {@link List}.
+	 * validator and collects the validated values into a {@link List}. The violations of
+	 * an element are located under its index ({@code [0]}, {@code [0].name}) and the
+	 * violations of all failing elements are accumulated.
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
@@ -503,8 +492,9 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 
 	/**
 	 * Returns a validator that validates every element of the input iterable with this
-	 * validator indexed by its position and collects the validated values into a
-	 * {@link Set} that preserves the iteration order.
+	 * validator and collects the validated values into a {@link Set} that preserves the
+	 * iteration order. The violations of an element are located under its index ({@code
+	 * [0]}, {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */

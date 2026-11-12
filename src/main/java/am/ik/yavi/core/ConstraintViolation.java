@@ -284,18 +284,6 @@ public class ConstraintViolation {
 	}
 
 	/**
-	 * Returns a new ConstraintViolation with the name indexed by appending "[index]" to
-	 * the current name. An index segment is appended to the {@link #path()} accordingly.
-	 * @param index the index to append to the name
-	 * @return a new ConstraintViolation with the indexed name
-	 * @since 0.7.0
-	 */
-	public ConstraintViolation indexed(int index) {
-		return this.relocate(this.name + "[" + index + "]",
-				PathSegment.concat(this.path, List.of(new PathSegment.Index(index))));
-	}
-
-	/**
 	 * Returns a new ConstraintViolation located under the property with the given name. A
 	 * property segment is prepended to the {@link #path()} and the name is prefixed
 	 * accordingly: {@code street} becomes {@code address.street}, {@code [0]} becomes
@@ -323,10 +311,6 @@ public class ConstraintViolation {
 	 * index segment is prepended to the {@link #path()} and the name is prefixed
 	 * accordingly: {@code street} becomes {@code [0].street} and an empty name becomes
 	 * {@code [0]}.
-	 *
-	 * <p>
-	 * Unlike {@link #indexed(int)}, which appends the index to a name that stands for the
-	 * collection, this treats the name as located inside the element.
 	 * @param index the index of the element that contains the violated value
 	 * @return a new ConstraintViolation under the given element
 	 * @since 0.18.0

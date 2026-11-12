@@ -228,17 +228,6 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	}
 
 	/**
-	 * Returns a validation result in which {@code [index]} is appended to the name of
-	 * every constraint violation.
-	 * @param index the index to append to violation names
-	 * @return a validation result with indexed violation names
-	 * @since 0.7.0
-	 */
-	default Validated<T> indexed(int index) {
-		return Validated.of(this.mapError(violation -> violation.indexed(index)));
-	}
-
-	/**
 	 * Returns a validation result in which every constraint violation is located under
 	 * the property with the given name.
 	 * @param name the name of the property that contains the validated value
