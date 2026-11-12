@@ -156,4 +156,32 @@ class ConstraintViolationTest {
 				new PathSegment.Index(3), new PathSegment.Property("name"));
 	}
 
+	@Test
+	void messageOfAValueWithoutAName() {
+		ConstraintViolation leading = ConstraintViolation.builder()
+			.name("")
+			.messageKey("charSequence.notBlank")
+			.defaultMessageFormat("\"{0}\" must not be blank")
+			.argsWithPrependedName()
+			.build();
+		ConstraintViolation inner = ConstraintViolation.builder()
+			.name("")
+			.messageKey("container.lessThan")
+			.defaultMessageFormat("The size of \"{0}\" must be less than {1}. The given size is {2}")
+			.argsWithPrependedName(3, 5)
+			.build();
+
+		assertThat(leading.message()).isEqualTo("The value must not be blank");
+		assertThat(inner.message()).isEqualTo("The size of the value must be less than 3. The given size is 5");
+		assertThat(inner.detail().getDefaultMessage()).isEqualTo(inner.message());
+		// only the message differs from that of a named violation
+		assertThat(leading.args()).containsExactly("");
+		assertThat(leading.defaultMessageFormat()).isEqualTo("\"{0}\" must not be blank");
+		// a formatter with its own formats still gets the empty name as an argument
+		assertThat(leading.message((key, format, args, locale) -> key + ":" + format + ":" + args[0]))
+			.isEqualTo("charSequence.notBlank:The value must not be blank:");
+		// the name is back once the violation is located
+		assertThat(leading.prefixed(0).prefixed("tags").message()).isEqualTo("\"tags[0]\" must not be blank");
+	}
+
 }

@@ -67,7 +67,8 @@ compiler checks that the arguments match it.
 
 | Zod | YAVI |
 | --- | --- |
-| `z.string()`, `z.number()`, `z.boolean()`, `z.date()` ... | `_string`, `_integer`, `_long`, `_double`, `_bigDecimal`, `_boolean`, `_localDate`, `_instant` ... |
+| `z.string()`, `z.number()`, `z.boolean()`, `z.date()` ... as a property | `_string(name, c -> ...)`, `_integer`, `_long`, `_double`, `_bigDecimal`, `_boolean`, `_localDate`, `_instant` ... |
+| the same as a schema of its own | `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)` ... |
 | `z.enum([...])` | `_enum(name, Role.class)` |
 | `z.object({...})` nested | `_object(name, anotherMapInputValidator)` |
 | `z.array(schema)` | `_list(name, elementValidator)`, `validator.liftList()` |
@@ -112,7 +113,8 @@ what a Zod schema is:
 
 ```java
 ValueValidator<Object, User> any = userValidator.untyped(); // rejects anything but a map
-ValueValidator<Object, Object> id = ValueValidator.anyOf(stringValidator.untyped(), integerValidator.untyped());
+ValueValidator<Object, Object> id = ValueValidator.anyOf(Yavi._string(c -> c.notBlank()).untyped(),
+        Yavi._integer(c -> c.notNull().positive()).untyped());
 ```
 
 The input type must be known when the validator is built. `fromMap` and `untyped()` throw
@@ -195,7 +197,7 @@ record Item(String name, Map<String, String> attrs) {}
 
 MapInputValidator<Item> itemValidator = Yavi.arguments()
         ._string("name", c -> c.notBlank())
-        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build())
+        ._rest(Yavi._string(c -> c.notBlank()))
         .fromMap(Item::new);
 ```
 

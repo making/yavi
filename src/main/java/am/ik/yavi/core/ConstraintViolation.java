@@ -42,6 +42,8 @@ public class ConstraintViolation {
 
 	private static final String DEFAULT_SEPARATOR = ".";
 
+	private static final String QUOTED_NAME = "\"{0}\"";
+
 	/**
 	 * The default message format to use when no localized message is found for the
 	 * message id. This format string may contain placeholders that will be replaced with
@@ -188,10 +190,18 @@ public class ConstraintViolation {
 	 * <p>
 	 * The message is formatted using the configured message formatter, applying the
 	 * message id, default message format, arguments and locale.
+	 *
+	 * <p>
+	 * A violation of a value without a name, such as the root of a validator of a single
+	 * value, has no name to show. The formatter is then given the default message format
+	 * with the quoted name ({@code "{0}"}) replaced by "the value", so that {@code "{0}"
+	 * must not be blank} reads "The value must not be blank". The message id and
+	 * {@link #args()} are the same as those of a named violation, and
+	 * {@link #defaultMessageFormat()} still returns the format as it was given.
 	 * @return the formatted message describing the constraint violation
 	 */
 	public String message() {
-		return this.messageFormatter.format(this.messageKey, this.defaultMessageFormat, this.args, this.locale);
+		return this.message(this.messageFormatter);
 	}
 
 	/**
@@ -200,7 +210,8 @@ public class ConstraintViolation {
 	 *
 	 * <p>
 	 * All other properties (message id, default message format, arguments and locale)
-	 * remain the same as in this violation.
+	 * remain the same as in this violation, including the default message format given
+	 * for a value without a name (see {@link #message()}).
 	 *
 	 * <pre>{@code
 	 * ConstraintViolation violation = ...;
@@ -211,7 +222,17 @@ public class ConstraintViolation {
 	 * @since 0.16.0
 	 */
 	public String message(MessageFormatter messageFormatter) {
-		return messageFormatter.format(this.messageKey, this.defaultMessageFormat, this.args, this.locale);
+		return messageFormatter.format(this.messageKey, this.messageFormat(), this.args, this.locale);
+	}
+
+	private String messageFormat() {
+		final boolean unnamed = this.name.isEmpty() && this.args.length > 0 && "".equals(this.args[0]);
+		if (!unnamed) {
+			return this.defaultMessageFormat;
+		}
+		final String format = this.defaultMessageFormat.startsWith(QUOTED_NAME)
+				? "The value" + this.defaultMessageFormat.substring(QUOTED_NAME.length()) : this.defaultMessageFormat;
+		return format.replace(QUOTED_NAME, "the value");
 	}
 
 	/**
