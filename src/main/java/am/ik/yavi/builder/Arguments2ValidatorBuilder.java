@@ -77,16 +77,6 @@ public final class Arguments2ValidatorBuilder<A1, A2, R1, R2> {
 
 	final ArgumentDefinition<A2, R2> d2;
 
-	/**
-	 * Creates a builder from the value validators of the already added arguments.
-	 * @param v1 value validator of the first argument
-	 * @param v2 value validator of argument at position 2
-	 * @since 0.14.0
-	 */
-	public Arguments2ValidatorBuilder(ValueValidator<A1, R1> v1, ValueValidator<A2, R2> v2) {
-		this(ArgumentDefinition.value(Object.class, v1), ArgumentDefinition.value(Object.class, v2));
-	}
-
 	Arguments2ValidatorBuilder(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2) {
 		this.d1 = d1;
 		this.d2 = d2;

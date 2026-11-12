@@ -121,36 +121,6 @@ public final class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 
 	final ArgumentDefinition<A13, R13> d13;
 
-	/**
-	 * Creates a builder from the value validators of the already added arguments.
-	 * @param v1 value validator of the first argument
-	 * @param v2 value validator of argument at position 2
-	 * @param v3 value validator of argument at position 3
-	 * @param v4 value validator of argument at position 4
-	 * @param v5 value validator of argument at position 5
-	 * @param v6 value validator of argument at position 6
-	 * @param v7 value validator of argument at position 7
-	 * @param v8 value validator of argument at position 8
-	 * @param v9 value validator of argument at position 9
-	 * @param v10 value validator of argument at position 10
-	 * @param v11 value validator of argument at position 11
-	 * @param v12 value validator of argument at position 12
-	 * @param v13 value validator of argument at position 13
-	 * @since 0.14.0
-	 */
-	public Arguments13ValidatorBuilder(ValueValidator<A1, R1> v1, ValueValidator<A2, R2> v2, ValueValidator<A3, R3> v3,
-			ValueValidator<A4, R4> v4, ValueValidator<A5, R5> v5, ValueValidator<A6, R6> v6, ValueValidator<A7, R7> v7,
-			ValueValidator<A8, R8> v8, ValueValidator<A9, R9> v9, ValueValidator<A10, R10> v10,
-			ValueValidator<A11, R11> v11, ValueValidator<A12, R12> v12, ValueValidator<A13, R13> v13) {
-		this(ArgumentDefinition.value(Object.class, v1), ArgumentDefinition.value(Object.class, v2),
-				ArgumentDefinition.value(Object.class, v3), ArgumentDefinition.value(Object.class, v4),
-				ArgumentDefinition.value(Object.class, v5), ArgumentDefinition.value(Object.class, v6),
-				ArgumentDefinition.value(Object.class, v7), ArgumentDefinition.value(Object.class, v8),
-				ArgumentDefinition.value(Object.class, v9), ArgumentDefinition.value(Object.class, v10),
-				ArgumentDefinition.value(Object.class, v11), ArgumentDefinition.value(Object.class, v12),
-				ArgumentDefinition.value(Object.class, v13));
-	}
-
 	Arguments13ValidatorBuilder(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2,
 			ArgumentDefinition<A3, R3> d3, ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5,
 			ArgumentDefinition<A6, R6> d6, ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8,

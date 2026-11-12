@@ -1802,15 +1802,6 @@ $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 $(for j in `seq 1 ${i}`;do echo "	final ArgumentDefinition<A${j}, R${j}> d${j};";echo;done)
 
-	/**
-	 * Creates a builder from the value validators of the already added arguments.
-	 * @param v1 value validator of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param v%s value validator of argument at position %s' "${j}" "${j}";fi;done)
-	 * @since 0.14.0
-	 */
-	public ${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ValueValidator<A${j}, R${j}> v${j}, ";done) | sed 's/,$//')) {
-		this($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition.value(Object.class, v${j}), ";done) | sed 's/,$//'));
-	}
-
 	${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.d${j} = d${j};";done)
 	}

@@ -93,23 +93,6 @@ public final class Arguments6ValidatorBuilder<A1, A2, A3, A4, A5, A6, R1, R2, R3
 
 	final ArgumentDefinition<A6, R6> d6;
 
-	/**
-	 * Creates a builder from the value validators of the already added arguments.
-	 * @param v1 value validator of the first argument
-	 * @param v2 value validator of argument at position 2
-	 * @param v3 value validator of argument at position 3
-	 * @param v4 value validator of argument at position 4
-	 * @param v5 value validator of argument at position 5
-	 * @param v6 value validator of argument at position 6
-	 * @since 0.14.0
-	 */
-	public Arguments6ValidatorBuilder(ValueValidator<A1, R1> v1, ValueValidator<A2, R2> v2, ValueValidator<A3, R3> v3,
-			ValueValidator<A4, R4> v4, ValueValidator<A5, R5> v5, ValueValidator<A6, R6> v6) {
-		this(ArgumentDefinition.value(Object.class, v1), ArgumentDefinition.value(Object.class, v2),
-				ArgumentDefinition.value(Object.class, v3), ArgumentDefinition.value(Object.class, v4),
-				ArgumentDefinition.value(Object.class, v5), ArgumentDefinition.value(Object.class, v6));
-	}
-
 	Arguments6ValidatorBuilder(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2,
 			ArgumentDefinition<A3, R3> d3, ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5,
 			ArgumentDefinition<A6, R6> d6) {
