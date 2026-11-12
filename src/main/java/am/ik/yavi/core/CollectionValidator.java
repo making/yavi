@@ -5,6 +5,7 @@
 package am.ik.yavi.core;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -28,6 +29,8 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 
 	private final String name;
 
+	private final List<PathSegment> path;
+
 	private final Function<T, @Nullable N> toCollection;
 
 	private final Validator<E> validator;
@@ -39,9 +42,33 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 	 * @param validator the validator applied to each element
 	 */
 	public CollectionValidator(Function<T, @Nullable N> toCollection, String name, Validator<E> validator) {
+		this(toCollection, name, PathSegment.of(name), validator);
+	}
+
+	/**
+	 * Creates a collection validator for a collection that is reached through the given
+	 * path.
+	 * @param toCollection function that extracts the collection from the target
+	 * @param name the flat property name used in violation names
+	 * @param path the structured path of the collection, relative to the target
+	 * @param validator the validator applied to each element
+	 * @since 0.18.0
+	 */
+	public CollectionValidator(Function<T, @Nullable N> toCollection, String name, List<PathSegment> path,
+			Validator<E> validator) {
 		this.toCollection = toCollection;
 		this.name = name;
+		this.path = path;
 		this.validator = validator;
+	}
+
+	/**
+	 * Returns the structured path of the collection, relative to the target.
+	 * @return the path
+	 * @since 0.18.0
+	 */
+	public List<PathSegment> path() {
+		return this.path;
 	}
 
 	/**

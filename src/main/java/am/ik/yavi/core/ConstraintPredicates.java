@@ -5,6 +5,7 @@
 package am.ik.yavi.core;
 
 import java.util.Deque;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jspecify.annotations.Nullable;
@@ -27,6 +28,8 @@ public class ConstraintPredicates<T, V> {
 
 	private final String name;
 
+	private final List<PathSegment> path;
+
 	private final Deque<ConstraintPredicate<V>> predicates;
 
 	private final Function<T, ? extends @Nullable V> toValue;
@@ -39,9 +42,33 @@ public class ConstraintPredicates<T, V> {
 	 */
 	public ConstraintPredicates(Function<T, ? extends @Nullable V> toValue, String name,
 			Deque<ConstraintPredicate<V>> predicates) {
+		this(toValue, name, PathSegment.of(name), predicates);
+	}
+
+	/**
+	 * Creates the constraint predicates of a property that is reached through the given
+	 * path.
+	 * @param toValue function that extracts the property value from the target
+	 * @param name the flat property name used in violation names
+	 * @param path the structured path of the property, relative to the target
+	 * @param predicates the predicates to apply to the property value
+	 * @since 0.18.0
+	 */
+	public ConstraintPredicates(Function<T, ? extends @Nullable V> toValue, String name, List<PathSegment> path,
+			Deque<ConstraintPredicate<V>> predicates) {
 		this.toValue = toValue;
 		this.name = name;
+		this.path = path;
 		this.predicates = predicates;
+	}
+
+	/**
+	 * Returns the structured path of the property, relative to the target.
+	 * @return the path
+	 * @since 0.18.0
+	 */
+	public final List<PathSegment> path() {
+		return this.path;
 	}
 
 	/**
