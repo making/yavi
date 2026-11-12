@@ -454,7 +454,7 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
         .preprocess(BigDecimal::stripTrailingZeros);
 ```
 
-`c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.normalize(form)` and `c.transform(f)` are available wherever the constraints of a `String` value are written, such as `Yavi.arguments()._string("email", c -> ...)`.
+`c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.toNormalForm(form)` and `c.transform(f)` are available wherever the constraints of a `String` value are written, such as `Yavi.arguments()._string("email", c -> ...)`.
 
 #### Nested objects, collections and optional arguments
 

@@ -72,7 +72,7 @@ public class StringValueConstraint<T> extends CharSequenceConstraint<T, String> 
 	 * @param form the normalization form
 	 * @return this constraint
 	 */
-	public StringValueConstraint<T> normalize(Normalizer.Form form) {
+	public StringValueConstraint<T> toNormalForm(Normalizer.Form form) {
 		return this.transform(s -> Normalizer.normalize(s, form));
 	}
 

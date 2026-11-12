@@ -81,7 +81,7 @@ compiler checks that the arguments match it.
 | `.refine(predicate)` on a value | a constraint (`c -> c.predicate(...)`) |
 | `.refine(predicate)` on an object | `.constraintOnTarget(predicate, name, violationMessage)` |
 | `.transform(f)` | `.map(f)` |
-| `z.string().trim().toLowerCase()`, `.toUpperCase()`, `.normalize()` | `_string(name, c -> c.trim().toLowerCase()...)`, `c.toUpperCase()`, `c.normalize(form)`, `c.transform(f)`, written before the constraints |
+| `z.string().trim().toLowerCase()`, `.toUpperCase()`, `.normalize()` | `_string(name, c -> c.trim().toLowerCase()...)`, `c.toUpperCase()`, `c.toNormalForm(form)`, `c.transform(f)`, written before the constraints |
 | `z.preprocess(f, schema)` | `validator.preprocess(f)` for a value of the same type, `validator.compose(f)` for another type |
 | `.pipe(schema)` | `.andThen(validator)` |
 | `z.unknown()` / `z.any()` | `_object(name, Object.class)` |

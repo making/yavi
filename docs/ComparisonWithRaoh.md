@@ -127,7 +127,7 @@ normalizedEmail.validate("  USER@Example.COM  "); // Valid[user@example.com]
 | --- | --- |
 | `trim()` | `c.trim()` (white space of `Character.isWhitespace`, as for `notBlank()`) |
 | `toLowerCase()`, `toUpperCase()` | `c.toLowerCase()`, `c.toUpperCase()` (`Locale.ROOT`) |
-| `normalize()` | `c.normalize(Normalizer.Form.NFC)` |
+| `normalize()` | `c.toNormalForm(Normalizer.Form.NFC)` |
 | `map(f)` before the constraints | `c.transform(f)` |
 
 * A transform is written before the first constraint; `c.notBlank().trim()` does not

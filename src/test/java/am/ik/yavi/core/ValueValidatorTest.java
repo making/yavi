@@ -129,7 +129,7 @@ class ValueValidatorTest {
 				c -> c.trim().toUpperCase().transform(s -> s.replace("-", "")).notBlank().lessThanOrEqual(4));
 		assertThat(code.validated(" ab-cd\u3000")).isEqualTo("ABCD");
 		assertThat(code.validated("\u0041\u030a")).isEqualTo("\u0041\u030a");
-		assertThat(Yavi._string(c -> c.normalize(Normalizer.Form.NFC).fixedSize(1)).validated("\u0041\u030a"))
+		assertThat(Yavi._string(c -> c.toNormalForm(Normalizer.Form.NFC).fixedSize(1)).validated("\u0041\u030a"))
 			.isEqualTo("\u00c5");
 		assertThat(Yavi._string(c -> c.toLowerCase()).map(String::length).validated("I")).isEqualTo(1);
 		// null is not transformed, the violated value is the transformed one
