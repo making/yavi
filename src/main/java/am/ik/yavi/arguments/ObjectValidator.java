@@ -45,10 +45,28 @@ public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
 
 	@Override
 	public <T2> ObjectValidator<X, T2> map(Function<? super T, ? extends T2> mapper) {
-		final Class<X> type = this.type;
 		final Function1<X, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
-		return type == null ? new ObjectValidator<>(super.validator, mapped)
-				: new ObjectValidator<>(super.validator, mapped, type);
+		return new ObjectValidator<>(super.validator, mapped, this.type, super.transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public ObjectValidator<X, T> preprocess(Function<? super X, ? extends @Nullable X> transform) {
+		return new ObjectValidator<>(super.validator, super.mapper, this.type, composed(transform, super.transform));
+	}
+
+	private ObjectValidator(Validator<Arguments1<X>> validator, Function1<? super X, ? extends T> mapper,
+			@Nullable Class<X> type, @Nullable Function<? super X, ? extends @Nullable X> transform) {
+		super(validator, mapper, type == null ? Object.class : type, transform);
+		this.type = type;
 	}
 
 	/**

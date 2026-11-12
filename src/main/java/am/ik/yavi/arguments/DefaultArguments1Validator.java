@@ -5,6 +5,7 @@
 package am.ik.yavi.arguments;
 
 import java.util.Locale;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
@@ -42,6 +43,14 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	private final Class<?> valueType;
 
 	/**
+	 * The function applied to an argument other than {@code null} before it is validated,
+	 * or {@code null} if the argument is validated as it is.
+	 *
+	 * @since 0.18.0
+	 */
+	protected final @Nullable Function<? super A1, ? extends @Nullable A1> transform;
+
+	/**
 	 * Creates a validator that applies the given validator to an {@link Arguments1} built
 	 * from the arguments and maps the validated arguments with the given function.
 	 * @param validator the validator applied to the arguments
@@ -63,9 +72,63 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	protected DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
 			Class<?> valueType) {
+		this(validator, mapper, valueType, null);
+	}
+
+	/**
+	 * Creates a validator like
+	 * {@link #DefaultArguments1Validator(Validator, Function1, Class)} that applies the
+	 * given function to an argument other than {@code null} before it validates it.
+	 * @param validator the validator applied to the argument
+	 * @param mapper the mapper applied to the validated argument
+	 * @param valueType the raw type of the argument; {@code Object} or {@code Enum} if it
+	 * is unknown
+	 * @param transform the function applied to the argument before it is validated, or
+	 * {@code null} to validate it as it is
+	 * @since 0.18.0
+	 */
+	protected DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
+			Class<?> valueType, @Nullable Function<? super A1, ? extends @Nullable A1> transform) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.valueType = valueType;
+		this.transform = transform;
+	}
+
+	/**
+	 * Returns a validator that applies the given function to an argument other than
+	 * {@code null} before the function of this validator, if any, and then validates the
+	 * result, as {@link ValueValidator#preprocess(Function)} states. The type of the
+	 * argument is kept, so an untyped input is transformed after its type is checked.
+	 * @param transform the function applied to an argument other than {@code null}
+	 * @return a validator that transforms its argument first
+	 * @since 0.18.0
+	 */
+	@Override
+	public DefaultArguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType,
+				composed(transform, this.transform));
+	}
+
+	/**
+	 * Returns the function that applies the first function and then, unless the result is
+	 * {@code null}, the second one.
+	 * @param first the function applied first
+	 * @param second the function applied to the result, or {@code null} for none
+	 * @param <A1> the type of the argument
+	 * @return the composed function
+	 * @since 0.18.0
+	 */
+	protected static <A1> Function<? super A1, ? extends @Nullable A1> composed(
+			Function<? super A1, ? extends @Nullable A1> first,
+			@Nullable Function<? super A1, ? extends @Nullable A1> second) {
+		if (second == null) {
+			return first;
+		}
+		return a1 -> {
+			final A1 transformed = first.apply(a1);
+			return transformed == null ? null : second.apply(transformed);
+		};
 	}
 
 	/**
@@ -113,7 +176,8 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, Supplier<X>> lazy() {
-		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1), this.valueType);
+		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1), this.valueType,
+				this.transform);
 	}
 
 	/**
@@ -126,8 +190,9 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	@Override
 	public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+		final A1 value = a1 == null || this.transform == null ? a1 : this.transform.apply(a1);
 		return this.validator.applicative()
-			.validate(Arguments.of(a1), locale, constraintContext)
+			.validate(Arguments.of(value), locale, constraintContext)
 			.map(values -> values.map(this.mapper));
 	}
 

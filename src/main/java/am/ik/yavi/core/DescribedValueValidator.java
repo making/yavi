@@ -26,11 +26,19 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 
 	private final Function<InputReader<Object>, ValueValidator<Object, X>> untyped;
 
+	private final @Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed;
+
+	/**
+	 * @param preprocessed returns this validator with the given transform applied to its
+	 * input, by a way that keeps the input type; {@code null} if there is none
+	 */
 	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
-			Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
+			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			@Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
 		this.delegate = delegate;
 		this.description = description;
 		this.untyped = untyped;
+		this.preprocessed = preprocessed;
 	}
 
 	@Override
@@ -41,6 +49,12 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 	@Override
 	public ValueDescription description() {
 		return this.description.get();
+	}
+
+	@Override
+	public ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
+		return this.preprocessed != null ? this.preprocessed.apply(transform)
+				: ValueValidator.super.preprocess(transform);
 	}
 
 	// the node type is erased: the function is written for any reader

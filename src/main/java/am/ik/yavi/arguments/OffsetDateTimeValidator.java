@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single {@link OffsetDateTime} value and maps it to a result.
@@ -42,7 +43,8 @@ public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<Offse
 	 */
 	@Override
 	public <T2> OffsetDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new OffsetDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new OffsetDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)),
+				super.transform);
 	}
 
 	/**
@@ -54,6 +56,27 @@ public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<Offse
 	public OffsetDateTimeValidator(Validator<Arguments1<OffsetDateTime>> validator,
 			Function1<? super OffsetDateTime, ? extends T> mapper) {
 		super(validator, mapper, OffsetDateTime.class);
+	}
+
+	private OffsetDateTimeValidator(Validator<Arguments1<OffsetDateTime>> validator,
+			Function1<? super OffsetDateTime, ? extends T> mapper,
+			@Nullable Function<? super OffsetDateTime, ? extends @Nullable OffsetDateTime> transform) {
+		super(validator, mapper, OffsetDateTime.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public OffsetDateTimeValidator<T> preprocess(
+			Function<? super OffsetDateTime, ? extends @Nullable OffsetDateTime> transform) {
+		return new OffsetDateTimeValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single {@link Instant} value and maps it to a result.
@@ -42,7 +43,7 @@ public class InstantValidator<T> extends DefaultArguments1Validator<Instant, T> 
 	 */
 	@Override
 	public <T2> InstantValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new InstantValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new InstantValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -53,6 +54,25 @@ public class InstantValidator<T> extends DefaultArguments1Validator<Instant, T> 
 	 */
 	public InstantValidator(Validator<Arguments1<Instant>> validator, Function1<? super Instant, ? extends T> mapper) {
 		super(validator, mapper, Instant.class);
+	}
+
+	private InstantValidator(Validator<Arguments1<Instant>> validator, Function1<? super Instant, ? extends T> mapper,
+			@Nullable Function<? super Instant, ? extends @Nullable Instant> transform) {
+		super(validator, mapper, Instant.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public InstantValidator<T> preprocess(Function<? super Instant, ? extends @Nullable Instant> transform) {
+		return new InstantValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

@@ -39,7 +39,9 @@
  * {@link am.ik.yavi.constraint.YearConstraint},
  * {@link am.ik.yavi.constraint.YearMonthConstraint} and
  * {@link am.ik.yavi.constraint.ZonedDateTimeConstraint}</li>
- * <li>char sequences: {@link am.ik.yavi.constraint.CharSequenceConstraint}</li>
+ * <li>char sequences: {@link am.ik.yavi.constraint.CharSequenceConstraint}, and
+ * {@link am.ik.yavi.constraint.StringValueConstraint} for a {@code String} validated as a
+ * value, which can be transformed before it is constrained</li>
  * <li>other values: {@link am.ik.yavi.constraint.ObjectConstraint},
  * {@link am.ik.yavi.constraint.BooleanConstraint} and
  * {@link am.ik.yavi.constraint.EnumConstraint}</li>

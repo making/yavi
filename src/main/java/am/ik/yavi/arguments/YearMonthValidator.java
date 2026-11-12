@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single {@link YearMonth} value and maps it to a result.
@@ -42,7 +43,7 @@ public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth,
 	 */
 	@Override
 	public <T2> YearMonthValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new YearMonthValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new YearMonthValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -54,6 +55,26 @@ public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth,
 	public YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
 			Function1<? super YearMonth, ? extends T> mapper) {
 		super(validator, mapper, YearMonth.class);
+	}
+
+	private YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
+			Function1<? super YearMonth, ? extends T> mapper,
+			@Nullable Function<? super YearMonth, ? extends @Nullable YearMonth> transform) {
+		super(validator, mapper, YearMonth.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public YearMonthValidator<T> preprocess(Function<? super YearMonth, ? extends @Nullable YearMonth> transform) {
+		return new YearMonthValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

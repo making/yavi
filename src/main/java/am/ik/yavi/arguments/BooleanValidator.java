@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single {@link Boolean} value and maps it to a result.
@@ -41,7 +42,7 @@ public class BooleanValidator<T> extends DefaultArguments1Validator<Boolean, T> 
 	 */
 	@Override
 	public <T2> BooleanValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new BooleanValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new BooleanValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -52,6 +53,25 @@ public class BooleanValidator<T> extends DefaultArguments1Validator<Boolean, T> 
 	 */
 	public BooleanValidator(Validator<Arguments1<Boolean>> validator, Function1<? super Boolean, ? extends T> mapper) {
 		super(validator, mapper, Boolean.class);
+	}
+
+	private BooleanValidator(Validator<Arguments1<Boolean>> validator, Function1<? super Boolean, ? extends T> mapper,
+			@Nullable Function<? super Boolean, ? extends @Nullable Boolean> transform) {
+		super(validator, mapper, Boolean.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public BooleanValidator<T> preprocess(Function<? super Boolean, ? extends @Nullable Boolean> transform) {
+		return new BooleanValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

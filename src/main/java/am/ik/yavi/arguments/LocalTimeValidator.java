@@ -6,6 +6,7 @@ package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalTime;
 import java.util.function.Function;
@@ -42,7 +43,7 @@ public class LocalTimeValidator<T> extends DefaultArguments1Validator<LocalTime,
 	 */
 	@Override
 	public <T2> LocalTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new LocalTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new LocalTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -54,6 +55,26 @@ public class LocalTimeValidator<T> extends DefaultArguments1Validator<LocalTime,
 	public LocalTimeValidator(Validator<Arguments1<LocalTime>> validator,
 			Function1<? super LocalTime, ? extends T> mapper) {
 		super(validator, mapper, LocalTime.class);
+	}
+
+	private LocalTimeValidator(Validator<Arguments1<LocalTime>> validator,
+			Function1<? super LocalTime, ? extends T> mapper,
+			@Nullable Function<? super LocalTime, ? extends @Nullable LocalTime> transform) {
+		super(validator, mapper, LocalTime.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public LocalTimeValidator<T> preprocess(Function<? super LocalTime, ? extends @Nullable LocalTime> transform) {
+		return new LocalTimeValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

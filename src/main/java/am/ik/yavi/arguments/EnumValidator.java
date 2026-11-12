@@ -45,10 +45,28 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 
 	@Override
 	public <T2> EnumValidator<E, T2> map(Function<? super T, ? extends T2> mapper) {
-		final Class<E> enumType = this.enumType;
 		final Function1<E, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
-		return enumType == null ? new EnumValidator<>(super.validator, mapped)
-				: new EnumValidator<>(super.validator, mapped, enumType);
+		return new EnumValidator<>(super.validator, mapped, this.enumType, super.transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public EnumValidator<E, T> preprocess(Function<? super E, ? extends @Nullable E> transform) {
+		return new EnumValidator<>(super.validator, super.mapper, this.enumType, composed(transform, super.transform));
+	}
+
+	private EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
+			@Nullable Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform) {
+		super(validator, mapper, enumType == null ? Enum.class : enumType, transform);
+		this.enumType = enumType;
 	}
 
 	/**

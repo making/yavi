@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single numeric value and maps it to a result.
@@ -41,7 +42,7 @@ public class IntegerValidator<T> extends DefaultArguments1Validator<Integer, T> 
 	 */
 	@Override
 	public <T2> IntegerValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new IntegerValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new IntegerValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -52,6 +53,25 @@ public class IntegerValidator<T> extends DefaultArguments1Validator<Integer, T> 
 	 */
 	public IntegerValidator(Validator<Arguments1<Integer>> validator, Function1<? super Integer, ? extends T> mapper) {
 		super(validator, mapper, Integer.class);
+	}
+
+	private IntegerValidator(Validator<Arguments1<Integer>> validator, Function1<? super Integer, ? extends T> mapper,
+			@Nullable Function<? super Integer, ? extends @Nullable Integer> transform) {
+		super(validator, mapper, Integer.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public IntegerValidator<T> preprocess(Function<? super Integer, ? extends @Nullable Integer> transform) {
+		return new IntegerValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }

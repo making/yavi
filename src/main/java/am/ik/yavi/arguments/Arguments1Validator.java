@@ -88,6 +88,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 				return valueValidator.readingWith(reader);
 			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.from(valueValidator.preprocess(transform));
+			}
 		};
 	}
 
@@ -210,6 +215,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).map(mapper);
 			}
+
+			@Override
+			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).map(mapper);
+			}
 		};
 	}
 
@@ -250,6 +260,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).andThen(validator);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).andThen(validator);
 			}
 		};
 	}
@@ -334,6 +349,40 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			@Override
 			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 				return Arguments1Validator.this.readingWith(reader).describedAs(description);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform).describedAs(description);
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that applies the given function to an argument other than
+	 * {@code null} and validates the result with this validator, as
+	 * {@link ValueValidator#preprocess(Function)} states. The description is kept.
+	 * @param transform the function applied to an argument other than {@code null}
+	 * @return a validator that transforms its argument first
+	 * @since 0.18.0
+	 */
+	@Override
+	default Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return Arguments1Validator.this.validate(a1 == null ? null : transform.apply(a1), locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return Arguments1Validator.this.lazy().preprocess(transform);
+			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
 			}
 		};
 	}

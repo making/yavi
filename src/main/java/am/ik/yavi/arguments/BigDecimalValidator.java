@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a single numeric value and maps it to a result.
@@ -42,7 +43,7 @@ public class BigDecimalValidator<T> extends DefaultArguments1Validator<BigDecima
 	 */
 	@Override
 	public <T2> BigDecimalValidator<T2> map(Function<? super T, ? extends T2> mapper) {
-		return new BigDecimalValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)));
+		return new BigDecimalValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 
 	/**
@@ -54,6 +55,26 @@ public class BigDecimalValidator<T> extends DefaultArguments1Validator<BigDecima
 	public BigDecimalValidator(Validator<Arguments1<BigDecimal>> validator,
 			Function1<? super BigDecimal, ? extends T> mapper) {
 		super(validator, mapper, BigDecimal.class);
+	}
+
+	private BigDecimalValidator(Validator<Arguments1<BigDecimal>> validator,
+			Function1<? super BigDecimal, ? extends T> mapper,
+			@Nullable Function<? super BigDecimal, ? extends @Nullable BigDecimal> transform) {
+		super(validator, mapper, BigDecimal.class, transform);
+	}
+
+	/**
+	 * Returns a new validator that applies the given function to a value other than
+	 * {@code null} before the value is validated. The constraints and the mapper see the
+	 * transformed value.
+	 * @param transform the function applied to a value other than {@code null}
+	 * @return a new validator that transforms its value first
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#preprocess(Function)
+	 */
+	@Override
+	public BigDecimalValidator<T> preprocess(Function<? super BigDecimal, ? extends @Nullable BigDecimal> transform) {
+		return new BigDecimalValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
 }
