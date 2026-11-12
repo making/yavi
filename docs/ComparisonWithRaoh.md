@@ -303,29 +303,27 @@ itemsValidator.validate(Map.of("items", List.of(
 // items[1].productId, items[1].quantity
 ```
 
-`_list` has no constraints of the list itself (`nonempty()`, `minSize`, `maxSize`,
-`unique()`). They are a second validator applied to the validated list:
+The constraints of the list itself (`nonempty()`, `minSize`, `maxSize`, `unique()`) are
+the third argument of `_list`. They are checked on the validated elements, only when
+every element is valid, and reported on the list (`tags`):
 
 ```java
-ValueValidator<Iterable<String>, List<String>> tagsValidator = Yavi._string(c -> c.notBlank())
-        .liftList()
-        .andThen(Yavi.<List<String>>_object(c -> c
-                .predicate(tags -> !tags.isEmpty() && tags.size() <= 10, "tags.size",
-                        "The size of \"{0}\" must be between 1 and 10")
-                .predicate(tags -> new HashSet<>(tags).size() == tags.size(), "tags.unique",
-                        "\"{0}\" must not contain duplicates")));
-
-Yavi.arguments()._object("tags", tagsValidator).fromMap(tags -> tags);
+Yavi.arguments()
+        ._list("tags", Yavi._string(c -> c.trim().notBlank()), c -> c.notEmpty().lessThanOrEqual(10).unique())
+        .fromMap(tags -> tags);
 ```
+
+A list that is not a property, such as the root of a document, is
+`Yavi._list(elementValidator, c -> ...)`.
 
 ### Maps
 
 `map(decoder)` is `_map(name, valueValidator)`; a violation is located under the key
-(`prices.apple`).
+(`prices.apple`). The constraints of the map (`minSize`) are the third argument.
 
 ```java
 Yavi.arguments()
-        ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()))
+        ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
         .fromMap(prices -> prices);
 ```
 

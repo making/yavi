@@ -480,6 +480,7 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 
 * `optional()`, `nullable()` and `defaultValue(...)` apply to the last added argument. A `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
 * `_object(name, validator)`, `_list(name, elementValidator)` and `_map(name, valueValidator)` reject `null` with `object.notNull` unless one of the above is applied. The violations of a list element are located under its index (`roles[0]`, `addresses[0].street`); give an element validator an empty name to report a violation on the element itself.
+* `_list(name, elementValidator, c -> c.notEmpty().lessThanOrEqual(10).unique())` and `_map(name, valueValidator, c -> c.notEmpty())` constrain the list or map itself. The constraints are checked on the validated elements, only when every element is valid, and reported on the argument (`roles`). `Yavi._list(elementValidator, c -> ...)` and `Yavi._map(valueValidator, c -> ...)` are the validators of a list or map that is not an argument.
 * `ValueValidator.anyOf(a, b)` tries the alternatives in order. If all of them fail, it reports `object.anyOf` followed by the violations of every alternative.
 * `constraintOnTarget` adds a rule that spans several arguments. It is evaluated only when all arguments are valid.
 
@@ -688,6 +689,7 @@ String json = JsonSchema.toJson(description);
 
 * A constraint is described by its message key and arguments, for example `container.lessThanOrEqual` with `[14]`.
 * An object that rejects unknown properties is written with `additionalProperties: false`, and one that reads the rest with the schema of its values.
+* The constraints of a list or map are described with it and written as `minItems`, `maxItems`, `uniqueItems`, `minProperties` and `maxProperties`.
 * A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or has no constraint that rejects `null` such as `notNull()`.
 * The combinators carry the description. A lambda and the result of `ValueValidator.compose` are unknown; describe them with `describedAs(...)`.
 * Conditional constraints and `constraintOnTarget` rules are not described. Constraints without a JSON Schema keyword are omitted from the schema.

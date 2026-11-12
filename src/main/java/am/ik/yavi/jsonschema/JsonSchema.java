@@ -41,7 +41,10 @@ import org.jspecify.annotations.Nullable;
  * its value accepts {@code null} (see {@link ValueDescription#acceptsNull()}). A value
  * that accepts {@code null} also allows the type {@code null}.</li>
  * <li>A list is written with {@code items}, a map with {@code additionalProperties},
- * alternatives with {@code anyOf} and a default value with {@code default}.</li>
+ * alternatives with {@code anyOf} and a default value with {@code default}. The
+ * constraints of a list or a map are written like those of a value ({@code minItems},
+ * {@code maxItems}, {@code uniqueItems}, {@code minProperties},
+ * {@code maxProperties}).</li>
  * <li>The properties that an object does not define are written with
  * {@code additionalProperties}: their schema if they are validated, and {@code false} if
  * they are rejected.</li>
@@ -125,10 +128,12 @@ public final class JsonSchema {
 			case ValueDescription.Elements elements -> {
 				schema.put("type", type("array", nullable));
 				schema.put("items", schema(elements.element(), elements.element().acceptsNull()));
+				elements.constraints().forEach(constraint -> constraint(schema, "array", constraint));
 			}
 			case ValueDescription.Entries entries -> {
 				schema.put("type", type("object", nullable));
 				schema.put("additionalProperties", schema(entries.value(), entries.value().acceptsNull()));
+				entries.constraints().forEach(constraint -> constraint(schema, "object", constraint));
 			}
 			case ValueDescription.AnyOf anyOf -> {
 				final List<Object> alternatives = new ArrayList<>();

@@ -129,8 +129,8 @@ class MapInputValidatorTest {
 		._enum("role", Role.class, c -> c.notNull())
 		._localDate("birthday")
 		._object("address", addressValidator)
-		._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build())
-		._map("scores", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build())
+		._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build(), c -> c.unique())
+		._map("scores", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build(), c -> c.lessThanOrEqual(2))
 		._string("nickname", c -> c.trim().notBlank())
 		.optional()
 		._double("rate")
@@ -228,6 +228,14 @@ class MapInputValidatorTest {
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void violationsOfTheMapAreAccumulated(Model model) {
+		// the constraints of a list or map are checked on the validated elements
+		assertThat(model
+			.validate(userValidator,
+					input("email", "a@example.com", "age", 1, "role", "USER", "address",
+							map("street", "1-2-3", "city", "Tokyo"), "tags", List.of("a", "b", "a"), "scores",
+							map("math", 1, "art", 2, "music", 3)))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("tags", "collection.unique"), tuple("scores", "container.lessThanOrEqual"));
 		if (model == Model.STRINGS || model == Model.PARAMETERS) {
 			// an empty string is a null node wherever it is, and a string that does not
 			// stand for the type is reported like any other mismatch

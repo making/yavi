@@ -62,8 +62,8 @@ class YaviArgumentsTest {
 		._object("address", addressValidator)
 		._object("billing", addressValidator)
 		.nullable()
-		._list("roles", Yavi._string(c -> c.notBlank()))
-		._map("scores", Yavi._integer(c -> c.greaterThanOrEqual(0)));
+		._list("roles", Yavi._string(c -> c.trim().notBlank()), c -> c.lessThanOrEqual(2).unique())
+		._map("scores", Yavi._integer(c -> c.greaterThanOrEqual(0)), c -> c.lessThanOrEqual(1));
 
 	static final Arguments7Validator<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, User> validator = builder
 		.apply(User::new)
@@ -86,9 +86,10 @@ class YaviArgumentsTest {
 	@Test
 	void violationsAreLocatedUnderTheArgument() {
 		final ConstraintViolations violations = validator
-			.validate("yavi", " ", -1, Map.of("city", "Tokyo"), Map.of("street", "1-2-3"), List.of("admin", ""),
-					Map.of("math", -1))
+			.validate("yavi", " ", -1, Map.of("city", "Tokyo"), Map.of("street", "1-2-3"), List.of("admin", "", "user"),
+					Map.of("math", -1, "art", 1))
 			.errors();
+		// the constraints of a list or map are not checked if an element is invalid
 		assertThat(violations).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("contact", "object.anyOf"), tuple("contact", "charSequence.email"),
 					tuple("contact", "charSequence.pattern"), tuple("nickname", "charSequence.notBlank"),
@@ -101,6 +102,17 @@ class YaviArgumentsTest {
 					List.of(new PathSegment.Property("roles"), new PathSegment.Index(1)),
 					List.of(new PathSegment.Property("scores"), new PathSegment.Property("math")));
 		assertThat(violations.get(7).message()).isEqualTo("\"roles[1]\" must not be blank");
+		// they are checked on the validated elements and reported on the argument
+		final Map<String, String> address = Map.of("street", "1-2-3", "city", "Tokyo");
+		assertThat(validator
+			.validate("yavi@example.com", null, 30, address, null, List.of("user", " user"),
+					Map.of("math", 1, "art", 1))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::message, ConstraintViolation::path)
+			.containsExactly(
+					tuple("roles", "\"roles\" must be unique. [user] is/are duplicated.",
+							List.of(new PathSegment.Property("roles"))),
+					tuple("scores", "The size of \"scores\" must be less than or equal to 1. The given size is 2",
+							List.of(new PathSegment.Property("scores"))));
 	}
 
 	@Test
@@ -144,8 +156,8 @@ class YaviArgumentsTest {
 												List.of(new ConstraintDescription("charSequence.pattern",
 														List.of("[0-9]{10,11}"), false))))))),
 						new ValueDescription.Property("nickname",
-								new ValueDescription.Optional(
-										new ValueDescription.Value("nickname", String.class, List.of(notBlank)), null)),
+								new ValueDescription.Optional(new ValueDescription.Value("nickname", String.class, List
+									.of(notBlank)), null)),
 						new ValueDescription.Property("age",
 								new ValueDescription.Optional(new ValueDescription.Value("age", Integer.class,
 										List.of(new ConstraintDescription("object.notNull", List.of(), true),
@@ -155,10 +167,15 @@ class YaviArgumentsTest {
 						new ValueDescription.Property("billing", new ValueDescription.Optional(address, null)),
 						new ValueDescription.Property("roles",
 								new ValueDescription.NotNull(new ValueDescription.Elements(
-										new ValueDescription.Value("", String.class, List.of(notBlank))))),
+										new ValueDescription.Value("", String.class, List.of(notBlank)),
+										List.of(new ConstraintDescription("container.lessThanOrEqual", List.of(2),
+												false),
+												new ConstraintDescription("collection.unique", List.of(), false))))),
 						new ValueDescription.Property("scores",
 								new ValueDescription.NotNull(new ValueDescription.Entries(
-										new ValueDescription.Value("", Integer.class, List.of(notNegative))))))));
+										new ValueDescription.Value("", Integer.class, List.of(notNegative)),
+										List.of(new ConstraintDescription("container.lessThanOrEqual", List.of(1),
+												false))))))));
 		final String addressSchema = """
 				"properties":{"street":{"type":"string","minLength":1},"city":{"type":"string","minLength":1}},\
 				"required":["street","city"]}""";
@@ -170,8 +187,9 @@ class YaviArgumentsTest {
 				"age":{"type":["integer","null"],"minimum":0,"default":20},\
 				"address":{"type":"object",%s,\
 				"billing":{"type":["object","null"],%s,\
-				"roles":{"type":"array","items":{"type":"string","minLength":1}},\
-				"scores":{"type":"object","additionalProperties":{"type":["integer","null"],"minimum":0}}},\
+				"roles":{"type":"array","items":{"type":"string","minLength":1},"maxItems":2,"uniqueItems":true},\
+				"scores":{"type":"object","additionalProperties":{"type":["integer","null"],"minimum":0},\
+				"maxProperties":1}},\
 				"required":["contact","address","roles","scores"]}""".formatted(addressSchema, addressSchema));
 	}
 
@@ -190,6 +208,27 @@ class YaviArgumentsTest {
 			.containsExactly("object.oneOf");
 		assertThat(Yavi.<List<String>>_object(c -> c.notNull()).liftList().validated(List.of(List.of("a"))))
 			.containsExactly(List.of("a"));
+		// a list or map that is not an argument is null as an empty one, and is not
+		// optional if a constraint rejects an empty one
+		final ValueValidator<Iterable<String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.notBlank()),
+				c -> c.notEmpty().lessThanOrEqual(2));
+		final ValueValidator<Map<String, Integer>, Map<String, Integer>> stock = Yavi
+			._map(Yavi._integer(c -> c.notNull()), c -> c.greaterThanOrEqual(1).containsKey("a"));
+		assertThat(tags.untyped().validated(List.of("a", "b"))).containsExactly("a", "b");
+		assertThat(stock.untyped().validated(Map.of("a", 1))).containsExactly(Map.entry("a", 1));
+		assertThat(List.of(tags.validate(null).errors(), tags.untyped().validate(List.of()).errors(),
+				stock.validate(null).errors(), stock.untyped().validate(Map.of("b", 1)).errors()))
+			.extracting(violations -> violations.get(0).name(), violations -> violations.get(0).message())
+			.containsExactly(tuple("", "The value must not be empty"), tuple("", "The value must not be empty"),
+					tuple("", "The size of the value must be greater than or equal to 1. The given size is 0"),
+					tuple("", "The value must contain key a"));
+		assertThat(tags.untyped().validate(List.of("a", " ", "c")).errors()).extracting(ConstraintViolation::name)
+			.containsExactly("[1]");
+		assertThat(tags.description().acceptsNull()).isFalse();
+		assertThat(JsonSchema.toJson(tags.description())).endsWith(
+				"\"type\":\"array\",\"items\":{\"type\":\"string\",\"minLength\":1},\"minItems\":1,\"maxItems\":2}");
+		assertThat(JsonSchema.toJson(stock.description()))
+			.endsWith("\"type\":\"object\",\"additionalProperties\":{\"type\":\"integer\"},\"minProperties\":1}");
 		// a value without a name is not named in the message
 		assertThat(Yavi._integer(c -> c.notNull().positive()).untyped().validate("1").errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::message)

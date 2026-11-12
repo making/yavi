@@ -103,17 +103,31 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 				reader -> nested(name, validator.readingWith(reader), validator.description()));
 	}
 
-	static <E, R> ArgumentDefinition<List<E>, List<R>> list(String name, ValueValidator<E, R> elementValidator) {
-		final ValueDescription description = new ValueDescription.Elements(elementValidator.description());
-		return new ArgumentDefinition<>(name, nested(name, elements(elementValidator)::validate, description),
-				reader -> nested(name, elements(reader, elementValidator.readingWith(reader)), description));
+	/**
+	 * Returns the definition of a list whose elements are validated one by one and whose
+	 * constraints are checked on the validated elements, only when all of them are valid.
+	 */
+	static <E, R> ArgumentDefinition<List<E>, List<R>> list(String name, ValueValidator<E, R> elementValidator,
+			ContainerConstraints<List<R>> constraints) {
+		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
+				constraints.descriptions());
+		final ValueValidator<List<E>, List<R>> elements = elements(elementValidator)::validate;
+		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(elements), description),
+				reader -> nested(name, constraints.constrain(elements(reader, elementValidator.readingWith(reader))),
+						description));
 	}
 
+	/**
+	 * Returns the definition of a map whose values are validated one by one and whose
+	 * constraints are checked on the validated values, only when all of them are valid.
+	 */
 	static <V, R> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
-			ValueValidator<V, R> valueValidator) {
+			ValueValidator<V, R> valueValidator, ContainerConstraints<Map<String, R>> constraints) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
-		return new ArgumentDefinition<>(name, nested(name, lifted, lifted.description()),
-				reader -> nested(name, lifted.readingWith(reader), lifted.description()));
+		final ValueDescription description = new ValueDescription.Entries(valueValidator.description(),
+				constraints.descriptions());
+		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(lifted), description),
+				reader -> nested(name, constraints.constrain(lifted.readingWith(reader)), description));
 	}
 
 	/**

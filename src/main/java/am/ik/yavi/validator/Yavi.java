@@ -32,10 +32,12 @@ import am.ik.yavi.builder.EnumValidatorBuilder;
 import am.ik.yavi.builder.FloatValidatorBuilder;
 import am.ik.yavi.builder.InstantValidatorBuilder;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
+import am.ik.yavi.builder.ListValidatorBuilder;
 import am.ik.yavi.builder.LocalDateTimeValidatorBuilder;
 import am.ik.yavi.builder.LocalDateValidatorBuilder;
 import am.ik.yavi.builder.LocalTimeValidatorBuilder;
 import am.ik.yavi.builder.LongValidatorBuilder;
+import am.ik.yavi.builder.MapValidatorBuilder;
 import am.ik.yavi.builder.ObjectValidatorBuilder;
 import am.ik.yavi.builder.OffsetDateTimeValidatorBuilder;
 import am.ik.yavi.builder.ShortValidatorBuilder;
@@ -48,6 +50,7 @@ import am.ik.yavi.constraint.BigDecimalConstraint;
 import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.CollectionConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
 import am.ik.yavi.constraint.EnumConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
@@ -57,6 +60,7 @@ import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.constraint.LocalDateTimeConstraint;
 import am.ik.yavi.constraint.LocalTimeConstraint;
 import am.ik.yavi.constraint.LongConstraint;
+import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
@@ -64,6 +68,7 @@ import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.core.ValueValidator;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -74,6 +79,8 @@ import java.time.OffsetDateTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -96,7 +103,8 @@ import java.util.function.Function;
  *
  * <p>
  * Arguments can be composed: {@code _object(name, validator)} nests another validator,
- * {@code _list} and {@code _map} validate elements, and {@code optional()},
+ * {@code _list} and {@code _map} validate elements and, with constraints, the list or map
+ * of the validated elements ({@code c -> c.notEmpty().unique()}), and {@code optional()},
  * {@code nullable()} and {@code defaultValue} make the last added argument accept
  * {@code null}. The violations of nested values are located under the argument name, for
  * example {@code address.street} or {@code roles[0]}. A rule that spans several arguments
@@ -120,7 +128,8 @@ import java.util.function.Function;
  * without a name is the element of a list, the value of a map, an alternative of
  * {@code anyOf} or a value validated by itself; its violations are named by the place
  * where it is used ({@code roles[0]}), or have the empty name and a message that says
- * "The value" in place of the name.
+ * "The value" in place of the name. {@code _list} and {@code _map} return the validator
+ * of a list or a map that is not an argument, with the constraints of the list or map.
  *
  * <pre>{@code
  * StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
@@ -422,6 +431,35 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a list without a name that validates every element with the
+	 * given validator and the list of the validated elements with the given constraints.
+	 *
+	 * <p>
+	 * The elements are validated like {@link ValueValidator#liftList()} does: the
+	 * violations of an element are located under its index, and a {@code null} list is
+	 * validated as an empty list. The constraints are checked on the produced elements,
+	 * only when every element is valid, and their violations are reported on the list
+	 * itself. This is the validator of a list that is not an argument, such as the root
+	 * of a JSON document; an argument is added with
+	 * {@code _list(name, elementValidator, constraints)} of {@link YaviArguments}.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Iterable<String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.trim().notBlank()),
+	 *     c -> c.notEmpty().lessThanOrEqual(10).unique());
+	 * }</pre>
+	 * @param <E> the type of the elements to validate
+	 * @param <T> the type of the validated elements
+	 * @param elementValidator value validator for each element
+	 * @param constraints function that configures the constraints of the list
+	 * @return a validator of the list
+	 * @since 0.18.0
+	 */
+	public static <E, T> ValueValidator<Iterable<E>, List<T>> _list(ValueValidator<E, T> elementValidator,
+			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
+		return ListValidatorBuilder.of(elementValidator, constraints).build();
+	}
+
+	/**
 	 * Returns a validator of a {@code LocalDateTime} without a name.
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -535,6 +573,35 @@ public final class Yavi {
 	public static LongValidator<Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return LongValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a map with string keys without a name that validates every
+	 * value with the given validator and the map of the validated values with the given
+	 * constraints.
+	 *
+	 * <p>
+	 * The values are validated like {@link ValueValidator#liftMap()} does: the violations
+	 * of a value are located under its key, and a {@code null} map is validated as an
+	 * empty map. The constraints are checked on the produced values, only when every
+	 * value is valid, and their violations are reported on the map itself. An argument is
+	 * added with {@code _map(name, valueValidator, constraints)} of
+	 * {@link YaviArguments}.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> prices = Yavi
+	 *     ._map(Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty());
+	 * }</pre>
+	 * @param <V> the type of the values to validate
+	 * @param <T> the type of the validated values
+	 * @param valueValidator value validator for each value
+	 * @param constraints function that configures the constraints of the map
+	 * @return a validator of the map
+	 * @since 0.18.0
+	 */
+	public static <V, T> ValueValidator<Map<String, V>, Map<String, T>> _map(ValueValidator<V, T> valueValidator,
+			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
+		return MapValidatorBuilder.of(valueValidator, constraints).build();
 	}
 
 	/**

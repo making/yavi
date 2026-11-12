@@ -26,6 +26,7 @@ import am.ik.yavi.constraint.BigDecimalConstraint;
 import am.ik.yavi.constraint.BigIntegerConstraint;
 import am.ik.yavi.constraint.BooleanConstraint;
 import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.CollectionConstraint;
 import am.ik.yavi.constraint.DoubleConstraint;
 import am.ik.yavi.constraint.EnumConstraint;
 import am.ik.yavi.constraint.FloatConstraint;
@@ -35,6 +36,7 @@ import am.ik.yavi.constraint.LocalDateTimeConstraint;
 import am.ik.yavi.constraint.LocalDateConstraint;
 import am.ik.yavi.constraint.LocalTimeConstraint;
 import am.ik.yavi.constraint.LongConstraint;
+import am.ik.yavi.constraint.MapConstraint;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
@@ -1246,7 +1248,34 @@ public final class Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> {
 	public <E, T> Arguments4ValidatorBuilder<A1, A2, A3, List<E>, R1, R2, R3, List<T>> _list(String name,
 			ValueValidator<E, T> elementValidator) {
 		return new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3,
-				ArgumentDefinition.list(name, elementValidator));
+				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
+	}
+
+	/**
+	 * Adds the next argument as a {@code List} with the given name whose elements are
+	 * validated by the given value validator and which satisfies the given constraints.
+	 *
+	 * <p>
+	 * The elements are validated like {@link #_list(String, ValueValidator)} does. The
+	 * constraints are checked on the list of the validated elements, only when every
+	 * element is valid, and their violations are reported on {@code name}.
+	 *
+	 * <pre>{@code
+	 * ._list("tags", Yavi._string(c -> c.trim().notBlank()), c -> c.notEmpty().lessThanOrEqual(10).unique())
+	 * }</pre>
+	 * @param <E> type of the elements validated by {@code elementValidator}
+	 * @param <T> type of the values produced by {@code elementValidator}
+	 * @param name the property name of the list
+	 * @param elementValidator value validator for each element
+	 * @param constraints function that configures the constraints of the list
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <E, T> Arguments4ValidatorBuilder<A1, A2, A3, List<E>, R1, R2, R3, List<T>> _list(String name,
+			ValueValidator<E, T> elementValidator,
+			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
+		return new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3,
+				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 
 	/**
@@ -1270,7 +1299,34 @@ public final class Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> {
 	public <V, T> Arguments4ValidatorBuilder<A1, A2, A3, Map<String, V>, R1, R2, R3, Map<String, T>> _map(String name,
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3,
-				ArgumentDefinition.map(name, valueValidator));
+				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
+	}
+
+	/**
+	 * Adds the next argument as a {@code Map} with the given name whose values are
+	 * validated by the given value validator and which satisfies the given constraints.
+	 *
+	 * <p>
+	 * The values are validated like {@link #_map(String, ValueValidator)} does. The
+	 * constraints are checked on the map of the validated values, only when every value
+	 * is valid, and their violations are reported on {@code name}.
+	 *
+	 * <pre>{@code
+	 * ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
+	 * }</pre>
+	 * @param <V> type of the values validated by {@code valueValidator}
+	 * @param <T> type of the values produced by {@code valueValidator}
+	 * @param name the property name of the map
+	 * @param valueValidator value validator for each value
+	 * @param constraints function that configures the constraints of the map
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <V, T> Arguments4ValidatorBuilder<A1, A2, A3, Map<String, V>, R1, R2, R3, Map<String, T>> _map(String name,
+			ValueValidator<V, T> valueValidator,
+			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
+		return new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3,
+				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
 
 	/**
