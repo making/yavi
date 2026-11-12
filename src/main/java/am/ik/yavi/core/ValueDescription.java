@@ -229,7 +229,10 @@ public sealed interface ValueDescription {
 
 	/**
 	 * A value for which {@code null} is accepted without being validated, whatever the
-	 * described value accepts.
+	 * described value accepts. A validator that
+	 * {@linkplain ValueValidator#recover(Object) recovers} is described this way too: the
+	 * described value is the one it expects, although it produces the default value for
+	 * any other.
 	 *
 	 * @param value the description of a value other than {@code null}
 	 * @param defaultValue the value produced for {@code null}; {@code null} if there is
@@ -237,6 +240,7 @@ public sealed interface ValueDescription {
 	 * @see ValueValidator#optional()
 	 * @see ValueValidator#nullable()
 	 * @see ValueValidator#defaultValue(Object)
+	 * @see ValueValidator#recover(Object)
 	 */
 	record Optional(ValueDescription value, @Nullable Object defaultValue) implements ValueDescription {
 	}

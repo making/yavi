@@ -45,6 +45,7 @@ import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
@@ -67,7 +68,7 @@ import am.ik.yavi.input.MapInputValidator;
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. {@code optional()}, {@code nullable()}
  * and {@code defaultValue} apply to the last added argument and make it accept
- * {@code null}.
+ * {@code null}; {@code recover} makes it accept any value.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -146,6 +147,41 @@ public final class Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> {
 	 */
 	public Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> defaultValue(R3 defaultValue) {
 		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, this.d3.withDefault(defaultValue));
+	}
+
+	/**
+	 * Produces the given value when the value of the last added argument is {@code null}
+	 * or invalid, so that the argument never fails.
+	 *
+	 * <p>
+	 * A {@code null} value succeeds with the fallback and the constraints of the argument
+	 * are not applied to it; the fallback itself is not validated. Every violation of any
+	 * other value is replaced with the fallback, including the one of a value read from a
+	 * map that does not represent the type of the argument.
+	 * @param fallback the value produced instead of a failure
+	 * @return a builder whose last argument falls back to the given value
+	 * @since 0.18.0
+	 * @see ValueValidator#recover(Object)
+	 */
+	public Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> recover(R3 fallback) {
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, this.d3.recovering(fallback));
+	}
+
+	/**
+	 * Produces the result of the given function when the value of the last added argument
+	 * is {@code null} or invalid, so that the argument never fails.
+	 *
+	 * <p>
+	 * The function is given the violations of the invalid value, and no violation for a
+	 * {@code null} value, to which the constraints of the argument are not applied.
+	 * @param fallback the function that produces a value from the violations
+	 * @return a builder whose last argument falls back to the result of the function
+	 * @since 0.18.0
+	 * @see ValueValidator#recoverWith(Function)
+	 */
+	public Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> recoverWith(
+			Function<? super ConstraintViolations, ? extends R3> fallback) {
+		return new Arguments3ValidatorBuilder<>(this.d1, this.d2, this.d3.recoveringWith(fallback));
 	}
 
 	/**

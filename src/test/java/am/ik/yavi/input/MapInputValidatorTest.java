@@ -226,6 +226,23 @@ class MapInputValidatorTest {
 		else {
 			assertThat(defaulted.value().rate()).isEqualTo(1.5);
 		}
+		// a recovering argument never fails: a value that the reader takes for the type
+		// is validated, and an absent key, a violated constraint, a value that does not
+		// represent the type and an invalid embedded object give the fallback
+		final Address nowhere = new Address("", "");
+		final MapInputValidator<Page> page = Yavi.arguments()
+			._integer("size", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100))
+			.recover(20)
+			._enum("role", Role.class, c -> c.notNull())
+			.recoverWith(violations -> violations.isEmpty() ? Role.ADMIN : Role.USER)
+			._embedded(addressValidator)
+			.recover(nowhere)
+			.fromMap(Page::new);
+		assertThat(model.validate(page, input("size", 50, "role", "ADMIN", "street", "1-2-3", "city", "Tokyo")).value())
+			.isEqualTo(new Page(50, Role.ADMIN, new Address("1-2-3", "Tokyo")));
+		assertThat(model.validate(page, input("size", 999, "role", "admin", "street", "1-2-3")).value())
+			.isEqualTo(new Page(20, Role.USER, nowhere));
+		assertThat(model.validate(page, input("size", "many")).value()).isEqualTo(new Page(20, Role.ADMIN, nowhere));
 	}
 
 	@ParameterizedTest
@@ -524,6 +541,9 @@ class MapInputValidatorTest {
 				() -> Yavi.arguments()._string("dept_code")._embedded(departmentValidator).fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("The property 'dept_code' is defined twice");
+	}
+
+	record Page(@Nullable Integer size, @Nullable Role role, @Nullable Address address) {
 	}
 
 	record Item(@Nullable String name, @Nullable Integer quantity) {

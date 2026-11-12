@@ -1968,7 +1968,7 @@ import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
-import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.Validated;'; fi)
+import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.Validated;'; fi)
 import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
@@ -1996,7 +1996,7 @@ cat <<EOD
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. {@code optional()},
  * {@code nullable()} and {@code defaultValue} apply to the last added argument and make
- * it accept {@code null}.
+ * it accept {@code null}; {@code recover} makes it accept any value.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2034,7 +2034,7 @@ cat <<EOD
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
  * violations are located under the argument name. On the returned builders,
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
- * argument and make it accept {@code null}.
+ * argument and make it accept {@code null}; {@code recover} makes it accept any value.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2110,6 +2110,40 @@ $(for j in `seq 1 ${i}`;do echo "		this.d${j} = d${j};";done)
 	 */
 	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> defaultValue(R${i} defaultValue) {
 		return new ${class}<>(${init_definitions}this.d${i}.withDefault(defaultValue));
+	}
+
+	/**
+	 * Produces the given value when the value of the last added argument is {@code null}
+	 * or invalid, so that the argument never fails.
+	 *
+	 * <p>
+	 * A {@code null} value succeeds with the fallback and the constraints of the argument
+	 * are not applied to it; the fallback itself is not validated. Every violation of
+	 * any other value is replaced with the fallback, including the one of a value read
+	 * from a map that does not represent the type of the argument.
+	 * @param fallback the value produced instead of a failure
+	 * @return a builder whose last argument falls back to the given value
+	 * @since 0.18.0
+	 * @see ValueValidator#recover(Object)
+	 */
+	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recover(R${i} fallback) {
+		return new ${class}<>(${init_definitions}this.d${i}.recovering(fallback));
+	}
+
+	/**
+	 * Produces the result of the given function when the value of the last added
+	 * argument is {@code null} or invalid, so that the argument never fails.
+	 *
+	 * <p>
+	 * The function is given the violations of the invalid value, and no violation for a
+	 * {@code null} value, to which the constraints of the argument are not applied.
+	 * @param fallback the function that produces a value from the violations
+	 * @return a builder whose last argument falls back to the result of the function
+	 * @since 0.18.0
+	 * @see ValueValidator#recoverWith(Function)
+	 */
+	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
+		return new ${class}<>(${init_definitions}this.d${i}.recoveringWith(fallback));
 	}
 EOD
 else
