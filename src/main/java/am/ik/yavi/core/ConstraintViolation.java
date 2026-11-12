@@ -40,6 +40,8 @@ public class ConstraintViolation {
 	 */
 	private final Object[] args;
 
+	private static final String DEFAULT_SEPARATOR = ".";
+
 	/**
 	 * The default message format to use when no localized message is found for the
 	 * message id. This format string may contain placeholders that will be replaced with
@@ -79,6 +81,12 @@ public class ConstraintViolation {
 	private final List<PathSegment> path;
 
 	/**
+	 * The separator that joins the name with the name of a containing property or element
+	 * when this violation is located under it.
+	 */
+	private final String separator;
+
+	/**
 	 * Creates a new constraint violation.
 	 *
 	 * <p>
@@ -97,14 +105,15 @@ public class ConstraintViolation {
 	@Deprecated
 	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, Object @Nullable [] args,
 			@Nullable MessageFormatter messageFormatter, @Nullable Locale locale) {
-		this(name, null, messageKey, defaultMessageFormat, args, messageFormatter, locale);
+		this(name, null, null, messageKey, defaultMessageFormat, args, messageFormatter, locale);
 	}
 
-	private ConstraintViolation(String name, @Nullable List<PathSegment> path, String messageKey,
-			String defaultMessageFormat, Object @Nullable [] args, @Nullable MessageFormatter messageFormatter,
-			@Nullable Locale locale) {
+	private ConstraintViolation(String name, @Nullable List<PathSegment> path, @Nullable String separator,
+			String messageKey, String defaultMessageFormat, Object @Nullable [] args,
+			@Nullable MessageFormatter messageFormatter, @Nullable Locale locale) {
 		this.name = name;
 		this.path = path == null ? PathSegment.of(name) : path;
+		this.separator = separator == null ? DEFAULT_SEPARATOR : separator;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		if (args != null) {
@@ -290,8 +299,10 @@ public class ConstraintViolation {
 	 * {@code address[0]} and an empty name becomes {@code address}.
 	 *
 	 * <p>
-	 * The flat name is joined with {@code .}, the default message key separator. An empty
-	 * property name leaves the violation unchanged.
+	 * The flat name is joined with the message key separator of the validator that
+	 * reported the violation, which is {@code .} by default, so a name stays uniform:
+	 * {@code address/street} becomes {@code order/address/street}. An empty property name
+	 * leaves the violation unchanged.
 	 * @param name the name of the property that contains the violated value
 	 * @return a new ConstraintViolation under the given property
 	 * @since 0.18.0
@@ -300,27 +311,27 @@ public class ConstraintViolation {
 		if (name.isEmpty()) {
 			return this;
 		}
-		final boolean joined = this.name.isEmpty()
-				|| (!this.path.isEmpty() && this.path.get(0) instanceof PathSegment.Index);
-		return this.relocate(joined ? name + this.name : name + "." + this.name,
-				PathSegment.concat(PathSegment.of(name), this.path));
+		return this.relocate(this.join(name), PathSegment.concat(PathSegment.of(name), this.path));
 	}
 
 	/**
 	 * Returns a new ConstraintViolation located under the element at the given index. An
 	 * index segment is prepended to the {@link #path()} and the name is prefixed
 	 * accordingly: {@code street} becomes {@code [0].street} and an empty name becomes
-	 * {@code [0]}.
+	 * {@code [0]}. The flat name is joined like {@link #prefixed(String)} does.
 	 * @param index the index of the element that contains the violated value
 	 * @return a new ConstraintViolation under the given element
 	 * @since 0.18.0
 	 */
 	public ConstraintViolation prefixed(int index) {
-		final boolean joined = this.name.isEmpty()
-				|| (!this.path.isEmpty() && this.path.get(0) instanceof PathSegment.Index);
-		final String prefix = "[" + index + "]";
-		return this.relocate(joined ? prefix + this.name : prefix + "." + this.name,
+		return this.relocate(this.join("[" + index + "]"),
 				PathSegment.concat(List.of(new PathSegment.Index(index)), this.path));
+	}
+
+	private String join(String prefix) {
+		final boolean adjacent = this.name.isEmpty()
+				|| (!this.path.isEmpty() && this.path.get(0) instanceof PathSegment.Index);
+		return adjacent ? prefix + this.name : prefix + this.separator + this.name;
 	}
 
 	/**
@@ -335,8 +346,8 @@ public class ConstraintViolation {
 		if (newArgs.length > 0) {
 			newArgs[0] = newName;
 		}
-		return new ConstraintViolation(newName, newPath, this.messageKey, this.defaultMessageFormat, newArgs,
-				this.messageFormatter, this.locale);
+		return new ConstraintViolation(newName, newPath, this.separator, this.messageKey, this.defaultMessageFormat,
+				newArgs, this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -365,6 +376,9 @@ public class ConstraintViolation {
 
 		/** The structured path to the value that the constraint violation applies to */
 		private @Nullable List<PathSegment> path;
+
+		/** The separator that joins the name with a containing property or element */
+		private @Nullable String separator;
 
 		/** The message id for internationalization */
 		private @Nullable String messageKey;
@@ -486,6 +500,20 @@ public class ConstraintViolation {
 		}
 
 		/**
+		 * Sets the separator that joins the name with the name of a containing property
+		 * or element when the violation is
+		 * {@linkplain ConstraintViolation#prefixed(String) prefixed}. If not specified,
+		 * {@code .} is used.
+		 * @param separator the separator of the names
+		 * @return this builder for method chaining
+		 * @since 0.18.0
+		 */
+		public Builder separator(String separator) {
+			this.separator = separator;
+			return this;
+		}
+
+		/**
 		 * Sets the message formatter to be used for message formatting. If not specified,
 		 * a default {@link SimpleMessageFormatter} will be used.
 		 * @param messageFormatter the message formatter to use
@@ -513,7 +541,7 @@ public class ConstraintViolation {
 		 * @return a new {@link ConstraintViolation} instance
 		 */
 		public ConstraintViolation build() {
-			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path,
+			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path, this.separator,
 					Objects.requireNonNull(this.messageKey), Objects.requireNonNull(this.defaultMessageFormat),
 					this.args, this.messageFormatter, this.locale);
 		}
@@ -742,6 +770,18 @@ public class ConstraintViolation {
 			 * @since 0.18.0
 			 */
 			Optionals path(List<PathSegment> path);
+
+			/**
+			 * Sets the separator that joins the name with the name of a containing
+			 * property or element when the violation is
+			 * {@linkplain ConstraintViolation#prefixed(String) prefixed}. A validator
+			 * sets its message key separator, so that a prefixed name is joined
+			 * uniformly. If not specified, {@code .} is used.
+			 * @param separator the separator of the names
+			 * @return this builder for method chaining
+			 * @since 0.18.0
+			 */
+			Optionals separator(String separator);
 
 			/**
 			 * Sets the message formatter to be used for message formatting.

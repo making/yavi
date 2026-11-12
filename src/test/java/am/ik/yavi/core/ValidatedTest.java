@@ -91,8 +91,8 @@ class ValidatedTest {
 			.prefixed("orders")
 			.validate(List.of(valid, new Order("1", new Address("", "JP"), List.of())))
 			.errors();
-		assertThat(lifted).extracting(ConstraintViolation::name).containsExactly("orders[1].address/street");
-		assertThat(lifted).extracting(violation -> violation.args()[0]).containsExactly("orders[1].address/street");
+		assertThat(lifted).extracting(ConstraintViolation::name).containsExactly("orders[1]/address/street");
+		assertThat(lifted).extracting(violation -> violation.args()[0]).containsExactly("orders[1]/address/street");
 		assertThat(lifted).extracting(ConstraintViolation::path)
 			.containsExactly(
 					List.of(new Property("orders"), new Index(1), new Property("address"), new Property("street")));
