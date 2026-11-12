@@ -47,7 +47,7 @@ YAVI into your application.
 
 #### Prerequisites
 
-* [Java Runtime](http://www.oracle.com/technetwork/java/index.html) >= 8
+* [Java Runtime](http://www.oracle.com/technetwork/java/index.html) >= 21 for YAVI 0.18 and later, >= 8 for earlier versions
 * [Apache Maven](http://maven.apache.org/)
 
 #### Project set up
@@ -452,7 +452,8 @@ introduction, it is recommended to read "[Using YAVI](https://yavi.ik.am/#using-
 
 ### Required
 
-* Java 8+
+* Java 21+ for YAVI 0.18 and later
+* Java 8+ for YAVI 0.17 and earlier
 
 ### License
 
