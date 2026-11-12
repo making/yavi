@@ -22,7 +22,6 @@ The examples assume these imports:
 
 ```java
 import am.ik.yavi.arguments.*;
-import am.ik.yavi.builder.*;
 import am.ik.yavi.core.*;
 import am.ik.yavi.input.*;
 import am.ik.yavi.validator.Yavi;
@@ -53,30 +52,36 @@ request parameters, `apply(f)` for typed arguments.
 
 ### Primitive values
 
-A validator of a single value is built with a `XxxValidatorBuilder` and takes a name, which
-is empty for a value that is not a property. `untyped()` makes it accept an `Object` and
-check its type, which is what `string()` and `int_()` of Raoh do.
+A validator of a single value is built with `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)`
+and so on: the methods have the names of the arguments of `Yavi.arguments()` and take the
+constraints. `untyped()` makes the validator accept an `Object` and check its type, which
+is what `string()` and `int_()` of Raoh do.
 
 ```java
-ValueValidator<Object, String> string = StringValidatorBuilder.of("", c -> c.notNull()).build().untyped();
-ValueValidator<Object, Integer> integer = IntegerValidatorBuilder.of("", c -> c.notNull()).build().untyped();
+ValueValidator<Object, String> string = Yavi._string(c -> c.notNull()).untyped();
+ValueValidator<Object, Integer> integer = Yavi._integer(c -> c.notNull()).untyped();
 
 string.validate("hello"); // Valid[hello]
 integer.validate(42); // Valid[42]
 integer.validate(42L); // Valid[42], a number is taken as long as its value is kept
-integer.validate("not a number"); // object.type: "" must be of type integer
+integer.validate("not a number"); // object.type: The value must be of type integer
 ```
 
 | Raoh | YAVI |
 | --- | --- |
-| `string()` | `StringValidatorBuilder` |
-| `int_()`, `long_()`, `double_()`, `float_()`, `decimal()` | `IntegerValidatorBuilder`, `LongValidatorBuilder`, `DoubleValidatorBuilder`, `FloatValidatorBuilder`, `BigDecimalValidatorBuilder` |
-| `bool()` | `BooleanValidatorBuilder` |
-| `bytes()` | `ObjectValidatorBuilder.of("", byte[].class, c -> c.notNull())` |
-| `date()`, `iso8601()` | `LocalDateValidatorBuilder`, `InstantValidatorBuilder` and the other temporal builders |
+| `string()` | `Yavi._string(c -> ...)` |
+| `int_()`, `long_()`, `double_()`, `float_()`, `decimal()` | `Yavi._integer`, `Yavi._long`, `Yavi._double`, `Yavi._float`, `Yavi._bigDecimal` |
+| `bool()` | `Yavi._boolean(c -> ...)` |
+| `bytes()` | `Yavi._object(byte[].class, c -> c.notNull())` |
+| `date()`, `iso8601()` | `Yavi._localDate`, `Yavi._instant` and the other temporal methods |
+| `enumOf(Role.class)` | `Yavi._enum(Role.class)` |
 
 A value is not required unless a constraint says so: a Raoh decoder rejects `null`, a YAVI
 validator accepts it without `notNull()` or `notBlank()`.
+
+A violation of such a validator has the empty name, and its message says "The value" where
+a named one shows the name. The name is given by the place where the validator is used
+(`tags[0]`, `prices.apple`), or as the first parameter: `Yavi._string("email", c -> ...)`.
 
 ### Constraints
 
@@ -87,8 +92,8 @@ validator accepts it without `notNull()` or `notBlank()`.
 | `fixedLength(n)` | `c.fixedSize(n)` |
 | `nonBlank()` | `c.notBlank()` |
 | `pattern(regex)` | `c.pattern(regex)` |
-| `uuid()` (returns `UUID`) | `c.uuid()`, then `.build(UUID::fromString)` |
-| `url()` (returns `URI`, `http` / `https` only) | `c.url()` (any protocol of `java.net.URL`), then `.build(URI::create)` |
+| `uuid()` (returns `UUID`) | `c.uuid()`, then `.map(UUID::fromString)` |
+| `url()` (returns `URI`, `http` / `https` only) | `c.url()` (any protocol of `java.net.URL`), then `.map(URI::create)` |
 | `int_().range(0, 150)` | `c.greaterThanOrEqual(0).lessThanOrEqual(150)` |
 | `positive()`, `nonNegative()` | `c.positive()`, `c.positiveOrZero()` |
 | `decimal().scale(4)` | `c.predicate(d -> d.scale() <= 4, key, message)` |
@@ -98,13 +103,11 @@ validator accepts it without `notNull()` or `notBlank()`.
 | a trailing custom message | `.message("...")` after the constraint |
 
 ```java
-ValueValidator<Object, LocalDate> date = LocalDateValidatorBuilder
-        .of("", c -> c.notNull().after(() -> LocalDate.of(2020, 1, 1)))
-        .build()
+ValueValidator<Object, LocalDate> date = Yavi._localDate(c -> c.notNull().after(() -> LocalDate.of(2020, 1, 1)))
         .untyped();
 
 date.validate("2025-06-15"); // Valid[2025-06-15]
-date.validate("2025-13-15"); // object.type: "" must be of type LocalDate
+date.validate("2025-13-15"); // object.type: The value must be of type LocalDate
 ```
 
 ### Transforms and normalization
@@ -113,9 +116,8 @@ Raoh chains transforms with constraints (`string().trim().toLowerCase().email()`
 constraint never changes the value, so a transform is a `map` between two validators:
 
 ```java
-StringValidator<String> email = StringValidatorBuilder.of("", c -> c.notBlank().email()).build();
-ValueValidator<String, String> normalizedEmail = StringValidatorBuilder.of("", c -> c.notNull())
-        .build()
+StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
+ValueValidator<String, String> normalizedEmail = Yavi._string(c -> c.notNull())
         .map(s -> s.trim().toLowerCase(Locale.ROOT))
         .andThen(email);
 
@@ -139,9 +141,7 @@ reader takes strings as text that stands for the type.
 
 ```java
 InputReader<Object> text = InputReader.ofJdkTypes().coercingStrings();
-ValueValidator<Object, Integer> age = IntegerValidatorBuilder
-        .of("", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
-        .build()
+ValueValidator<Object, Integer> age = Yavi._integer(c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
         .readingWith(text);
 
 age.validate("25"); // Valid[25]
@@ -162,19 +162,18 @@ Other strings are taken by a reader that overrides `InputReader#value(node, type
 
 ### Domain primitives
 
-`build(f)` or `map(f)` creates the domain type. A named validator is reused as an argument:
+`map(f)` creates the domain type. A named validator is reused as an argument:
 
 ```java
 record Email(String value) {}
 record Age(int value) {}
 record UserId(UUID value) {}
 
-StringValidator<Email> emailValidator = StringValidatorBuilder.of("email", c -> c.notBlank().email()).build(Email::new);
-IntegerValidator<Age> ageValidator = IntegerValidatorBuilder
-        .of("age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
-        .build(Age::new);
-StringValidator<UserId> userIdValidator = StringValidatorBuilder.of("id", c -> c.notNull().uuid())
-        .build(s -> new UserId(UUID.fromString(s)));
+StringValidator<Email> emailValidator = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
+IntegerValidator<Age> ageValidator = Yavi._integer("age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
+        .map(Age::new);
+StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.notNull().uuid())
+        .map(s -> new UserId(UUID.fromString(s)));
 ```
 
 ## Objects
@@ -296,15 +295,13 @@ itemsValidator.validate(Map.of("items", List.of(
 `unique()`). They are a second validator applied to the validated list:
 
 ```java
-ValueValidator<Iterable<String>, List<String>> tagsValidator = StringValidatorBuilder.of("", c -> c.notBlank())
-        .build()
+ValueValidator<Iterable<String>, List<String>> tagsValidator = Yavi._string(c -> c.notBlank())
         .liftList()
-        .andThen(ObjectValidatorBuilder.<List<String>>of("", c -> c
+        .andThen(Yavi.<List<String>>_object(c -> c
                 .predicate(tags -> !tags.isEmpty() && tags.size() <= 10, "tags.size",
                         "The size of \"{0}\" must be between 1 and 10")
                 .predicate(tags -> new HashSet<>(tags).size() == tags.size(), "tags.unique",
-                        "\"{0}\" must not contain duplicates"))
-            .build());
+                        "\"{0}\" must not contain duplicates")));
 
 Yavi.arguments()._object("tags", tagsValidator).fromMap(tags -> tags);
 ```
@@ -316,7 +313,7 @@ Yavi.arguments()._object("tags", tagsValidator).fromMap(tags -> tags);
 
 ```java
 Yavi.arguments()
-        ._map("prices", BigDecimalValidatorBuilder.of("", c -> c.notNull().positive()).build())
+        ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()))
         .fromMap(prices -> prices);
 ```
 
@@ -349,7 +346,7 @@ MapInputValidator<Params> paramsValidator = Yavi.arguments()
         .fromMap(Params::new);
 
 MapInputValidator<Params> validator = Yavi.arguments()
-        ._object("params", StringValidatorBuilder.of("", c -> c.notNull()).build().andThen(parseJson).andThen(paramsValidator))
+        ._object("params", Yavi._string(c -> c.notNull()).andThen(parseJson).andThen(paramsValidator))
         .fromMap(params -> params);
 
 validator.validate(Map.of("params", "not json")); // params: "params" cannot be parsed as JSON
@@ -552,7 +549,7 @@ static <T, X> ValueValidator<Object, X> recover(ValueValidator<T, X> validator, 
 }
 
 MapInputValidator<Integer> pageSizeValidator = Yavi.arguments()
-        ._object("pageSize", recover(IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).build(), 20))
+        ._object("pageSize", recover(Yavi._integer(c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)), 20))
         .defaultValue(20)
         .fromMap(pageSize -> pageSize);
 
@@ -640,7 +637,7 @@ record UserRegistration(Email email, Password password, Role role, List<Contact>
 
 MapInputValidator<UserRegistration> userRegistrationValidator = Yavi.arguments()
         ._object("email", normalizedEmail.map(Email::new))
-        ._string(StringValidatorBuilder.of("password", c -> c.notNull().greaterThanOrEqual(8).lessThanOrEqual(128)).build(Password::new))
+        ._string(Yavi._string("password", c -> c.notNull().greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
         ._list("contacts", contactValidator)
         .fromMap(UserRegistration::new);
@@ -683,7 +680,7 @@ record Item(String name, Map<String, String> attrs) {}
 
 MapInputValidator<Item> itemValidator = Yavi.arguments()
         ._string("name", c -> c.notBlank())
-        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build())
+        ._rest(Yavi._string(c -> c.notBlank()))
         .fromMap(Item::new);
 
 itemValidator.validate(Map.of("name", "pen", "color", "red")); // Item[name=pen, attrs={color=red}]

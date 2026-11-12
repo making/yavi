@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  * ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.arguments()
  *     ._string("q", c -> c.notBlank())
  *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
- *     ._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build())
+ *     ._list("tags", Yavi._string(c -> c.notBlank()))
  *     ._object("address", addressValidator)
  *     .fromMap(SearchForm::new)
  *     .readingParameters();

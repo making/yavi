@@ -11,9 +11,9 @@ validators per transformed value (`docs/ComparisonWithRaoh.md`, "Transforms and
 normalization"):
 
 ```java
-StringValidatorBuilder.of("", c -> c.notNull()).build()
+Yavi._string(c -> c.notNull())
     .map(s -> s.trim().toLowerCase(Locale.ROOT))
-    .andThen(StringValidatorBuilder.of("", c -> c.notBlank().email()).build());
+    .andThen(Yavi._string(c -> c.notBlank().email()));
 ```
 
 * It cannot be written in place: `_string("email", c -> ...)` has no transform.
@@ -37,8 +37,8 @@ default ValueValidator<T, X> preprocess(UnaryOperator<T> f)
 ## Design questions
 
 * Whether common string transforms get names (`trimmed()`, `lowerCased()`,
-  `normalized(Form)`) on `StringValidatorBuilder` / the string argument, or only the
-  general hook exists.
+  `normalized(Form)`) on the validator of `Yavi._string(c)` / the string argument, or only
+  the general hook exists.
 * With `readingWith(reader)` the transform must run after the type check of the reader,
   on the typed value.
 * The violated value in the violation: the transformed one.

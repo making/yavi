@@ -53,8 +53,8 @@ class YaviArgumentsTest {
 	static final Arguments7ValidatorBuilder<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, String, Optional<String>, Integer, Address, Address, List<String>, Map<String, Integer>> builder = Yavi
 		.arguments()
 		._object("contact",
-				ValueValidator.<String, String>anyOf(StringValidatorBuilder.of("", c -> c.email()).build(),
-						StringValidatorBuilder.of("", c -> c.pattern("[0-9]{10,11}")).build()))
+				ValueValidator.<String, String>anyOf(Yavi._string(c -> c.email()),
+						Yavi._string(c -> c.pattern("[0-9]{10,11}"))))
 		._string("nickname", c -> c.notBlank())
 		.optional()
 		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
@@ -62,8 +62,8 @@ class YaviArgumentsTest {
 		._object("address", addressValidator)
 		._object("billing", addressValidator)
 		.nullable()
-		._list("roles", StringValidatorBuilder.of("", c -> c.notBlank()).build())
-		._map("scores", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build());
+		._list("roles", Yavi._string(c -> c.notBlank()))
+		._map("scores", Yavi._integer(c -> c.greaterThanOrEqual(0)));
 
 	static final Arguments7Validator<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, User> validator = builder
 		.apply(User::new)
@@ -173,6 +173,33 @@ class YaviArgumentsTest {
 				"roles":{"type":"array","items":{"type":"string","minLength":1}},\
 				"scores":{"type":"object","additionalProperties":{"type":["integer","null"],"minimum":0}}},\
 				"required":["contact","address","roles","scores"]}""".formatted(addressSchema, addressSchema));
+	}
+
+	@Test
+	void validatorOfASingleValue() {
+		enum
+		Role{
+
+		ADMIN,USER
+
+		}
+		assertThat(Yavi._string(c -> c.notBlank().email()).map(String::length).validated("a@b.c")).isEqualTo(5);
+		assertThat(Yavi._enum(Role.class).untyped().validated("ADMIN")).isEqualTo(Role.ADMIN);
+		assertThat(Yavi._enum(Role.class, c -> c.oneOf(Role.USER)).validate(Role.ADMIN).errors())
+			.extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.oneOf");
+		assertThat(Yavi.<List<String>>_object(c -> c.notNull()).liftList().validated(List.of(List.of("a"))))
+			.containsExactly(List.of("a"));
+		// a value without a name is not named in the message
+		assertThat(Yavi._integer(c -> c.notNull().positive()).untyped().validate("1").errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("", "The value must be of type integer"));
+		assertThat(Yavi._object(byte[].class, c -> c.notNull()).untyped().validate(null).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("", "The value must not be null"));
+		assertThat(Yavi._string("email", c -> c.notBlank()).validate(" ").errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("email", "\"email\" must not be blank"));
 	}
 
 }

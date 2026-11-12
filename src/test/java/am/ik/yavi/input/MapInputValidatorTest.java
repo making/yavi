@@ -287,7 +287,7 @@ class MapInputValidatorTest {
 			.containsExactly("object.notNull");
 		// any input is taken once untyped
 		assertThat(addressValidator.untyped().validate(List.of()).errors()).extracting(ConstraintViolation::message)
-			.containsExactly("\"\" must be of type object");
+			.containsExactly("The value must be of type object");
 	}
 
 	@ParameterizedTest

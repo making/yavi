@@ -403,23 +403,20 @@ Please take a look at the following definition:
 ```java
 package com.example;
 
-import am.ik.yavi.builder.IntegerValidatorBuilder;
-import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
 
 public final class Car {
 
-  public static StringValidator<String> manufacturerValidator = StringValidatorBuilder
-          .of("manufacturer", c -> c.notNull())
-          .build();
+  public static StringValidator<String> manufacturerValidator = Yavi._string("manufacturer", c -> c.notNull());
 
-  public static StringValidator<String> licensePlateValidator = StringValidatorBuilder
-          .of("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
-          .build();
+  public static StringValidator<String> licensePlateValidator = Yavi._string("licensePlate",
+          c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14));
 
-  public static IntegerValidator<Integer> seatCountValidator = IntegerValidatorBuilder
-          .of("seatCount", c -> c.greaterThanOrEqual(2))
-          .build();
+  public static IntegerValidator<Integer> seatCountValidator = Yavi._integer("seatCount", c -> c.greaterThanOrEqual(2));
 
   private static Arguments3Validator<String, String, Integer, Car> validator = manufacturerValidator
           .split(licensePlateValidator)
@@ -445,6 +442,8 @@ After defining validators for `manufacturer`, `licensePlate`, and `seatCount`, i
 
 These small validators can also be used for generating other objects, which prevents domain rules from being scattered throughout the code.
 
+`Yavi._string`, `Yavi._integer`, `Yavi._localDate` and so on have the names of the arguments of `Yavi.arguments()`. The name can be omitted for a value that is not a property, such as the element of a list: `Yavi._string(c -> c.notBlank())`. Its violations are named by the place where the validator is used (`roles[0]`); validated by itself, they have the empty name and a message that says "The value" in place of the name (`The value must not be blank`).
+
 #### Nested objects, collections and optional arguments
 
 An argument can also be a nested object, a list or a map. Their violations are located under the argument name (`address.street`, `roles[0]`, `scores.math`), both in `name()` and in the structured `path()`.
@@ -461,7 +460,7 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
         ._string("nickname", c -> c.notBlank()).optional() // Optional<String>
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
         ._object("address", addressValidator) // address.street
-        ._list("roles", StringValidatorBuilder.of("", c -> c.notBlank()).build()) // roles[0]
+        ._list("roles", Yavi._string(c -> c.notBlank())) // roles[0]
         .apply(User::new)
         .constraintOnTarget(user -> user.age() >= 18 || !user.roles().contains("admin"), "roles",
                 ViolationMessage.of("user.adultAdmin", "\"{0}\" must not contain \"admin\" for a minor"));
@@ -490,7 +489,7 @@ MapInputValidator<User> userValidator = Yavi.arguments()
         ._enum("role", Role.class, c -> c.notNull()) // "ADMIN"
         ._localDate("birthday") // "2000-01-01"
         ._object("address", addressValidator) // a nested map
-        ._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build()) // a list
+        ._list("tags", Yavi._string(c -> c.notBlank())) // a list
         ._string("nickname").optional()
         .fromMap(User::new);
 
@@ -538,7 +537,7 @@ MapInputValidator<Employee> employeeValidator = Yavi.arguments()
         ._integer("id", c -> c.notNull())
         ._embedded(userNameValidator) // first_name, last_name
         ._embedded(departmentValidator).nullable() // dept_name, dept_code
-        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build()) // a Map<String, String> of the other keys
+        ._rest(Yavi._string(c -> c.notBlank())) // a Map<String, String> of the other keys
         .fromMap(Employee::new);
 ```
 
@@ -628,7 +627,7 @@ ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
         ._localDate("since")
-        ._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build()).defaultValue(List.of())
+        ._list("tags", Yavi._string(c -> c.notBlank())).defaultValue(List.of())
         ._object("address", addressValidator).nullable()
         .fromMap(SearchForm::new)
         .readingParameters();
