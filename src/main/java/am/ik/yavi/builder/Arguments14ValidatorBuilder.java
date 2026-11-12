@@ -16,6 +16,7 @@ import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -45,6 +46,7 @@ import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function14;
 import am.ik.yavi.input.MapInputValidator;
@@ -1554,6 +1556,36 @@ public final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	}
 
 	/**
+	 * Builds an {@link Arguments14Validator} from the added arguments and the given
+	 * function, which validates the arguments together and returns the result or the
+	 * violations. This is {@link #apply} for a function that can fail, such as a factory
+	 * method that checks a rule across the arguments.
+	 *
+	 * <p>
+	 * The function is applied only when all arguments are valid. A violation it reports
+	 * is located relative to the arguments: one with an empty name, as
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * creates, is reported on the arguments as a whole.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations
+	 * @return a new arguments validator
+	 * @since 0.18.0
+	 */
+	public <X> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> flatApply(
+			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends Validated<? extends X>> f) {
+		return ArgumentsValidators
+			.split(this.d1.validator(), this.d2.validator(), this.d3.validator(), this.d4.validator(),
+					this.d5.validator(), this.d6.validator(), this.d7.validator(), this.d8.validator(),
+					this.d9.validator(), this.d10.validator(), this.d11.validator(), this.d12.validator(),
+					this.d13.validator(), this.d14.validator())
+			.<Validated<? extends X>>apply(f)
+			.<X>andThen((validated, locale, constraintContext) -> Validated.of(Objects.requireNonNull(validated)))
+			.describedAs(ArgumentDefinition.describe(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14));
+	}
+
+	/**
 	 * Builds a {@link MapInputValidator} that reads the added arguments from a
 	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
 	 * creates the result with the given function.
@@ -1584,6 +1616,41 @@ public final class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	public <X> MapInputValidator<X> fromMap(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends X> f) {
 		return MapInputValidator.of(
+				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
+						this.d6.part(6), this.d7.part(7), this.d8.part(8), this.d9.part(9), this.d10.part(10),
+						this.d11.part(11), this.d12.part(12), this.d13.part(13), this.d14.part(14)),
+				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2), (R4) values.get(3),
+						(R5) values.get(4), (R6) values.get(5), (R7) values.get(6), (R8) values.get(7),
+						(R9) values.get(8), (R10) values.get(9), (R11) values.get(10), (R12) values.get(11),
+						(R13) values.get(12), (R14) values.get(13)));
+	}
+
+	/**
+	 * Builds a {@link MapInputValidator} that reads the added arguments like
+	 * {@link #fromMap} and creates the result with the given function, which validates
+	 * the arguments together and returns the result or the violations. This is
+	 * {@code fromMap} for a function that can fail, such as a factory method that checks
+	 * a rule across the properties.
+	 *
+	 * <p>
+	 * The function is applied only when all arguments are valid. A violation it reports
+	 * is located relative to the map: one with an empty name, as
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * creates, is reported on the map itself and takes the name of the property the
+	 * validator is applied to. Read another tree model with
+	 * {@code flatFromMap(f).readingWith(reader)}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations
+	 * @return a new map input validator
+	 * @throws IllegalStateException as {@link #fromMap} does
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> MapInputValidator<X> flatFromMap(
+			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends Validated<? extends X>> f) {
+		return MapInputValidator.flatOf(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
 						this.d6.part(6), this.d7.part(7), this.d8.part(8), this.d9.part(9), this.d10.part(10),
 						this.d11.part(11), this.d12.part(12), this.d13.part(13), this.d14.part(14)),

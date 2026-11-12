@@ -18,7 +18,6 @@ import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.core.ViolatedValue;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
 
@@ -228,17 +227,17 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		public Validated<X> validate(@Nullable N input, Locale locale, ConstraintContext constraintContext) {
 			final String discriminator = DiscriminatedUnionValidator.this.discriminator;
 			if (input == null || this.reader.isNull(input)) {
-				return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL,
-						new ViolatedValue(null), locale));
+				return Validated.failureWith(
+						MapInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL, null, locale));
 			}
 			if (!this.reader.isObject(input)) {
 				return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_TYPE,
-						new ViolatedValue(this.reader.value(input)), locale, "object"));
+						this.reader.value(input), locale, "object"));
 			}
 			final N node = this.reader.property(input, discriminator);
 			if (node == null && !this.reader.hasProperty(input, discriminator)) {
 				return Validated.failureWith(MapInputValidator.violation(discriminator,
-						ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
+						ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
 			}
 			final Object value = node == null || this.reader.isNull(node) ? null : this.reader.value(node);
 			final ValueValidator<N, ? extends X> alternative = value instanceof String ? this.alternatives.get(value)
@@ -246,7 +245,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 			if (alternative == null) {
 				return Validated
 					.failureWith(MapInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
-							new ViolatedValue(value), locale, List.copyOf(this.alternatives.keySet())));
+							value, locale, List.copyOf(this.alternatives.keySet())));
 			}
 			return Validated.of(alternative.validate(input, locale, constraintContext));
 		}

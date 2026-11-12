@@ -19,7 +19,6 @@ import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.core.ViolatedValue;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.input.MapInputValidator;
 import org.jspecify.annotations.Nullable;
@@ -259,15 +258,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 			ValueValidator<N, R> elementValidator) {
 		return (node, locale, constraintContext) -> {
 			if (node == null || !reader.isArray(node)) {
-				final ViolationMessage message = ViolationMessage.Default.OBJECT_TYPE;
-				return Validated.failureWith(ConstraintViolation.builder()
-					.name("")
-					.messageKey(message.messageKey())
-					.defaultMessageFormat(message.defaultMessageFormat())
-					.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { "array" },
-							new ViolatedValue(node == null ? null : reader.value(node)))
-					.locale(locale)
-					.build());
+				return Validated.failureWith(ViolationMessage.Default.OBJECT_TYPE,
+						node == null ? null : reader.value(node), locale, "array");
 			}
 			return Validated.traverseIndexed(reader.elements(node),
 					(value, index) -> elementValidator

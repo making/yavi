@@ -11,14 +11,17 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import am.ik.yavi.arguments.Arguments2;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validated;
@@ -297,6 +300,70 @@ class MapInputValidatorTest {
 		// any input is taken once untyped
 		assertThat(addressValidator.untyped().validate(List.of()).errors()).extracting(ConstraintViolation::message)
 			.containsExactly("The value must be of type object");
+	}
+
+	record Booking(@Nullable DateRange period) {
+	}
+
+	record DateRange(LocalDate start, LocalDate end) {
+
+		static Validated<DateRange> parse(@Nullable LocalDate start, @Nullable LocalDate end) {
+			return start != null && end != null && start.isBefore(end)
+					? Validated.successWith(new DateRange(start, end))
+					: Validated.failureWith(ViolationMessage.of("dateRange.invalid", "\"{0}\" must start before {1}"),
+							start, Locale.ENGLISH, end);
+		}
+
+	}
+
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void functionOfTheValidatedArgumentsCanFail(Model model) {
+		final MapInputValidator<DateRange> rangeValidator = Yavi.arguments()
+			._localDate("start", c -> c.notNull())
+			._localDate("end", c -> c.notNull())
+			.flatFromMap(DateRange::parse)
+			.rejectingUnknownProperties();
+		final ValueValidator<Map<String, Object>, Booking> validator = Yavi.arguments()
+			._object("period", rangeValidator)
+			.fromMap(Booking::new);
+		assertThat(model.validate(validator, input("period", map("start", "2026-01-01", "end", "2026-01-31"))).value())
+			.isEqualTo(new Booking(new DateRange(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31))));
+		// the violation of the function is reported on the object it creates
+		final ConstraintViolations violations = model
+			.validate(validator, input("period", map("start", "2026-02-01", "end", "2026-01-31")))
+			.errors();
+		assertThat(violations).extracting(ConstraintViolation::name, ConstraintViolation::messageKey,
+				ConstraintViolation::message, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("period", "dateRange.invalid", "\"period\" must start before 2026-01-31",
+					LocalDate.of(2026, 2, 1)));
+		assertThat(violations.get(0).path()).containsExactly(new PathSegment.Property("period"));
+		// the function is not applied to invalid arguments
+		assertThat(model.validate(validator, input("period", map("start", "2026-02-01", "zone", "UTC"))).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("period.end", "object.required"), tuple("period.zone", "object.unknownProperty"));
+		if (model != Model.MAP) {
+			return;
+		}
+		// the same function over arguments, and the arguments themselves as a record
+		assertThat(Yavi.arguments()
+			._localDate("start", c -> c.notNull())
+			._localDate("end", c -> c.notNull())
+			.flatApply(DateRange::parse)
+			.validate(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 31))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("", "dateRange.invalid"));
+		assertThat(Yavi.arguments()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(Objects.requireNonNull(name).length())).validate("abc").value())
+			.isEqualTo(3);
+		final String described = switch (Yavi.arguments()
+			._string("name", c -> c.notBlank())
+			._integer("age", c -> c.notNull())
+			.fromMap(am.ik.yavi.arguments.Arguments::of)
+			.validate(input("name", "Taro", "age", 20))) {
+			case Validated.Valid(Arguments2(var name, var age)) -> name + " is " + age;
+			case Validated.Invalid(var errors) -> errors.toString();
+		};
+		assertThat(described).isEqualTo("Taro is 20");
 	}
 
 	@ParameterizedTest

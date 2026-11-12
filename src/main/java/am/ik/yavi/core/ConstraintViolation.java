@@ -372,6 +372,38 @@ public class ConstraintViolation {
 	}
 
 	/**
+	 * Creates a constraint violation of the given message on the validated value itself.
+	 * This is the short form of {@link #builder()} for a hand-written validator.
+	 *
+	 * <p>
+	 * The violation has an empty name and an empty path, so it takes the name of the
+	 * property that the validator is applied to; give it another location with
+	 * {@link #prefixed(String)}. The message arguments are the name as <code>{0}</code>,
+	 * then the given arguments, then the violated value, as the messages of
+	 * {@link ViolationMessage.Default} have them.
+	 * @param message the message key and the default message format
+	 * @param violatedValue the value that violated the rule, possibly {@code null}
+	 * @param locale the locale of the message
+	 * @param args the message arguments from <code>{1}</code> on, each possibly
+	 * {@code null}
+	 * @return a new constraint violation with an empty name
+	 * @since 0.18.0
+	 * @see Validated#failureWith(ViolationMessage, Object, Locale, Object...)
+	 */
+	// Message arguments may hold a null violated value; the array type does not
+	// express element nullness.
+	@SuppressWarnings("NullAway")
+	public static ConstraintViolation of(ViolationMessage message, @Nullable Object violatedValue, Locale locale,
+			@Nullable Object... args) {
+		final Object[] completeArgs = new Object[args.length + 2];
+		completeArgs[0] = "";
+		System.arraycopy(args, 0, completeArgs, 1, args.length);
+		completeArgs[args.length + 1] = violatedValue;
+		return new ConstraintViolation("", null, null, message.messageKey(), message.defaultMessageFormat(),
+				completeArgs, null, locale);
+	}
+
+	/**
 	 * Creates a new builder for constructing ConstraintViolation instances using a
 	 * fluent, type-safe API. This builder implements a staged builder pattern to enforce
 	 * required properties while making optional properties truly optional.

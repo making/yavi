@@ -17,11 +17,9 @@ import java.util.function.Predicate;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.InputReader;
-import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.core.ViolatedValue;
 import am.ik.yavi.core.ViolationMessage;
 import org.jspecify.annotations.Nullable;
 
@@ -138,7 +136,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	/** The names of the properties that the parts define. */
 	private final Set<String> names;
 
-	private final Function<? super List<@Nullable Object>, ? extends X> mapper;
+	private final Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper;
 
 	private final boolean rejectUnknownProperties;
 
@@ -214,10 +212,34 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 */
 	public static <X> MapInputValidator<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
+		return new MapInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
+				false);
+	}
+
+	/**
+	 * Creates a validator from the given parts and a function that validates their values
+	 * together. This is {@link #of} for a function that can fail: it returns the result
+	 * or the violations of a rule across the parts.
+	 *
+	 * <p>
+	 * The function is applied only when all parts are valid. A violation it reports is
+	 * located relative to the map: one with an empty name is reported on the map itself
+	 * and takes the name of the property the validator is applied to.
+	 * @param parts the parts in the order of the values
+	 * @param mapper function that creates the result from the validated values, in the
+	 * order of the parts, or reports violations
+	 * @param <X> the type of the result
+	 * @return a new validator
+	 * @throws IllegalArgumentException as {@link #of} does
+	 * @since 0.18.0
+	 */
+	public static <X> MapInputValidator<X> flatOf(List<? extends Part<?>> parts,
+			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
 		return new MapInputValidator<>(List.copyOf(parts), mapper, false);
 	}
 
-	private MapInputValidator(List<Part<?>> parts, Function<? super List<@Nullable Object>, ? extends X> mapper,
+	private MapInputValidator(List<Part<?>> parts,
+			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
 			boolean rejectUnknownProperties) {
 		// the described object: the properties of every way to read it, which are several
 		// if an embedded validator has alternatives
@@ -479,11 +501,11 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 		public Validated<X> validate(@Nullable N input, Locale locale, ConstraintContext constraintContext) {
 			if (input == null || this.reader.isNull(input)) {
 				return Validated.failureWith(
-						violation("", ViolationMessage.Default.OBJECT_NOT_NULL, new ViolatedValue(null), locale));
+						violation("", ViolationMessage.Default.OBJECT_NOT_NULL, null, locale));
 			}
 			if (!this.reader.isObject(input)) {
 				return Validated.failureWith(violation("", ViolationMessage.Default.OBJECT_TYPE,
-						new ViolatedValue(this.reader.value(input)), locale, "object"));
+						this.reader.value(input), locale, "object"));
 			}
 			final List<Part<?>> parts = MapInputValidator.this.parts;
 			final Set<String> names = MapInputValidator.this.names;
@@ -501,7 +523,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 						// an absent key is required rather than null
 						validated = read.isValid() || value != null || this.reader.hasProperty(input, name) ? read
 								: Validated.failureWith(violation(name, ViolationMessage.Default.OBJECT_REQUIRED,
-										new ViolatedValue(null), locale));
+										null, locale));
 					}
 					case Embedded<?> embedded -> {
 						final Group group = MapInputValidator.this.groups.get(i);
@@ -525,14 +547,13 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 					if (!names.contains(property.getKey())) {
 						final N value = property.getValue();
 						violations.add(violation(property.getKey(), ViolationMessage.Default.OBJECT_UNKNOWN_PROPERTY,
-								new ViolatedValue(
-										value == null || this.reader.isNull(value) ? null : this.reader.value(value)),
+								value == null || this.reader.isNull(value) ? null : this.reader.value(value),
 								locale));
 					}
 				}
 			}
 			return violations.isEmpty()
-					? Validated.successWith(MapInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+					? Validated.of(MapInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
 					: Validated.failureWith(violations);
 		}
 
@@ -576,16 +597,9 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * Returns a violation located at the given name, which is one path segment whatever
 	 * characters it holds.
 	 */
-	static ConstraintViolation violation(String name, ViolationMessage message, ViolatedValue violatedValue,
+	static ConstraintViolation violation(String name, ViolationMessage message, @Nullable Object violatedValue,
 			Locale locale, Object... args) {
-		return ConstraintViolation.builder()
-			.name(name)
-			.messageKey(message.messageKey())
-			.defaultMessageFormat(message.defaultMessageFormat())
-			.argsWithPrependedNameAndAppendedViolatedValue(args, violatedValue)
-			.path(PathSegment.of(name))
-			.locale(locale)
-			.build();
+		return ConstraintViolation.of(message, violatedValue, locale, args).prefixed(name);
 	}
 
 }

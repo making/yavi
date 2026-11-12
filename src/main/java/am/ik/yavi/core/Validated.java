@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -179,6 +180,38 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	}
 
 	/**
+	 * Returns a failed validation result that holds a single violation of the given
+	 * message, created with
+	 * {@link ConstraintViolation#of(ViolationMessage, Object, Locale, Object...)}. This
+	 * is the short way to fail in a hand-written validator: <pre>{@code
+	 * ValueValidator<String, URI> uri = (s, locale, context) -> {
+	 *     try {
+	 *         return Validated.successWith(new URI(s));
+	 *     }
+	 *     catch (URISyntaxException e) {
+	 *         return Validated.failureWith(ViolationMessage.of("uri.invalid", "\"{0}\" must be a URI"), s, locale);
+	 *     }
+	 * };
+	 * }</pre>
+	 *
+	 * <p>
+	 * The violation has an empty name, so it is reported on the validated value itself
+	 * and takes the name of the property the validator is applied to.
+	 * @param message the message key and the default message format
+	 * @param violatedValue the value that violated the rule, possibly {@code null}
+	 * @param locale the locale of the message
+	 * @param args the message arguments from <code>{1}</code> on, each possibly
+	 * {@code null}
+	 * @param <T> value type in the case of success
+	 * @return a failed validation result
+	 * @since 0.18.0
+	 */
+	static <T> Validated<T> failureWith(ViolationMessage message, @Nullable Object violatedValue, Locale locale,
+			@Nullable Object... args) {
+		return failureWith(ConstraintViolation.of(message, violatedValue, locale, args));
+	}
+
+	/**
 	 * Returns the validated value.
 	 * @return the value produced by the successful validation; {@code null} if the
 	 * validation succeeded with {@code null}
@@ -205,6 +238,35 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	@SuppressWarnings("unchecked")
 	default <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(List<ConstraintViolation> errors) {
 		return (V) Validated.failureWith(errors);
+	}
+
+	/**
+	 * Returns a validation result that holds the result of applying the given function to
+	 * the validated value. The function is not applied if the validation failed; in that
+	 * case the violations are kept.
+	 * @param mapper the function applied to the validated value
+	 * @param <T2> the type of the mapped value
+	 * @return the mapped validation result or this failure
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	default <T2> Validated<T2> map(Function<? super T, ? extends T2> mapper) {
+		return isValid() ? Validated.successWith(mapper.apply(value())) : (Validated<T2>) this;
+	}
+
+	/**
+	 * Returns the validation result produced by the given function from the validated
+	 * value. The function is not applied if the validation failed; in that case the
+	 * violations are kept.
+	 * @param mapper the function from the validated value to the next validation result
+	 * @param <T2> the value type of the next validation result
+	 * @return the validation result produced by the function or this failure
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	default <T2> Validated<T2> flatMap(
+			Function<? super T, ? extends Validation<ConstraintViolation, ? extends T2>> mapper) {
+		return isValid() ? Validated.of(mapper.apply(value())) : (Validated<T2>) this;
 	}
 
 	/**

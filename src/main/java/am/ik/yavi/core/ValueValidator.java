@@ -498,14 +498,7 @@ public interface ValueValidator<T, X> {
 				violations.addAll(validated.errors());
 			}
 			violations.add(0,
-					ConstraintViolation.builder()
-						.name("")
-						.messageKey(ViolationMessage.Default.OBJECT_ANY_OF.messageKey())
-						.defaultMessageFormat(ViolationMessage.Default.OBJECT_ANY_OF.defaultMessageFormat())
-						.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { alternatives.size() },
-								new ViolatedValue(t))
-						.locale(locale)
-						.build());
+					ConstraintViolation.of(ViolationMessage.Default.OBJECT_ANY_OF, t, locale, alternatives.size()));
 			return Validated.failureWith(violations);
 		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()), untyped);
 	}
@@ -529,13 +522,7 @@ public interface ValueValidator<T, X> {
 	default ValueValidator<T, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
 		return this.andThen((x, locale, constraintContext) -> predicate.test(x) ? Validated.successWith(x)
-				: Validated.failureWith(ConstraintViolation.builder()
-					.name(name)
-					.messageKey(violationMessage.messageKey())
-					.defaultMessageFormat(violationMessage.defaultMessageFormat())
-					.argsWithPrependedNameAndAppendedViolatedValue(new Object[0], new ViolatedValue(x))
-					.locale(locale)
-					.build()));
+				: Validated.failureWith(ConstraintViolation.of(violationMessage, x, locale).prefixed(name)));
 	}
 
 	/**
