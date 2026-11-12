@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LongValidator;
 import am.ik.yavi.constraint.LongConstraint;
@@ -80,9 +82,9 @@ public class LongValidatorBuilder implements ValueValidatorBuilder<Long, Long> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> LongValidator<T> build(Function<? super Long, ? extends T> mapper) {
+	public <T> LongValidator<T> build(Function<@Nullable Long, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Long>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LongValidator<>(validator, mapper::apply);
+		return new LongValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

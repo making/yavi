@@ -5,6 +5,7 @@
 package am.ik.yavi.arguments;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -80,7 +81,7 @@ class ObjectValidatorTest {
 	void composeValid(ObjectValidator<Instant, Date> dateValidator) {
 		final Map<String, Instant> params = Collections.singletonMap("createdAt", Instant.ofEpochMilli(1000L));
 		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
-			.compose(map -> map.get("createdAt"));
+			.compose(map -> Objects.requireNonNull(map).get("createdAt"));
 		final Validated<Date> dateValidated = mapValidator.validate(params);
 		assertThat(dateValidated.isValid()).isTrue();
 		assertThat(dateValidated.value().getTime()).isEqualTo(1000L);
@@ -91,7 +92,7 @@ class ObjectValidatorTest {
 	void composeInvalid(ObjectValidator<Instant, Date> dateValidator) {
 		final Map<String, Instant> params = Collections.singletonMap("createdAt", Instant.now().plusSeconds(1));
 		final Arguments1Validator<Map<String, Instant>, Date> mapValidator = dateValidator
-			.compose(map -> map.get("createdAt"));
+			.compose(map -> Objects.requireNonNull(map).get("createdAt"));
 		final Validated<Date> dateValidated = mapValidator.validate(params);
 		assertThat(dateValidated.isValid()).isFalse();
 		final ConstraintViolations violations = dateValidated.errors();

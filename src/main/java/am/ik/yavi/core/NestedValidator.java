@@ -7,6 +7,8 @@ package am.ik.yavi.core;
 import java.util.Locale;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A {@link Validatable} that applies another validator to a value nested in the target
  * object.
@@ -26,7 +28,7 @@ import java.util.function.Function;
  */
 public class NestedValidator<T, N> implements Validatable<T> {
 
-	private final Function<T, N> nested;
+	private final Function<T, @Nullable N> nested;
 
 	private final Validatable<N> validator;
 
@@ -43,7 +45,7 @@ public class NestedValidator<T, N> implements Validatable<T> {
 	 * @param validator validator applied to the nested value
 	 * @param prefix prefix for the names of the reported violations
 	 */
-	public NestedValidator(Function<T, N> nested, Validatable<N> validator, String prefix) {
+	public NestedValidator(Function<T, @Nullable N> nested, Validatable<N> validator, String prefix) {
 		this.nested = nested;
 		this.prefix = prefix;
 		this.validator = prefixedValidatorIfNeeded(validator, prefix);

@@ -15,7 +15,7 @@
  *
  * @since 0.0.17
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.message;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

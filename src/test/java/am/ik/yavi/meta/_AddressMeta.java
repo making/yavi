@@ -14,7 +14,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.Address, am.ik.yavi.meta.Address.Country> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.Address, am.ik.yavi.meta.Address.@org.jspecify.annotations.Nullable Country> toValue() {
 			return am.ik.yavi.meta.Address::country;
 		}
 	};
@@ -27,7 +27,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.Address, String> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.Address, @org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.meta.Address::street;
 		}
 	};
@@ -40,7 +40,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.Address, am.ik.yavi.meta.Address.PhoneNumber> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.Address, am.ik.yavi.meta.Address.@org.jspecify.annotations.Nullable PhoneNumber> toValue() {
 			return am.ik.yavi.meta.Address::phoneNumber;
 		}
 	};

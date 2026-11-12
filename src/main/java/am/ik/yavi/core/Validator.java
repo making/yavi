@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_NOT_NULL;
 
 /**
@@ -307,7 +309,7 @@ public class Validator<T> implements Validatable<T> {
 				}
 			}
 			for (ConstraintPredicate<?> constraintPredicate : predicates.predicates()) {
-				final Object v = predicates.toValue().apply(target);
+				final @Nullable Object v = predicates.toValue().apply(target);
 				if (v == null && constraintPredicate.nullValidity().skipNull()) {
 					continue;
 				}

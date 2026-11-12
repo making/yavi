@@ -4,7 +4,7 @@
  */
 package am.ik.yavi.constraint.charsequence.variant;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Determines which Unicode variation selectors are removed from a character sequence
@@ -100,7 +100,9 @@ public class VariantOptions {
 		private StandardizedVariationSequence svs;
 
 		Builder() {
-			this.notIgnoreAll();
+			this.svs = StandardizedVariationSequence.NOT_IGNORE;
+			this.ivs = IdeographicVariationSequence.NOT_IGNORE;
+			this.fvs = MongolianFreeVariationSelector.NOT_IGNORE;
 		}
 
 		/**

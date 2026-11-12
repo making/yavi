@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -255,7 +256,7 @@ public class CustomValidatorTest {
 		}
 
 		@Override
-		public Object[] arguments(Instant violatedValue) {
+		public Object[] arguments(@Nullable Instant violatedValue) {
 			return new Object[] { this.start, this.end };
 		}
 

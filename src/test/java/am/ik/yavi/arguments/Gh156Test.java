@@ -6,7 +6,7 @@ package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.validator.Yavi;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,13 +15,13 @@ public class Gh156Test {
 
 	static class Person {
 
-		private final String firstName;
+		private final @Nullable String firstName;
 
-		private final String middleName;
+		private final @Nullable String middleName;
 
-		private final String lastName;
+		private final @Nullable String lastName;
 
-		public Person(String firstName, @Nullable String middleName, String lastName) {
+		public Person(@Nullable String firstName, @Nullable String middleName, @Nullable String lastName) {
 			this.firstName = firstName;
 			this.middleName = middleName;
 			this.lastName = lastName;

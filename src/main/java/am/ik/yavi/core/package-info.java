@@ -37,7 +37,7 @@
  * the message ids in {@link am.ik.yavi.core.ViolationMessage} and formatted through
  * {@link am.ik.yavi.message.MessageFormatter}.
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.core;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

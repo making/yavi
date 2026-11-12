@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines a set of Unicode code points for a character sequence constraint.

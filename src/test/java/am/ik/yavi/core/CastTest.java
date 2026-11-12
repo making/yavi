@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -47,9 +48,9 @@ class CastTest {
 			.constraint(Employee::getServiceId, "service", Constraint::notNull)
 			.build();
 
-		private String serviceId;
+		private @Nullable String serviceId;
 
-		String getServiceId() {
+		@Nullable String getServiceId() {
 			return serviceId;
 		}
 
@@ -66,9 +67,9 @@ class CastTest {
 
 		static final Validator<Person> validator = validatorBuilder.build();
 
-		private String name;
+		private @Nullable String name;
 
-		String getName() {
+		@Nullable String getName() {
 			return name;
 		}
 
@@ -84,9 +85,9 @@ class CastTest {
 			.constraint(Student::getId, "id", Constraint::notNull)
 			.build();
 
-		private String id;
+		private @Nullable String id;
 
-		String getId() {
+		@Nullable String getId() {
 			return id;
 		}
 

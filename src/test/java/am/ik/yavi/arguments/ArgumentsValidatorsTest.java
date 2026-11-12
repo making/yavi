@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,13 +41,13 @@ class ArgumentsValidatorsTest {
 		.build(PhoneNumber::new);
 
 	static final Arguments1Validator<Map<String, String>, Country> mapCountryValidator = countryValidator
-		.compose(map -> map.get("country"));
+		.compose(map -> Objects.requireNonNull(map).get("country"));
 
 	static final Arguments1Validator<Map<String, String>, String> mapStreetValidator = streetValidator
-		.compose(map -> map.get("street"));
+		.compose(map -> Objects.requireNonNull(map).get("street"));
 
 	static final Arguments1Validator<Map<String, String>, PhoneNumber> mapPhoneNumberValidator = phoneNumberValidator
-		.compose(map -> map.get("phoneNumber"));
+		.compose(map -> Objects.requireNonNull(map).get("phoneNumber"));
 
 	static final StringValidator<String> v1 = StringValidatorBuilder.of("s1", c -> c.notBlank()).build();
 
@@ -78,27 +79,37 @@ class ArgumentsValidatorsTest {
 		.split(v8)
 		.split(v9)
 		.split(v10)
-		.apply(Arrays::asList);
+		.apply((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) -> Arrays.asList(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10));
 
-	final Arguments1Validator<Map<String, String>, String> mapV1 = v1.compose(map -> map.get("s1"));
+	final Arguments1Validator<Map<String, String>, String> mapV1 = v1
+		.compose(map -> Objects.requireNonNull(map).get("s1"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV2 = v2.compose(map -> map.get("s2"));
+	final Arguments1Validator<Map<String, String>, String> mapV2 = v2
+		.compose(map -> Objects.requireNonNull(map).get("s2"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV3 = v3.compose(map -> map.get("s3"));
+	final Arguments1Validator<Map<String, String>, String> mapV3 = v3
+		.compose(map -> Objects.requireNonNull(map).get("s3"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV4 = v4.compose(map -> map.get("s4"));
+	final Arguments1Validator<Map<String, String>, String> mapV4 = v4
+		.compose(map -> Objects.requireNonNull(map).get("s4"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV5 = v5.compose(map -> map.get("s5"));
+	final Arguments1Validator<Map<String, String>, String> mapV5 = v5
+		.compose(map -> Objects.requireNonNull(map).get("s5"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV6 = v6.compose(map -> map.get("s6"));
+	final Arguments1Validator<Map<String, String>, String> mapV6 = v6
+		.compose(map -> Objects.requireNonNull(map).get("s6"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV7 = v7.compose(map -> map.get("s7"));
+	final Arguments1Validator<Map<String, String>, String> mapV7 = v7
+		.compose(map -> Objects.requireNonNull(map).get("s7"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV8 = v8.compose(map -> map.get("s8"));
+	final Arguments1Validator<Map<String, String>, String> mapV8 = v8
+		.compose(map -> Objects.requireNonNull(map).get("s8"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV9 = v9.compose(map -> map.get("s9"));
+	final Arguments1Validator<Map<String, String>, String> mapV9 = v9
+		.compose(map -> Objects.requireNonNull(map).get("s9"));
 
-	final Arguments1Validator<Map<String, String>, String> mapV10 = v10.compose(map -> map.get("s10"));
+	final Arguments1Validator<Map<String, String>, String> mapV10 = v10
+		.compose(map -> Objects.requireNonNull(map).get("s10"));
 
 	final Arguments1Validator<Map<String, String>, List<String>> map10V = mapV1.combine(mapV2)
 		.combine(mapV3)
@@ -109,7 +120,7 @@ class ArgumentsValidatorsTest {
 		.combine(mapV8)
 		.combine(mapV9)
 		.combine(mapV10)
-		.apply(Arrays::asList);
+		.apply((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) -> Arrays.asList(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10));
 
 	@ParameterizedTest
 	@MethodSource("splitValidators")
@@ -118,9 +129,9 @@ class ArgumentsValidatorsTest {
 		final Validated<Address> validated = validator.validate("JP", "XYZ Avenue", "123-456-789");
 		assertThat(validated.isValid()).isTrue();
 		final Address address = validated.value();
-		assertThat(address.country().name()).isEqualTo("JP");
+		assertThat(Objects.requireNonNull(address.country()).name()).isEqualTo("JP");
 		assertThat(address.street()).isEqualTo("XYZ Avenue");
-		assertThat(address.phoneNumber().value()).isEqualTo("123-456-789");
+		assertThat(Objects.requireNonNull(address.phoneNumber()).value()).isEqualTo("123-456-789");
 	}
 
 	@ParameterizedTest
@@ -172,9 +183,9 @@ class ArgumentsValidatorsTest {
 		});
 		assertThat(validated.isValid()).isTrue();
 		final Address address = validated.value();
-		assertThat(address.country().name()).isEqualTo("JP");
+		assertThat(Objects.requireNonNull(address.country()).name()).isEqualTo("JP");
 		assertThat(address.street()).isEqualTo("XYZ Avenue");
-		assertThat(address.phoneNumber().value()).isEqualTo("123-456-789");
+		assertThat(Objects.requireNonNull(address.phoneNumber()).value()).isEqualTo("123-456-789");
 	}
 
 	@ParameterizedTest

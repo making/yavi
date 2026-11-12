@@ -7,6 +7,8 @@ package am.ik.yavi.builder;
 import java.math.BigInteger;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.BigIntegerValidator;
 import am.ik.yavi.constraint.BigIntegerConstraint;
@@ -82,9 +84,9 @@ public class BigIntegerValidatorBuilder implements ValueValidatorBuilder<BigInte
 	 * @return a new validator
 	 */
 	@Override
-	public <T> BigIntegerValidator<T> build(Function<? super BigInteger, ? extends T> mapper) {
+	public <T> BigIntegerValidator<T> build(Function<@Nullable BigInteger, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<BigInteger>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BigIntegerValidator<>(validator, mapper::apply);
+		return new BigIntegerValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

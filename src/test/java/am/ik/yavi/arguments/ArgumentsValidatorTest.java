@@ -43,26 +43,28 @@ class ArgumentsValidatorTest {
 			._string(Arguments1::arg1, "name", c -> c.greaterThanOrEqual(2)))
 		.build();
 
-	final Arguments2Validator<Integer, Integer, Range> arguments2Validator = ArgumentsValidatorBuilder.of(Range::new)
+	final Arguments2Validator<Integer, Integer, Range> arguments2Validator = ArgumentsValidatorBuilder
+		.<Integer, Integer, Range>of((from, to) -> new Range(Objects.requireNonNull(from), Objects.requireNonNull(to)))
 		.builder(b -> b._integer(Arguments2::arg1, "from", c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
 			._integer(Arguments2::arg2, "to", c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
-			.constraintOnTarget(a -> a.arg1() < a.arg2(), "range",
+			.constraintOnTarget(a -> Objects.requireNonNull(a.arg1()) < Objects.requireNonNull(a.arg2()), "range",
 					ViolationMessage.of("to.isGreaterThanFrom", "\"to\" must be greater than \"from\".")))
 		.build();
 
 	final Arguments3Validator<String, String, Integer, User> arguments3Validator = ArgumentsValidatorBuilder
-		.of(User::new)
+		.<String, String, Integer, User>of((email, name, role) -> new User(Objects.requireNonNull(email),
+				Objects.requireNonNull(name), Objects.requireNonNull(role)))
 		.builder(b -> b._string(Arguments3::arg1, "name", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
 			._string(Arguments3::arg2, "email", c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
 			._integer(Arguments3::arg3, "age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200)))
 		.build();
 
-	final Arguments1Validator<Map<String, Object>, User> mapValidator = arguments3Validator
-		.compose(m -> Arguments.of((String) m.get("name"), (String) m.get("email"), (Integer) m.get("age")));
+	final Arguments1Validator<Map<String, Object>, User> mapValidator = arguments3Validator.compose(m -> Arguments
+		.of((String) Objects.requireNonNull(m).get("name"), (String) m.get("email"), (Integer) m.get("age")));
 
 	static final Arguments1Validator<String, PhoneNumber> phoneNumberValidator = StringValidatorBuilder
 		.of("phoneNumber", c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
-		.build(PhoneNumber::new)
+		.build(value -> new PhoneNumber(Objects.requireNonNull(value)))
 		.compose(identity());
 
 	@Test
@@ -421,7 +423,8 @@ class ArgumentsValidatorTest {
 
 		public static Arguments2Validator<LocalTime, LocalTime, TimeSlot> validator = startTimeValidator
 			.split(endTimeValidator)
-			.apply(TimeSlot::new);
+			.apply((startTime, endTime) -> new TimeSlot(Objects.requireNonNull(startTime),
+					Objects.requireNonNull(endTime)));
 
 		public TimeSlot(LocalTime startTime, LocalTime endTime) {
 			validator.lazy().validate(startTime, endTime);
@@ -445,8 +448,8 @@ class ArgumentsValidatorTest {
 
 		public static Arguments1Validator<Arguments3<LocalDate, LocalTime, LocalTime>, Reservation> v1 = localDateValidator
 			.wrap()
-			.<Arguments3<LocalDate, LocalTime, LocalTime>>compose(Arguments3::first1)
-			.combine(TimeSlot.validator.wrap().compose(Arguments3::last2))
+			.<Arguments3<LocalDate, LocalTime, LocalTime>>compose(a -> Objects.requireNonNull(a).first1())
+			.combine(TimeSlot.validator.wrap().compose(a -> Objects.requireNonNull(a).last2()))
 			.apply((localDate, timeSlot) -> new Reservation(Objects.requireNonNull(localDate),
 					Objects.requireNonNull(timeSlot).startTime, timeSlot.endTime));
 
@@ -482,9 +485,9 @@ class ArgumentsValidatorTest {
 		Arguments1Validator<Arguments3<String, String, Integer>, User> userValidator = arguments3Validator.wrap();
 
 		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, Range> composedRangeValidator = rangeValidator
-			.compose(Arguments5::first2);
+			.compose(a -> Objects.requireNonNull(a).first2());
 		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, User> composedUserValidator = userValidator
-			.compose(Arguments5::last3);
+			.compose(a -> Objects.requireNonNull(a).last3());
 
 		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, Pair<Range, User>> combinedValidator = composedRangeValidator
 			.combine(composedUserValidator)
@@ -532,12 +535,17 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void composeLazy() {
-		arguments1Validator.<Object[]>compose(objects -> (String) objects[0]).lazy().validated(new Object[] { "JP" });
-		arguments2Validator.<Object[]>compose(objects -> Arguments.of((Integer) objects[0], (Integer) objects[1]))
+		arguments1Validator.<Object[]>compose(objects -> (String) Objects.requireNonNull(objects)[0])
+			.lazy()
+			.validated(new Object[] { "JP" });
+		arguments2Validator
+			.<Object[]>compose(
+					objects -> Arguments.of((Integer) Objects.requireNonNull(objects)[0], (Integer) objects[1]))
 			.lazy()
 			.validated(new Object[] { 1, 2 });
 		arguments3Validator
-			.<Object[]>compose(objects -> Arguments.of((String) objects[0], (String) objects[1], (Integer) objects[2]))
+			.<Object[]>compose(objects -> Arguments.of((String) Objects.requireNonNull(objects)[0], (String) objects[1],
+					(Integer) objects[2]))
 			.lazy()
 			.validated(new Object[] { "aa", "bb@cc.dd", 18 });
 	}

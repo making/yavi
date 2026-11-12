@@ -7,7 +7,7 @@ package am.ik.yavi.core;
 import java.util.Collection;
 import java.util.function.Function;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link CollectionValidator} that also holds the function that extracts the object
@@ -27,7 +27,7 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public class NestedCollectionValidator<T, C extends Collection<E>, E, N> extends CollectionValidator<T, C, E> {
 
-	private final Function<T, N> nested;
+	private final Function<T, ? extends @Nullable N> nested;
 
 	/**
 	 * Creates a nested collection validator.
@@ -37,9 +37,9 @@ public class NestedCollectionValidator<T, C extends Collection<E>, E, N> extends
 	 * @param nested function that extracts the object containing the collection from the
 	 * target
 	 */
-	public NestedCollectionValidator(Function<T, C> toCollection, String name, Validator<E> validator,
-			Function<T, N> nested) {
-		super(toCollection, name, validator);
+	public NestedCollectionValidator(Function<T, ? extends @Nullable C> toCollection, String name,
+			Validator<E> validator, Function<T, ? extends @Nullable N> nested) {
+		super((Function<T, @Nullable C>) toCollection, name, validator);
 		this.nested = nested;
 	}
 
@@ -48,8 +48,7 @@ public class NestedCollectionValidator<T, C extends Collection<E>, E, N> extends
 	 * @param target the target object
 	 * @return the nested object, or {@code null} if it does not exist
 	 */
-	@Nullable
-	public N nestedCollection(T target) {
+	@Nullable public N nestedCollection(T target) {
 		return nested.apply(target);
 	}
 

@@ -72,10 +72,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <optional>true</optional>
+            <!-- Annotations only; provided scope keeps them off the runtime classpath and
+                 out of the transitive dependencies of consumers. -->
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -142,6 +144,9 @@
                         <!-- Fail the build on warnings so that deprecations scheduled to become
                              errors in a future language version are caught early. -->
                         <arg>-Werror</arg>
+                        <!-- Read JSpecify annotations strictly so that the Kotlin extensions see
+                             the same nullness model as the Java API. -->
+                        <arg>-Xjspecify-annotations=strict</arg>
                     </args>
                 </configuration>
                 <executions>
@@ -172,39 +177,58 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- Configures Error Prone and NullAway. The plugin is the source of truth
+                     for the compiler flags; do not duplicate them in maven-compiler-plugin. -->
+                <groupId>am.ik.maven</groupId>
+                <artifactId>nullability-maven-plugin</artifactId>
+                <version>0.5.2</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>configure</goal>
+                            <goal>generate-package-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <checking>tests</checking>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                        <arg>-proc:none</arg>
-                    </compilerArgs>
-                </configuration>
                 <executions>
-                    <!-- Replacing default-compile as it is treated specially by maven -->
+                    <!-- The Kotlin sources are compiled before the Java sources, so the
+                         default executions are used as they are. The nullability plugin
+                         extends their compiler arguments with the Error Prone and NullAway
+                         setup. -->
                     <execution>
                         <id>default-compile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <!-- Replacing default-testCompile as it is treated specially by maven -->
-                    <execution>
-                        <id>default-testCompile</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>java-compile</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                                <arg>-proc:none</arg>
+                            </compilerArgs>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>java-test-compile</id>
+                        <id>default-testCompile</id>
                         <phase>test-compile</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                                <arg>-proc:none</arg>
+                            </compilerArgs>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -227,9 +251,6 @@
                         <include>src/**/*.java</include>
                         <include>src/**/*.kt</include>
                     </includes>
-                    <excludes>
-                        <exclude>src/main/java/am/ik/yavi/jsr305/*.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

@@ -4,13 +4,16 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.validator.Yavi;
 
 public class Car {
 
-	private final String manufacturer;
+	private final @Nullable String manufacturer;
 
-	private final String licensePlate;
+	private final @Nullable String licensePlate;
 
 	private final int seatCount;
 
@@ -18,9 +21,10 @@ public class Car {
 		._string("manufacturer", c -> c.notNull()) //
 		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14)) //
 		._integer("seatCount", c -> c.greaterThanOrEqual(2)) //
-		.apply(Car::new);
+		.apply((manufacturer, licensePlate, seatCount) -> new Car(Objects.requireNonNull(manufacturer),
+				Objects.requireNonNull(licensePlate), Objects.requireNonNull(seatCount)));
 
-	public Car(String manufacturer, String licensePlate, int seatCount) {
+	public Car(@Nullable String manufacturer, @Nullable String licensePlate, int seatCount) {
 		validator.lazy().validated(manufacturer, licensePlate, seatCount);
 		this.manufacturer = manufacturer;
 		this.licensePlate = licensePlate;

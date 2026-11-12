@@ -12,7 +12,7 @@
  *
  * @since 0.14.0
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.validator;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

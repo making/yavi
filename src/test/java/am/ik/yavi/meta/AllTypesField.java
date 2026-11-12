@@ -8,49 +8,49 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AllTypesField {
 
-	final String stringValue;
+	final @Nullable String stringValue;
 
-	final Boolean booleanValue;
+	final @Nullable Boolean booleanValue;
 
 	final boolean booleanPrimitiveValue;
 
-	final Character characterValue;
+	final @Nullable Character characterValue;
 
 	final char characterPrimitiveValue;
 
-	final Byte byteValue;
+	final @Nullable Byte byteValue;
 
 	final byte bytePrimitiveValue;
 
-	final Short shortValue;
+	final @Nullable Short shortValue;
 
 	final short shortPrimitiveValue;
 
-	final Integer integerValue;
+	final @Nullable Integer integerValue;
 
 	final int integerPrimitiveValue;
 
-	final Long longValue;
+	final @Nullable Long longValue;
 
 	final long longPrimitiveValue;
 
-	final Float floatValue;
+	final @Nullable Float floatValue;
 
 	final float floatPrimitiveValue;
 
-	final Double doubleValue;
+	final @Nullable Double doubleValue;
 
 	final double doublePrimitiveValue;
 
-	final BigInteger bigIntegerValue;
+	final @Nullable BigInteger bigIntegerValue;
 
-	final BigDecimal bigDecimalValue;
+	final @Nullable BigDecimal bigDecimalValue;
 
-	final LocalDate localDateValue;
+	final @Nullable LocalDate localDateValue;
 
 	public AllTypesField(@ConstraintTarget(field = true) String stringValue,
 			@ConstraintTarget(field = true) Boolean booleanValue,

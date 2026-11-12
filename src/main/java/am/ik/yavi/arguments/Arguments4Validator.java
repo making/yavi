@@ -14,7 +14,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates 4 arguments and produces a value of type {@code X}.
@@ -104,7 +104,7 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	default Arguments1Validator<Arguments4<A1, A2, A3, A4>, X> wrap() {
 		return new Arguments1Validator<Arguments4<A1, A2, A3, A4>, X>() {
 			@Override
-			public Validated<X> validate(Arguments4<A1, A2, A3, A4> args, Locale locale,
+			public Validated<X> validate(@Nullable Arguments4<A1, A2, A3, A4> args, Locale locale,
 					ConstraintContext constraintContext) {
 				final Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4> nonNullArgs = Objects
 					.requireNonNull(args);
@@ -140,11 +140,11 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @return a validator with the mapped result type
 	 * @since 0.17.0
 	 */
-	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
-					ConstraintContext constraintContext) {
+			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
 				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext).map(mapper);
 			}
 
@@ -171,8 +171,8 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(ValueValidator<? super X, X2> validator) {
 		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, Locale locale,
-					ConstraintContext constraintContext) {
+			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
 				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext));
 			}
@@ -198,11 +198,11 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @return a validator with the adapted input type
 	 * @since 0.7.0
 	 */
-	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4>> mapper) {
+	default <A extends @Nullable Object> Arguments1Validator<A, X> compose(
+			Function<@Nullable A, ? extends @Nullable Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4>> mapper) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				final Arguments4<? extends A1, ? extends A2, ? extends A3, ? extends A4> args = mapper.apply(a);
 				return Arguments4Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(), locale,
 						constraintContext);

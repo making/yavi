@@ -20,7 +20,7 @@
  *
  * @since 0.5.0
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.factory;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

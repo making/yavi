@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,13 +35,13 @@ public class Gh226Test {
 
 	public class Email {
 
-		private List<String> recipients;
+		private @Nullable List<String> recipients;
 
-		public void setRecipients(List<String> recipients) {
+		public void setRecipients(@Nullable List<String> recipients) {
 			this.recipients = recipients;
 		}
 
-		public List<String> getRecipients() {
+		public @Nullable List<String> getRecipients() {
 			return this.recipients;
 		}
 

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Context values that are passed to validation and read by {@link ConstraintCondition}s.
@@ -75,7 +75,7 @@ public interface ConstraintContext {
 	 * @param function the function that looks up attribute values
 	 * @return a context backed by the function
 	 */
-	static ConstraintContext from(Function<String, ?> function) {
+	static ConstraintContext from(Function<String, ? extends @Nullable Object> function) {
 		return new ConstraintContext() {
 			@Override
 			public Attribute attribute(String key) {
@@ -100,8 +100,7 @@ public interface ConstraintContext {
 		 * does not exist.
 		 * @return value
 		 */
-		@Nullable
-		Object value();
+		@Nullable Object value();
 
 		/**
 		 * Returns the typed attribute value.
@@ -111,8 +110,7 @@ public interface ConstraintContext {
 		 * @throws ClassCastException if the attribute value is not an instance of the
 		 * given class
 		 */
-		@Nullable
-		default <T> T value(Class<T> clazz) {
+		@Nullable default <T> T value(Class<T> clazz) {
 			return clazz.cast(this.value());
 		}
 

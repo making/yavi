@@ -14,7 +14,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.String> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.AllTypesBean::getStringValue;
 		}
 	};
@@ -27,7 +27,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return test.AllTypesBean::getBooleanValue;
 		}
 	};
@@ -40,7 +40,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return test.AllTypesBean::isBooleanPrimitiveValue;
 		}
 	};
@@ -53,7 +53,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return test.AllTypesBean::getCharacterValue;
 		}
 	};
@@ -66,7 +66,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return test.AllTypesBean::getCharacterPrimitiveValue;
 		}
 	};
@@ -79,7 +79,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return test.AllTypesBean::getByteValue;
 		}
 	};
@@ -92,7 +92,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return test.AllTypesBean::getBytePrimitiveValue;
 		}
 	};
@@ -105,7 +105,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return test.AllTypesBean::getShortValue;
 		}
 	};
@@ -118,7 +118,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return test.AllTypesBean::getShortPrimitiveValue;
 		}
 	};
@@ -131,7 +131,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return test.AllTypesBean::getIntegerValue;
 		}
 	};
@@ -144,7 +144,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return test.AllTypesBean::getIntegerPrimitiveValue;
 		}
 	};
@@ -157,7 +157,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return test.AllTypesBean::getLongValue;
 		}
 	};
@@ -170,7 +170,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return test.AllTypesBean::getLongPrimitiveValue;
 		}
 	};
@@ -183,7 +183,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return test.AllTypesBean::getFloatValue;
 		}
 	};
@@ -196,7 +196,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return test.AllTypesBean::getFloatPrimitiveValue;
 		}
 	};
@@ -209,7 +209,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return test.AllTypesBean::getDoubleValue;
 		}
 	};
@@ -222,7 +222,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return test.AllTypesBean::getDoublePrimitiveValue;
 		}
 	};
@@ -235,7 +235,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.math.BigInteger> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.math.@org.jspecify.annotations.Nullable BigInteger> toValue() {
 			return test.AllTypesBean::getBigIntegerValue;
 		}
 	};
@@ -248,7 +248,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.math.BigDecimal> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.math.@org.jspecify.annotations.Nullable BigDecimal> toValue() {
 			return test.AllTypesBean::getBigDecimalValue;
 		}
 	};
@@ -261,7 +261,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesBean, java.time.LocalDate> toValue() {
+		public java.util.function.Function<test.AllTypesBean, java.time.@org.jspecify.annotations.Nullable LocalDate> toValue() {
 			return test.AllTypesBean::getLocalDateValue;
 		}
 	};

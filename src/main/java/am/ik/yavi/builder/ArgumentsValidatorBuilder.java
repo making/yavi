@@ -72,6 +72,8 @@ import am.ik.yavi.fn.Function16;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Builds arguments validators that validate a fixed number of arguments and map them to a
  * result.
@@ -546,7 +548,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function1<? super A1, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments1<A1>> builder;
+		private @Nullable ValidatorBuilder<Arguments1<A1>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -584,7 +586,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments1Validator<A1, X> build() {
-			return new DefaultArguments1Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments1Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -602,7 +605,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function2<? super A1, ? super A2, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments2<A1, A2>> builder;
+		private @Nullable ValidatorBuilder<Arguments2<A1, A2>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -640,7 +643,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments2Validator<A1, A2, X> build() {
-			return new DefaultArguments2Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments2Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -659,7 +663,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function3<? super A1, ? super A2, ? super A3, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments3<A1, A2, A3>> builder;
+		private @Nullable ValidatorBuilder<Arguments3<A1, A2, A3>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -697,7 +701,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments3Validator<A1, A2, A3, X> build() {
-			return new DefaultArguments3Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments3Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -717,7 +722,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function4<? super A1, ? super A2, ? super A3, ? super A4, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder;
+		private @Nullable ValidatorBuilder<Arguments4<A1, A2, A3, A4>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -756,7 +761,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments4Validator<A1, A2, A3, A4, X> build() {
-			return new DefaultArguments4Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments4Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -777,7 +783,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function5<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder;
+		private @Nullable ValidatorBuilder<Arguments5<A1, A2, A3, A4, A5>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -816,7 +822,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments5Validator<A1, A2, A3, A4, A5, X> build() {
-			return new DefaultArguments5Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments5Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -838,7 +845,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder;
+		private @Nullable ValidatorBuilder<Arguments6<A1, A2, A3, A4, A5, A6>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -877,7 +884,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments6Validator<A1, A2, A3, A4, A5, A6, X> build() {
-			return new DefaultArguments6Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments6Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -900,7 +908,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function7<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder;
+		private @Nullable ValidatorBuilder<Arguments7<A1, A2, A3, A4, A5, A6, A7>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -939,7 +947,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> build() {
-			return new DefaultArguments7Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments7Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -963,7 +972,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function8<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder;
+		private @Nullable ValidatorBuilder<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1002,7 +1011,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> build() {
-			return new DefaultArguments8Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments8Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1027,7 +1037,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function9<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder;
+		private @Nullable ValidatorBuilder<Arguments9<A1, A2, A3, A4, A5, A6, A7, A8, A9>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1066,7 +1076,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> build() {
-			return new DefaultArguments9Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments9Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1092,7 +1103,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function10<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
+		private @Nullable ValidatorBuilder<Arguments10<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1131,7 +1142,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> build() {
-			return new DefaultArguments10Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments10Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1158,7 +1170,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function11<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
+		private @Nullable ValidatorBuilder<Arguments11<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1197,7 +1209,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> build() {
-			return new DefaultArguments11Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments11Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1225,7 +1238,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function12<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
+		private @Nullable ValidatorBuilder<Arguments12<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1264,7 +1277,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> build() {
-			return new DefaultArguments12Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments12Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1293,7 +1307,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function13<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
+		private @Nullable ValidatorBuilder<Arguments13<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1332,7 +1346,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> build() {
-			return new DefaultArguments13Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments13Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1362,7 +1377,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function14<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
+		private @Nullable ValidatorBuilder<Arguments14<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1401,7 +1416,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> build() {
-			return new DefaultArguments14Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments14Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1432,7 +1448,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function15<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
+		private @Nullable ValidatorBuilder<Arguments15<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1471,7 +1487,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> build() {
-			return new DefaultArguments15Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments15Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}
@@ -1503,7 +1520,7 @@ public final class ArgumentsValidatorBuilder {
 
 		private final Function16<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends X> mapper;
 
-		private ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
+		private @Nullable ValidatorBuilder<Arguments16<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -1542,7 +1559,8 @@ public final class ArgumentsValidatorBuilder {
 		 * @since 0.3.0
 		 */
 		public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> build() {
-			return new DefaultArguments16Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments16Validator<>(
+					Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 
 	}

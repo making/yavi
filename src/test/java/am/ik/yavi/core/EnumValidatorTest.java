@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EnumValidatorTest {
 
-	Validator<Message> validator;
+	Validator<Message> validator = ValidatorBuilder.of(Message.class).build();
 
 	@Nested
 	class TestConstraintEnumValidator {

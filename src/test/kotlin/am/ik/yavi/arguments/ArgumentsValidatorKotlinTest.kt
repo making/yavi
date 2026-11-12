@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class ArgumentsValidatorKotlinTest {
     data class Person(val firstName: String?, val lastName: String?, val age: Int?)
 
-    val validator: Arguments3Validator<String?, String?, Int?, Person> = ArgumentsValidatorBuilder.of(::Person)
+    val validator: Arguments3Validator<String, String, Int, Person> = ArgumentsValidatorBuilder.of<String, String, Int, Person>(::Person)
             .builder { b ->
                 b._string({ it.arg1() }, "firstName") {
                     it.notEmpty().lessThanOrEqual(10)

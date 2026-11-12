@@ -4,7 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Factory for {@link Arguments1} to {@link Arguments16} containers.

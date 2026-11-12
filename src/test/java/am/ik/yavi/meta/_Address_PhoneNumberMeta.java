@@ -14,7 +14,7 @@ public class _Address_PhoneNumberMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.Address.PhoneNumber, String> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.Address.PhoneNumber, @org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.meta.Address.PhoneNumber::value;
 		}
 	};

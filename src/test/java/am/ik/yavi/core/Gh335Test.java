@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -51,20 +52,20 @@ public class Gh335Test {
 
 	public static class NestedObject {
 
-		private final String field;
+		private final @Nullable String field;
 
-		private final Boolean bool;
+		private final @Nullable Boolean bool;
 
-		public NestedObject(String field, Boolean bool) {
+		public NestedObject(@Nullable String field, @Nullable Boolean bool) {
 			this.field = field;
 			this.bool = bool;
 		}
 
-		public String field() {
+		public @Nullable String field() {
 			return field;
 		}
 
-		public Boolean bool() {
+		public @Nullable Boolean bool() {
 			return bool;
 		}
 
@@ -72,7 +73,7 @@ public class Gh335Test {
 
 	public static class RootObject {
 
-		private final String field;
+		private final @Nullable String field;
 
 		private final NestedObject nested2;
 
@@ -81,7 +82,7 @@ public class Gh335Test {
 			this.nested2 = nested2;
 		}
 
-		public String field() {
+		public @Nullable String field() {
 			return field;
 		}
 

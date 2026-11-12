@@ -7,7 +7,7 @@ package am.ik.yavi.arguments;
 import java.util.Objects;
 
 import am.ik.yavi.fn.Function7;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An immutable container of 7 arguments.
@@ -37,19 +37,19 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 
-	private final A1 arg1;
+	private final @Nullable A1 arg1;
 
-	private final A2 arg2;
+	private final @Nullable A2 arg2;
 
-	private final A3 arg3;
+	private final @Nullable A3 arg3;
 
-	private final A4 arg4;
+	private final @Nullable A4 arg4;
 
-	private final A5 arg5;
+	private final @Nullable A5 arg5;
 
-	private final A6 arg6;
+	private final @Nullable A6 arg6;
 
-	private final A7 arg7;
+	private final @Nullable A7 arg7;
 
 	/**
 	 * Creates a container with the given arguments. The arguments may be {@code null} and
@@ -73,8 +73,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 1, which may be {@code null}.
 	 * @return the argument at position 1, possibly {@code null}
 	 */
-	@Nullable
-	public A1 arg1() {
+	@Nullable public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -82,8 +81,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 2, which may be {@code null}.
 	 * @return the argument at position 2, possibly {@code null}
 	 */
-	@Nullable
-	public A2 arg2() {
+	@Nullable public A2 arg2() {
 		return this.arg2;
 	}
 
@@ -91,8 +89,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 3, which may be {@code null}.
 	 * @return the argument at position 3, possibly {@code null}
 	 */
-	@Nullable
-	public A3 arg3() {
+	@Nullable public A3 arg3() {
 		return this.arg3;
 	}
 
@@ -100,8 +97,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 4, which may be {@code null}.
 	 * @return the argument at position 4, possibly {@code null}
 	 */
-	@Nullable
-	public A4 arg4() {
+	@Nullable public A4 arg4() {
 		return this.arg4;
 	}
 
@@ -109,8 +105,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 5, which may be {@code null}.
 	 * @return the argument at position 5, possibly {@code null}
 	 */
-	@Nullable
-	public A5 arg5() {
+	@Nullable public A5 arg5() {
 		return this.arg5;
 	}
 
@@ -118,8 +113,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 6, which may be {@code null}.
 	 * @return the argument at position 6, possibly {@code null}
 	 */
-	@Nullable
-	public A6 arg6() {
+	@Nullable public A6 arg6() {
 		return this.arg6;
 	}
 
@@ -127,8 +121,7 @@ public final class Arguments7<A1, A2, A3, A4, A5, A6, A7> {
 	 * Returns the argument at position 7, which may be {@code null}.
 	 * @return the argument at position 7, possibly {@code null}
 	 */
-	@Nullable
-	public A7 arg7() {
+	@Nullable public A7 arg7() {
 		return this.arg7;
 	}
 

@@ -16,7 +16,7 @@
  * annotation processor output directory, for example
  * {@code target/generated-sources/annotations}.
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.processor;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

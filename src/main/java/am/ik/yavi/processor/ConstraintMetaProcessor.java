@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -117,10 +118,10 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 				String className = "****";
 				final Element element = k.first();
 				if (element instanceof VariableElement) {
-					className = element.getEnclosingElement().getEnclosingElement().toString();
+					className = enclosingElement(enclosingElement(element)).toString();
 				}
 				else if (element instanceof ExecutableElement) {
-					className = element.getEnclosingElement().toString();
+					className = enclosingElement(element).toString();
 				}
 				return className;
 			}, toList()));
@@ -130,12 +131,16 @@ public class ConstraintMetaProcessor extends AbstractProcessor {
 		elementsMap.forEach(this::writeConstraintMetaFile);
 	}
 
+	private static Element enclosingElement(Element element) {
+		return Objects.requireNonNull(element.getEnclosingElement(), "element has no enclosing element");
+	}
+
 	private void processConstraintArguments(TypeElement typeElement, RoundEnvironment roundEnv) {
 		final Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(typeElement);
 
 		for (Element element : elementsAnnotatedWith) {
 			final List<Element> parameters = new ArrayList<>(((ExecutableElement) element).getParameters());
-			String className = element.getEnclosingElement().toString();
+			String className = enclosingElement(element).toString();
 			if (element.getKind() == METHOD) {
 				parameters.add(0, element.getEnclosingElement());
 				className = className + beanUpperCamel(element.getSimpleName().toString());

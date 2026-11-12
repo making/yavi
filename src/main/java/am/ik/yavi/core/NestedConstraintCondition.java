@@ -6,6 +6,8 @@ package am.ik.yavi.core;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * A {@link ConstraintCondition} that applies another condition to a value nested in the
  * target object.
@@ -22,7 +24,7 @@ import java.util.function.Function;
  */
 public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 
-	private final Function<T, N> nested;
+	private final Function<T, @Nullable N> nested;
 
 	private final ConstraintCondition<N> constraintCondition;
 
@@ -31,7 +33,7 @@ public class NestedConstraintCondition<T, N> implements ConstraintCondition<T> {
 	 * @param nested function that extracts the nested value from the target
 	 * @param constraintCondition condition applied to the nested value
 	 */
-	public NestedConstraintCondition(Function<T, N> nested, ConstraintCondition<N> constraintCondition) {
+	public NestedConstraintCondition(Function<T, @Nullable N> nested, ConstraintCondition<N> constraintCondition) {
 		this.nested = nested;
 		this.constraintCondition = constraintCondition;
 	}

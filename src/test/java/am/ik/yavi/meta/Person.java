@@ -4,16 +4,18 @@
  */
 package am.ik.yavi.meta;
 
+import org.jspecify.annotations.Nullable;
+
 public class Person {
 
-	private final String firstName;
+	private final @Nullable String firstName;
 
-	private final String lastName;
+	private final @Nullable String lastName;
 
-	private final int age;
+	private final @Nullable Integer age;
 
 	@ConstraintArguments
-	public Person(String firstName, String lastName, int age) {
+	public Person(@Nullable String firstName, @Nullable String lastName, @Nullable Integer age) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.age = age;

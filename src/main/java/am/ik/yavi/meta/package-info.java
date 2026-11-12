@@ -25,7 +25,7 @@
  *     .build();
  * }</pre>
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.meta;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

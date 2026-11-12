@@ -14,7 +14,7 @@ public class _Car2ArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments2<java.lang.String, java.lang.Integer>, java.lang.String> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments2<java.lang.String, java.lang.Integer>, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.arguments.Arguments2::arg1;
 		}
 	};
@@ -27,7 +27,7 @@ public class _Car2ArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments2<java.lang.String, java.lang.Integer>, java.lang.Integer> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments2<java.lang.String, java.lang.Integer>, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return am.ik.yavi.arguments.Arguments2::arg2;
 		}
 	};

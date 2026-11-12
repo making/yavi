@@ -7,6 +7,8 @@ package am.ik.yavi.builder;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.ZonedDateTimeValidator;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
@@ -83,9 +85,9 @@ public class ZonedDateTimeValidatorBuilder implements ValueValidatorBuilder<Zone
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ZonedDateTimeValidator<T> build(Function<? super ZonedDateTime, ? extends T> mapper) {
+	public <T> ZonedDateTimeValidator<T> build(Function<@Nullable ZonedDateTime, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<ZonedDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ZonedDateTimeValidator<>(validator, mapper::apply);
+		return new ZonedDateTimeValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

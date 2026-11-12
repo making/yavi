@@ -14,7 +14,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.String> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.AllTypesImmutable::stringValue;
 		}
 	};
@@ -27,7 +27,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return test.AllTypesImmutable::booleanValue;
 		}
 	};
@@ -40,7 +40,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return test.AllTypesImmutable::booleanPrimitiveValue;
 		}
 	};
@@ -53,7 +53,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return test.AllTypesImmutable::characterValue;
 		}
 	};
@@ -66,7 +66,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return test.AllTypesImmutable::characterPrimitiveValue;
 		}
 	};
@@ -79,7 +79,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return test.AllTypesImmutable::byteValue;
 		}
 	};
@@ -92,7 +92,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return test.AllTypesImmutable::bytePrimitiveValue;
 		}
 	};
@@ -105,7 +105,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return test.AllTypesImmutable::shortValue;
 		}
 	};
@@ -118,7 +118,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return test.AllTypesImmutable::shortPrimitiveValue;
 		}
 	};
@@ -131,7 +131,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return test.AllTypesImmutable::integerValue;
 		}
 	};
@@ -144,7 +144,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return test.AllTypesImmutable::integerPrimitiveValue;
 		}
 	};
@@ -157,7 +157,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return test.AllTypesImmutable::longValue;
 		}
 	};
@@ -170,7 +170,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return test.AllTypesImmutable::longPrimitiveValue;
 		}
 	};
@@ -183,7 +183,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return test.AllTypesImmutable::floatValue;
 		}
 	};
@@ -196,7 +196,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return test.AllTypesImmutable::floatPrimitiveValue;
 		}
 	};
@@ -209,7 +209,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return test.AllTypesImmutable::doubleValue;
 		}
 	};
@@ -222,7 +222,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return test.AllTypesImmutable::doublePrimitiveValue;
 		}
 	};
@@ -235,7 +235,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.math.BigInteger> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.math.@org.jspecify.annotations.Nullable BigInteger> toValue() {
 			return test.AllTypesImmutable::bigIntegerValue;
 		}
 	};
@@ -248,7 +248,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.math.BigDecimal> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.math.@org.jspecify.annotations.Nullable BigDecimal> toValue() {
 			return test.AllTypesImmutable::bigDecimalValue;
 		}
 	};
@@ -261,7 +261,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesImmutable, java.time.LocalDate> toValue() {
+		public java.util.function.Function<test.AllTypesImmutable, java.time.@org.jspecify.annotations.Nullable LocalDate> toValue() {
 			return test.AllTypesImmutable::localDateValue;
 		}
 	};

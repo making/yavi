@@ -14,7 +14,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.Address, test.Address.Country> toValue() {
+		public java.util.function.Function<test.Address, test.Address.@org.jspecify.annotations.Nullable Country> toValue() {
 			return test.Address::country;
 		}
 	};
@@ -27,7 +27,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.Address, java.lang.String> toValue() {
+		public java.util.function.Function<test.Address, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.Address::street;
 		}
 	};
@@ -40,7 +40,7 @@ public class _AddressMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.Address, test.Address.PhoneNumber> toValue() {
+		public java.util.function.Function<test.Address, test.Address.@org.jspecify.annotations.Nullable PhoneNumber> toValue() {
 			return test.Address::phoneNumber;
 		}
 	};

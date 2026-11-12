@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.BooleanValidator;
 import am.ik.yavi.constraint.BooleanConstraint;
@@ -81,9 +83,9 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	 * @return a new validator
 	 */
 	@Override
-	public <T> BooleanValidator<T> build(Function<? super Boolean, ? extends T> mapper) {
+	public <T> BooleanValidator<T> build(Function<@Nullable Boolean, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Boolean>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BooleanValidator<>(validator, mapper::apply);
+		return new BooleanValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

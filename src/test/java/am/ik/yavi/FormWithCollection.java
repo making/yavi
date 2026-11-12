@@ -4,17 +4,18 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 public class FormWithCollection {
 
-	private final List<Address> addresses;
+	private final @Nullable List<Address> addresses;
 
-	public FormWithCollection(List<Address> addresses) {
+	public FormWithCollection(@Nullable List<Address> addresses) {
 		this.addresses = addresses;
 	}
 
-	public List<Address> getAddresses() {
+	public @Nullable List<Address> getAddresses() {
 		return addresses;
 	}
 

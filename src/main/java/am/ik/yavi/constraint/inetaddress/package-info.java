@@ -14,7 +14,7 @@
  *
  * @since 0.7.0
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.constraint.inetaddress;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

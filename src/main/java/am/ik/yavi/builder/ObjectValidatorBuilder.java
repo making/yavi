@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.ObjectValidator;
 import am.ik.yavi.constraint.ObjectConstraint;
@@ -82,9 +84,9 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ObjectValidator<X, T> build(Function<? super X, ? extends T> mapper) {
+	public <T> ObjectValidator<X, T> build(Function<@Nullable X, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ObjectValidator<>(validator, mapper::apply);
+		return new ObjectValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**
@@ -92,6 +94,8 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 * @return a new validator
 	 */
 	@Override
+	// A validated value may be null; the type parameter does not express it.
+	@SuppressWarnings("NullAway")
 	public ObjectValidator<X, X> build() {
 		return build(x -> x);
 	}

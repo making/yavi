@@ -11,6 +11,7 @@ import am.ik.yavi.fn.Function8;
 import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 8 validators that validate the same input into a single validator.
@@ -101,7 +102,7 @@ public class Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> {
 			Function8<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Validations.apply(f::apply, Arguments8Combining.this.v1.validate(a, locale, constraintContext),
 						Arguments8Combining.this.v2.validate(a, locale, constraintContext),
 						Arguments8Combining.this.v3.validate(a, locale, constraintContext),

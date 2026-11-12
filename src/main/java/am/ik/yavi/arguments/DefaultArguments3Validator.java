@@ -11,7 +11,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function3;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Default {@link Arguments3Validator} that applies a {@link Validator} to an

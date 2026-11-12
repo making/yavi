@@ -8,56 +8,57 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AllTypesImmutable {
 
-	private final String stringValue;
+	private final @Nullable String stringValue;
 
-	private final Boolean booleanValue;
+	private final @Nullable Boolean booleanValue;
 
 	private final boolean booleanPrimitiveValue;
 
-	private final Character characterValue;
+	private final @Nullable Character characterValue;
 
 	private final char characterPrimitiveValue;
 
-	private final Byte byteValue;
+	private final @Nullable Byte byteValue;
 
 	private final byte bytePrimitiveValue;
 
-	private final Short shortValue;
+	private final @Nullable Short shortValue;
 
 	private final short shortPrimitiveValue;
 
-	private final Integer integerValue;
+	private final @Nullable Integer integerValue;
 
 	private final int integerPrimitiveValue;
 
-	private final Long longValue;
+	private final @Nullable Long longValue;
 
 	private final long longPrimitiveValue;
 
-	private final Float floatValue;
+	private final @Nullable Float floatValue;
 
 	private final float floatPrimitiveValue;
 
-	private final Double doubleValue;
+	private final @Nullable Double doubleValue;
 
 	private final double doublePrimitiveValue;
 
-	private final BigInteger bigIntegerValue;
+	private final @Nullable BigInteger bigIntegerValue;
 
-	private final BigDecimal bigDecimalValue;
+	private final @Nullable BigDecimal bigDecimalValue;
 
-	private final LocalDate localDateValue;
+	private final @Nullable LocalDate localDateValue;
 
-	public AllTypesImmutable(String stringValue, Boolean booleanValue, boolean booleanPrimitiveValue,
-			Character characterValue, char characterPrimitiveValue, Byte byteValue, byte bytePrimitiveValue,
-			Short shortValue, short shortPrimitiveValue, Integer integerValue, int integerPrimitiveValue,
-			Long longValue, long longPrimitiveValue, Float floatValue, float floatPrimitiveValue, Double doubleValue,
-			double doublePrimitiveValue, BigInteger bigIntegerValue, BigDecimal bigDecimalValue,
-			@Nullable LocalDate localDateValue) {
+	public AllTypesImmutable(@Nullable String stringValue, @Nullable Boolean booleanValue,
+			boolean booleanPrimitiveValue, @Nullable Character characterValue, char characterPrimitiveValue,
+			@Nullable Byte byteValue, byte bytePrimitiveValue, @Nullable Short shortValue, short shortPrimitiveValue,
+			@Nullable Integer integerValue, int integerPrimitiveValue, @Nullable Long longValue,
+			long longPrimitiveValue, @Nullable Float floatValue, float floatPrimitiveValue,
+			@Nullable Double doubleValue, double doublePrimitiveValue, @Nullable BigInteger bigIntegerValue,
+			@Nullable BigDecimal bigDecimalValue, @Nullable LocalDate localDateValue) {
 		this.stringValue = stringValue;
 		this.booleanValue = booleanValue;
 		this.booleanPrimitiveValue = booleanPrimitiveValue;
@@ -81,12 +82,12 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public String stringValue() {
+	public @Nullable String stringValue() {
 		return stringValue;
 	}
 
 	@ConstraintTarget(getter = false)
-	public Boolean booleanValue() {
+	public @Nullable Boolean booleanValue() {
 		return booleanValue;
 	}
 
@@ -96,7 +97,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Character characterValue() {
+	public @Nullable Character characterValue() {
 		return characterValue;
 	}
 
@@ -106,7 +107,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Byte byteValue() {
+	public @Nullable Byte byteValue() {
 		return byteValue;
 	}
 
@@ -116,7 +117,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Short shortValue() {
+	public @Nullable Short shortValue() {
 		return shortValue;
 	}
 
@@ -126,7 +127,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Integer integerValue() {
+	public @Nullable Integer integerValue() {
 		return integerValue;
 	}
 
@@ -136,7 +137,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Long longValue() {
+	public @Nullable Long longValue() {
 		return longValue;
 	}
 
@@ -146,7 +147,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Float floatValue() {
+	public @Nullable Float floatValue() {
 		return floatValue;
 	}
 
@@ -156,7 +157,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public Double doubleValue() {
+	public @Nullable Double doubleValue() {
 		return doubleValue;
 	}
 
@@ -166,17 +167,17 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public BigInteger bigIntegerValue() {
+	public @Nullable BigInteger bigIntegerValue() {
 		return bigIntegerValue;
 	}
 
 	@ConstraintTarget(getter = false)
-	public BigDecimal bigDecimalValue() {
+	public @Nullable BigDecimal bigDecimalValue() {
 		return bigDecimalValue;
 	}
 
 	@ConstraintTarget(getter = false)
-	public LocalDate localDateValue() {
+	public @Nullable LocalDate localDateValue() {
 		return localDateValue;
 	}
 

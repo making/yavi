@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ class ApplicativeValidationTest {
 	static final ValueValidator<Map<String, String>, Country> mapCountryValidator = Country.validator()
 		.prefixed("country")
 		.applicative()
-		.compose(map -> new Country(map.get("country")));
+		.compose(map -> new Country(Objects.requireNonNull(map).get("country")));
 
 	static final ValueValidator<Country, String> countryValidator = Country.validator()
 		.prefixed("country")
@@ -45,9 +46,9 @@ class ApplicativeValidationTest {
 		assertThat(validation.isValid()).isTrue();
 		final Address address = validation.value();
 		assertThat(address).isNotNull();
-		assertThat(address.country().name()).isEqualTo("jp");
+		assertThat(Objects.requireNonNull(address.country()).name()).isEqualTo("jp");
 		assertThat(address.street()).isEqualTo("xyz");
-		assertThat(address.phoneNumber().value()).isEqualTo("12345678");
+		assertThat(Objects.requireNonNull(address.phoneNumber()).value()).isEqualTo("12345678");
 	}
 
 	@ParameterizedTest

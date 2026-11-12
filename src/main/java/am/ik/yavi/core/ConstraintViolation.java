@@ -4,11 +4,12 @@
  */
 package am.ik.yavi.core;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -82,12 +83,17 @@ public class ConstraintViolation {
 	 * @deprecated Use {@link #builder()} instead for a more fluent and type-safe API
 	 */
 	@Deprecated
-	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, @Nullable Object[] args,
+	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, Object @Nullable [] args,
 			@Nullable MessageFormatter messageFormatter, @Nullable Locale locale) {
 		this.name = name;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
-		this.args = args == null ? new Object[0] : args;
+		if (args != null) {
+			this.args = args;
+		}
+		else {
+			this.args = new Object[0];
+		}
 		this.messageFormatter = messageFormatter == null ? SimpleMessageFormatter.getInstance() : messageFormatter;
 		this.locale = locale == null ? Locale.getDefault() : locale;
 	}
@@ -274,22 +280,22 @@ public class ConstraintViolation {
 			StagedBuilders.DefaultMessageFormat, StagedBuilders.Optionals {
 
 		/** The field name that the constraint violation applies to */
-		private String name;
+		private @Nullable String name;
 
 		/** The message id for internationalization */
-		private String messageKey;
+		private @Nullable String messageKey;
 
 		/** The default message format if no localized message is found */
-		private String defaultMessageFormat;
+		private @Nullable String defaultMessageFormat;
 
 		/** The arguments to be used when formatting the message */
-		private Object[] args;
+		private Object @Nullable [] args;
 
 		/** The message formatter to be used for formatting the message */
-		private MessageFormatter messageFormatter;
+		private @Nullable MessageFormatter messageFormatter;
 
 		/** The locale to be used for message localization */
-		private Locale locale;
+		private @Nullable Locale locale;
 
 		/**
 		 * Private constructor to prevent direct instantiation. Use
@@ -351,7 +357,7 @@ public class ConstraintViolation {
 		 */
 		public Builder argsWithPrependedName(Object... args) {
 			Object[] argsWithName = new Object[args.length + 1];
-			argsWithName[0] = this.name;
+			argsWithName[0] = Objects.requireNonNull(this.name);
 			System.arraycopy(args, 0, argsWithName, 1, args.length);
 			this.args = argsWithName;
 			return this;
@@ -371,6 +377,9 @@ public class ConstraintViolation {
 		 * value is retrieved by calling value() method
 		 * @return this builder for method chaining
 		 */
+		// Message arguments may hold a null violated value; the array type does not
+		// express element nullness.
+		@SuppressWarnings("NullAway")
 		public Builder argsWithPrependedNameAndAppendedViolatedValue(Object[] args, ViolatedValue violatedValue) {
 			Object[] completeArgs = new Object[args.length + 2];
 			completeArgs[0] = this.name;
@@ -408,7 +417,8 @@ public class ConstraintViolation {
 		 * @return a new {@link ConstraintViolation} instance
 		 */
 		public ConstraintViolation build() {
-			return new ConstraintViolation(name, messageKey, defaultMessageFormat, args, messageFormatter, locale);
+			return new ConstraintViolation(Objects.requireNonNull(this.name), Objects.requireNonNull(this.messageKey),
+					Objects.requireNonNull(this.defaultMessageFormat), this.args, this.messageFormatter, this.locale);
 		}
 
 	}

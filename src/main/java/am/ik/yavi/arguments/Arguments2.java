@@ -7,7 +7,7 @@ package am.ik.yavi.arguments;
 import java.util.Objects;
 
 import am.ik.yavi.fn.Function2;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An immutable container of 2 arguments.
@@ -32,9 +32,9 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public final class Arguments2<A1, A2> {
 
-	private final A1 arg1;
+	private final @Nullable A1 arg1;
 
-	private final A2 arg2;
+	private final @Nullable A2 arg2;
 
 	/**
 	 * Creates a container with the given arguments. The arguments may be {@code null} and
@@ -50,8 +50,7 @@ public final class Arguments2<A1, A2> {
 	 * Returns the argument at position 1, which may be {@code null}.
 	 * @return the argument at position 1, possibly {@code null}
 	 */
-	@Nullable
-	public A1 arg1() {
+	@Nullable public A1 arg1() {
 		return this.arg1;
 	}
 
@@ -59,8 +58,7 @@ public final class Arguments2<A1, A2> {
 	 * Returns the argument at position 2, which may be {@code null}.
 	 * @return the argument at position 2, possibly {@code null}
 	 */
-	@Nullable
-	public A2 arg2() {
+	@Nullable public A2 arg2() {
 		return this.arg2;
 	}
 

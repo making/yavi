@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A single constraint on a value: a predicate that decides whether the value is valid,
@@ -82,6 +82,8 @@ public class ConstraintPredicate<V> {
 			ViolationMessage violationMessage, Supplier<Object[]> args, NullAs nullAs) {
 		return new ConstraintPredicate<V>(v -> !violatedValue.apply(v).isPresent(), violationMessage, args, nullAs) {
 			@Override
+			@SuppressWarnings("NullAway") // the function is only invoked for constraint
+											// predicates that handle null
 			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return violatedValue.apply(target);
 			}

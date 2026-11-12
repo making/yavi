@@ -35,7 +35,7 @@
  * Validated<Person> validated = validator.validate("Alice", 20);
  * }</pre>
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.arguments;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

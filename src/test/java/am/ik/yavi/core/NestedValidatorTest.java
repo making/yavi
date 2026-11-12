@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
@@ -33,7 +35,8 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 	private ConstraintCondition<IntRange> whenAllOfNumbersNotNull = (r, g) -> r.small != null && r.big != null;
 
 	private Validator<IntRange> thenCompareNumbers = ValidatorBuilder.of(IntRange.class)
-		.constraintOnTarget(r -> r.big > r.small, "big", null, "[big] must be greater than [small]")
+		.constraintOnTarget(r -> Objects.requireNonNull(r.big) > Objects.requireNonNull(r.small), "big", "",
+				"[big] must be greater than [small]")
 		.build();
 
 	private Validator<IntRange> intRangeValidator = ValidatorBuilder.of(IntRange.class)
@@ -343,9 +346,9 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	public static class Nested {
 
-		IntRange intRange;
+		@Nullable IntRange intRange;
 
-		Nested(IntRange intRange) {
+		Nested(@Nullable IntRange intRange) {
 			this.intRange = intRange;
 		}
 
@@ -353,11 +356,11 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	public static class IntRange {
 
-		public Integer small;
+		public @Nullable Integer small;
 
-		public Integer big;
+		public @Nullable Integer big;
 
-		IntRange(Integer small, Integer big) {
+		IntRange(@Nullable Integer small, @Nullable Integer big) {
 			this.small = small;
 			this.big = big;
 		}
@@ -366,23 +369,23 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	public static class MainObject {
 
-		Long id;
+		@Nullable Long id;
 
-		NestedObject nested;
+		@Nullable NestedObject nested;
 
-		public Long getId() {
+		public @Nullable Long getId() {
 			return id;
 		}
 
-		public void setId(Long id) {
+		public void setId(@Nullable Long id) {
 			this.id = id;
 		}
 
-		public NestedObject getNested() {
+		public @Nullable NestedObject getNested() {
 			return nested;
 		}
 
-		public void setNested(NestedObject nested) {
+		public void setNested(@Nullable NestedObject nested) {
 			this.nested = nested;
 		}
 
@@ -390,33 +393,33 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	public static class NestedObject {
 
-		Long id;
+		@Nullable Long id;
 
-		String text;
+		@Nullable String text;
 
-		List<IntRange> intRanges;
+		@Nullable List<IntRange> intRanges;
 
-		public Long getId() {
+		public @Nullable Long getId() {
 			return id;
 		}
 
-		public void setId(Long id) {
+		public void setId(@Nullable Long id) {
 			this.id = id;
 		}
 
-		public String getText() {
+		public @Nullable String getText() {
 			return text;
 		}
 
-		public void setText(String text) {
+		public void setText(@Nullable String text) {
 			this.text = text;
 		}
 
-		public List<IntRange> getIntRanges() {
+		public @Nullable List<IntRange> getIntRanges() {
 			return intRanges;
 		}
 
-		public void setIntRanges(List<IntRange> intRanges) {
+		public void setIntRanges(@Nullable List<IntRange> intRanges) {
 			this.intRanges = intRanges;
 		}
 
@@ -424,13 +427,13 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	private static class A {
 
-		private final B b;
+		private final @Nullable B b;
 
-		public A(B b) {
+		public A(@Nullable B b) {
 			this.b = b;
 		}
 
-		public B getB() {
+		public @Nullable B getB() {
 			return b;
 		}
 
@@ -438,13 +441,13 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	private static class B {
 
-		private final C c;
+		private final @Nullable C c;
 
-		public B(C c) {
+		public B(@Nullable C c) {
 			this.c = c;
 		}
 
-		public C getC() {
+		public @Nullable C getC() {
 			return c;
 		}
 
@@ -452,13 +455,13 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	private static class C {
 
-		private final D d;
+		private final @Nullable D d;
 
-		public C(D d) {
+		public C(@Nullable D d) {
 			this.d = d;
 		}
 
-		public D getD() {
+		public @Nullable D getD() {
 			return d;
 		}
 
@@ -466,20 +469,20 @@ public class NestedValidatorTest extends AbstractNestedValidatorTest {
 
 	private static class D {
 
-		private final E e;
+		private final @Nullable E e;
 
-		private final List<E> list;
+		private final @Nullable List<E> list;
 
-		private D(E e, List<E> list) {
+		private D(@Nullable E e, @Nullable List<E> list) {
 			this.e = e;
 			this.list = list;
 		}
 
-		public E getE() {
+		public @Nullable E getE() {
 			return e;
 		}
 
-		public List<E> getList() {
+		public @Nullable List<E> getList() {
 			return list;
 		}
 

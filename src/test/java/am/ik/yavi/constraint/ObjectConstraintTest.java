@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.constraint;
 
+import java.util.Objects;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -15,7 +16,7 @@ import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -114,8 +115,8 @@ class ObjectConstraintTest {
 						"\"color\" must be one of the following values: [RED, BLUE]");
 		}
 
-		private Predicate<String> oneOfPredicate(List<String> values) {
-			return constraint.oneOf(values).predicates().getFirst().predicate();
+		private Predicate<String> oneOfPredicate(@Nullable List<String> values) {
+			return constraint.oneOf(Objects.requireNonNull(values)).predicates().getFirst().predicate();
 		}
 
 	}

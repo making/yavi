@@ -8,65 +8,65 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AllTypesBean {
 
-	private String stringValue;
+	private @Nullable String stringValue;
 
-	private Boolean booleanValue;
+	private @Nullable Boolean booleanValue;
 
 	private boolean booleanPrimitiveValue;
 
-	private Character characterValue;
+	private @Nullable Character characterValue;
 
 	private char characterPrimitiveValue;
 
-	private Byte byteValue;
+	private @Nullable Byte byteValue;
 
 	private byte bytePrimitiveValue;
 
-	private Short shortValue;
+	private @Nullable Short shortValue;
 
 	private short shortPrimitiveValue;
 
-	private Integer integerValue;
+	private @Nullable Integer integerValue;
 
 	private int integerPrimitiveValue;
 
-	private Long longValue;
+	private @Nullable Long longValue;
 
 	private long longPrimitiveValue;
 
-	private Float floatValue;
+	private @Nullable Float floatValue;
 
 	private float floatPrimitiveValue;
 
-	private Double doubleValue;
+	private @Nullable Double doubleValue;
 
 	private double doublePrimitiveValue;
 
-	private BigInteger bigIntegerValue;
+	private @Nullable BigInteger bigIntegerValue;
 
-	private BigDecimal bigDecimalValue;
+	private @Nullable BigDecimal bigDecimalValue;
 
-	private LocalDate localDateValue;
+	private @Nullable LocalDate localDateValue;
 
 	@ConstraintTarget
-	public String getStringValue() {
+	public @Nullable String getStringValue() {
 		return stringValue;
 	}
 
-	public void setStringValue(String stringValue) {
+	public void setStringValue(@Nullable String stringValue) {
 		this.stringValue = stringValue;
 	}
 
 	@ConstraintTarget
-	public Boolean getBooleanValue() {
+	public @Nullable Boolean getBooleanValue() {
 		return booleanValue;
 	}
 
-	public void setBooleanValue(Boolean booleanValue) {
+	public void setBooleanValue(@Nullable Boolean booleanValue) {
 		this.booleanValue = booleanValue;
 	}
 
@@ -80,11 +80,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Character getCharacterValue() {
+	public @Nullable Character getCharacterValue() {
 		return characterValue;
 	}
 
-	public void setCharacterValue(Character characterValue) {
+	public void setCharacterValue(@Nullable Character characterValue) {
 		this.characterValue = characterValue;
 	}
 
@@ -98,11 +98,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Byte getByteValue() {
+	public @Nullable Byte getByteValue() {
 		return byteValue;
 	}
 
-	public void setByteValue(Byte byteValue) {
+	public void setByteValue(@Nullable Byte byteValue) {
 		this.byteValue = byteValue;
 	}
 
@@ -116,11 +116,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Short getShortValue() {
+	public @Nullable Short getShortValue() {
 		return shortValue;
 	}
 
-	public void setShortValue(Short shortValue) {
+	public void setShortValue(@Nullable Short shortValue) {
 		this.shortValue = shortValue;
 	}
 
@@ -134,11 +134,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Integer getIntegerValue() {
+	public @Nullable Integer getIntegerValue() {
 		return integerValue;
 	}
 
-	public void setIntegerValue(Integer integerValue) {
+	public void setIntegerValue(@Nullable Integer integerValue) {
 		this.integerValue = integerValue;
 	}
 
@@ -152,11 +152,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Long getLongValue() {
+	public @Nullable Long getLongValue() {
 		return longValue;
 	}
 
-	public void setLongValue(Long longValue) {
+	public void setLongValue(@Nullable Long longValue) {
 		this.longValue = longValue;
 	}
 
@@ -170,11 +170,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Float getFloatValue() {
+	public @Nullable Float getFloatValue() {
 		return floatValue;
 	}
 
-	public void setFloatValue(Float floatValue) {
+	public void setFloatValue(@Nullable Float floatValue) {
 		this.floatValue = floatValue;
 	}
 
@@ -188,11 +188,11 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public Double getDoubleValue() {
+	public @Nullable Double getDoubleValue() {
 		return doubleValue;
 	}
 
-	public void setDoubleValue(Double doubleValue) {
+	public void setDoubleValue(@Nullable Double doubleValue) {
 		this.doubleValue = doubleValue;
 	}
 
@@ -206,25 +206,25 @@ public class AllTypesBean {
 	}
 
 	@ConstraintTarget
-	public BigInteger getBigIntegerValue() {
+	public @Nullable BigInteger getBigIntegerValue() {
 		return bigIntegerValue;
 	}
 
-	public void setBigIntegerValue(BigInteger bigIntegerValue) {
+	public void setBigIntegerValue(@Nullable BigInteger bigIntegerValue) {
 		this.bigIntegerValue = bigIntegerValue;
 	}
 
 	@ConstraintTarget
-	public BigDecimal getBigDecimalValue() {
+	public @Nullable BigDecimal getBigDecimalValue() {
 		return bigDecimalValue;
 	}
 
-	public void setBigDecimalValue(BigDecimal bigDecimalValue) {
+	public void setBigDecimalValue(@Nullable BigDecimal bigDecimalValue) {
 		this.bigDecimalValue = bigDecimalValue;
 	}
 
 	@ConstraintTarget
-	public LocalDate getLocalDateValue() {
+	public @Nullable LocalDate getLocalDateValue() {
 		return localDateValue;
 	}
 

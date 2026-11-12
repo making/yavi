@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
@@ -159,7 +161,7 @@ public final class UrlConstraintBuilder<E extends CharSequence> {
 		}, CHAR_SEQUENCE_URL_PORT, () -> new Object[] { this.ports }, VALID);
 	}
 
-	private URL parse(E value) {
+	private @Nullable URL parse(E value) {
 		if (this.size.applyAsInt(value) == 0) {
 			return null;
 		}

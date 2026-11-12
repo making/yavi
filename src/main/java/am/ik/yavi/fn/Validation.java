@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.stream.Collectors.toList;
 
@@ -83,8 +83,7 @@ public abstract class Validation<E, T> implements Serializable {
 	 * @throws NoSuchElementException if this validation is a failure
 	 * @since 0.8.3
 	 */
-	@Nullable
-	public abstract T valueNullable();
+	@Nullable public abstract T valueNullable();
 
 	/**
 	 * Returns the errors of this validation. The returned list is unmodifiable.
@@ -388,7 +387,7 @@ public abstract class Validation<E, T> implements Serializable {
 		/**
 		 * The value held by this successful validation. May be {@code null}.
 		 */
-		public final T value;
+		public final @Nullable T value;
 
 		Success(@Nullable T value) {
 			this.value = value;
@@ -408,7 +407,7 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 
 		@Override
-		public T valueNullable() {
+		@Nullable public T valueNullable() {
 			return this.value;
 		}
 
@@ -474,7 +473,7 @@ public abstract class Validation<E, T> implements Serializable {
 		}
 
 		@Override
-		public T valueNullable() {
+		@Nullable public T valueNullable() {
 			return this.value();
 		}
 

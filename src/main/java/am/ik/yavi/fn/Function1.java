@@ -4,7 +4,7 @@
  */
 package am.ik.yavi.fn;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A function that takes one argument and produces a result.
@@ -12,7 +12,7 @@ import am.ik.yavi.jsr305.Nullable;
  * <p>
  * This is the 1-argument variant of {@link java.util.function.Function}, used to apply a
  * function to the values of combined validation results. Every argument is annotated
- * {@link am.ik.yavi.jsr305.Nullable}, so implementations must accept {@code null}
+ * {@link org.jspecify.annotations.Nullable}, so implementations must accept {@code null}
  * arguments.
  *
  * <p>

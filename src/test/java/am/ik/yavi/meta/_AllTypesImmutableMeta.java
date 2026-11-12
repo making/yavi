@@ -15,7 +15,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.String> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::stringValue;
 		}
 	};
@@ -28,7 +28,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Boolean> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::booleanValue;
 		}
 	};
@@ -41,7 +41,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Boolean> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::booleanPrimitiveValue;
 		}
 	};
@@ -54,7 +54,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Character> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::characterValue;
 		}
 	};
@@ -67,7 +67,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Character> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::characterPrimitiveValue;
 		}
 	};
@@ -80,7 +80,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Byte> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::byteValue;
 		}
 	};
@@ -93,7 +93,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Byte> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::bytePrimitiveValue;
 		}
 	};
@@ -106,7 +106,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Short> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::shortValue;
 		}
 	};
@@ -119,7 +119,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Short> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::shortPrimitiveValue;
 		}
 	};
@@ -132,7 +132,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Integer> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::integerValue;
 		}
 	};
@@ -145,7 +145,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Integer> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::integerPrimitiveValue;
 		}
 	};
@@ -158,7 +158,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Long> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::longValue;
 		}
 	};
@@ -171,7 +171,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Long> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::longPrimitiveValue;
 		}
 	};
@@ -184,7 +184,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Float> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::floatValue;
 		}
 	};
@@ -197,7 +197,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Float> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::floatPrimitiveValue;
 		}
 	};
@@ -210,7 +210,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Double> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::doubleValue;
 		}
 	};
@@ -223,7 +223,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.Double> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::doublePrimitiveValue;
 		}
 	};
@@ -236,7 +236,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.math.BigInteger> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.math.@org.jspecify.annotations.Nullable BigInteger> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::bigIntegerValue;
 		}
 	};
@@ -249,7 +249,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.math.BigDecimal> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.math.@org.jspecify.annotations.Nullable BigDecimal> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::bigDecimalValue;
 		}
 	};
@@ -262,7 +262,7 @@ public class _AllTypesImmutableMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.time.LocalDate> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesImmutable, java.time.@org.jspecify.annotations.Nullable LocalDate> toValue() {
 			return am.ik.yavi.meta.AllTypesImmutable::localDateValue;
 		}
 	};

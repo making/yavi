@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import static java.util.function.Function.identity;
 
 /**
@@ -1144,7 +1146,7 @@ public class Validations {
 	 * accumulated errors
 	 * @since 0.7.0
 	 */
-	public static <E, T, U> Validation<E, List<U>> traverseIndexed(Iterable<T> values,
+	public static <E, T, U> Validation<E, List<U>> traverseIndexed(@Nullable Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
 		return traverseIndexed(values, traverser, ArrayList::new);
 	}
@@ -1169,9 +1171,12 @@ public class Validations {
 	 * holding the accumulated errors
 	 * @since 0.8.0
 	 */
-	public static <E, T, U, C extends Collection<U>> Validation<E, C> traverseIndexed(Iterable<T> values,
+	public static <E, T, U, C extends Collection<U>> Validation<E, C> traverseIndexed(@Nullable Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser,
 			Supplier<C> factory) {
+		if (values == null) {
+			return Validation.success(factory.get());
+		}
 		final List<E> errors = new ArrayList<>();
 		final C results = factory.get();
 		int index = 0;
@@ -1199,8 +1204,11 @@ public class Validations {
 	 * @since 0.8.0
 	 */
 	@SuppressWarnings("unchecked")
-	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(Optional<T> value,
+	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(@Nullable Optional<T> value,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
+		if (value == null) {
+			return Validation.success(Optional.empty());
+		}
 		return value.map(t -> mapper.apply(t).bimap(es -> (List<E>) es, u -> Optional.of((U) u))) //
 			.orElse(Validation.success(Optional.empty()));
 	}
