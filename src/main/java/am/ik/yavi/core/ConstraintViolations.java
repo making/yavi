@@ -9,10 +9,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * A mutable {@link List} of {@link ConstraintViolation} instances.
@@ -223,12 +224,24 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
-	 * Returns the details of all violations in this list.
-	 * @return a list of violation details, one per violation
+	 * Returns the violations in a form that is ready to be serialized, for example as the
+	 * body of an API response.
+	 *
+	 * <p>
+	 * Every {@link ViolationDetail} tells which value failed, with the name and the JSON
+	 * Pointer, and why, with the message id, the formatted message and the arguments:
+	 *
+	 * <pre>{@code
+	 * [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
+	 *   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+	 * }</pre>
+	 * @return an unmodifiable list of violation details, one per violation in the order
+	 * of the violations
 	 * @since 0.0.3
+	 * @see ConstraintViolation#detail()
 	 */
 	public List<ViolationDetail> details() {
-		return this.delegate.stream().map(ConstraintViolation::detail).collect(Collectors.toList());
+		return this.delegate.stream().map(ConstraintViolation::detail).toList();
 	}
 
 	/**
@@ -288,6 +301,54 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	@Override
 	public final Iterator<ConstraintViolation> iterator() {
 		return this.delegate.iterator();
+	}
+
+	/**
+	 * Returns the messages of the violations grouped by the
+	 * {@linkplain ConstraintViolation#name() name} of the value that failed, the form
+	 * that shows the messages next to the fields of a form.
+	 *
+	 * <p>
+	 * The names are in the order in which they first appear in the violations, and so are
+	 * the messages of a name:
+	 *
+	 * <pre>{@code
+	 * {"email": ["\"email\" must not be blank"],
+	 *  "items[1].name": ["\"items[1].name\" must not be blank"]}
+	 * }</pre>
+	 *
+	 * The messages of the violations on the validated value itself are under the empty
+	 * name.
+	 * @return an unmodifiable map of the name to the messages
+	 * @since 0.18.0
+	 */
+	public Map<String, List<String>> messagesByName() {
+		return this.messagesBy(ConstraintViolation::name);
+	}
+
+	/**
+	 * Returns the messages of the violations grouped by the
+	 * {@linkplain ConstraintViolation#pointer() JSON Pointer} to the value that failed.
+	 *
+	 * <p>
+	 * This is {@link #messagesByName()} with the keys in the form that a client of a JSON
+	 * API resolves against the document that it sent: {@code /items/1/name} instead of
+	 * {@code items[1].name}. The messages of the violations on the validated value itself
+	 * are under the empty pointer.
+	 * @return an unmodifiable map of the JSON Pointer to the messages
+	 * @since 0.18.0
+	 */
+	public Map<String, List<String>> messagesByPointer() {
+		return this.messagesBy(ConstraintViolation::pointer);
+	}
+
+	private Map<String, List<String>> messagesBy(Function<ConstraintViolation, String> key) {
+		final Map<String, List<String>> messages = new LinkedHashMap<>();
+		for (ConstraintViolation violation : this.delegate) {
+			messages.computeIfAbsent(key.apply(violation), k -> new ArrayList<>()).add(violation.message());
+		}
+		messages.replaceAll((k, v) -> Collections.unmodifiableList(v));
+		return Collections.unmodifiableMap(messages);
 	}
 
 	/**

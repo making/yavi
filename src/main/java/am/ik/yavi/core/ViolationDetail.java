@@ -4,74 +4,40 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Arrays;
+import java.util.List;
+
+import org.jspecify.annotations.Nullable;
 
 /**
- * A structured representation of a {@link ConstraintViolation}.
+ * A {@link ConstraintViolation} in a form that is ready to be serialized, for example as
+ * an element of the body of an API response.
  *
  * <p>
- * This class is intended to be used for JSON serialization (for example with Jackson).
- * Its getters expose the message id, the message arguments and the formatted message of a
- * violation.
+ * It tells which value failed, with the {@code name} for a form and the {@code pointer}
+ * for a JSON document, and why, with the message id, the formatted message and the
+ * message arguments. A JSON library that supports records (for example Jackson) writes it
+ * as
  *
+ * <pre>{@code
+ * {"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
+ *  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}
+ * }</pre>
+ *
+ * <p>
+ * The arguments are those of {@link ConstraintViolation#args()}: they start with the name
+ * and, by convention, end with the value that violated the constraint. Map the detail to
+ * a type of your own before it is serialized if that value must not be sent back.
+ *
+ * @param name the name of the value that failed, such as {@code items[1].name}; empty for
+ * the validated value itself
+ * @param pointer the JSON Pointer (RFC 6901) to the value that failed, such as
+ * {@code /items/1/name}; empty for the validated value itself
+ * @param messageKey the message id of the violated constraint
+ * @param message the formatted message
+ * @param args the message arguments, unmodifiable
  * @since 0.0.3
+ * @see ConstraintViolations#details()
  */
-public class ViolationDetail {
-
-	private final Object[] args;
-
-	private final String defaultMessage;
-
-	private final String key;
-
-	/**
-	 * Creates a new instance.
-	 * @param key the message id of the violated constraint
-	 * @param args the message arguments
-	 * @param defaultMessage the formatted violation message
-	 */
-	public ViolationDetail(String key, Object[] args, String defaultMessage) {
-		this.key = key;
-		this.args = args;
-		this.defaultMessage = defaultMessage;
-	}
-
-	/**
-	 * Returns the message arguments of the violation.
-	 * @return the message arguments
-	 */
-	public Object[] getArgs() {
-		return args;
-	}
-
-	/**
-	 * Returns the formatted message of the violation.
-	 *
-	 * <p>
-	 * Despite its name, this is the message in which the arguments have already been
-	 * substituted.
-	 * @return the formatted message
-	 */
-	public String getDefaultMessage() {
-		return defaultMessage;
-	}
-
-	/**
-	 * Returns the message id of the violated constraint.
-	 * @return the message id
-	 */
-	public String getKey() {
-		return key;
-	}
-
-	/**
-	 * Returns a string representation of this detail.
-	 * @return a string representation
-	 */
-	@Override
-	public String toString() {
-		return "ViolationDetail{" + "key='" + key + '\'' + ", args=" + Arrays.toString(args) + ", defaultMessage='"
-				+ defaultMessage + '\'' + '}';
-	}
-
+public record ViolationDetail(String name, String pointer, String messageKey, String message,
+		List<@Nullable Object> args) {
 }

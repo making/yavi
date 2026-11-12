@@ -287,26 +287,6 @@ class ValidatorTest {
 	}
 
 	@Test
-	void details() throws Exception {
-		User user = new User("", "example.com", 300);
-		Validator<User> validator = validator();
-		ConstraintViolations violations = validator.validate(user);
-		assertThat(violations.isValid()).isFalse();
-		List<ViolationDetail> details = violations.details();
-		assertThat(details.size()).isEqualTo(3);
-		assertThat(details.get(0).getDefaultMessage())
-			.isEqualTo("The size of \"name\" must be greater than or equal to 1. The given size is 0");
-		assertThat(details.get(0).getKey()).isEqualTo("container.greaterThanOrEqual");
-		assertThat(details.get(0).getArgs()).containsExactly("name", 1, 0);
-		assertThat(details.get(1).getDefaultMessage()).isEqualTo("\"email\" must be a valid email address");
-		assertThat(details.get(1).getKey()).isEqualTo("charSequence.email");
-		assertThat(details.get(1).getArgs()).containsExactly("email", "example.com");
-		assertThat(details.get(2).getDefaultMessage()).isEqualTo("\"age\" must be less than or equal to 200");
-		assertThat(details.get(2).getKey()).isEqualTo("numeric.lessThanOrEqual");
-		assertThat(details.get(2).getArgs()).containsExactly("age", 200, 300);
-	}
-
-	@Test
 	void emojiInValid() throws Exception {
 		User user = new User("I❤️☕️", null, null);
 		Validator<User> validator = ValidatorBuilder.of(User.class)

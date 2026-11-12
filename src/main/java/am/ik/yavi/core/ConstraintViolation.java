@@ -150,30 +150,31 @@ public class ConstraintViolation {
 	}
 
 	/**
-	 * Returns structured information about this constraint violation.
+	 * Returns this constraint violation in a form that is ready to be serialized, for
+	 * example as an element of the body of an API response.
 	 *
 	 * <p>
-	 * The returned detail contains the message id and the arguments of this violation
-	 * together with its formatted message.
+	 * The returned detail contains the {@link #name()}, the {@link #pointer()}, the
+	 * message id, the formatted {@link #message()} and the arguments of this violation.
 	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 */
 	public ViolationDetail detail() {
-		return new ViolationDetail(this.messageKey, this.args, this.message());
+		return this.detail(this.messageFormatter);
 	}
 
 	/**
-	 * Returns structured information about this constraint violation, using the provided
-	 * message formatter to format the message.
+	 * Returns this constraint violation in a form that is ready to be serialized, using
+	 * the provided message formatter to format the message.
 	 *
 	 * <p>
-	 * All other properties (message id and arguments) remain the same as in this
-	 * violation.
+	 * All other properties remain the same as in {@link #detail()}.
 	 * @param messageFormatter the message formatter to use for formatting the message
 	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 * @since 0.16.0
 	 */
 	public ViolationDetail detail(MessageFormatter messageFormatter) {
-		return new ViolationDetail(this.messageKey, this.args, this.message(messageFormatter));
+		return new ViolationDetail(this.name, this.pointer(), this.messageKey, this.message(messageFormatter),
+				Collections.unmodifiableList(Arrays.asList(this.args.clone())));
 	}
 
 	/**
@@ -266,6 +267,22 @@ public class ConstraintViolation {
 	 */
 	public List<PathSegment> path() {
 		return this.path;
+	}
+
+	/**
+	 * Returns the JSON Pointer (RFC 6901) to the value that this constraint violation
+	 * applies to, which is the {@link #path()} rendered by
+	 * {@link PathSegment#toJsonPointer(List)}.
+	 *
+	 * <p>
+	 * The violation named {@code items[1].name} has the pointer {@code /items/1/name}. A
+	 * violation on the validated value itself has the empty pointer. Unlike the name, the
+	 * pointer does not depend on the message key separator.
+	 * @return the JSON Pointer of the path
+	 * @since 0.18.0
+	 */
+	public String pointer() {
+		return PathSegment.toJsonPointer(this.path);
 	}
 
 	/**

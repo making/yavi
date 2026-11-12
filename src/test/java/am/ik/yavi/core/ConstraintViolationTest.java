@@ -154,6 +154,7 @@ class ConstraintViolationTest {
 		assertThat(prefixed.message()).isEqualTo("[0].items[3].name must not be empty");
 		assertThat(prefixed.path()).containsExactly(new PathSegment.Index(0), new PathSegment.Property("items"),
 				new PathSegment.Index(3), new PathSegment.Property("name"));
+		assertThat(prefixed.pointer()).isEqualTo("/0/items/3/name");
 	}
 
 	@Test
@@ -173,7 +174,7 @@ class ConstraintViolationTest {
 
 		assertThat(leading.message()).isEqualTo("The value must not be blank");
 		assertThat(inner.message()).isEqualTo("The size of the value must be less than 3. The given size is 5");
-		assertThat(inner.detail().getDefaultMessage()).isEqualTo(inner.message());
+		assertThat(inner.detail().message()).isEqualTo(inner.message());
 		// only the message differs from that of a named violation
 		assertThat(leading.args()).containsExactly("");
 		assertThat(leading.defaultMessageFormat()).isEqualTo("\"{0}\" must not be blank");

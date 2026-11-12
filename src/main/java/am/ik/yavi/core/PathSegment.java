@@ -68,4 +68,29 @@ public sealed interface PathSegment {
 		return Collections.unmodifiableList(path);
 	}
 
+	/**
+	 * Renders a path as a JSON Pointer (RFC 6901), the form that the {@code pointer} of
+	 * an RFC 9457 problem detail uses.
+	 *
+	 * <p>
+	 * Every segment becomes a reference token preceded by {@code /}: the path
+	 * {@code [Property("items"), Index(1), Property("name")]} is rendered as
+	 * {@code /items/1/name}. In a property name {@code ~} is escaped as {@code ~0} and
+	 * {@code /} as {@code ~1}. The empty path, which refers to the validated value
+	 * itself, is rendered as the empty string.
+	 * @param path the path to render
+	 * @return the JSON Pointer of the path
+	 */
+	static String toJsonPointer(List<PathSegment> path) {
+		final StringBuilder pointer = new StringBuilder();
+		for (PathSegment segment : path) {
+			pointer.append('/');
+			switch (segment) {
+				case Property property -> pointer.append(property.name().replace("~", "~0").replace("/", "~1"));
+				case Index index -> pointer.append(index.index());
+			}
+		}
+		return pointer.toString();
+	}
+
 }

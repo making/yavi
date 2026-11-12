@@ -263,8 +263,17 @@ like `z.discriminatedUnion`. An alternative does not have to define the discrimi
 
 A `ConstraintViolation` has a message key instead of an issue code, and the message is
 formatted with a `MessageFormatter`, so it can be localized. `path()` is a list of
-`PathSegment.Property` and `PathSegment.Index`, and `name()` is its flat form
-(`address.street`, `tags[0]`).
+`PathSegment.Property` and `PathSegment.Index`, `name()` is its flat form
+(`address.street`, `tags[0]`) and `pointer()` its JSON Pointer (`/address/street`,
+`/tags/0`).
+
+| Zod | YAVI |
+| --- | --- |
+| `z.flattenError(error)` | `violations.messagesByName()`, a map of the name to the messages; the messages of the root are under the empty name |
+| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`) |
+
+`z.treeifyError` has no counterpart: the keys of `messagesByPointer()` address the
+nested values instead.
 
 ## Not available
 
