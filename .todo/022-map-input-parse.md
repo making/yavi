@@ -116,6 +116,9 @@ Schema<Map<String, Object>, Shape> shapeSchema =
 ## Notes
 
 - Depends on 021 (done).
+- Do 025 first. It turns the per-argument metadata into a public description that
+  travels with the validators and knows nested and element types, which closes the "Not
+  provided" item above.
 - Do not add reflection; the schema already knows its field names and constructor.
 - This is the closest analogue of `schema.safeParse(JSON.parse(input))` in Java, but it
   remains optional for users who validate DTOs bound by Jackson.
