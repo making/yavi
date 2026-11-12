@@ -5,6 +5,8 @@
 package am.ik.yavi.constraint.charsequence;
 
 import java.text.Normalizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.CONTAINER_FIXED_SIZE;
@@ -18,13 +20,16 @@ import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.core.ConstraintPredicate;
 
 /**
- * Constraint that measures a character sequence in emoji instead of Unicode code points.
+ * Constraint that measures a character sequence in extended grapheme clusters instead of
+ * Unicode code points.
  *
  * <p>
- * The size is the best-effort emoji count of {@link Emoji#bestEffortCount(String)} after
- * the value is normalized with the configured normalizer and the ignored variation
- * selectors are removed. An emoji written with skin tone modifiers, keycaps, regional
- * indicator pairs or ZWJ sequences therefore counts as one.
+ * The size is the number of extended grapheme clusters after the value is normalized with
+ * the configured normalizer and the ignored variation selectors are removed. The clusters
+ * are recognized with the {@code \b{g}} grapheme cluster boundary of
+ * {@link java.util.regex.Pattern}. An emoji written with skin tone modifiers, keycaps,
+ * regional indicator pairs, subdivision flags or ZWJ sequences is a single cluster and
+ * therefore counts as one.
  * </p>
  *
  * <p>
@@ -40,6 +45,13 @@ import am.ik.yavi.core.ConstraintPredicate;
  * @since 0.0.12
  */
 public class EmojiConstraint<T, E extends CharSequence> extends CharSequenceConstraint<T, E> {
+
+	/**
+	 * Matches the boundaries of extended grapheme clusters. A value with {@code n}
+	 * clusters has {@code n + 1} boundaries.
+	 * @see <a href="https://unicode.org/reports/tr29/">Unicode Text Segmentation</a>
+	 */
+	private static final Pattern GRAPHEME_CLUSTER_BOUNDARY = Pattern.compile("\\b{g}");
 
 	/**
 	 * Creates the constraint. The predicates added to {@code delegate} are copied to the
@@ -121,7 +133,22 @@ public class EmojiConstraint<T, E extends CharSequence> extends CharSequenceCons
 	}
 
 	private int size(E x) {
-		return Emoji.bestEffortCount(this.normalize(x.toString()));
+		return graphemeClusterCount(this.normalize(x.toString()));
+	}
+
+	/**
+	 * Returns the number of extended grapheme clusters in the given string.
+	 * @param s the string to measure
+	 * @return the number of grapheme clusters
+	 */
+	static int graphemeClusterCount(String s) {
+		Matcher matcher = GRAPHEME_CLUSTER_BOUNDARY.matcher(s);
+		int boundaries = 0;
+		while (matcher.find()) {
+			boundaries++;
+		}
+		// An empty string has one boundary and no cluster.
+		return boundaries - 1;
 	}
 
 }
