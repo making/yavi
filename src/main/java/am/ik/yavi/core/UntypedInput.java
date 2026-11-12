@@ -73,7 +73,7 @@ final class UntypedInput {
 		}
 
 		@Override
-		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
+		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
 			return new Checked<>(reader, this.type, this.validator);
 		}
 

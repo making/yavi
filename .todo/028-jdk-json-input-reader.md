@@ -4,7 +4,7 @@ Difficulty: Low
 
 ## Background
 
-026 added `am.ik.yavi.core.InputReader` and `ValueValidator#untyped(InputReader)`, which
+026 added `am.ik.yavi.core.InputReader` and `ValueValidator#readingWith(InputReader)`, which
 read the tree model of a JSON library without copying it to a map. YAVI ships only the
 reader of JDK types; the README shows the one for Jackson 3 and
 `src/test/java/am/ik/yavi/input/JsonNodeReader.java` tests it.
@@ -16,7 +16,7 @@ without a third-party dependency.
 ## Goal
 
 A reader of `jdk.incubator.json.JsonValue` (later `java.util.json` or whatever the final
-package is), usable as `userValidator.untyped(<reader>)`.
+package is), usable as `userValidator.readingWith(<reader>)`.
 
 Expected mapping, to be verified against the JDK in use:
 

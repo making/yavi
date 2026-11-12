@@ -74,17 +74,17 @@ compiler checks that the arguments match it.
 | `.transform(f)` | `.map(f)` |
 | `.pipe(schema)` | `.andThen(validator)` |
 | `z.unknown()` / `z.any()` | `_object(name, Object.class)` |
-| `z.strictObject({...})` | the default of `fromMap` |
-| `z.object({...})` (strips unknown keys) | `.ignoringUnknownProperties()` |
+| `z.object({...})` (strips unknown keys) | the default of `fromMap` |
+| `z.strictObject({...})` | `.rejectingUnknownProperties()` |
 | `z.toJSONSchema(schema)` | `JsonSchema.of(validator.description())` |
 
 ## Differences
 
-### Unknown keys are rejected by default
+### Unknown keys
 
-Zod strips unknown keys unless the object is strict. `fromMap` reports them with the
-message key `object.unknownProperty`, because a stripped key hides a typo in an optional
-property. `ignoringUnknownProperties()` gives the behavior of Zod. There is no
+Both ignore unknown keys unless the object is strict. `rejectingUnknownProperties()`
+reports them with the message key `object.unknownProperty`, which catches a typo in an
+optional property; like `z.strictObject`, it applies to that object only. There is no
 counterpart of `z.looseObject` (passthrough): the result is created by a function, so
 there is nowhere to keep the extra keys.
 
@@ -138,11 +138,13 @@ for a lambda or an `_enum` / `_object` argument added without a type; give it wi
 `untyped(type)`, `_enum(name, type)` or `_object(name, type)`.
 
 Zod reads JavaScript values, which is what `JSON.parse` returns. In Java a parsed JSON
-document is a map or the tree model of a library. `untyped(reader)` binds a validator to
-an `InputReader` of such a model, so the tree is validated without being copied to a map:
+document is a map or the tree model of a library. `readingWith(reader)` binds a validator to
+an `InputReader` of such a model, so the tree is validated without being copied to a map,
+and `from(reader, f)` builds such a validator from the arguments:
 
 ```java
-ValueValidator<JsonNode, User> nodeValidator = userValidator.untyped(JsonNodeReader.INSTANCE);
+ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
+ValueValidator<JsonNode, User> same = Yavi.arguments()._string("email")...from(JsonNodeReader.INSTANCE, User::new);
 ```
 
 The README shows the reader for Jackson.

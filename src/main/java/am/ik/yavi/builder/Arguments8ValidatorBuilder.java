@@ -41,6 +41,7 @@ import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function8;
 import am.ik.yavi.input.MapInputValidator;
@@ -1366,9 +1367,10 @@ public final class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R1
 	 * <p>
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
-	 * absent key is validated like {@code null}; see {@link MapInputValidator} for the
-	 * violations of absent and unknown keys. A nested {@code _object}, {@code _list} or
-	 * {@code _map} argument reads a map or a list whose content is checked by the
+	 * absent key is validated like {@code null} and an unknown key is ignored; see
+	 * {@link MapInputValidator} for the violations of absent keys and for rejecting
+	 * unknown keys. A nested {@code _object}, {@code _list} or {@code _map} argument
+	 * reads a map or a list whose content is checked by the
 	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
 	 * nested object is added with another {@code MapInputValidator}.
 	 * @param <X> type of the result
@@ -1387,6 +1389,33 @@ public final class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R1
 						this.d5.property(5), this.d6.property(6), this.d7.property(7), this.d8.property(8)),
 				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2), (R4) values.get(3),
 						(R5) values.get(4), (R6) values.get(5), (R7) values.get(6), (R8) values.get(7)));
+	}
+
+	/**
+	 * Builds a validator that reads the added arguments from an object of the given
+	 * reader, such as a node of the tree model of a JSON library, by their names and
+	 * creates the result with the given function. The tree is read as it is, without
+	 * being copied to a map.
+	 *
+	 * <p>
+	 * This is {@code fromMap(f).readingWith(reader)}: the rules are those of
+	 * {@link #fromMap}, and the reader is applied to the nested validators too, whatever
+	 * input they were built for.
+	 * @param <N> the type of the nodes
+	 * @param <X> type of the result
+	 * @param reader the reader of the nodes
+	 * @param f function that creates the result from the validated values
+	 * @return a new validator of a node
+	 * @throws IllegalStateException if an argument has no name, or if its input type is
+	 * unknown
+	 * @throws UnsupportedOperationException if a nested validator does not know its input
+	 * type
+	 * @since 0.18.0
+	 * @see ValueValidator#readingWith(InputReader)
+	 */
+	public <N, X> ValueValidator<N, X> from(InputReader<N> reader,
+			Function8<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? extends X> f) {
+		return this.<X>fromMap(f).readingWith(reader);
 	}
 
 }

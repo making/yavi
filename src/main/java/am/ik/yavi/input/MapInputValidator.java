@@ -52,9 +52,9 @@ import org.jspecify.annotations.Nullable;
  * the property, for example {@code object.notNull}.</li>
  * <li>A value that does not represent the type of the property is reported with
  * {@code object.type}. Nothing is coerced.</li>
- * <li>A key that no property is defined for is reported with
- * {@code object.unknownProperty}, unless {@link #ignoringUnknownProperties()} is
- * applied.</li>
+ * <li>A key that no property is defined for is ignored. With
+ * {@link #rejectingUnknownProperties()} it is reported with
+ * {@code object.unknownProperty}.</li>
  * </ul>
  *
  * <p>
@@ -67,7 +67,7 @@ import org.jspecify.annotations.Nullable;
  * to a map, with an {@link InputReader} implemented for that model:
  *
  * <pre>{@code
- * ValueValidator<JsonNode, User> nodeValidator = validator.untyped(jsonNodeReader);
+ * ValueValidator<JsonNode, User> nodeValidator = validator.readingWith(jsonNodeReader);
  * Validated<User> validated = nodeValidator.validate(node);
  * }</pre>
  *
@@ -86,7 +86,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 
 	private final Function<? super List<@Nullable Object>, ? extends X> mapper;
 
-	private final boolean ignoreUnknownProperties;
+	private final boolean rejectUnknownProperties;
 
 	private final Reading<Object> reading;
 
@@ -97,7 +97,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * @param validator the validator of the value, which reports its violations under
 	 * {@code name}; an absent key is validated as {@code null}. To read the property with
 	 * another {@link InputReader}, the validator must know its input type (see
-	 * {@link ValueValidator#untyped(InputReader)})
+	 * {@link ValueValidator#readingWith(InputReader)})
 	 * @param <R> the type of the validated value
 	 */
 	public record Property<R> (String name, ValueValidator<Object, R> validator) {
@@ -111,7 +111,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * @param mapper the function that creates the object from the validated values, which
 	 * are given in the order of the properties
 	 * @param <X> the type of the created object
-	 * @return a validator that rejects unknown properties
+	 * @return a validator that ignores unknown properties
 	 * @throws IllegalArgumentException if two properties have the same name
 	 */
 	public static <X> MapInputValidator<X> of(List<? extends Property<?>> properties,
@@ -120,7 +120,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	}
 
 	private MapInputValidator(List<Property<?>> properties,
-			Function<? super List<@Nullable Object>, ? extends X> mapper, boolean ignoreUnknownProperties) {
+			Function<? super List<@Nullable Object>, ? extends X> mapper, boolean rejectUnknownProperties) {
 		final Set<String> names = new HashSet<>();
 		for (Property<?> property : properties) {
 			if (!names.add(property.name())) {
@@ -130,17 +130,18 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 		this.properties = properties;
 		this.names = names;
 		this.mapper = mapper;
-		this.ignoreUnknownProperties = ignoreUnknownProperties;
+		this.rejectUnknownProperties = rejectUnknownProperties;
 		this.reading = new Reading<>(InputReader.ofJdkTypes(),
 				properties.stream().<ValueValidator<Object, ?>>map(Property::validator).toList());
 	}
 
 	/**
-	 * Returns a validator that ignores the keys of the input map that no property is
-	 * defined for, instead of reporting them with {@code object.unknownProperty}.
-	 * @return a validator that ignores unknown properties
+	 * Returns a validator that reports the keys of the input map that no property is
+	 * defined for with {@code object.unknownProperty}, instead of ignoring them. It
+	 * applies to this map only: a nested validator decides for its own map.
+	 * @return a validator that rejects unknown properties
 	 */
-	public MapInputValidator<X> ignoringUnknownProperties() {
+	public MapInputValidator<X> rejectingUnknownProperties() {
 		return new MapInputValidator<>(this.properties, this.mapper, true);
 	}
 
@@ -169,13 +170,13 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 		if (reader == InputReader.ofJdkTypes()) {
 			return (ValueValidator<N, X>) this.reading;
 		}
 		return new Reading<>(reader,
 				this.properties.stream()
-					.<ValueValidator<N, ?>>map(property -> property.validator().untyped(reader))
+					.<ValueValidator<N, ?>>map(property -> property.validator().readingWith(reader))
 					.toList());
 	}
 
@@ -224,7 +225,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 							violation(name, ViolationMessage.Default.OBJECT_REQUIRED, new ViolatedValue(null), locale));
 				}
 			}
-			if (!MapInputValidator.this.ignoreUnknownProperties) {
+			if (MapInputValidator.this.rejectUnknownProperties) {
 				for (Map.Entry<String, ? extends @Nullable N> property : this.reader.properties(input)) {
 					if (!MapInputValidator.this.names.contains(property.getKey())) {
 						final N value = property.getValue();
@@ -246,8 +247,8 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 		}
 
 		@Override
-		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
-			return MapInputValidator.this.untyped(reader);
+		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
+			return MapInputValidator.this.readingWith(reader);
 		}
 
 	}

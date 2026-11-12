@@ -46,7 +46,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * An alternative does not have to define the discriminator: the key is hidden from an
  * alternative that describes its properties without it, so that it is not an unknown
- * property there. An alternative that defines it receives it.
+ * property there even if the alternative rejects unknown properties. An alternative that
+ * defines it receives it.
  *
  * <p>
  * A {@code null} map is rejected with {@code object.notNull} and a map with a key that is
@@ -55,7 +56,7 @@ import org.jspecify.annotations.Nullable;
  * equal to their value.
  *
  * <p>
- * The tree model of a JSON library is read with {@link #untyped(InputReader)}, like a
+ * The tree model of a JSON library is read with {@link #readingWith(InputReader)}, like a
  * {@link MapInputValidator}.
  *
  * @param <X> the common type of the objects created by the alternatives
@@ -148,7 +149,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 		if (reader == InputReader.ofJdkTypes()) {
 			return (ValueValidator<N, X>) this.reading;
 		}
@@ -182,10 +183,10 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	private <N> ValueValidator<N, ? extends X> of(InputReader<N> reader,
 			ValueValidator<? super Map<String, Object>, ? extends X> alternative) {
 		if (!this.isHiddenFrom(alternative)) {
-			return alternative.untyped(reader);
+			return alternative.readingWith(reader);
 		}
 		final ValueValidator<Object, ? extends X> hiding = alternative
-			.untyped(new HidingReader<>(reader, this.discriminator));
+			.readingWith(new HidingReader<>(reader, this.discriminator));
 		return (input, locale, constraintContext) -> Validated
 			.of(hiding.validate(new Hidden<>(Objects.requireNonNull(input)), locale, constraintContext));
 	}
@@ -242,8 +243,8 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		}
 
 		@Override
-		public <M> ValueValidator<M, X> untyped(InputReader<M> reader) {
-			return DiscriminatedUnionValidator.this.untyped(reader);
+		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
+			return DiscriminatedUnionValidator.this.readingWith(reader);
 		}
 
 	}

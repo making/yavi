@@ -506,7 +506,7 @@ Validated<User> validated = userValidator.validate(map);
 
 * A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number.
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
-* A key that no argument is defined for is reported with `object.unknownProperty`. `ignoringUnknownProperties()` accepts such keys.
+* A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
@@ -523,15 +523,19 @@ Only the selected alternative is validated. An absent discriminator is reported 
 
 ##### Validating the tree model of a JSON library
 
-The same validators read the tree model of a JSON library, such as Jackson's `JsonNode`, as it is: `untyped(reader)` binds a validator to an `InputReader`, which tells how to read a node. The tree is not copied to a map, and the rules above and the violations are the same.
+The same arguments read the tree model of a JSON library, such as Jackson's `JsonNode`, as it is: `from(reader, f)` builds a validator of nodes with an `InputReader`, which tells how to read a node. The tree is not copied to a map, and the rules above and the violations are the same.
 
 ```java
-ValueValidator<JsonNode, User> nodeValidator = userValidator.untyped(JsonNodeReader.INSTANCE);
+ValueValidator<JsonNode, User> userValidator = Yavi.arguments()
+        ._string("email", c -> c.notBlank().email())
+        ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+        ._object("address", addressValidator)
+        .from(JsonNodeReader.INSTANCE, User::new);
 
-Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
+Validated<User> validated = userValidator.validate(jsonMapper.readTree(json));
 ```
 
-The reader is applied to the whole validator, so nested validators such as `addressValidator` are built with `fromMap` whatever input is read in the end, and one validator serves both a map and a node. YAVI has no dependency on a JSON library; a reader is a small stateless class written once per tree model and shared by all validators. This is the one for Jackson 3:
+`from(reader, f)` is `fromMap(f).readingWith(reader)`. `readingWith` is available on every validator and applies the reader to the whole validator, so nested validators such as `addressValidator` are built with `fromMap` or `from` whatever input is read in the end, and a validator of maps also serves nodes: `mapValidator.readingWith(reader)`. YAVI has no dependency on a JSON library; a reader is a small stateless class written once per tree model and shared by all validators. This is the one for Jackson 3:
 
 ```java
 public final class JsonNodeReader implements InputReader<JsonNode> {
@@ -585,7 +589,7 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 }
 ```
 
-A validator that does not know its input type (a lambda) is read only from JDK types; `untyped(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
+A validator that does not know its input type (a lambda) is read only from JDK types; `readingWith(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 

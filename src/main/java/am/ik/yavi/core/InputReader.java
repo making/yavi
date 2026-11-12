@@ -11,15 +11,15 @@ import org.jspecify.annotations.Nullable;
 /**
  * Tells how to read the nodes of a tree of untyped input, such as the tree model of a
  * JSON library. A validator reads its input through a reader once it is bound to one with
- * {@link ValueValidator#untyped(InputReader)}, so the tree is validated as it is, without
- * being copied to JDK types first.
+ * {@link ValueValidator#readingWith(InputReader)}, so the tree is validated as it is,
+ * without being copied to JDK types first.
  *
  * <p>
  * A reader is implemented once per tree model and has no state, so one instance serves
  * every validator of an application:
  *
  * <pre>{@code
- * ValueValidator<JsonNode, User> validator = userValidator.untyped(jsonNodeReader);
+ * ValueValidator<JsonNode, User> validator = userValidator.readingWith(jsonNodeReader);
  * }</pre>
  *
  * <p>

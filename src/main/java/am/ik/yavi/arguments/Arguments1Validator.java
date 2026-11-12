@@ -85,8 +85,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
-				return valueValidator.untyped(reader);
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return valueValidator.readingWith(reader);
 			}
 		};
 	}
@@ -207,8 +207,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
-				return Arguments1Validator.this.untyped(reader).map(mapper);
+			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).map(mapper);
 			}
 		};
 	}
@@ -248,8 +248,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public <N> ValueValidator<N, X2> untyped(InputReader<N> reader) {
-				return Arguments1Validator.this.untyped(reader).andThen(validator);
+			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).andThen(validator);
 			}
 		};
 	}
@@ -332,8 +332,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 			}
 
 			@Override
-			public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
-				return Arguments1Validator.this.untyped(reader).describedAs(description);
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).describedAs(description);
 			}
 		};
 	}

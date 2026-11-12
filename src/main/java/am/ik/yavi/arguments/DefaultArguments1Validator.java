@@ -93,14 +93,14 @@ public class DefaultArguments1Validator<A1, X> implements Arguments1Validator<A1
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 		if (this.valueType == Object.class || this.valueType == Enum.class) {
-			return Arguments1Validator.super.untyped(reader);
+			return Arguments1Validator.super.readingWith(reader);
 		}
 		final ValueDescription.Value description = ValueDescription.Value.of(this.valueType, this.validator);
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
-			.untyped(reader)
+			.readingWith(reader)
 			.prefixed(description.name())
 			.andThen(this)
 			.describedAs(description);

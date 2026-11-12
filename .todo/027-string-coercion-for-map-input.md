@@ -68,7 +68,7 @@ The default stays exact. Names are placeholders; use YAVI's vocabulary.
 ## Design questions to settle
 
 - How the mode reaches the type checks. A validator is bound to an
-  `am.ik.yavi.core.InputReader` with `untyped(reader)`, and the reader reaches every
+  `am.ik.yavi.core.InputReader` with `readingWith(reader)`, and the reader reaches every
   nested validator, including one that was built before (026). The type check reads a
   node with `InputReader#value(node)` and does not tell the reader the type it checks, so
   a reader alone cannot convert `"30"` for an `Integer` argument and leave it for a

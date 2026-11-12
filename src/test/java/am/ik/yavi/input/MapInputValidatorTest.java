@@ -75,7 +75,7 @@ class MapInputValidatorTest {
 			@Override
 			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
 					@Nullable Map<String, Object> input) {
-				return validator.untyped(JsonNodeReader.INSTANCE).validate(jsonMapper.valueToTree(input));
+				return validator.readingWith(JsonNodeReader.INSTANCE).validate(jsonMapper.valueToTree(input));
 			}
 		};
 
@@ -99,7 +99,8 @@ class MapInputValidatorTest {
 	static final MapInputValidator<Address> addressValidator = Yavi.arguments()
 		._string("street", c -> c.notBlank())
 		._string("city", c -> c.notBlank())
-		.fromMap(Address::new);
+		.fromMap(Address::new)
+		.rejectingUnknownProperties();
 
 	static final ValueValidator<Map<String, Object>, User> userValidator = Yavi.arguments()
 		._string("email", c -> c.notBlank().email())
@@ -114,13 +115,21 @@ class MapInputValidatorTest {
 		._double("rate")
 		.defaultValue(1.5)
 		.fromMap(User::new)
+		.rejectingUnknownProperties()
 		.constraintOnTarget(User::hasTagIfAdmin, "tags",
 				ViolationMessage.of("user.adminTags", "An admin must have a tag"));
 
 	static final ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator
 		.<Shape>of("type")
-		.when("circle", Yavi.arguments()._integer("radius", c -> c.notNull().positive()).fromMap(Circle::new))
-		// an alternative may define the discriminator itself
+		// the discriminator is not an unknown property of an alternative that rejects
+		// them
+		.when("circle",
+				Yavi.arguments()
+					._integer("radius", c -> c.notNull().positive())
+					.fromMap(Circle::new)
+					.rejectingUnknownProperties())
+		// an alternative may define the discriminator itself, and ignores unknown
+		// properties by default
 		.when("square", Yavi.arguments()._string("type")._integer("side", c -> c.notNull()).fromMap(Square::new));
 
 	static Map<String, @Nullable Object> map(@Nullable Object... keysAndValues) {
@@ -197,11 +206,8 @@ class MapInputValidatorTest {
 			.errors()).extracting(ConstraintViolation::messageKey).containsExactly("user.adminTags");
 		assertThat(model.validate(userValidator, null).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
-		// unknown properties are ignored on request, and any input is taken once untyped
-		final ValueValidator<Object, Address> lenient = addressValidator.ignoringUnknownProperties().untyped();
-		assertThat(lenient.validated(map("street", "1-2-3", "city", "Tokyo", "zip", "100")))
-			.isEqualTo(new Address("1-2-3", "Tokyo"));
-		assertThat(lenient.validate(List.of()).errors()).extracting(ConstraintViolation::message)
+		// any input is taken once untyped
+		assertThat(addressValidator.untyped().validate(List.of()).errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"\" must be of type object");
 	}
 
@@ -210,7 +216,7 @@ class MapInputValidatorTest {
 	void discriminatorSelectsTheAlternative(Model model) {
 		assertThat(model.validate(shapeValidator, input("type", "circle", "radius", 2)).value())
 			.isEqualTo(new Circle(2));
-		assertThat(model.validate(shapeValidator, input("type", "square", "side", 3)).value())
+		assertThat(model.validate(shapeValidator, input("type", "square", "side", 3, "color", "red")).value())
 			.isEqualTo(new Square("square", 3));
 		// only the selected alternative is validated
 		assertThat(model.validate(shapeValidator, input("type", "circle", "radius", 0, "side", 3)).errors())
@@ -278,10 +284,11 @@ class MapInputValidatorTest {
 		final ValueValidator<Object, Object> id = ValueValidator.anyOf(
 				StringValidatorBuilder.of("", c -> c.notBlank()).build().untyped(),
 				IntegerValidatorBuilder.of("", c -> c.positive()).build().untyped());
-		final MapInputValidator<List<Object>> validator = Yavi.arguments()
+		final var arguments = Yavi.arguments()
 			._object("count", coerced.untyped(Object.class))
 			._object("id", id)
-			._object("payload", Object.class)
+			._object("payload", Object.class);
+		final MapInputValidator<List<Object>> validator = arguments
 			.fromMap((count, i, payload) -> Arrays.asList(count, i, payload));
 		assertThat(validator.validated(input("count", "10", "id", 7, "payload", List.of(1)))).containsExactly(10, 7,
 				List.of(1));
@@ -300,25 +307,26 @@ class MapInputValidatorTest {
 			.hasMessageContaining("The argument at position 1 has no name");
 		assertThatThrownBy(() -> Yavi.arguments()._string("a")._integer("a").fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class);
-		// another reader is applied to the same validator: a validator that takes an
-		// Object is given the value of the node, a null node is null wherever it is, and
-		// the result can be given yet another reader
-		final ValueValidator<JsonNode, List<Object>> nodeValidator = validator.untyped(JsonNodeReader.INSTANCE);
+		// the same arguments are read from a node: a validator that takes an Object is
+		// given the value of the node, a null node is null wherever it is, and the result
+		// can be given yet another reader
+		final ValueValidator<JsonNode, List<Object>> nodeValidator = arguments.from(JsonNodeReader.INSTANCE,
+				(count, i, payload) -> Arrays.asList(count, i, payload));
 		final JsonNode node = jsonMapper.readTree("""
 				{"count":"10","id":7,"payload":[1]}""");
 		assertThat(nodeValidator.validated(node)).containsExactly(10, 7, node.get("payload"));
-		assertThat(nodeValidator.untyped(InputReader.ofJdkTypes())
+		assertThat(nodeValidator.readingWith(InputReader.ofJdkTypes())
 			.validated(input("count", "10", "id", 7, "payload", List.of(1)))).containsExactly(10, 7, List.of(1));
 		assertThat(StringValidatorBuilder.of("name", c -> c.notBlank())
 			.build()
 			.optional()
-			.untyped(JsonNodeReader.INSTANCE)
+			.readingWith(JsonNodeReader.INSTANCE)
 			.validated(jsonMapper.nullNode())).isEmpty();
 		// a property or an alternative that is a lambda is read only from JDK types
 		final MapInputValidator<Object> lambda = MapInputValidator
 			.of(List.of(new MapInputValidator.Property<>("count", coerced)), values -> values.get(0));
 		assertThat(lambda.untyped().validated(map("count", "10"))).isEqualTo(10);
-		assertThatThrownBy(() -> lambda.untyped(JsonNodeReader.INSTANCE))
+		assertThatThrownBy(() -> lambda.readingWith(JsonNodeReader.INSTANCE))
 			.isInstanceOf(UnsupportedOperationException.class);
 	}
 

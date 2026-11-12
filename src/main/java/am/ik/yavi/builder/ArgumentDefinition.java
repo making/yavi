@@ -60,7 +60,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
 		return new ArgumentDefinition<>(null, described, type == Object.class || type == Enum.class
-				? reader -> validator.untyped(reader)
+				? reader -> validator.readingWith(reader)
 				: reader -> untyped(reader, describedName(described.description()), (Class<A>) type, described));
 	}
 
@@ -69,7 +69,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * given validator.
 	 */
 	static <A, R> ArgumentDefinition<A, R> value(String name, ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator, reader -> validator.untyped(reader));
+		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader));
 	}
 
 	static <A, R> ArgumentDefinition<A, R> value(String name, Class<A> type, ValueValidator<A, R> validator) {
@@ -78,20 +78,20 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 
 	static <A, R> ArgumentDefinition<A, R> object(String name, ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, nested(name, validator, validator.description()),
-				reader -> nested(name, validator.untyped(reader), validator.description()));
+				reader -> nested(name, validator.readingWith(reader), validator.description()));
 	}
 
 	static <E, R> ArgumentDefinition<List<E>, List<R>> list(String name, ValueValidator<E, R> elementValidator) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description());
 		return new ArgumentDefinition<>(name, nested(name, elements(elementValidator)::validate, description),
-				reader -> nested(name, elements(reader, elementValidator.untyped(reader)), description));
+				reader -> nested(name, elements(reader, elementValidator.readingWith(reader)), description));
 	}
 
 	static <V, R> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
 			ValueValidator<V, R> valueValidator) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
 		return new ArgumentDefinition<>(name, nested(name, lifted, lifted.description()),
-				reader -> nested(name, lifted.untyped(reader), lifted.description()));
+				reader -> nested(name, lifted.readingWith(reader), lifted.description()));
 	}
 
 	ArgumentDefinition<A, Optional<R>> asOptional() {
@@ -152,7 +152,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 
 		@Override
 		@SuppressWarnings("unchecked")
-		public <N> ValueValidator<N, R> untyped(InputReader<N> reader) {
+		public <N> ValueValidator<N, R> readingWith(InputReader<N> reader) {
 			return (ValueValidator<N, R>) (ValueValidator<?, R>) this.reading
 				.apply((InputReader<Object>) (InputReader<?>) reader);
 		}
@@ -204,7 +204,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 			ValueValidator<A, R> validator) {
 		return ValueValidator.<A>passThrough()
 			.untyped(type)
-			.untyped(reader)
+			.readingWith(reader)
 			.prefixed(name)
 			.andThen(validator)
 			.describedAs(validator.description());

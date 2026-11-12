@@ -46,7 +46,7 @@ final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
 	// the node type is erased: the function is written for any reader
 	@Override
 	@SuppressWarnings("unchecked")
-	public <N> ValueValidator<N, X> untyped(InputReader<N> reader) {
+	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 		return (ValueValidator<N, X>) (ValueValidator<?, X>) this.untyped
 			.apply((InputReader<Object>) (InputReader<?>) reader);
 	}
