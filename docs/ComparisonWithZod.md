@@ -73,6 +73,8 @@ compiler checks that the arguments match it.
 | `z.object({...})` nested | `_object(name, anotherMapInputValidator)` |
 | `z.array(schema)` | `_list(name, elementValidator)`, `validator.liftList()` |
 | `z.record(z.string(), schema)` | `_map(name, valueValidator)`, `validator.liftMap()` |
+| `z.array(schema).nonempty().min(1).max(10)` | `_list(name, elementValidator, c -> c.notEmpty().greaterThanOrEqual(1).lessThanOrEqual(10))`, `Yavi._list(elementValidator, c -> ...)` (also `unique()`, `contains(...)`) |
+| `z.record(z.string(), schema)` with a size | `_map(name, valueValidator, c -> c.notEmpty())`, `Yavi._map(valueValidator, c -> ...)` |
 | `.optional()` | `.optional()` (produces `Optional<X>`) |
 | `.nullable()` | `.nullable()` |
 | `.default(value)` | `.defaultValue(value)` |

@@ -47,6 +47,31 @@ public record ConstraintDescription(String messageKey, List<@Nullable Object> ar
 		return new ConstraintDescription(predicate.messageKey(), args, rejectsNull(predicate));
 	}
 
+	/**
+	 * Returns the description of the given constraint predicate of a value for which
+	 * {@code null} is validated as the given value, such as the empty list of a list
+	 * whose elements are validated one by one.
+	 *
+	 * <p>
+	 * Whether {@code null} is rejected is determined by applying the predicate to the
+	 * given value.
+	 * @param predicate the constraint predicate to describe
+	 * @param nullValue the value as which {@code null} is validated
+	 * @param <V> the type of the constrained value
+	 * @return the description of the constraint
+	 */
+	public static <V> ConstraintDescription of(ConstraintPredicate<V> predicate, V nullValue) {
+		final ConstraintDescription description = of(predicate);
+		boolean rejected;
+		try {
+			rejected = predicate.violatedValue(nullValue).isPresent();
+		}
+		catch (RuntimeException e) {
+			rejected = false;
+		}
+		return new ConstraintDescription(description.messageKey(), description.args(), rejected);
+	}
+
 	@SuppressWarnings("NullAway") // a predicate that does not skip null handles null
 	private static boolean rejectsNull(ConstraintPredicate<?> predicate) {
 		if (predicate.nullValidity().skipNull()) {

@@ -649,7 +649,9 @@ public interface ValueValidator<T, X> {
 	 * Returns a validator that validates every element of the input iterable with this
 	 * validator and collects the validated values into a {@link List}. The violations of
 	 * an element are located under its index ({@code [0]}, {@code [0].name}) and the
-	 * violations of all failing elements are accumulated.
+	 * violations of all failing elements are accumulated. A {@code null} iterable
+	 * validates successfully with an empty list. The list itself is constrained with
+	 * {@code Yavi._list(elementValidator, constraints)}.
 	 * @return a value validator for iterables
 	 */
 	default ValueValidator<Iterable<T>, List<X>> liftList() {
@@ -672,7 +674,8 @@ public interface ValueValidator<T, X> {
 	 * and collects the validated values into a {@link Map} with the same keys in
 	 * iteration order. The violations of a value are located under its key and the
 	 * violations of all failing values are accumulated. A {@code null} map validates
-	 * successfully with an empty map.
+	 * successfully with an empty map. The map itself is constrained with
+	 * {@code Yavi._map(valueValidator, constraints)}.
 	 * @return a value validator for maps
 	 * @since 0.18.0
 	 */

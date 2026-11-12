@@ -23,7 +23,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * The description covers the constraints that always apply to the input. Constraints that
  * depend on a condition or a constraint group and rules on the produced value
- * ({@code constraintOnTarget}) are not part of it.
+ * ({@code constraintOnTarget}) are not part of it. The constraints of a list or a map are
+ * checked on the validated elements or values, whose number is the one of the input.
  *
  * <p>
  * In YAVI a value accepts {@code null} unless a constraint rejects it;
@@ -150,8 +151,27 @@ public sealed interface ValueDescription {
 	 * of an element are located under its index.
 	 *
 	 * @param element the description of every element
+	 * @param constraints the constraints applied to the list of the validated elements,
+	 * in the order they are checked; unmodifiable. A constraint
+	 * {@linkplain ConstraintDescription#rejectsNull() rejects null} if it rejects an
+	 * empty list, as which {@code null} is validated unless it is rejected before
 	 */
-	record Elements(ValueDescription element) implements ValueDescription {
+	record Elements(ValueDescription element, List<ConstraintDescription> constraints) implements ValueDescription {
+
+		/**
+		 * Creates the description of a list.
+		 */
+		public Elements {
+			constraints = List.copyOf(constraints);
+		}
+
+		/**
+		 * Creates the description of a list without constraints.
+		 * @param element the description of every element
+		 */
+		public Elements(ValueDescription element) {
+			this(element, List.of());
+		}
 	}
 
 	/**
@@ -159,8 +179,27 @@ public sealed interface ValueDescription {
 	 * value are located under its key.
 	 *
 	 * @param value the description of every value
+	 * @param constraints the constraints applied to the map of the validated values, in
+	 * the order they are checked; unmodifiable. A constraint
+	 * {@linkplain ConstraintDescription#rejectsNull() rejects null} if it rejects an
+	 * empty map, as which {@code null} is validated unless it is rejected before
 	 */
-	record Entries(ValueDescription value) implements ValueDescription {
+	record Entries(ValueDescription value, List<ConstraintDescription> constraints) implements ValueDescription {
+
+		/**
+		 * Creates the description of a map.
+		 */
+		public Entries {
+			constraints = List.copyOf(constraints);
+		}
+
+		/**
+		 * Creates the description of a map without constraints.
+		 * @param value the description of every value
+		 */
+		public Entries(ValueDescription value) {
+			this(value, List.of());
+		}
 	}
 
 	/**
@@ -230,8 +269,8 @@ public sealed interface ValueDescription {
 	 *
 	 * <p>
 	 * A {@link Value} accepts {@code null} unless one of its constraints rejects it,
-	 * {@link Elements} and {@link Entries} accept {@code null} as an empty list or map,
-	 * and an object with {@link Properties} does not accept {@code null}.
+	 * {@link Elements} and {@link Entries} accept {@code null} as an empty list or map
+	 * unless one of their constraints rejects it, and an object with {@link Properties} does not accept {@code null}.
 	 * @return {@code true} if {@code null} is accepted or nothing is known about the
 	 * input
 	 */
@@ -241,8 +280,8 @@ public sealed interface ValueDescription {
 			case AnyOf anyOf -> anyOf.alternatives().stream().anyMatch(ValueDescription::acceptsNull);
 			case NotNull notNull -> false;
 			case Properties properties -> false;
-			case Elements elements -> true;
-			case Entries entries -> true;
+			case Elements elements -> elements.constraints().stream().noneMatch(ConstraintDescription::rejectsNull);
+			case Entries entries -> entries.constraints().stream().noneMatch(ConstraintDescription::rejectsNull);
 			case Optional optional -> true;
 			case Unknown unknown -> true;
 			case Never never -> false;
