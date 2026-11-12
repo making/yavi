@@ -38,6 +38,13 @@ public class StringValueConstraint<T> extends CharSequenceConstraint<T, String> 
 	private Function<String, @Nullable String> transformation = s -> s;
 
 	/**
+	 * Creates a constraint without transforms that measures the size as
+	 * {@link CharSequenceConstraint#CharSequenceConstraint()} does.
+	 */
+	public StringValueConstraint() {
+	}
+
+	/**
 	 * Removes the leading and trailing white space, as {@link String#strip()} does. A
 	 * character is white space according to {@link Character#isWhitespace(int)}, which
 	 * includes the ideographic space, as for {@link #notBlank()}.
