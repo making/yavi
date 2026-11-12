@@ -11,9 +11,11 @@
     <description>Yet Another Validation (lambda based type safe validation)</description>
 
     <properties>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <!-- Set by jacoco:prepare-agent when coverage is measured; referenced late in the
+             surefire argLine so that the agent and the JVM options below are combined. -->
+        <argLine></argLine>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kotlin.version>2.4.21</kotlin.version>
@@ -234,6 +236,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <!-- compile-testing instantiates javac in-process and needs access to
+                         com.sun.tools.javac.api, which is encapsulated since JDK 16. -->
+                    <argLine>@{argLine} --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -333,37 +340,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>jdk8-tools</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <!-- compile-testing declares com.sun:tools (system scope) only via a file-activated
-                 profile. Maven 3.10+ no longer resolves transitive system-scope dependencies, so
-                 on JDK 8 com.sun.source.util.TreeScanner disappears from the surefire fork
-                 classpath. Re-declare it directly. On JDK 9+ com.sun.source comes from the
-                 jdk.compiler module and no tools.jar exists. -->
-            <dependencies>
-                <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <version>1.8</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>jpms-aware</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-                <argLine>--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</argLine>
-            </properties>
         </profile>
     </profiles>
 </project>
