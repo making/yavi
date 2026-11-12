@@ -5,7 +5,7 @@
 package am.ik.yavi.core;
 
 import am.ik.yavi.fn.Validation;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -82,7 +82,7 @@ public interface ValueValidator<T, X> {
 	 * @return a value validator that applies the mapping function after validation
 	 * @since 0.17.0
 	 */
-	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> ValueValidator<T, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return (t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext).map(mapper);
 	}
 
@@ -107,7 +107,8 @@ public interface ValueValidator<T, X> {
 	 * @param <A> the input type of the new validator
 	 * @return a value validator with the adapted input type
 	 */
-	default <A> ValueValidator<A, X> compose(Function<? super A, ? extends T> mapper) {
+	default <A extends @Nullable Object> ValueValidator<A, X> compose(
+			Function<@Nullable A, ? extends @Nullable T> mapper) {
 		return (a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
 				constraintContext);
 	}

@@ -14,7 +14,7 @@ public class _Address_PhoneNumberMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.Address.PhoneNumber, java.lang.String> toValue() {
+		public java.util.function.Function<test.Address.PhoneNumber, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.Address.PhoneNumber::value;
 		}
 	};

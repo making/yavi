@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -62,7 +63,7 @@ class StringValidatorTest {
 	void composeValid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", "JP");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-			.compose(map -> map.get("country"));
+			.compose(map -> Objects.requireNonNull(map).get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value().name()).isEqualTo("JP");
@@ -73,7 +74,7 @@ class StringValidatorTest {
 	void composeInvalid(StringValidator<Country> countryValidator) {
 		final Map<String, String> params = Collections.singletonMap("country", " ");
 		final Arguments1Validator<Map<String, String>, Country> mapValidator = countryValidator
-			.compose(map -> map.get("country"));
+			.compose(map -> Objects.requireNonNull(map).get("country"));
 		final Validated<Country> countryValidated = mapValidator.validate(params);
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();

@@ -73,8 +73,8 @@ class ConstraintMetaTemplate {
 				+ "\t\tpublic java.util.function.Function<%s, %s> toValue() {\n" //
 				+ "\t\t\treturn %s;\n" + //
 				"\t\t}\n" + //
-				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType, target, className, type,
-				useField ? "x  -> x." + target : className + "::" + method);
+				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType, target, className,
+				nullable(type), useField ? "x  -> x." + target : className + "::" + method);
 	}
 
 	/**
@@ -100,8 +100,14 @@ class ConstraintMetaTemplate {
 				+ "\t\tpublic java.util.function.Function<%s, %s> toValue() {\n" //
 				+ "\t\t\treturn %s;\n" + //
 				"\t\t}\n" + //
-				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType, target, className, type,
-				className.replaceAll("<(.+)>", "") + "::arg" + position);
+				"\t}", simpleType, metaType, target.toUpperCase(), simpleType, metaType, target, className,
+				nullable(type), className.replaceAll("<(.+)>", "") + "::arg" + position);
+	}
+
+	private static String nullable(String type) {
+		final int lastDot = type.lastIndexOf('.');
+		return (lastDot < 0) ? "@org.jspecify.annotations.Nullable " + type
+				: type.substring(0, lastDot + 1) + "@org.jspecify.annotations.Nullable " + type.substring(lastDot + 1);
 	}
 
 	private static String simpleType(String type) {

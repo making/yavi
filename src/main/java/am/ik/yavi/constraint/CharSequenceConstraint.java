@@ -23,6 +23,8 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+
+import org.jspecify.annotations.Nullable;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
@@ -113,7 +115,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * The normalization form applied before the size is measured, or {@code null} if
 	 * normalization is disabled.
 	 */
-	protected final Normalizer.Form normalizerForm;
+	protected final Normalizer.@Nullable Form normalizerForm;
 
 	/**
 	 * The variation selectors removed before the size is measured.
@@ -134,7 +136,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * or {@code null} to skip normalization
 	 * @param variantOptions the variation selectors to ignore before the size is measured
 	 */
-	public CharSequenceConstraint(Normalizer.Form normalizerForm, VariantOptions variantOptions) {
+	public CharSequenceConstraint(Normalizer.@Nullable Form normalizerForm, VariantOptions variantOptions) {
 		this.normalizerForm = normalizerForm;
 		this.variantOptions = variantOptions;
 	}
@@ -519,7 +521,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * or {@code null} to skip normalization
 	 * @return the new constraint
 	 */
-	public CharSequenceConstraint<T, E> normalizer(Normalizer.Form normalizerForm) {
+	public CharSequenceConstraint<T, E> normalizer(Normalizer.@Nullable Form normalizerForm) {
 		CharSequenceConstraint<T, E> constraint = new CharSequenceConstraint<>(normalizerForm, this.variantOptions);
 		constraint.predicates().addAll(this.predicates());
 		return constraint;

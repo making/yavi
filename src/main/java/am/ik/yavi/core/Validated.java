@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A specialized {@link Validation} whose errors are {@link ConstraintViolation}s.
@@ -133,7 +133,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @throws java.util.NoSuchElementException if the validation failed
 	 */
 	@Override
-	public T valueNullable() {
+	public @Nullable T valueNullable() {
 		return this.delegate.valueNullable();
 	}
 
@@ -234,7 +234,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * violations
 	 * @since 0.7.0
 	 */
-	public static <T, U> Validated<List<U>> traverseIndexed(Iterable<T> values,
+	public static <T, U> Validated<List<U>> traverseIndexed(@Nullable Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseIndexed(values, mapper));
 	}
@@ -253,7 +253,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * accumulated violations
 	 * @since 0.8.0
 	 */
-	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(Iterable<T> values,
+	public static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(@Nullable Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper, Supplier<C> factory) {
 		return Validated.of(Validations.traverseIndexed(values, mapper, factory));
 	}
@@ -269,7 +269,7 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	 * @return a validation result holding the optional produced value or the violations
 	 * @since 0.8.0
 	 */
-	public static <T, U> Validated<Optional<U>> traverseOptional(Optional<T> value,
+	public static <T, U> Validated<Optional<U>> traverseOptional(@Nullable Optional<T> value,
 			Function<? super T, ? extends Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseOptional(value, mapper));
 	}

@@ -15,7 +15,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.String> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getStringValue;
 		}
 	};
@@ -28,7 +28,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Boolean> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getBooleanValue;
 		}
 	};
@@ -41,7 +41,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Boolean> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::isBooleanPrimitiveValue;
 		}
 	};
@@ -54,7 +54,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Character> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getCharacterValue;
 		}
 	};
@@ -67,7 +67,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Character> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getCharacterPrimitiveValue;
 		}
 	};
@@ -80,7 +80,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Byte> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getByteValue;
 		}
 	};
@@ -93,7 +93,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Byte> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getBytePrimitiveValue;
 		}
 	};
@@ -106,7 +106,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Short> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getShortValue;
 		}
 	};
@@ -119,7 +119,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Short> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getShortPrimitiveValue;
 		}
 	};
@@ -132,7 +132,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Integer> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getIntegerValue;
 		}
 	};
@@ -145,7 +145,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Integer> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getIntegerPrimitiveValue;
 		}
 	};
@@ -158,7 +158,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Long> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getLongValue;
 		}
 	};
@@ -171,7 +171,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Long> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getLongPrimitiveValue;
 		}
 	};
@@ -184,7 +184,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Float> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getFloatValue;
 		}
 	};
@@ -197,7 +197,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Float> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getFloatPrimitiveValue;
 		}
 	};
@@ -210,7 +210,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Double> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getDoubleValue;
 		}
 	};
@@ -223,7 +223,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.Double> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getDoublePrimitiveValue;
 		}
 	};
@@ -236,7 +236,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.math.BigInteger> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.math.@org.jspecify.annotations.Nullable BigInteger> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getBigIntegerValue;
 		}
 	};
@@ -249,7 +249,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.math.BigDecimal> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.math.@org.jspecify.annotations.Nullable BigDecimal> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getBigDecimalValue;
 		}
 	};
@@ -262,7 +262,7 @@ public class _AllTypesBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.time.LocalDate> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.AllTypesBean, java.time.@org.jspecify.annotations.Nullable LocalDate> toValue() {
 			return am.ik.yavi.meta.AllTypesBean::getLocalDateValue;
 		}
 	};

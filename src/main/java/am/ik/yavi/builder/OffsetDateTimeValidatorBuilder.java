@@ -7,6 +7,8 @@ package am.ik.yavi.builder;
 import java.time.OffsetDateTime;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.OffsetDateTimeValidator;
 import am.ik.yavi.constraint.OffsetDateTimeConstraint;
@@ -83,9 +85,9 @@ public class OffsetDateTimeValidatorBuilder implements ValueValidatorBuilder<Off
 	 * @return a new validator
 	 */
 	@Override
-	public <T> OffsetDateTimeValidator<T> build(Function<? super OffsetDateTime, ? extends T> mapper) {
+	public <T> OffsetDateTimeValidator<T> build(Function<@Nullable OffsetDateTime, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<OffsetDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new OffsetDateTimeValidator<>(validator, mapper::apply);
+		return new OffsetDateTimeValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

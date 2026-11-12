@@ -10,7 +10,7 @@ import java.util.function.Function;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ErrorHandler;
 import am.ik.yavi.core.Validator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -58,7 +58,7 @@ import am.ik.yavi.message.MessageFormatter;
  */
 public class BiConsumerFactory<E> extends ValidatorFactorySupport {
 
-	private final ErrorHandler<E> errorHandler;
+	private final @Nullable ErrorHandler<E> errorHandler;
 
 	/**
 	 * Creates a factory with the given message configuration and error handler.

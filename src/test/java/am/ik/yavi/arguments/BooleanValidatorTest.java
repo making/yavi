@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ class BooleanValidatorTest {
 	void composeValid(BooleanValidator<Checked> checkedValidator) {
 		final Map<String, Boolean> params = Collections.singletonMap("checked", true);
 		final Arguments1Validator<Map<String, Boolean>, Checked> mapValidator = checkedValidator
-			.compose(map -> map.get("checked"));
+			.compose(map -> Objects.requireNonNull(map).get("checked"));
 		final Validated<Checked> checkedValidated = mapValidator.validate(params);
 		assertThat(checkedValidated.isValid()).isTrue();
 		assertThat(checkedValidated.value().isChecked()).isTrue();
@@ -69,7 +70,7 @@ class BooleanValidatorTest {
 	void composeInvalid(BooleanValidator<Checked> checkedValidator) {
 		final Map<String, Boolean> params = Collections.singletonMap("checked", false);
 		final Arguments1Validator<Map<String, Boolean>, Checked> mapValidator = checkedValidator
-			.compose(map -> map.get("checked"));
+			.compose(map -> Objects.requireNonNull(map).get("checked"));
 		final Validated<Checked> checkedValidated = mapValidator.validate(params);
 		assertThat(checkedValidated.isValid()).isFalse();
 		final ConstraintViolations violations = checkedValidated.errors();
@@ -79,8 +80,12 @@ class BooleanValidatorTest {
 	}
 
 	static Stream<BooleanValidator<Checked>> validators() {
-		return Stream.of(BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build(Checked::new),
-				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build().map(Checked::new));
+		return Stream.of(
+				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue())
+					.build(value -> new Checked(Objects.requireNonNull(value))),
+				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue())
+					.build()
+					.map(value -> new Checked(Objects.requireNonNull(value))));
 	}
 
 	public static class Checked {

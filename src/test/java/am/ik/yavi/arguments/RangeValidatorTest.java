@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import am.ik.yavi.Range;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.CustomValidatorTest.RangeConstraint;
@@ -18,7 +19,7 @@ public class RangeValidatorTest {
 	Arguments2Validator<Integer, Integer, Range> validator = Yavi.arguments()
 		._integer("from", c -> c.greaterThanOrEqual(0))
 		._integer("to", c -> c.greaterThanOrEqual(0))
-		.apply(Range::new)
+		.apply((from, to) -> new Range(Objects.requireNonNull(from), Objects.requireNonNull(to)))
 		.andThen(Yavi.arguments().<Range>_object("to", c -> c.predicate(RangeConstraint.SINGLETON)).get());
 
 	@Test

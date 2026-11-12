@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.IntegerValidator;
 import am.ik.yavi.constraint.IntegerConstraint;
@@ -81,9 +83,9 @@ public class IntegerValidatorBuilder implements ValueValidatorBuilder<Integer, I
 	 * @return a new validator
 	 */
 	@Override
-	public <T> IntegerValidator<T> build(Function<? super Integer, ? extends T> mapper) {
+	public <T> IntegerValidator<T> build(Function<@Nullable Integer, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Integer>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new IntegerValidator<>(validator, mapper::apply);
+		return new IntegerValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

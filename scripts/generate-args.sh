@@ -248,7 +248,7 @@ for i in `seq 1 ${n}`;do
   field_declarations=""
   for j in `seq 1 ${i}`; do
     field_declarations+="
-	private final A${j} arg${j};"
+	private final @Nullable A${j} arg${j};"
   done
 
   # Create constructor parameters
@@ -340,7 +340,7 @@ package am.ik.yavi.arguments;
 import java.util.Objects;
 
 import am.ik.yavi.fn.Function${i};
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An immutable container of ${i} argument${argument_suffix}.
@@ -454,6 +454,8 @@ done)
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Builds arguments validators that validate a fixed number of arguments and map them to
  * a result.
@@ -528,7 +530,7 @@ $(for i in `seq 1 ${n}`;do
 	 */
 	public static final class ${arguments} {
 		private final Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper;
-		private ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>> builder;
+		private @Nullable ValidatorBuilder<Arguments${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')>> builder;
 
 		/**
 		 * Creates a builder that maps the validated arguments with the given function.
@@ -566,7 +568,7 @@ $(for i in `seq 1 ${n}`;do
 		 * @since 0.3.0
 		 */
 		public Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> build() {
-			return new DefaultArguments${i}Validator<>(this.builder.build(), this.mapper);
+			return new DefaultArguments${i}Validator<>(Objects.requireNonNull(this.builder, "no rules were set with builder(...)").build(), this.mapper);
 		}
 	}
 
@@ -607,7 +609,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 EOD
 fi)
 $(if [ "${i}" == "1" ];then
@@ -627,7 +629,7 @@ import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 EOD
 fi)
 
@@ -702,7 +704,7 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
 		return new Arguments1Validator<A1, X>() {
 			@Override
-			public Validated<X> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
 				return validator.validate(Arguments.of(a1), locale, constraintContext);
 			}
 
@@ -794,7 +796,7 @@ fi)
 	default Arguments1Validator<${wrapArguments}, X> wrap() {
 		return new Arguments1Validator<${wrapArguments}, X>() {
 			@Override
-			public Validated<X> validate(${wrapArguments} args, Locale locale,
+			public Validated<X> validate(@Nullable ${wrapArguments} args, Locale locale,
 					ConstraintContext constraintContext) {
 				final ${arguments} nonNullArgs = Objects.requireNonNull(args);
 				return ${class}.this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "nonNullArgs.arg${j}(), ";done) | sed 's/,$//'),
@@ -831,10 +833,10 @@ fi)
 	 * @return a validator with the mapped result type
 	 * @since 0.17.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
-	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
 			@Override
-			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
+			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
 				return ${class}.this.validate(${as}, locale, constraintContext).map(mapper);
 			}
 
@@ -862,7 +864,7 @@ fi)
 	default <X2> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super X, X2> validator) {
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
 			@Override
-			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
+			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
 				return ${class}.this.validate(${as}, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext));
 			}
@@ -891,10 +893,10 @@ fi)
 $(if [ "${i}" == "1" ];then
 cat <<EOD
 	@Override
-	default <A> Arguments1Validator<A, X> compose(Function<? super A, ? extends A1> mapper) {
+	default <A extends @Nullable Object> Arguments1Validator<A, X> compose(Function<@Nullable A, ? extends @Nullable A1> mapper) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Arguments1Validator.this.validate(mapper.apply(a), locale, constraintContext);
 			}
 
@@ -907,11 +909,11 @@ cat <<EOD
 EOD
 else
 cat <<EOD
-	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends ${arguments}> mapper) {
+	default <A extends @Nullable Object> Arguments1Validator<A, X> compose(
+			Function<@Nullable A, ? extends @Nullable ${arguments}> mapper) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				final ${arguments} args = mapper.apply(a);
 				return ${class}.this.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "args.arg${j}(), ";done) | sed 's/,$//'), locale, constraintContext);
 			}
@@ -1160,7 +1162,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function${i};
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Default {@link ${interface}} that applies a {@link Validator} to an
@@ -1248,7 +1250,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.fn.Validations;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines ${i} validators that validate distinct arguments into a validator for those
@@ -1348,6 +1350,7 @@ import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines ${i} validators that validate the same input into a single validator.
@@ -1393,7 +1396,7 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	public <X> Arguments1Validator<A, X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "${class}.this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//'));
 			}
 

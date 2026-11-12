@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Objects;
 import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
@@ -44,9 +45,11 @@ class ValueValidatorTest {
 			.apply(Address::new);
 
 		ValueValidator<Address, Address> foreignAddressValidator = ValidatorBuilder.<Address>of()
-			.constraintOnCondition((address, group) -> !"JP".equalsIgnoreCase(address.country().name()),
+			.constraintOnCondition(
+					(address, group) -> !"JP".equalsIgnoreCase(Objects.requireNonNull(address.country()).name()),
 					ValidatorBuilder.<Address>of()
-						._string(a -> a.phoneNumber().value(), "PhoneNumber", c -> c.startsWith("+"))
+						._string(a -> Objects.requireNonNull(a.phoneNumber()).value(), "PhoneNumber",
+								c -> c.startsWith("+"))
 						.build())
 			.build()
 			.applicative();

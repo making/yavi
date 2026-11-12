@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.DoubleValidator;
 import am.ik.yavi.constraint.DoubleConstraint;
@@ -81,9 +83,9 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 	 * @return a new validator
 	 */
 	@Override
-	public <T> DoubleValidator<T> build(Function<? super Double, ? extends T> mapper) {
+	public <T> DoubleValidator<T> build(Function<@Nullable Double, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Double>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new DoubleValidator<>(validator, mapper::apply);
+		return new DoubleValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

@@ -14,7 +14,7 @@ public class _Address_CountryMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.Address.Country, java.lang.String> toValue() {
+		public java.util.function.Function<test.Address.Country, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.Address.Country::name;
 		}
 	};

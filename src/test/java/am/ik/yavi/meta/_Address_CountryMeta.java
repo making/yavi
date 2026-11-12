@@ -14,7 +14,7 @@ public class _Address_CountryMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.meta.Address.Country, String> toValue() {
+		public java.util.function.Function<am.ik.yavi.meta.Address.Country, @org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.meta.Address.Country::name;
 		}
 	};

@@ -22,7 +22,7 @@
  *
  * @since 0.0.10
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.constraint.charsequence;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

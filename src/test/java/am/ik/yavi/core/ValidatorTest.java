@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.Objects;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -229,7 +230,7 @@ class ValidatorTest {
 	@Test
 	void condition() {
 		Validator<User> validator = ValidatorBuilder.of(User.class) //
-			.constraintOnCondition((u, cg) -> !u.getName().isEmpty(), //
+			.constraintOnCondition((u, cg) -> !Objects.requireNonNull(u.getName()).isEmpty(), //
 					b -> b.constraint(User::getEmail, "email", c -> c.email().notEmpty()))
 			.build();
 		{

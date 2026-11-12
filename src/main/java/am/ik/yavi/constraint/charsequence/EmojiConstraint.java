@@ -5,6 +5,8 @@
 package am.ik.yavi.constraint.charsequence;
 
 import java.text.Normalizer;
+
+import org.jspecify.annotations.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,7 +63,7 @@ public class EmojiConstraint<T, E extends CharSequence> extends CharSequenceCons
 	 * {@code null} to skip normalization
 	 * @param variantOptions the variation selectors to ignore before counting
 	 */
-	public EmojiConstraint(CharSequenceConstraint<T, E> delegate, Normalizer.Form normalizerForm,
+	public EmojiConstraint(CharSequenceConstraint<T, E> delegate, Normalizer.@Nullable Form normalizerForm,
 			VariantOptions variantOptions) {
 		super(normalizerForm, variantOptions);
 		this.predicates().addAll(delegate.predicates());

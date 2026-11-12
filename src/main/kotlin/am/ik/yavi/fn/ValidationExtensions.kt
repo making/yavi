@@ -21,7 +21,7 @@ package am.ik.yavi.fn
  * @return the result of [mapper] or [errorsMapper]
  * @since 0.9.1
  */
-suspend fun <E, T, U> Validation<E, T>.awaitFold(
+suspend fun <E : Any, T : Any, U : Any> Validation<E, T>.awaitFold(
 	errorsMapper: suspend (List<E>) -> U,
 	mapper: suspend (T) -> U
 ): U =
@@ -47,7 +47,7 @@ suspend fun <E, T, U> Validation<E, T>.awaitFold(
  * holding the mapped errors
  * @since 0.9.1
  */
-suspend fun <E, T, X, Y> Validation<E, T>.awaitBimap(
+suspend fun <E : Any, T : Any, X : Any, Y : Any> Validation<E, T>.awaitBimap(
 	errorsMapper: suspend (List<E>) -> List<X>,
 	mapper: suspend (T) -> Y
 ): Validation<X, Y> =
@@ -73,7 +73,7 @@ suspend fun <E, T, X, Y> Validation<E, T>.awaitBimap(
  * @since 0.9.1
  */
 @Suppress("UNCHECKED_CAST")
-suspend fun <E, T, X> Validation<E, T>.awaitMapErrors(errorsMapper: suspend (List<E>) -> List<X>): Validation<X, T> =
+suspend fun <E : Any, T : Any, X : Any> Validation<E, T>.awaitMapErrors(errorsMapper: suspend (List<E>) -> List<X>): Validation<X, T> =
 	if (isValid) this as Validation<X, T> else Validation.failure(
 		errorsMapper.invoke(
 			errors()
@@ -98,7 +98,7 @@ suspend fun <E, T, X> Validation<E, T>.awaitMapErrors(errorsMapper: suspend (Lis
  * @since 0.9.1
  */
 @Suppress("UNCHECKED_CAST")
-suspend fun <E, T, X> Validation<E, T>.awaitMapError(errorsMapper: suspend (E) -> X): Validation<X, T> =
+suspend fun <E : Any, T : Any, X : Any> Validation<E, T>.awaitMapError(errorsMapper: suspend (E) -> X): Validation<X, T> =
 	if (isValid) this as Validation<X, T> else Validation.failure(errors().map {
 		errorsMapper.invoke(
 			it
@@ -122,5 +122,5 @@ suspend fun <E, T, X> Validation<E, T>.awaitMapError(errorsMapper: suspend (E) -
  * @since 0.9.1
  */
 @Suppress("UNCHECKED_CAST")
-suspend fun <E, T, Y> Validation<E, T>.awaitMap(mapper: suspend (T) -> Y): Validation<E, Y> =
+suspend fun <E : Any, T : Any, Y : Any> Validation<E, T>.awaitMap(mapper: suspend (T) -> Y): Validation<E, Y> =
 	if (isValid) Validation.success(mapper.invoke(value())) else this as Validation<E, Y>

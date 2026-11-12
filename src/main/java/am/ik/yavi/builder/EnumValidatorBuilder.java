@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.EnumValidator;
 import am.ik.yavi.constraint.EnumConstraint;
@@ -81,9 +83,9 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * @return a new validator
 	 */
 	@Override
-	public <T> EnumValidator<E, T> build(Function<? super E, ? extends T> mapper) {
+	public <T> EnumValidator<E, T> build(Function<@Nullable E, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new EnumValidator<>(validator, mapper::apply);
+		return new EnumValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**
@@ -91,6 +93,8 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * @return a new validator
 	 */
 	@Override
+	// A validated value may be null; the type parameter does not express it.
+	@SuppressWarnings("NullAway")
 	public EnumValidator<E, E> build() {
 		return build(e -> e);
 	}

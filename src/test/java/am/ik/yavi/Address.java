@@ -4,29 +4,31 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 public class Address {
 
-	private final Country country;
+	private final @Nullable Country country;
 
-	private final PhoneNumber phoneNumber;
+	private final @Nullable PhoneNumber phoneNumber;
 
-	private final String street;
+	private final @Nullable String street;
 
-	public Address(Country country, String street, PhoneNumber phoneNumber) {
+	public Address(@Nullable Country country, @Nullable String street, @Nullable PhoneNumber phoneNumber) {
 		this.country = country;
 		this.street = street;
 		this.phoneNumber = phoneNumber;
 	}
 
-	public Country country() {
+	public @Nullable Country country() {
 		return this.country;
 	}
 
-	public PhoneNumber phoneNumber() {
+	public @Nullable PhoneNumber phoneNumber() {
 		return this.phoneNumber;
 	}
 
-	public String street() {
+	public @Nullable String street() {
 		return this.street;
 	}
 

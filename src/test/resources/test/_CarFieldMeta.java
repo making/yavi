@@ -13,7 +13,7 @@ public class _CarFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.CarField, java.lang.String> toValue() {
+		public java.util.function.Function<test.CarField, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return x -> x.name;
 		}
 	};
@@ -26,7 +26,7 @@ public class _CarFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.CarField, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.CarField, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return x -> x.gas;
 		}
 	};

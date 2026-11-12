@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AllTypesImmutable {
 
@@ -50,7 +50,7 @@ public class AllTypesImmutable {
 
 	private final BigDecimal bigDecimalValue;
 
-	private final LocalDate localDateValue;
+	private final @Nullable LocalDate localDateValue;
 
 	public AllTypesImmutable(String stringValue, Boolean booleanValue, boolean booleanPrimitiveValue,
 			Character characterValue, char characterPrimitiveValue, Byte byteValue, byte bytePrimitiveValue,
@@ -176,7 +176,7 @@ public class AllTypesImmutable {
 	}
 
 	@ConstraintTarget(getter = false)
-	public LocalDate localDateValue() {
+	public @Nullable LocalDate localDateValue() {
 		return localDateValue;
 	}
 

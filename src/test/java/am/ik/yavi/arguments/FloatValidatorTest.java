@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ class FloatValidatorTest {
 	void composeValid(FloatValidator<Price> priceValidator) {
 		final Map<String, Float> params = Collections.singletonMap("price", (float) 100);
 		final Arguments1Validator<Map<String, Float>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo((float) 100);
@@ -69,7 +70,7 @@ class FloatValidatorTest {
 	void composeInvalid(FloatValidator<Price> priceValidator) {
 		final Map<String, Float> params = Collections.singletonMap("price", (float) -1);
 		final Arguments1Validator<Map<String, Float>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -80,10 +81,11 @@ class FloatValidatorTest {
 
 	static Stream<FloatValidator<Price>> validators() {
 		return Stream.of(
-				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0)).build(Price::new),
+				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0))
+					.build(value -> new Price(Objects.requireNonNull(value))),
 				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0))
 					.build()
-					.map(Price::new));
+					.map(value -> new Price(Objects.requireNonNull(value))));
 	}
 
 	public static class Price {

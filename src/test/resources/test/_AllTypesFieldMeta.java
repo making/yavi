@@ -14,7 +14,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.String> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return x -> x.stringValue;
 		}
 	};
@@ -27,7 +27,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return x -> x.booleanValue;
 		}
 	};
@@ -40,7 +40,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Boolean> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Boolean> toValue() {
 			return x -> x.booleanPrimitiveValue;
 		}
 	};
@@ -53,7 +53,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return x -> x.characterValue;
 		}
 	};
@@ -66,7 +66,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Character> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Character> toValue() {
 			return x -> x.characterPrimitiveValue;
 		}
 	};
@@ -79,7 +79,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return x -> x.byteValue;
 		}
 	};
@@ -92,7 +92,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Byte> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Byte> toValue() {
 			return x -> x.bytePrimitiveValue;
 		}
 	};
@@ -105,7 +105,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return x -> x.shortValue;
 		}
 	};
@@ -118,7 +118,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Short> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Short> toValue() {
 			return x -> x.shortPrimitiveValue;
 		}
 	};
@@ -131,7 +131,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return x -> x.integerValue;
 		}
 	};
@@ -144,7 +144,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return x -> x.integerPrimitiveValue;
 		}
 	};
@@ -157,7 +157,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return x -> x.longValue;
 		}
 	};
@@ -170,7 +170,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Long> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Long> toValue() {
 			return x -> x.longPrimitiveValue;
 		}
 	};
@@ -183,7 +183,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return x -> x.floatValue;
 		}
 	};
@@ -196,7 +196,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Float> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Float> toValue() {
 			return x -> x.floatPrimitiveValue;
 		}
 	};
@@ -209,7 +209,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return x -> x.doubleValue;
 		}
 	};
@@ -222,7 +222,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.lang.Double> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.lang.@org.jspecify.annotations.Nullable Double> toValue() {
 			return x -> x.doublePrimitiveValue;
 		}
 	};
@@ -235,7 +235,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.math.BigInteger> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.math.@org.jspecify.annotations.Nullable BigInteger> toValue() {
 			return x -> x.bigIntegerValue;
 		}
 	};
@@ -248,7 +248,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.math.BigDecimal> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.math.@org.jspecify.annotations.Nullable BigDecimal> toValue() {
 			return x -> x.bigDecimalValue;
 		}
 	};
@@ -261,7 +261,7 @@ public class _AllTypesFieldMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.AllTypesField, java.time.LocalDate> toValue() {
+		public java.util.function.Function<test.AllTypesField, java.time.@org.jspecify.annotations.Nullable LocalDate> toValue() {
 			return x -> x.localDateValue;
 		}
 	};

@@ -99,6 +99,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Builds a {@link Validator} for a target type with a fluent API.
  *
@@ -158,7 +160,7 @@ public class ValidatorBuilder<T> {
 
 	final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
 
-	MessageFormatter messageFormatter;
+	@Nullable MessageFormatter messageFormatter;
 
 	boolean failFast = false;
 
@@ -1753,7 +1755,7 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #_object(Function, String, Function)
 	 */
-	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, E> f, String name,
+	public <E> ValidatorBuilder<T> constraintOnObject(Function<T, @Nullable E> f, String name,
 			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
@@ -1770,7 +1772,7 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @since 0.4.0
 	 */
-	public <E> ValidatorBuilder<T> _object(Function<T, E> f, String name,
+	public <E> ValidatorBuilder<T> _object(Function<T, @Nullable E> f, String name,
 			Function<ObjectConstraint<T, E>, ObjectConstraint<T, E>> c) {
 		return this.constraint(f, name, c, ObjectConstraint::new);
 	}
@@ -2172,7 +2174,7 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #nestIfPresent(Function, String, Validator)
 	 */
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nest(Function<T, @Nullable N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.INVALID);
 	}
 
@@ -2186,7 +2188,7 @@ public class ValidatorBuilder<T> {
 	 * @see #nest(Function, String, Validator)
 	 */
 	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta, Validator<N> validator) {
-		return this.nest(meta.toValue(), meta.name(), validator, NullAs.INVALID);
+		return this.nest(target -> meta.toValue().apply(target), meta.name(), validator, NullAs.INVALID);
 	}
 
 	/**
@@ -2199,7 +2201,8 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #nest(Function, String, Validator)
 	 */
-	public <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, ValidatorBuilderConverter<N> converter) {
+	public <N> ValidatorBuilder<T> nest(Function<T, @Nullable N> nested, String name,
+			ValidatorBuilderConverter<N> converter) {
 		return this.nest(nested, name, converter, NullAs.INVALID);
 	}
 
@@ -2214,7 +2217,7 @@ public class ValidatorBuilder<T> {
 	 * @see #nest(Function, String, ValidatorBuilderConverter)
 	 */
 	public <N> ValidatorBuilder<T> nest(ObjectConstraintMeta<T, N> meta, ValidatorBuilderConverter<N> converter) {
-		return this.nest(meta.toValue(), meta.name(), converter, NullAs.INVALID);
+		return this.nest(target -> meta.toValue().apply(target), meta.name(), converter, NullAs.INVALID);
 	}
 
 	/**
@@ -2237,7 +2240,7 @@ public class ValidatorBuilder<T> {
 	 * @param validator the validator whose constraints are applied to the nested property
 	 * @return this builder
 	 */
-	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name, Validator<N> validator) {
+	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, @Nullable N> nested, String name, Validator<N> validator) {
 		return this.nest(nested, name, validator, NullAs.VALID);
 	}
 
@@ -2251,7 +2254,7 @@ public class ValidatorBuilder<T> {
 	 * @see #nestIfPresent(Function, String, Validator)
 	 */
 	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta, Validator<N> validator) {
-		return this.nest(meta.toValue(), meta.name(), validator, NullAs.VALID);
+		return this.nest(target -> meta.toValue().apply(target), meta.name(), validator, NullAs.VALID);
 	}
 
 	/**
@@ -2265,7 +2268,7 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #nestIfPresent(Function, String, Validator)
 	 */
-	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, N> nested, String name,
+	public <N> ValidatorBuilder<T> nestIfPresent(Function<T, @Nullable N> nested, String name,
 			ValidatorBuilderConverter<N> converter) {
 		return this.nest(nested, name, converter, NullAs.VALID);
 	}
@@ -2282,7 +2285,7 @@ public class ValidatorBuilder<T> {
 	 */
 	public <N> ValidatorBuilder<T> nestIfPresent(ObjectConstraintMeta<T, N> meta,
 			ValidatorBuilderConverter<N> converter) {
-		return this.nest(meta.toValue(), meta.name(), converter, NullAs.VALID);
+		return this.nest(target -> meta.toValue().apply(target), meta.name(), converter, NullAs.VALID);
 	}
 
 	/**
@@ -2296,8 +2299,8 @@ public class ValidatorBuilder<T> {
 	 * @param supplier creates the constraint instance
 	 * @return this builder
 	 */
-	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(Function<T, V> f, String name,
-			Function<C, C> c, Supplier<C> supplier) {
+	protected final <V, C extends Constraint<T, V, C>> ValidatorBuilder<T> constraint(
+			Function<T, ? extends @Nullable V> f, String name, Function<C, C> c, Supplier<C> supplier) {
 		C constraint = supplier.get();
 		Deque<ConstraintPredicate<V>> predicates = c.apply(constraint).predicates();
 		this.predicatesList.add(new ConstraintPredicates<>(f, name, predicates));
@@ -2351,7 +2354,7 @@ public class ValidatorBuilder<T> {
 	 * @param nullAs whether a {@code null} nested value is skipped or rejected
 	 * @return this builder
 	 */
-	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name,
+	protected final <N> ValidatorBuilder<T> nest(Function<T, @Nullable N> nested, String name,
 			ValidatorBuilderConverter<N> converter, NullAs nullAs) {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
@@ -2373,7 +2376,7 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #nest(Function, String, Validator)
 	 */
-	protected final <N> ValidatorBuilder<T> nest(Function<T, N> nested, String name, Validator<N> validator,
+	protected final <N> ValidatorBuilder<T> nest(Function<T, @Nullable N> nested, String name, Validator<N> validator,
 			NullAs nullAs) {
 		if (!nullAs.skipNull()) {
 			this.constraintOnObject(nested, name, Constraint::notNull);
@@ -2385,8 +2388,8 @@ public class ValidatorBuilder<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(Function<T, N> nested, String name,
-			boolean failFast) {
+	private <N> Consumer<ConstraintPredicates<N, ?>> appendNestedPredicates(Function<T, @Nullable N> nested,
+			String name, boolean failFast) {
 		return predicates -> {
 			String nestedName = name + this.messageKeySeparator + predicates.name();
 			ConstraintPredicates<T, ?> constraintPredicates = new NestedConstraintPredicates(
@@ -2397,7 +2400,8 @@ public class ValidatorBuilder<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Function<T, ?> toNestedFunction(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
+	private <N> Function<T, @Nullable Object> toNestedFunction(Function<T, @Nullable N> nested,
+			ConstraintPredicates<N, ?> predicates) {
 		if (predicates instanceof NestedConstraintPredicates) {
 			return target -> {
 				N nestedValue = nested.apply(target);
@@ -2407,11 +2411,11 @@ public class ValidatorBuilder<T> {
 				return (N) ((NestedConstraintPredicates) predicates).nestedValue(nestedValue);
 			};
 		}
-		return nested;
+		return target -> nested.apply(target);
 	}
 
 	private <N> Consumer<Pair<ConstraintCondition<N>, Validatable<N>>> appendNestedConditionalValidator(
-			Function<T, N> nested, String name) {
+			Function<T, @Nullable N> nested, String name) {
 		return conditionalValidator -> {
 			final ConstraintCondition<T> condition = new NestedConstraintCondition<>(nested,
 					conditionalValidator.first());
@@ -2431,7 +2435,7 @@ public class ValidatorBuilder<T> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(Function<T, N> nested,
+	private <N> Consumer<CollectionValidator<N, ?, ?>> appendNestedCollectionValidator(Function<T, @Nullable N> nested,
 			String name) {
 		return collectionValidator -> {
 			String nestedName = name + this.messageKeySeparator + collectionValidator.name();
@@ -2452,7 +2456,8 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
-	private <N> Function<T, Object> toNestedValue(Function<T, N> nested, ConstraintPredicates<N, ?> predicates) {
+	private <N> Function<T, @Nullable Object> toNestedValue(Function<T, @Nullable N> nested,
+			ConstraintPredicates<N, ?> predicates) {
 		return (T target) -> {
 			N nestedValue = nested.apply(target);
 			if (nestedValue == null) {
@@ -2462,7 +2467,7 @@ public class ValidatorBuilder<T> {
 		};
 	}
 
-	private <N, C extends Collection<?>> Function<T, Object> toNestedCollection(Function<T, N> nested,
+	private <N, C extends Collection<?>> Function<T, @Nullable C> toNestedCollection(Function<T, @Nullable N> nested,
 			CollectionValidator<N, C, ?> validator) {
 		return (T target) -> {
 			N nestedCollection = nested.apply(target);
@@ -2489,7 +2494,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToBigDecimal<T> extends Function<T, BigDecimal> {
+	public interface ToBigDecimal<T> extends Function<T, @Nullable BigDecimal> {
 
 	}
 
@@ -2499,7 +2504,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToBigInteger<T> extends Function<T, BigInteger> {
+	public interface ToBigInteger<T> extends Function<T, @Nullable BigInteger> {
 
 	}
 
@@ -2509,7 +2514,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToBoolean<T> extends Function<T, Boolean> {
+	public interface ToBoolean<T> extends Function<T, @Nullable Boolean> {
 
 	}
 
@@ -2519,7 +2524,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToBooleanArray<T> extends Function<T, boolean[]> {
+	public interface ToBooleanArray<T> extends Function<T, boolean @Nullable []> {
 
 	}
 
@@ -2529,7 +2534,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToByte<T> extends Function<T, Byte> {
+	public interface ToByte<T> extends Function<T, @Nullable Byte> {
 
 	}
 
@@ -2539,7 +2544,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToByteArray<T> extends Function<T, byte[]> {
+	public interface ToByteArray<T> extends Function<T, byte @Nullable []> {
 
 	}
 
@@ -2549,7 +2554,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToCharArray<T> extends Function<T, char[]> {
+	public interface ToCharArray<T> extends Function<T, char @Nullable []> {
 
 	}
 
@@ -2560,7 +2565,7 @@ public class ValidatorBuilder<T> {
 	 * @param <E> the {@code CharSequence} subtype of the property
 	 * @since 0.1.0
 	 */
-	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, E> {
+	public interface ToCharSequence<T, E extends CharSequence> extends Function<T, @Nullable E> {
 
 	}
 
@@ -2575,7 +2580,7 @@ public class ValidatorBuilder<T> {
 	 * @param <E> the enum type of the property
 	 * @since 0.14.0
 	 */
-	public interface toEnum<T, E extends Enum> extends Function<T, E> {
+	public interface toEnum<T, E extends Enum> extends Function<T, @Nullable E> {
 
 	}
 
@@ -2585,7 +2590,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToCharacter<T> extends Function<T, Character> {
+	public interface ToCharacter<T> extends Function<T, @Nullable Character> {
 
 	}
 
@@ -2597,7 +2602,7 @@ public class ValidatorBuilder<T> {
 	 * @param <E> the element type of the collection
 	 * @since 0.1.0
 	 */
-	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, L> {
+	public interface ToCollection<T, L extends Collection<E>, E> extends Function<T, @Nullable L> {
 
 	}
 
@@ -2607,7 +2612,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToDouble<T> extends Function<T, Double> {
+	public interface ToDouble<T> extends Function<T, @Nullable Double> {
 
 	}
 
@@ -2617,7 +2622,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToDoubleArray<T> extends Function<T, double[]> {
+	public interface ToDoubleArray<T> extends Function<T, double @Nullable []> {
 
 	}
 
@@ -2627,7 +2632,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToFloat<T> extends Function<T, Float> {
+	public interface ToFloat<T> extends Function<T, @Nullable Float> {
 
 	}
 
@@ -2637,7 +2642,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToFloatArray<T> extends Function<T, float[]> {
+	public interface ToFloatArray<T> extends Function<T, float @Nullable []> {
 
 	}
 
@@ -2647,7 +2652,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToIntArray<T> extends Function<T, int[]> {
+	public interface ToIntArray<T> extends Function<T, int @Nullable []> {
 
 	}
 
@@ -2657,7 +2662,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToInteger<T> extends Function<T, Integer> {
+	public interface ToInteger<T> extends Function<T, @Nullable Integer> {
 
 	}
 
@@ -2667,7 +2672,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToLong<T> extends Function<T, Long> {
+	public interface ToLong<T> extends Function<T, @Nullable Long> {
 
 	}
 
@@ -2677,7 +2682,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToLongArray<T> extends Function<T, long[]> {
+	public interface ToLongArray<T> extends Function<T, long @Nullable []> {
 
 	}
 
@@ -2689,7 +2694,7 @@ public class ValidatorBuilder<T> {
 	 * @param <V> the value type of the map
 	 * @since 0.1.0
 	 */
-	public interface ToMap<T, K, V> extends Function<T, Map<K, V>> {
+	public interface ToMap<T, K, V> extends Function<T, @Nullable Map<K, V>> {
 
 	}
 
@@ -2700,7 +2705,7 @@ public class ValidatorBuilder<T> {
 	 * @param <E> the element type of the array
 	 * @since 0.1.0
 	 */
-	public interface ToObjectArray<T, E> extends Function<T, E[]> {
+	public interface ToObjectArray<T, E> extends Function<T, E @Nullable []> {
 
 	}
 
@@ -2710,7 +2715,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToShort<T> extends Function<T, Short> {
+	public interface ToShort<T> extends Function<T, @Nullable Short> {
 
 	}
 
@@ -2720,7 +2725,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.1.0
 	 */
-	public interface ToShortArray<T> extends Function<T, short[]> {
+	public interface ToShortArray<T> extends Function<T, short @Nullable []> {
 
 	}
 
@@ -2730,7 +2735,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToLocalTimeConstraint<T> extends Function<T, LocalTime> {
+	public interface ToLocalTimeConstraint<T> extends Function<T, @Nullable LocalTime> {
 
 	}
 
@@ -2740,7 +2745,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToZonedDateTimeConstraint<T> extends Function<T, ZonedDateTime> {
+	public interface ToZonedDateTimeConstraint<T> extends Function<T, @Nullable ZonedDateTime> {
 
 	}
 
@@ -2750,7 +2755,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToOffsetDateTimeConstraint<T> extends Function<T, OffsetDateTime> {
+	public interface ToOffsetDateTimeConstraint<T> extends Function<T, @Nullable OffsetDateTime> {
 
 	}
 
@@ -2760,7 +2765,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToLocalDateTimeConstraint<T> extends Function<T, LocalDateTime> {
+	public interface ToLocalDateTimeConstraint<T> extends Function<T, @Nullable LocalDateTime> {
 
 	}
 
@@ -2770,7 +2775,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToLocalDateConstraint<T> extends Function<T, LocalDate> {
+	public interface ToLocalDateConstraint<T> extends Function<T, @Nullable LocalDate> {
 
 	}
 
@@ -2780,7 +2785,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.10.0
 	 */
-	public interface ToInstantConstraint<T> extends Function<T, Instant> {
+	public interface ToInstantConstraint<T> extends Function<T, @Nullable Instant> {
 
 	}
 
@@ -2790,7 +2795,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.11.0
 	 */
-	public interface ToYearConstraint<T> extends Function<T, Year> {
+	public interface ToYearConstraint<T> extends Function<T, @Nullable Year> {
 
 	}
 
@@ -2800,7 +2805,7 @@ public class ValidatorBuilder<T> {
 	 * @param <T> the type of the target object
 	 * @since 0.11.0
 	 */
-	public interface ToYearMonthConstraint<T> extends Function<T, YearMonth> {
+	public interface ToYearMonthConstraint<T> extends Function<T, @Nullable YearMonth> {
 
 	}
 

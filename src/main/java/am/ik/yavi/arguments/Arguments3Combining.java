@@ -11,6 +11,7 @@ import am.ik.yavi.fn.Function3;
 import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 3 validators that validate the same input into a single validator.
@@ -68,7 +69,7 @@ public class Arguments3Combining<A, R1, R2, R3> {
 	public <X> Arguments1Validator<A, X> apply(Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Validations.apply(f::apply, Arguments3Combining.this.v1.validate(a, locale, constraintContext),
 						Arguments3Combining.this.v2.validate(a, locale, constraintContext),
 						Arguments3Combining.this.v3.validate(a, locale, constraintContext));

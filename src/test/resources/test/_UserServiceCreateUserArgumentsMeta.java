@@ -14,7 +14,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, test.UserService> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, test.@org.jspecify.annotations.Nullable UserService> toValue() {
 			return am.ik.yavi.arguments.Arguments3::arg1;
 		}
 	};
@@ -27,7 +27,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, java.lang.String> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.arguments.Arguments3::arg2;
 		}
 	};
@@ -40,7 +40,7 @@ public class _UserServiceCreateUserArgumentsMeta {
 		}
 
 		@Override
-		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, java.lang.String> toValue() {
+		public java.util.function.Function<am.ik.yavi.arguments.Arguments3<test.UserService, java.lang.String, java.lang.String>, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return am.ik.yavi.arguments.Arguments3::arg3;
 		}
 	};

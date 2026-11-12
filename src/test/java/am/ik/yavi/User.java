@@ -4,43 +4,45 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 public class User {
 
-	private Integer age;
+	private @Nullable Integer age;
 
-	private String email;
+	private @Nullable String email;
 
 	private boolean enabled = true;
 
-	private String name;
+	private @Nullable String name;
 
-	public User(String name, String email, Integer age) {
+	public User(@Nullable String name, @Nullable String email, @Nullable Integer age) {
 		this.name = name;
 		this.email = email;
 		this.age = age;
 	}
 
-	public Integer getAge() {
+	public @Nullable Integer getAge() {
 		return age;
 	}
 
-	public void setAge(Integer age) {
+	public void setAge(@Nullable Integer age) {
 		this.age = age;
 	}
 
-	public String getEmail() {
+	public @Nullable String getEmail() {
 		return email;
 	}
 
-	public void setEmail(String email) {
+	public void setEmail(@Nullable String email) {
 		this.email = email;
 	}
 
-	public String getName() {
+	public @Nullable String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 

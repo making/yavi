@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ class IntegerValidatorTest {
 	void composeValid(IntegerValidator<Price> priceValidator) {
 		final Map<String, Integer> params = Collections.singletonMap("price", 100);
 		final Arguments1Validator<Map<String, Integer>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(100);
@@ -69,7 +70,7 @@ class IntegerValidatorTest {
 	void composeInvalid(IntegerValidator<Price> priceValidator) {
 		final Map<String, Integer> params = Collections.singletonMap("price", -1);
 		final Arguments1Validator<Map<String, Integer>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -79,8 +80,12 @@ class IntegerValidatorTest {
 	}
 
 	static Stream<IntegerValidator<Price>> validators() {
-		return Stream.of(IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0)).build(Price::new),
-				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0)).build().map(Price::new));
+		return Stream.of(
+				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0))
+					.build(value -> new Price(Objects.requireNonNull(value))),
+				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0))
+					.build()
+					.map(value -> new Price(Objects.requireNonNull(value))));
 	}
 
 	public static class Price {

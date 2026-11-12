@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -85,11 +86,11 @@ public class Gh213Test {
 
 	public static class User {
 
-		private String firstName;
+		private @Nullable String firstName;
 
-		private String lastName;
+		private @Nullable String lastName;
 
-		private InvoiceCode code;
+		private @Nullable InvoiceCode code;
 
 		static final Validator<User> VALIDATOR = ValidatorBuilder.<User>of()
 			.constraint(User::getFirstName, "firstName", Constraint::notNull)
@@ -99,21 +100,21 @@ public class Gh213Test {
 					b -> b.nest(User::getCode, "code", InvoiceCode.VALIDATOR))
 			.build();
 
-		public User(String firstName, String lastName, InvoiceCode code) {
+		public User(@Nullable String firstName, @Nullable String lastName, @Nullable InvoiceCode code) {
 			this.firstName = firstName;
 			this.lastName = lastName;
 			this.code = code;
 		}
 
-		public String getFirstName() {
+		public @Nullable String getFirstName() {
 			return firstName;
 		}
 
-		public String getLastName() {
+		public @Nullable String getLastName() {
 			return lastName;
 		}
 
-		public InvoiceCode getCode() {
+		public @Nullable InvoiceCode getCode() {
 			return code;
 		}
 
@@ -125,13 +126,13 @@ public class Gh213Test {
 			.constraint(InvoiceCode::getFiscalCode, "fiscalCode", Constraint::notNull)
 			.build();
 
-		public String fiscalCode;
+		public @Nullable String fiscalCode;
 
-		public InvoiceCode(String fiscalCode) {
+		public InvoiceCode(@Nullable String fiscalCode) {
 			this.fiscalCode = fiscalCode;
 		}
 
-		public String getFiscalCode() {
+		public @Nullable String getFiscalCode() {
 			return fiscalCode;
 		}
 

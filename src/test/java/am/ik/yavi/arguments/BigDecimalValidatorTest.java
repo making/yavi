@@ -5,6 +5,7 @@
 package am.ik.yavi.arguments;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -60,7 +61,7 @@ class BigDecimalValidatorTest {
 	void composeValid(BigDecimalValidator<Price> priceValidator) {
 		final Map<String, BigDecimal> params = Collections.singletonMap("price", BigDecimal.valueOf(100));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo(BigDecimal.valueOf(100));
@@ -71,7 +72,7 @@ class BigDecimalValidatorTest {
 	void composeInvalid(BigDecimalValidator<Price> priceValidator) {
 		final Map<String, BigDecimal> params = Collections.singletonMap("price", BigDecimal.valueOf(-1));
 		final Arguments1Validator<Map<String, BigDecimal>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -83,10 +84,10 @@ class BigDecimalValidatorTest {
 	static Stream<BigDecimalValidator<Price>> validators() {
 		return Stream.of(
 				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
-					.build(Price::new),
+					.build(value -> new Price(Objects.requireNonNull(value))),
 				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
 					.build()
-					.map(Price::new));
+					.map(value -> new Price(Objects.requireNonNull(value))));
 	}
 
 	public static class Price {

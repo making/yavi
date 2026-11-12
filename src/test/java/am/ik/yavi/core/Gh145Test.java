@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.builder.ValidatorBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -79,9 +80,9 @@ public class Gh145Test {
 
 		private String name;
 
-		private Address address;
+		private @Nullable Address address;
 
-		public Person(String name, Address address) {
+		public Person(String name, @Nullable Address address) {
 			this.name = name;
 			this.address = address;
 		}
@@ -90,7 +91,7 @@ public class Gh145Test {
 			return name;
 		}
 
-		public Address getAddress() {
+		public @Nullable Address getAddress() {
 			return address;
 		}
 
@@ -100,9 +101,9 @@ public class Gh145Test {
 
 		private String city;
 
-		private Country country;
+		private @Nullable Country country;
 
-		public Address(String city, Country country) {
+		public Address(String city, @Nullable Country country) {
 			this.city = city;
 			this.country = country;
 		}
@@ -111,7 +112,7 @@ public class Gh145Test {
 			return city;
 		}
 
-		public Country getCountry() {
+		public @Nullable Country getCountry() {
 			return country;
 		}
 
@@ -119,16 +120,16 @@ public class Gh145Test {
 
 	private static class Country {
 
-		private String code;
+		private @Nullable String code;
 
 		private String name;
 
-		public Country(String code, String name) {
+		public Country(@Nullable String code, String name) {
 			this.code = code;
 			this.name = name;
 		}
 
-		public String getCode() {
+		public @Nullable String getCode() {
 			return code;
 		}
 

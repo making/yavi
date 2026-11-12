@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
+import java.util.Objects;
 import java.nio.charset.StandardCharsets;
 
 import am.ik.yavi.builder.ValidatorBuilder;
@@ -22,8 +24,8 @@ class Gh165Test {
 		}
 
 		@Override
-		public Object[] arguments(String violatedValue) {
-			return new Object[] { this.maxCount, violatedValue.length() };
+		public Object[] arguments(@Nullable String violatedValue) {
+			return new Object[] { this.maxCount, Objects.requireNonNull(violatedValue).length() };
 		}
 
 		@Override

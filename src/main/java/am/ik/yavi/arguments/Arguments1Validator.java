@@ -19,7 +19,7 @@ import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates 1 argument and produces a value of type {@code X}.
@@ -88,7 +88,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
 		return new Arguments1Validator<A1, X>() {
 			@Override
-			public Validated<X> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
 				return validator.validate(Arguments.of(a1), locale, constraintContext);
 			}
 
@@ -123,7 +123,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	default Arguments1Validator<Arguments1<A1>, X> wrap() {
 		return new Arguments1Validator<Arguments1<A1>, X>() {
 			@Override
-			public Validated<X> validate(Arguments1<A1> args, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable Arguments1<A1> args, Locale locale,
+					ConstraintContext constraintContext) {
 				final Arguments1<? extends A1> nonNullArgs = Objects.requireNonNull(args);
 				return Arguments1Validator.this.validate(nonNullArgs.arg1(), locale, constraintContext);
 			}
@@ -158,10 +159,10 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.17.0
 	 */
 	@Override
-	default <X2> Arguments1Validator<A1, X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> Arguments1Validator<A1, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X2> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
 				return Arguments1Validator.this.validate(a1, locale, constraintContext).map(mapper);
 			}
 
@@ -189,7 +190,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	default <X2> Arguments1Validator<A1, X2> andThen(ValueValidator<? super X, X2> validator) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X2> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
 				return Arguments1Validator.this.validate(a1, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext));
 			}
@@ -216,10 +217,11 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.7.0
 	 */
 	@Override
-	default <A> Arguments1Validator<A, X> compose(Function<? super A, ? extends A1> mapper) {
+	default <A extends @Nullable Object> Arguments1Validator<A, X> compose(
+			Function<@Nullable A, ? extends @Nullable A1> mapper) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Arguments1Validator.this.validate(mapper.apply(a), locale, constraintContext);
 			}
 

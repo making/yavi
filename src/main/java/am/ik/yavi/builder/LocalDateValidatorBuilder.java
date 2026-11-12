@@ -7,6 +7,8 @@ package am.ik.yavi.builder;
 import java.time.LocalDate;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LocalDateValidator;
 import am.ik.yavi.constraint.LocalDateConstraint;
@@ -83,9 +85,9 @@ public class LocalDateValidatorBuilder implements ValueValidatorBuilder<LocalDat
 	 * @return a new validator
 	 */
 	@Override
-	public <T> LocalDateValidator<T> build(Function<? super LocalDate, ? extends T> mapper) {
+	public <T> LocalDateValidator<T> build(Function<@Nullable LocalDate, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<LocalDate>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LocalDateValidator<>(validator, mapper::apply);
+		return new LocalDateValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

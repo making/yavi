@@ -4,17 +4,18 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
 import java.util.Map;
 
 public class FormWithMap {
 
-	private final Map<String, Address> addresses;
+	private final @Nullable Map<String, Address> addresses;
 
-	public FormWithMap(Map<String, Address> addresses) {
+	public FormWithMap(@Nullable Map<String, Address> addresses) {
 		this.addresses = addresses;
 	}
 
-	public Map<String, Address> getAddresses() {
+	public @Nullable Map<String, Address> getAddresses() {
 		return addresses;
 	}
 

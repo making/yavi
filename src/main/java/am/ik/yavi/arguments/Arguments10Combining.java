@@ -11,6 +11,7 @@ import am.ik.yavi.fn.Function10;
 import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 10 validators that validate the same input into a single validator.
@@ -114,7 +115,7 @@ public class Arguments10Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> {
 			Function10<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				return Validations.apply(f::apply, Arguments10Combining.this.v1.validate(a, locale, constraintContext),
 						Arguments10Combining.this.v2.validate(a, locale, constraintContext),
 						Arguments10Combining.this.v3.validate(a, locale, constraintContext),

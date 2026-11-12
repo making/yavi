@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AllTypesField {
 
@@ -50,7 +50,7 @@ public class AllTypesField {
 
 	final BigDecimal bigDecimalValue;
 
-	final LocalDate localDateValue;
+	final @Nullable LocalDate localDateValue;
 
 	public AllTypesField(@ConstraintTarget(field = true) String stringValue,
 			@ConstraintTarget(field = true) Boolean booleanValue,

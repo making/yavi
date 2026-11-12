@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.constraint.CharSequenceConstraint;
@@ -81,9 +83,9 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 * @return a new validator
 	 */
 	@Override
-	public <T> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
+	public <T> StringValidator<T> build(Function<@Nullable String, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new StringValidator<>(validator, mapper::apply);
+		return new StringValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

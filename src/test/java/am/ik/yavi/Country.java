@@ -4,6 +4,8 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ApplicativeValidator;
 import am.ik.yavi.core.Validated;
@@ -11,9 +13,9 @@ import am.ik.yavi.core.Validator;
 
 public class Country {
 
-	private final String name;
+	private final @Nullable String name;
 
-	public Country(String name) {
+	public Country(@Nullable String name) {
 		this.name = name;
 	}
 
@@ -26,7 +28,7 @@ public class Country {
 			.build();
 	}
 
-	public String name() {
+	public @Nullable String name() {
 		return this.name;
 	}
 

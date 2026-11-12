@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_EQUAL_TO;
 import static am.ik.yavi.core.ViolationMessage.Default.OBJECT_IS_NULL;

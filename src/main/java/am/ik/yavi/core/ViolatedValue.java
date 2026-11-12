@@ -6,7 +6,7 @@ package am.ik.yavi.core;
 
 import java.util.Objects;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Wraps the value that violated a constraint.
@@ -20,7 +20,7 @@ import am.ik.yavi.jsr305.Nullable;
  */
 public class ViolatedValue {
 
-	private final Object value;
+	private final @Nullable Object value;
 
 	/**
 	 * Creates a new instance.
@@ -44,8 +44,7 @@ public class ViolatedValue {
 	 * Returns the value that violated the constraint.
 	 * @return the violated value; may be {@code null}
 	 */
-	@Nullable
-	public Object value() {
+	@Nullable public Object value() {
 		return this.value;
 	}
 

@@ -6,6 +6,8 @@ package am.ik.yavi.meta;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Metadata for a property, exposed as a constant of a generated meta class.
  *
@@ -36,6 +38,6 @@ public interface ConstraintMeta<T, V> {
 	 * @return the extractor for the property value
 	 * @since 0.4.0
 	 */
-	Function<T, V> toValue();
+	Function<T, @Nullable V> toValue();
 
 }

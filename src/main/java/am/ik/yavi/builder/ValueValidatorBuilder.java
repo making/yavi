@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.core.ValueValidator;
 
 /**
@@ -40,6 +42,6 @@ public interface ValueValidatorBuilder<A, R> {
 	 * @param mapper function that maps the validated value
 	 * @return the value validator
 	 */
-	<T> ValueValidator<? super A, ? extends T> build(Function<? super R, ? extends T> mapper);
+	<T> ValueValidator<? super A, ? extends T> build(Function<@Nullable R, ? extends @Nullable T> mapper);
 
 }

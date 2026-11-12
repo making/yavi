@@ -6,6 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.FloatValidator;
 import am.ik.yavi.constraint.FloatConstraint;
@@ -80,9 +82,9 @@ public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float
 	 * @return a new validator
 	 */
 	@Override
-	public <T> FloatValidator<T> build(Function<? super Float, ? extends T> mapper) {
+	public <T> FloatValidator<T> build(Function<@Nullable Float, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Float>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new FloatValidator<>(validator, mapper::apply);
+		return new FloatValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

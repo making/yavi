@@ -4,15 +4,17 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 public class Book {
 
-	private final String isbn;
+	private final @Nullable String isbn;
 
-	public Book(String isbn) {
+	public Book(@Nullable String isbn) {
 		this.isbn = isbn;
 	}
 
-	public String isbn() {
+	public @Nullable String isbn() {
 		return this.isbn;
 	}
 

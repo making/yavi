@@ -8,7 +8,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Objects;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link MessageFormatter} that looks up localized messages through a
@@ -77,8 +77,7 @@ public class MessageSourceMessageFormatter implements MessageFormatter {
 		 * @param locale the locale used for the lookup
 		 * @return the resolved message
 		 */
-		@Nullable
-		String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
+		@Nullable String getMessage(String code, Object[] args, String defaultMessage, Locale locale);
 
 	}
 

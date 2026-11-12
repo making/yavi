@@ -4,6 +4,8 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.ApplicativeValidator;
 import am.ik.yavi.core.Validated;
@@ -13,12 +15,12 @@ import java.util.Objects;
 
 public class PhoneNumber {
 
-	private final String value;
+	private final @Nullable String value;
 
 	static final ApplicativeValidator<PhoneNumber> applicativeValidator = validator().prefixed("phoneNumber")
 		.applicative();
 
-	public PhoneNumber(String value) {
+	public PhoneNumber(@Nullable String value) {
 		this.value = value;
 	}
 
@@ -29,7 +31,7 @@ public class PhoneNumber {
 			.build();
 	}
 
-	public String value() {
+	public @Nullable String value() {
 		return this.value;
 	}
 
@@ -44,7 +46,7 @@ public class PhoneNumber {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		PhoneNumber that = (PhoneNumber) o;
-		return value.equals(that.value);
+		return Objects.equals(value, that.value);
 	}
 
 	@Override

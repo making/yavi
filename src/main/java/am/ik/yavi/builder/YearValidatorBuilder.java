@@ -7,6 +7,8 @@ package am.ik.yavi.builder;
 import java.time.Year;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.YearValidator;
 import am.ik.yavi.constraint.YearConstraint;
@@ -81,9 +83,9 @@ public class YearValidatorBuilder implements ValueValidatorBuilder<Year, Year> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> YearValidator<T> build(Function<? super Year, ? extends T> mapper) {
+	public <T> YearValidator<T> build(Function<@Nullable Year, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Year>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new YearValidator<>(validator, mapper::apply);
+		return new YearValidator<>(validator, value -> mapper.apply(value));
 	}
 
 	/**

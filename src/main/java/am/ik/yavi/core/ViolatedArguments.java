@@ -7,7 +7,7 @@ package am.ik.yavi.core;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Supplies the message arguments of a custom constraint.

@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.constraint.CharSequenceConstraint;
 import org.junit.jupiter.api.Test;
@@ -167,13 +168,13 @@ public class NestedConstraintConditionGh127Test {
 			.constraint(E::getValue, "value", CharSequenceConstraint::notBlank)
 			.build();
 
-		private final String value;
+		private final @Nullable String value;
 
-		public E(String value) {
+		public E(@Nullable String value) {
 			this.value = value;
 		}
 
-		public String getValue() {
+		public @Nullable String getValue() {
 			return value;
 		}
 

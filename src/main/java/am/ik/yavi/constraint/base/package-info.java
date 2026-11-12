@@ -24,7 +24,7 @@
  * </p>
  * @since 0.0.1
  */
-@NonNullApi
+@NullMarked
 package am.ik.yavi.constraint.base;
 
-import am.ik.yavi.jsr305.NonNullApi;
+import org.jspecify.annotations.NullMarked;

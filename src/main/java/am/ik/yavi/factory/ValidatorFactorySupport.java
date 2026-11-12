@@ -5,7 +5,7 @@
 package am.ik.yavi.factory;
 
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 
 /**
@@ -22,13 +22,13 @@ abstract class ValidatorFactorySupport {
 	 * Separator between nested property names in message keys; {@code null} for the
 	 * default separator.
 	 */
-	protected final String messageKeySeparator;
+	protected final @Nullable String messageKeySeparator;
 
 	/**
 	 * Formatter used to create violation messages; {@code null} for the default
 	 * formatter.
 	 */
-	protected final MessageFormatter messageFormatter;
+	protected final @Nullable MessageFormatter messageFormatter;
 
 	/**
 	 * Creates the base with the given message configuration.

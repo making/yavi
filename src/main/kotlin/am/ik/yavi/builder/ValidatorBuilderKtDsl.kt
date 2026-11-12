@@ -39,7 +39,7 @@ import kotlin.reflect.KProperty1
  * @return a new validator
  * @since 0.9.0
  */
-inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
+inline fun <T : Any> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
 	val builder = ValidatorBuilderKt<T>(ValidatorBuilder())
 	return builder.apply(init).build()
 }
@@ -73,7 +73,7 @@ inline fun <T> validator(init: ValidatorBuilderKt<T>.() -> Unit): Validator<T> {
  * @param <T> the type of the target object to validate
  * @since 0.9.0
  */
-class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
+class ValidatorBuilderKt<T : Any>(private val validatorBuilder: ValidatorBuilder<T>) {
 
 	/**
 	 * Builds the validator from the current state of the underlying builder.
@@ -100,7 +100,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTString")
-	operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String?>.() -> Unit) =
+	operator fun KProperty1<T, String?>.invoke(block: CharSequenceConstraint<T, String>.() -> Unit) =
 		validatorBuilder.constraint(this, this.name) { it.apply(block) }
 
 	/**
@@ -122,7 +122,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	@JvmName("invokeTString")
 	operator fun KProperty1<T, String?>.invoke(
 		name: String,
-		block: CharSequenceConstraint<T, String?>.() -> Unit
+		block: CharSequenceConstraint<T, String>.() -> Unit
 	) =
 		validatorBuilder.constraint(this, name) { it.apply(block) }
 
@@ -852,7 +852,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <N> KProperty1<T, N?>.nest(validator: Validator<N>) =
+	infix fun <N : Any> KProperty1<T, N?>.nest(validator: Validator<N>) =
 		validatorBuilder.nest(this, this.name, validator)
 
 	/**
@@ -867,7 +867,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <N> KProperty1<T, N?>.nestIfPresent(validator: Validator<N>) =
+	infix fun <N : Any> KProperty1<T, N?>.nestIfPresent(validator: Validator<N>) =
 		validatorBuilder.nestIfPresent(this, this.name, validator)
 
 	/**
@@ -885,9 +885,9 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@Suppress("UNCHECKED_CAST")
-	infix fun <N> KProperty1<T, N?>.nest(block: ValidatorBuilderKt<N>.() -> Unit) =
-		validatorBuilder.nest(this, this.name) {
-			ValidatorBuilderKt(it).apply(block as ValidatorBuilderKt<N?>.() -> Unit).validatorBuilder
+	infix fun <N : Any> KProperty1<T, N?>.nest(block: ValidatorBuilderKt<N>.() -> Unit) =
+		validatorBuilder.nest<N>(this, this.name) {
+			ValidatorBuilderKt(it as ValidatorBuilder<N>).apply(block).validatorBuilder
 		}
 
 	/**
@@ -904,9 +904,9 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@Suppress("UNCHECKED_CAST")
-	infix fun <N> KProperty1<T, N?>.nestIfPresent(block: ValidatorBuilderKt<N>.() -> Unit) =
-		validatorBuilder.nestIfPresent(this, this.name) {
-			ValidatorBuilderKt(it).apply(block as ValidatorBuilderKt<N?>.() -> Unit).validatorBuilder
+	infix fun <N : Any> KProperty1<T, N?>.nestIfPresent(block: ValidatorBuilderKt<N>.() -> Unit) =
+		validatorBuilder.nestIfPresent<N>(this, this.name) {
+			ValidatorBuilderKt(it as ValidatorBuilder<N>).apply(block).validatorBuilder
 		}
 
 	/**
@@ -924,8 +924,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <L : Collection<E>?, E> KProperty1<T, L?>.forEach(validator: Validator<E>) =
-		validatorBuilder.forEach(this, this.name, validator)
+	infix fun <L : Collection<E>, E : Any> KProperty1<T, L?>.forEach(validator: Validator<E>) =
+		validatorBuilder.forEach<L, E>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each element of the selected collection property.
@@ -942,11 +942,11 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <L : Collection<E>?, E> KProperty1<T, L?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) =
-		validatorBuilder.forEach(
+	infix fun <L : Collection<E>, E : Any> KProperty1<T, L?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) =
+		validatorBuilder.forEach<L, E>(
 			this,
 			this.name
-		) { ValidatorBuilderKt(it).apply(block).validatorBuilder }
+		) { ValidatorBuilderKt(it as ValidatorBuilder<E>).apply(block).validatorBuilder }
 
 	/**
 	 * Adds a validator that is applied to each element of the selected collection property
@@ -964,8 +964,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <L : Collection<E>?, E> KProperty1<T, L?>.forEachIfPresent(validator: Validator<E>) =
-		validatorBuilder.forEachIfPresent(this, this.name, validator)
+	infix fun <L : Collection<E>, E : Any> KProperty1<T, L?>.forEachIfPresent(validator: Validator<E>) =
+		validatorBuilder.forEachIfPresent<L, E>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each element of the selected collection property
@@ -983,9 +983,9 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <L : Collection<E>?, E> KProperty1<T, L?>.forEachIfPresent(block: ValidatorBuilderKt<E>.() -> Unit) =
-		validatorBuilder.forEachIfPresent(this, this.name) {
-			ValidatorBuilderKt(it).apply(
+	infix fun <L : Collection<E>, E : Any> KProperty1<T, L?>.forEachIfPresent(block: ValidatorBuilderKt<E>.() -> Unit) =
+		validatorBuilder.forEachIfPresent<L, E>(this, this.name) {
+			ValidatorBuilderKt(it as ValidatorBuilder<E>).apply(
 				block
 			).validatorBuilder
 		}
@@ -1006,8 +1006,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachMapMap")
-	infix fun <K, V> KProperty1<T, Map<K, V>?>.forEach(validator: Validator<V>) =
-		validatorBuilder.forEach(this, this.name, validator)
+	infix fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.forEach(validator: Validator<V>) =
+		validatorBuilder.forEach<K, V>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each value of the selected map property.
@@ -1025,11 +1025,11 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachMapMap")
-	infix fun <K, V> KProperty1<T, Map<K, V>?>.forEach(block: ValidatorBuilderKt<V>.() -> Unit) =
-		validatorBuilder.forEach(
+	infix fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.forEach(block: ValidatorBuilderKt<V>.() -> Unit) =
+		validatorBuilder.forEach<K, V>(
 			this,
 			this.name
-		) { ValidatorBuilderKt(it).apply(block).validatorBuilder }
+		) { ValidatorBuilderKt(it as ValidatorBuilder<V>).apply(block).validatorBuilder }
 
 	/**
 	 * Adds a validator that is applied to each value of the selected map property when the
@@ -1048,8 +1048,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachIfPresentMap")
-	infix fun <K, V> KProperty1<T, Map<K, V>?>.forEachIfPresent(validator: Validator<V>) =
-		validatorBuilder.forEachIfPresent(this, this.name, validator)
+	infix fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.forEachIfPresent(validator: Validator<V>) =
+		validatorBuilder.forEachIfPresent<K, V>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each value of the selected map property when the
@@ -1068,9 +1068,9 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachIfPresentMap")
-	infix fun <K, V> KProperty1<T, Map<K, V>?>.forEachIfPresent(block: ValidatorBuilderKt<V>.() -> Unit) =
-		validatorBuilder.forEachIfPresent(this, this.name) {
-			ValidatorBuilderKt(it).apply(
+	infix fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.forEachIfPresent(block: ValidatorBuilderKt<V>.() -> Unit) =
+		validatorBuilder.forEachIfPresent<K, V>(this, this.name) {
+			ValidatorBuilderKt(it as ValidatorBuilder<V>).apply(
 				block
 			).validatorBuilder
 		}
@@ -1090,8 +1090,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachMapArray")
-	infix fun <E> KProperty1<T, Array<E>?>.forEach(validator: Validator<E>) =
-		validatorBuilder.forEach(this, this.name, validator)
+	infix fun <E : Any> KProperty1<T, Array<E>?>.forEach(validator: Validator<E>) =
+		validatorBuilder.forEach<E>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each element of the selected array property.
@@ -1108,11 +1108,11 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachMapArray")
-	infix fun <E> KProperty1<T, Array<E>?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) =
-		validatorBuilder.forEach(
+	infix fun <E : Any> KProperty1<T, Array<E>?>.forEach(block: ValidatorBuilderKt<E>.() -> Unit) =
+		validatorBuilder.forEach<E>(
 			this,
 			this.name
-		) { ValidatorBuilderKt(it).apply(block).validatorBuilder }
+		) { ValidatorBuilderKt(it as ValidatorBuilder<E>).apply(block).validatorBuilder }
 
 	/**
 	 * Adds a validator that is applied to each element of the selected array property when
@@ -1130,8 +1130,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachIfPresentArray")
-	infix fun <E> KProperty1<T, Array<E>?>.forEachIfPresent(validator: Validator<E>) =
-		validatorBuilder.forEachIfPresent(this, this.name, validator)
+	infix fun <E : Any> KProperty1<T, Array<E>?>.forEachIfPresent(validator: Validator<E>) =
+		validatorBuilder.forEachIfPresent<E>(this, this.name, validator)
 
 	/**
 	 * Adds a validator that is applied to each element of the selected array property when
@@ -1149,9 +1149,9 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("forEachIfPresentArray")
-	infix fun <E> KProperty1<T, Array<E>?>.forEachIfPresent(block: ValidatorBuilderKt<E>.() -> Unit) =
-		validatorBuilder.forEachIfPresent(this, this.name) {
-			ValidatorBuilderKt(it).apply(
+	infix fun <E : Any> KProperty1<T, Array<E>?>.forEachIfPresent(block: ValidatorBuilderKt<E>.() -> Unit) =
+		validatorBuilder.forEachIfPresent<E>(this, this.name) {
+			ValidatorBuilderKt(it as ValidatorBuilder<E>).apply(
 				block
 			).validatorBuilder
 		}
@@ -1172,8 +1172,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTCollection")
-	operator fun <L : Collection<E>?, E> KProperty1<T, L?>.invoke(block: CollectionConstraint<T, L?, E>.() -> Unit) =
-		validatorBuilder.constraint(this, this.name) { it.apply(block) }
+	operator fun <L : Collection<E>, E : Any> KProperty1<T, L?>.invoke(block: CollectionConstraint<T, L, E>.() -> Unit) =
+		validatorBuilder.constraint<L, E>(this, this.name) { it.apply(block) }
 
 	/**
 	 * Adds a constraint for the property selected by this property reference, using the
@@ -1194,11 +1194,11 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTCollection")
-	operator fun <L : Collection<E>?, E> KProperty1<T, L?>.invoke(
+	operator fun <L : Collection<E>, E : Any> KProperty1<T, L?>.invoke(
 		name: String,
-		block: CollectionConstraint<T, L?, E>.() -> Unit
+		block: CollectionConstraint<T, L, E>.() -> Unit
 	) =
-		validatorBuilder.constraint(this, name) { it.apply(block) }
+		validatorBuilder.constraint<L, E>(this, name) { it.apply(block) }
 
 	/**
 	 * Adds a constraint for the property selected by this property reference.
@@ -1216,7 +1216,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTMap")
-	operator fun <K, V> KProperty1<T, Map<K, V>?>.invoke(block: MapConstraint<T, K, V>.() -> Unit) =
+	operator fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.invoke(block: MapConstraint<T, K, V>.() -> Unit) =
 		validatorBuilder.constraint(this, this.name) { it.apply(block) }
 
 	/**
@@ -1237,7 +1237,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTMap")
-	operator fun <K, V> KProperty1<T, Map<K, V>?>.invoke(
+	operator fun <K : Any, V : Any> KProperty1<T, Map<K, V>?>.invoke(
 		name: String,
 		block: MapConstraint<T, K, V>.() -> Unit
 	) =
@@ -1258,7 +1258,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTArray")
-	operator fun <E> KProperty1<T, Array<E>?>.invoke(block: ObjectArrayConstraint<T, E>.() -> Unit) =
+	operator fun <E : Any> KProperty1<T, Array<E>?>.invoke(block: ObjectArrayConstraint<T, E>.() -> Unit) =
 		validatorBuilder.constraint(this, this.name) { it.apply(block) }
 
 	/**
@@ -1279,7 +1279,7 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @since 0.9.0
 	 */
 	@JvmName("invokeTArray")
-	operator fun <E> KProperty1<T, Array<E>?>.invoke(
+	operator fun <E : Any> KProperty1<T, Array<E>?>.invoke(
 		name: String,
 		block: ObjectArrayConstraint<T, E>.() -> Unit
 	) =
@@ -1316,8 +1316,8 @@ class ValidatorBuilderKt<T>(private val validatorBuilder: ValidatorBuilder<T>) {
 	 * @return the underlying [ValidatorBuilder]
 	 * @since 0.9.0
 	 */
-	infix fun <E> KProperty1<T, E?>.onObject(block: ObjectConstraint<T, E?>.() -> Unit) =
-		validatorBuilder.constraintOnObject(this, this.name) { it.apply(block) }
+	infix fun <E : Any> KProperty1<T, E?>.onObject(block: ObjectConstraint<T, E>.() -> Unit) =
+		validatorBuilder.constraintOnObject<E>(this, this.name) { it.apply(block) }
 
 	/**
 	 * Adds a constraint for the property selected by this property reference.

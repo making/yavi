@@ -7,7 +7,7 @@ package am.ik.yavi.core;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A reusable constraint that combines a predicate with its own violation message and

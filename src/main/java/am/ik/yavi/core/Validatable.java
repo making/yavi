@@ -86,6 +86,9 @@ public interface Validatable<T> {
 	 */
 	default ApplicativeValidator<T> applicative() {
 		return (target, locale, constraintContext) -> {
+			if (target == null) {
+				throw new IllegalArgumentException("target must not be null");
+			}
 			final ConstraintViolations violations = Validatable.this.validate(target, locale, constraintContext);
 			if (violations.isValid()) {
 				return Validated.of(Validation.success(target));

@@ -7,6 +7,8 @@ package am.ik.yavi.core;
 import java.util.Collection;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Describes the validation of a collection contained in a target object.
  *
@@ -26,7 +28,7 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 
 	private final String name;
 
-	private final Function<T, N> toCollection;
+	private final Function<T, @Nullable N> toCollection;
 
 	private final Validator<E> validator;
 
@@ -36,7 +38,7 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 	 * @param name the property name used in violation names
 	 * @param validator the validator applied to each element
 	 */
-	public CollectionValidator(Function<T, N> toCollection, String name, Validator<E> validator) {
+	public CollectionValidator(Function<T, @Nullable N> toCollection, String name, Validator<E> validator) {
 		this.toCollection = toCollection;
 		this.name = name;
 		this.validator = validator;
@@ -54,7 +56,7 @@ public class CollectionValidator<T, N extends Collection<E>, E> {
 	 * Returns the function that extracts the collection from the target.
 	 * @return the collection extractor
 	 */
-	public Function<T, N> toCollection() {
+	public Function<T, @Nullable N> toCollection() {
 		return this.toCollection;
 	}
 

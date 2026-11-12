@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import java.util.Objects;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -58,7 +59,7 @@ class ShortValidatorTest {
 	void composeValid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) 100);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isTrue();
 		assertThat(priceValidated.value().value()).isEqualTo((short) 100);
@@ -69,7 +70,7 @@ class ShortValidatorTest {
 	void composeInvalid(ShortValidator<Price> priceValidator) {
 		final Map<String, Short> params = Collections.singletonMap("price", (short) -1);
 		final Arguments1Validator<Map<String, Short>, Price> mapValidator = priceValidator
-			.compose(map -> map.get("price"));
+			.compose(map -> Objects.requireNonNull(map).get("price"));
 		final Validated<Price> priceValidated = mapValidator.validate(params);
 		assertThat(priceValidated.isValid()).isFalse();
 		final ConstraintViolations violations = priceValidated.errors();
@@ -80,10 +81,11 @@ class ShortValidatorTest {
 
 	static Stream<ShortValidator<Price>> validators() {
 		return Stream.of(
-				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0)).build(Price::new),
+				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
+					.build(value -> new Price(Objects.requireNonNull(value))),
 				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
 					.build()
-					.map(Price::new));
+					.map(value -> new Price(Objects.requireNonNull(value))));
 	}
 
 	public static class Price {

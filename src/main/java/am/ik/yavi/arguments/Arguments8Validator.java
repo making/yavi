@@ -14,7 +14,7 @@ import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates 8 arguments and produces a value of type {@code X}.
@@ -117,7 +117,7 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 	default Arguments1Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, X> wrap() {
 		return new Arguments1Validator<Arguments8<A1, A2, A3, A4, A5, A6, A7, A8>, X>() {
 			@Override
-			public Validated<X> validate(Arguments8<A1, A2, A3, A4, A5, A6, A7, A8> args, Locale locale,
+			public Validated<X> validate(@Nullable Arguments8<A1, A2, A3, A4, A5, A6, A7, A8> args, Locale locale,
 					ConstraintContext constraintContext) {
 				final Arguments8<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8> nonNullArgs = Objects
 					.requireNonNull(args);
@@ -155,10 +155,12 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 	 * @return a validator with the mapped result type
 	 * @since 0.17.0
 	 */
-	default <X2> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X2> map(Function<? super X, ? extends X2> mapper) {
+	default <X2> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X2> map(
+			Function<? super X, ? extends @Nullable X2> mapper) {
 		return new Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, Locale locale,
+			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, Locale locale,
 					ConstraintContext constraintContext) {
 				return Arguments8Validator.this.validate(a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext)
 					.map(mapper);
@@ -188,7 +190,8 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 			ValueValidator<? super X, X2> validator) {
 		return new Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X2>() {
 			@Override
-			public Validated<X2> validate(A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8, Locale locale,
+			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, Locale locale,
 					ConstraintContext constraintContext) {
 				return Arguments8Validator.this.validate(a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext));
@@ -215,11 +218,11 @@ public interface Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> {
 	 * @return a validator with the adapted input type
 	 * @since 0.7.0
 	 */
-	default <A> Arguments1Validator<A, X> compose(
-			Function<? super A, ? extends Arguments8<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8>> mapper) {
+	default <A extends @Nullable Object> Arguments1Validator<A, X> compose(
+			Function<@Nullable A, ? extends @Nullable Arguments8<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8>> mapper) {
 		return new Arguments1Validator<A, X>() {
 			@Override
-			public Validated<X> validate(A a, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
 				final Arguments8<? extends A1, ? extends A2, ? extends A3, ? extends A4, ? extends A5, ? extends A6, ? extends A7, ? extends A8> args = mapper
 					.apply(a);
 				return Arguments8Validator.this.validate(args.arg1(), args.arg2(), args.arg3(), args.arg4(),

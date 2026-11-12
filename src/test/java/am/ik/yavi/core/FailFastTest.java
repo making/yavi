@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -116,7 +116,7 @@ public class FailFastTest {
 
 	public static class Car {
 
-		private final String manufacturer;
+		private final @Nullable String manufacturer;
 
 		private final boolean isRegistered;
 
@@ -125,8 +125,7 @@ public class FailFastTest {
 			this.isRegistered = isRegistered;
 		}
 
-		@Nullable
-		public String getManufacturer() {
+		@Nullable public String getManufacturer() {
 			return manufacturer;
 		}
 
@@ -140,7 +139,7 @@ public class FailFastTest {
 
 		private final OwnerId ownerId;
 
-		private final String name;
+		private final @Nullable String name;
 
 		private final List<Car> cars;
 
@@ -154,8 +153,7 @@ public class FailFastTest {
 			return ownerId;
 		}
 
-		@Nullable
-		public String getName() {
+		@Nullable public String getName() {
 			return name;
 		}
 
@@ -167,14 +165,13 @@ public class FailFastTest {
 
 	public static class OwnerId {
 
-		private final String value;
+		private final @Nullable String value;
 
 		public OwnerId(@Nullable String value) {
 			this.value = value;
 		}
 
-		@Nullable
-		public String getValue() {
+		@Nullable public String getValue() {
 			return value;
 		}
 

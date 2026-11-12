@@ -12,7 +12,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function4;
 import am.ik.yavi.fn.Validations;
-import am.ik.yavi.jsr305.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 4 validators that validate distinct arguments into a validator for those

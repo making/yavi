@@ -4,15 +4,17 @@
  */
 package am.ik.yavi;
 
+import org.jspecify.annotations.Nullable;
+
 public class FormWithArray {
 
-	private final Address[] addresses;
+	private final Address @Nullable [] addresses;
 
-	public FormWithArray(Address[] addresses) {
+	public FormWithArray(Address @Nullable [] addresses) {
 		this.addresses = addresses;
 	}
 
-	public Address[] getAddresses() {
+	public Address @Nullable [] getAddresses() {
 		return addresses;
 	}
 

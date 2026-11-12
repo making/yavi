@@ -13,7 +13,7 @@ public class _CarBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.CarBean, java.lang.String> toValue() {
+		public java.util.function.Function<test.CarBean, java.lang.@org.jspecify.annotations.Nullable String> toValue() {
 			return test.CarBean::getName;
 		}
 	};
@@ -26,7 +26,7 @@ public class _CarBeanMeta {
 		}
 
 		@Override
-		public java.util.function.Function<test.CarBean, java.lang.Integer> toValue() {
+		public java.util.function.Function<test.CarBean, java.lang.@org.jspecify.annotations.Nullable Integer> toValue() {
 			return test.CarBean::getGas;
 		}
 	};

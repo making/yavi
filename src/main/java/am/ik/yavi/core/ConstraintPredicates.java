@@ -7,6 +7,8 @@ package am.ik.yavi.core;
 import java.util.Deque;
 import java.util.function.Function;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * The constraint predicates of one property of a target object.
  *
@@ -27,7 +29,7 @@ public class ConstraintPredicates<T, V> {
 
 	private final Deque<ConstraintPredicate<V>> predicates;
 
-	private final Function<T, V> toValue;
+	private final Function<T, ? extends @Nullable V> toValue;
 
 	/**
 	 * Creates the constraint predicates of a property.
@@ -35,7 +37,8 @@ public class ConstraintPredicates<T, V> {
 	 * @param name the property name used in violation names
 	 * @param predicates the predicates to apply to the property value
 	 */
-	public ConstraintPredicates(Function<T, V> toValue, String name, Deque<ConstraintPredicate<V>> predicates) {
+	public ConstraintPredicates(Function<T, ? extends @Nullable V> toValue, String name,
+			Deque<ConstraintPredicate<V>> predicates) {
 		this.toValue = toValue;
 		this.name = name;
 		this.predicates = predicates;
@@ -62,7 +65,7 @@ public class ConstraintPredicates<T, V> {
 	 * Returns the function that extracts the property value from the target.
 	 * @return the property value extractor
 	 */
-	public final Function<T, V> toValue() {
+	public final Function<T, ? extends @Nullable V> toValue() {
 		return this.toValue;
 	}
 
