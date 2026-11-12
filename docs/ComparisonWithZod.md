@@ -74,17 +74,17 @@ compiler checks that the arguments match it.
 | `.transform(f)` | `.map(f)` |
 | `.pipe(schema)` | `.andThen(validator)` |
 | `z.unknown()` / `z.any()` | `_object(name, Object.class)` |
-| `z.strictObject({...})` | the default of `fromMap` |
-| `z.object({...})` (strips unknown keys) | `.ignoringUnknownProperties()` |
+| `z.object({...})` (strips unknown keys) | the default of `fromMap` |
+| `z.strictObject({...})` | `.rejectingUnknownProperties()` |
 | `z.toJSONSchema(schema)` | `JsonSchema.of(validator.description())` |
 
 ## Differences
 
-### Unknown keys are rejected by default
+### Unknown keys
 
-Zod strips unknown keys unless the object is strict. `fromMap` reports them with the
-message key `object.unknownProperty`, because a stripped key hides a typo in an optional
-property. `ignoringUnknownProperties()` gives the behavior of Zod. There is no
+Both ignore unknown keys unless the object is strict. `rejectingUnknownProperties()`
+reports them with the message key `object.unknownProperty`, which catches a typo in an
+optional property; like `z.strictObject`, it applies to that object only. There is no
 counterpart of `z.looseObject` (passthrough): the result is created by a function, so
 there is nowhere to keep the extra keys.
 
@@ -137,14 +137,25 @@ The input type must be known when the validator is built. `fromMap` and `untyped
 for a lambda or an `_enum` / `_object` argument added without a type; give it with
 `untyped(type)`, `_enum(name, type)` or `_object(name, type)`.
 
+Zod reads JavaScript values, which is what `JSON.parse` returns. In Java a parsed JSON
+document is a map or the tree model of a library. `readingWith(reader)` binds a validator to
+an `InputReader` of such a model, so the tree is validated without being copied to a map,
+and `from(reader, f)` builds such a validator from the arguments:
+
+```java
+ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
+ValueValidator<JsonNode, User> same = Yavi.arguments()._string("email")...from(JsonNodeReader.INSTANCE, User::new);
+```
+
+The README shows the reader for Jackson.
+
 ### Unions
 
 `z.union` and `ValueValidator.anyOf` try the alternatives in order and report the failures
 of all of them (`object.anyOf` followed by the violations of every alternative).
 `DiscriminatedUnionValidator` applies only the alternative selected by the discriminator,
 like `z.discriminatedUnion`. An alternative does not have to define the discriminator as
-`z.literal(...)`: the key is removed from the map given to an alternative that does not
-define it.
+`z.literal(...)`: the key is hidden from an alternative that does not define it.
 
 ### Errors
 
@@ -160,5 +171,3 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
   (use the `equalTo` / `oneOf` constraints).
 * Asynchronous refinements and transforms.
 * More than 16 properties with the builders; use `MapInputValidator.of(properties, mapper)`.
-* A tree model of a JSON library as input. Convert it first:
-  `userValidator.untyped().compose(node -> objectMapper.convertValue(node, Object.class))`.

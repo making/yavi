@@ -7,14 +7,20 @@ package am.ik.yavi.builder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import am.ik.yavi.constraint.ObjectConstraint;
+import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolatedValue;
+import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.input.MapInputValidator;
 import org.jspecify.annotations.Nullable;
 
@@ -33,13 +39,14 @@ import org.jspecify.annotations.Nullable;
  * only with a value validator
  * @param validator the validator applied to the argument
  * @param untyped the validator applied to the argument when it is read from an untyped
- * input; it fails with {@code UnsupportedOperationException} if the input type of the
- * argument is unknown
+ * input with a reader; it fails with {@code UnsupportedOperationException} if the input
+ * type of the argument is unknown. The node type is erased: the function is written for
+ * any reader
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> validator,
-		Supplier<ValueValidator<Object, R>> untyped) {
+		Function<InputReader<Object>, ValueValidator<Object, R>> untyped) {
 
 	/**
 	 * Returns the definition of an argument added only with a value validator. If the
@@ -52,8 +59,9 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 		final boolean undescribed = validator.description() instanceof ValueDescription.Unknown && type != Object.class;
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
-		return new ArgumentDefinition<>(null, described, type == Object.class || type == Enum.class ? validator::untyped
-				: () -> untyped(describedName(described.description()), (Class<A>) type, described));
+		return new ArgumentDefinition<>(null, described, type == Object.class || type == Enum.class
+				? reader -> validator.readingWith(reader)
+				: reader -> untyped(reader, describedName(described.description()), (Class<A>) type, described));
 	}
 
 	/**
@@ -61,44 +69,44 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * given validator.
 	 */
 	static <A, R> ArgumentDefinition<A, R> value(String name, ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator, validator::untyped);
+		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader));
 	}
 
 	static <A, R> ArgumentDefinition<A, R> value(String name, Class<A> type, ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator, () -> untyped(name, type, validator));
+		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator));
 	}
 
 	static <A, R> ArgumentDefinition<A, R> object(String name, ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, nested(name, validator, validator.description()),
-				() -> nested(name, validator.untyped(), validator.description()));
+				reader -> nested(name, validator.readingWith(reader), validator.description()));
 	}
 
-	@SuppressWarnings("unchecked")
 	static <E, R> ArgumentDefinition<List<E>, List<R>> list(String name, ValueValidator<E, R> elementValidator) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description());
 		return new ArgumentDefinition<>(name, nested(name, elements(elementValidator)::validate, description),
-				() -> nested(name, elements(elementValidator.untyped())
-					.untyped((Class<Iterable<Object>>) (Class<?>) Iterable.class), description));
+				reader -> nested(name, elements(reader, elementValidator.readingWith(reader)), description));
 	}
 
 	static <V, R> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
 			ValueValidator<V, R> valueValidator) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
 		return new ArgumentDefinition<>(name, nested(name, lifted, lifted.description()),
-				() -> nested(name, lifted.untyped(), lifted.description()));
+				reader -> nested(name, lifted.readingWith(reader), lifted.description()));
 	}
 
 	ArgumentDefinition<A, Optional<R>> asOptional() {
-		return new ArgumentDefinition<>(this.name, this.validator.optional(), () -> this.untyped.get().optional());
+		return new ArgumentDefinition<>(this.name, this.validator.optional(),
+				reader -> this.untyped.apply(reader).optional());
 	}
 
 	ArgumentDefinition<A, R> asNullable() {
-		return new ArgumentDefinition<>(this.name, this.validator.nullable(), () -> this.untyped.get().nullable());
+		return new ArgumentDefinition<>(this.name, this.validator.nullable(),
+				reader -> this.untyped.apply(reader).nullable());
 	}
 
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
 		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(defaultValue),
-				() -> this.untyped.get().defaultValue(defaultValue));
+				reader -> this.untyped.apply(reader).defaultValue(defaultValue));
 	}
 
 	/**
@@ -115,13 +123,40 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 					"The argument at position " + position + " has no name. Add it with a name to read it from a map.");
 		}
 		try {
-			return new MapInputValidator.Property<>(name, this.untyped.get());
+			return new MapInputValidator.Property<>(name,
+					new Reading<>(this.untyped.apply(InputReader.ofJdkTypes()), this.untyped));
 		}
 		catch (UnsupportedOperationException e) {
 			throw new IllegalStateException("The input type of the argument '" + name
 					+ "' is unknown. Add it with a type (for example _enum(name, type) or _object(name, type)),"
 					+ " or with a validator that knows its input type (see ValueValidator#untyped).", e);
 		}
+	}
+
+	/**
+	 * The validator of an argument read from a tree of JDK types, which reads the nodes
+	 * of another reader as the argument defines it.
+	 */
+	private record Reading<R> (ValueValidator<Object, R> validator,
+			Function<InputReader<Object>, ValueValidator<Object, R>> reading) implements ValueValidator<Object, R> {
+
+		@Override
+		public Validated<R> validate(@Nullable Object value, Locale locale, ConstraintContext constraintContext) {
+			return this.validator.validate(value, locale, constraintContext);
+		}
+
+		@Override
+		public ValueDescription description() {
+			return this.validator.description();
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <N> ValueValidator<N, R> readingWith(InputReader<N> reader) {
+			return (ValueValidator<N, R>) (ValueValidator<?, R>) this.reading
+				.apply((InputReader<Object>) (InputReader<?>) reader);
+		}
+
 	}
 
 	/**
@@ -135,13 +170,41 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	}
 
 	/**
-	 * Returns a validator of an untyped input that reports an input not representing the
-	 * given type under the given name and otherwise validates like the given validator.
+	 * Returns a validator that validates every element of an array of the given reader
+	 * like {@link #elements(ValueValidator)} and reports any other node with
+	 * {@code object.type}.
 	 */
-	private static <A, R> ValueValidator<Object, R> untyped(String name, Class<A> type,
+	private static <N, R> ValueValidator<N, List<R>> elements(InputReader<N> reader,
+			ValueValidator<N, R> elementValidator) {
+		return (node, locale, constraintContext) -> {
+			if (node == null || !reader.isArray(node)) {
+				final ViolationMessage message = ViolationMessage.Default.OBJECT_TYPE;
+				return Validated.failureWith(ConstraintViolation.builder()
+					.name("")
+					.messageKey(message.messageKey())
+					.defaultMessageFormat(message.defaultMessageFormat())
+					.argsWithPrependedNameAndAppendedViolatedValue(new Object[] { "array" },
+							new ViolatedValue(node == null ? null : reader.value(node)))
+					.locale(locale)
+					.build());
+			}
+			return Validated.traverseIndexed(reader.elements(node),
+					(value, index) -> elementValidator
+						.validate(value == null || reader.isNull(value) ? null : value, locale, constraintContext)
+						.prefixed(index));
+		};
+	}
+
+	/**
+	 * Returns a validator of an untyped input read with the given reader that reports an
+	 * input not representing the given type under the given name and otherwise validates
+	 * like the given validator.
+	 */
+	private static <N, A, R> ValueValidator<N, R> untyped(InputReader<N> reader, String name, Class<A> type,
 			ValueValidator<A, R> validator) {
 		return ValueValidator.<A>passThrough()
 			.untyped(type)
+			.readingWith(reader)
 			.prefixed(name)
 			.andThen(validator)
 			.describedAs(validator.description());

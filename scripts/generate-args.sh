@@ -585,18 +585,18 @@ for i in `seq 1 ${n}`;do
   if [ "${i}" == "1" ];then
     untyped_map="
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().map(mapper);
+			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).map(mapper);
 			}"
     untyped_and_then="
 			@Override
-			public ValueValidator<Object, X2> untyped() {
-				return Arguments1Validator.this.untyped().andThen(validator);
+			public <N> ValueValidator<N, X2> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).andThen(validator);
 			}"
     untyped_described_as="
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return Arguments1Validator.this.untyped().describedAs(description);
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader).describedAs(description);
 			}"
   fi
   class="Arguments${i}Validator"
@@ -651,6 +651,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -723,8 +724,8 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			}
 
 			@Override
-			public ValueValidator<Object, X> untyped() {
-				return valueValidator.untyped();
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return valueValidator.readingWith(reader);
 			}
 		};
 	}
@@ -1315,7 +1316,7 @@ package am.ik.yavi.arguments;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.InputReader;'; fi)
 import am.ik.yavi.core.Validated;
 $(if [ "${i}" == "1" ];then echo "import am.ik.yavi.core.ValueDescription;"; fi)
 import am.ik.yavi.core.Validator;
@@ -1395,9 +1396,12 @@ cat <<EOD
 	}
 
 	/**
-	 * Returns a validator that accepts an untyped input and checks that it represents the
-	 * raw type of the argument, as {@link ValueValidator#untyped(Class)} states. A
-	 * mismatch is reported under the name of the argument.
+	 * Returns a validator that accepts an untyped input read with the given reader and
+	 * checks that it represents the raw type of the argument, as
+	 * {@link ValueValidator#untyped(Class)} states. A mismatch is reported under the name
+	 * of the argument.
+	 * @param reader the reader of the nodes
+	 * @param <N> the type of the nodes
 	 *
 	 * @return a value validator for an untyped input
 	 * @throws UnsupportedOperationException if the raw type of the argument is unknown
@@ -1406,13 +1410,14 @@ cat <<EOD
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public ValueValidator<Object, X> untyped() {
+	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
 		if (this.valueType == Object.class || this.valueType == Enum.class) {
-			return Arguments1Validator.super.untyped();
+			return Arguments1Validator.super.readingWith(reader);
 		}
 		final ValueDescription.Value description = ValueDescription.Value.of(this.valueType, this.validator);
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
+			.readingWith(reader)
 			.prefixed(description.name())
 			.andThen(this)
 			.describedAs(description);
@@ -1937,7 +1942,7 @@ import am.ik.yavi.constraint.OffsetDateTimeConstraint;
 import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
-import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.InputReader;'; fi)
 import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
@@ -3247,8 +3252,9 @@ cat <<EOD
 	 * <p>
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
-	 * absent key is validated like {@code null}; see {@link MapInputValidator} for the
-	 * violations of absent and unknown keys. A nested {@code _object}, {@code _list} or
+	 * absent key is validated like {@code null} and an unknown key is ignored; see
+	 * {@link MapInputValidator} for the violations of absent keys and for rejecting
+	 * unknown keys. A nested {@code _object}, {@code _list} or
 	 * {@code _map} argument reads a map or a list whose content is checked by the
 	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
 	 * nested object is added with another {@code MapInputValidator}.
@@ -3264,6 +3270,32 @@ cat <<EOD
 	public <X> MapInputValidator<X> fromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return MapInputValidator.of(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.property(${j}), ";done) | sed 's/,$//')),
 				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')));
+	}
+
+	/**
+	 * Builds a validator that reads the added arguments from an object of the given
+	 * reader, such as a node of the tree model of a JSON library, by their names and
+	 * creates the result with the given function. The tree is read as it is, without
+	 * being copied to a map.
+	 *
+	 * <p>
+	 * This is {@code fromMap(f).readingWith(reader)}: the rules are those of
+	 * {@link #fromMap}, and the reader is applied to the nested validators too, whatever
+	 * input they were built for.
+	 * @param <N> the type of the nodes
+	 * @param <X> type of the result
+	 * @param reader the reader of the nodes
+	 * @param f function that creates the result from the validated values
+	 * @return a new validator of a node
+	 * @throws IllegalStateException if an argument has no name, or if its input type is
+	 * unknown
+	 * @throws UnsupportedOperationException if a nested validator does not know its
+	 * input type
+	 * @since 0.18.0
+	 * @see ValueValidator#readingWith(InputReader)
+	 */
+	public <N, X> ValueValidator<N, X> from(InputReader<N> reader, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
+		return this.<X>fromMap(f).readingWith(reader);
 	}
 EOD
 fi)
