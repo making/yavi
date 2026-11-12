@@ -232,6 +232,17 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	}
 
 	/**
+	 * Returns the violations as machine-readable {@link Issue}s, each with a structured
+	 * path, a code and a formatted message.
+	 * @return the issues of the violations
+	 * @since 0.18.0
+	 * @see ConstraintViolation#issue()
+	 */
+	public List<Issue> issues() {
+		return this.delegate.stream().map(ConstraintViolation::issue).toList();
+	}
+
+	/**
 	 * Returns the element at the specified position in this list.
 	 * @param index index of the element to return
 	 * @return the element at the specified position in this list

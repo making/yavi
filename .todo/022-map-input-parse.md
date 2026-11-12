@@ -66,6 +66,17 @@ Schema<Map<String, Object>, Shape> shapeSchema =
 - How nested maps and lists are represented and validated without reflection.
 - How the discriminator behaves when the field is missing or not a string.
 
+## What 020 provides
+
+- `ParseResult` (`Success` / `Failure(List<Issue>)`) and `Validated.toParseResult()`
+  exist; `safeParse` is that conversion applied to the schema's `Validated`.
+- `Issue` is sealed with the single variant `Issue.Violation(path, code, message, args)`.
+  Add the missing-field, type-mismatch and unknown-key variants here. `Validated` fixes
+  the error type to `ConstraintViolation`, so create them as violations with dedicated
+  message keys (keeps i18n and the `ConstraintViolations` API working) and map them to
+  the new variants in `ConstraintViolation.issue()`.
+- Set the path of those violations with `ConstraintViolation.builder()....path(...)`.
+
 ## Notes
 
 - Depends on 021.

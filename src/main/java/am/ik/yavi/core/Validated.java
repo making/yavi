@@ -191,6 +191,30 @@ public class Validated<T> extends Validation<ConstraintViolation, T> {
 	}
 
 	/**
+	 * Converts this validation result to a sealed {@link ParseResult}, so that the
+	 * success and failure cases can be handled exhaustively with pattern matching.
+	 *
+	 * <pre>{@code
+	 * switch (validated.toParseResult()) {
+	 * 	case ParseResult.Success<User>(var user) -> save(user);
+	 * 	case ParseResult.Failure<User>(var issues) -> issues.forEach(issue -> report(issue.path(), issue.code()));
+	 * }
+	 * }</pre>
+	 * @return a {@link ParseResult.Success} holding the validated value, which is
+	 * {@code null} if this validation succeeded with {@code null}, or a
+	 * {@link ParseResult.Failure} holding the {@link Issue}s of the violations
+	 * @since 0.18.0
+	 */
+	// A successful validation may hold null; T does not express that.
+	@SuppressWarnings("NullAway")
+	public ParseResult<T> toParseResult() {
+		if (this.isValid()) {
+			return new ParseResult.Success<>(this.valueNullable());
+		}
+		return new ParseResult.Failure<>(this.errors().issues());
+	}
+
+	/**
 	 * Combines the given validation results into a validation result that holds a list of
 	 * the values in iteration order. The violations of all failed validations are
 	 * accumulated.

@@ -76,10 +76,27 @@ ValueValidator<Object, Shape> shape = S.or(circleSchema, squareSchema);
 - Default values: whether a default applies to a missing key only or also to `null`.
 - Naming: `_optional` / `_default` versus combinators on the value schema.
 
+## What 020 provides
+
+- `ConstraintViolation.path()` is a `List<PathSegment>` (`PathSegment.Property` /
+  `PathSegment.Index`) built where the violation is created; `issue()` turns a violation
+  into `Issue.Violation(path, code, message, args)` and `Validated.toParseResult()`
+  returns the sealed `ParseResult` (`Success` / `Failure(List<Issue>)`).
+- `ValidatorBuilder.nest` / `forEach`, `Validator.prefixed` and
+  `ConstraintViolation.indexed` already extend the path. A violation created outside
+  `Validator` sets it with `ConstraintViolation.builder()....path(...)`.
+- Prefixing the violations of an arbitrary `ValueValidator` with a property (needed by
+  `_object(name, schema)`) has no public operation yet: `ConstraintViolation.relocate`
+  is package-private because the flat name needs the message key separator. Expose a
+  path-aware operation instead of using `rename`, which resets the path to one segment.
+- `Issue` is sealed with the single variant `Issue.Violation`. Report an `or` failure
+  as a new variant that holds the issues of each branch, and decide how a
+  `ConstraintViolation` carries it (`ConstraintViolation.issue()` is the conversion
+  point). A map key needs no new `PathSegment`; use `Property`.
+
 ## Notes
 
-- Depends on 020: the path and issue model must exist before composition can report
-  prefixed paths.
+- Depends on 020 (done).
 - Keep the existing `Yavi.arguments()` call sites source-compatible.
 - This todo is the largest of the sequence; split it if the generator change grows
   beyond a reasonable review size.
