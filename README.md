@@ -521,6 +521,33 @@ ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionVa
 
 Only the selected alternative is validated. An absent discriminator is reported with `object.required` and an unexpected one with `object.oneOf`.
 
+An argument does not have to be the value of one key. `_embedded` reads the same map as the other arguments, which builds an object from the columns of several tables in the row of a JOIN, and `_rest` collects the keys that no argument is defined for:
+
+```java
+MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+        ._string("first_name", c -> c.notBlank())
+        ._string("last_name", c -> c.notBlank())
+        .fromMap(UserName::new);
+
+MapInputValidator<Department> departmentValidator = Yavi.arguments()
+        ._string("dept_name", c -> c.notBlank())
+        ._string("dept_code", c -> c.notBlank())
+        .fromMap(Department::new);
+
+MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+        ._integer("id", c -> c.notNull())
+        ._embedded(userNameValidator) // first_name, last_name
+        ._embedded(departmentValidator).nullable() // dept_name, dept_code
+        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build()) // a Map<String, String> of the other keys
+        .fromMap(Employee::new);
+```
+
+* The properties of an embedded validator are properties of the embedding one: they are described, are not unknown to `rejectingUnknownProperties()`, are not part of the rest, and a name defined twice is rejected when the validator is built. A `DiscriminatedUnionValidator` is embedded in the same way.
+* An embedded validator with `optional()`, `nullable()` or `defaultValue(...)` is given `null` when none of its properties has a value, like the columns of a LEFT JOIN that matches no row.
+* A violation of the rest is located under its key. `_rest()` without a validator takes the values as they are. `_rest` and `rejectingUnknownProperties()` exclude each other.
+* A lambda may be embedded too. The properties it reads are unknown, so the validator can then neither reject unknown properties nor read the rest.
+* Embedding is also the way to read more than 16 keys.
+
 ##### Validating the tree model of a JSON library
 
 The same arguments read the tree model of a JSON library, such as Jackson's `JsonNode`, as it is: `from(reader, f)` builds a validator of nodes with an `InputReader`, which tells how to read a node. The tree is not copied to a map, and the rules above and the violations are the same.
@@ -649,6 +676,7 @@ String json = JsonSchema.toJson(description);
 ```
 
 * A constraint is described by its message key and arguments, for example `container.lessThanOrEqual` with `[14]`.
+* An object that rejects unknown properties is written with `additionalProperties: false`, and one that reads the rest with the schema of its values.
 * A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or has no constraint that rejects `null` such as `notNull()`.
 * The combinators carry the description. A lambda and the result of `ValueValidator.compose` are unknown; describe them with `describedAs(...)`.
 * Conditional constraints and `constraintOnTarget` rules are not described. Constraints without a JSON Schema keyword are omitted from the schema.

@@ -77,17 +77,38 @@ public sealed interface ValueDescription {
 
 	/**
 	 * An object with named properties, such as the arguments of an
-	 * {@code ArgumentsNValidator}.
+	 * {@code ArgumentsNValidator} or the keys of a validated map.
 	 *
 	 * @param properties the properties in the order of the arguments; unmodifiable
+	 * @param rest the description of the value of every other property of the object;
+	 * {@code null} if the other properties are not read, {@link Never} if they are
+	 * rejected and {@link Unknown} if they are read by a validator that does not describe
+	 * them
 	 */
-	record Properties(List<Property> properties) implements ValueDescription {
+	record Properties(List<Property> properties, @Nullable ValueDescription rest) implements ValueDescription {
 
 		/**
 		 * Creates the description of an object.
 		 */
 		public Properties {
 			properties = List.copyOf(properties);
+		}
+
+		/**
+		 * Creates the description of an object whose other properties are not read.
+		 * @param properties the properties in the order of the arguments
+		 */
+		public Properties(List<Property> properties) {
+			this(properties, null);
+		}
+
+		/**
+		 * Returns whether the described properties are the only ones that the object is
+		 * read for, so that a validator of the same object may read the others.
+		 * @return {@code true} unless the other properties are validated or unknown
+		 */
+		public boolean isClosed() {
+			return this.rest == null || this.rest instanceof Never;
 		}
 
 		/**
@@ -188,6 +209,13 @@ public sealed interface ValueDescription {
 	}
 
 	/**
+	 * A value that is never accepted. As the {@linkplain Properties#rest() rest} of an
+	 * object, it tells that a property that is not described is rejected.
+	 */
+	record Never() implements ValueDescription {
+	}
+
+	/**
 	 * A named property of an object.
 	 *
 	 * @param name the property name
@@ -217,6 +245,7 @@ public sealed interface ValueDescription {
 			case Entries entries -> true;
 			case Optional optional -> true;
 			case Unknown unknown -> true;
+			case Never never -> false;
 		};
 	}
 

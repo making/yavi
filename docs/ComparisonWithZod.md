@@ -84,6 +84,9 @@ compiler checks that the arguments match it.
 | `z.unknown()` / `z.any()` | `_object(name, Object.class)` |
 | `z.object({...})` (strips unknown keys) | the default of `fromMap` |
 | `z.strictObject({...})` | `.rejectingUnknownProperties()` |
+| `z.looseObject({...})` | `._rest()` |
+| `z.object({...}).catchall(schema)` | `._rest(valueValidator)` |
+| `a.extend(b.shape)`, `z.intersection(a, b)` of objects | `._embedded(b)`, which gives the object of `b` to the function |
 | `z.coerce.number()`, `z.coerce.boolean()` | a property of the input, see [Strings](#strings) |
 | `z.toJSONSchema(schema)` | `JsonSchema.of(validator.description())` |
 
@@ -181,9 +184,20 @@ whereas `_string("name")` without `notNull()` or `notBlank()` accepts an absent 
 
 Both ignore unknown keys unless the object is strict. `rejectingUnknownProperties()`
 reports them with the message key `object.unknownProperty`, which catches a typo in an
-optional property; like `z.strictObject`, it applies to that object only. There is no
-counterpart of `z.looseObject` (passthrough): the result is created by a function, so
-there is nowhere to keep the extra keys.
+optional property; like `z.strictObject`, it applies to that object only.
+
+The counterpart of `.catchall(schema)` and `z.looseObject` is an argument: the result is
+created by a function, so the extra keys are given to it as a map. `_rest(valueValidator)`
+validates their values and `_rest()` takes them as they are.
+
+```java
+record Item(String name, Map<String, String> attrs) {}
+
+MapInputValidator<Item> itemValidator = Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build())
+        .fromMap(Item::new);
+```
 
 ### Types
 
@@ -246,8 +260,10 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 
 ## Not available
 
-* Object schema operations: `extend`, `merge`, `pick`, `omit`, `partial`.
-* `z.intersection`, `z.tuple`, `z.lazy` (recursive schemas) and `z.literal` as a schema
-  (use the `equalTo` / `oneOf` constraints).
+* Object schema operations that derive a schema: `pick`, `omit`, `partial`. `extend` and
+  `merge` are `_embedded`, which keeps the object of the embedded validator.
+* `z.tuple`, `z.lazy` (recursive schemas) and `z.literal` as a schema (use the `equalTo` /
+  `oneOf` constraints).
 * Asynchronous refinements and transforms.
-* More than 16 properties with the builders; use `MapInputValidator.of(properties, mapper)`.
+* More than 16 arguments in one builder; group them with `_embedded`, or use
+  `MapInputValidator.of(parts, mapper)`.

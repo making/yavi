@@ -42,6 +42,9 @@ import org.jspecify.annotations.Nullable;
  * that accepts {@code null} also allows the type {@code null}.</li>
  * <li>A list is written with {@code items}, a map with {@code additionalProperties},
  * alternatives with {@code anyOf} and a default value with {@code default}.</li>
+ * <li>The properties that an object does not define are written with
+ * {@code additionalProperties}: their schema if they are validated, and {@code false} if
+ * they are rejected.</li>
  * <li>The built-in constraints with an equivalent keyword are translated:
  * {@code notNull}, {@code notBlank}, {@code notEmpty} and the size constraints
  * ({@code minLength}, {@code maxLength}, {@code minItems}, {@code maxItems},
@@ -109,6 +112,15 @@ public final class JsonSchema {
 				if (!required.isEmpty()) {
 					schema.put("required", required);
 				}
+				switch (properties.rest()) {
+					case null -> {
+					}
+					case ValueDescription.Unknown unknown -> {
+					}
+					case ValueDescription.Never never -> schema.put("additionalProperties", false);
+					case ValueDescription rest ->
+						schema.put("additionalProperties", schema(rest, rest.acceptsNull()));
+				}
 			}
 			case ValueDescription.Elements elements -> {
 				schema.put("type", type("array", nullable));
@@ -142,6 +154,7 @@ public final class JsonSchema {
 			}
 			case ValueDescription.Unknown unknown -> {
 			}
+			case ValueDescription.Never never -> schema.put("not", new LinkedHashMap<>());
 		}
 		return schema;
 	}

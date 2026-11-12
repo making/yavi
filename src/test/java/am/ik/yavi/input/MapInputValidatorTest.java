@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import am.ik.yavi.builder.IntegerValidatorBuilder;
@@ -21,6 +22,7 @@ import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.jsonschema.JsonSchema;
@@ -325,9 +327,127 @@ class MapInputValidatorTest {
 				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
 				"shapes":{"type":"array","items":{"anyOf":[\
 				{"type":"object","properties":{"type":{"type":"string","const":"circle"},\
-				"radius":{"type":"integer","exclusiveMinimum":0}},"required":["type","radius"]},\
+				"radius":{"type":"integer","exclusiveMinimum":0}},"required":["type","radius"],\
+				"additionalProperties":false},\
 				{"type":"object","properties":{"type":{"type":["string","null"]},\
 				"side":{"type":"integer"}},"required":["side"]}]}}},"required":["shapes"]}""");
+	}
+
+	record UserName(@Nullable String first, @Nullable String last) {
+	}
+
+	record Department(@Nullable String name, @Nullable String code) {
+	}
+
+	record Employee(@Nullable Integer id, @Nullable UserName name, @Nullable Department department,
+			@Nullable Map<String, Integer> scores) {
+	}
+
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void embeddedValidatorsAndTheRestReadTheSameMap(Model model) {
+		// an embedded validator that rejects unknown properties sees only its own
+		final MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+			._string("first_name", c -> c.notBlank())
+			._string("last_name", c -> c.notBlank())
+			.fromMap(UserName::new)
+			.rejectingUnknownProperties();
+		final MapInputValidator<Department> departmentValidator = Yavi.arguments()
+			._string("dept_name", c -> c.notBlank())
+			._string("dept_code", c -> c.notBlank())
+			.fromMap(Department::new);
+		final MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+			._integer("id", c -> c.notNull())
+			._embedded(userNameValidator)
+			._embedded(departmentValidator)
+			.nullable()
+			._rest(IntegerValidatorBuilder.of("", c -> c.notNull().positive()).build())
+			.fromMap(Employee::new);
+		assertThat(model
+			.validate(employeeValidator,
+					input("id", 1, "first_name", "Taro", "last_name", "Yamada", "dept_name", "Sales", "dept_code", "S",
+							"math", 90))
+			.value()).isEqualTo(
+					new Employee(1, new UserName("Taro", "Yamada"), new Department("Sales", "S"), Map.of("math", 90)));
+		// a nullable embedded validator is given null when none of its properties has a
+		// value
+		assertThat(model
+			.validate(employeeValidator, input("id", 1, "first_name", "Taro", "last_name", "Yamada", "dept_name", null))
+			.value()).isEqualTo(new Employee(1, new UserName("Taro", "Yamada"), null, Map.of()));
+		// the violations of an embedded validator are reported as they are, and those of
+		// the rest under the key
+		assertThat(model
+			.validate(employeeValidator, input("id", 1, "first_name", "", "dept_name", "Sales", "math", 0, "art", "A"))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("first_name", "charSequence.notBlank"), tuple("last_name", "object.required"),
+					tuple("dept_code", "object.required"), tuple("math", "numeric.positive"),
+					tuple("art", "object.type"));
+		assertThat(JsonSchema.toJson(employeeValidator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"id":{"type":"integer"},\
+				"first_name":{"type":"string","minLength":1},"last_name":{"type":"string","minLength":1},\
+				"dept_name":{"type":["string","null"],"minLength":1},\
+				"dept_code":{"type":["string","null"],"minLength":1}},\
+				"required":["id","first_name","last_name"],\
+				"additionalProperties":{"type":"integer","exclusiveMinimum":0}}""");
+		// the properties of an embedded union are those of its alternatives: the selected
+		// one reports those of the others if it rejects unknown properties
+		final MapInputValidator<List<Object>> eventValidator = Yavi.arguments()
+			._string("id", c -> c.notBlank())
+			._embedded(shapeValidator)
+			.fromMap((id, shape) -> List.of(id, shape))
+			.rejectingUnknownProperties();
+		assertThat(model.validate(eventValidator, input("id", "e1", "type", "circle", "radius", 2)).value())
+			.containsExactly("e1", new Circle(2));
+		assertThat(model
+			.validate(eventValidator, input("id", "e1", "type", "circle", "radius", 2, "side", 3, "color", "red"))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("side", "object.unknownProperty"), tuple("color", "object.unknownProperty"));
+		assertThat(JsonSchema.toJson(eventValidator.description())).isEqualTo("""
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","anyOf":[\
+				{"type":"object","properties":{"id":{"type":"string","minLength":1},\
+				"type":{"type":"string","const":"circle"},"radius":{"type":"integer","exclusiveMinimum":0}},\
+				"required":["id","type","radius"],"additionalProperties":false},\
+				{"type":"object","properties":{"id":{"type":"string","minLength":1},\
+				"type":{"type":["string","null"]},"side":{"type":"integer"}},\
+				"required":["id","side"],"additionalProperties":false}]}""");
+		// the rest is taken as it is without a validator, and arguments that are not read
+		// from a key are still arguments of apply
+		assertThat(Yavi.arguments()
+			._string("id")
+			._rest()
+			.fromMap((id, rest) -> Optional.ofNullable(rest))
+			.validated(input("id", "e1", "tags", List.of("a")))).contains(Map.of("tags", List.of("a")));
+		assertThat(Yavi.arguments()
+			._embedded(departmentValidator)
+			._rest()
+			.apply((department, rest) -> Optional.ofNullable(rest))
+			.validated(input("dept_name", "Sales", "dept_code", "S"), input("math", 90))).contains(Map.of("math", 90));
+		// any other validator is embedded as it is and reads the whole map, so the
+		// properties that are read are unknown
+		final ValueValidator<Map<String, Object>, Integer> size = (map, locale, context) -> Validated
+			.successWith(Objects.requireNonNull(map).size());
+		final MapInputValidator<List<Object>> sized = Yavi.arguments()
+			._string("id")
+			._embedded(size)
+			.fromMap((id, count) -> List.of(id, count));
+		assertThat(sized.validated(input("id", "e1", "color", "red"))).containsExactly("e1", 2);
+		assertThat(sized.description()).isEqualTo(new ValueDescription.Properties(
+				List.of(new ValueDescription.Property("id", new ValueDescription.Value("id", String.class, List.of()))),
+				new ValueDescription.Unknown()));
+		assertThatThrownBy(sized::rejectingUnknownProperties).isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("unknown properties cannot be rejected");
+		assertThatThrownBy(() -> Yavi.arguments()._embedded(sized)._rest().fromMap((a, b) -> ""))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("rest of the properties cannot be told");
+		assertThatThrownBy(() -> Yavi.arguments()._rest().fromMap(Optional::ofNullable).rejectingUnknownProperties())
+			.isInstanceOf(IllegalStateException.class);
+		assertThatThrownBy(() -> Yavi.arguments()._rest()._rest().fromMap((a, b) -> ""))
+			.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(
+				() -> Yavi.arguments()._string("dept_code")._embedded(departmentValidator).fromMap((a, b) -> ""))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("The property 'dept_code' is defined twice");
 	}
 
 	record Item(@Nullable String name, @Nullable Integer quantity) {
