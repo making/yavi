@@ -32,7 +32,8 @@ import java.util.function.Supplier;
  * transformed within its type with {@link #preprocess(Function)}, and lifted to
  * collections, maps or optionals with {@code lift*} methods. A {@code null} input can be
  * accepted with {@link #optional()}, {@link #nullable()} or
- * {@link #defaultValue(Object)}, alternatives are combined with
+ * {@link #defaultValue(Object)}, any failure is replaced with a fallback with
+ * {@link #recover(Object)}, alternatives are combined with
  * {@link #anyOf(ValueValidator[])}, and a rule that spans several properties of the
  * produced value is added with {@link #constraintOnTarget}. What a validator expects as
  * input is available from {@link #description()}; the combinators carry it. An input of
@@ -75,8 +76,9 @@ public interface ValueValidator<T, X> {
 	 * {@link #constraintOnTarget}, {@link #prefixed(String)} and
 	 * {@link #preprocess(Function)} keep it because they do not change the type of the
 	 * input, the {@code lift*} methods, {@link #optional()}, {@link #nullable()},
-	 * {@link #defaultValue(Object)} and {@link #anyOf(ValueValidator[])} wrap it, and
-	 * {@link #compose(Function)} resets it to unknown because it changes the input.
+	 * {@link #defaultValue(Object)}, {@link #recover(Object)} and
+	 * {@link #anyOf(ValueValidator[])} wrap it, and {@link #compose(Function)} resets it
+	 * to unknown because it changes the input.
 	 * @return the description of the input
 	 * @since 0.18.0
 	 * @see #describedAs(ValueDescription)
@@ -376,9 +378,9 @@ public interface ValueValidator<T, X> {
 	 * after the type check, by the validators created by the builders of single values
 	 * and by {@link #map(Function)}, {@link #andThen(ValueValidator)},
 	 * {@link #constraintOnTarget}, {@link #prefixed(String)},
-	 * {@link #describedAs(ValueDescription)}, {@link #optional()}, {@link #nullable()}
-	 * and {@link #defaultValue(Object)} of them. The input type of any other validator is
-	 * unknown afterwards; give it with {@link #untyped(Class)}.
+	 * {@link #describedAs(ValueDescription)}, {@link #optional()}, {@link #nullable()},
+	 * {@link #defaultValue(Object)} and {@link #recover(Object)} of them. The input type
+	 * of any other validator is unknown afterwards; give it with {@link #untyped(Class)}.
 	 *
 	 * <p>
 	 * A function added later is applied earlier: {@code v.preprocess(f).preprocess(g)}
@@ -451,6 +453,7 @@ public interface ValueValidator<T, X> {
 	 * @param defaultValue the value produced for a {@code null} input
 	 * @return a value validator that falls back to the default value
 	 * @since 0.18.0
+	 * @see #recover(Object)
 	 */
 	default ValueValidator<T, X> defaultValue(X defaultValue) {
 		return described(
@@ -459,6 +462,79 @@ public interface ValueValidator<T, X> {
 				() -> new ValueDescription.Optional(this.description(), defaultValue),
 				nullAware(reader -> this.readingWith(reader).defaultValue(defaultValue)),
 				transform -> this.preprocess(transform).defaultValue(defaultValue));
+	}
+
+	/**
+	 * Returns a validator that never fails: it produces the given value for a
+	 * {@code null} input and for an input that this validator rejects. This is for an
+	 * input that must not break a request, such as the size of a page.
+	 *
+	 * <pre>{@code
+	 * Yavi._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
+	 * }</pre>
+	 *
+	 * <p>
+	 * A {@code null} input succeeds with the fallback without invoking this validator, as
+	 * with {@link #defaultValue(Object)}; the fallback itself is not validated. Any other
+	 * input is validated by this validator, and every violation is replaced with the
+	 * fallback: those of the constraints, those of the nested validators and, with
+	 * {@link #readingWith(InputReader)}, the one of an input that does not represent the
+	 * input type. An exception thrown by this validator is not caught.
+	 *
+	 * <p>
+	 * The input is {@linkplain #description() described} as with
+	 * {@link #defaultValue(Object)}: what this validator expects, or nothing, in which
+	 * case the fallback is produced.
+	 * @param fallback the value produced instead of a failure
+	 * @return a value validator that always succeeds
+	 * @since 0.18.0
+	 * @see #recoverWith(Function)
+	 */
+	default ValueValidator<T, X> recover(X fallback) {
+		return described(
+				(t, locale, constraintContext) -> t == null ? Validated.successWith(fallback)
+						: recovered(ValueValidator.this.validate(t, locale, constraintContext), violations -> fallback),
+				() -> new ValueDescription.Optional(this.description(), fallback),
+				nullAware(reader -> this.readingWith(reader).recover(fallback)),
+				transform -> this.preprocess(transform).recover(fallback));
+	}
+
+	/**
+	 * Returns a validator that never fails: it produces the result of the given function
+	 * for a {@code null} input and for an input that this validator rejects. This is
+	 * {@link #recover(Object)} for a fallback that depends on the violations, or that is
+	 * to be reported:
+	 *
+	 * <pre>{@code
+	 * Yavi._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recoverWith(violations -> {
+	 *     violations.forEach(violation -> log.debug("{}", violation.message()));
+	 *     return 20;
+	 * })
+	 * }</pre>
+	 *
+	 * <p>
+	 * The function is given the violations of the rejected input. For a {@code null}
+	 * input this validator is not invoked and the function is given no violation. The
+	 * {@linkplain #description() description} has no default value, which is not known
+	 * before the validation.
+	 * @param fallback the function that produces a value from the violations
+	 * @return a value validator that always succeeds
+	 * @since 0.18.0
+	 * @see #recover(Object)
+	 */
+	default ValueValidator<T, X> recoverWith(Function<? super ConstraintViolations, ? extends X> fallback) {
+		return described(
+				(t, locale, constraintContext) -> t == null
+						? Validated.successWith(fallback.apply(new ConstraintViolations()))
+						: recovered(ValueValidator.this.validate(t, locale, constraintContext), fallback),
+				() -> new ValueDescription.Optional(this.description(), null),
+				nullAware(reader -> this.readingWith(reader).recoverWith(fallback)),
+				transform -> this.preprocess(transform).recoverWith(fallback));
+	}
+
+	private static <X> Validated<X> recovered(Validated<X> validated,
+			Function<? super ConstraintViolations, ? extends X> fallback) {
+		return validated.isValid() ? validated : Validated.successWith(fallback.apply(validated.errors()));
 	}
 
 	/**

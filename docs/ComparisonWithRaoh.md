@@ -368,6 +368,7 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 | `field("nickname", nullable(string()))` | `_string("nickname").nullable()` |
 | `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional()` |
 | `field("role", withDefault(decoder, value))` | `_enum("role", Role.class).defaultValue(value)` |
+| `field("size", recover(decoder, fallback))` | `_integer("size", c -> ...).recover(fallback)` |
 | `optionalNullableField("bio", string())` (`Presence<String>`) | not available |
 
 An absent key is validated like `null`, so `optional()`, `nullable()` and
@@ -566,29 +567,36 @@ validator given to `andThen`, as `parseJson` above.
 `withDefault` is `defaultValue(...)`: it applies to an absent key and to `null`, and a
 value that is present but invalid is a violation.
 
-There is no `recover`. A lambda that replaces the failure of an untyped validator does it
-for a map:
+`recover(decoder, fallback)` is `recover(fallback)`: it applies to an absent key and to
+`null` like `defaultValue(...)`, and to a value that is present but invalid, so the
+argument never fails. It is for a parameter that must not break a request.
 
 ```java
-static <T, X> ValueValidator<Object, X> recover(ValueValidator<T, X> validator, X fallback) {
-    ValueValidator<Object, X> untyped = validator.untyped();
-    ValueValidator<Object, X> recovering = (value, locale, context) -> Validated
-        .successWith(untyped.validate(value, locale, context).orElseGet(violations -> fallback));
-    return recovering.untyped(Object.class);
-}
-
 MapInputValidator<Integer> pageSizeValidator = Yavi.arguments()
-        ._object("pageSize", recover(Yavi._integer(c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)), 20))
-        .defaultValue(20)
+        ._integer("pageSize", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         .fromMap(pageSize -> pageSize);
 
+pageSizeValidator.validate(Map.of("pageSize", 50)); // Valid[50]
 pageSizeValidator.validate(Map.of("pageSize", 999)); // Valid[20]
+pageSizeValidator.validate(Map.of("pageSize", "many")); // Valid[20]
 pageSizeValidator.validate(Map.of()); // Valid[20]
 ```
 
-Do not use it with `readingParameters()` or `readingWith(reader)`: the lambda takes the
-value as an `Object` and checks it without the reader, so the string `"50"` is not an
-integer there and is silently replaced with `20`.
+The value is read by the reader before it is recovered: with `readingParameters()` the
+string `"50"` is the integer `50`, and with `readingWith(reader)` a node that is not a
+number gives the fallback. `recover` is on every `ValueValidator`
+(`Yavi._integer(c -> ...).recover(20)`, `addressValidator.recover(fallback)`), and it is
+described like `defaultValue` (`default` in the JSON Schema).
+
+`recoverWith(f)` computes the fallback from the violations, for example to log them. For
+an absent key or `null` there is no violation:
+
+```java
+._integer("pageSize", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recoverWith(violations -> {
+    violations.forEach(violation -> log.debug("{}", violation.message()));
+    return 20;
+})
+```
 
 ## Several results and several rows
 
@@ -751,8 +759,20 @@ pageRequestValidator.validate(Map.of()); // PageRequest[page=0, size=20, order=A
 pageRequestValidator.validate(Map.of("page", "-1")); // page: "page" must be greater than or equal to 0
 ```
 
-`size=9999` and `sort=desc` are violations here; falling back to a default for them needs
-`recover`, which is not available for request parameters.
+`size=9999` and `sort=desc` are violations here. With `recover` in place of
+`defaultValue`, they fall back like an absent parameter:
+
+```java
+ValueValidator<Map<String, String>, PageRequest> lenientPageRequestValidator = Yavi.arguments()
+        ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
+        ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
+        ._enum("sort", SortOrder.class).recover(SortOrder.ASC)
+        .fromMap(PageRequest::new)
+        .readingParameters();
+
+lenientPageRequestValidator.validate(Map.of("page", "2", "size", "50", "sort", "DESC")); // PageRequest[page=2, size=50, order=DESC]
+lenientPageRequestValidator.validate(Map.of("page", "-1", "size", "9999", "sort", "desc")); // PageRequest[page=0, size=20, order=ASC]
+```
 
 ### CSV import
 
@@ -827,10 +847,8 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 ## Not available
 
 * Three states of a field (`Presence`: absent, `null`, value).
-* `recover`, other than the lambda above for a map.
 * A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
   structure read from a JSON tree or described as a JSON Schema.
-* Constraints on the list or map of `_list` and `_map`.
 * Enum constants read without regard to case, booleans read from `1`, `yes`, `on`, and a
   `scale` constraint of a `BigDecimal`.
 * Encoders (a domain object to a map).

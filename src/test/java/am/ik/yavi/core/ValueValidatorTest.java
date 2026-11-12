@@ -119,6 +119,20 @@ class ValueValidatorTest {
 			.containsExactly("charSequence.notBlank");
 		assertThat(name.nullable().validate(" ").isValid()).isFalse();
 		assertThat(name.defaultValue("anonymous").validate(" ").isValid()).isFalse();
+		// unless the validator recovers, which replaces any failure; the function is
+		// given the violations, and none for null
+		assertThat(name.recover("anonymous").validated(null)).isEqualTo("anonymous");
+		assertThat(name.recover("anonymous").validated(" ")).isEqualTo("anonymous");
+		assertThat(name.recover("anonymous").validated("yavi")).isEqualTo("yavi");
+		final ValueValidator<String, String> reported = name
+			.recoverWith(violations -> violations.stream().map(ConstraintViolation::messageKey).toList().toString());
+		assertThat(reported.validated(null)).isEqualTo("[]");
+		assertThat(reported.validated(" ")).isEqualTo("[charSequence.notBlank]");
+		assertThat(reported.validated("yavi")).isEqualTo("yavi");
+		// the mismatch of an untyped input is a failure like any other, and the input is
+		// transformed before it is validated
+		assertThat(name.recover("anonymous").untyped().validated(1)).isEqualTo("anonymous");
+		assertThat(name.recover("anonymous").preprocess(String::strip).untyped().validated(" yavi ")).isEqualTo("yavi");
 	}
 
 	@Test

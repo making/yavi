@@ -78,6 +78,8 @@ compiler checks that the arguments match it.
 | `.optional()` | `.optional()` (produces `Optional<X>`) |
 | `.nullable()` | `.nullable()` |
 | `.default(value)` | `.defaultValue(value)` |
+| `.catch(value)` | `.recover(value)` (also for `null` and an absent key) |
+| `.catch(ctx => ...)` | `.recoverWith(violations -> ...)` |
 | `z.union([a, b])` | `ValueValidator.anyOf(a, b)` |
 | `z.discriminatedUnion("type", [...])` | `DiscriminatedUnionValidator.<X>of("type").when("circle", a).when("square", b)` |
 | `.refine(predicate)` on a value | a constraint (`c -> c.predicate(...)`) |

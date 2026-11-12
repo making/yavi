@@ -15,6 +15,7 @@ import java.util.function.Function;
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -180,6 +181,16 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
 		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(defaultValue),
 				reader -> this.untyped.apply(reader).defaultValue(defaultValue), this.source);
+	}
+
+	ArgumentDefinition<A, R> recovering(R fallback) {
+		return new ArgumentDefinition<>(this.name, this.validator.recover(fallback),
+				reader -> this.untyped.apply(reader).recover(fallback), this.source);
+	}
+
+	ArgumentDefinition<A, R> recoveringWith(Function<? super ConstraintViolations, ? extends R> fallback) {
+		return new ArgumentDefinition<>(this.name, this.validator.recoverWith(fallback),
+				reader -> this.untyped.apply(reader).recoverWith(fallback), this.source);
 	}
 
 	/**
