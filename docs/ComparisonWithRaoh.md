@@ -224,8 +224,8 @@ customerValidator.validate(Map.of("name", "", "address", Map.of("city", "", "zip
 
 ### Flat data
 
-`combine(flat(a), flat(b))` is `ArgumentsValidators.combine(a, b)`: both validators read
-the same map.
+`combine(flat(a), flat(b))` is `_embedded`: the embedded validators read the same map as
+the other arguments.
 
 ```java
 record UserName(String first, String last) {}
@@ -242,23 +242,32 @@ MapInputValidator<Department> departmentValidator = Yavi.arguments()
         ._string("dept_code", c -> c.notBlank())
         .fromMap(Department::new);
 
-Arguments1Validator<Map<String, Object>, Employee> employeeValidator = ArgumentsValidators
-        .combine(userNameValidator, departmentValidator)
-        .apply(Employee::new);
+MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+        ._embedded(userNameValidator)
+        ._embedded(departmentValidator)
+        .fromMap(Employee::new);
 ```
 
-The combined validator is a validator of a `Map<String, Object>` only. It does not know
-its input type, so it cannot be an argument of another `fromMap`, cannot read a JSON tree
-with `readingWith` and cannot reject unknown properties.
+The result is a `MapInputValidator` like any other: it is nested, reads a JSON tree or
+request parameters and describes the four properties. Unlike `flat`, it can be strict: the
+properties of the embedded validators are known to `rejectingUnknownProperties()`. A name
+that two of them define is rejected when the validator is built.
 
-A LEFT JOIN whose columns are all `null` is a lambda; there is no `Presence` (see
-[Not available](#not-available)):
+A LEFT JOIN whose columns are all `null` is an embedded validator that accepts `null`: it
+is given `null` when none of its properties has a value.
 
 ```java
-ValueValidator<Map<String, Object>, Department> joined = (row, locale, context) -> row.get("dept_name") == null
-        ? Validated.successWith(null)
-        : departmentValidator.validate(row, locale, context);
+MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+        ._embedded(userNameValidator)
+        ._embedded(departmentValidator).nullable()
+        .fromMap(Employee::new);
+
+employeeValidator.validate(Map.of("first_name", "Taro", "last_name", "Yamada"));
+// Employee[name=UserName[first=Taro, last=Yamada], dept=null]
 ```
+
+`ArgumentsValidators.combine(a, b)` combines validators of any input type, not only of a
+map, and for that reason knows neither the input type nor the properties.
 
 ### Lists
 
@@ -665,23 +674,23 @@ ValueValidator<Map<String, Object>, Map<String, BigDecimal>> priceMapValidator =
 
 ### Known fields and the remaining fields
 
-`MapInputValidator` reads the properties it defines and has no access to the others. As
-in Raoh, the rest is collected by a lambda that reads the same map:
+`_rest` is an argument that collects the keys no other argument is defined for. Its values
+are validated, with a violation located under the key, which the lambda of Raoh does not
+do:
 
 ```java
 record Item(String name, Map<String, String> attrs) {}
 
-MapInputValidator<String> nameValidator = Yavi.arguments()._string("name", c -> c.notBlank()).fromMap(name -> name);
-ValueValidator<Map<String, Object>, Map<String, String>> attrsValidator = (map, locale, context) -> Validated
-    .successWith(map.entrySet()
-        .stream()
-        .filter(entry -> !entry.getKey().equals("name"))
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> String.valueOf(entry.getValue()))));
+MapInputValidator<Item> itemValidator = Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._rest(StringValidatorBuilder.of("", c -> c.notBlank()).build())
+        .fromMap(Item::new);
 
-Arguments1Validator<Map<String, Object>, Item> itemValidator = ArgumentsValidators
-        .combine(nameValidator, attrsValidator)
-        .apply(Item::new);
+itemValidator.validate(Map.of("name", "pen", "color", "red")); // Item[name=pen, attrs={color=red}]
+itemValidator.validate(Map.of("name", "pen", "color", "")); // color: "color" must not be blank
 ```
+
+`_rest()` without a validator takes the values as they are.
 
 ### Pagination and query parameters
 
@@ -768,8 +777,9 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
   arguments with `apply(f)`. Raoh has no counterpart.
 * **Required.** A Raoh decoder rejects `null` and an absent field; a YAVI argument does so
   only with `notNull()` or `notBlank()`.
-* **Arity.** Both take up to 16 typed fields. Beyond that, YAVI has
-  `MapInputValidator.of(properties, mapper)`, whose mapper takes a list of values.
+* **Arity.** Both take up to 16 typed fields. Beyond that, YAVI groups the fields with
+  `_embedded`, or has `MapInputValidator.of(parts, mapper)`, whose mapper takes a list of
+  values.
 * **Description.** A YAVI validator describes its input (`description()`), from which
   `JsonSchema` generates a JSON Schema.
 * **Clock.** Raoh has no `past()` and `future()` on purpose. YAVI has them, with a `Clock`
@@ -781,8 +791,6 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 * `recover`, other than the lambda above for a map.
 * A reference to a validator that is not built yet (`lazy` of Raoh), for a recursive
   structure read from a JSON tree or described as a JSON Schema.
-* A combination of validators of the same input (`flat`) that keeps the input type, and
-  the collection of the remaining fields with a known type.
 * Constraints on the list or map of `_list` and `_map`.
 * Transforms in the chain of constraints (`trim()`, `toLowerCase()`, `normalize()`).
 * Enum constants read without regard to case, booleans read from `1`, `yes`, `on`, and a

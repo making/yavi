@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.StreamSupport;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintDescription;
@@ -141,7 +140,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 								List.of(new ConstraintDescription(ViolationMessage.Default.OBJECT_EQUAL_TO.messageKey(),
 										List.of(value), true)))));
 				properties.addAll(described.properties());
-				descriptions.add(new ValueDescription.Properties(properties));
+				descriptions.add(new ValueDescription.Properties(properties, described.rest()));
 			}
 			else {
 				descriptions.add(description);
@@ -182,8 +181,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		return (input, locale, constraintContext) -> {
 			Map<String, Object> properties = (Map<String, Object>) input;
 			if (hidden && properties != null) {
-				properties = new LinkedHashMap<>(properties);
-				properties.remove(this.discriminator);
+				properties = Projection.of(properties, this::isShown);
 			}
 			return Validated.of(alternative.validate(properties, locale, constraintContext));
 		};
@@ -198,10 +196,13 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		if (!this.isHiddenFrom(alternative)) {
 			return alternative.readingWith(reader);
 		}
-		final ValueValidator<Object, ? extends X> hiding = alternative
-			.readingWith(new HidingReader<>(reader, this.discriminator));
-		return (input, locale, constraintContext) -> Validated
-			.of(hiding.validate(new Hidden<>(Objects.requireNonNull(input)), locale, constraintContext));
+		final ValueValidator<Object, ? extends X> hiding = alternative.readingWith(new Projection.Reader<>(reader));
+		return (input, locale, constraintContext) -> Validated.of(hiding
+			.validate(new Projection<>(Objects.requireNonNull(input), this::isShown), locale, constraintContext));
+	}
+
+	private boolean isShown(String name) {
+		return !this.discriminator.equals(name);
 	}
 
 	private boolean isHiddenFrom(ValueValidator<?, ?> alternative) {
@@ -258,78 +259,6 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		@Override
 		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
 			return DiscriminatedUnionValidator.this.readingWith(reader);
-		}
-
-	}
-
-	/**
-	 * An object given to an alternative that does not see one of its properties.
-	 */
-	private record Hidden<N> (N object) {
-	}
-
-	/**
-	 * Reads a {@link Hidden} object without the hidden property and any other node with
-	 * the given reader.
-	 */
-	private record HidingReader<N> (InputReader<N> reader, String hidden) implements InputReader<Object> {
-
-		@SuppressWarnings("unchecked")
-		private N node(Object node) {
-			return (N) (node instanceof Hidden<?>object ? object.object() : node);
-		}
-
-		@Override
-		public boolean isNull(Object node) {
-			return this.reader.isNull(this.node(node));
-		}
-
-		@Override
-		public Object value(Object node) {
-			return this.reader.value(this.node(node));
-		}
-
-		@Override
-		public Object value(Object node, Class<?> type) {
-			return this.reader.value(this.node(node), type);
-		}
-
-		@Override
-		public boolean isObject(Object node) {
-			return this.reader.isObject(this.node(node));
-		}
-
-		@Override
-		public @Nullable Object property(Object object, String name) {
-			return this.hides(object, name) ? null : this.reader.property(this.node(object), name);
-		}
-
-		@Override
-		public boolean hasProperty(Object object, String name) {
-			return !this.hides(object, name) && this.reader.hasProperty(this.node(object), name);
-		}
-
-		@Override
-		public Iterable<? extends Map.Entry<String, ? extends @Nullable Object>> properties(Object object) {
-			final Iterable<? extends Map.Entry<String, ? extends @Nullable N>> properties = this.reader
-				.properties(this.node(object));
-			return object instanceof Hidden ? StreamSupport.stream(properties.spliterator(), false)
-				.filter(property -> !this.hidden.equals(property.getKey()))
-				.toList() : properties;
-		}
-
-		@Override
-		public boolean isArray(Object node) {
-			return this.reader.isArray(this.node(node));
-		}
-
-		@Override
-		public Iterable<? extends @Nullable Object> elements(Object array) {
-			return this.reader.elements(this.node(array));
-		}
-
-		private boolean hides(Object object, String name) {
-			return object instanceof Hidden && this.hidden.equals(name);
 		}
 
 	}
