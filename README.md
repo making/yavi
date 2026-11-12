@@ -504,7 +504,7 @@ Map<String, Object> map = Map.of(
 Validated<User> validated = userValidator.validate(map);
 ```
 
-* A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number.
+* A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [a map of strings](#validating-a-map-of-strings-such-as-request-parameters).
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
@@ -590,6 +590,33 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 ```
 
 A validator that does not know its input type (a lambda) is read only from JDK types; `readingWith(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
+
+##### Validating a map of strings such as request parameters
+
+Request parameters, a submitted form, a row of a CSV file, environment variables and properties hold nothing but strings. `InputReader.ofJdkTypes().coercingStrings()` reads such a map with the same arguments: a string is taken as text that stands for a value of the type of its argument.
+
+```java
+ValueValidator<Object, SearchForm> searchFormValidator = Yavi.arguments()
+        ._string("q", c -> c.notBlank())
+        ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+        ._boolean("includeArchived").defaultValue(false)
+        ._localDate("since")
+        .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
+
+@GetMapping("/search")
+Object search(@RequestParam Map<String, String> params) { // ?q=yavi&page=2&since=
+    Validated<SearchForm> validated = searchFormValidator.validate(params); // SearchForm[q=yavi, page=2, includeArchived=false, since=null]
+    // ...
+}
+```
+
+* An empty string is validated like `null` whatever the type of its argument is, because text has no other way to say that a value is not given. `optional()`, `nullable()` and `defaultValue(...)` apply to it; give `defaultValue("")` to a string argument that must receive `""`.
+* A string is a number if it is a decimal number: an optional sign, digits, an optional fraction and an optional exponent (the grammar of `new BigDecimal(String)`), without surrounding whitespace or grouping separators. It is then checked like any other number: `"30"` and `"30.0"` are an `Integer`, `"30.5"`, `" 30"` and `"1,000"` are not.
+* A string is a boolean if it is `"true"` or `"false"`.
+* A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. A string is not trimmed and nothing is converted to a string.
+* It is opt-in and applies to everything that is read: nested objects, the elements of a list and the values of a map. The rules of absent and unknown keys do not change.
+
+`coercingStrings()` is available on every reader, so `JsonNodeReader.INSTANCE.coercingStrings()` reads a JSON document whose numbers are sent as strings, and `mapValidator.readingWith(reader)` reads a map of strings with a validator built with `fromMap`. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 

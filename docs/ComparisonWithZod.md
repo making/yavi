@@ -109,13 +109,40 @@ document has for the type of the argument:
 * the name of a constant for an enum,
 * an ISO-8601 string for `LocalDate`, `Instant` and the other temporal types.
 
-A mismatch is reported with `object.type` (`"age" must be of type integer`). There is no
-`z.coerce`. A coercion is a validator that takes an `Object`:
+A mismatch is reported with `object.type` (`"age" must be of type integer`).
+
+`z.coerce` is chosen per schema and converts with the JavaScript constructors
+(`Number(input)`, `Boolean(input)`). In YAVI the coercion of strings is a property of the
+input, not of an argument: an input that holds nothing but strings, such as request
+parameters, is read with `InputReader#coercingStrings()` and the arguments are written as
+for a JSON document.
+
+```java
+ValueValidator<Object, SearchForm> validator = Yavi.arguments()
+        ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+        ._boolean("includeArchived").defaultValue(false)
+        .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
+
+validator.validate(Map.of("page", "2", "includeArchived", "true"));
+```
+
+The conversion is stricter than `z.coerce`:
+
+| Input | `z.coerce` | `coercingStrings()` |
+| --- | --- | --- |
+| `""` for a number | `0` | `null`, so `optional()` and `defaultValue` apply |
+| `" 30 "`, `"0x1e"` for a number | `30` | `object.type` |
+| `"false"` for a boolean | `true` | `false` |
+| `"on"`, `"1"` for a boolean | `true` | `object.type` (`z.stringbool()` takes them) |
+| `30` for a string | `"30"` | `object.type` |
+
+An empty string is `null` for a string argument too. Any other coercion is a validator
+that takes an `Object`, or a reader that overrides `InputReader#value(node, type)`:
 
 ```java
 ValueValidator<Object, Integer> coerced = (value, locale, context) -> ValueValidator.<Integer>passThrough()
         .untyped(Integer.class)
-        .validate(value instanceof String s ? Integer.valueOf(s) : value, locale, context);
+        .validate(value instanceof Boolean b ? Integer.valueOf(b ? 1 : 0) : value, locale, context);
 
 Yavi.arguments()._object("age", coerced.untyped(Object.class))...
 ```

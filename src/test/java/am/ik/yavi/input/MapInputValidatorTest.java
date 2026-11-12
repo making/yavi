@@ -77,6 +77,15 @@ class MapInputValidatorTest {
 					@Nullable Map<String, Object> input) {
 				return validator.readingWith(JsonNodeReader.INSTANCE).validate(jsonMapper.valueToTree(input));
 			}
+		},
+		// a tree whose scalars are all strings, such as request parameters; a string is
+		// coerced only where another type is expected
+		STRINGS {
+			@Override
+			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+					@Nullable Map<String, Object> input) {
+				return validator.readingWith(InputReader.ofJdkTypes().coercingStrings()).validate(strings(input));
+			}
 		};
 
 		abstract <X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
@@ -140,6 +149,21 @@ class MapInputValidatorTest {
 		return map;
 	}
 
+	/**
+	 * Returns the same tree with every scalar as a string.
+	 */
+	static @Nullable Object strings(@Nullable Object node) {
+		if (node instanceof Map<?, ?>object) {
+			final Map<Object, @Nullable Object> strings = new LinkedHashMap<>();
+			object.forEach((name, value) -> strings.put(name, strings(value)));
+			return strings;
+		}
+		if (node instanceof List<?>array) {
+			return array.stream().map(MapInputValidatorTest::strings).toList();
+		}
+		return node == null ? null : node.toString();
+	}
+
 	@SuppressWarnings({ "unchecked", "NullAway" })
 	static Map<String, Object> input(@Nullable Object... keysAndValues) {
 		return (Map<String, Object>) (Map<String, ?>) map(keysAndValues);
@@ -166,6 +190,24 @@ class MapInputValidatorTest {
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void violationsOfTheMapAreAccumulated(Model model) {
+		if (model == Model.STRINGS) {
+			// an empty string is a null node wherever it is, and a string that does not
+			// stand for the type is reported like any other mismatch
+			final Validated<User> coerced = model.validate(userValidator,
+					input("email", "", "age", "", "role", "", "birthday", "", "address", map("street", "1-2-3"), "tags",
+							List.of("a", ""), "scores", map("math", "-1", "art", "1.5", "music", " 1"), "nickname", "",
+							"rate", "high", "name", ""));
+			assertThat(coerced.errors())
+				.extracting(ConstraintViolation::name, ConstraintViolation::messageKey,
+						violation -> violation.violatedValue())
+				.containsExactly(tuple("email", "charSequence.notBlank", null), tuple("age", "object.notNull", null),
+						tuple("role", "object.notNull", null), tuple("address.city", "object.required", null),
+						tuple("tags[1]", "charSequence.notBlank", null),
+						tuple("scores.math", "numeric.greaterThanOrEqual", -1),
+						tuple("scores.art", "object.type", "1.5"), tuple("scores.music", "object.type", " 1"),
+						tuple("rate", "object.type", "high"), tuple("name", "object.unknownProperty", null));
+			return;
+		}
 		final Validated<User> validated = model.validate(userValidator,
 				input("email", null, "age", "30", "role", "GUEST", "birthday", "2001-02-29", "address",
 						map("street", "", "zip", "100"), "tags", Arrays.asList("a", 1, " "), "scores",
@@ -247,30 +289,66 @@ class MapInputValidatorTest {
 	}
 
 	static Stream<Arguments> untypedInputs() {
-		return Stream.of(Arguments.of(Integer.class, 1L, 1), Arguments.of(Integer.class, 1.0, 1),
-				Arguments.of(Integer.class, 1.5, null), Arguments.of(Integer.class, 1L << 40, null),
-				Arguments.of(Integer.class, "1", null), Arguments.of(Long.class, new BigInteger("5"), 5L),
-				Arguments.of(BigInteger.class, 5, new BigInteger("5")), Arguments.of(Double.class, 1, 1.0),
-				Arguments.of(Double.class, new BigDecimal("0.1"), 0.1),
-				Arguments.of(Double.class, new BigDecimal("1e400"), null),
-				Arguments.of(Double.class, Double.NaN, Double.NaN), Arguments.of(Float.class, 0.1, 0.1f),
-				Arguments.of(BigDecimal.class, 0.1, new BigDecimal("0.1")), Arguments.of(String.class, 1, null),
-				Arguments.of(Boolean.class, "true", null), Arguments.of(Role.class, Role.USER, Role.USER),
-				Arguments.of(Role.class, "user", null), Arguments.of(Year.class, 2026, Year.of(2026)),
-				Arguments.of(Year.class, "2026", Year.of(2026)), Arguments.of(Map.class, Map.of(1, 2), null),
-				Arguments.of(Object.class, List.of(1), List.of(1)));
+		return Stream.of(exact(Integer.class, 1L, 1), exact(Integer.class, 1.0, 1), exact(Integer.class, 1.5, null),
+				exact(Integer.class, 1L << 40, null), exact(Long.class, new BigInteger("5"), 5L),
+				exact(BigInteger.class, 5, new BigInteger("5")),
+				// the digits of a huge exponent are not written out
+				exact(BigInteger.class, new BigDecimal("1e1000000000"), null), exact(Double.class, 1, 1.0),
+				exact(Double.class, new BigDecimal("0.1"), 0.1), exact(Double.class, new BigDecimal("1e400"), null),
+				exact(Double.class, Double.NaN, Double.NaN), exact(Float.class, 0.1, 0.1f),
+				exact(BigDecimal.class, 0.1, new BigDecimal("0.1")), exact(String.class, 1, null),
+				exact(Role.class, Role.USER, Role.USER), exact(Role.class, "user", null),
+				exact(Year.class, 2026, Year.of(2026)), exact(Year.class, "2026", Year.of(2026)),
+				exact(Map.class, Map.of(1, 2), null), exact(Object.class, List.of(1), List.of(1)),
+				// a string is a number or a boolean only when strings are coerced
+				coerced(Integer.class, "1", 1), coerced(Integer.class, "+1.0e1", 10),
+				coerced(Integer.class, "1.5", null), coerced(Integer.class, " 1", null),
+				coerced(Integer.class, "0x1", null), coerced(Integer.class, "2147483648", null),
+				coerced(Long.class, "2147483648", 2147483648L), coerced(Short.class, "-1", (short) -1),
+				coerced(Byte.class, "128", null), coerced(BigInteger.class, "1e3", new BigInteger("1000")),
+				coerced(BigInteger.class, "1e1000000000", null), coerced(BigDecimal.class, "1,000", null),
+				coerced(BigDecimal.class, "0.10", new BigDecimal("0.10")), coerced(Double.class, "0.1", 0.1),
+				coerced(Double.class, "NaN", null), coerced(Double.class, "1e400", null),
+				coerced(Float.class, "0.1", 0.1f), coerced(Boolean.class, "true", true),
+				coerced(Boolean.class, "false", false), coerced(Boolean.class, "TRUE", null),
+				coerced(Boolean.class, "on", null),
+				// a string stays a string
+				Arguments.of(String.class, "1", "1", "1"), Arguments.of(Object.class, "1", "1", "1"));
+	}
+
+	/**
+	 * An input that is read in the same way whether strings are coerced or not.
+	 */
+	static Arguments exact(Class<?> type, Object input, @Nullable Object expected) {
+		return Arguments.of(type, input, expected, expected);
+	}
+
+	/**
+	 * A string that represents the type only when strings are coerced.
+	 */
+	static Arguments coerced(Class<?> type, String input, @Nullable Object expected) {
+		return Arguments.of(type, input, null, expected);
 	}
 
 	@ParameterizedTest
 	@MethodSource("untypedInputs")
-	<T> void untypedInputMustRepresentTheType(Class<T> type, Object input, @Nullable Object expected) {
-		final Validated<T> validated = ValueValidator.<T>passThrough().untyped(type).validate(input);
-		if (expected == null) {
-			assertThat(validated.isValid()).isFalse();
-		}
-		else {
-			assertThat(validated.value()).isEqualTo(expected);
-		}
+	<T> void untypedInputMustRepresentTheType(Class<T> type, Object input, @Nullable Object expected,
+			@Nullable Object coerced) {
+		final ValueValidator<Object, T> validator = ValueValidator.<T>passThrough().untyped(type);
+		final Map<ValueValidator<Object, T>, @Nullable Object> expectations = new LinkedHashMap<>();
+		expectations.put(validator, expected);
+		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
+		expectations.forEach((untyped, value) -> {
+			final Validated<T> validated = untyped.validate(input);
+			if (value == null) {
+				assertThat(validated.errors())
+					.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+					.containsExactly(tuple(type.isEnum() ? "object.oneOf" : "object.type", input));
+			}
+			else {
+				assertThat(validated.value()).isEqualTo(value);
+			}
+		});
 	}
 
 	@Test
@@ -326,6 +404,17 @@ class MapInputValidatorTest {
 		final MapInputValidator<Object> lambda = MapInputValidator
 			.of(List.of(new MapInputValidator.Property<>("count", coerced)), values -> values.get(0));
 		assertThat(lambda.untyped().validated(map("count", "10"))).isEqualTo(10);
+		// the node is read as it is under another reader, coerced or not: its strings are
+		// coerced, and its null node and an empty string are both null
+		final ValueValidator<JsonNode, Square> square = Yavi.arguments()
+			._string("type")
+			._integer("side", c -> c.notNull())
+			.from(JsonNodeReader.INSTANCE.coercingStrings(), Square::new);
+		assertThat(square.validated(jsonMapper.readTree("""
+				{"type":"","side":"3"}"""))).isEqualTo(new Square(null, 3));
+		assertThat(square.validate(jsonMapper.readTree("""
+				{"type":null,"side":""}""")).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.notNull");
 		assertThatThrownBy(() -> lambda.readingWith(JsonNodeReader.INSTANCE))
 			.isInstanceOf(UnsupportedOperationException.class);
 	}

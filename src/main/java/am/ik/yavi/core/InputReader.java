@@ -34,6 +34,10 @@ import org.jspecify.annotations.Nullable;
  * The methods of an object or an array are called only with a node that is one. A
  * {@code null} reference is never given to a reader.
  *
+ * <p>
+ * An input whose scalars are all text, such as request parameters, is read with
+ * {@link #coercingStrings()}.
+ *
  * @param <N> the type of the nodes
  * @since 0.18.0
  * @see #ofJdkTypes()
@@ -58,6 +62,26 @@ public interface InputReader<N> {
 	 * @see ValueValidator#untyped(Class)
 	 */
 	Object value(N node);
+
+	/**
+	 * Returns the value of a scalar node that is about to be checked as the given type.
+	 * The returned value is then checked as {@link ValueValidator#untyped(Class)} states,
+	 * so a value that does not represent the type is still reported as a mismatch, with
+	 * {@link #value(Object) value(node)} as the violated value.
+	 *
+	 * <p>
+	 * The default implementation returns {@link #value(Object) value(node)} whatever the
+	 * type is. Override this method if the representation of a node depends on what it is
+	 * read as, for example to read {@code "on"} as a {@code Boolean}; return the value as
+	 * it is for a node that the reader does not convert.
+	 * @param node the node, which is not a null node
+	 * @param type the type the value is checked as
+	 * @return the value of the node
+	 * @see #coercingStrings()
+	 */
+	default Object value(N node, Class<?> type) {
+		return this.value(node);
+	}
 
 	/**
 	 * Tells whether the node is an object, that is a set of named properties.
@@ -106,6 +130,52 @@ public interface InputReader<N> {
 	 * @return the elements, which may be null nodes
 	 */
 	Iterable<? extends @Nullable N> elements(N array);
+
+	/**
+	 * Returns a reader that reads the same tree as this reader and takes its strings as
+	 * text that stands for a value of the checked type. It reads an input that has no
+	 * other scalar than strings: request parameters, a submitted form, a row of a CSV
+	 * file, environment variables or properties.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Object, SearchForm> validator = Yavi.arguments()
+	 *     ._string("q", c -> c.notBlank())
+	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+	 *     ._boolean("includeArchived").defaultValue(false)
+	 *     .from(InputReader.ofJdkTypes().coercingStrings(), SearchForm::new);
+	 * Validated<SearchForm> validated = validator.validate(Map.of("q", "yavi", "page", "2"));
+	 * }</pre>
+	 *
+	 * The following is added to the rules of {@link ValueValidator#untyped(Class)}:
+	 * <ul>
+	 * <li>An empty string is a null node whatever it is checked as, because text has no
+	 * other way to say that a value is not given. It is validated like {@code null}, so
+	 * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to it; a
+	 * string argument that must receive {@code ""} is given
+	 * {@code defaultValue("")}.</li>
+	 * <li>A string checked as a numeric type is read as a decimal number, in the grammar
+	 * of {@link java.math.BigDecimal#BigDecimal(String)}: an optional sign, digits, an
+	 * optional fraction and an optional exponent, without surrounding whitespace or
+	 * grouping separators. The number is then checked like any other number, so
+	 * {@code "30"} and {@code "30.0"} are an {@code Integer}, and {@code "30.5"} and
+	 * {@code "NaN"} are not.</li>
+	 * <li>A string checked as a {@code Boolean} is {@code "true"} or
+	 * {@code "false"}.</li>
+	 * </ul>
+	 * Any other string is left as it is, so a string that does not stand for the type is
+	 * reported with {@code object.type} like any other mismatch. A string is not trimmed,
+	 * a value that is not a string is read as this reader reads it, and nothing is
+	 * converted to a string: {@code 30} is not a {@code String}. Enum constants and
+	 * temporal types are read from a string by every reader.
+	 *
+	 * <p>
+	 * To take other strings, such as {@code "on"} for a {@code Boolean}, override
+	 * {@link #value(Object, Class)} in a reader of your own.
+	 * @return a reader that coerces strings
+	 */
+	default InputReader<N> coercingStrings() {
+		return new StringCoercingInputReader<>(this);
+	}
 
 	/**
 	 * Returns the reader of a tree of JDK types, which is what

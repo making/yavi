@@ -277,6 +277,11 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		}
 
 		@Override
+		public Object value(Object node, Class<?> type) {
+			return this.reader.value(this.node(node), type);
+		}
+
+		@Override
 		public boolean isObject(Object node) {
 			return this.reader.isObject(this.node(node));
 		}

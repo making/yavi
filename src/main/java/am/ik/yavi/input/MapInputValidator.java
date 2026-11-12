@@ -51,7 +51,8 @@ import org.jspecify.annotations.Nullable;
  * violations for {@code null}. An explicit {@code null} is reported by the constraints of
  * the property, for example {@code object.notNull}.</li>
  * <li>A value that does not represent the type of the property is reported with
- * {@code object.type}. Nothing is coerced.</li>
+ * {@code object.type}. Nothing is coerced unless the map is read with
+ * {@link InputReader#coercingStrings()}.</li>
  * <li>A key that no property is defined for is ignored. With
  * {@link #rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}.</li>
@@ -73,6 +74,18 @@ import org.jspecify.annotations.Nullable;
  *
  * The reader is applied to the nested validators too, so they are built with
  * {@code fromMap} whatever input is read in the end.
+ *
+ * <p>
+ * A map of strings, such as request parameters or a submitted form, is read with the
+ * reader that {@linkplain InputReader#coercingStrings() coerces strings}: {@code "30"} is
+ * then an {@code Integer}, {@code "true"} a {@code Boolean} and an empty string
+ * {@code null}. The returned validator takes any map, including a
+ * {@code Map<String, String>}:
+ *
+ * <pre>{@code
+ * ValueValidator<Object, User> formValidator = validator.readingWith(InputReader.ofJdkTypes().coercingStrings());
+ * Validated<User> validated = formValidator.validate(requestParameters);
+ * }</pre>
  *
  * @param <X> the type of the created object
  * @since 0.18.0
