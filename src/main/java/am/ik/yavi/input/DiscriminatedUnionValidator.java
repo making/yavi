@@ -110,17 +110,16 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	}
 
 	/**
-	 * Returns a validator that selects and applies the same alternatives for a map whose
-	 * values are strings, such as request parameters, as
-	 * {@link MapInputValidator#coercingStrings()} states.
-	 * @param <M> the type of the map
-	 * @return a validator of a map that coerces strings
-	 * @see InputReader#coercingStrings()
+	 * Returns a validator that selects and applies the same alternatives for a flat map
+	 * of parameters, such as request parameters, as
+	 * {@link MapInputValidator#readingParameters()} states.
+	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
+	 * strings
+	 * @return a validator of a map of parameters
+	 * @see ParameterTree
 	 */
-	@SuppressWarnings("unchecked")
-	public <M extends Map<String, ?>> ValueValidator<M, X> coercingStrings() {
-		return (ValueValidator<M, X>) (ValueValidator<?, X>) this
-			.readingWith(InputReader.ofJdkTypes().coercingStrings());
+	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters() {
+		return ParameterTree.reading(this);
 	}
 
 	@Override

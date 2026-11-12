@@ -504,7 +504,7 @@ Map<String, Object> map = Map.of(
 Validated<User> validated = userValidator.validate(map);
 ```
 
-* A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [a map of strings](#validating-a-map-of-strings-such-as-request-parameters).
+* A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [request parameters](#validating-request-parameters).
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
@@ -591,33 +591,49 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 
 A validator that does not know its input type (a lambda) is read only from JDK types; `readingWith(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
 
-##### Validating a map of strings such as request parameters
+##### Validating request parameters
 
-Request parameters, a submitted form, a row of a CSV file, environment variables and properties hold nothing but strings. `coercingStrings()` of a validator built with `fromMap` reads such a map with the same arguments: a string is taken as text that stands for a value of the type of its argument.
+Request parameters and a submitted form are a flat map of strings, possibly several for one key. `readingParameters()` of a validator built with `fromMap` reads such a map with the same arguments: a string is taken as text that stands for a value of the type of its argument, and a key is the path of a nested value.
 
 ```java
-ValueValidator<Map<String, String>, SearchForm> searchFormValidator = Yavi.arguments()
+ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.arguments()
         ._string("q", c -> c.notBlank())
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
         ._localDate("since")
+        ._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build()).defaultValue(List.of())
+        ._object("address", addressValidator).nullable()
         .fromMap(SearchForm::new)
-        .coercingStrings();
+        .readingParameters();
 
 @GetMapping("/search")
-Object search(@RequestParam Map<String, String> params) { // ?q=yavi&page=2&since=
-    Validated<SearchForm> validated = searchFormValidator.validate(params); // SearchForm[q=yavi, page=2, includeArchived=false, since=null]
+Object search(@RequestParam MultiValueMap<String, String> params) { // ?q=yavi&page=2&since=&tags=a&tags=b&address.city=Tokyo
+    Validated<SearchForm> validated = searchFormValidator.validate(params); // SearchForm[q=yavi, page=2, includeArchived=false, since=null, tags=[a, b], address=Address[city=Tokyo]]
     // ...
 }
 ```
+
+The type of the map is the one the validator is assigned to: a `Map<String, String>`, a `Map<String, List<String>>` such as Spring's `MultiValueMap`, or the `Map<String, String[]>` of the Servlet API.
+
+The values are text:
 
 * An empty string is validated like `null` whatever the type of its argument is, because text has no other way to say that a value is not given. `optional()`, `nullable()` and `defaultValue(...)` apply to it; give `defaultValue("")` to a string argument that must receive `""`.
 * A string is a number if it is a decimal number: an optional sign, digits, an optional fraction and an optional exponent (the grammar of `new BigDecimal(String)`), without surrounding whitespace or grouping separators. It is then checked like any other number: `"30"` and `"30.0"` are an `Integer`, `"30.5"`, `" 30"` and `"1,000"` are not.
 * A string is a boolean if it is `"true"` or `"false"`.
 * A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. A string is not trimmed and nothing is converted to a string.
-* It is opt-in and applies to everything that is read: nested objects, the elements of a list and the values of a map. The rules of absent and unknown keys do not change.
 
-The type of the map is the one the validator is assigned to, `Map<String, String>` or `Map<String, Object>`. `mapValidator.coercingStrings()` is `mapValidator.readingWith(InputReader.ofJdkTypes().coercingStrings())`: the coercion is a decorator available on every reader, so any validator reads strings with it (`pageValidator.readingWith(...)` takes `"2"`), and `JsonNodeReader.INSTANCE.coercingStrings()` reads a JSON document whose numbers are sent as strings. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
+The keys are paths, and a key is whatever its argument expects:
+
+* `address.city` and `address[city]` are the property `city` of the object `address`. A name that holds a dot is written in brackets (`scores[a.b]`), and `tags[]` is `tags`.
+* A key with one value is a scalar or a list of one element, and a key with several values is a list (`tags=a&tags=b`). Several values for a scalar argument are reported with `object.type`; none is picked.
+* Keys with indexes are a list in the order of the indexes: `items[0].name=pen&items[1].name=ink`. An index that is skipped is an element that is `null`, so a violation keeps the index it was sent with (`items[2].name`). An index is at most 255 (`ParameterTree.DEFAULT_MAX_INDEX`): a greater number is a name, so `tags[999999999]` is reported with `object.type` and allocates nothing.
+* A key that has both values and nested keys (`a=1&a.b=2`) is reported with `object.type`, and a key that is not written as a path (`a..b`, `a[0`) matches no argument.
+* An empty list or object cannot be sent: its key is absent, which is validated like `null`. Give `defaultValue(List.of())` to a list that may be empty, such as checkboxes.
+* The rules of absent and unknown keys do not change: with `rejectingUnknownProperties()`, `address.zip` is reported by the validator of `address`.
+
+`readingParameters()` validates the `ParameterTree` of the map, which any validator reads with `readingWith(ParameterTree.reader())`; `ParameterTree.of(map, maxIndex)` gives another limit to the indexes.
+
+A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. To take other strings, such as `"on"` for a boolean, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod.
 

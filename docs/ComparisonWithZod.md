@@ -4,6 +4,14 @@
 YAVI covers the same workflow in Java since 0.18.0. This page maps the concepts of Zod to
 YAVI and lists the differences.
 
+* [Basic](#basic)
+* [Vocabulary](#vocabulary)
+* [Schemas](#schemas)
+* [Inputs](#inputs): a map, a JSON tree, request parameters, typed values
+* [Rules that differ](#rules-that-differ): absent keys, unknown keys, types, strings, unions,
+  errors
+* [Not available](#not-available)
+
 ## Basic
 
 ```ts
@@ -76,17 +84,87 @@ compiler checks that the arguments match it.
 | `z.unknown()` / `z.any()` | `_object(name, Object.class)` |
 | `z.object({...})` (strips unknown keys) | the default of `fromMap` |
 | `z.strictObject({...})` | `.rejectingUnknownProperties()` |
+| `z.coerce.number()`, `z.coerce.boolean()` | a property of the input, see [Strings](#strings) |
 | `z.toJSONSchema(schema)` | `JsonSchema.of(validator.description())` |
 
-## Differences
+## Inputs
 
-### Unknown keys
+A Zod schema always takes `unknown`, which in practice is what `JSON.parse` returns. In
+Java the input has several forms, and the same arguments read all of them. The schema is
+written once with `fromMap(f)`, and the form of the input is chosen last:
 
-Both ignore unknown keys unless the object is strict. `rejectingUnknownProperties()`
-reports them with the message key `object.unknownProperty`, which catches a typo in an
-optional property; like `z.strictObject`, it applies to that object only. There is no
-counterpart of `z.looseObject` (passthrough): the result is created by a function, so
-there is nowhere to keep the extra keys.
+| Input | Zod | YAVI | Input type |
+| --- | --- | --- | --- |
+| A parsed JSON document as a map | `schema.safeParse(JSON.parse(input))` | `validator` | `Map<String, Object>` |
+| A value of unknown type | `schema.safeParse(input)` | `validator.untyped()` | `Object` |
+| The tree model of a JSON library | | `validator.readingWith(reader)` | the node type, such as `JsonNode` |
+| Request parameters, a submitted form | `z.coerce`, `zod-form-data` | `validator.readingParameters()` | `Map<String, String>`, `Map<String, List<String>>`, `Map<String, String[]>` |
+| Typed arguments | | `Yavi.arguments()...apply(f)` | the types of the arguments |
+
+### A map or a value of unknown type
+
+`fromMap(f)` builds a validator of a `Map<String, Object>`. `untyped()` turns it, and any
+other validator that knows its input type, into a `ValueValidator<Object, X>`, which is
+what a Zod schema is:
+
+```java
+ValueValidator<Object, User> any = userValidator.untyped(); // rejects anything but a map
+ValueValidator<Object, Object> id = ValueValidator.anyOf(stringValidator.untyped(), integerValidator.untyped());
+```
+
+The input type must be known when the validator is built. `fromMap` and `untyped()` throw
+for a lambda or an `_enum` / `_object` argument added without a type; give it with
+`untyped(type)`, `_enum(name, type)` or `_object(name, type)`.
+
+### The tree model of a JSON library
+
+`readingWith(reader)` binds a validator to an `InputReader`, which tells how to read the
+nodes of a tree model. The tree is validated without being copied to a map.
+`from(reader, f)` builds such a validator from the arguments:
+
+```java
+ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
+ValueValidator<JsonNode, User> same = Yavi.arguments()._string("email")...from(JsonNodeReader.INSTANCE, User::new);
+```
+
+The README shows the reader for Jackson.
+
+### Request parameters
+
+Request parameters and a submitted form are a flat map of strings. `readingParameters()`
+reads it with the arguments written as for a JSON document:
+
+```java
+ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.arguments()
+        ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+        ._boolean("includeArchived").defaultValue(false)
+        ._list("tags", tagValidator).defaultValue(List.of())
+        ._object("address", addressValidator).nullable()
+        .fromMap(SearchForm::new)
+        .readingParameters();
+
+// page=2&includeArchived=true&tags=a&tags=b&address.city=Tokyo
+validator.validate(parameters);
+```
+
+It does what Zod needs two things for:
+
+* The values are strings that stand for the type of their argument, which is `z.coerce` in
+  Zod. The rules are in [Strings](#strings).
+* The keys are paths (`address.city`, `items[0].name`) and a key with several values is a
+  list, which is what `zod-form-data` adds to Zod for a `FormData`. The README states the
+  syntax of the keys.
+
+An empty list cannot be sent, so a list that may be empty has `defaultValue(List.of())`.
+
+### Typed arguments
+
+In Java the input is usually already bound to a type, so a YAVI validator is typed first
+(`ValueValidator<String, Email>`). `apply(f)` builds a validator of typed arguments from
+the arguments that `fromMap(f)` builds a validator of a map from. Zod has no counterpart:
+its schemas check the type and the constraints together.
+
+## Rules that differ
 
 ### Absent and `null`
 
@@ -99,7 +177,15 @@ violation of the constraint, such as `object.notNull`.
 A value is not required unless a constraint says so. `z.string()` rejects `undefined`,
 whereas `_string("name")` without `notNull()` or `notBlank()` accepts an absent key.
 
-### Types and coercion
+### Unknown keys
+
+Both ignore unknown keys unless the object is strict. `rejectingUnknownProperties()`
+reports them with the message key `object.unknownProperty`, which catches a typo in an
+optional property; like `z.strictObject`, it applies to that object only. There is no
+counterpart of `z.looseObject` (passthrough): the result is created by a function, so
+there is nowhere to keep the extra keys.
+
+### Types
 
 Both are exact by default: `"30"` is not a number. YAVI accepts the representation a JSON
 document has for the type of the argument:
@@ -111,26 +197,20 @@ document has for the type of the argument:
 
 A mismatch is reported with `object.type` (`"age" must be of type integer`).
 
+### Strings
+
 `z.coerce` is chosen per schema and converts with the JavaScript constructors
 (`Number(input)`, `Boolean(input)`). In YAVI the coercion of strings is a property of the
-input, not of an argument: an input that holds nothing but strings, such as request
-parameters, is read with `coercingStrings()` and the arguments are written as for a JSON
-document. It is `readingWith(InputReader.ofJdkTypes().coercingStrings())`, a decorator
-that every `InputReader` has.
+input, not of an argument, so the arguments do not change:
 
-```java
-ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
-        ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
-        ._boolean("includeArchived").defaultValue(false)
-        .fromMap(SearchForm::new)
-        .coercingStrings();
+* `readingParameters()` coerces the strings of request parameters.
+* `InputReader#coercingStrings()` decorates any reader, for a tree whose scalars are all
+  strings: `validator.readingWith(JsonNodeReader.INSTANCE.coercingStrings())` reads a JSON
+  document whose numbers are sent as strings.
 
-validator.validate(Map.of("page", "2", "includeArchived", "true"));
-```
+Both follow the same rules, which are stricter than `z.coerce`:
 
-The conversion is stricter than `z.coerce`:
-
-| Input | `z.coerce` | `coercingStrings()` |
+| Input | `z.coerce` | YAVI |
 | --- | --- | --- |
 | `""` for a number | `0` | `null`, so `optional()` and `defaultValue` apply |
 | `" 30 "`, `"0x1e"` for a number | `30` | `object.type` |
@@ -149,35 +229,6 @@ ValueValidator<Object, Integer> coerced = (value, locale, context) -> ValueValid
 Yavi.arguments()._object("age", coerced.untyped(Object.class))...
 ```
 
-### Typed input is the primary case
-
-A Zod schema always takes `unknown`. A YAVI validator is typed first
-(`ValueValidator<String, Email>`), because in Java the input is usually already bound to a
-type. `apply(f)` builds a validator of typed arguments and `fromMap(f)` builds one of a
-map from the same arguments. `untyped()` turns a validator that knows its input type into
-a `ValueValidator<Object, X>`, which is what a Zod schema is:
-
-```java
-ValueValidator<Object, User> any = userValidator.untyped(); // rejects anything but a map
-ValueValidator<Object, Object> id = ValueValidator.anyOf(stringValidator.untyped(), integerValidator.untyped());
-```
-
-The input type must be known when the validator is built. `fromMap` and `untyped()` throw
-for a lambda or an `_enum` / `_object` argument added without a type; give it with
-`untyped(type)`, `_enum(name, type)` or `_object(name, type)`.
-
-Zod reads JavaScript values, which is what `JSON.parse` returns. In Java a parsed JSON
-document is a map or the tree model of a library. `readingWith(reader)` binds a validator to
-an `InputReader` of such a model, so the tree is validated without being copied to a map,
-and `from(reader, f)` builds such a validator from the arguments:
-
-```java
-ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
-ValueValidator<JsonNode, User> same = Yavi.arguments()._string("email")...from(JsonNodeReader.INSTANCE, User::new);
-```
-
-The README shows the reader for Jackson.
-
 ### Unions
 
 `z.union` and `ValueValidator.anyOf` try the alternatives in order and report the failures
@@ -193,7 +244,7 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 `PathSegment.Property` and `PathSegment.Index`, and `name()` is its flat form
 (`address.street`, `tags[0]`).
 
-### Not available
+## Not available
 
 * Object schema operations: `extend`, `merge`, `pick`, `omit`, `partial`.
 * `z.intersection`, `z.tuple`, `z.lazy` (recursive schemas) and `z.literal` as a schema
