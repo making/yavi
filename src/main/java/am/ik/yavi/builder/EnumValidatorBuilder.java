@@ -39,9 +39,15 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	private final Class<E> type;
 
 	/**
-	 * Creates a builder like {@link #of(String, Function)} that also knows the enum type
-	 * of the value. The built validator reports it in its description and can validate an
-	 * untyped input with {@code untyped()}.
+	 * Returns a builder that validates the value of the given enum type under the given
+	 * name with the given constraints. The built validator reports the enum type in its
+	 * description and can validate an untyped input with {@code untyped()}.
+	 *
+	 * <p>
+	 * The name is used as the violation name of every resulting violation. A {@code null}
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 * @param name the property name used in violation names and messages
 	 * @param type the enum type of the value
 	 * @param constraints function that configures the constraints

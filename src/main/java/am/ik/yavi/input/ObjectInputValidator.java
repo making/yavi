@@ -64,7 +64,7 @@ import org.jspecify.annotations.Nullable;
  * {@code object.type}. Nothing is coerced unless the map is read with
  * {@link am.ik.yavi.core.CoercibleInputReader#coercingStrings()}.</li>
  * <li>A key that no property is defined for is ignored. With
- * {@link #rejectingUnknownProperties()} it is reported with
+ * {@link IgnoringUnknown#rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}, and with {@code _rest} of the builders it is validated
  * and given to the created object, as {@link Rest} states.</li>
  * </ul>
