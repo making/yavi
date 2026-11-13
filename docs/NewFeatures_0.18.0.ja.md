@@ -416,6 +416,59 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
+
+### Spring MVC でフォームを再表示する
+
+Spring MVC が `BindingResult` を用意するのは、自身がバインドしたフォームオブジェクトに対してだけです。パラメータのマップには用意されません。そこで、コントローラの `@ModelAttribute` メソッドで、パラメータの `MapBindingResult` をモデルに入れます。こうすると、ハンドラは `BindingResult` を引数で受け取れます。Thymeleaf の `th:object`、`th:field`、`#fields` も、フォームオブジェクトの場合と同じように使えます。追加のライブラリは要りません。
+
+```java
+@Controller
+class SignupController {
+
+    @ModelAttribute
+    void signupForm(@RequestParam Map<String, String> params, Model model) {
+        model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
+    }
+
+    @GetMapping("/signup")
+    String form() {
+        return "signup";
+    }
+
+    @PostMapping("/signup")
+    String signup(@RequestParam Map<String, String> params, BindingResult result) {
+        return switch (signupValidator.validate(params)) {
+            case Validated.Valid<Signup>(Signup signup) -> {
+                register(signup);
+                yield "redirect:/";
+            }
+            case Validated.Invalid<Signup>(ConstraintViolations violations) -> {
+                violations.apply(result::rejectValue);
+                yield "signup";
+            }
+        };
+    }
+
+}
+```
+
+```html
+<form method="post" th:action="@{/signup}" th:object="${signupForm}">
+    <input type="text" th:field="*{age}">
+    <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></span>
+    <input type="checkbox" th:field="*{subscribed}" value="on">
+    <button type="submit">Sign up</button>
+</form>
+```
+
+* `@ModelAttribute` メソッドはコントローラのすべてのハンドラの前に実行されるので、GET のハンドラでも空のフォームを表示できます。このメソッドがないと、リクエストは `An Errors/BindingResult argument is expected to be declared immediately after the model attribute` で失敗します。
+* Spring が引数に渡すのは、モデルの最後の属性になっている `BindingResult` です。`BindingResult` の前には、モデルに属性を追加する引数を置かないでください。
+* フィールドには、送信されたテキストがそのまま再表示されます。プロパティの型を表さないテキスト（`age` に対する `abc`）も再表示されます。
+* フィールドエラーのコードはメッセージキー（`object.type`）なので、これまでどおり `MessageSource` でメッセージを差し替えられます。
+* Thymeleaf はチェックボックスに隠しフィールド `_subscribed` を追加します。このキーに対応するプロパティは定義されていないので、このようなフォームは `rejectingUnknownProperties()` を付けたバリデータでは読めません。
+* フィールドの名前は、`th:field` が出力する形（`address.city`、`items[0].name`）にします。この形が違反の名前であり、`MapBindingResult` が値を引くキーでもあるからです。`address[city]` の形で送信された値は、検証はされますが再表示されません。
+* `Map<String, String>` は、キーの最初の値しか持ちません。チェックボックスのように複数の値を持つキー（`tags=a&tags=b`）がある場合は、そのキーの値をリストで持つマップを `MapBindingResult` に渡します。そうしないと、最初のチェックボックスしか再びチェックされません。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
+
 ## 結果を扱う
 
 `Validated` は、record の `Valid` と `Invalid` からなる sealed インターフェースになりました。結果は網羅的な `switch` で扱えます。

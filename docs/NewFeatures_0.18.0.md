@@ -485,6 +485,74 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
+
+### Showing the form again in Spring MVC
+
+Spring MVC creates a `BindingResult` only for a form object that it binds, not for a map
+of parameters. A `@ModelAttribute` method of the controller puts a `MapBindingResult` of
+the parameters into the model. A handler then takes the `BindingResult` as an argument,
+and `th:object`, `th:field` and `#fields` of Thymeleaf work as they do with a form object.
+No library is needed.
+
+```java
+@Controller
+class SignupController {
+
+    @ModelAttribute
+    void signupForm(@RequestParam Map<String, String> params, Model model) {
+        model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
+    }
+
+    @GetMapping("/signup")
+    String form() {
+        return "signup";
+    }
+
+    @PostMapping("/signup")
+    String signup(@RequestParam Map<String, String> params, BindingResult result) {
+        return switch (signupValidator.validate(params)) {
+            case Validated.Valid<Signup>(Signup signup) -> {
+                register(signup);
+                yield "redirect:/";
+            }
+            case Validated.Invalid<Signup>(ConstraintViolations violations) -> {
+                violations.apply(result::rejectValue);
+                yield "signup";
+            }
+        };
+    }
+
+}
+```
+
+```html
+<form method="post" th:action="@{/signup}" th:object="${signupForm}">
+    <input type="text" th:field="*{age}">
+    <span th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></span>
+    <input type="checkbox" th:field="*{subscribed}" value="on">
+    <button type="submit">Sign up</button>
+</form>
+```
+
+* The `@ModelAttribute` method runs before every handler of the controller, so the GET
+  handler renders the empty form. Without the method a request fails with
+  `An Errors/BindingResult argument is expected to be declared immediately after the model attribute`.
+* Spring passes the `BindingResult` that is the last attribute of the model. Do not put
+  an argument that adds a model attribute before it.
+* A field shows the text that was sent again, even if it is not of the type of its
+  property (`abc` for `age`).
+* The code of a field error is the message key (`object.type`), so a `MessageSource`
+  replaces the message as before.
+* Thymeleaf adds a hidden field `_subscribed` to a checkbox. No property is defined for
+  that key, so such a form cannot be read with `rejectingUnknownProperties()`.
+* Name a field as `th:field` does: `address.city`, `items[0].name`. These are the names
+  of the violations and the keys that `MapBindingResult` looks up. A value sent as
+  `address[city]` is validated, but it is not shown again.
+* A `Map<String, String>` has only the first value of a key. For a key with several
+  values, such as checkboxes (`tags=a&tags=b`), give `MapBindingResult` a map that has
+  the list of the values for that key, or only the first checkbox is checked again. The
+  violation of an element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
+
 ## Handling the result
 
 `Validated` is a sealed interface of the records `Valid` and `Invalid`, so a result is
