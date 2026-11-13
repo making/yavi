@@ -85,9 +85,9 @@ public class YearMonthValidatorBuilder implements ValueValidatorBuilder<YearMont
 	 * @return a new validator
 	 */
 	@Override
-	public <T> YearMonthValidator<T> build(Function<@Nullable YearMonth, ? extends @Nullable T> mapper) {
+	public <T> YearMonthValidator<T> build(Function<? super YearMonth, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<YearMonth>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new YearMonthValidator<>(validator, value -> mapper.apply(value));
+		return new YearMonthValidator<>(validator, mapper::apply);
 	}
 
 	/**

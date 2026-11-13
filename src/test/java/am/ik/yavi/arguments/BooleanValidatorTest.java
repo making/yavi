@@ -80,12 +80,8 @@ class BooleanValidatorTest {
 	}
 
 	static Stream<BooleanValidator<Checked>> validators() {
-		return Stream.of(
-				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue())
-					.build(value -> new Checked(Objects.requireNonNull(value))),
-				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue())
-					.build()
-					.map(value -> new Checked(Objects.requireNonNull(value))));
+		return Stream.of(BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build(Checked::new),
+				BooleanValidatorBuilder.of("checked", c -> c.notNull().isTrue()).build().map(Checked::new));
 	}
 
 	public static class Checked {

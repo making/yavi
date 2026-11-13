@@ -85,9 +85,9 @@ public class LocalTimeValidatorBuilder implements ValueValidatorBuilder<LocalTim
 	 * @return a new validator
 	 */
 	@Override
-	public <T> LocalTimeValidator<T> build(Function<@Nullable LocalTime, ? extends @Nullable T> mapper) {
+	public <T> LocalTimeValidator<T> build(Function<? super LocalTime, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<LocalTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LocalTimeValidator<>(validator, value -> mapper.apply(value));
+		return new LocalTimeValidator<>(validator, mapper::apply);
 	}
 
 	/**

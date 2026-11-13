@@ -4,7 +4,6 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Objects;
 import am.ik.yavi.arguments.User.Role;
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
 import am.ik.yavi.core.ConstraintViolationsException;
@@ -16,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class MethodInvocationTest {
 
 	static final Arguments4Validator<UserService, String, String, Role, User> validator = ArgumentsValidatorBuilder
-		.<UserService, String, String, Role, User>of((service, email, name, role) -> Objects.requireNonNull(service)
-			.createUser(Objects.requireNonNull(email), Objects.requireNonNull(name), Objects.requireNonNull(role))) //
+		.<UserService, String, String, Role, User>of(
+				(service, email, name, role) -> service.createUser(email, name, role)) //
 		.builder(b -> b //
 			._object(Arguments4::arg1, "userService", c -> c.notNull())
 			._string(Arguments4::arg2, "email", c -> c.email())

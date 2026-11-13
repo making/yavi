@@ -21,8 +21,7 @@ public class Car {
 		._string("manufacturer", c -> c.notNull()) //
 		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14)) //
 		._integer("seatCount", c -> c.greaterThanOrEqual(2)) //
-		.apply((manufacturer, licensePlate, seatCount) -> new Car(Objects.requireNonNull(manufacturer),
-				Objects.requireNonNull(licensePlate), Objects.requireNonNull(seatCount)));
+		.apply(Car::new);
 
 	public Car(@Nullable String manufacturer, @Nullable String licensePlate, int seatCount) {
 		validator.lazy().validated(manufacturer, licensePlate, seatCount);

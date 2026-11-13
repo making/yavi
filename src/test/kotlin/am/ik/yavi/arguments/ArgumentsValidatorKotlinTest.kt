@@ -11,7 +11,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class ArgumentsValidatorKotlinTest {
-    data class Person(val firstName: String?, val lastName: String?, val age: Int?)
+    data class Person(val firstName: String, val lastName: String, val age: Int)
 
     val validator: Arguments3Validator<String, String, Int, Person> = ArgumentsValidatorBuilder.of<String, String, Int, Person>(::Person)
             .builder { b ->

@@ -29,15 +29,14 @@ import static org.assertj.core.api.Assertions.tuple;
 
 class YaviArgumentsTest {
 
-	record Address(@Nullable String street, @Nullable String city) {
+	record Address(String street, String city) {
 	}
 
-	record User(@Nullable String contact, @Nullable Optional<String> nickname, @Nullable Integer age,
-			@Nullable Address address, @Nullable Address billing, @Nullable List<String> roles,
-			@Nullable Map<String, Integer> scores) {
+	record User(@Nullable String contact, Optional<String> nickname, Integer age, Address address,
+			@Nullable Address billing, @Nullable List<String> roles, @Nullable Map<String, Integer> scores) {
 
 		boolean isAdultIfAdmin() {
-			return this.age == null || this.roles == null || this.age >= 18 || !this.roles.contains("admin");
+			return this.roles == null || this.age >= 18 || !this.roles.contains("admin");
 		}
 	}
 

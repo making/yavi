@@ -42,12 +42,16 @@ public record Arguments2<A1, A2> (@Nullable A1 arg1, @Nullable A2 arg2) {
 	 * returns its result.
 	 *
 	 * <p>
-	 * No validation is performed and the arguments are passed as they are, possibly
-	 * {@code null}.
+	 * No validation is performed and the arguments are passed as they are. An argument
+	 * that is {@code null} is passed as {@code null}, so the function must accept
+	 * {@code null} for every argument that has not been validated to be present, for
+	 * example with {@code notNull()}.
 	 * @param <X> the type of the result
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
+	// An argument may be null; the type of the function parameter does not express that.
+	@SuppressWarnings("NullAway")
 	public <X> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2);
 	}

@@ -82,9 +82,9 @@ public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float
 	 * @return a new validator
 	 */
 	@Override
-	public <T> FloatValidator<T> build(Function<@Nullable Float, ? extends @Nullable T> mapper) {
+	public <T> FloatValidator<T> build(Function<? super Float, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Float>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new FloatValidator<>(validator, value -> mapper.apply(value));
+		return new FloatValidator<>(validator, mapper::apply);
 	}
 
 	/**

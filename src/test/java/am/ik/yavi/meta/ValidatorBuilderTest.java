@@ -4,7 +4,6 @@
  */
 package am.ik.yavi.meta;
 
-import java.util.Objects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -238,8 +237,7 @@ public class ValidatorBuilderTest {
 	void methodArguments() {
 		final UserService userService = new UserService();
 		final Arguments3Validator<UserService, String, String, User> validator = ArgumentsValidatorBuilder
-			.<UserService, String, String, User>of((service, email, name) -> Objects.requireNonNull(service)
-				.createUser(Objects.requireNonNull(email), Objects.requireNonNull(name))) //
+			.<UserService, String, String, User>of((service, email, name) -> service.createUser(email, name)) //
 			.builder(b -> b //
 				.constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE, c -> c.notNull())
 				.constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -> c.email())

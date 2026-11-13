@@ -108,11 +108,11 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ObjectValidator<X, T> build(Function<@Nullable X, ? extends @Nullable T> mapper) {
+	public <T> ObjectValidator<X, T> build(Function<? super X, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final Class<X> type = this.type;
-		return type == null ? new ObjectValidator<>(validator, value -> mapper.apply(value))
-				: new ObjectValidator<>(validator, value -> mapper.apply(value), type);
+		return type == null ? new ObjectValidator<>(validator, mapper::apply)
+				: new ObjectValidator<>(validator, mapper::apply, type);
 	}
 
 	/**

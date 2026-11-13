@@ -85,9 +85,9 @@ public class LocalDateValidatorBuilder implements ValueValidatorBuilder<LocalDat
 	 * @return a new validator
 	 */
 	@Override
-	public <T> LocalDateValidator<T> build(Function<@Nullable LocalDate, ? extends @Nullable T> mapper) {
+	public <T> LocalDateValidator<T> build(Function<? super LocalDate, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<LocalDate>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LocalDateValidator<>(validator, value -> mapper.apply(value));
+		return new LocalDateValidator<>(validator, mapper::apply);
 	}
 
 	/**

@@ -85,9 +85,9 @@ public class OffsetDateTimeValidatorBuilder implements ValueValidatorBuilder<Off
 	 * @return a new validator
 	 */
 	@Override
-	public <T> OffsetDateTimeValidator<T> build(Function<@Nullable OffsetDateTime, ? extends @Nullable T> mapper) {
+	public <T> OffsetDateTimeValidator<T> build(Function<? super OffsetDateTime, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<OffsetDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new OffsetDateTimeValidator<>(validator, value -> mapper.apply(value));
+		return new OffsetDateTimeValidator<>(validator, mapper::apply);
 	}
 
 	/**

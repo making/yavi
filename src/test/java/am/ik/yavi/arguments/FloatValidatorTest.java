@@ -81,11 +81,10 @@ class FloatValidatorTest {
 
 	static Stream<FloatValidator<Price>> validators() {
 		return Stream.of(
-				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0))
-					.build(value -> new Price(Objects.requireNonNull(value))),
+				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0)).build(Price::new),
 				FloatValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((float) 0))
 					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+					.map(Price::new));
 	}
 
 	public static class Price {

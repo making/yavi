@@ -101,9 +101,9 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 * @return a new validator
 	 */
 	@Override
-	public <T> StringValidator<T> build(Function<@Nullable String, ? extends @Nullable T> mapper) {
+	public <T> StringValidator<T> build(Function<? super String, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		final StringValidator<T> built = new StringValidator<>(validator, value -> mapper.apply(value));
+		final StringValidator<T> built = new StringValidator<>(validator, mapper::apply);
 		return this.transform == null ? built : built.preprocess(this.transform);
 	}
 

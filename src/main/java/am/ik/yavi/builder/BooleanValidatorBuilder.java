@@ -83,9 +83,9 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	 * @return a new validator
 	 */
 	@Override
-	public <T> BooleanValidator<T> build(Function<@Nullable Boolean, ? extends @Nullable T> mapper) {
+	public <T> BooleanValidator<T> build(Function<? super Boolean, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Boolean>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BooleanValidator<>(validator, value -> mapper.apply(value));
+		return new BooleanValidator<>(validator, mapper::apply);
 	}
 
 	/**

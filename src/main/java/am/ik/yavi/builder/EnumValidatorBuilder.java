@@ -107,11 +107,11 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * @return a new validator
 	 */
 	@Override
-	public <T> EnumValidator<E, T> build(Function<@Nullable E, ? extends @Nullable T> mapper) {
+	public <T> EnumValidator<E, T> build(Function<? super E, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final Class<E> type = this.type;
-		return type == null ? new EnumValidator<>(validator, value -> mapper.apply(value))
-				: new EnumValidator<>(validator, value -> mapper.apply(value), type);
+		return type == null ? new EnumValidator<>(validator, mapper::apply)
+				: new EnumValidator<>(validator, mapper::apply, type);
 	}
 
 	/**

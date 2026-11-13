@@ -84,10 +84,10 @@ class BigDecimalValidatorTest {
 	static Stream<BigDecimalValidator<Price>> validators() {
 		return Stream.of(
 				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
-					.build(value -> new Price(Objects.requireNonNull(value))),
+					.build(Price::new),
 				BigDecimalValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(BigDecimal.valueOf(0)))
 					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+					.map(Price::new));
 	}
 
 	public static class Price {

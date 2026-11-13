@@ -292,6 +292,8 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result or the accumulated errors
 	 */
+	// The value may be null; the type of the function parameter does not express that.
+	@SuppressWarnings("NullAway")
 	default <U, V extends Validation<E, U>> V apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {

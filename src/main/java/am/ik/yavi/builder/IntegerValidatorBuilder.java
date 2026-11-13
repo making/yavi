@@ -83,9 +83,9 @@ public class IntegerValidatorBuilder implements ValueValidatorBuilder<Integer, I
 	 * @return a new validator
 	 */
 	@Override
-	public <T> IntegerValidator<T> build(Function<@Nullable Integer, ? extends @Nullable T> mapper) {
+	public <T> IntegerValidator<T> build(Function<? super Integer, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Integer>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new IntegerValidator<>(validator, value -> mapper.apply(value));
+		return new IntegerValidator<>(validator, mapper::apply);
 	}
 
 	/**

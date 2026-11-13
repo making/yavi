@@ -66,23 +66,11 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 */
 	static <A1, A2, A3, A4, X> Arguments4Validator<A1, A2, A3, A4, X> unwrap(
 			Arguments1Validator<Arguments4<A1, A2, A3, A4>, X> validator) {
-		return new Arguments4Validator<A1, A2, A3, A4, X>() {
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					Locale locale, ConstraintContext constraintContext) {
-				return validator.validate(Arguments.of(a1, a2, a3, a4), locale, constraintContext);
-			}
-
-			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
-				return Arguments4Validator.unwrap(validator.lazy());
-			}
-
-			@Override
-			public ValueDescription description() {
-				return validator.description();
-			}
-		};
+		return ArgumentsValidators
+			.derived(
+					(a1, a2, a3, a4, locale, constraintContext) -> validator.validate(Arguments.of(a1, a2, a3, a4),
+							locale, constraintContext),
+					() -> Arguments4Validator.unwrap(validator.lazy()), validator::description);
 	}
 
 	/**
@@ -154,25 +142,12 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @since 0.17.0
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
-		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
-			@Override
-			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					Locale locale, ConstraintContext constraintContext) {
-				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext).map(mapper);
-			}
-
-			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X2>> lazy() {
-				return Arguments4Validator.this.lazy()
-					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get()));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return Arguments4Validator.this.description();
-			}
-
-		};
+		return ArgumentsValidators.derived(
+				(a1, a2, a3, a4, locale, constraintContext) -> this.validate(a1, a2, a3, a4, locale, constraintContext)
+					.map(mapper),
+				() -> this.lazy()
+					.map((Function<Supplier<X>, Supplier<X2>>) xSupplier -> () -> mapper.apply(xSupplier.get())),
+				this::description);
 	}
 
 	/**
@@ -188,28 +163,14 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @since 0.11.0
 	 */
 	default <X2> Arguments4Validator<A1, A2, A3, A4, X2> andThen(ValueValidator<? super X, X2> validator) {
-		return new Arguments4Validator<A1, A2, A3, A4, X2>() {
-			@Override
-			public Validated<X2> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					Locale locale, ConstraintContext constraintContext) {
-				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext));
-			}
-
-			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X2>> lazy() {
-				return Arguments4Validator.this.lazy()
+		return ArgumentsValidators.derived(
+				(a1, a2, a3, a4, locale, constraintContext) -> this.validate(a1, a2, a3, a4, locale, constraintContext)
+					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+				() -> this.lazy()
 					.andThen((xSupplier, locale, constraintContext) -> validator
 						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
-						.map(x2 -> () -> x2));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return Arguments4Validator.this.description();
-			}
-
-		};
+						.map(x2 -> () -> x2)),
+				this::description);
 	}
 
 	/**
@@ -294,24 +255,7 @@ public interface Arguments4Validator<A1, A2, A3, A4, X> {
 	 * @see #description()
 	 */
 	default Arguments4Validator<A1, A2, A3, A4, X> describedAs(ValueDescription description) {
-		return new Arguments4Validator<A1, A2, A3, A4, X>() {
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					Locale locale, ConstraintContext constraintContext) {
-				return Arguments4Validator.this.validate(a1, a2, a3, a4, locale, constraintContext);
-			}
-
-			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
-				return Arguments4Validator.this.lazy().describedAs(description);
-			}
-
-			@Override
-			public ValueDescription description() {
-				return description;
-			}
-
-		};
+		return ArgumentsValidators.derived(this, () -> this.lazy().describedAs(description), () -> description);
 	}
 
 	/**

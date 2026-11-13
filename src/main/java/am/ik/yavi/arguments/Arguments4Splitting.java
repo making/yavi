@@ -4,16 +4,10 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Locale;
-import java.util.function.Supplier;
-
-import am.ik.yavi.core.ConstraintContext;
-import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function4;
 import am.ik.yavi.fn.Validations;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 4 validators that validate distinct arguments into a validator for those
@@ -82,30 +76,16 @@ public class Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> {
 	 */
 	public <X> Arguments4Validator<A1, A2, A3, A4, X> apply(
 			Function4<? super R1, ? super R2, ? super R3, ? super R4, ? extends X> f) {
-		return new Arguments4Validator<A1, A2, A3, A4, X>() {
-
-			@Override
-			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
-				return ((a1, a2, a3, a4, locale, constraintContext) -> Validations.apply(
+		return ArgumentsValidators.derived(
+				(a1, a2, a3, a4, locale, constraintContext) -> Validations.apply(f::apply,
+						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext),
+						v3.validate(a3, locale, constraintContext), v4.validate(a4, locale, constraintContext)),
+				() -> (a1, a2, a3, a4, locale, constraintContext) -> Validations.apply(
 						(r1, r2, r3, r4) -> () -> f.apply(r1, r2, r3, r4), v1.validate(a1, locale, constraintContext),
 						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
-						v4.validate(a4, locale, constraintContext)));
-			}
-
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					Locale locale, ConstraintContext constraintContext) {
-				return Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
-						v4.validate(a4, locale, constraintContext));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
-						v4.description());
-			}
-		};
+						v4.validate(a4, locale, constraintContext)),
+				() -> ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
+						v4.description()));
 	}
 
 	/**

@@ -15,13 +15,13 @@ public class Gh156Test {
 
 	static class Person {
 
-		private final @Nullable String firstName;
+		private final String firstName;
 
 		private final @Nullable String middleName;
 
-		private final @Nullable String lastName;
+		private final String lastName;
 
-		public Person(@Nullable String firstName, @Nullable String middleName, @Nullable String lastName) {
+		public Person(String firstName, @Nullable String middleName, String lastName) {
 			this.firstName = firstName;
 			this.middleName = middleName;
 			this.lastName = lastName;
