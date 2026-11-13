@@ -245,7 +245,7 @@ class ArgumentsValidatorsTest {
 		return Stream.of(
 				ArgumentsValidators.split(countryValidator, streetValidator, phoneNumberValidator).apply(Address::new),
 				countryValidator.split(streetValidator).split(phoneNumberValidator).apply(Address::new),
-				Yavi.arguments()
+				Yavi.schema()
 					._string(countryValidator)
 					._string(streetValidator)
 					._string(phoneNumberValidator)

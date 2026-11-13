@@ -15,11 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class RangeValidatorTest {
 
-	Arguments2Validator<Integer, Integer, Range> validator = Yavi.arguments()
+	Arguments2Validator<Integer, Integer, Range> validator = Yavi.schema()
 		._integer("from", c -> c.greaterThanOrEqual(0))
 		._integer("to", c -> c.greaterThanOrEqual(0))
 		.apply(Range::new)
-		.andThen(Yavi.arguments().<Range>_object("to", c -> c.predicate(RangeConstraint.SINGLETON)).get());
+		.andThen(Yavi.schema().<Range>_object("to", c -> c.predicate(RangeConstraint.SINGLETON)).get());
 
 	@Test
 	void valid() {

@@ -158,7 +158,7 @@ public interface InputReader<N> {
 	 * <li>An empty string is a null node whatever it is checked as, because text has no
 	 * other way to say that a value is not given. It is validated like {@code null}, so
 	 * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to it; a
-	 * string argument that must receive {@code ""} is given
+	 * string property that must receive {@code ""} is given
 	 * {@code defaultValue("")}.</li>
 	 * <li>A string checked as a numeric type is read as a decimal number, in the grammar
 	 * of {@link java.math.BigDecimal#BigDecimal(String)}: an optional sign, digits, an

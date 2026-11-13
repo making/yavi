@@ -29,7 +29,7 @@ class ArgumentsValidatorKotlinTest {
     data class Member(val name: String, val nickname: String?, val age: Int)
 
     // an argument is required, so its value is not nullable unless nullable() says so
-    val memberValidator: Arguments3Validator<String, String, Int, Member> = Yavi.arguments()
+    val memberValidator: Arguments3Validator<String, String, Int, Member> = Yavi.schema()
             ._string("name") { it.notBlank() }
             ._string("nickname") { it.lessThanOrEqual(10) }.nullable()
             ._integer("age") { it.greaterThanOrEqual(0) }

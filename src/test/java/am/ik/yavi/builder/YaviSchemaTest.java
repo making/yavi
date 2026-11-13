@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-class YaviArgumentsTest {
+class YaviSchemaTest {
 
 	record Address(String street, String city) {
 	}
@@ -43,7 +43,7 @@ class YaviArgumentsTest {
 		}
 	}
 
-	static final ValueValidator<Map<String, String>, Address> addressValidator = Yavi.arguments()
+	static final ValueValidator<Map<String, String>, Address> addressValidator = Yavi.schema()
 		._string("street", c -> c.notBlank())
 		._string("city", c -> c.notBlank())
 		.apply(Address::new)

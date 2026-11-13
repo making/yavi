@@ -61,7 +61,7 @@ public record Arguments6<A1, A2, A3, A4, A5, A6> (@Nullable A1 arg1, @Nullable A
 	 */
 	// A raw argument may be null, and the function is trusted to take it: its
 	// parameters are not @Nullable so that ArgumentsValidatorBuilder.of(User::new)
-	// compiles. Yavi.arguments() gives the validated values with their types instead.
+	// compiles. Yavi.schema() gives the validated values with their types instead.
 	@SuppressWarnings("NullAway")
 	public <X extends @Nullable Object> X map(
 			Function6<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends X> mapper) {

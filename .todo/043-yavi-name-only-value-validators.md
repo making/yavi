@@ -16,9 +16,9 @@ Yavi._enum("role", Role.class)       // does not compile
 Yavi._object("point", Point.class)   // does not compile
 ```
 
-`Yavi.arguments()` has the missing forms (`_string(name)`, `_enum(name, type)`,
+`Yavi.schema()` has the missing forms (`_string(name)`, `_enum(name, type)`,
 `_object(name, type)`), and the documentation says that `Yavi._xxx` has the names of the
-arguments of `Yavi.arguments()`. The gap was found when
+arguments of `Yavi.schema()`. The gap was found when
 `Yavi._enum("role", Role.class).ignoringCase()` was written in `README.md`,
 `docs/ComparisonWithRaoh.md`, `docs/ComparisonWithZod.md` and the description of #552
 without compiling. Those documents now use `Yavi._enum("role", Role.class, c -> c)`.
@@ -37,7 +37,7 @@ Arguments against:
 
 * About 20 more static methods on `Yavi` (62 today), each with Javadoc, for something that
   `c -> c` already expresses.
-* A named validator of a single value is mostly given to `Yavi.arguments()`, where
+* A named validator of a single value is mostly given to `Yavi.schema()`, where
   `._string("name")` exists. The case that needs the missing form is narrow: a modifier of
   the typed validator itself, which today is only `EnumValidator#ignoringCase()`. Adding
   only `_enum(name, type)` and `_object(name, type)` may be enough, but leaves the

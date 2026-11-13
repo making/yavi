@@ -56,11 +56,11 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 * </p>
 	 *
 	 * <p>
-	 * A validator that produces a value, such as an argument of {@code Yavi.arguments()}
-	 * or {@code Yavi._string(...)}, requires the value, so this constraint alone can
-	 * never be satisfied there: {@code null} is rejected with {@code object.notNull} and
-	 * any other value with {@code object.isNull}. Apply {@code nullable()} to the
-	 * validator to say that the value must be {@code null}:
+	 * A validator that produces a value, such as an argument of {@code Yavi.schema()} or
+	 * {@code Yavi._string(...)}, requires the value, so this constraint alone can never
+	 * be satisfied there: {@code null} is rejected with {@code object.notNull} and any
+	 * other value with {@code object.isNull}. Apply {@code nullable()} to the validator
+	 * to say that the value must be {@code null}:
 	 * {@code _string("id", c -> c.isNull()).nullable()}.
 	 * </p>
 	 * @return this constraint

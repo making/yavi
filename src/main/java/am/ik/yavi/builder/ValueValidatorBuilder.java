@@ -17,9 +17,8 @@ import am.ik.yavi.core.ValueValidator;
  * <p>
  * Implementations exist for the supported value types, for example
  * {@link StringValidatorBuilder} and {@link IntegerValidatorBuilder}. They are used by
- * {@link YaviArguments} to create validators for constructor or method arguments. The
- * built validator reports constraint violations and produces no value when validation
- * fails.
+ * {@link YaviSchema} to create validators for constructor or method arguments. The built
+ * validator reports constraint violations and produces no value when validation fails.
  *
  * @param <A> the type of the value to validate
  * @param <R> the type of the value produced when validation succeeds

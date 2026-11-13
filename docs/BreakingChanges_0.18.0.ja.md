@@ -14,6 +14,8 @@ YAVI 0.18.0 には、0.17 に対して次の破壊的変更があります。影
 
 コード例の「before」は 0.17 向けに書かれたコードです。「after」は、同じコードを 0.18 でコンパイルでき、同じ動作になるように直したものです。「after (new API)」は 0.18 で追加された API を使ったものです。新しい API は [0.18.0 の新機能](NewFeatures_0.18.0.ja.md) で説明しています。
 
+「before」の `Yavi.arguments()` は、「after」では `Yavi.schema()` と書いています。`Yavi.arguments()` は 0.18 でもコンパイルできますが、非推奨です。詳しくは [`Yavi.arguments()` は非推奨になり、`YaviArguments` は `YaviSchema` になった](#yaviarguments-は非推奨になりyaviarguments-は-yavischema-になった) を参照してください。
+
 ## Java 21 が必須
 
 YAVI 0.18.0 は Java 21 向けにコンパイルされています。0.17 は Java 8 で動作していました。
@@ -37,12 +39,12 @@ YAVI 0.18.0 は Java 21 向けにコンパイルされています。0.17 は Ja
 
 ## 引数と単一の値のバリデータはデフォルトで `null` を拒否する
 
-`Yavi.arguments()` の引数と、単一の値のバリデータ（`StringValidatorBuilder` など）は、`notNull()` がなくても `null` を拒否するようになりました。`null` になりうる値には、0.18.0 で追加された `nullable()` を付けます。
+`Yavi.schema()` の引数と、単一の値のバリデータ（`StringValidatorBuilder` など）は、`notNull()` がなくても `null` を拒否するようになりました。`null` になりうる値には、0.18.0 で追加された `nullable()` を付けます。
 
 ```java
 record Member(String name, @Nullable String nickname) {}
 
-Arguments2Validator<String, @Nullable String, Member> validator = Yavi.arguments()
+Arguments2Validator<String, @Nullable String, Member> validator = Yavi.schema()
         ._string("name", c -> c.lessThanOrEqual(50))                // null は有効だったが、違反になった
         ._string("nickname", c -> c.lessThanOrEqual(20)).nullable() // null は有効
         .apply(Member::new);
@@ -91,19 +93,19 @@ Yavi.arguments()
         .apply(Member::new);
 
 // after
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
         .apply(Member::new);
 
 // after (new API)
 // optional() と defaultValue(...) も null を受け付けるが、バリデータが返す値は null にならない
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).optional() // Optional<String>
         .apply(Member::new);
 
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).defaultValue("") // String
         .apply(Member::new);
@@ -133,7 +135,7 @@ ValueValidator<String, @Nullable String> memo = Yavi._string("memo", c -> c.less
 Yavi.arguments()._string("id", c -> c.isNull())
 
 // after
-Yavi.arguments()._string("id", c -> c.isNull()).nullable()
+Yavi.schema()._string("id", c -> c.isNull()).nullable()
 ```
 
 #### 3. NullAway または Kotlin では null を受け取る側を nullable と宣言する
@@ -147,7 +149,7 @@ null 性チェッカーで検査していない Java コードは、この手順
 ```kotlin
 data class Member(val name: String, val nickname: String?)
 
-Yavi.arguments()
+Yavi.schema()
     ._string("name") { it.notBlank() }
     ._string("nickname") { it.lessThanOrEqual(20) }.nullable()
     .apply(::Member)
@@ -175,7 +177,7 @@ NullAway が正しいコードを報告する場合は、[NullAway の制限事�
           .apply(Member::new);
 
   // after
-  Yavi.arguments()
+  Yavi.schema()
           ._string("name")
           ._integer("age", c -> c.greaterThanOrEqual(0))
           .apply(Member::new);
@@ -574,10 +576,22 @@ ConstraintViolation.builder()
 new Arguments2ValidatorBuilder<>(nameValidator, ageValidator).apply(Member::new);
 
 // after
-Yavi.arguments()._string(nameValidator)._integer(ageValidator).apply(Member::new);
+Yavi.schema()._string(nameValidator)._integer(ageValidator).apply(Member::new);
 ```
 
 関連するプルリクエスト: [#538](https://github.com/making/yavi/pull/538)
+
+### `Yavi.arguments()` は非推奨になり、`YaviArguments` は `YaviSchema` になった
+
+`Yavi.schema()` は `Yavi.arguments()` の新しい名前です。`Yavi.arguments()` は非推奨ですが、引き続き使えます。このビルダーは、型付きの引数、マップ、JSON のツリー、リクエストパラメータから読み取る入力を記述するものになったため、型の名前を `YaviArguments` から `YaviSchema` に変えました。この型の変数を宣言しているコードは、型名を変える必要があります。
+
+```java
+// before
+YaviArguments builder = Yavi.arguments();
+
+// after
+YaviSchema builder = Yavi.schema();
+```
 
 ### `Arguments1` から `Arguments16` は record になった
 

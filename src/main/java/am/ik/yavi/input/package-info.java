@@ -7,7 +7,7 @@
  * object.
  *
  * <p>
- * {@link am.ik.yavi.input.MapInputValidator} reads the properties of an object from a
+ * {@link am.ik.yavi.input.ObjectInputValidator} reads the properties of an object from a
  * {@code Map<String, Object>} and {@link am.ik.yavi.input.DiscriminatedUnionValidator}
  * selects the validator of such a map by the value of one of its keys. Both are
  * {@link am.ik.yavi.core.ValueValidator}s, so they nest and combine like any other

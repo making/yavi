@@ -17,14 +17,14 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * A partial update, such as a PATCH request (JSON Merge Patch), needs all three: an
- * absent property is left unchanged and a {@code null} one is cleared. An argument added
- * with {@code presence()} of the builders returned by {@code Yavi.arguments()} is read
- * from a map as a {@code Presence}:
+ * absent property is left unchanged and a {@code null} one is cleared. A property added
+ * with {@code presence()} of the builders returned by {@code Yavi.schema()} is read from
+ * a map as a {@code Presence}:
  *
  * <pre>{@code
  * record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
  *
- * MapInputValidator<ProfilePatch> validator = Yavi.arguments()
+ * ObjectInputValidator<ProfilePatch> validator = Yavi.schema()
  *     ._string("nickname", c -> c.lessThanOrEqual(50)).presence()
  *     ._string("bio", c -> c.lessThanOrEqual(500)).presence()
  *     .fromMap(ProfilePatch::new);

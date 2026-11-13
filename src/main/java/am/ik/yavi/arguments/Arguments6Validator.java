@@ -27,11 +27,10 @@ import org.jspecify.annotations.Nullable;
  * Validation is applicative: all violations are accumulated in the returned
  * {@link Validated} instead of stopping at the first one, and a value is produced only
  * when every constraint succeeds. Whether a {@code null} argument is accepted depends on
- * how the validator is built: an argument added to the builders of
- * {@code Yavi.arguments()} is required unless it is made {@code nullable()} or
- * {@code optional()}, and a validator built with
- * {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} accepts {@code null} unless a
- * configured constraint rejects it (for example {@code notNull()}); see
+ * how the validator is built: an argument added to the builders of {@code Yavi.schema()}
+ * is required unless it is made {@code nullable()} or {@code optional()}, and a validator
+ * built with {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} accepts {@code null}
+ * unless a configured constraint rejects it (for example {@code notNull()}); see
  * {@link am.ik.yavi.core.NullAs}.
  *
  * <p>

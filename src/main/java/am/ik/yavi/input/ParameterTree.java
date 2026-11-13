@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * JSON document:
  *
  * <pre>{@code
- * ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.arguments()
+ * ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.schema()
  *     ._string("q", c -> c.notBlank())
  *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
  *     ._list("tags", Yavi._string(c -> c.notBlank()))
@@ -38,10 +38,10 @@ import org.jspecify.annotations.Nullable;
  * Validated<SearchForm> validated = validator.validate(parameters);
  * }</pre>
  *
- * {@code readingParameters()} of {@link MapInputValidator#readingParameters() a validator
- * of maps} is the usual way to read parameters. Any other validator reads a tree with
- * {@link #reader()}: {@code validator.readingWith(ParameterTree.reader())} validates
- * {@link #of(Map) ParameterTree.of(parameters)}.
+ * {@code readingParameters()} of {@link ObjectInputValidator#readingParameters() a
+ * validator of maps} is the usual way to read parameters. Any other validator reads a
+ * tree with {@link #reader()}: {@code validator.readingWith(ParameterTree.reader())}
+ * validates {@link #of(Map) ParameterTree.of(parameters)}.
  *
  * <h2>Keys</h2>
  *
@@ -51,7 +51,7 @@ import org.jspecify.annotations.Nullable;
  * it is written in brackets, where it holds anything but {@code ]}. A key may end with
  * {@code []}, which is ignored: {@code tags[]} is {@code tags}. A key that is not written
  * in this way, or that has more than {@value #MAX_DEPTH} names, is a property of the root
- * under its whole text, so it matches no argument and is reported as an unknown property
+ * under its whole text, so it matches no property and is reported as an unknown property
  * if they are rejected.
  *
  * <h2>Values</h2>
@@ -94,7 +94,7 @@ import org.jspecify.annotations.Nullable;
  * A tree is immutable and does not see the later changes of the map it was created from.
  *
  * @since 0.18.0
- * @see MapInputValidator#readingParameters()
+ * @see ObjectInputValidator#readingParameters()
  */
 public final class ParameterTree {
 

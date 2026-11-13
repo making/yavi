@@ -97,7 +97,7 @@ import java.util.function.Function;
  * The rules validate the raw arguments, so an argument is {@code null} unless a rule such
  * as {@code notNull()} rejects it, and the mapper is trusted to take it: a nullness
  * checker cannot tell from the rules which parameter of the mapper may be {@code null}.
- * The builders returned by {@code Yavi.arguments()} do tell it: an argument is required
+ * The builders returned by {@code Yavi.schema()} do tell it: an argument is required
  * there, and {@code nullable()} changes the type of its validated value.
  *
  * <p>

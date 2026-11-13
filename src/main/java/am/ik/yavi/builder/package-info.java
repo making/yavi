@@ -23,7 +23,7 @@
  * {@link am.ik.yavi.builder.IntegerValidatorBuilder}, implement
  * {@link am.ik.yavi.builder.ValueValidatorBuilder} and build a
  * {@link am.ik.yavi.core.ValueValidator} for a single value.
- * {@link am.ik.yavi.builder.YaviArguments} provides the same validators for use as
+ * {@link am.ik.yavi.builder.YaviSchema} provides the same validators for use as
  * constructor or method arguments. The arguments builders
  * ({@link am.ik.yavi.builder.ArgumentsValidatorBuilder} and
  * {@code Arguments1ValidatorBuilder} through {@code Arguments16ValidatorBuilder}) build
@@ -33,7 +33,7 @@
  * The builders differ in what {@code null} means. {@code ValidatorBuilder} validates an
  * object that exists, so the value of a property is valid if it is {@code null} unless a
  * constraint such as {@code notNull()} rejects it, and so is a raw argument of
- * {@code ArgumentsValidatorBuilder}. The typed builders and {@code YaviArguments} build
+ * {@code ArgumentsValidatorBuilder}. The typed builders and {@code YaviSchema} build
  * validators that produce a value, which is required: {@code null} is a violation unless
  * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} is applied, and the
  * type of the produced value tells whether it can be {@code null}.

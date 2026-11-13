@@ -324,7 +324,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 *
 	 * <pre>{@code
 	 * record Comment(String body, List<Comment> replies) {
-	 *     static final MapInputValidator<Comment> VALIDATOR = Yavi.arguments()
+	 *     static final ObjectInputValidator<Comment> VALIDATOR = Yavi.schema()
 	 *         ._string("body", c -> c.notBlank())
 	 *         ._list("replies", ValueValidator.lazy(() -> Comment.VALIDATOR)).defaultValue(List.of())
 	 *         .fromMap(Comment::new);
@@ -395,7 +395,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * also defines a recursive validator in a local variable:
 	 *
 	 * <pre>{@code
-	 * MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
+	 * ObjectInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.schema()
 	 *     ._string("body", c -> c.notBlank())
 	 *     ._list("replies", self).defaultValue(List.of())
 	 *     .fromMap(Comment::new));
@@ -1028,7 +1028,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * {@link #readingWith(InputReader)} the validator never produces
 	 * {@link Presence.Absent}. Whether an object has a property is told by the validator
 	 * of the object: {@code presence()} of the builders returned by
-	 * {@code Yavi.arguments()}, or {@code MapInputValidator.PresenceProperty}.
+	 * {@code Yavi.schema()}, or {@code ObjectInputValidator.PresenceProperty}.
 	 * @return a value validator for a value that may be absent
 	 * @since 0.18.0
 	 */

@@ -48,15 +48,19 @@ import am.ik.yavi.core.ValueValidator;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Builds an arguments validator by adding one validated argument at a time.
+ * An empty schema: describes the properties of an input by adding one at a time, and
+ * builds a validator that reads them.
  *
  * <p>
- * Each {@code _xxx} method adds the next argument and returns the builder for the
- * following argument. The arguments are validated together, so every violation is
- * reported and the result is created only when all arguments are valid. The validator is
- * created with {@code apply} after all arguments have been added. Instances are obtained
- * from {@link am.ik.yavi.validator.Yavi#arguments()}. For example: <pre>{@code
- * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+ * Each {@code _xxx} method adds the next property and returns the builder for the
+ * following one. A property is an argument of the function that creates the result, so
+ * the builders call it an argument. The arguments are validated together, so every
+ * violation is reported and the result is created only when all arguments are valid. The
+ * validator is created after all arguments have been added: with {@code apply} to take
+ * them as typed arguments, or with {@code fromMap} to read them from a
+ * {@code Map<String, Object>} by their names. Instances are obtained from
+ * {@link am.ik.yavi.validator.Yavi#schema()}. For example: <pre>{@code
+ * Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
  *     ._string("manufacturer")
  *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
@@ -88,7 +92,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @since 0.14.0
  */
-public final class YaviArguments
+public final class YaviSchema
 
 {
 
@@ -96,10 +100,10 @@ public final class YaviArguments
 	 * Creates a new builder.
 	 *
 	 * <p>
-	 * Instances are normally obtained from {@link am.ik.yavi.validator.Yavi#arguments()}.
+	 * Instances are normally obtained from {@link am.ik.yavi.validator.Yavi#schema()}.
 	 * @since 0.14.0
 	 */
-	public YaviArguments() {
+	public YaviSchema() {
 	}
 
 	/**
@@ -1292,7 +1296,7 @@ public final class YaviArguments
 	 * instead of the value of a key, and its violations are reported as they are. Its
 	 * properties are defined for the built validator, and with {@code optional()},
 	 * {@code nullable()} or {@code defaultValue} it is given {@code null} when none of
-	 * them has a value; see {@link am.ik.yavi.input.MapInputValidator}. With
+	 * them has a value; see {@link am.ik.yavi.input.ObjectInputValidator}. With
 	 * {@code apply}, the argument is a map validated by the validator.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the map

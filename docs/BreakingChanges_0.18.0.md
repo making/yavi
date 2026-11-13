@@ -17,6 +17,10 @@ In the examples, "before" is code written for 0.17, "after" is the same code cha
 that it compiles and behaves the same with 0.18, and "after (new API)" uses an API that
 is new in 0.18. See [New features in 0.18.0](NewFeatures_0.18.0.md) for the new APIs.
 
+"after" writes `Yavi.schema()` where "before" writes `Yavi.arguments()`. `Yavi.arguments()`
+still compiles with 0.18 but is deprecated; see
+[`Yavi.arguments()` is deprecated and `YaviArguments` is `YaviSchema`](#yaviarguments-is-deprecated-and-yaviarguments-is-yavischema).
+
 ## Java 21 is required
 
 YAVI 0.18.0 is compiled for Java 21. 0.17 ran on Java 8.
@@ -42,14 +46,14 @@ This is needed also where the source does not change.
 
 ## A validated value is required by default
 
-An argument of `Yavi.arguments()` and a validator of a single value
+An argument of `Yavi.schema()` and a validator of a single value
 (`StringValidatorBuilder` and so on) now reject `null` without `notNull()`. A value that
 may be `null` has to say so with `nullable()`, which is new in 0.18.0.
 
 ```java
 record Member(String name, @Nullable String nickname) {}
 
-Arguments2Validator<String, @Nullable String, Member> validator = Yavi.arguments()
+Arguments2Validator<String, @Nullable String, Member> validator = Yavi.schema()
         ._string("name", c -> c.lessThanOrEqual(50))                // null was valid, is a violation now
         ._string("nickname", c -> c.lessThanOrEqual(20)).nullable() // null is valid
         .apply(Member::new);
@@ -106,19 +110,19 @@ Yavi.arguments()
         .apply(Member::new);
 
 // after
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
         .apply(Member::new);
 
 // after (new API)
 // optional() and defaultValue(...) accept null too and keep it out of the validated value
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).optional() // Optional<String>
         .apply(Member::new);
 
-Yavi.arguments()
+Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).defaultValue("") // String
         .apply(Member::new);
@@ -148,7 +152,7 @@ Without it no value is valid.
 Yavi.arguments()._string("id", c -> c.isNull())
 
 // after
-Yavi.arguments()._string("id", c -> c.isNull()).nullable()
+Yavi.schema()._string("id", c -> c.isNull()).nullable()
 ```
 
 #### 3. With NullAway or Kotlin, declare the receiver of a nullable value as nullable
@@ -165,7 +169,7 @@ Java code that is not checked by a nullness checker compiles without this step.
 ```kotlin
 data class Member(val name: String, val nickname: String?)
 
-Yavi.arguments()
+Yavi.schema()
     ._string("name") { it.notBlank() }
     ._string("nickname") { it.lessThanOrEqual(20) }.nullable()
     .apply(::Member)
@@ -194,7 +198,7 @@ Nothing below is required. The code before works and behaves as it did.
           .apply(Member::new);
 
   // after
-  Yavi.arguments()
+  Yavi.schema()
           ._string("name")
           ._integer("age", c -> c.greaterThanOrEqual(0))
           .apply(Member::new);
@@ -639,10 +643,25 @@ Related pull request: [#558](https://github.com/making/yavi/pull/558)
 new Arguments2ValidatorBuilder<>(nameValidator, ageValidator).apply(Member::new);
 
 // after
-Yavi.arguments()._string(nameValidator)._integer(ageValidator).apply(Member::new);
+Yavi.schema()._string(nameValidator)._integer(ageValidator).apply(Member::new);
 ```
 
 Related pull request: [#538](https://github.com/making/yavi/pull/538)
+
+### `Yavi.arguments()` is deprecated and `YaviArguments` is `YaviSchema`
+
+`Yavi.schema()` is the new name of `Yavi.arguments()`, which still works and is
+deprecated. The builder now describes an input that is read from typed arguments, a map,
+a JSON tree or request parameters, so its type `YaviArguments` is renamed to
+`YaviSchema`. Code that declares a variable of that type must rename it.
+
+```java
+// before
+YaviArguments builder = Yavi.arguments();
+
+// after
+YaviSchema builder = Yavi.schema();
+```
 
 ### `Arguments1` to `Arguments16` are records
 

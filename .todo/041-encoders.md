@@ -15,7 +15,7 @@ under "Not available".
 
 Decide the scope before any design: YAVI is a validation library and an encoder validates
 nothing. Arguments for: the property names and the discriminator of a
-`MapInputValidator` / `DiscriminatedUnionValidator` are already written once and an
+`ObjectInputValidator` / `DiscriminatedUnionValidator` are already written once and an
 encoder repeats them, so a round trip defined in one place is the only form worth adding.
 Arguments against: Jackson and record accessors already cover output, and 16-arity
 generated code doubles.

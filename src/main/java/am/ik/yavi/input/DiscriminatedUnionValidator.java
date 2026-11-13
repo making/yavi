@@ -60,11 +60,11 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * The tree model of a JSON library is read with {@link #readingWith(InputReader)}, like a
- * {@link MapInputValidator}.
+ * {@link ObjectInputValidator}.
  *
  * @param <X> the common type of the objects created by the alternatives
  * @since 0.18.0
- * @see MapInputValidator
+ * @see ObjectInputValidator
  */
 public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<String, Object>, X> {
 
@@ -130,7 +130,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	/**
 	 * Returns a validator that selects and applies the same alternatives for a flat map
 	 * of parameters, such as request parameters, as
-	 * {@link MapInputValidator#readingParameters()} states.
+	 * {@link ObjectInputValidator#readingParameters()} states.
 	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
 	 * strings
 	 * @return a validator of a map of parameters
@@ -143,7 +143,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	/**
 	 * Returns a validator like {@link #readingParameters()} that takes the text of a
 	 * value by the given rules, as
-	 * {@link MapInputValidator#readingParameters(StringCoercion)} states.
+	 * {@link ObjectInputValidator#readingParameters(StringCoercion)} states.
 	 * @param coercion the rules by which a string is taken as text
 	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
 	 * strings
@@ -300,15 +300,15 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 			final String discriminator = DiscriminatedUnionValidator.this.discriminator;
 			if (input == null || this.reader.isNull(input)) {
 				return Validated.failureWith(
-						MapInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL, null, locale));
+						ObjectInputValidator.violation("", ViolationMessage.Default.OBJECT_NOT_NULL, null, locale));
 			}
 			if (!this.reader.isObject(input)) {
-				return Validated.failureWith(MapInputValidator.violation("", ViolationMessage.Default.OBJECT_TYPE,
+				return Validated.failureWith(ObjectInputValidator.violation("", ViolationMessage.Default.OBJECT_TYPE,
 						this.reader.value(input), locale, "object"));
 			}
 			final N node = this.reader.property(input, discriminator);
 			if (node == null && !this.reader.hasProperty(input, discriminator)) {
-				return Validated.failureWith(MapInputValidator.violation(discriminator,
+				return Validated.failureWith(ObjectInputValidator.violation(discriminator,
 						ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
 			}
 			final Object value = node == null || this.reader.isNull(node) ? null : this.reader.value(node);
@@ -316,7 +316,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 					: null;
 			if (alternative == null) {
 				return Validated
-					.failureWith(MapInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
+					.failureWith(ObjectInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
 							value, locale, List.copyOf(this.alternatives.keySet())));
 			}
 			return Validated.of(alternative.validate(input, locale, constraintContext));
