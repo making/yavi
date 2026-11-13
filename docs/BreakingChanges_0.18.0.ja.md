@@ -239,12 +239,12 @@ validator.validate("Taro", null); // 変更前: validate から NullPointerExcep
 
 ## `ViolationDetail` は record になった
 
-`ConstraintViolations#details()` は、どの値が失敗したかを示す record を返します。アクセサの名前が変わり、JSON ライブラリがそこから出力する JSON のプロパティ名も変わりました。
+`ConstraintViolations#details()` は、どの値が失敗したかを示す record を返します。アクセサの名前が変わり、JSON ライブラリがそこから出力する JSON のプロパティ名も変わりました。位置引数の `args` はなくなり、名前付きの `params` になりました。`params` には値の名前も、制約に違反した値も入りません。
 
 ```java
 List<ViolationDetail> details = violations.details();
-// [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+// [{"name": "items[1].quantity", "pointer": "/items/1/quantity", "messageKey": "numeric.lessThanOrEqual",
+//   "message": "\"items[1].quantity\" must be less than or equal to 99", "params": {"max": 99}}]
 ```
 
 ### 影響を受けるユーザー
@@ -252,7 +252,8 @@ List<ViolationDetail> details = violations.details();
 影響を受けるもの:
 
 * `ViolationDetail` の `getKey()`、`getArgs()`、`getDefaultMessage()`、またはコンストラクタを呼ぶコード。
-* `details()` を JSON として返す API のクライアント。
+* `details()` を JSON として返す API のクライアント。とくに `args` を読むもの。
+* クライアントが引数を読んでいる独自の制約や自分で作る違反。メッセージが引数に名前を付けた場合だけ `params` に入ります。
 * `details()` が返すリストを変更するコード。
 
 影響を受けないもの:
@@ -261,7 +262,7 @@ List<ViolationDetail> details = violations.details();
 
 ### 移行手順
 
-#### 1. アクセサの名前を変える
+#### 1. アクセサの名前を変え、引数は違反から読む
 
 ```java
 // before
@@ -271,17 +272,18 @@ for (ViolationDetail detail : violations.details()) {
     String message = detail.getDefaultMessage();
 }
 
-// after
-for (ViolationDetail detail : violations.details()) {
-    String key = detail.messageKey();
-    List<Object> args = detail.args();
-    String message = detail.message();
+// after: 位置引数を持つのは詳細ではなく違反
+for (ConstraintViolation violation : violations) {
+    String key = violation.messageKey();
+    Object[] args = violation.args();
+    String message = violation.message();
 }
 
 // after (new API)
 for (ViolationDetail detail : violations.details()) {
-    String name = detail.name();       // items[1].name
-    String pointer = detail.pointer(); // /items/1/name (JSON Pointer)
+    String name = detail.name();                // items[1].quantity
+    String pointer = detail.pointer();          // /items/1/quantity (JSON Pointer)
+    Map<String, Object> params = detail.params(); // {max=99}
 }
 ```
 
@@ -293,18 +295,29 @@ for (ViolationDetail detail : violations.details()) {
 
 // after
 [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+  "message": "\"items[1].name\" must not be blank", "params": {}}]
 ```
 
-0.17 の JSON を維持するには、独自の型に詰め替えます。
+違反値を送り返す 0.17 の JSON を維持するには、違反を独自の型に詰め替えます。
 
 ```java
 record LegacyDetail(String key, List<Object> args, String defaultMessage) {}
 
-List<LegacyDetail> details = violations.details()
-        .stream()
-        .map(detail -> new LegacyDetail(detail.messageKey(), detail.args(), detail.message()))
+List<LegacyDetail> details = violations.stream()
+        .map(violation -> new LegacyDetail(violation.messageKey(), Arrays.asList(violation.args()), violation.message()))
         .toList();
+```
+
+#### 3. 独自のメッセージの引数に名前を付ける
+
+組み込みの制約の引数には名前があります ([0.18.0 の新機能](NewFeatures_0.18.0.ja.md) の「結果を扱う」を参照)。独自のメッセージの引数は、メッセージが名前を付けた場合だけ `params` に入ります。
+
+```java
+// before: "args": ["quantity", 3, 5]
+ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}");
+
+// after (new API): "params": {"stock": 3}
+ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}", "stock");
 ```
 
 ### すべての変更
@@ -313,21 +326,24 @@ List<LegacyDetail> details = violations.details()
 | --- | --- | --- |
 | メッセージキー | `getKey()`、JSON では `key` | `messageKey()`、JSON では `messageKey` |
 | フォーマット済みのメッセージ | `getDefaultMessage()`、JSON では `defaultMessage` | `message()`、JSON では `message` |
-| 引数 | `Object[] getArgs()` | `List<Object> args()`。変更不可 |
+| 引数 | `Object[] getArgs()`、JSON では `args`。位置引数で、先頭が名前、末尾が違反値 | `Map<String, Object> params()`、JSON では `params`。名前付きで、名前と違反値は含まない。変更不可。位置引数は `ConstraintViolation#args()` |
 | 値の名前と JSON Pointer | なし | `name()`、`pointer()` |
 | 型 | クラス | record の `ViolationDetail.Simple` と `ViolationDetail.NoAlternativeMatched` からなる sealed interface |
 | `ValueValidator.anyOf` の各選択肢の詳細 | なし | `ViolationDetail.NoAlternativeMatched` の `alternatives()`、JSON では `alternatives` |
-| コンストラクタ | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail.Simple(name, pointer, messageKey, message, args)` |
+| コンストラクタ | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail.Simple(name, pointer, messageKey, message, params)` |
 | `details()` が返すリスト | 変更可 | 変更不可 |
 
 ### 理由
 
 これまでの `ViolationDetail` からは、どの値が失敗したかがわかりませんでした。名前は `args` の先頭要素に入っているだけでした。また、`defaultMessage` はデフォルトのメッセージではなく、フォーマット済みのメッセージでした。
 
+独自のメッセージを組み立てるクライアントは、メッセージキーごとに `args` のどの位置に何が入るかを知っている必要がありましたが、その対応表は API の一部ではありませんでした。また `args` の末尾は違反値なので、`details()` をそのまま返すと、拒否されたパスワードやトークンが送り返されていました。避けるには、呼び出し側が毎回独自の型に詰め替える必要がありました。
+
 ### 関連するプルリクエスト
 
 * [#551](https://github.com/making/yavi/pull/551): `ViolationDetail` を record にし、`messagesByName()`、`messagesByPointer()`、`pointer()` を追加します。
 * [#566](https://github.com/making/yavi/pull/566): 2 つの record からなる sealed interface にします。`alternatives` を持つのは `ViolationDetail.NoAlternativeMatched` です。
+* [#568](https://github.com/making/yavi/pull/568): `args` を `params` に置き換えます。
 
 ## liftList などの違反名はインデックスが先になる
 

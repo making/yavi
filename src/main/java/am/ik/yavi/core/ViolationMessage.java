@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.core;
 
+import java.util.List;
+
 /**
  * Defines the message id and the default message format of a constraint violation.
  *
@@ -13,6 +15,11 @@ package am.ik.yavi.core;
  * message in a resource bundle so that it can be localized by a
  * {@link am.ik.yavi.message.MessageFormatter}, while the default message format is used
  * when no localized message is found.
+ *
+ * <p>
+ * A message can also name its arguments with {@link #paramNames()}, so that a violation
+ * exposes them by name ({@link ConstraintViolation#params()}) to a consumer that does not
+ * know the positions of the message format.
  *
  * <p>
  * Implementations must be immutable. This interface is also used as the message type of
@@ -31,6 +38,27 @@ public interface ViolationMessage {
 	 * @return a new {@code ViolationMessage}
 	 */
 	static ViolationMessage of(String messageKey, String defaultMessageFormat) {
+		return of(messageKey, defaultMessageFormat, new String[0]);
+	}
+
+	/**
+	 * Creates a {@code ViolationMessage} with the given message id and default message
+	 * format, whose arguments have the given names.
+	 *
+	 * <pre>{@code
+	 * // "{1}" is "min" and "{2}" is "max"; the violated value, which follows them, has no name
+	 * ViolationMessage.of("order.quantity", "\"{0}\" must be between {1} and {2}", "min", "max");
+	 * }</pre>
+	 * @param messageKey the message id used for message lookup
+	 * @param defaultMessageFormat the message format used when no localized message is
+	 * found
+	 * @param paramNames the names of the message arguments from <code>{1}</code> on (see
+	 * {@link #paramNames()})
+	 * @return a new {@code ViolationMessage}
+	 * @since 0.18.0
+	 */
+	static ViolationMessage of(String messageKey, String defaultMessageFormat, String... paramNames) {
+		final List<String> names = List.of(paramNames);
 		return new ViolationMessage() {
 			@Override
 			public String defaultMessageFormat() {
@@ -40,6 +68,11 @@ public interface ViolationMessage {
 			@Override
 			public String messageKey() {
 				return messageKey;
+			}
+
+			@Override
+			public List<String> paramNames() {
+				return names;
 			}
 		};
 	}
@@ -57,6 +90,25 @@ public interface ViolationMessage {
 	String messageKey();
 
 	/**
+	 * Returns the names of the message arguments that follow the name of the value: the
+	 * first name is that of <code>{1}</code>, the second that of <code>{2}</code> and so
+	 * on. A violation exposes the arguments that have a name as
+	 * {@link ConstraintViolation#params()}, which is what
+	 * {@link ConstraintViolations#details()} returns instead of the positional arguments.
+	 *
+	 * <p>
+	 * An argument without a name is not exposed. Give no name to the violated value,
+	 * which is the last argument, unless it is meant to be returned to the client: it may
+	 * be a password or a token. The message format is not affected by the names and keeps
+	 * referring to the arguments by position.
+	 * @return the unmodifiable names of the arguments; empty by default
+	 * @since 0.18.0
+	 */
+	default List<String> paramNames() {
+		return List.of();
+	}
+
+	/**
 	 * Default messages for the constraints provided by this library.
 	 *
 	 * <p>
@@ -65,6 +117,13 @@ public interface ViolationMessage {
 	 * referenced by the highest placeholder of a message that reports the actual value
 	 * (for example the given size). The remaining arguments depend on the constraint and
 	 * are described for each constant.
+	 *
+	 * <p>
+	 * The arguments that the constraint is configured with are named after the parameters
+	 * of the constraint method ({@code max} of {@code lessThanOrEqual(max)}), and so is
+	 * what a constraint computes from the value (the {@code actualSize}, the
+	 * {@code duplicates}). The value that violated the constraint has no name; see
+	 * {@link #paramNames()}.
 	 *
 	 * @since 0.1.0
 	 */
@@ -85,26 +144,26 @@ public interface ViolationMessage {
 		 * to {1}}. {@code {0}} is the property name and {@code {1}} is the expected
 		 * value.
 		 */
-		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}"), //
+		OBJECT_EQUAL_TO("object.equalTo", "\"{0}\" must be equal to {1}", "value"), //
 		/**
 		 * Message id {@code object.oneOf}. Default message: {@code "{0}" must be one of
 		 * the following values: {1}}. {@code {0}} is the property name and {@code {1}} is
 		 * the collection of allowed values.
 		 */
-		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}"), //
+		OBJECT_ONE_OF("object.oneOf", "\"{0}\" must be one of the following values: {1}", "values"), //
 		/**
 		 * Message id {@code object.notOneOf}. Default message: {@code "{0}" must not be
 		 * one of the following values: {1}}. {@code {0}} is the property name and
 		 * {@code {1}} is the collection of forbidden values.
 		 */
-		OBJECT_NOT_ONE_OF("object.notOneOf", "\"{0}\" must not be one of the following values: {1}"), //
+		OBJECT_NOT_ONE_OF("object.notOneOf", "\"{0}\" must not be one of the following values: {1}", "values"), //
 		/**
 		 * Message id {@code object.anyOf}. Default message: {@code "{0}" must satisfy at
 		 * least one of the {1} alternatives}. {@code {0}} is the property name and
 		 * {@code {1}} is the number of alternatives.
 		 * @since 0.18.0
 		 */
-		OBJECT_ANY_OF("object.anyOf", "\"{0}\" must satisfy at least one of the {1} alternatives"), //
+		OBJECT_ANY_OF("object.anyOf", "\"{0}\" must satisfy at least one of the {1} alternatives", "count"), //
 		/**
 		 * Message id {@code object.type}. Default message: {@code "{0}" must be of type
 		 * {1}}. {@code {0}} is the property name and {@code {1}} is the name of the
@@ -112,7 +171,7 @@ public interface ViolationMessage {
 		 * Reported when an untyped input does not represent the expected type.
 		 * @since 0.18.0
 		 */
-		OBJECT_TYPE("object.type", "\"{0}\" must be of type {1}"), //
+		OBJECT_TYPE("object.type", "\"{0}\" must be of type {1}", "type"), //
 		/**
 		 * Message id {@code object.required}. Default message: {@code "{0}" is required}.
 		 * {@code {0}} is the property name. Reported when an input map has no key for a
@@ -138,7 +197,8 @@ public interface ViolationMessage {
 		 * property name, {@code {1}} is the maximum size and {@code {2}} is the actual
 		 * size.
 		 */
-		CONTAINER_LESS_THAN("container.lessThan", "The size of \"{0}\" must be less than {1}. The given size is {2}"), //
+		CONTAINER_LESS_THAN("container.lessThan", "The size of \"{0}\" must be less than {1}. The given size is {2}",
+				"max", "actualSize"), //
 		/**
 		 * Message id {@code container.lessThanOrEqual}. Default message: {@code The size
 		 * of "{0}" must be less than or equal to {1}. The given size is {2}}. {@code {0}}
@@ -146,7 +206,7 @@ public interface ViolationMessage {
 		 * actual size.
 		 */
 		CONTAINER_LESS_THAN_OR_EQUAL("container.lessThanOrEqual",
-				"The size of \"{0}\" must be less than or equal to {1}. The given size is {2}"), //
+				"The size of \"{0}\" must be less than or equal to {1}. The given size is {2}", "max", "actualSize"), //
 		/**
 		 * Message id {@code container.greaterThan}. Default message: {@code The size of
 		 * "{0}" must be greater than {1}. The given size is {2}}. {@code {0}} is the
@@ -154,7 +214,7 @@ public interface ViolationMessage {
 		 * size.
 		 */
 		CONTAINER_GREATER_THAN("container.greaterThan",
-				"The size of \"{0}\" must be greater than {1}. The given size is {2}"), //
+				"The size of \"{0}\" must be greater than {1}. The given size is {2}", "min", "actualSize"), //
 		/**
 		 * Message id {@code container.greaterThanOrEqual}. Default message: {@code The
 		 * size of "{0}" must be greater than or equal to {1}. The given size is {2}}.
@@ -162,37 +222,39 @@ public interface ViolationMessage {
 		 * {@code {2}} is the actual size.
 		 */
 		CONTAINER_GREATER_THAN_OR_EQUAL("container.greaterThanOrEqual",
-				"The size of \"{0}\" must be greater than or equal to {1}. The given size is {2}"), //
+				"The size of \"{0}\" must be greater than or equal to {1}. The given size is {2}", "min", "actualSize"), //
 		/**
 		 * Message id {@code container.fixedSize}. Default message: {@code The size of
 		 * "{0}" must be {1}. The given size is {2}}. {@code {0}} is the property name,
 		 * {@code {1}} is the expected size and {@code {2}} is the actual size.
 		 */
-		CONTAINER_FIXED_SIZE("container.fixedSize", "The size of \"{0}\" must be {1}. The given size is {2}"), //
+		CONTAINER_FIXED_SIZE("container.fixedSize", "The size of \"{0}\" must be {1}. The given size is {2}", "size",
+				"actualSize"), //
 		/**
 		 * Message id {@code numeric.greaterThan}. Default message: {@code "{0}" must be
 		 * greater than {1}}. {@code {0}} is the property name and {@code {1}} is the
 		 * exclusive lower bound.
 		 */
-		NUMERIC_GREATER_THAN("numeric.greaterThan", "\"{0}\" must be greater than {1}"), //
+		NUMERIC_GREATER_THAN("numeric.greaterThan", "\"{0}\" must be greater than {1}", "min"), //
 		/**
 		 * Message id {@code numeric.greaterThanOrEqual}. Default message: {@code "{0}"
 		 * must be greater than or equal to {1}}. {@code {0}} is the property name and
 		 * {@code {1}} is the inclusive lower bound.
 		 */
-		NUMERIC_GREATER_THAN_OR_EQUAL("numeric.greaterThanOrEqual", "\"{0}\" must be greater than or equal to {1}"), //
+		NUMERIC_GREATER_THAN_OR_EQUAL("numeric.greaterThanOrEqual", "\"{0}\" must be greater than or equal to {1}",
+				"min"), //
 		/**
 		 * Message id {@code numeric.lessThan}. Default message: {@code "{0}" must be less
 		 * than {1}}. {@code {0}} is the property name and {@code {1}} is the exclusive
 		 * upper bound.
 		 */
-		NUMERIC_LESS_THAN("numeric.lessThan", "\"{0}\" must be less than {1}"), //
+		NUMERIC_LESS_THAN("numeric.lessThan", "\"{0}\" must be less than {1}", "max"), //
 		/**
 		 * Message id {@code numeric.lessThanOrEqual}. Default message: {@code "{0}" must
 		 * be less than or equal to {1}}. {@code {0}} is the property name and {@code {1}}
 		 * is the inclusive upper bound.
 		 */
-		NUMERIC_LESS_THAN_OR_EQUAL("numeric.lessThanOrEqual", "\"{0}\" must be less than or equal to {1}"), //
+		NUMERIC_LESS_THAN_OR_EQUAL("numeric.lessThanOrEqual", "\"{0}\" must be less than or equal to {1}", "max"), //
 		/**
 		 * Message id {@code numeric.positive}. Default message: {@code "{0}" must be
 		 * positive}. {@code {0}} is the property name.
@@ -219,7 +281,7 @@ public interface ViolationMessage {
 		 * divisor.
 		 * @since 0.18.0
 		 */
-		NUMERIC_MULTIPLE_OF("numeric.multipleOf", "\"{0}\" must be a multiple of {1}"), //
+		NUMERIC_MULTIPLE_OF("numeric.multipleOf", "\"{0}\" must be a multiple of {1}", "divisor"), //
 		/**
 		 * Message id {@code numeric.fractionDigits}. Default message: {@code "{0}" must
 		 * have at most {1} fraction digits}. {@code {0}} is the property name and
@@ -227,7 +289,7 @@ public interface ViolationMessage {
 		 *
 		 * @since 0.18.0
 		 */
-		NUMERIC_FRACTION_DIGITS("numeric.fractionDigits", "\"{0}\" must have at most {1} fraction digits"), //
+		NUMERIC_FRACTION_DIGITS("numeric.fractionDigits", "\"{0}\" must have at most {1} fraction digits", "max"), //
 		/**
 		 * Message id {@code numeric.integerDigits}. Default message: {@code "{0}" must
 		 * have at most {1} integer digits}. {@code {0}} is the property name and
@@ -235,7 +297,7 @@ public interface ViolationMessage {
 		 *
 		 * @since 0.18.0
 		 */
-		NUMERIC_INTEGER_DIGITS("numeric.integerDigits", "\"{0}\" must have at most {1} integer digits"), //
+		NUMERIC_INTEGER_DIGITS("numeric.integerDigits", "\"{0}\" must have at most {1} integer digits", "max"), //
 		/**
 		 * Message id {@code boolean.isTrue}. Default message: {@code "{0}" must be true}.
 		 * {@code {0}} is the property name.
@@ -256,19 +318,19 @@ public interface ViolationMessage {
 		 * contain {1}}. {@code {0}} is the property name and {@code {1}} is the required
 		 * substring.
 		 */
-		CHAR_SEQUENCE_CONTAINS("charSequence.contains", "\"{0}\" must contain {1}"), //
+		CHAR_SEQUENCE_CONTAINS("charSequence.contains", "\"{0}\" must contain {1}", "substring"), //
 		/**
 		 * Message id {@code charSequence.startsWith}. Default message: {@code "{0}" must
 		 * start with "{1}"}. {@code {0}} is the property name and {@code {1}} is the
 		 * required prefix.
 		 */
-		CHAR_SEQUENCE_STARTSWITH("charSequence.startsWith", "\"{0}\" must start with \"{1}\""), //
+		CHAR_SEQUENCE_STARTSWITH("charSequence.startsWith", "\"{0}\" must start with \"{1}\"", "prefix"), //
 		/**
 		 * Message id {@code charSequence.endsWith}. Default message: {@code "{0}" must
 		 * end with "{1}"}. {@code {0}} is the property name and {@code {1}} is the
 		 * required suffix.
 		 */
-		CHAR_SEQUENCE_ENDSWITH("charSequence.endsWith", "\"{0}\" must end with \"{1}\""), //
+		CHAR_SEQUENCE_ENDSWITH("charSequence.endsWith", "\"{0}\" must end with \"{1}\"", "suffix"), //
 		/**
 		 * Message id {@code charSequence.email}. Default message: {@code "{0}" must be a
 		 * valid email address}. {@code {0}} is the property name.
@@ -307,19 +369,21 @@ public interface ViolationMessage {
 		 * property name and {@code {1}} is the collection of allowed protocols.
 		 */
 		CHAR_SEQUENCE_URL_PROTOCOL("charSequence.url.protocol",
-				"The protocol of \"{0}\" must be one of the following values: {1}"), //
+				"The protocol of \"{0}\" must be one of the following values: {1}", "values"), //
 		/**
 		 * Message id {@code charSequence.url.host}. Default message: {@code The host of
 		 * "{0}" must be one of the following values: {1}}. {@code {0}} is the property
 		 * name and {@code {1}} is the collection of allowed hosts.
 		 */
-		CHAR_SEQUENCE_URL_HOST("charSequence.url.host", "The host of \"{0}\" must be one of the following values: {1}"), //
+		CHAR_SEQUENCE_URL_HOST("charSequence.url.host", "The host of \"{0}\" must be one of the following values: {1}",
+				"values"), //
 		/**
 		 * Message id {@code charSequence.url.port}. Default message: {@code The port of
 		 * "{0}" must be one of the following values: {1}}. {@code {0}} is the property
 		 * name and {@code {1}} is the collection of allowed ports.
 		 */
-		CHAR_SEQUENCE_URL_PORT("charSequence.url.port", "The port of \"{0}\" must be one of the following values: {1}"), //
+		CHAR_SEQUENCE_URL_PORT("charSequence.url.port", "The port of \"{0}\" must be one of the following values: {1}",
+				"values"), //
 		/**
 		 * Message id {@code charSequence.uuid}. Default message: {@code "{0}" must be a
 		 * valid UUID}. {@code {0}} is the property name.
@@ -336,7 +400,7 @@ public interface ViolationMessage {
 		 * match {1}}. {@code {0}} is the property name and {@code {1}} is the regular
 		 * expression.
 		 */
-		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}"), //
+		CHAR_SEQUENCE_PATTERN("charSequence.pattern", "\"{0}\" must match {1}", "pattern"), //
 		/**
 		 * Message id {@code charSequence.luhn}. Default message: {@code the check digit
 		 * for "{0}" is invalid, Luhn checksum failed}. {@code {0}} is the property name.
@@ -394,7 +458,8 @@ public interface ViolationMessage {
 		 * name, {@code {1}} is the date pattern and {@code {2}} is the given value.
 		 */
 		CHAR_SEQUENCE_LOCAL_DATE("charSequence.localdate",
-				"\"{0}\" must be a valid representation of a local date using the pattern: {1}. The give value is: {2}"),
+				"\"{0}\" must be a valid representation of a local date using the pattern: {1}. The give value is: {2}",
+				"pattern"),
 		/**
 		 * Message id {@code byteSize.lessThan}. Default message: {@code The byte size of
 		 * "{0}" must be less than {1}. The given size is {2}}. {@code {0}} is the
@@ -402,7 +467,7 @@ public interface ViolationMessage {
 		 * actual byte size.
 		 */
 		BYTE_SIZE_LESS_THAN("byteSize.lessThan",
-				"The byte size of \"{0}\" must be less than {1}. The given size is {2}"), //
+				"The byte size of \"{0}\" must be less than {1}. The given size is {2}", "max", "actualSize"), //
 		/**
 		 * Message id {@code byteSize.lessThanOrEqual}. Default message: {@code The byte
 		 * size of "{0}" must be less than or equal to {1}. The given size is {2}}.
@@ -410,7 +475,8 @@ public interface ViolationMessage {
 		 * {@code {2}} is the actual byte size.
 		 */
 		BYTE_SIZE_LESS_THAN_OR_EQUAL("byteSize.lessThanOrEqual",
-				"The byte size of \"{0}\" must be less than or equal to {1}. The given size is {2}"), //
+				"The byte size of \"{0}\" must be less than or equal to {1}. The given size is {2}", "max",
+				"actualSize"), //
 		/**
 		 * Message id {@code byteSize.greaterThan}. Default message: {@code The byte size
 		 * of "{0}" must be greater than {1}. The given size is {2}}. {@code {0}} is the
@@ -418,7 +484,7 @@ public interface ViolationMessage {
 		 * actual byte size.
 		 */
 		BYTE_SIZE_GREATER_THAN("byteSize.greaterThan",
-				"The byte size of \"{0}\" must be greater than {1}. The given size is {2}"), //
+				"The byte size of \"{0}\" must be greater than {1}. The given size is {2}", "min", "actualSize"), //
 		/**
 		 * Message id {@code byteSize.greaterThanOrEqual}. Default message: {@code The
 		 * byte size of "{0}" must be greater than or equal to {1}. The given size is
@@ -426,25 +492,27 @@ public interface ViolationMessage {
 		 * and {@code {2}} is the actual byte size.
 		 */
 		BYTE_SIZE_GREATER_THAN_OR_EQUAL("byteSize.greaterThanOrEqual",
-				"The byte size of \"{0}\" must be greater than or equal to {1}. The given size is {2}"), //
+				"The byte size of \"{0}\" must be greater than or equal to {1}. The given size is {2}", "min",
+				"actualSize"), //
 		/**
 		 * Message id {@code byteSize.fixedSize}. Default message: {@code The byte size of
 		 * "{0}" must be {1}. The given size is {2}}. {@code {0}} is the property name,
 		 * {@code {1}} is the expected byte size and {@code {2}} is the actual byte size.
 		 */
-		BYTE_SIZE_FIXED_SIZE("byteSize.fixedSize", "The byte size of \"{0}\" must be {1}. The given size is {2}"), //
+		BYTE_SIZE_FIXED_SIZE("byteSize.fixedSize", "The byte size of \"{0}\" must be {1}. The given size is {2}",
+				"size", "actualSize"), //
 		/**
 		 * Message id {@code collection.contains}. Default message: {@code "{0}" must
 		 * contain {1}}. {@code {0}} is the property name and {@code {1}} is the required
 		 * element.
 		 */
-		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}"), //
+		COLLECTION_CONTAINS("collection.contains", "\"{0}\" must contain {1}", "element"), //
 		/**
 		 * Message id {@code collection.unique}. Default message: {@code "{0}" must be
 		 * unique. {1} is/are duplicated.}. {@code {0}} is the property name and
 		 * {@code {1}} is the collection of duplicated elements.
 		 */
-		COLLECTION_UNIQUE("collection.unique", "\"{0}\" must be unique. {1} is/are duplicated."), //
+		COLLECTION_UNIQUE("collection.unique", "\"{0}\" must be unique. {1} is/are duplicated.", "duplicates"), //
 		/**
 		 * Message id {@code collection.containsAll}. Default message: {@code "{0}" must
 		 * be have of all of the following values: {1}, missing values: {2}}. {@code {0}}
@@ -452,48 +520,48 @@ public interface ViolationMessage {
 		 * collection of missing values.
 		 */
 		COLLECTION_CONTAINS_ALL("collection.containsAll",
-				"\"{0}\" must be have of all of the following values: {1}, missing values: {2}"), //
+				"\"{0}\" must be have of all of the following values: {1}, missing values: {2}", "values", "missing"), //
 		/**
 		 * Message id {@code map.containsValue}. Default message: {@code "{0}" must
 		 * contain value {1}}. {@code {0}} is the property name and {@code {1}} is the
 		 * required value.
 		 */
-		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}"), //
+		MAP_CONTAINS_VALUE("map.containsValue", "\"{0}\" must contain value {1}", "value"), //
 		/**
 		 * Message id {@code map.containsKey}. Default message: {@code "{0}" must contain
 		 * key {1}}. {@code {0}} is the property name and {@code {1}} is the required key.
 		 */
-		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}"), //
+		MAP_CONTAINS_KEY("map.containsKey", "\"{0}\" must contain key {1}", "key"), //
 		/**
 		 * Message id {@code array.contains}. Default message: {@code "{0}" must contain
 		 * {1}}. {@code {0}} is the property name and {@code {1}} is the required element.
 		 */
-		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}"), //
+		ARRAY_CONTAINS("array.contains", "\"{0}\" must contain {1}", "element"), //
 		/**
 		 * Message id {@code codePoints.asWhiteList}. Default message: {@code "{1}" is/are
 		 * not allowed for "{0}"}. {@code {0}} is the property name and {@code {1}} is the
 		 * collection of characters that are not allowed.
 		 */
-		CODE_POINTS_ALL_INCLUDED("codePoints.asWhiteList", "\"{1}\" is/are not allowed for \"{0}\""), //
+		CODE_POINTS_ALL_INCLUDED("codePoints.asWhiteList", "\"{1}\" is/are not allowed for \"{0}\"", "notAllowed"), //
 		/**
 		 * Message id {@code codePoints.asBlackList}. Default message: {@code "{1}" is/are
 		 * not allowed for "{0}"}. {@code {0}} is the property name and {@code {1}} is the
 		 * collection of characters that are not allowed.
 		 */
-		CODE_POINTS_NOT_INCLUDED("codePoints.asBlackList", "\"{1}\" is/are not allowed for \"{0}\""), //
+		CODE_POINTS_NOT_INCLUDED("codePoints.asBlackList", "\"{1}\" is/are not allowed for \"{0}\"", "notAllowed"), //
 		/**
 		 * Message id {@code password.required}. Default message: {@code "{0}" must meet
 		 * {1} policy}. {@code {0}} is the property name and {@code {1}} is the name of
 		 * the required password policy.
 		 */
-		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy"), //
+		PASSWORD_REQUIRED("password.required", "\"{0}\" must meet {1} policy", "policy"), //
 		/**
 		 * Message id {@code password.optional}. Default message: {@code "{0}" must meet
 		 * at least {1} policies from {2}}. {@code {0}} is the property name, {@code {1}}
 		 * is the minimum number of policies and {@code {2}} is the collection of optional
 		 * policy names.
 		 */
-		PASSWORD_OPTIONAL("password.optional", "\"{0}\" must meet at least {1} policies from {2}"), //
+		PASSWORD_OPTIONAL("password.optional", "\"{0}\" must meet at least {1} policies from {2}", "min", "policies"), //
 		/**
 		 * Message id {@code temporal.past}. Default message: {@code "{0}" must be a past
 		 * date}. {@code {0}} is the property name.
@@ -520,46 +588,49 @@ public interface ViolationMessage {
 		 * before {1}}. {@code {0}} is the property name and {@code {1}} is the boundary
 		 * value.
 		 */
-		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}"), //
+		TEMPORAL_BEFORE("temporal.before", "\"{0}\" has to be before {1}", "other"), //
 		/**
 		 * Message id {@code temporal.beforeOrEqual}. Default message: {@code "{0}" has to
 		 * be before or equals to {1}}. {@code {0}} is the property name and {@code {1}}
 		 * is the boundary value.
 		 */
-		TEMPORAL_BEFORE_OR_EQUAL("temporal.beforeOrEqual", "\"{0}\" has to be before or equals to {1}"), //
+		TEMPORAL_BEFORE_OR_EQUAL("temporal.beforeOrEqual", "\"{0}\" has to be before or equals to {1}", "other"), //
 		/**
 		 * Message id {@code temporal.after}. Default message: {@code "{0}" has to be
 		 * after {1}}. {@code {0}} is the property name and {@code {1}} is the boundary
 		 * value.
 		 */
-		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}"), //
+		TEMPORAL_AFTER("temporal.after", "\"{0}\" has to be after {1}", "other"), //
 		/**
 		 * Message id {@code temporal.afterOrEqual}. Default message: {@code "{0}" has to
 		 * be after or equals to {1}}. {@code {0}} is the property name and {@code {1}} is
 		 * the boundary value.
 		 */
-		TEMPORAL_AFTER_OR_EQUAL("temporal.afterOrEqual", "\"{0}\" has to be after or equals to {1}"), //
+		TEMPORAL_AFTER_OR_EQUAL("temporal.afterOrEqual", "\"{0}\" has to be after or equals to {1}", "other"), //
 		/**
 		 * Message id {@code temporal.between}. Default message: {@code "{0}" has to be
 		 * between {1} and {2}}. {@code {0}} is the property name, {@code {1}} is the
 		 * start of the range and {@code {2}} is the end of the range.
 		 */
-		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}"), //
+		TEMPORAL_BETWEEN("temporal.between", "\"{0}\" has to be between {1} and {2}", "rangeFrom", "rangeTo"), //
 		/**
 		 * Message id {@code temporal.field}. Default message: {@code The {1} of "{0}" is
 		 * invalid}. {@code {0}} is the property name and {@code {1}} is the temporal
 		 * field.
 		 */
-		TEMPORAL_FIELD("temporal.field", "The {1} of \"{0}\" is invalid") //
+		TEMPORAL_FIELD("temporal.field", "The {1} of \"{0}\" is invalid", "field") //
 		;
 
 		private final String defaultMessageFormat;
 
 		private final String messageKey;
 
-		Default(String messageKey, String defaultMessageFormat) {
+		private final List<String> paramNames;
+
+		Default(String messageKey, String defaultMessageFormat, String... paramNames) {
 			this.messageKey = messageKey;
 			this.defaultMessageFormat = defaultMessageFormat;
+			this.paramNames = List.of(paramNames);
 		}
 
 		/**
@@ -578,6 +649,16 @@ public interface ViolationMessage {
 		@Override
 		public String messageKey() {
 			return this.messageKey;
+		}
+
+		/**
+		 * Returns the names of the arguments of this message.
+		 * @return the unmodifiable names of the arguments
+		 * @since 0.18.0
+		 */
+		@Override
+		public List<String> paramNames() {
+			return this.paramNames;
 		}
 
 	}

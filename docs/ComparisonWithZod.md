@@ -339,7 +339,8 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 | Zod | YAVI |
 | --- | --- |
 | `z.flattenError(error)` | `violations.messagesByName()`, a map of the name to the messages; the messages of the root are under the empty name |
-| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
+| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `params`, and `alternatives` for `object.anyOf`) |
+| `issue.minimum`, `issue.maximum`, `issue.format` and so on | `params` of a detail, `violation.params()` (`{"max": 150}`); the violated value is not in it |
 
 `z.treeifyError` has no counterpart: the keys of `messagesByPointer()` address the
 nested values instead.

@@ -34,7 +34,7 @@ import am.ik.yavi.validator.Yavi;
 | `Decoder<I, T>` | `ValueValidator<I, T>` |
 | `decoder.decode(input)` returns `Result<T>` | `validator.validate(input)` returns `Validated<T>` |
 | `Ok(value)` / `Err(issues)` | `Validated.Valid(value)` / `Validated.Invalid(violations)`, a sealed interface |
-| `Issue` (`path`, `code`, `message`, `meta`) | `ConstraintViolation` (`path()` / `name()`, `messageKey()`, `message()`, `args()`) |
+| `Issue` (`path`, `code`, `message`, `meta`) | `ConstraintViolation` (`path()` / `name()`, `messageKey()`, `message()`, `params()`) |
 | path `/address/zip`, `/items/1/name` | `pointer()` `/address/zip`, `/items/1/name`; `name()` `address.zip`, `items[1].name` |
 | `combine(field(...), ...).map(f)` | `Yavi.schema()._xxx(...).fromMap(f)` (`ObjectInputValidator<X>`) |
 | `ObjectDecoders` (input `Object`) | `validator.untyped()` |
@@ -747,13 +747,16 @@ ConstraintViolations violations = validated.errors();
 | Raoh | YAVI |
 | --- | --- |
 | `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
-| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
+| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `params`, and `alternatives` for `object.anyOf`) |
+| `issue.meta()` (`{"min": 0, "max": 150}`) | `violation.params()` (`{"max": 150}`), `params` of a `ViolationDetail`; the violated value is not in it |
 | `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to
 150`), a message of Raoh does not (`must be between 0 and 150`). The locale is given when
 validating; the message key and `args()` are kept in the violation, so a message is also
-formatted later.
+formatted later. A message format of YAVI refers to its arguments by position (`{1}`), a
+template of Raoh by name (`{max}`); the names of `params()` are for the client that renders
+a message of its own.
 
 ## Scenarios
 

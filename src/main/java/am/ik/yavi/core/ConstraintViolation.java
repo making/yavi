@@ -10,8 +10,10 @@ import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -22,7 +24,8 @@ import java.util.function.Function;
  * <p>
  * A violation carries the property name, the message id, the default message format, the
  * message arguments, the message formatter and the locale. The message arguments start
- * with the property name and end with the value that violated the constraint. A violation
+ * with the property name and end with the value that violated the constraint; the ones
+ * that the message names are also available by name as {@link #params()}. A violation
  * that reports that no alternative matched is a {@link NoAlternativeMatched}, which also
  * carries the violations of each alternative.
  *
@@ -91,13 +94,21 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	private final String separator;
 
+	/**
+	 * The names of the arguments that follow the name: the first one names the second
+	 * element of the args array.
+	 */
+	private final List<String> paramNames;
+
 	private ConstraintViolation(String name, @Nullable List<PathSegment> path, String separator, String messageKey,
-			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter, Locale locale) {
+			String defaultMessageFormat, List<String> paramNames, Object[] args, MessageFormatter messageFormatter,
+			Locale locale) {
 		this.name = name;
 		this.path = path == null ? PathSegment.of(name) : path;
 		this.separator = separator;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
+		this.paramNames = paramNames;
 		this.args = args;
 		this.messageFormatter = messageFormatter;
 		this.locale = locale;
@@ -140,6 +151,36 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	}
 
 	/**
+	 * Returns the message arguments that have a name, by name: what the constraint was
+	 * configured with and, where the constraint computes one, what it found in the value.
+	 * {@code lessThanOrEqual(150)} of a number reports <code>{"max": 150}</code> and
+	 * {@code lessThanOrEqual(8)} of a string <code>{"max": 8, "actualSize": 11}</code>.
+	 *
+	 * <p>
+	 * The names are those of the violation message (see
+	 * {@link ViolationMessage#paramNames()}): the messages of
+	 * {@link ViolationMessage.Default} name every argument but the name of the value and
+	 * the value that violated the constraint, so neither is in the parameters. A
+	 * violation whose message names no argument, such as that of
+	 * {@link ViolationMessage#of(String, String)}, has no parameters.
+	 * @return the unmodifiable parameters in the order of the arguments, each possibly
+	 * {@code null}
+	 * @since 0.18.0
+	 * @see #args()
+	 */
+	public Map<String, @Nullable Object> params() {
+		final int size = Math.min(this.paramNames.size(), this.args.length - 1);
+		if (size <= 0) {
+			return Collections.emptyMap();
+		}
+		final Map<String, @Nullable Object> params = new LinkedHashMap<>();
+		for (int i = 0; i < size; i++) {
+			params.put(this.paramNames.get(i), this.args[i + 1]);
+		}
+		return Collections.unmodifiableMap(params);
+	}
+
+	/**
 	 * Returns the default message format string.
 	 * @return the default message format string used when no localized message is found
 	 */
@@ -153,10 +194,12 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 *
 	 * <p>
 	 * The returned detail contains the {@link #name()}, the {@link #pointer()}, the
-	 * message id, the formatted {@link #message()} and the arguments of this violation.
-	 * The detail of a {@link NoAlternativeMatched} is a
-	 * {@link ViolationDetail.NoAlternativeMatched}, which also holds the details of the
-	 * alternatives; any other detail is a {@link ViolationDetail.Simple}.
+	 * message id, the formatted {@link #message()} and the {@link #params()} of this
+	 * violation. It does not contain the {@link #violatedValue()}, which may be a
+	 * password or a token, unless the message names it. The detail of a
+	 * {@link NoAlternativeMatched} is a {@link ViolationDetail.NoAlternativeMatched},
+	 * which also holds the details of the alternatives; any other detail is a
+	 * {@link ViolationDetail.Simple}.
 	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 */
 	public ViolationDetail detail() {
@@ -177,11 +220,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	public ViolationDetail detail(MessageFormatter messageFormatter) {
 		return new ViolationDetail.Simple(this.name, this.pointer(), this.messageKey, this.message(messageFormatter),
-				this.detailArgs());
-	}
-
-	private List<@Nullable Object> detailArgs() {
-		return Collections.unmodifiableList(Arrays.asList(this.args.clone()));
+				this.params());
 	}
 
 	/**
@@ -412,8 +451,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	ConstraintViolation relocated(String name, List<PathSegment> path, Object[] args,
 			Function<? super ConstraintViolation, String> newName,
 			BiFunction<? super ConstraintViolation, String, List<PathSegment>> newPath) {
-		return new ConstraintViolation(name, path, this.separator, this.messageKey, this.defaultMessageFormat, args,
-				this.messageFormatter, this.locale);
+		return new ConstraintViolation(name, path, this.separator, this.messageKey, this.defaultMessageFormat,
+				this.paramNames, args, this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -437,7 +476,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 		private NoAlternativeMatched(String name, List<PathSegment> path, Object[] args,
 				List<ConstraintViolations> alternatives, ConstraintViolation source) {
-			super(name, path, source.separator, source.messageKey, source.defaultMessageFormat, args,
+			super(name, path, source.separator, source.messageKey, source.defaultMessageFormat, source.paramNames, args,
 					source.messageFormatter, source.locale);
 			this.alternatives = alternatives;
 		}
@@ -466,7 +505,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		@Override
 		public ViolationDetail.NoAlternativeMatched detail(MessageFormatter messageFormatter) {
 			return new ViolationDetail.NoAlternativeMatched(this.name(), this.pointer(), this.messageKey(),
-					this.message(messageFormatter), super.detailArgs(),
+					this.message(messageFormatter), this.params(),
 					this.alternatives.stream()
 						.map(violations -> violations.stream()
 							.map(violation -> violation.detail(messageFormatter))
@@ -518,7 +557,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 * property that the validator is applied to; give it another location with
 	 * {@link #prefixed(String)}. The message arguments are the name as <code>{0}</code>,
 	 * then the given arguments, then the violated value, as the messages of
-	 * {@link ViolationMessage.Default} have them.
+	 * {@link ViolationMessage.Default} have them. The given arguments that the message
+	 * names are the {@link #params()} of the violation.
 	 * @param message the message key and the default message format
 	 * @param violatedValue the value that violated the rule, possibly {@code null}
 	 * @param locale the locale of the message
@@ -538,7 +578,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		System.arraycopy(args, 0, completeArgs, 1, args.length);
 		completeArgs[args.length + 1] = violatedValue;
 		return new ConstraintViolation("", null, DEFAULT_SEPARATOR, message.messageKey(),
-				message.defaultMessageFormat(), completeArgs, SimpleMessageFormatter.getInstance(), locale);
+				message.defaultMessageFormat(), message.paramNames(), completeArgs,
+				SimpleMessageFormatter.getInstance(), locale);
 	}
 
 	/**
@@ -579,6 +620,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 		/** The arguments to be used when formatting the message */
 		private Object[] args = new Object[0];
+
+		/** The names of the arguments that follow the name */
+		private List<String> paramNames = List.of();
 
 		/** The message formatter to be used for formatting the message */
 		private MessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
@@ -679,6 +723,19 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		}
 
 		/**
+		 * Sets the names of the arguments that follow the name, which makes them the
+		 * {@link ConstraintViolation#params()} of the violation. If not specified, the
+		 * violation has no parameters.
+		 * @param paramNames the names of the arguments from <code>{1}</code> on
+		 * @return this builder for method chaining
+		 * @since 0.18.0
+		 */
+		public Builder paramNames(List<String> paramNames) {
+			this.paramNames = List.copyOf(paramNames);
+			return this;
+		}
+
+		/**
 		 * Sets the structured path to the value that the constraint violation applies to.
 		 * If not specified, the path is a single property segment holding the name.
 		 * @param path the structured path
@@ -734,7 +791,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		public ConstraintViolation build() {
 			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path, this.separator,
 					Objects.requireNonNull(this.messageKey), Objects.requireNonNull(this.defaultMessageFormat),
-					this.args, this.messageFormatter, this.locale);
+					this.paramNames, this.args, this.messageFormatter, this.locale);
 		}
 
 	}
@@ -946,6 +1003,20 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			 * @return this builder for method chaining
 			 */
 			Optionals argsWithPrependedNameAndAppendedViolatedValue(Object[] args, ViolatedValue violatedValue);
+
+			/**
+			 * Sets the names of the arguments that follow the name: the first name is
+			 * that of <code>{1}</code>. The arguments that have a name are the
+			 * {@link ConstraintViolation#params()} of the violation, which a
+			 * {@link ViolationDetail} exposes; an argument without a name, such as the
+			 * violated value at the end, is not exposed. If not specified, the violation
+			 * has no parameters.
+			 * @param paramNames the names of the arguments from <code>{1}</code> on
+			 * @return this builder for method chaining
+			 * @since 0.18.0
+			 * @see ViolationMessage#paramNames()
+			 */
+			Optionals paramNames(List<String> paramNames);
 
 			/**
 			 * Sets the structured path to the value that the constraint violation applies

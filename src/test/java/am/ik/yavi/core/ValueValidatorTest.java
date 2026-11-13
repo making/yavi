@@ -235,12 +235,12 @@ class ValueValidatorTest {
 		assertThat(new JsonMapper().writeValueAsString(violations.details())).isEqualTo("""
 				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"object.anyOf",\
 				"message":"\\"[0].amount\\" must satisfy at least one of the 2 alternatives",\
-				"args":["[0].amount",2,"x"],"alternatives":[\
+				"params":{"count":2},"alternatives":[\
 				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"charSequence.integer",\
-				"message":"\\"[0].amount\\" must be a valid representation of an integer","args":["[0].amount","x"]}],\
+				"message":"\\"[0].amount\\" must be a valid representation of an integer","params":{}}],\
 				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"charSequence.bigdecimal",\
 				"message":"\\"[0].amount\\" must be a valid representation of a big decimal",\
-				"args":["[0].amount","x"]}]]}]""");
+				"params":{}}]]}]""");
 		// an alternative that is itself a choice keeps its own alternatives
 		final ValueValidator<String, Number> nested = ValueValidator.anyOf(number,
 				StringValidatorBuilder.of("", c -> c.isLong()).build(Long::valueOf));

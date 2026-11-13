@@ -350,6 +350,7 @@ public class Validator<T> implements Validatable<T> {
 						.messageKey(constraintPredicate.messageKey())
 						.defaultMessageFormat(constraintPredicate.defaultMessageFormat())
 						.argsWithPrependedNameAndAppendedViolatedValue(args, violatedValue)
+						.paramNames(constraintPredicate.paramNames())
 						.path(path)
 						.separator(this.messageKeySeparator)
 						.messageFormatter(this.messageFormatter)
