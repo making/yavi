@@ -4,11 +4,21 @@
  */
 package am.ik.yavi.builder;
 
+import java.net.URI;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
+import javax.tools.ToolProvider;
 
 import am.ik.yavi.arguments.Arguments;
 import am.ik.yavi.core.ConstraintGroup;
@@ -279,6 +289,76 @@ class YaviSchemaTest {
 			.extracting(violations -> violations.get(0).messageKey())
 			.containsExactly("object.notNull", "object.isNull", "object.isNull");
 		assertThat(mustBeNull.nullable().validate(null).isValid()).isTrue();
+	}
+
+	@Test
+	void modifierChainWithoutEffectDoesNotCompile() throws Exception {
+		// every chain is one line of a source file: the lines that do not compile are
+		// reported by the compiler
+		final List<String> accepted = List.of(
+				// an invalid value is recovered as an absent one
+				"s._string(\"x\").optional().recover(Optional.empty()).required()",
+				"s._string(\"x\").nullable().recoverWith(violations -> null).rejectingNull()",
+				// null produces something else than the fallback
+				"s._integer(\"x\").recover(0).nullable().required()",
+				"s._integer(\"x\").recover(0).defaultValue(1).presence()",
+				"s._integer(\"x\").recoverWith(violations -> 0).optional().rejectingNull()",
+				// a validator that accepts null
+				"s._integer(Yavi._integer(\"x\", c -> c.positive()).defaultValue(1)).rejectingNull()",
+				"s._integer(Yavi._integer(\"x\", c -> c.positive()).nullable()).presence()",
+				// a lambda is not taken for a validator that accepts null
+				"s._string((value, locale, context) -> Validated.successWith(value)).nullable().required()",
+				"s._rest().nullable().recover(null)", "s._rest().recover(Map.of()).defaultValue(Map.of())",
+				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional()");
+		final List<String> rejected = List.of(
+				// only the last one would decide what null produces
+				"s._string(\"x\").nullable().optional()", "s._string(\"x\").optional().nullable()",
+				"s._string(\"x\").optional().optional()", "s._string(\"x\").nullable().nullable()",
+				"s._string(\"x\").optional().defaultValue(Optional.of(\"a\"))",
+				"s._string(\"x\").nullable().defaultValue(\"a\")", "s._integer(\"x\").defaultValue(1).nullable()",
+				"s._integer(\"x\").defaultValue(1).optional()", "s._integer(\"x\").defaultValue(1).defaultValue(2)",
+				"s._integer(\"x\").defaultValue(1).recover(2)",
+				"s._integer(\"x\").defaultValue(1).recoverWith(violations -> 2)",
+				// the second one would never recover
+				"s._integer(\"x\").recover(1).recover(2)", "s._integer(\"x\").recover(1).recoverWith(violations -> 2)",
+				"s._integer(\"x\").recover(0).nullable().optional()",
+				"s._string(\"x\").optional().recover(Optional.empty()).nullable()",
+				"s._string(\"x\").optional().recover(Optional.empty()).recover(Optional.empty())",
+				// a property that rejects null rejects an absent key too
+				"s._string(\"x\").required()", "s._string(\"x\").rejectingNull()",
+				"s._string(Yavi._string(\"x\", c -> c.notBlank())).required()",
+				// a validator that accepts null
+				"s._integer(Yavi._integer(\"x\", c -> c.positive()).defaultValue(1)).nullable()",
+				"s._integer(Yavi._integer(\"x\", c -> c.positive()).nullable()).recover(2)",
+				// an argument that is not read from a key
+				"s._rest().nullable().optional()", "s._rest().defaultValue(Map.of()).nullable()",
+				"s._rest().recover(Map.of()).recover(Map.of())", "s._rest().optional().required()",
+				"s._rest().presence()");
+		final List<String> chains = new ArrayList<>(accepted);
+		chains.addAll(rejected);
+		final String source = """
+				import java.util.Map; import java.util.Optional; import am.ik.yavi.builder.YaviSchema; \
+				import am.ik.yavi.core.Validated; import am.ik.yavi.validator.Yavi; \
+				class Chains { void chains(YaviSchema s) { Object[] chains = {
+				%s
+				}; } }""".formatted(String.join(",\n", chains));
+		final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+		final JavaFileObject file = new SimpleJavaFileObject(URI.create("string:///Chains.java"),
+				JavaFileObject.Kind.SOURCE) {
+			@Override
+			public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+				return source;
+			}
+		};
+		compiler.getTask(null, null, diagnostics, List.of("-proc:none", "-d",
+				Files.createTempDirectory("chains").toString(), "-classpath", System.getProperty("java.class.path")),
+				null, List.of(file))
+			.call();
+		// the first chain is on the second line
+		assertThat(diagnostics.getDiagnostics()).filteredOn(d -> d.getKind() == Diagnostic.Kind.ERROR)
+			.extracting(d -> chains.get((int) d.getLineNumber() - 2))
+			.containsExactlyElementsOf(rejected);
 	}
 
 }

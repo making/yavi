@@ -43,6 +43,7 @@ import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
+import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.ValueValidator;
 
 import org.jspecify.annotations.Nullable;
@@ -124,6 +125,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<BigDecimal, T> _bigDecimal(
+			NullAcceptingValueValidator<BigDecimal, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(BigDecimal.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code BigDecimal} with the given name and configured
 	 * constraints.
 	 *
@@ -173,6 +192,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(
 			ValueValidator<BigInteger, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigInteger.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<BigInteger, T> _bigInteger(
+			NullAcceptingValueValidator<BigInteger, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -228,6 +265,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Boolean, T> _boolean(
+			NullAcceptingValueValidator<Boolean, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Boolean.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Boolean} with the given name and configured
 	 * constraints.
 	 *
@@ -275,6 +330,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Double, T> _double(
 			ValueValidator<Double, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Double.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_double(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Double, T> _double(
+			NullAcceptingValueValidator<Double, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -326,6 +399,25 @@ public final class YaviSchema
 	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<E, T> _enum(
 			ValueValidator<E, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Enum.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <E> the enum type of the argument
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<E, T> _enum(
+			NullAcceptingValueValidator<E, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -418,6 +510,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_float(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Float, T> _float(
+			NullAcceptingValueValidator<Float, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Float.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Float} with the given name and configured
 	 * constraints.
 	 *
@@ -466,6 +576,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Instant, T> _instant(
 			ValueValidator<Instant, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Instant.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Instant, T> _instant(
+			NullAcceptingValueValidator<Instant, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -521,6 +649,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Integer, T> _integer(
+			NullAcceptingValueValidator<Integer, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Integer.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as an {@code Integer} with the given name and configured
 	 * constraints.
 	 *
@@ -570,6 +716,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDateTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalDateTime, T> _localDateTime(
+			NullAcceptingValueValidator<LocalDateTime, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -625,6 +789,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalTime, T> _localTime(
+			NullAcceptingValueValidator<LocalTime, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code LocalTime} with the given name and configured
 	 * constraints.
 	 *
@@ -674,6 +856,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(
 			ValueValidator<LocalDate, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDate.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalDate, T> _localDate(
+			NullAcceptingValueValidator<LocalDate, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -728,6 +928,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_long(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Long, T> _long(
+			NullAcceptingValueValidator<Long, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Long.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Long} with the given name and configured
 	 * constraints.
 	 *
@@ -776,6 +994,25 @@ public final class YaviSchema
 	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(
 			ValueValidator<T1, T2> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Object.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_object(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<T1, T2> _object(
+			NullAcceptingValueValidator<T1, T2> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -869,6 +1106,25 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<OffsetDateTime, T> _offsetDateTime(
+			NullAcceptingValueValidator<OffsetDateTime, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(
+				ArgumentDefinition.value(OffsetDateTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as an {@code OffsetDateTime} with the given name and
 	 * configured constraints.
 	 *
@@ -920,6 +1176,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_short(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Short, T> _short(
+			NullAcceptingValueValidator<Short, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Short.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Short} with the given name and configured
 	 * constraints.
 	 *
@@ -967,6 +1241,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<String, T> _string(
 			ValueValidator<String, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(String.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_string(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<String, T> _string(
+			NullAcceptingValueValidator<String, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -1027,6 +1319,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<YearMonth, T> _yearMonth(
+			NullAcceptingValueValidator<YearMonth, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(YearMonth.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code YearMonth} with the given name and configured
 	 * constraints.
 	 *
@@ -1078,6 +1388,24 @@ public final class YaviSchema
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_year(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Year, T> _year(
+			NullAcceptingValueValidator<Year, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Year.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Year} with the given name and configured
 	 * constraints.
 	 *
@@ -1126,6 +1454,24 @@ public final class YaviSchema
 	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<ZonedDateTime, T> _zonedDateTime(
+			NullAcceptingValueValidator<ZonedDateTime, T> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**

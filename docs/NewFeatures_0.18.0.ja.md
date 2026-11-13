@@ -234,6 +234,24 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 
 どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして、`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` のいずれかの後に書きます。`null` を受け付けないプロパティは存在しないキーも `null` も拒否するので、`_string("x").required()` はコンパイルできません。この 2 つは存在しないキーと `null` を区別するものなので、キーを持つ入力（マップ、`readingWith(reader)` で読むツリー、パラメーター）に対して働きます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。型付きの引数（`apply`）には「存在しない」という状態がありません。`null` が存在しない値を表すため、`rejectingNull()` を付けた場合も含めて、これらを付けない場合と同じように検証されます。JSON Schema は `fromMap` と `apply` で同じです。
 
+`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` はどれも、プロパティを検証する前に `null` に対して返す値を決めます。2 つ重ねても、効くのは最後に書いたものだけです。効果のない部分を含む連鎖はコンパイルできません。
+
+| 連鎖 | |
+| --- | --- |
+| `.optional().recover(Optional.empty())`、`.nullable().recover(null)` | コンパイルできる。不正な値を、値がない場合と同じ結果にする |
+| `.recover(0).nullable()`、`.recover(0).optional()`、`.recover(0).defaultValue(1)` | コンパイルできる。`null` に対して、不正な値のフォールバック値とは別の値を返す |
+| `.nullable().optional()`、`.defaultValue(1).nullable()`、`.optional().defaultValue(...)` | コンパイルできない。1 つ目が `null` に対して返す値は使われない |
+| `.defaultValue(1).recover(2)` | コンパイルできない。`recover` は `null` も置き換える。`.recover(2).defaultValue(1)` と書く |
+| `.recover(1).recover(2)` | コンパイルできない。1 つ目は失敗しない |
+
+`_embedded` と `_rest` のプロパティも同じです。`ValueValidator` のコンビネーターには制限がなく、`NullAcceptingValueValidator` を返します。これは `null` を受け付けることが型でわかるバリデーターです。このバリデーターで追加したプロパティには `required()`、`rejectingNull()`、`presence()` を続けられ、`null` を重ねて受け付ける修飾メソッドは続けられません。
+
+```java
+NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> c.positive()).defaultValue(1);
+
+Yavi.schema()._integer(page).rejectingNull() // 省略したときだけ 1
+```
+
 ### 自分自身を含む構造
 
 `ValueValidator.recursive(self -> ...)` は、自分自身への参照を使ってバリデータを作ります。`ValueValidator.lazy(() -> validator)` は、後で作られるバリデータを参照します。互いに参照し合うバリデータに使います。
@@ -519,4 +537,5 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
+| 効果のない修飾メソッドの連鎖はコンパイルできない、`NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563) |
 | JSpecify、`@Nullable` のない値 | [#534](https://github.com/making/yavi/pull/534)、[#556](https://github.com/making/yavi/pull/556)、[#557](https://github.com/making/yavi/pull/557) |
