@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.ArgumentsValidators;
@@ -71,7 +72,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name.
+ * violations are located under the argument name. {@code splitBy} after {@code _list}
+ * reads the list also from one text, such as the request parameter {@code tags=a,b}.
  *
  * <p>
  * An argument is required: {@code null} is a violation, and the validated value is given
@@ -1614,7 +1616,10 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * The violations of {@code validator} are located under {@code name}: a violation
 	 * named {@code street} is reported as {@code name.street} with the corresponding
-	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. A {@code null} value is
+	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. The validator of a single
+	 * value is used under {@code name} instead of the name it was built with, as
+	 * {@link ValueValidator#named(String)} states, so that the rule of a value is defined
+	 * once: {@code _object("backupEmail", emailValidator)}. A {@code null} value is
 	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
 	 * or {@code defaultValue} is applied to the argument, or to {@code validator} itself.
 	 * @param <T1> type of the value validated by {@code validator}
@@ -1672,13 +1677,14 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <T> type of the values produced by {@code elementValidator}
 	 * @param name the property name that prefixes the violations of the elements
 	 * @param elementValidator value validator for each element
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> Arguments13ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> _list(
+	public <E, T extends @Nullable Object> Arguments13ValidatorBuilder.KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _list(
 			String name, ValueValidator<E, T> elementValidator) {
-		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, this.d11, this.d12,
+		return new Arguments13ValidatorBuilder.KeyedList<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
 	}
 
@@ -1699,14 +1705,15 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param name the property name of the list
 	 * @param elementValidator value validator for each element
 	 * @param constraints function that configures the constraints of the list
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> Arguments13ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> _list(
+	public <E, T extends @Nullable Object> Arguments13ValidatorBuilder.KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _list(
 			String name, ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
-		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, this.d11, this.d12,
+		return new Arguments13ValidatorBuilder.KeyedList<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 
@@ -2375,11 +2382,11 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R12> type of the validated value of argument at position 12
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+	public static sealed class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
 			extends
 			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>
 			implements
-			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>> {
+			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>>permits KeyedList {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -2582,6 +2589,102 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Presence<A12>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Presence<@NonNull R12>> presence() {
 			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11, this.d12.withPresence());
+		}
+
+	}
+
+	/**
+	 * The builder after a list that is read from a key is added: the modifiers of
+	 * {@link Keyed} apply to the list, and before them {@code splitBy} tells that the
+	 * list may be given as one text, such as the request parameter
+	 * {@code tags=java,yavi}.
+	 *
+	 * @param <A1> type of argument at position 1
+	 * @param <R1> type of the validated value of argument at position 1
+	 * @param <A2> type of argument at position 2
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <E> type of the elements of the list
+	 * @param <T> type of the validated elements of the list
+	 * @since 0.18.0
+	 */
+	public static final class KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, E, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, T extends @Nullable Object>
+			extends
+			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, List<T>> {
+
+		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11,
+				ArgumentDefinition<List<E>, List<T>> d12) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+		}
+
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given separator, as {@link #splitBy(Pattern)} states.
+		 *
+		 * <pre>{@code
+		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
+		 * }</pre>
+		 * @param separator the text that separates the elements, taken literally
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the separator is empty
+		 * @since 0.18.0
+		 */
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, List<T>> splitBy(
+				String separator) {
+			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
+		}
+
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given pattern, such as one element per line of a {@code textarea}.
+		 *
+		 * <pre>{@code
+		 * ._list("ids", Yavi._integer(c -> c.positive())).splitBy(Pattern.compile("\\R"))
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, the value of the key is read as
+		 * {@link ValueValidator#liftList(Pattern)} states: a text is split and so is
+		 * every text of a list, so {@code tags=a,b&tags=c} is {@code [a, b, c]}; an
+		 * element that was split off is text that stands for a value, so that
+		 * {@code 1,2,3} is a list of {@code Integer}; and no element is dropped or
+		 * trimmed, except that a separator at the end of the text starts no element. The
+		 * violations of an element are located under its index, as those of a list that
+		 * is not split are ({@code tags[1]}).
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a list that holds the elements already and
+		 * is validated as before. This is written directly after {@code _list}: the
+		 * returned builder has the other modifiers of the argument.
+		 * @param separator the pattern that separates the elements in a text
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the pattern matches the empty string
+		 * @since 0.18.0
+		 */
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, List<T>> splitBy(
+				Pattern separator) {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.separatedBy(separator));
 		}
 
 	}

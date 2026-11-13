@@ -77,11 +77,11 @@ final class UntypedInput {
 	 */
 	static <N, T, X extends @Nullable Object> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
 			ValueValidator<T, X> validator) {
-		return new Checked<>(reader, type, validator);
+		return new Checked<>(reader, type, validator, "");
 	}
 
 	private record Checked<N, T, X extends @Nullable Object> (InputReader<N> reader, Class<T> type,
-			ValueValidator<T, X> validator) implements ValueValidator<N, X> {
+			ValueValidator<T, X> validator, String name) implements ValueValidator<N, X> {
 
 		@Override
 		public Validated<X> validate(@Nullable N node, Locale locale, ConstraintContext constraintContext) {
@@ -92,9 +92,10 @@ final class UntypedInput {
 				// type
 				final Object value = this.reader.value(present);
 				final Object[] constants = this.type.getEnumConstants();
-				return Validated.failureWith(constants != null
+				return Validated.failureWith((constants != null
 						? violation(ViolationMessage.Default.OBJECT_ONE_OF, List.of(constants), value, locale)
-						: mismatch(typeName(this.type), value, locale));
+						: mismatch(typeName(this.type), value, locale))
+					.prefixed(this.name));
 			}
 			return this.validator.validate(this.type.cast(converted), locale, constraintContext);
 		}
@@ -106,9 +107,24 @@ final class UntypedInput {
 
 		@Override
 		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
-			return new Checked<>(reader, this.type, this.validator);
+			return new Checked<>(reader, this.type, this.validator, this.name);
 		}
 
+		@Override
+		public ValueValidator<N, X> named(String name) {
+			return new Checked<>(this.reader, this.type, this.validator.named(name), name);
+		}
+
+	}
+
+	/**
+	 * Returns the elements of the given text that the given pattern separates. A
+	 * separator at the end of the text ends the last element and starts no other.
+	 */
+	static List<String> split(String text, Pattern separator) {
+		final String[] parts = separator.split(text, -1);
+		final int length = parts.length > 1 && parts[parts.length - 1].isEmpty() ? parts.length - 1 : parts.length;
+		return List.of(parts).subList(0, length);
 	}
 
 	/**

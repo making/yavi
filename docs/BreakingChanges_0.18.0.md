@@ -746,6 +746,23 @@ YaviSchema builder = Yavi.schema();
 
 Related pull request: [#549](https://github.com/making/yavi/pull/549)
 
+### `andThen` takes a validator of a subtype
+
+`ValueValidator#andThen` and `ArgumentsNValidator#andThen` take a
+`ValueValidator<? super X, ? extends X2>`. They took a `ValueValidator<? super X, X2>`.
+A call compiles as before. A class that overrides `andThen` declares the new type of the
+parameter.
+
+```java
+// before
+@Override
+public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, X2> validator) { ... }
+
+// after
+@Override
+public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? extends X2> validator) { ... }
+```
+
 ### `emoji()` counts extended grapheme clusters
 
 A few sequences that are not emoji count as one where they counted as two: `"\r\n"`, or

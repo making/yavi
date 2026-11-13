@@ -75,4 +75,18 @@ public class LongValidator<T extends @Nullable Object> extends DefaultArguments1
 		return new LongValidator<>(super.validator, super.mapper, composed(transform, super.transform));
 	}
 
+	/**
+	 * Returns a validator with the same constraints that reports the violations of the
+	 * value under the given name instead of the name it was built with, so that the rule
+	 * of a value is defined once and used under several names.
+	 * @param name the name under which the violations of the value are reported
+	 * @return a validator of the value under the given name
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#named(String)
+	 */
+	@Override
+	public LongValidator<T> named(String name) {
+		return new LongValidator<>(super.renamed(name), super.mapper, super.transform);
+	}
+
 }

@@ -37,6 +37,7 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
 
 * リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。そのメッセージは、名前の代わりに「The value」と表示します（`The value must not be blank`）。
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。
+* `named(name)` は、バリデータを別の名前で使います。[後述](#ルールを別の名前で使う)します。
 
 ### 制約の前に値を変換する
 
@@ -52,6 +53,34 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 
 `String` の変換には、`trim()`、`toLowerCase()`、`toUpperCase()`、`toNormalForm(form)`、`transform(f)` があります。
 
+### ルールを別の名前で使う
+
+バリデータは、作成時に与えられた名前を保持します。`named(name)` は、同じバリデータを別の名前で返します。値のルールを 1 か所で定義し、複数のプロパティで使えます。
+
+```java
+public final class Email {
+    public static final StringValidator<String> VALIDATOR = Yavi._string("email", c -> c.trim().notBlank().email());
+}
+
+record Contact(String email, @Nullable String backupEmail, String replyTo) {}
+
+ObjectInputValidator<Contact> contactValidator = Yavi.schema()
+        ._string(Email.VALIDATOR)                                 // キーも名前も "email"
+        ._string(Email.VALIDATOR.named("backupEmail")).nullable() // キーも名前も "backupEmail"
+        ._object("replyTo", Email.VALIDATOR)                      // named("replyTo") と同じ
+        .fromMap(Contact::new);
+
+contactValidator.validate(Map.of("email", "a", "backupEmail", "b", "replyTo", "c"));
+// email:       "email" must be a valid email address
+// backupEmail: "backupEmail" must be a valid email address
+// replyTo:     "replyTo" must be a valid email address
+```
+
+* 単一の値のバリデータでは、違反の名前、メッセージ、`description()` の名前が、指定した名前に置き換わります。そのため、バリデータだけを渡して追加したプロパティのキーも、指定した名前になります。
+* オブジェクト、リスト、マップ、ラムダの値のように自身の名前を持たない値では、違反が `prefixed(name)` と同じく指定した名前の下に位置づけられます（`addressValidator.named("home")` は `home.street` を報告します）。
+* 名前はコンビネータを越えて引き継がれます。`Email.VALIDATOR.map(Email::new).nullable().named("x")` と `Email.VALIDATOR.named("x").map(Email::new).nullable()` は同じ結果になり、`untyped().named("x")` と `named("x").untyped()` も同じ結果になります。`andThen` は前後両方のバリデータに、`anyOf` はすべての選択肢に名前を渡します。
+* スキーマの `_object(name, validator)` は、バリデータを `name` の名前で使います。
+
 ### コンビネータ
 
 すべての `ValueValidator` に次のメソッドがあります。
@@ -61,7 +90,9 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 | `nullable()`、`optional()`、`defaultValue(value)` | `null` を受け付け、`null`、`Optional.empty()`、デフォルト値のいずれかを返す |
 | `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
 | `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる |
+| `liftList(separator)` | `liftList()` に加えて、`1,2,3` のような 1 つのテキストからもリストを読む |
 | `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
+| `named(name)` | 値の違反を別の名前で報告する |
 | `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。この違反は `ConstraintViolation.NoAlternativeMatched` で、各選択肢の違反はその `alternatives()` にある |
 | `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
 
@@ -252,6 +283,50 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 
 `required()` と `rejectingNull()` は、`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` のいずれかの後に書きます。型付きの引数（`apply`）には「存在しない」という状態がないので、`null` はこれらを付けない場合と同じように検証されます。
 
+### 実行時にプロパティが決まるスキーマ
+
+`Yavi.schema()` のプロパティはコンパイル時に決まります。検証した値をコンストラクタに渡すからです。`Yavi.dynamicSchema()` は、アンケートの設問やカスタムフィールドのように、プロパティが設定やデータベースから決まる入力を記述します。そのバリデータは、検証した値を名前ごとに持つマップを返します。
+
+```java
+record Question(String id, String title, boolean required, int maxLength) {}
+
+DynamicSchema<String> schema = Yavi.dynamicSchema();
+for (Question question : survey.questions()) {
+    StringValidator<String> answer = Yavi._string(c -> c.notBlank().lessThanOrEqual(question.maxLength()));
+    schema = question.required() ? schema.property(question.id(), answer).label(question.title())
+            : schema.property(question.id(), answer.defaultValue("")).label(question.title());
+}
+ObjectInputValidator<Map<String, String>> answersValidator = schema.build();
+
+answersValidator.validate(Map.of("q1", "yavi")); // {q1=yavi, q2=}
+answersValidator.validate(Map.of());             // q1: "Your name" is required
+```
+
+スキーマは不変で、`property` は新しいスキーマを返します。プロパティのバリデータは、`named(name)` と同じく、プロパティの名前で使われます。
+
+| プロパティ | マップの内容 |
+| --- | --- |
+| `property(name, validator)` | 検証した値。値は必須 |
+| `property(name, validator.nullable())`、`.defaultValue(...)`、`.recover(...)` | 存在しないキーと `null` に対してバリデータが返す値 |
+| 上記に `.required()` または `.rejectingNull()` を続ける | `Yavi.schema()` と同じ |
+| `.presence()` を続ける | キーが存在しなければエントリなし |
+| `rest(valueValidator)` | どのプロパティにも定義されていないキーの、検証した値 |
+
+* `label`、`required(message)`、`typeMessage` は、[スキーマのプロパティ](#プロパティのラベルとメッセージ)のものと同じです。
+* 修飾メソッドの型は `Yavi.schema()` と同じく段階的です。`required()` と `rejectingNull()` は `null` を受け付けるバリデータにだけあり、`presence()` の後には修飾メソッドを続けられません。
+* 値の型は、スキーマを代入する変数の型で決まります。複数の型のプロパティを持つスキーマは `Yavi.<Object>dynamicSchema()` で作ります。
+* 返されるバリデータは `fromMap` のものと同じ種類です。`rejectingUnknownProperties()`、`readingWith(reader)`、`readingParameters()`、`description()` を持ち、別のスキーマのプロパティにもなります。
+
+```java
+record Response(String email, Map<String, String> answers) {}
+
+ValueValidator<Map<String, String>, Response> responseValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email())
+        ._object("answers", answersValidator) // answers.q1=...&answers.q2=...
+        .fromMap(Response::new)
+        .readingParameters();
+```
+
 ### 自分自身を含む構造
 
 `ValueValidator.recursive(self -> ...)` は、自分自身への参照を使ってバリデータを作ります。`ValueValidator.lazy(() -> validator)` は、後で作られるバリデータを参照します。互いに参照し合うバリデータに使います。
@@ -384,6 +459,7 @@ Object search(@RequestParam MultiValueMap<String, String> params) {
 * 複数の値を持つキーはリストです（`tags=a&tags=b`）。スカラーのプロパティに複数の値がある場合は `object.type` で報告されます。
 * インデックス付きのキーは、インデックス順のリストです（`items[0].name=pen&items[1].name=ink`）。
 * 空のリストは送信できません。キーが存在しないことになります。チェックボックスのように空になりうるリストには `defaultValue(List.of())` を付けます。
+* `splitBy` は、1 つの値（`tags=a,b`）からリストを読みます。[後述](#1-つのパラメータに入ったリスト)します。
 
 フォームのフィールドや CSV のセルのように人が書いたテキストに対しては、`StringCoercion` でこれらのルールを緩められます。
 
@@ -418,6 +494,40 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
 
+### 1 つのパラメータに入ったリスト
+
+1 つのパラメータが複数の値を持つことはよくあります。`?tags=java,yavi`、`?ids=1,2,3`、`textarea` に 1 行ずつ書いた URI などです。`_list` の直後に `splitBy` を書くと、このようなテキストをリストとして読みます。
+
+```java
+record Article(String title, List<String> tags, List<Integer> related, List<URI> links) {}
+
+ValueValidator<Map<String, String>, Article> articleValidator = Yavi.schema()
+        ._string("title", c -> c.notBlank())
+        ._list("tags", Yavi._string(c -> c.notBlank().lessThanOrEqual(10)), c -> c.unique()).splitBy(",")
+        ._list("related", Yavi._integer(c -> c.positive())).splitBy(",").defaultValue(List.of())
+        ._list("links", Yavi._object(URI.class)).splitBy(Pattern.compile("\\R")).defaultValue(List.of())
+        .fromMap(Article::new)
+        .readingParameters();
+
+articleValidator.validate(Map.of("title", "t", "tags", "java,yavi", "related", "1,2,3"));
+// Article[title=t, tags=[java, yavi], related=[1, 2, 3], links=[]]
+
+articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "related", "1,x"));
+// tags[1]:    "tags[1]" must not be blank
+// tags[2]:    The size of "tags[2]" must be less than or equal to 10. The given size is 14
+// related[1]: "related[1]" must be of type integer
+```
+
+* 区切りは、そのまま解釈される文字列か `Pattern` で指定します。
+* 要素は、ほかのパラメータと同じく、値を表すテキストとして読まれます。違反は、同じキーを繰り返した場合と同じく、インデックスの下に位置づけられます。
+* すべてのテキストが分割されます。同じキーを繰り返した場合の各値も分割されるので、`tags=a,b&tags=c` は `[a, b, c]` です。
+* 要素は捨てられず、前後の空白も除かれません。`a,,b` は 3 要素で、2 番目の要素には値がありません。例外は末尾の区切りで、その後ろは要素になりません。最後の行の後の改行と同じく、`a,b,` は `[a, b]` です。空白は、パターン（`\\s*,\\s*`）、`StringCoercion.strict().trimming()`、`c.trim()` のいずれかで除きます。
+* 空のパラメータ（`tags=`）は、ほかのプロパティと同じく、値がないものとして扱われます。
+* `splitBy` は `_list` の直後、ほかの修飾メソッドの前に書きます。
+* ほかの入力も同じように読まれます。`{"tags": "java,yavi"}` と `{"tags": ["java", "yavi"]}` は同じリストです。このプロパティの JSON Schema は `"type": ["array", "string"]` になります。
+* スキーマのプロパティではないリストは、`Yavi._list(elementValidator, constraints).splitBy(",")` または `elementValidator.liftList(pattern)` で分割します。
+* 型付きの引数（`apply`）はすでに要素を持っているので、これまでと同じように検証されます。
+
 ### プロパティのラベルとメッセージ
 
 フォームは項目をラベルで呼びます。また、値がない（`object.required`）、型が違う（`object.type`）という違反は制約を検査する前に報告されるため、制約の `message(...)` では変えられません。これらの読ませ方はプロパティに指定します。
@@ -445,6 +555,7 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 * `typeMessage` と `required` は `ViolationMessage` も受け取ります。この場合はメッセージキーも置き換わります: `required(ViolationMessage.of("token.roles", "Select at least one role"))`。
 * `label` と `typeMessage` はプロパティを追加した直後、`optional()` などの前に書きます。`required(...)` は最後の修飾子で、`.required("...").optional()` はコンパイルできません。
 * ネストしたプロパティ（`address.street`）の違反は、そのプロパティの指定に従います。明示的な `null` と、存在しない enum 定数は従来どおり報告されます（`object.notNull`、`object.oneOf`）。
+* `Yavi.dynamicSchema()` のプロパティにも同じ修飾メソッドがあります。
 * `ObjectInputValidator.of(parts, mapper)` のプロパティには、同じ内容を `PropertyMessages` で渡します。
 
 制約のメッセージは、`ValidatorBuilder` と同じく `MessageFormatter` で決まります。`formattingWith` はバリデータが報告するすべての違反をそのフォーマッタで整形します。違反を受け取った後に、フォーマッタやリソースバンドルのラベルを与えることもできます。

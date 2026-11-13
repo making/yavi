@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
@@ -169,6 +170,30 @@ public class Validator<T> implements Validatable<T> {
 	Validator<T> prefixed(String prefix, List<PathSegment> prefixPath) {
 		return new Validator<>(this.messageKeySeparator, this.predicatesList, this.collectionValidators,
 				this.conditionalValidators, this.messageFormatter, this.failFast, prefix, prefixPath);
+	}
+
+	/**
+	 * Returns a new validator that reports the violations of the constraints on the
+	 * target itself under the name that the given function gives for their name. This is
+	 * how the constraints of a single value are reused under another name.
+	 *
+	 * <p>
+	 * The constraints on nested values, the validators of collections and the conditional
+	 * validators keep their names. All other settings are shared with this validator.
+	 * @param rename the function that gives the new name of a constrained property
+	 * @return a new validator instance with the renamed properties
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Validator<T> renamed(Function<? super String, String> rename) {
+		final List<ConstraintPredicates<T, ?>> renamed = new ArrayList<>(this.predicatesList.size());
+		for (ConstraintPredicates<T, ?> predicates : this.predicatesList) {
+			final String name = rename.apply(predicates.name());
+			renamed.add(predicates.getClass() != ConstraintPredicates.class || name.equals(predicates.name())
+					? predicates : new ConstraintPredicates(predicates.toValue(), name, predicates.predicates()));
+		}
+		return new Validator<>(this.messageKeySeparator, renamed, this.collectionValidators, this.conditionalValidators,
+				this.messageFormatter, this.failFast, this.prefix, this.prefixPath);
 	}
 
 	/**

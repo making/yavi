@@ -151,7 +151,7 @@ public interface Arguments3Validator<A1, A2, A3, X extends @Nullable Object> {
 	 * @since 0.11.0
 	 */
 	default <X2 extends @Nullable Object> Arguments3Validator<A1, A2, A3, X2> andThen(
-			ValueValidator<? super @NonNull X, X2> validator) {
+			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, locale, constraintContext) -> this.validate(a1, a2, a3, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext)),

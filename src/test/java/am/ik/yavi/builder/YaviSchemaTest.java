@@ -7,11 +7,13 @@ package am.ik.yavi.builder;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -23,6 +25,7 @@ import javax.tools.ToolProvider;
 import am.ik.yavi.arguments.Arguments;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.Arguments7Validator;
 import am.ik.yavi.core.ConstraintDescription;
@@ -297,6 +300,59 @@ class YaviSchemaTest {
 			.extracting(violations -> violations.get(0).messageKey())
 			.containsExactly("object.notNull", "object.isNull", "object.isNull");
 		assertThat(mustBeNull.nullable().validate(null).isValid()).isTrue();
+		// the rule of a value is defined once and used under several names: the name
+		// replaces the one of a single value, in the description too, whichever
+		// combinator or reader is applied before or after it
+		final StringValidator<String> email = Yavi._string("email", c -> c.trim().notBlank().email());
+		final ValueValidator<String, @Nullable Integer> chained = email.map(String::length)
+			.andThen(Yavi._integer(c -> c.lessThan(8)))
+			.nullable();
+		assertThat(Stream
+			.of(email.named("backupEmail").validate(" "), age.named("years").validate(null),
+					Yavi._string().named("note").validate(null), email.named("backupEmail").untyped().validate(1),
+					email.untyped().named("backupEmail").validate(1),
+					Yavi._string(c -> c.notBlank()).named("name").optional().untyped().validate(" "),
+					chained.named("contact").validate("a"), chained.named("contact").validate("yavi@example.com"),
+					chained.untyped().named("contact").validate(1),
+					ValueValidator.anyOf(email, Yavi._string("phone", c -> c.pattern("[0-9]+")))
+						.named("contact")
+						.validate("x"))
+			.map(validated -> validated.errors().get(0)))
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("backupEmail", "\"backupEmail\" must not be blank"),
+					tuple("years", "\"years\" must not be null"), tuple("note", "\"note\" must not be null"),
+					tuple("backupEmail", "\"backupEmail\" must be of type string"),
+					tuple("backupEmail", "\"backupEmail\" must be of type string"),
+					tuple("name", "\"name\" must not be blank"),
+					tuple("contact", "\"contact\" must be a valid email address"),
+					tuple("contact", "\"contact\" must be less than 8"),
+					tuple("contact", "\"contact\" must be of type string"),
+					tuple("contact", "\"contact\" must satisfy at least one of the 2 alternatives"));
+		assertThat(email.named("backupEmail").nullable().description())
+			.isEqualTo(email.nullable().named("backupEmail").description())
+			.isEqualTo(email.nullable().description().named("backupEmail"));
+		// a value that has no name of its own is located under the name
+		assertThat(Stream
+			.of(tags.named("tags").validate(List.of("a", " ")),
+					Yavi.schema()
+						._string("street", c -> c.notBlank())
+						.fromMap(street -> street)
+						.named("home")
+						.validate(Map.of("street", "")))
+			.map(validated -> validated.errors().get(0).name())).containsExactly("tags[1]", "home.street");
+		// the name is the key of a property, and a validator is used under the name of
+		// the property it is added with
+		final var contact = Yavi.schema()
+			._string(email)
+			._string(email.named("backupEmail").nullable())
+			._object("replyTo", email)
+			.fromMap((first, second, third) -> Arrays.asList(first, second, third));
+		assertThat(contact.validated(Map.of("email", " a@b.c", "replyTo", "c@d.e"))).containsExactly("a@b.c", null,
+				"c@d.e");
+		assertThat(contact.readingParameters().validate(Map.of("email", "a", "backupEmail", "b")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("email", "charSequence.email"), tuple("backupEmail", "charSequence.email"),
+					tuple("replyTo", "object.required"));
 	}
 
 	@Test
@@ -356,6 +412,16 @@ class YaviSchemaTest {
 				"s._string(\"x\").fromMap(x -> x).constraintOnTarget(x -> true, \"x\", ViolationMessage.of(\"a\", \"b\"))"
 						+ ".rejectingUnknownProperties()",
 				"Yavi._enum(TimeUnit.class).map(unit -> unit).ignoringCase()",
+				// a name keeps the type of the validator
+				"Yavi._string(\"x\", c -> c.notBlank()).named(\"y\").map(String::length).named(\"z\").preprocess(x -> x)",
+				"s._string(Yavi._string(c -> c).nullable().named(\"x\")).required()",
+				// a list is told to be read from text before its other modifiers
+				"s._list(\"x\", Yavi._integer()).splitBy(\",\").label(\"X\").defaultValue(java.util.List.of())",
+				// the properties of a schema known at run time
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").presence()"
+						+ ".property(\"y\", Yavi._string().defaultValue(\"\")).rejectingNull().build()"
+						+ ".rejectingUnknownProperties()",
+				"Yavi.<String>dynamicSchema().rest(Yavi._string()).build()",
 				// the rest is never null, and is the last property
 				"s._string(\"x\")._rest().recover(Map.of()).fromMap((x, rest) -> x)", "s._rest().recover(Map.of())",
 				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
@@ -400,6 +466,18 @@ class YaviSchemaTest {
 				"Yavi._enum(TimeUnit.class).ignoringCase().ignoringCase()",
 				// an Optional is not wrapped in a Presence
 				"s._string(\"x\").optional().presence()", "s._integer(\"x\").recover(0).optional().presence()",
+				// only a list is split, once, before its other modifiers
+				"s._string(\"x\").splitBy(\",\")", "s._map(\"x\", Yavi._integer()).splitBy(\",\")",
+				"s._list(\"x\", Yavi._integer()).splitBy(\",\").splitBy(\";\")",
+				"s._list(\"x\", Yavi._integer()).label(\"X\").splitBy(\",\")",
+				// a property known at run time that rejects null rejects an absent key
+				// too
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).rejectingNull()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).required()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).presence().presence()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._integer())",
+				"Yavi.<String>dynamicSchema().rest(Yavi._string()).property(\"x\", Yavi._string())",
+				"Yavi.<String>dynamicSchema().rest(Yavi._string()).build().rejectingUnknownProperties()",
 				// an enum or an object without its type cannot be read from a map
 				"s._enum(\"x\")", "s._object(\"x\")", "s.<String>_object(\"x\", c -> c.notNull())",
 				// a union without alternatives would reject every input

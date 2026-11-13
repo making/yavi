@@ -86,6 +86,11 @@ final class LazyValueValidator<T, X extends @Nullable Object> implements ValueVa
 	}
 
 	@Override
+	public ValueValidator<T, X> named(String name) {
+		return new LazyValueValidator<>(this.reference, () -> this.resolve().named(name));
+	}
+
+	@Override
 	public ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
 		return new LazyValueValidator<>(this.reference, () -> this.resolve().preprocess(transform));
 	}

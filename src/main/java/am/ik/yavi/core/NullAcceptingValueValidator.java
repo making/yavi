@@ -26,9 +26,10 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * A validator derived from this one, for example with
- * {@link ValueValidator#prefixed(String)}, is a plain {@link ValueValidator}. The
- * interface is sealed, and therefore not a functional interface: a lambda is never taken
- * for a validator that accepts {@code null}.
+ * {@link ValueValidator#prefixed(String)}, is a plain {@link ValueValidator}, unless it
+ * is only given another name with {@link #named(String)}. The interface is sealed, and
+ * therefore not a functional interface: a lambda is never taken for a validator that
+ * accepts {@code null}.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
@@ -36,5 +37,15 @@ import org.jspecify.annotations.Nullable;
  */
 public sealed interface NullAcceptingValueValidator<T, X extends @Nullable Object>
 		extends ValueValidator<T, X>permits DescribedNullAcceptingValueValidator {
+
+	/**
+	 * Returns a validator that reports the violations of the validated value under the
+	 * given name, as {@link ValueValidator#named(String)} states, and that still accepts
+	 * {@code null}.
+	 * @param name the name under which the violations of the value are reported
+	 * @return a validator of the value under the given name
+	 */
+	@Override
+	NullAcceptingValueValidator<T, X> named(String name);
 
 }

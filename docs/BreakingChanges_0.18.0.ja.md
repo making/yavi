@@ -663,6 +663,20 @@ YaviSchema builder = Yavi.schema();
 
 関連するプルリクエスト: [#549](https://github.com/making/yavi/pull/549)
 
+### `andThen` はサブタイプのバリデータを受け取る
+
+`ValueValidator#andThen` と `ArgumentsNValidator#andThen` は、`ValueValidator<? super X, ? extends X2>` を受け取ります。これまでは `ValueValidator<? super X, X2>` でした。呼び出し側はこれまでどおりコンパイルできます。`andThen` をオーバーライドしているクラスは、引数の型を新しい型に変えます。
+
+```java
+// before
+@Override
+public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, X2> validator) { ... }
+
+// after
+@Override
+public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? extends X2> validator) { ... }
+```
+
 ### `emoji()` は拡張書記素クラスタを数える
 
 絵文字ではない一部の並びが、2 ではなく 1 と数えられるようになりました。`"\r\n"` や、濁点付きの半角カタカナ（`ｶﾞ`）が該当します。`Emoji` クラスは削除されました。

@@ -18,10 +18,19 @@ import org.jspecify.annotations.Nullable;
 final class DescribedNullAcceptingValueValidator<T, X extends @Nullable Object> extends DescribedValueValidator<T, X>
 		implements NullAcceptingValueValidator<T, X> {
 
+	private final Function<String, NullAcceptingValueValidator<T, X>> named;
+
 	DescribedNullAcceptingValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
-			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
-		super(delegate, description, untyped, preprocessed);
+			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
+			Function<String, NullAcceptingValueValidator<T, X>> named) {
+		super(delegate, description, untyped, preprocessed, named);
+		this.named = named;
+	}
+
+	@Override
+	public NullAcceptingValueValidator<T, X> named(String name) {
+		return this.named.apply(name);
 	}
 
 }

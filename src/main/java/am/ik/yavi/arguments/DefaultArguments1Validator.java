@@ -160,6 +160,33 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	}
 
 	/**
+	 * Returns a validator with the same constraints that reports the violations of the
+	 * argument under the given name instead of the name it was built with, as
+	 * {@link ValueValidator#named(String)} states. The name is the one of the
+	 * {@linkplain #description() description} too.
+	 * @param name the name under which the violations of the argument are reported
+	 * @return a validator of the argument under the given name
+	 * @since 0.18.0
+	 */
+	@Override
+	public DefaultArguments1Validator<A1, X> named(String name) {
+		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.transform,
+				this.required);
+	}
+
+	/**
+	 * Returns the validator of the argument with the given name for the argument, for the
+	 * subclasses to create themselves under another name.
+	 * @param name the name under which the violations of the argument are reported
+	 * @return the validator applied to the argument, under the given name
+	 * @since 0.18.0
+	 */
+	protected final Validator<Arguments1<A1>> renamed(String name) {
+		final String current = this.name;
+		return this.validator.renamed(constrained -> constrained.equals(current) ? name : constrained);
+	}
+
+	/**
 	 * Returns the function that applies the first function and then, unless the result is
 	 * {@code null}, the second one.
 	 * @param first the function applied first
@@ -213,7 +240,7 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
 			.readingWith(reader)
-			.prefixed(this.name)
+			.named(this.name)
 			.andThen(this)
 			.describedAs(this.describe());
 	}

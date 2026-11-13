@@ -66,6 +66,20 @@ public class ObjectValidator<X, T extends @Nullable Object> extends DefaultArgum
 		return new ObjectValidator<>(super.validator, super.mapper, this.type, composed(transform, super.transform));
 	}
 
+	/**
+	 * Returns a validator with the same constraints that reports the violations of the
+	 * value under the given name instead of the name it was built with, so that the rule
+	 * of a value is defined once and used under several names.
+	 * @param name the name under which the violations of the value are reported
+	 * @return a validator of the value under the given name
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#named(String)
+	 */
+	@Override
+	public ObjectValidator<X, T> named(String name) {
+		return new ObjectValidator<>(super.renamed(name), super.mapper, this.type, super.transform);
+	}
+
 	private ObjectValidator(Validator<Arguments1<X>> validator, Function1<? super X, ? extends T> mapper,
 			@Nullable Class<X> type, @Nullable Function<? super X, ? extends @Nullable X> transform) {
 		super(validator, mapper, type == null ? Object.class : type, transform);

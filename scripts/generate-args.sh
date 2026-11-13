@@ -505,6 +505,11 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).map(mapper);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> named(String name) {
+				return Arguments1Validator.this.named(name).map(mapper);
 			}"
     untyped_and_then="
 			@Override
@@ -515,6 +520,11 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).andThen(validator);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> named(String name) {
+				return Arguments1Validator.this.named(name).andThen(validator.named(name));
 			}"
     untyped_described_as="
 			@Override
@@ -525,6 +535,11 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).describedAs(description);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.this.named(name).describedAs(description.named(name));
 			}"
   fi
   class="Arguments${i}Validator"
@@ -663,6 +678,11 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			@Override
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.from(valueValidator.preprocess(transform));
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.from(valueValidator.named(name));
 			}
 		};
 	}
@@ -845,7 +865,7 @@ fi)
 	 * @return a chained validator
 	 * @since 0.11.0
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
-	default <X2 extends @Nullable Object> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super @NonNull X, X2> validator) {
+	default <X2 extends @Nullable Object> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(ValueValidator<? super @NonNull X, ? extends X2> validator) {
 $(if [ "${i}" == "1" ];then
 cat <<EOD
 		return new ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2>() {
@@ -1099,7 +1119,25 @@ cat <<EOD
 			public ValueDescription description() {
 				return Arguments1Validator.this.description();
 			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.this.named(name).preprocess(transform);
+			}
 		};
+	}
+
+	/**
+	 * Returns a validator that reports the violations of the validated argument under
+	 * the given name, as {@link ValueValidator#named(String)} states.
+	 *
+	 * @param name the name under which the violations of the argument are reported
+	 * @return a validator of the argument under the given name
+	 * @since 0.18.0
+	 */
+	@Override
+	default Arguments1Validator<A1, X> named(String name) {
+		return Arguments1Validator.from(ValueValidator.super.named(name));
 	}
 
 EOD
@@ -1494,6 +1532,35 @@ cat <<EOD
 	}
 
 	/**
+	 * Returns a validator with the same constraints that reports the violations of the
+	 * argument under the given name instead of the name it was built with, as
+	 * {@link ValueValidator#named(String)} states. The name is the one of the
+	 * {@linkplain #description() description} too.
+	 *
+	 * @param name the name under which the violations of the argument are reported
+	 * @return a validator of the argument under the given name
+	 * @since 0.18.0
+	 */
+	@Override
+	public DefaultArguments1Validator<A1, X> named(String name) {
+		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.transform,
+				this.required);
+	}
+
+	/**
+	 * Returns the validator of the argument with the given name for the argument, for
+	 * the subclasses to create themselves under another name.
+	 *
+	 * @param name the name under which the violations of the argument are reported
+	 * @return the validator applied to the argument, under the given name
+	 * @since 0.18.0
+	 */
+	protected final Validator<Arguments1<A1>> renamed(String name) {
+		final String current = this.name;
+		return this.validator.renamed(constrained -> constrained.equals(current) ? name : constrained);
+	}
+
+	/**
 	 * Returns the function that applies the first function and then, unless the result
 	 * is {@code null}, the second one.
 	 *
@@ -1550,7 +1617,7 @@ cat <<EOD
 		return ValueValidator.<A1>passThrough()
 			.untyped((Class<A1>) this.valueType)
 			.readingWith(reader)
-			.prefixed(this.name)
+			.named(this.name)
 			.andThen(this)
 			.describedAs(this.describe());
 	}
@@ -2379,6 +2446,10 @@ fi
     type_uses="$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)$(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')"
     ctor_params="$(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')"
     ctor_args="$(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//')"
+    # the stage of a list: the last argument is a list of E validated as a list of T
+    list_type_decls="${init_arguments}E, $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "R${j} extends @Nullable Object, ";done;fi)T extends @Nullable Object"
+    list_type_uses="${init_arguments}List<E>, ${init_results}List<T>"
+    list_ctor_params="$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done;fi)ArgumentDefinition<List<E>, List<T>> d${i}"
   fi
   file="$(dirname $0)/../src/main/java/am/ik/yavi/builder/${class}.java"
   echo $file
@@ -2420,6 +2491,11 @@ import java.util.Optional;
 EOD
 fi)
 import java.util.function.Function;
+$(if [ "${i}" -gt 0 ];then
+cat <<EOD
+import java.util.regex.Pattern;
+EOD
+fi)
 
 import am.ik.yavi.arguments.Arguments1;
 $(if [ "${i}" -gt 1 ];then
@@ -2481,7 +2557,8 @@ cat <<EOD
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name.
+ * violations are located under the argument name. {@code splitBy} after {@code _list}
+ * reads the list also from one text, such as the request parameter {@code tags=a,b}.
  *
  * <p>
  * An argument is required: {@code null} is a violation, and the validated value is
@@ -2530,7 +2607,8 @@ cat <<EOD
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name.
+ * violations are located under the argument name. {@code splitBy} after {@code _list}
+ * reads the list also from one text, such as the request parameter {@code tags=a,b}.
  *
  * <p>
  * An argument is required: {@code null} is a violation, and the validated value is
@@ -3906,10 +3984,13 @@ cat <<EOD
 	 * <p>
 	 * The violations of {@code validator} are located under {@code name}: a violation
 	 * named {@code street} is reported as {@code name.street} with the corresponding
-	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. A {@code null} value is
-	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
-	 * or {@code defaultValue} is applied to the argument, or to {@code validator}
-	 * itself.
+	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. The validator of a single
+	 * value is used under {@code name} instead of the name it was built with, as
+	 * {@link ValueValidator#named(String)} states, so that the rule of a value is
+	 * defined once: {@code _object("backupEmail", emailValidator)}. A {@code null} value
+	 * is rejected with {@code object.notNull} unless {@code optional()},
+	 * {@code nullable()} or {@code defaultValue} is applied to the argument, or to
+	 * {@code validator} itself.
 	 * @param <T1> type of the value validated by {@code validator}
 	 * @param <T2> type of the value produced by {@code validator}
 	 * @param name the property name that prefixes the violations of {@code validator}
@@ -3962,11 +4043,12 @@ cat <<EOD
 	 * @param <T> type of the values produced by {@code elementValidator}
 	 * @param name the property name that prefixes the violations of the elements
 	 * @param elementValidator value validator for each element
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) List<E>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) List<T>> _list(String name, ValueValidator<E, T> elementValidator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
+	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ValueValidator<E, T> elementValidator) {
+		return new ${next_class}.KeyedList<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
 	}
 
 	/**
@@ -3986,12 +4068,13 @@ cat <<EOD
 	 * @param name the property name of the list
 	 * @param elementValidator value validator for each element
 	 * @param constraints function that configures the constraints of the list
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) List<E>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) List<T>> _list(String name, ValueValidator<E, T> elementValidator,
+	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
+		return new ${next_class}.KeyedList<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 
 	/**
@@ -4359,7 +4442,7 @@ $(modifier_default_value "${class}")
 	 * invalid value with an empty {@code Optional} or {@code null}, and
 	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
 	 * {@code recover}, to produce something else than the fallback for {@code null}.
-$(stage_class Keyed final "${class}" "" messages)
+$(stage_class Keyed sealed "${class}" " permits KeyedList" messages)
 
 $(modifier_messages Keyed)
 
@@ -4374,6 +4457,72 @@ $(modifier_default_value NullAccepting)
 $(modifier_recover KeyedRecovered)
 
 $(modifier_presence)
+
+	}
+
+	/**
+	 * The builder after a list that is read from a key is added: the modifiers of
+	 * {@link Keyed} apply to the list, and before them {@code splitBy} tells that the
+	 * list may be given as one text, such as the request parameter
+	 * {@code tags=java,yavi}.
+	 *
+$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A%s> type of argument at position %s\n\t * @param <R%s> type of the validated value of argument at position %s\n' "${j}" "${j}" "${j}" "${j}";done;fi)
+	 * @param <E> type of the elements of the list
+	 * @param <T> type of the validated elements of the list
+	 * @since 0.18.0
+	 */
+	public static final class KeyedList<${list_type_decls}> extends Keyed<${list_type_uses}> {
+
+		KeyedList(${list_ctor_params}) {
+			super(${ctor_args});
+		}
+
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given separator, as {@link #splitBy(Pattern)} states.
+		 *
+		 * <pre>{@code
+		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
+		 * }</pre>
+		 * @param separator the text that separates the elements, taken literally
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the separator is empty
+		 * @since 0.18.0
+		 */
+		public Keyed<${list_type_uses}> splitBy(String separator) {
+			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
+		}
+
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given pattern, such as one element per line of a {@code textarea}.
+		 *
+		 * <pre>{@code
+		 * ._list("ids", Yavi._integer(c -> c.positive())).splitBy(Pattern.compile("\\\\R"))
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, the value of the key is read as
+		 * {@link ValueValidator#liftList(Pattern)} states: a text is split and so is
+		 * every text of a list, so {@code tags=a,b&tags=c} is {@code [a, b, c]}; an
+		 * element that was split off is text that stands for a value, so that
+		 * {@code 1,2,3} is a list of {@code Integer}; and no element is dropped or
+		 * trimmed, except that a separator at the end of the text starts no element.
+		 * The violations of an element are located under its index, as those of a
+		 * list that is not split are ({@code tags[1]}).
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a list that holds the elements already
+		 * and is validated as before. This is written directly after {@code _list}:
+		 * the returned builder has the other modifiers of the argument.
+		 * @param separator the pattern that separates the elements in a text
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the pattern matches the empty string
+		 * @since 0.18.0
+		 */
+		public Keyed<${list_type_uses}> splitBy(Pattern separator) {
+			return new Keyed<>(${init_definitions}this.d${i}.separatedBy(separator));
+		}
 
 	}
 
