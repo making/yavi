@@ -130,8 +130,8 @@ Validated<User> validated = userValidator.validate(Map.of(
 | プロパティの型を表さない値（`"age": "30"`） | `object.type`: `"age" must be of type integer` |
 | 値が変わらない数値（`Integer` に対する `30L`、`30.0`） | 受け付ける。`30.5` は `object.type` |
 | enum の定数、日時の値 | 定数の名前、ISO-8601 形式の文字列から読み取る |
-| 存在しないキー | `null` と同じように検証する。`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` があれば受け付け、なければ `object.required` |
-| 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反 |
+| 存在しないキー | `null` と同じように検証する。`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` があれば受け付け、なければ `object.required`。`required()` を付けると常に `object.required` |
+| 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反。`rejectingNull()` を付けると常に `object.notNull` |
 | プロパティが定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
 
 * `_enum` と `_object` のプロパティをマップから読むには、型の指定が必要です（`_enum(name, type)`、`_object(name, type)`）。
@@ -208,6 +208,31 @@ switch (patch.bio()) {
 ```
 
 存在しないキーは検証されません。存在するキーは、`presence()` がない場合と同じように検証されます（`{"nickname": null}` は `"nickname" must not be null`）。`presence()` は、プロパティの最後の修飾メソッドとして書きます。
+
+部分更新ではない契約では、存在しないキーと `null` の片方だけを受け付けることがよくあります。`required()` と `rejectingNull()` は、値の型を変えずにどちらを受け付けるかを指定します。
+
+```java
+record Account(@Nullable Instant deletedAt, Optional<String> bio, int page) {}
+
+ObjectInputValidator<Account> accountValidator = Yavi.schema()
+        ._instant("deletedAt").nullable().required()      // 必ず送る。値がなければ null を送る
+        ._string("bio").optional().rejectingNull()        // 省略できる。送るなら文字列
+        ._integer("page").defaultValue(1).rejectingNull() // 省略したときだけ 1
+        .fromMap(Account::new);
+
+accountValidator.validate(Map.of());                                  // "deletedAt" is required
+accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, bio=Optional.empty, page=1]
+```
+
+| プロパティ | 存在しないキー | 明示的な `null` | JSON Schema |
+| --- | --- | --- | --- |
+| `_string("x")` | `object.required` | `object.notNull` | `required`、`"type": "string"` |
+| `.nullable()`、`.optional()`、`.defaultValue(...)`、`.recover(...)` | 受け付ける | 受け付ける | `"type": ["string", "null"]` |
+| 上記に `.required()` を続ける | `object.required` | 受け付ける | `required`、`"type": ["string", "null"]` |
+| 上記に `.rejectingNull()` を続ける | 受け付ける | `object.notNull` | `"type": "string"` |
+| `.presence()` | `Absent` | プロパティが検証する | `"type": "string"` |
+
+どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして書きます。型付きの引数（`apply`）には「存在しない」という状態がないため、これらを付けない場合と同じように検証されます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。
 
 ### 自分自身を含む構造
 
@@ -453,7 +478,7 @@ String json = JsonSchema.toJson(description);
  "required":["email","role","address"]}
 ```
 
-* プロパティは、`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` のいずれかが付いている場合と、`presence()` で読む場合を除いて、`required` になります。
+* プロパティは、`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` のいずれかが付いていて `required()` が続かない場合と、`presence()` で読む場合を除いて、`required` になります。これらのプロパティは、`rejectingNull()` で終わる場合を除いて、型 `null` も受け付けます。
 * リストやマップの制約は `minItems`、`maxItems`、`uniqueItems`、`minProperties`、`maxProperties` として、`rejectingUnknownProperties()` は `additionalProperties: false` として、再帰的な構造は `$ref` として出力されます。
 * ラムダと `ValueValidator.compose` の結果は、内容が不明として扱われます。`describedAs(...)` で記述を与えてください。条件付きの制約と `constraintOnTarget` は記述に含まれません。
 * `ValidatorBuilder` で作った Bean の `Validator` は記述に対応していません。
@@ -493,4 +518,5 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `ignoringCase()`、`StringCoercion`、`fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
+| `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
 | JSpecify、`@Nullable` のない値 | [#534](https://github.com/making/yavi/pull/534)、[#556](https://github.com/making/yavi/pull/556)、[#557](https://github.com/making/yavi/pull/557) |

@@ -45,11 +45,14 @@ import org.jspecify.annotations.Nullable;
  * type of the argument is unknown. The node type is erased: the function is written for
  * any reader
  * @param source what the argument is read from when its validator reads a map
+ * @param strictness whether the key of an argument read from a key is told from
+ * {@code null}
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
-		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source) {
+		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
+		ObjectInputValidator.Strictness strictness) {
 
 	/**
 	 * What an argument is read from when its validator reads a map.
@@ -76,6 +79,11 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R>> untyped) {
 		this(name, validator, untyped, Source.PROPERTY);
+	}
+
+	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
+			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source) {
+		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL);
 	}
 
 	/**
@@ -220,6 +228,18 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	/**
+	 * Returns the definition of this argument with the given strictness of its key, which
+	 * its description tells. The typed argument is validated as before: it has no absent
+	 * state. The builders offer this only for an argument that is read from a key, and no
+	 * modifier after it.
+	 */
+	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
+		return new ArgumentDefinition<>(this.name,
+				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
+				this.source, strictness);
+	}
+
+	/**
 	 * Returns the part that reads this argument from a map. The key of a property is the
 	 * name of the argument, or else the name under which its validator reports
 	 * violations.
@@ -246,7 +266,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 					e);
 		}
 		return switch (this.source) {
-			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading);
+			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading, this.strictness);
 			case PRESENCE -> (ObjectInputValidator.Part<R>) new ObjectInputValidator.PresenceProperty<>(name,
 					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading);
 			case OBJECT -> new ObjectInputValidator.Embedded<>(reading);
@@ -334,6 +354,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			case ValueDescription.Optional optional -> describedName(optional.value());
 			case ValueDescription.NotNull notNull -> describedName(notNull.value());
 			case ValueDescription.Presence presence -> describedName(presence.value());
+			case ValueDescription.Required required -> describedName(required.value());
 			case ValueDescription.Value value -> value.name();
 			default -> "";
 		};

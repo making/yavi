@@ -1009,6 +1009,9 @@ class ObjectInputValidatorTest {
 			Presence<Integer> age) {
 	}
 
+	record Account(@Nullable String deletedAt, Optional<String> bio, Integer page, String note) {
+	}
+
 	// the arguments of a function are nullable, and a Presence never is
 	@SuppressWarnings("NullAway")
 	@ParameterizedTest
@@ -1078,6 +1081,48 @@ class ObjectInputValidatorTest {
 		assertThat(model.validate(bio, input()).value()).isEqualTo(Presence.absent());
 		assertThat(model.validate(bio, input("bio", null)).errors()).extracting(ConstraintViolation::name)
 			.containsExactly("bio");
+		// without a Presence: the key is required although null is accepted, or null is
+		// rejected although the key may be absent
+		final var strict = Yavi.schema()
+			._string("deletedAt")
+			.nullable()
+			.required()
+			._string("bio", c -> c.notBlank())
+			.optional()
+			.rejectingNull()
+			._integer("page")
+			.defaultValue(1)
+			.rejectingNull()
+			._string("note")
+			.recover("-")
+			.required();
+		final ObjectInputValidator<Account> account = strict.fromMap(Account::new);
+		assertThat(model.validate(account, input("deletedAt", null, "note", null)).value())
+			.isEqualTo(new Account(null, Optional.empty(), 1, "-"));
+		assertThat(model.validate(account, input("bio", null, "page", null, "note", 1)).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("deletedAt", "object.required"), tuple("bio", "object.notNull"),
+					tuple("page", "object.notNull"));
+		assertThat(model.validate(account, input("deletedAt", "2026-11-13", "bio", " ", "page", 2)).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("bio", "charSequence.notBlank"), tuple("note", "object.required"));
+		// a parameter with an empty value is present and null
+		assertThat(account.readingParameters().validate(Map.of("deletedAt", "", "bio", "")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("bio", "object.notNull"), tuple("note", "object.required"));
+		final String schema = """
+				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+				"deletedAt":{"type":["string","null"]},\
+				"bio":{"type":"string","minLength":1},\
+				"page":{"type":"integer","default":1},\
+				"note":{"type":["string","null"],"default":"-"}},\
+				"required":["deletedAt","note"]}""";
+		assertThat(JsonSchema.toJson(account.description())).isEqualTo(schema);
+		// typed arguments have no absent state and are described alike
+		final var typedAccount = strict.apply(Account::new);
+		assertThat(typedAccount.validated(null, null, null, null))
+			.isEqualTo(new Account(null, Optional.empty(), 1, "-"));
+		assertThat(JsonSchema.toJson(typedAccount.description())).isEqualTo(schema);
 	}
 
 	@Test

@@ -377,8 +377,8 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 | Raoh | YAVI |
 | --- | --- |
 | `field("email", string().email())` | `_string("email", c -> c.email())` |
-| `field("nickname", nullable(string()))` (`@Nullable String`) | `_string("nickname").nullable()` (`@Nullable String`) |
-| `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional()` |
+| `field("nickname", nullable(string()))` (`@Nullable String`) | `_string("nickname").nullable().required()` (`@Nullable String`) |
+| `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional().rejectingNull()` (`Optional<String>`) |
 | `field("role", withDefault(decoder, value))` | `_enum("role", Role.class).defaultValue(value)` |
 | `field("size", recover(decoder, fallback))` | `_integer("size", c -> ...).recover(fallback)` |
 | `optionalNullableField("bio", string())` (`Presence<String>`) | `_string("bio").nullable().presence()` (`Presence<String>`) |
@@ -390,6 +390,25 @@ rejects a function that takes a `nullable()` property as a value that is not `nu
 An absent key is validated like `null`, so `optional()`, `nullable()` and
 `defaultValue(...)` accept both. Only the violation differs for a required property:
 `object.required` for an absent key and `object.notNull` for an explicit `null`.
+
+Raoh keeps the two apart: `field(name, nullable(dec))` requires the key and
+`optionalField(name, dec)` rejects `null`. The last modifier of a property says the same:
+`required()` rejects an absent key although `null` is accepted, and `rejectingNull()`
+rejects an explicit `null` although the key may be absent. The type of the value stays
+`@Nullable X`, `Optional<X>` or `X` with a default value.
+
+```java
+record Account(@Nullable Instant deletedAt, Optional<String> middleName, int page) {}
+
+ObjectInputValidator<Account> accountValidator = Yavi.schema()
+        ._instant("deletedAt").nullable().required()         // field("deletedAt", nullable(...))
+        ._string("middleName").optional().rejectingNull()    // optionalField("middleName", ...)
+        ._integer("page").defaultValue(1).rejectingNull()
+        .fromMap(Account::new);
+
+accountValidator.validate(Map.of()); // deletedAt: "deletedAt" is required
+accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, middleName=Optional.empty, page=1]
+```
 
 `presence()` tells "leave unchanged" from "clear the value" in a PATCH request. The
 property is a `Presence<X>` with the same three states as in Raoh: `Absent`,

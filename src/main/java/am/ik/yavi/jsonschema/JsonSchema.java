@@ -47,7 +47,8 @@ import org.jspecify.annotations.Nullable;
  * it may be omitted (see {@link ValueDescription#acceptsAbsent()}). A value that accepts
  * {@code null} (see {@link ValueDescription#acceptsNull()}) also allows the type
  * {@code null}, so a {@link ValueDescription.Presence} that rejects {@code null} is
- * neither required nor nullable.</li>
+ * neither required nor nullable, and a {@link ValueDescription.Required} that accepts
+ * {@code null} is both.</li>
  * <li>A list is written with {@code items}, a map with {@code additionalProperties},
  * alternatives with {@code anyOf} and a default value with {@code default}. The
  * constraints of a list or a map are written like those of a value ({@code minItems},
@@ -190,6 +191,7 @@ public final class JsonSchema {
 				case ValueDescription.NotNull notNull -> this.collect(notNull.value());
 				case ValueDescription.Optional optional -> this.collect(optional.value());
 				case ValueDescription.Presence presence -> this.collect(presence.value());
+				case ValueDescription.Required required -> this.collect(required.value());
 				case ValueDescription.Reference reference -> {
 					if (this.byReference.containsKey(reference)) {
 						return;
@@ -318,7 +320,14 @@ public final class JsonSchema {
 				}
 				// the caller has decided whether null is accepted here
 				case ValueDescription.NotNull notNull -> schema.putAll(this.schema(notNull.value(), nullable));
-				case ValueDescription.Presence presence -> schema.putAll(this.schema(presence.value(), nullable));
+				case ValueDescription.Required required -> schema.putAll(this.schema(required.value(), nullable));
+				case ValueDescription.Presence presence -> {
+					schema.putAll(this.schema(presence.value(), nullable));
+					final Object defaultValue = presence.defaultValue();
+					if (defaultValue != null) {
+						schema.put("default", Objects.requireNonNull(jsonValue(defaultValue)));
+					}
+				}
 				case ValueDescription.Optional optional -> {
 					schema.putAll(this.schema(optional.value(), true));
 					final Object defaultValue = optional.defaultValue();

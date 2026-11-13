@@ -78,8 +78,8 @@ import org.jspecify.annotations.Nullable;
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
  * argument and make it accept {@code null}, which changes the type of its validated value
  * to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
- * {@code recover} makes it accept any value, and {@code presence()} tells an absent value
- * from {@code null}.
+ * {@code recover} makes it accept any value, and {@code required()},
+ * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same

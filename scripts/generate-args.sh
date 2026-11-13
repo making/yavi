@@ -2168,8 +2168,8 @@ cat <<EOD
  * {@code nullable()} and {@code defaultValue} apply to the last added argument and make
  * it accept {@code null}, which changes the type of its validated value to
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
- * {@code recover} makes it accept any value, and {@code presence()} tells an absent
- * value from {@code null}.
+ * {@code recover} makes it accept any value, and {@code required()},
+ * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2217,8 +2217,8 @@ cat <<EOD
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
  * argument and make it accept {@code null}, which changes the type of its validated
  * value to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
- * {@code recover} makes it accept any value, and {@code presence()} tells an absent
- * value from {@code null}.
+ * {@code recover} makes it accept any value, and {@code required()},
+ * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -3580,7 +3580,8 @@ cat <<EOD
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
 	 * absent key is validated like {@code null}, unless the argument is added with
-	 * {@code presence()}, and an unknown key is ignored; see
+	 * {@code required()}, {@code rejectingNull()} or {@code presence()}, and an unknown
+	 * key is ignored; see
 	 * {@link ObjectInputValidator} for the violations of absent keys and for rejecting
 	 * unknown keys. An {@code _embedded} argument reads the map itself and a
 	 * {@code _rest} argument the keys that no other argument defines. A nested
@@ -3764,7 +3765,8 @@ cat <<EOD
 
 	/**
 	 * The builder after an argument that is read from a key is added: its absence can
-	 * be told from {@code null} with {@link #presence()}.
+	 * be told from {@code null} with {@link #required()}, {@link #rejectingNull()} and
+	 * {@link #presence()}.
 	 *
 	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
 	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
@@ -3826,6 +3828,72 @@ cat <<EOD
 		 */
 		public ${class}<${init_arguments}Presence<A${i}>, ${init_results}Presence<@NonNull R${i}>> presence() {
 			return new ${class}<>(${init_definitions}this.d${i}.withPresence());
+		}
+
+		/**
+		 * Requires the key of the last added argument although its value may be
+		 * {@code null}, for a contract such as "{@code deletedAt} must be sent, as
+		 * {@code null} if there is none".
+		 *
+		 * <pre>{@code
+		 * ._instant("deletedAt").nullable().required()
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, an absent key is rejected with {@code object.required}
+		 * and the argument is not validated. A key that is present is validated as
+		 * before, so an explicit {@code null} is accepted by {@code optional()},
+		 * {@code nullable()}, {@code defaultValue} and {@code recover}, which are written
+		 * before this modifier. The argument is described as a
+		 * {@link am.ik.yavi.core.ValueDescription.Required}, so its JSON Schema is {@code required} and
+		 * allows the type {@code null}. An argument that does not accept {@code null}
+		 * requires its key anyway.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none.
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #rejectingNull()
+		 */
+		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> required() {
+			return new ${class}<>(${init_definitions}this.d${i}.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Rejects an explicit {@code null} for the last added argument although its key
+		 * may be absent, for a contract such as "{@code bio} may be omitted, and is a
+		 * text if it is sent".
+		 *
+		 * <pre>{@code
+		 * ._string("bio").optional().rejectingNull() // Optional.empty() only for an absent key
+		 * ._integer("page").defaultValue(1).rejectingNull() // 1 only for an absent key
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, an explicit {@code null} is rejected with
+		 * {@code object.notNull} and the argument is not validated. An absent key is
+		 * validated as {@code null}, as before, so it is what {@code optional()},
+		 * {@code nullable()}, {@code defaultValue} and {@code recover}, which are written
+		 * before this modifier, accept: the empty {@code Optional}, the {@code null} or
+		 * the default value of the validated argument stands for an absent key only. The
+		 * argument is described as a {@link am.ik.yavi.core.ValueDescription.Presence}, so its JSON
+		 * Schema is not {@code required} and does not allow the type {@code null}.
+		 * A parameter with an empty value, which is read as {@code null}, is present and
+		 * therefore rejected.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before: {@code null} is the absent value. This is the last modifier of an
+		 * argument: the returned builder has none. To be given the three states, use
+		 * {@link #presence()}.
+		 * @return a builder whose last argument rejects an explicit {@code null}
+		 * @since 0.18.0
+		 * @see #required()
+		 */
+		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> rejectingNull() {
+			return new ${class}<>(${init_definitions}this.d${i}.withStrictness(ObjectInputValidator.Strictness.REJECTING_NULL));
 		}
 
 	}

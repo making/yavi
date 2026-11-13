@@ -55,6 +55,11 @@ import org.jspecify.annotations.Nullable;
  * {@code null}, which a partial update such as a PATCH request needs: an absent key is
  * {@link Presence.Absent} and is not validated, and a key that is present is validated,
  * {@code null} included, so the property decides whether it can be cleared.</li>
+ * <li>A property that accepts {@code null} tells an absent key from {@code null} without
+ * a {@link Presence} too, as its {@link Strictness} states: with {@code required()} of
+ * the builders the key must be present although its value may be {@code null}, and with
+ * {@code rejectingNull()} the key may be absent although its value must not be
+ * {@code null}.</li>
  * <li>A value that does not represent the type of the property is reported with
  * {@code object.type}. Nothing is coerced unless the map is read with
  * {@link InputReader#coercingStrings()}.</li>
@@ -175,13 +180,80 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 *
 	 * @param name the key of the property in the map
 	 * @param validator the validator of the value, which reports its violations under
-	 * {@code name}; an absent key is validated as {@code null}. To read the property with
-	 * another {@link InputReader}, the validator must know its input type (see
-	 * {@link ValueValidator#readingWith(InputReader)})
+	 * {@code name}. To read the property with another {@link InputReader}, the validator
+	 * must know its input type (see {@link ValueValidator#readingWith(InputReader)})
+	 * @param strictness whether an absent key and an explicit {@code null} are validated
+	 * as {@code null} or rejected
 	 * @param <R> the type of the validated value
 	 */
-	public record Property<R extends @Nullable Object> (String name,
-			ValueValidator<Object, R> validator) implements Part<R> {
+	public record Property<R extends @Nullable Object> (String name, ValueValidator<Object, R> validator,
+			Strictness strictness) implements Part<R> {
+
+		/**
+		 * Creates a property whose absent key is validated as {@code null}.
+		 * @param name the key of the property in the map
+		 * @param validator the validator of the value
+		 */
+		public Property(String name, ValueValidator<Object, R> validator) {
+			this(name, validator, Strictness.ABSENT_AS_NULL);
+		}
+	}
+
+	/**
+	 * Whether a {@link Property} tells an absent key from an explicit {@code null}. It
+	 * matters only to a property whose validator accepts {@code null}; any other property
+	 * rejects both, an absent key with {@code object.required}.
+	 */
+	public enum Strictness {
+
+		/**
+		 * An absent key is validated as {@code null}, so a validator that accepts
+		 * {@code null} accepts both.
+		 */
+		ABSENT_AS_NULL,
+
+		/**
+		 * An absent key is rejected with {@code object.required} without being validated,
+		 * whatever the validator accepts. An explicit {@code null} is validated as
+		 * {@code null}.
+		 */
+		REQUIRED,
+
+		/**
+		 * An explicit {@code null} is rejected with {@code object.notNull} without being
+		 * validated, whatever the validator accepts. An absent key is validated as
+		 * {@code null}.
+		 */
+		REJECTING_NULL;
+
+		/**
+		 * Returns the description of the value of a property of this strictness.
+		 * @param description the description of the input of the validator of the
+		 * property
+		 * @return the given description for {@link #ABSENT_AS_NULL}, a
+		 * {@link ValueDescription.Required} of it for {@link #REQUIRED}, and for
+		 * {@link #REJECTING_NULL} a {@link ValueDescription.Presence} of a value that
+		 * rejects {@code null} if the given description accepts {@code null}
+		 */
+		public ValueDescription describe(ValueDescription description) {
+			return switch (this) {
+				case ABSENT_AS_NULL -> description;
+				case REQUIRED -> description instanceof ValueDescription.Required ? description
+						: new ValueDescription.Required(description);
+				case REJECTING_NULL -> switch (description) {
+					case ValueDescription.Presence presence when !presence.acceptsNull() -> presence;
+					case ValueDescription.Optional optional ->
+						new ValueDescription.Presence(notNull(optional.value()), optional.defaultValue());
+					default -> description.acceptsNull() ? new ValueDescription.Presence(notNull(description))
+							: description;
+				};
+			};
+		}
+
+		private static ValueDescription notNull(ValueDescription description) {
+			return description.acceptsNull() ? new ValueDescription.NotNull(description) : description;
+		}
+
 	}
 
 	/**
@@ -282,8 +354,8 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 			List<List<ValueDescription.Property>> added = null;
 			Group group = null;
 			switch (part) {
-				case Property<?> property ->
-					added = List.of(List.of(new ValueDescription.Property(property.name(), described)));
+				case Property<?> property -> added = List
+					.of(List.of(new ValueDescription.Property(property.name(), property.strictness().describe(described))));
 				case PresenceProperty<?> property ->
 					added = List.of(List.of(new ValueDescription.Property(property.name(),
 							described instanceof ValueDescription.Presence ? described
@@ -587,12 +659,19 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 					case Property<?> property -> {
 						final String name = property.name();
 						final N value = this.reader.property(input, name);
-						final Validated<?> read = validator.validate(
-								value == null || this.reader.isNull(value) ? null : value, locale, constraintContext);
+						final boolean absent = value == null && !this.reader.hasProperty(input, name);
+						final boolean isNull = value == null || this.reader.isNull(value);
+						final Validated<?> read = switch (property.strictness()) {
+							case REQUIRED -> absent ? null : validator.validate(isNull ? null : value, locale, constraintContext);
+							case REJECTING_NULL -> isNull && !absent
+									? Validated.failureWith(
+											violation(name, ViolationMessage.Default.OBJECT_NOT_NULL, null, locale))
+									: validator.validate(isNull ? null : value, locale, constraintContext);
+							case ABSENT_AS_NULL -> validator.validate(isNull ? null : value, locale, constraintContext);
+						};
 						// an absent key is required rather than null
-						validated = read.isValid() || value != null || this.reader.hasProperty(input, name) ? read
-								: Validated.failureWith(violation(name, ViolationMessage.Default.OBJECT_REQUIRED,
-										null, locale));
+						validated = read != null && (read.isValid() || !absent) ? read : Validated
+							.failureWith(violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
 					}
 					case PresenceProperty<?> property -> {
 						final String name = property.name();
