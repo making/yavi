@@ -320,7 +320,7 @@ effect, or would fail when the validator is built, does not compile:
 | `._rest()._rest()`, `._rest()._string("x")` | does not compile: the rest is the last property |
 | `._rest().fromMap(f).rejectingUnknownProperties()` | does not compile: no key is unknown |
 | `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | does not compile: `fromMap` returns an `ObjectInputValidator.IgnoringUnknown`, which is told once |
-| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | does not compile: write `ignoringCase()` last, after `map` |
+| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | does not compile: `ignoringCase()` returns an `Arguments1Validator`, so it is written once |
 | `._enum("role")`, `._object("address")` | do not exist: an enum and an object are added with their type, which `fromMap` needs |
 
 `nullable()` is the only modifier that produces `null`. A `null` default value or

@@ -263,7 +263,7 @@ Yavi.schema()._integer(page).rejectingNull() // 省略したときだけ 1
 | `._rest()._rest()`、`._rest()._string("x")` | コンパイルできない。`_rest` は最後のプロパティ |
 | `._rest().fromMap(f).rejectingUnknownProperties()` | コンパイルできない。未知のキーがない |
 | `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | コンパイルできない。`fromMap` は `ObjectInputValidator.IgnoringUnknown` を返し、指定できるのは 1 回だけ |
-| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | コンパイルできない。`ignoringCase()` は `map` の後、最後に書く |
+| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | コンパイルできない。`ignoringCase()` が返すのは `Arguments1Validator` で、指定できるのは 1 回だけ |
 | `._enum("role")`、`._object("address")` | 存在しない。enum とオブジェクトは、`fromMap` に必要な型を付けて追加する |
 
 `null` を返す修飾メソッドは `nullable()` だけです。`null` にならない値（制約で検証した値、リスト、マップ、`Optional`）のデフォルト値やフォールバック値に `null` を渡すと、nullness チェッカーがあればコンパイル時に報告されます。チェッカーがない場合も、スキーマを組み立てた時点で `NullPointerException` になります。引数の型が `null` を許さない関数に `null` が渡ることはありません。

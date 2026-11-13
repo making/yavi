@@ -108,8 +108,8 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	 *
 	 * <p>
 	 * The returned validator is not an {@code EnumValidator}, so the case is ignored
-	 * once: write this after {@code map} and {@code preprocess}, whose results keep
-	 * ignoring the case.
+	 * once. It keeps ignoring the case through {@code map}, {@code preprocess} and
+	 * {@code lazy}, which can be written before or after this method.
 	 * @return a new validator that ignores the case of the name of a constant
 	 * @since 0.18.0
 	 */
