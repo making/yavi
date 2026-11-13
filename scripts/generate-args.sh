@@ -2356,7 +2356,7 @@ modifier_required_message() {
 cat <<EOD
 		/**
 		 * Requires $2 and reports a
-		 * missing value with the given message format instead of the one of
+		 * missing value with the given text instead of the message of
 		 * {@code object.required}, for a value that only a person can tell how to give,
 		 * such as a group of checkboxes that sends no key when no box is checked.
 		 *
@@ -2365,7 +2365,10 @@ cat <<EOD
 		 * }</pre>
 		 *
 		 * <p>
-		 * The message key {@code object.required} and the arguments are kept:
+		 * The text is the message: a message formatter that has a message for
+		 * {@code object.required} does not replace it (see
+		 * {@link ViolationMessage#withText(String)}). The message key
+		 * {@code object.required} and the arguments are kept:
 		 * <code>{0}</code> is the name or the label of the argument. With
 		 * {@code fromMap}, the message is reported for an absent key and for text without
 		 * a value. An explicit {@code null} is not missing: it is reported by a
@@ -2375,12 +2378,12 @@ cat <<EOD
 		 * With {@code apply}, the argument has no absent state and is validated as
 		 * before. This is the last modifier of an argument: the returned builder has
 		 * none, so one that would accept a missing value cannot follow.
-		 * @param messageFormat the message format of a missing value
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a builder whose last argument requires its key
 		 * @since 0.18.0
 		 */
 		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> required(String messageFormat) {
-			return this.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**

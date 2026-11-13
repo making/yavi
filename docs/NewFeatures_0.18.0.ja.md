@@ -587,10 +587,11 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 | 修飾子 | 変わるもの |
 | --- | --- |
 | `label("Token name")` | プロパティとその要素（`roles`、`roles[1]`）のすべてのメッセージの `{0}`。違反の名前、パス、ポインタは変わらないので、`messagesByName()` のキーと `ViolationDetail` の `name` は元のままです。ラベルは `violation.label()` で取れます。 |
-| `typeMessage(format)` | プロパティとその要素の `object.type` のメッセージ。`{1}` は型の名前、`{2}` は値です。 |
-| `required(format)` | `object.required` のメッセージ。キーがない場合と、値のないテキストの場合に報告されます。`optional()`、`nullable()`、`defaultValue(...)` の後では、`required()` と同じくキーも必須にします。 |
+| `typeMessage(text)` | プロパティとその要素の `object.type` のメッセージ。`{1}` は型の名前、`{2}` は値です。 |
+| `required(text)` | `object.required` のメッセージ。キーがない場合と、値のないテキストの場合に報告されます。`optional()`、`nullable()`、`defaultValue(...)` の後では、`required()` と同じくキーも必須にします。 |
 
-* `typeMessage` と `required` は `ViolationMessage` も受け取ります。この場合はメッセージキーも置き換わります: `required(ViolationMessage.of("token.roles", "Select at least one role"))`。
+* テキストは、制約の `message("...")` のテキストと同じく、そのままメッセージになります。`object.required` のメッセージを持つフォーマッタも、これを置き換えません（後述）。
+* `typeMessage` と `required` は `ViolationMessage` も受け取ります。この場合はメッセージキーも置き換わるため、リソースバンドルで地域化できます: `required(ViolationMessage.of("token.roles", "Select at least one role"))`。
 * `label` と `typeMessage` はプロパティを追加した直後、`optional()` などの前に書きます。`required(...)` は最後の修飾子で、`.required("...").optional()` はコンパイルできません。
 * ネストしたプロパティ（`address.street`）の違反は、そのプロパティの指定に従います。明示的な `null` と、存在しない enum 定数は従来どおり報告されます（`object.notNull`、`object.oneOf`）。
 * `Yavi.dynamicSchema()` のプロパティにも同じ修飾メソッドがあります。
@@ -611,6 +612,21 @@ violations.labeled(violation -> messageSource.getMessage("label." + violation.na
 ```
 
 `labeled` は、関数が `null` を返した違反をそのままにします。
+
+フォーマッタは違反のキーでメッセージを探しますが、1 つの制約や 1 つのプロパティのためにコードに書いたテキスト（`message("...")`、`required("...")`、`typeMessage("...")`）については探しません。バンドルがキーのすべての違反に対して持つメッセージより、具体的なテキストが優先されます。違反のキーは変わりません。
+
+```java
+// messages.properties: object.required={0} is required.
+tokenValidator.formattingWith(formatter).validate(Map.of()).errors().messagesByName();
+// {name=[Token name is required.], ttl=[ttl is required.], roles=[Select at least one role]}
+```
+
+| API | 説明 |
+| --- | --- |
+| `ViolationMessage#withText(text)` | このメッセージのキーと引数名を持ち、テキストをフォーマットとするメッセージ。どのフォーマッタもこれを置き換えません。`required("...")` が渡すのは `OBJECT_REQUIRED.withText("...")` です。 |
+| `ViolationMessage#localizable()`、`ConstraintViolation#localizable()` | テキストでは `false`。 |
+| `MessageFormatter#format(String, Object[], Locale)` | テキストを整形します。デフォルトは `MessageFormat` で整形します。ほかのメッセージと同じ方法で整形するにはオーバーライドします。 |
+| `Constraint#predicates(List)` | `url(url -> ...)` や `password(...)` のように、複数の述語を 1 つの制約として追加します。直後の `message(...)` はそのすべてのメッセージを置き換えます。 |
 
 ### Spring MVC でフォームを再表示する
 
@@ -880,6 +896,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `coercingStrings()`、`readingParameters()` | [#542](https://github.com/making/yavi/pull/542)、[#543](https://github.com/making/yavi/pull/543) |
 | Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
 | `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
+| コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |

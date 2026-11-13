@@ -8,6 +8,7 @@ YAVI 0.18.0 には、0.17 に対して次の破壊的変更があります。影
 * [引数と単一の値のバリデータはデフォルトで `null` を拒否する](#引数と単一の値のバリデータはデフォルトで-null-を拒否する)
 * [`ViolationDetail` は record になった](#violationdetail-は-record-になった)
 * [liftList などの違反名はインデックスが先になる](#liftlist-などの違反名はインデックスが先になる)
+* [コードに書いたメッセージはフォーマッタに置き換えられない](#コードに書いたメッセージはフォーマッタに置き換えられない)
 * [名前のない値のメッセージ](#名前のない値のメッセージ)
 * [null 性アノテーションは JSpecify のものになった](#null-性アノテーションは-jspecify-のものになった)
 * [その他の変更](#その他の変更)
@@ -419,6 +420,93 @@ validated.prefixed(1); // [1].tag
 ### 関連するプルリクエスト
 
 * [#544](https://github.com/making/yavi/pull/544): lift した要素の違反をインデックスの下に位置づけ、`indexed(int)` を削除します。
+
+## コードに書いたメッセージはフォーマッタに置き換えられない
+
+制約の `message(String)`、プロパティの `required(String)` と `typeMessage(String)` でコードに書いたテキストが、違反のメッセージになります。`MessageSourceMessageFormatter` などの `MessageFormatter` は、制約のメッセージキーに対応するメッセージでこのテキストを置き換えなくなり、引数を埋め込むだけになりました。メッセージキーは変わりません。
+
+```java
+// messages.properties: charSequence.notBlank={0} must not be blank.
+Validator<User> validator = ValidatorBuilder.<User>of()
+        .messageFormatter(new MessageSourceMessageFormatter(messageSource::getMessage))
+        ._string(User::name, "name", c -> c.notBlank().message("Enter your name"))
+        .build();
+
+validator.validate(new User("")).get(0).message();
+// before: name must not be blank.
+// after:  Enter your name
+```
+
+複数の述語からなる制約（`url(url -> ...)`、`password(policies -> ...)`）の直後の `message(...)` は、最後の述語だけでなく、そのすべての述語のメッセージを置き換えます。
+
+```java
+._string(Site::url, "url", c -> c.url(url -> url.protocol("http", "https").build()).message("Enter an http URL"))
+// "javascript:alert(1)" (charSequence.url)
+// before: "url" must be a valid URL
+// after:  Enter an http URL
+```
+
+### 影響を受けるユーザー
+
+影響を受けるもの:
+
+* バリデータのフォーマッタがメッセージキーに対応するメッセージを持つ `message(String)`、`required(String)`、`typeMessage(String)`。典型的には、デフォルトメッセージを地域化するリソースバンドルを使う `MessageSourceMessageFormatter` です。どのロケールでもテキストが表示されるようになります。
+* `protocol`、`host`、`port` を指定した `url(url -> ...)` や、ポリシーが 2 つ以上の `password(...)` の直後の `message(...)`。
+* メッセージを探す以外のこともする独自の `MessageFormatter`。テキストは新しい `format(String messageFormat, Object[] args, Locale locale)` に渡されます。オーバーライドしなければ `MessageFormat` でフォーマットされます。
+* `ConstraintViolation.builder().name(...).message(String)`。メッセージキー `_` でメッセージを探さなくなります。
+
+影響を受けないもの:
+
+* `message(ViolationMessage)`、`required(ViolationMessage)`、`typeMessage(ViolationMessage)`。これまでどおり、それ自身のキーでメッセージを探します。
+* 違反のメッセージキーと引数。したがって `ViolationDetail` も変わりません。
+* デフォルトの `SimpleMessageFormatter` を使うバリデータ。メッセージを探さないためです。
+* Spring MVC の `violations.apply(bindingResult::rejectValue)`。Spring がメッセージキーでもう一度メッセージを探すため、ここではバンドルのメッセージが優先されたままです。テキストと探すべきメッセージは `violation.localizable()` で見分けられます。
+
+### 移行手順
+
+#### 1. フォーマッタに置き換えられていたテキストを削除する
+
+0.17 ではテキストは表示されていませんでした。削除すると、違反のメッセージは 0.17 と同じになります。
+
+```java
+// before
+c -> c.notBlank().message("Enter your name")
+
+// after: 0.17 と同じく、バンドルのメッセージ
+c -> c.notBlank()
+```
+
+#### 2. 地域化するテキストには専用のキーを付ける
+
+```java
+// after
+c -> c.notBlank().message(ViolationMessage.of("user.name.notBlank", "Enter your name"))
+// messages_ja.properties: user.name.notBlank=名前を入力してください
+```
+
+#### 3. `url(...)` や `password(...)` の一部の述語にだけメッセージを付ける
+
+```java
+// before: テキストはプロトコルの違反にだけ使われる
+c -> c.url(url -> url.protocol("http", "https").build()).message("Enter an http URL")
+
+// after: 0.17 と同じメッセージ
+c -> c.url(url -> {
+    List<ConstraintPredicate<String>> predicates = new ArrayList<>(url.protocol("http", "https").build());
+    predicates.set(1, predicates.get(1).overrideMessage("Enter an http URL"));
+    return predicates;
+})
+```
+
+### 理由
+
+1 つのプロパティのために書いたテキストは、バンドルがキーのすべての違反に対して持つメッセージより具体的です。0.17 では、アプリケーションがデフォルトメッセージを地域化した途端に、より具体的なほうが黙って負けていました。キーを変えないのは、キーで違反を見分けるクライアントがそのまま動くようにするためです。
+
+`message(...)` は制約が最後に追加した述語のメッセージを置き換えていたため、`url(...)` では作り方次第で結果が変わりました。テキストは `ftp://example.com`（`charSequence.url.protocol`）には表示され、`javascript:alert(1)`（`charSequence.url`）には表示されませんでした。
+
+### 関連するプルリクエスト
+
+* [#575](https://github.com/making/yavi/pull/575)
 
 ## 名前のない値のメッセージ
 

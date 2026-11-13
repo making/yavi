@@ -5,7 +5,6 @@
 package am.ik.yavi.core;
 
 import am.ik.yavi.message.MessageFormatter;
-import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +36,7 @@ class ConstraintViolationTest {
 		assertThat(violation.args()).isNotNull();
 		assertThat(violation.args()).isEmpty();
 		assertThat(violation.locale()).isEqualTo(Locale.getDefault());
+		assertThat(violation.localizable()).isTrue();
 		assertThat(violation.message()).isEqualTo(defaultMessage);
 	}
 
@@ -47,7 +47,7 @@ class ConstraintViolationTest {
 		String messageKey = "length";
 		String defaultMessage = "{0} length must be between {1} and {2}";
 		Object[] args = new Object[] { name, 4, 20 };
-		MessageFormatter formatter = SimpleMessageFormatter.getInstance();
+		MessageFormatter knowsEveryKey = (key, format, arguments, l) -> key;
 		Locale locale = Locale.ENGLISH;
 
 		ConstraintViolation violation = ConstraintViolation.builder()
@@ -55,8 +55,9 @@ class ConstraintViolationTest {
 			.messageKey(messageKey)
 			.defaultMessageFormat(defaultMessage)
 			.args(args)
-			.messageFormatter(formatter)
+			.messageFormatter(knowsEveryKey)
 			.locale(locale)
+			.localizable(false)
 			.build();
 
 		assertThat(violation.name()).isEqualTo(name);
@@ -64,7 +65,12 @@ class ConstraintViolationTest {
 		assertThat(violation.defaultMessageFormat()).isEqualTo(defaultMessage);
 		assertThat(violation.args()).isEqualTo(args);
 		assertThat(violation.locale()).isEqualTo(locale);
+		// a message that is not localizable is not looked up by its key
+		assertThat(violation.localizable()).isFalse();
 		assertThat(violation.message()).isEqualTo("username length must be between 4 and 20");
+		assertThat(violation.withMessage(ViolationMessage.of("other", "other")).message()).isEqualTo("other");
+		assertThat(violation.withMessage(ViolationMessage.of("other", "other").withText("{0} is too long")).message())
+			.isEqualTo("username is too long");
 	}
 
 	@Test

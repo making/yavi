@@ -53,7 +53,9 @@ public interface MessageModifiers<B> {
 
 	/**
 	 * Reports a value that does not represent the type of the last added argument with
-	 * the given message format instead of the one of {@code object.type}. The message key
+	 * the given text instead of the message of {@code object.type}. The text is the
+	 * message: a message formatter that has a message for {@code object.type} does not
+	 * replace it (see {@link ViolationMessage#withText(String)}). The message key
 	 * {@code object.type} and the arguments are kept: <code>{0}</code> is the name or the
 	 * label, <code>{1}</code> the name of the type and <code>{2}</code> the value.
 	 *
@@ -65,12 +67,11 @@ public interface MessageModifiers<B> {
 	 * It has an effect only with {@code fromMap}: a typed argument is of its type. An
 	 * enum constant that does not exist is reported with {@code object.oneOf}, which this
 	 * message does not replace.
-	 * @param messageFormat the message format of a value of another type
+	 * @param messageFormat the text of the message of a value of another type
 	 * @return a builder whose last argument has the message
 	 */
 	default B typeMessage(String messageFormat) {
-		return this.typeMessage(ViolationMessage.of(ViolationMessage.Default.OBJECT_TYPE.messageKey(), messageFormat,
-				ViolationMessage.Default.OBJECT_TYPE.paramNames().toArray(String[]::new)));
+		return this.typeMessage(ViolationMessage.Default.OBJECT_TYPE.withText(messageFormat));
 	}
 
 	/**

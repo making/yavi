@@ -2142,9 +2142,9 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 
 		/**
 		 * Requires the last added argument, which it is unless a modifier accepts
-		 * {@code null} and reports a missing value with the given message format instead
-		 * of the one of {@code object.required}, for a value that only a person can tell
-		 * how to give, such as a group of checkboxes that sends no key when no box is
+		 * {@code null} and reports a missing value with the given text instead of the
+		 * message of {@code object.required}, for a value that only a person can tell how
+		 * to give, such as a group of checkboxes that sends no key when no box is
 		 * checked.
 		 *
 		 * <pre>{@code
@@ -2152,23 +2152,25 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * }</pre>
 		 *
 		 * <p>
-		 * The message key {@code object.required} and the arguments are kept:
-		 * <code>{0}</code> is the name or the label of the argument. With
-		 * {@code fromMap}, the message is reported for an absent key and for text without
-		 * a value. An explicit {@code null} is not missing: it is reported by a
-		 * constraint that rejects it, or else with {@code object.notNull}.
+		 * The text is the message: a message formatter that has a message for
+		 * {@code object.required} does not replace it (see
+		 * {@link ViolationMessage#withText(String)}). The message key
+		 * {@code object.required} and the arguments are kept: <code>{0}</code> is the
+		 * name or the label of the argument. With {@code fromMap}, the message is
+		 * reported for an absent key and for text without a value. An explicit
+		 * {@code null} is not missing: it is reported by a constraint that rejects it, or
+		 * else with {@code object.notNull}.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as
 		 * before. This is the last modifier of an argument: the returned builder has
 		 * none, so one that would accept a missing value cannot follow.
-		 * @param messageFormat the message format of a missing value
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a builder whose last argument requires its key
 		 * @since 0.18.0
 		 */
 		public Arguments2ValidatorBuilder<A1, A2, R1, R2> required(String messageFormat) {
-			return this
-				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**
@@ -2571,7 +2573,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 
 		/**
 		 * Requires the key of the last added argument, as {@link #required()} does and
-		 * reports a missing value with the given message format instead of the one of
+		 * reports a missing value with the given text instead of the message of
 		 * {@code object.required}, for a value that only a person can tell how to give,
 		 * such as a group of checkboxes that sends no key when no box is checked.
 		 *
@@ -2580,23 +2582,25 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * }</pre>
 		 *
 		 * <p>
-		 * The message key {@code object.required} and the arguments are kept:
-		 * <code>{0}</code> is the name or the label of the argument. With
-		 * {@code fromMap}, the message is reported for an absent key and for text without
-		 * a value. An explicit {@code null} is not missing: it is reported by a
-		 * constraint that rejects it, or else with {@code object.notNull}.
+		 * The text is the message: a message formatter that has a message for
+		 * {@code object.required} does not replace it (see
+		 * {@link ViolationMessage#withText(String)}). The message key
+		 * {@code object.required} and the arguments are kept: <code>{0}</code> is the
+		 * name or the label of the argument. With {@code fromMap}, the message is
+		 * reported for an absent key and for text without a value. An explicit
+		 * {@code null} is not missing: it is reported by a constraint that rejects it, or
+		 * else with {@code object.notNull}.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as
 		 * before. This is the last modifier of an argument: the returned builder has
 		 * none, so one that would accept a missing value cannot follow.
-		 * @param messageFormat the message format of a missing value
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a builder whose last argument requires its key
 		 * @since 0.18.0
 		 */
 		public Arguments2ValidatorBuilder<A1, A2, R1, R2> required(String messageFormat) {
-			return this
-				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**
@@ -2792,7 +2796,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 
 		/**
 		 * Requires the key of the last added argument, as {@link #required()} does and
-		 * reports a missing value with the given message format instead of the one of
+		 * reports a missing value with the given text instead of the message of
 		 * {@code object.required}, for a value that only a person can tell how to give,
 		 * such as a group of checkboxes that sends no key when no box is checked.
 		 *
@@ -2801,23 +2805,25 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * }</pre>
 		 *
 		 * <p>
-		 * The message key {@code object.required} and the arguments are kept:
-		 * <code>{0}</code> is the name or the label of the argument. With
-		 * {@code fromMap}, the message is reported for an absent key and for text without
-		 * a value. An explicit {@code null} is not missing: it is reported by a
-		 * constraint that rejects it, or else with {@code object.notNull}.
+		 * The text is the message: a message formatter that has a message for
+		 * {@code object.required} does not replace it (see
+		 * {@link ViolationMessage#withText(String)}). The message key
+		 * {@code object.required} and the arguments are kept: <code>{0}</code> is the
+		 * name or the label of the argument. With {@code fromMap}, the message is
+		 * reported for an absent key and for text without a value. An explicit
+		 * {@code null} is not missing: it is reported by a constraint that rejects it, or
+		 * else with {@code object.notNull}.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as
 		 * before. This is the last modifier of an argument: the returned builder has
 		 * none, so one that would accept a missing value cannot follow.
-		 * @param messageFormat the message format of a missing value
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a builder whose last argument requires its key
 		 * @since 0.18.0
 		 */
 		public Arguments2ValidatorBuilder<A1, A2, R1, R2> required(String messageFormat) {
-			return this
-				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**

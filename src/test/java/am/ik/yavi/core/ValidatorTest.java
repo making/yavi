@@ -22,11 +22,13 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
+import am.ik.yavi.message.MessageFormatter;
 import org.junit.jupiter.api.Test;
 
 import static am.ik.yavi.constraint.charsequence.variant.IdeographicVariationSequence.IGNORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ValidatorTest {
 
@@ -474,76 +476,33 @@ class ValidatorTest {
 
 	@Test
 	void overrideMessage() {
-		Validator<User> validator = ValidatorBuilder.<User>of() //
-			.constraint(User::getName, "name", c -> c.notNull()
-				.message("name is required!") //
-				.greaterThanOrEqual(1)
-				.message("name is too small!") //
-				.lessThanOrEqual(20)
-				.message("name is too large!")) //
+		final MessageFormatter knowsEveryKey = (messageKey, defaultMessageFormat, args, locale) -> messageKey;
+		final Validator<User> validator = ValidatorBuilder.<User>of()
+			.messageFormatter(knowsEveryKey)
+			.constraint(User::getName, "name",
+					c -> c.notNull()
+						.message("name is required!")
+						.greaterThanOrEqual(1)
+						.message(ViolationMessage.of("name.tooSmall", "name is too small!"))
+						.lessThanOrEqual(20)
+						.message("{0} is longer than {1}!"))
+			.constraint(User::getEmail, "email",
+					c -> c.url(url -> url.protocol("http", "https").build()).message("\"{0}\" must be an http URL"))
 			.build();
-
-		{
-			User user = new User(null, "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is required!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("object.notNull");
-		}
-		{
-			User user = new User("", "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is too small!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("container.greaterThanOrEqual");
-		}
-		{
-			User user = new User("012345678901234567890", "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is too large!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("container.lessThanOrEqual");
-		}
-	}
-
-	@Test
-	void overrideViolationMessage() {
-		Validator<User> validator = ValidatorBuilder.<User>of() //
-			.constraint(User::getName, "name", c -> c.notNull()
-				.message(ViolationMessage.of("a", "name is required!")) //
-				.greaterThanOrEqual(1)
-				.message(ViolationMessage.of("b", "name is too small!")) //
-				.lessThanOrEqual(20)
-				.message(ViolationMessage.of("c", "name is too large!"))) //
-			.build();
-
-		{
-			User user = new User(null, "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is required!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("a");
-		}
-		{
-			User user = new User("", "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is too small!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("b");
-		}
-		{
-			User user = new User("012345678901234567890", "a@b.c", 10);
-			ConstraintViolations violations = validator.validate(user);
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations.size()).isEqualTo(1);
-			assertThat(violations.get(0).message()).isEqualTo("name is too large!");
-			assertThat(violations.get(0).messageKey()).isEqualTo("c");
-		}
+		// a text is the message whatever the formatter knows and keeps the key of the
+		// constraint, a ViolationMessage is looked up by its own key, and the message of
+		// a constraint made of several predicates is that of each
+		assertThat(validator.validate(new User(null, "https://example.com", 10)))
+			.extracting(ConstraintViolation::messageKey, ConstraintViolation::message)
+			.containsExactly(tuple("object.notNull", "name is required!"));
+		assertThat(validator.validate(new User("", "ftp://example.com", 10)))
+			.extracting(ConstraintViolation::messageKey, ConstraintViolation::message)
+			.containsExactly(tuple("name.tooSmall", "name.tooSmall"),
+					tuple("charSequence.url.protocol", "\"email\" must be an http URL"));
+		assertThat(validator.validate(new User("012345678901234567890", "javascript:alert(1)", 10)))
+			.extracting(ConstraintViolation::messageKey, ConstraintViolation::message)
+			.containsExactly(tuple("container.lessThanOrEqual", "name is longer than 20!"),
+					tuple("charSequence.url", "\"email\" must be an http URL"));
 	}
 
 	@Test

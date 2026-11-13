@@ -126,7 +126,7 @@ public record PropertyMessages(@Nullable String label, @Nullable ViolationMessag
 	}
 
 	private static boolean isDefault(ConstraintViolation violation, ViolationMessage message) {
-		return message.messageKey().equals(violation.messageKey())
+		return violation.localizable() && message.messageKey().equals(violation.messageKey())
 				&& message.defaultMessageFormat().equals(violation.defaultMessageFormat());
 	}
 

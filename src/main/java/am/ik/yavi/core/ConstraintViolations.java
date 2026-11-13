@@ -171,6 +171,12 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 * ConstraintViolations violations = validator.validate(userForm);
 	 * violations.apply(bindingResult::rejectValue);
 	 * }</pre>
+	 *
+	 * <p>
+	 * The callback is given the message key of a violation whose message is not
+	 * {@linkplain ConstraintViolation#localizable() localizable} too, with the text as
+	 * the default message. A callback that looks the key up again, as the {@code Errors}
+	 * of Spring does, shows a message it finds for the key instead of the text.
 	 * @param callback the callback invoked for each violation
 	 * @return this list
 	 * @since 0.0.7

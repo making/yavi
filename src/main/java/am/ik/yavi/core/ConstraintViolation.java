@@ -101,13 +101,19 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	private final List<String> paramNames;
 
 	/**
+	 * Whether the message formatter may look up a message for the message key; false for
+	 * a message given as text, whose format is the message.
+	 */
+	private final boolean localizable;
+
+	/**
 	 * The label given to the violated value, which the first element of the args array
 	 * then holds instead of the name; {@code null} if the value is shown by its name.
 	 */
 	private final @Nullable String label;
 
 	private ConstraintViolation(String name, @Nullable List<PathSegment> path, @Nullable String label, String separator,
-			String messageKey, String defaultMessageFormat, List<String> paramNames, Object[] args,
+			String messageKey, String defaultMessageFormat, List<String> paramNames, boolean localizable, Object[] args,
 			MessageFormatter messageFormatter, Locale locale) {
 		this.name = name;
 		this.label = label;
@@ -116,6 +122,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		this.paramNames = paramNames;
+		this.localizable = localizable;
 		this.args = args;
 		this.messageFormatter = messageFormatter;
 		this.locale = locale;
@@ -190,7 +197,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 	/**
 	 * Returns the default message format string.
-	 * @return the default message format string used when no localized message is found
+	 * @return the default message format string used when no localized message is found,
+	 * or the message format if the message is not {@linkplain #localizable() localizable}
 	 */
 	public String defaultMessageFormat() {
 		return this.defaultMessageFormat;
@@ -244,7 +252,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 *
 	 * <p>
 	 * The message is formatted using the configured message formatter, applying the
-	 * message id, default message format, arguments and locale.
+	 * message id, default message format, arguments and locale. A message that is not
+	 * {@linkplain #localizable() localizable} is formatted without the message id, with
+	 * {@link MessageFormatter#format(String, Object[], Locale)}.
 	 *
 	 * <p>
 	 * A violation of a value without a name, such as the root of a validator of a single
@@ -277,7 +287,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 * @since 0.16.0
 	 */
 	public String message(MessageFormatter messageFormatter) {
-		return messageFormatter.format(this.messageKey, this.messageFormat(), this.args, this.locale);
+		return this.localizable ? messageFormatter.format(this.messageKey, this.messageFormat(), this.args, this.locale)
+				: messageFormatter.format(this.messageFormat(), this.args, this.locale);
 	}
 
 	private String messageFormat() {
@@ -297,6 +308,19 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	public String messageKey() {
 		return this.messageKey;
+	}
+
+	/**
+	 * Returns whether the message formatter may look up a message for the
+	 * {@link #messageKey()}. A message given in code as text, such as
+	 * {@code message("...")} of a constraint, is not: the {@link #defaultMessageFormat()}
+	 * is the message, and only its arguments are substituted.
+	 * @return whether the message is localizable
+	 * @since 0.18.0
+	 * @see ViolationMessage#localizable()
+	 */
+	public boolean localizable() {
+		return this.localizable;
 	}
 
 	/**
@@ -347,7 +371,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		if (newArgs.length > 0) {
 			newArgs[0] = label;
 		}
-		return this.copy(label, newArgs, this.messageKey, this.defaultMessageFormat, this.paramNames,
+		return this.copy(label, newArgs, this.messageKey, this.defaultMessageFormat, this.paramNames, this.localizable,
 				this.messageFormatter);
 	}
 
@@ -371,7 +395,8 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	public ConstraintViolation withMessage(ViolationMessage message) {
 		return this.copy(this.label, this.args, message.messageKey(), message.defaultMessageFormat(),
-				message.paramNames().isEmpty() ? this.paramNames : message.paramNames(), this.messageFormatter);
+				message.paramNames().isEmpty() ? this.paramNames : message.paramNames(), message.localizable(),
+				this.messageFormatter);
 	}
 
 	/**
@@ -386,7 +411,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	public ConstraintViolation formattedWith(MessageFormatter messageFormatter) {
 		return this.copy(this.label, this.args, this.messageKey, this.defaultMessageFormat, this.paramNames,
-				messageFormatter);
+				this.localizable, messageFormatter);
 	}
 
 	/**
@@ -394,9 +419,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 * given properties.
 	 */
 	ConstraintViolation copy(@Nullable String label, Object[] args, String messageKey, String defaultMessageFormat,
-			List<String> paramNames, MessageFormatter messageFormatter) {
+			List<String> paramNames, boolean localizable, MessageFormatter messageFormatter) {
 		return new ConstraintViolation(this.name, this.path, label, this.separator, messageKey, defaultMessageFormat,
-				paramNames, args, messageFormatter, this.locale);
+				paramNames, localizable, args, messageFormatter, this.locale);
 	}
 
 	/**
@@ -553,7 +578,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			Function<? super ConstraintViolation, String> newName,
 			BiFunction<? super ConstraintViolation, String, List<PathSegment>> newPath) {
 		return new ConstraintViolation(name, path, this.label, this.separator, this.messageKey,
-				this.defaultMessageFormat, this.paramNames, args, this.messageFormatter, this.locale);
+				this.defaultMessageFormat, this.paramNames, this.localizable, args, this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -579,14 +604,14 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 				List<ConstraintViolations> alternatives, ConstraintViolation source,
 				MessageFormatter messageFormatter) {
 			this(name, path, source.label, args, source.messageKey, source.defaultMessageFormat, source.paramNames,
-					messageFormatter, alternatives, source);
+					source.localizable, messageFormatter, alternatives, source);
 		}
 
 		private NoAlternativeMatched(String name, List<PathSegment> path, @Nullable String label, Object[] args,
-				String messageKey, String defaultMessageFormat, List<String> paramNames,
+				String messageKey, String defaultMessageFormat, List<String> paramNames, boolean localizable,
 				MessageFormatter messageFormatter, List<ConstraintViolations> alternatives,
 				ConstraintViolation source) {
-			super(name, path, label, source.separator, messageKey, defaultMessageFormat, paramNames, args,
+			super(name, path, label, source.separator, messageKey, defaultMessageFormat, paramNames, localizable, args,
 					messageFormatter, source.locale);
 			this.alternatives = alternatives;
 		}
@@ -640,7 +665,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 		@Override
 		NoAlternativeMatched copy(@Nullable String label, Object[] args, String messageKey, String defaultMessageFormat,
-				List<String> paramNames, MessageFormatter messageFormatter) {
+				List<String> paramNames, boolean localizable, MessageFormatter messageFormatter) {
 			final List<ConstraintViolations> alternatives = messageFormatter == super.messageFormatter
 					? this.alternatives
 					: this.alternatives.stream()
@@ -649,7 +674,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 							.toList()))
 						.toList();
 			return new NoAlternativeMatched(this.name(), this.path(), label, args, messageKey, defaultMessageFormat,
-					paramNames, messageFormatter, alternatives, this);
+					paramNames, localizable, messageFormatter, alternatives, this);
 		}
 
 		@Override
@@ -717,7 +742,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		System.arraycopy(args, 0, completeArgs, 1, args.length);
 		completeArgs[args.length + 1] = violatedValue;
 		return new ConstraintViolation("", null, null, DEFAULT_SEPARATOR, message.messageKey(),
-				message.defaultMessageFormat(), message.paramNames(), completeArgs,
+				message.defaultMessageFormat(), message.paramNames(), message.localizable(), completeArgs,
 				SimpleMessageFormatter.getInstance(), locale);
 	}
 
@@ -762,6 +787,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 		/** The names of the arguments that follow the name */
 		private List<String> paramNames = List.of();
+
+		/** Whether the message formatter may look up a message for the message key */
+		private boolean localizable = true;
 
 		/** The message formatter to be used for formatting the message */
 		private MessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
@@ -875,6 +903,19 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		}
 
 		/**
+		 * Sets whether the message formatter may look up a message for the message key.
+		 * If not specified, it may; {@code false} makes the default message format the
+		 * message (see {@link ViolationMessage#localizable()}).
+		 * @param localizable whether the message is localizable
+		 * @return this builder for method chaining
+		 * @since 0.18.0
+		 */
+		public Builder localizable(boolean localizable) {
+			this.localizable = localizable;
+			return this;
+		}
+
+		/**
 		 * Sets the structured path to the value that the constraint violation applies to.
 		 * If not specified, the path is a single property segment holding the name.
 		 * @param path the structured path
@@ -930,7 +971,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		public ConstraintViolation build() {
 			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path, null, this.separator,
 					Objects.requireNonNull(this.messageKey), Objects.requireNonNull(this.defaultMessageFormat),
-					this.paramNames, this.args, this.messageFormatter, this.locale);
+					this.paramNames, this.localizable, this.args, this.messageFormatter, this.locale);
 		}
 
 	}
@@ -1021,7 +1062,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			 * <ul>
 			 * <li>Sets the message id to the default value
 			 * ({@link #DEFAULT_MESSAGE_KEY})</li>
-			 * <li>Uses the provided message as the default message format</li>
+			 * <li>Uses the provided message as the message, which a message formatter
+			 * does not look up by the message id (see
+			 * {@link ViolationMessage#localizable()})</li>
 			 * <li>Prepends the field name as the first argument in the argument list</li>
 			 * <li>Builds and returns the final ConstraintViolation object</li>
 			 * </ul>
@@ -1038,6 +1081,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 				return this.messageKey(DEFAULT_MESSAGE_KEY)
 					.defaultMessageFormat(message)
 					.argsWithPrependedName()
+					.localizable(false)
 					.build();
 			}
 
@@ -1156,6 +1200,17 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			 * @see ViolationMessage#paramNames()
 			 */
 			Optionals paramNames(List<String> paramNames);
+
+			/**
+			 * Sets whether the message formatter may look up a message for the message
+			 * id. If not specified, it may; {@code false} makes the default message
+			 * format the message, which a message found for the id does not replace.
+			 * @param localizable whether the message is localizable
+			 * @return this builder for method chaining
+			 * @since 0.18.0
+			 * @see ViolationMessage#localizable()
+			 */
+			Optionals localizable(boolean localizable);
 
 			/**
 			 * Sets the structured path to the value that the constraint violation applies
