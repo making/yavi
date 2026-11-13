@@ -763,6 +763,8 @@ public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, X2> 
 public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? extends X2> validator) { ... }
 ```
 
+Related pull request: [#572](https://github.com/making/yavi/pull/572)
+
 ### `emoji()` counts extended grapheme clusters
 
 A few sequences that are not emoji count as one where they counted as two: `"\r\n"`, or

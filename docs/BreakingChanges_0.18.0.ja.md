@@ -677,6 +677,8 @@ public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, X2> 
 public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? extends X2> validator) { ... }
 ```
 
+関連するプルリクエスト: [#572](https://github.com/making/yavi/pull/572)
+
 ### `emoji()` は拡張書記素クラスタを数える
 
 絵文字ではない一部の並びが、2 ではなく 1 と数えられるようになりました。`"\r\n"` や、濁点付きの半角カタカナ（`ｶﾞ`）が該当します。`Emoji` クラスは削除されました。
