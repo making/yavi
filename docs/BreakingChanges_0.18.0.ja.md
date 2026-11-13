@@ -610,6 +610,8 @@ Yavi.schema()
 
 この enum の description は定数を持つようになるので、JSON Schema に `enum` が出力されます。
 
+関連するプルリクエスト: [#565](https://github.com/making/yavi/pull/565)
+
 ### `apply` の 2 つの引数に同じ名前は付けられない
 
 2 つの引数が同じ名前を持つと、`apply` と `flatApply` は `fromMap` と同じく `IllegalArgumentException` を投げます。そのままでは、1 つのプロパティが 2 つの引数を表すオブジェクトとして記述されてしまうためです。引数ごとに別の名前を付けてください。
@@ -621,6 +623,8 @@ Yavi.arguments()._integer("value")._integer("value").apply(Range::new);
 // after
 Yavi.schema()._integer("from")._integer("to").apply(Range::new);
 ```
+
+関連するプルリクエスト: [#565](https://github.com/making/yavi/pull/565)
 
 ### `Yavi.arguments()` は非推奨になり、`YaviArguments` は `YaviSchema` になった
 

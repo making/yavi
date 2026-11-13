@@ -679,6 +679,8 @@ Yavi.schema()
 
 The description of such an enum now holds its constants, so its JSON Schema has `enum`.
 
+Related pull request: [#565](https://github.com/making/yavi/pull/565)
+
 ### Two arguments of `apply` cannot have the same name
 
 `apply` and `flatApply` throw an `IllegalArgumentException` when two arguments have the
@@ -692,6 +694,8 @@ Yavi.arguments()._integer("value")._integer("value").apply(Range::new);
 // after
 Yavi.schema()._integer("from")._integer("to").apply(Range::new);
 ```
+
+Related pull request: [#565](https://github.com/making/yavi/pull/565)
 
 ### `Yavi.arguments()` is deprecated and `YaviArguments` is `YaviSchema`
 
