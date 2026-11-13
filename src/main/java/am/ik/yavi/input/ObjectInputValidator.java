@@ -128,7 +128,7 @@ import org.jspecify.annotations.Nullable;
  * {@code address}.
  *
  * <pre>{@code
- * ValueValidator<Map<String, String>, User> formValidator = validator.readingParameters();
+ * ValueValidator<Map<String, ?>, User> formValidator = validator.readingParameters();
  * Validated<User> validated = formValidator.validate(requestParameters);
  * }</pre>
  *
@@ -600,21 +600,27 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	 * {@link am.ik.yavi.core.CoercibleInputReader#coercingStrings()} states. This applies
 	 * to the nested validators too. The returned validator given another reader with
 	 * {@link ValueValidator#readingWith(InputReader)} reads the nodes of that reader, not
-	 * parameters. The type of the map is the one the result is assigned to:
+	 * parameters.
+	 *
+	 * <p>
+	 * The returned validator takes every form of such a map, a
+	 * {@code Map<String, String>}, a {@code Map<String, List<String>>} and a
+	 * {@code Map<String, String[]>}, so its type does not depend on what it is assigned
+	 * to and any combinator can follow it:
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.schema()
+	 * ValueValidator<Map<String, ?>, SearchForm> validator = Yavi.schema()
 	 *     ._string("q", c -> c.notBlank())
 	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
 	 *     .fromMap(SearchForm::new)
-	 *     .readingParameters();
+	 *     .readingParameters()
+	 *     .formattingWith(messageFormatter);
 	 * }</pre>
-	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
-	 * strings
-	 * @return a validator of a map of parameters
+	 * @return a validator of a map of parameters, whose values are strings, or iterables
+	 * or arrays of strings
 	 * @see ParameterTree
 	 */
-	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters() {
+	public ValueValidator<Map<String, ?>, X> readingParameters() {
 		return this.readingParameters(StringCoercion.strict());
 	}
 
@@ -627,12 +633,11 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	 * validator.readingParameters(StringCoercion.strict().trimming().booleanWords());
 	 * }</pre>
 	 * @param coercion the rules by which a string is taken as text
-	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
-	 * strings
-	 * @return a validator of a map of parameters
+	 * @return a validator of a map of parameters, whose values are strings, or iterables
+	 * or arrays of strings
 	 * @see am.ik.yavi.core.CoercibleInputReader#coercingStrings(StringCoercion)
 	 */
-	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters(StringCoercion coercion) {
+	public ValueValidator<Map<String, ?>, X> readingParameters(StringCoercion coercion) {
 		return ParameterTree.reading(this, coercion);
 	}
 

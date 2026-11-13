@@ -832,7 +832,7 @@ strings, which `readingParameters()` reads with the same schema:
 enum SortOrder { ASC, DESC }
 record PageRequest(int page, int size, SortOrder order) {}
 
-ValueValidator<Map<String, String>, PageRequest> pageRequestValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, PageRequest> pageRequestValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).defaultValue(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).defaultValue(20)
         ._enum("sort", SortOrder.class).defaultValue(SortOrder.ASC)
@@ -848,7 +848,7 @@ pageRequestValidator.validate(Map.of("page", "-1")); // page: "page" must be gre
 `defaultValue`, they fall back like an absent parameter:
 
 ```java
-ValueValidator<Map<String, String>, PageRequest> lenientPageRequestValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, PageRequest> lenientPageRequestValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         ._enum("sort", SortOrder.class).recover(SortOrder.ASC)
@@ -867,13 +867,14 @@ the rows with `liftList`:
 ```java
 record MemberImport(String email, String name, int age) {}
 
-ValueValidator<Map<String, String>, MemberImport> rowValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, MemberImport> rowValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("name", c -> c.notBlank().lessThanOrEqual(100))
         ._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .fromMap(MemberImport::new)
         .readingParameters();
 
+List<Map<String, ?>> rows = List.copyOf(csvRows); // the List<Map<String, String>> of a CSV library
 Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows").validate(rows);
 // rows[1].email, rows[1].name, rows[1].age, rows[3].email, rows[3].age
 ```

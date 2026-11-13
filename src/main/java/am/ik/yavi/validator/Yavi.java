@@ -141,7 +141,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <pre>{@code
  * ValueValidator<JsonNode, Car> nodeValidator = validator.readingWith(jsonNodeReader);
- * ValueValidator<Map<String, String>, Car> formValidator = validator.readingParameters();
+ * ValueValidator<Map<String, ?>, Car> formValidator = validator.readingParameters();
  * }</pre>
  *
  * <p>

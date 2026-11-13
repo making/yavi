@@ -658,7 +658,7 @@ A validator that does not know its input type (a lambda) is read only from JDK t
 Request parameters and a submitted form are a flat map of strings, possibly several for one key. `readingParameters()` of a validator built with `fromMap` reads such a map with the same schema: a string is taken as text that stands for a value of the type of its property, and a key is the path of a nested value.
 
 ```java
-ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, SearchForm> searchFormValidator = Yavi.schema()
         ._string("q", c -> c.notBlank())
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
@@ -675,7 +675,7 @@ Object search(@RequestParam MultiValueMap<String, String> params) { // ?q=yavi&p
 }
 ```
 
-The type of the map is the one the validator is assigned to: a `Map<String, String>`, a `Map<String, List<String>>` such as Spring's `MultiValueMap`, or the `Map<String, String[]>` of the Servlet API.
+The validator takes every form of such a map: a `Map<String, String>`, a `Map<String, List<String>>` such as Spring's `MultiValueMap`, and the `Map<String, String[]>` of the Servlet API. Its type is `ValueValidator<Map<String, ?>, X>` whatever it is assigned to, so any combinator, such as `formattingWith`, follows `readingParameters()`.
 
 The values are text:
 
@@ -702,7 +702,7 @@ The rules are strict on purpose. `StringCoercion` relaxes them for text written 
 ```java
 StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 
-ValueValidator<Map<String, String>, Signup> validator = Yavi.schema()
+ValueValidator<Map<String, ?>, Signup> validator = Yavi.schema()
         ._integer("age")
         ._boolean("subscribed").defaultValue(false) // an unchecked checkbox sends nothing
         .fromMap(Signup::new)
@@ -747,7 +747,7 @@ List<ViolationDetail> details = violations.details();
 A form calls a field by its label, and a missing value or a value of another type is reported by no constraint. A property of `Yavi.schema()` says how they read, and a `MessageFormatter` is given to a validator or to its violations:
 
 ```java
-ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Token> tokenValidator = Yavi.schema()
         ._string("name", c -> c.notBlank()).label("Token name") // {0} of its messages
         ._integer("ttl", c -> c.positive()).typeMessage("\"{0}\" must be a number of seconds") // object.type
         ._list("roles", Yavi._string()).required("Select at least one role") // object.required

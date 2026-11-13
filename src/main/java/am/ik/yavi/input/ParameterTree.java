@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * JSON document:
  *
  * <pre>{@code
- * ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.schema()
+ * ValueValidator<Map<String, ?>, SearchForm> validator = Yavi.schema()
  *     ._string("q", c -> c.notBlank())
  *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
  *     ._list("tags", Yavi._string(c -> c.notBlank()))
@@ -203,12 +203,12 @@ public final class ParameterTree {
 	 * Returns a validator of a map of parameters that validates its tree with the given
 	 * validator, whose strings are read by the given rules.
 	 */
-	static <M extends Map<String, ?>, X> ValueValidator<M, X> reading(ValueValidator<?, X> validator,
-			StringCoercion coercion) {
+	static <X> ValueValidator<Map<String, ?>, X> reading(ValueValidator<?, X> validator, StringCoercion coercion) {
 		final ValueValidator<ParameterTree, X> ofTree = validator.readingWith(reader(coercion));
 		return new ValueValidator<>() {
 			@Override
-			public Validated<X> validate(@Nullable M parameters, Locale locale, ConstraintContext constraintContext) {
+			public Validated<X> validate(@Nullable Map<String, ?> parameters, Locale locale,
+					ConstraintContext constraintContext) {
 				return ofTree.validate(parameters == null ? null : of(parameters), locale, constraintContext);
 			}
 

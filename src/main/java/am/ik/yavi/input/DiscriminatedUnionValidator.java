@@ -187,12 +187,11 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 * Returns a validator that selects and applies the same alternatives for a flat map
 	 * of parameters, such as request parameters, as
 	 * {@link ObjectInputValidator#readingParameters()} states.
-	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
-	 * strings
-	 * @return a validator of a map of parameters
+	 * @return a validator of a map of parameters, whose values are strings, or iterables
+	 * or arrays of strings
 	 * @see ParameterTree
 	 */
-	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters() {
+	public ValueValidator<Map<String, ?>, X> readingParameters() {
 		return this.readingParameters(StringCoercion.strict());
 	}
 
@@ -201,12 +200,11 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 * value by the given rules, as
 	 * {@link ObjectInputValidator#readingParameters(StringCoercion)} states.
 	 * @param coercion the rules by which a string is taken as text
-	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
-	 * strings
-	 * @return a validator of a map of parameters
+	 * @return a validator of a map of parameters, whose values are strings, or iterables
+	 * or arrays of strings
 	 * @see am.ik.yavi.core.CoercibleInputReader#coercingStrings(StringCoercion)
 	 */
-	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters(StringCoercion coercion) {
+	public ValueValidator<Map<String, ?>, X> readingParameters(StringCoercion coercion) {
 		return ParameterTree.reading(this, coercion);
 	}
 

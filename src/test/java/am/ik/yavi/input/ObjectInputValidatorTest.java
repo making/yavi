@@ -466,9 +466,16 @@ class ObjectInputValidatorTest {
 			.containsExactly("object.oneOf");
 		assertThat(model.validate(shapeValidator, input("radius", 2)).errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"type\" is required");
-		// a map of parameters is read with the type it has
-		final ValueValidator<Map<String, String>, Shape> ofStrings = shapeValidator.readingParameters();
-		assertThat(ofStrings.validated(Map.of("type", "circle", "radius", "2"))).isEqualTo(new Circle(2));
+		// every form of a map of parameters is read by one validator, which any
+		// combinator follows without a type witness
+		final ValueValidator<Map<String, ?>, Shape> ofParameters = shapeValidator.readingParameters()
+			.formattingWith((messageKey, defaultMessageFormat, args, locale) -> messageKey);
+		assertThat(ofParameters.validated(Map.of("type", "circle", "radius", "2"))).isEqualTo(new Circle(2));
+		assertThat(ofParameters.validated(Map.of("type", List.of("square"), "side", new String[] { "3" })))
+			.isEqualTo(new Square("square", 3));
+		assertThat(ofParameters.validate(Map.of("type", List.of("circle"))).errors())
+			.extracting(ConstraintViolation::message)
+			.containsExactly("object.required");
 		// a rule on the created object keeps the union, whatever alternative is selected
 		assertThat(shapeValidator
 			.constraintOnTarget(shape -> shape instanceof Circle, "type",
@@ -1065,7 +1072,7 @@ class ObjectInputValidatorTest {
 		// a form: the fields are trimmed, a blank one is not given, and a checkbox is
 		// "on" or absent
 		final StringCoercion form = StringCoercion.strict().trimming().booleanWords();
-		final ValueValidator<Map<String, String>, Signup> ofForm = validator.readingParameters(form);
+		final ValueValidator<Map<String, ?>, Signup> ofForm = validator.readingParameters(form);
 		assertThat(ofForm.validated(Map.of("name", " a ", "age", " 30 ", "subscribed", "on", "role", " admin ")))
 			.isEqualTo(new Signup("a", 30, true, Role.ADMIN));
 		assertThat(ofForm.validated(Map.of("name", " ", "age", " \t", "role", "USER")))
@@ -1086,7 +1093,7 @@ class ObjectInputValidatorTest {
 		// a string whose white space is a part of it says so, and keeps saying so; a
 		// blank one is still not given
 		final Arguments1Validator<String, String> password = Yavi._string("password").untrimmed();
-		final ValueValidator<Map<String, String>, String> ofPassword = Yavi.schema()
+		final ValueValidator<Map<String, ?>, String> ofPassword = Yavi.schema()
 			._string(Yavi._string("x", c -> c.greaterThanOrEqual(3))
 				.map(String::length)
 				.preprocess(String::toLowerCase)
