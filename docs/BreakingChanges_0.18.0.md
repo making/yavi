@@ -1,8 +1,44 @@
 # Breaking changes in 0.18.0
 
-YAVI 0.18.0 contains one breaking change:
+[日本語](BreakingChanges_0.18.0.ja.md)
 
+YAVI 0.18.0 contains the following breaking changes from 0.17, the ones that affect the
+most users first:
+
+* [Java 21 is required](#java-21-is-required)
 * [A validated value is required by default](#a-validated-value-is-required-by-default)
+* [`ViolationDetail` is a record](#violationdetail-is-a-record)
+* [The violations of a lifted collection are located under the index](#the-violations-of-a-lifted-collection-are-located-under-the-index)
+* [The message of a value without a name](#the-message-of-a-value-without-a-name)
+* [The nullness annotations are those of JSpecify](#the-nullness-annotations-are-those-of-jspecify)
+* [Other changes](#other-changes)
+
+In the examples, "before" is code written for 0.17, "after" is the same code changed so
+that it compiles and behaves the same with 0.18, and "after (new API)" uses an API that
+is new in 0.18. See [New features in 0.18.0](NewFeatures_0.18.0.md) for the new APIs.
+
+## Java 21 is required
+
+YAVI 0.18.0 is compiled for Java 21. 0.17 ran on Java 8.
+
+### Who is affected
+
+* An application that runs on Java 8 to 20. It stays on 0.17.
+* Code compiled against 0.17, such as a library that uses YAVI. `Validation` is an
+  interface now and the methods of `Yavi.arguments()` return other types, so it fails
+  with 0.18 at run time until it is recompiled.
+
+### Migration
+
+#### 1. Run on Java 21 or later
+
+#### 2. Recompile the code that uses YAVI
+
+This is needed also where the source does not change.
+
+### Related pull requests
+
+* [#532](https://github.com/making/yavi/pull/532) raises the baseline to Java 21.
 
 ## A validated value is required by default
 
@@ -228,3 +264,341 @@ Kotlin can check.
   lets `nullable()` change its type.
 * [#556](https://github.com/making/yavi/pull/556) is its precondition: the function given
   to `apply` receives the validated values without `@Nullable` parameters.
+
+## `ViolationDetail` is a record
+
+`ConstraintViolations#details()` returns records that say which value failed. Their
+accessors have other names, and so have the properties of the JSON that a JSON library
+writes from them.
+
+```java
+List<ViolationDetail> details = violations.details();
+// [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
+//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+```
+
+### Who is affected
+
+Affected:
+
+* Code that calls `getKey()`, `getArgs()` or `getDefaultMessage()` of a
+  `ViolationDetail`, or its constructor.
+* A client of an API that returns `details()` as JSON.
+* Code that modifies the list returned by `details()`.
+
+Not affected:
+
+* `ConstraintViolation`: `name()`, `messageKey()`, `args()` and `message()`.
+
+### Migration
+
+#### 1. Rename the accessors
+
+```java
+// before
+for (ViolationDetail detail : violations.details()) {
+    String key = detail.getKey();
+    Object[] args = detail.getArgs();
+    String message = detail.getDefaultMessage();
+}
+
+// after
+for (ViolationDetail detail : violations.details()) {
+    String key = detail.messageKey();
+    List<Object> args = detail.args();
+    String message = detail.message();
+}
+
+// after (new API)
+for (ViolationDetail detail : violations.details()) {
+    String name = detail.name();       // items[1].name
+    String pointer = detail.pointer(); // /items/1/name, a JSON Pointer
+}
+```
+
+#### 2. Follow the new JSON in the client, or keep the JSON of 0.17
+
+```jsonc
+// before
+[{"key": "charSequence.notBlank", "args": ["items[1].name", ""], "defaultMessage": "\"items[1].name\" must not be blank"}]
+
+// after
+[{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
+  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+```
+
+To keep the JSON of 0.17, map the details to a type of your own:
+
+```java
+record LegacyDetail(String key, List<Object> args, String defaultMessage) {}
+
+List<LegacyDetail> details = violations.details()
+        .stream()
+        .map(detail -> new LegacyDetail(detail.messageKey(), detail.args(), detail.message()))
+        .toList();
+```
+
+### All changes
+
+| | Before | After |
+| --- | --- | --- |
+| Message key | `getKey()`, JSON `key` | `messageKey()`, JSON `messageKey` |
+| Formatted message | `getDefaultMessage()`, JSON `defaultMessage` | `message()`, JSON `message` |
+| Arguments | `Object[] getArgs()` | `List<Object> args()`, unmodifiable |
+| Name and JSON Pointer of the value | not available | `name()`, `pointer()` |
+| Constructor | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail(name, pointer, messageKey, message, args)` |
+| List returned by `details()` | modifiable | unmodifiable |
+
+### Why
+
+A detail did not say which value failed: the name was only the first element of `args`.
+`defaultMessage` was the formatted message, not the default one.
+
+### Related pull requests
+
+* [#551](https://github.com/making/yavi/pull/551) makes `ViolationDetail` a record and
+  adds `messagesByName()`, `messagesByPointer()` and `pointer()`.
+
+## The violations of a lifted collection are located under the index
+
+`liftList()`, `liftSet()` and `liftCollection()` put the index of an element before the
+name of the element validator, where they put it after the name.
+
+```java
+Yavi._string("tag", c -> c.notBlank())
+        .liftList()
+        .validate(List.of("java", "")); // [1].tag, was tag[1]
+```
+
+The code compiles as it is. The names of the violations change.
+
+### Who is affected
+
+Affected:
+
+* Code that looks up a violation of a lifted validator by its name, such as the field of
+  a form or an assertion of a test, where the element validator has a name.
+* Code that calls `indexed(int)`.
+
+Not affected:
+
+* `ValidatorBuilder#forEach`.
+* A lifted validator whose element has the empty name. It reports `[1]` as before.
+
+### Migration
+
+#### 1. Name the collection, not the element
+
+```java
+// before
+StringValidatorBuilder.of("tag", c -> c.notBlank()).build()
+        .liftList()
+        .validate(List.of("java", "")); // tag[1]
+
+// after
+StringValidatorBuilder.of("", c -> c.notBlank()).build()
+        .liftList().prefixed("tag")
+        .validate(List.of("java", "")); // tag[1]
+
+// after (new API)
+Yavi._string(c -> c.notBlank())
+        .liftList().prefixed("tag")
+        .validate(List.of("java", "")); // tag[1]
+```
+
+An element that is an object keeps the names of its properties. With `prefixed`, it is
+named like an element of `ValidatorBuilder#forEach`:
+
+```java
+// before
+addressValidator.applicative().liftList().validate(addresses); // street[1]
+
+// after
+addressValidator.applicative().liftList().prefixed("addresses").validate(addresses); // addresses[1].street
+```
+
+#### 2. Replace `indexed(int)` with `prefixed(int)`
+
+`indexed(int)` is removed from `ConstraintViolation`, `Validated`, `ValueValidator` and
+`Arguments1Validator`. `prefixed(int)` of `ConstraintViolation` and `Validated` puts the
+index before the name.
+
+```java
+// before
+validated.indexed(1); // tag[1]
+
+// after
+validated.prefixed(1); // [1].tag
+```
+
+### Why
+
+The name did not follow the structure of the input: the property `street` of the second
+address was `street[1]`, which reads as the second element of `street`.
+
+### Related pull requests
+
+* [#544](https://github.com/making/yavi/pull/544) locates the violations of lifted
+  elements under the index and removes `indexed(int)`.
+
+## The message of a value without a name
+
+The message of a violation whose name is empty says "The value" where it had the quoted
+empty name.
+
+```java
+Yavi._string(c -> c.notBlank()).validate(""); // The value must not be blank
+```
+
+### Who is affected
+
+Affected:
+
+* An assertion on, or a display of, the default message of a validator with the empty
+  name: `StringValidatorBuilder.of("", ...)` and so on.
+
+Not affected:
+
+* The message key and the arguments. The name is still `""`.
+* A message that a `MessageSource` formats with a format of its own.
+* A violation with a name (`"tags[0]" must not be blank`).
+
+### Migration
+
+#### 1. Update the expected messages
+
+```java
+// before
+StringValidatorBuilder.of("", c -> c.notBlank()).build().validate("");
+// "" must not be blank
+
+// after
+StringValidatorBuilder.of("", c -> c.notBlank()).build().validate("");
+// The value must not be blank
+
+// after (new API)
+Yavi._string(c -> c.notBlank()).validate("");
+// The value must not be blank
+```
+
+### Related pull requests
+
+* [#546](https://github.com/making/yavi/pull/546) adds the validators of a single value
+  to `Yavi` and changes the message.
+
+## The nullness annotations are those of JSpecify
+
+The package `am.ik.yavi.jsr305` is removed. YAVI is annotated with
+[JSpecify](https://jspecify.dev) (`@NullMarked`, `@Nullable`) instead.
+
+### Who is affected
+
+Affected:
+
+* Code that imports an annotation of `am.ik.yavi.jsr305`.
+* Code checked by NullAway, and Kotlin (2.1 or later reports a mismatch with JSpecify
+  annotations as an error). They now check the nullness of every parameter and result of
+  YAVI.
+
+Not affected:
+
+* Any other Java code.
+
+### Migration
+
+#### 1. Import the annotations of JSpecify
+
+YAVI does not bring `org.jspecify:jspecify`. Add it to your dependencies.
+
+```java
+// before
+import am.ik.yavi.jsr305.Nullable;
+
+// after
+import org.jspecify.annotations.Nullable;
+```
+
+#### 2. With NullAway or Kotlin, fix the reported nullness
+
+* A value that may be `null` is declared so, as described in
+  [step 3 of the required default](#3-with-nullaway-or-kotlin-declare-the-receiver-of-a-nullable-value-as-nullable).
+* The validated type of the Kotlin DSL is not nullable: `validator<T> { ... }`, `nest`
+  and `forEach` declare `T : Any`.
+
+See [Limitations of NullAway](NullAwayLimitations.md) if NullAway reports correct code.
+
+### Related pull requests
+
+* [#534](https://github.com/making/yavi/pull/534) replaces JSR 305 with JSpecify.
+* [#556](https://github.com/making/yavi/pull/556) reduces `@Nullable` to the places where
+  `null` is part of the contract.
+
+## Other changes
+
+These affect few users.
+
+### `Validation` is an interface
+
+`Validation` is an interface and `Validated` a sealed interface. A class that extends
+`Validation` implements it instead, and `map` / `flatMap` have one type parameter. Code
+that calls them without type arguments on a `Validated` compiles as it is.
+
+```java
+// before
+class Result<T> extends Validation<String, T> { ... }
+Validated<Integer> number = validated.<Integer, Validated<Integer>>map(Integer::valueOf);
+
+// after
+class Result<T> implements Validation<String, T> { ... }
+Validated<Integer> number = validated.<Integer>map(Integer::valueOf);
+```
+
+Related pull requests: [#537](https://github.com/making/yavi/pull/537),
+[#549](https://github.com/making/yavi/pull/549)
+
+### The constructors of `ArgumentsNValidatorBuilder` are removed
+
+```java
+// before
+new Arguments2ValidatorBuilder<>(nameValidator, ageValidator).apply(Member::new);
+
+// after
+Yavi.arguments()._string(nameValidator)._integer(ageValidator).apply(Member::new);
+```
+
+Related pull request: [#538](https://github.com/making/yavi/pull/538)
+
+### `Arguments1` to `Arguments16` are records
+
+`toString()` returns `Arguments2[arg1=a, arg2=1]`. It was `Arguments2{arg1=a, arg2=1}`.
+
+Related pull request: [#549](https://github.com/making/yavi/pull/549)
+
+### `emoji()` counts extended grapheme clusters
+
+A few sequences that are not emoji count as one where they counted as two: `"\r\n"`, or
+a half-width katakana with a voiced sound mark (`ｶﾞ`). The class `Emoji` is removed.
+
+Related pull request: [#533](https://github.com/making/yavi/pull/533)
+
+### The message key separator applies under `forEach`
+
+A `ValidatorBuilder` with a message key separator other than `.` uses it in the names
+under `forEach(..., builder -> ...)` too.
+
+```java
+new ValidatorBuilder<Order>("/")
+        .forEach(Order::addresses, "addresses", b -> b.constraint(Address::street, "street", c -> c.notBlank()))
+        .build();
+// before: addresses[0].street
+// after:  addresses[0]/street
+```
+
+Related pull request: [#537](https://github.com/making/yavi/pull/537)
+
+### The constructors of the nested validators take the path
+
+The constructors of `NestedValidator`, `NestedCollectionValidator` and
+`NestedConstraintPredicates` take the path as an additional argument.
+
+Related pull request: [#537](https://github.com/making/yavi/pull/537)

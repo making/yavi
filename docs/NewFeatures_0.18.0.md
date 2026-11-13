@@ -1,0 +1,569 @@
+# New features in 0.18.0
+
+[日本語](NewFeatures_0.18.0.ja.md)
+
+YAVI 0.18.0 turns `Yavi.arguments()` into a way to describe an input once and read it
+from typed arguments, a map, a JSON tree or request parameters.
+
+* [Validators of a single value](#validators-of-a-single-value)
+* [Optional arguments, nested objects, lists and maps](#optional-arguments-nested-objects-lists-and-maps)
+* [Validating a map such as a parsed JSON object](#validating-a-map-such-as-a-parsed-json-object)
+* [Validating the tree model of a JSON library](#validating-the-tree-model-of-a-json-library)
+* [Validating request parameters](#validating-request-parameters)
+* [Handling the result](#handling-the-result)
+* [Describing a validator and generating a JSON Schema](#describing-a-validator-and-generating-a-json-schema)
+* [Nullness with JSpecify](#nullness-with-jspecify)
+
+See [Breaking changes in 0.18.0](BreakingChanges_0.18.0.md) to migrate from 0.17.
+
+The examples use these types:
+
+```java
+enum Role { ADMIN, MEMBER, GUEST }
+record Address(String street, String city) {}
+record User(String email, Optional<String> nickname, Integer age, Role role, Address address, List<String> tags) {}
+```
+
+## Validators of a single value
+
+`Yavi._string`, `Yavi._integer`, `Yavi._localDate` and so on build the validator of one
+value without a builder class and `build()`. They have the names of the arguments of
+`Yavi.arguments()`.
+
+```java
+// before
+StringValidator<String> emailValidator = StringValidatorBuilder.of("email", c -> c.notBlank().email()).build();
+
+// after
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank().email());
+```
+
+* The name can be omitted for a value that is not a property, such as the element of a
+  list: `Yavi._string(c -> c.notBlank())`. Its message says "The value" in place of the
+  name (`The value must not be blank`).
+* `Yavi._list(elementValidator, c -> c.notEmpty().unique())` and
+  `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it.
+
+### Transforming a value before its constraints
+
+The transforms of a `String` are written before its constraints. Any other value is
+transformed with `preprocess`. `null` is not transformed.
+
+```java
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
+emailValidator.validate("  USER@Example.COM "); // Valid[value=user@example.com]
+
+BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.positive())
+        .preprocess(BigDecimal::stripTrailingZeros);
+```
+
+`c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.toNormalForm(form)` and
+`c.transform(f)` are available wherever the constraints of a `String` value are written,
+such as `Yavi.arguments()._string("email", c -> ...)`.
+
+### Combinators
+
+Every `ValueValidator` has:
+
+| Method | Result |
+| --- | --- |
+| `nullable()`, `optional()`, `defaultValue(value)` | accepts `null` and produces `null`, `Optional.empty()` or the default value |
+| `recover(fallback)`, `recoverWith(violations -> ...)` | never fails: produces the fallback for `null` and for an invalid value |
+| `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key |
+| `prefixed(name)` | puts a name before the names of the violations (`orders[1].id`) |
+| `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise `object.anyOf` followed by the violations of every alternative |
+| `ValueValidator.lazy(supplier)`, `recursive(self -> ...)` | a reference to a validator that is not built yet |
+
+### New constraints
+
+`BigDecimalConstraint` has `fractionDigits(max)` and `integerDigits(max)`, the
+counterpart of `@Digits` of Bean Validation. The digits of the value are counted, so
+`1.500` has one fraction digit.
+
+```java
+Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
+// 1.505: "price" must have at most 2 fraction digits
+```
+
+## Optional arguments, nested objects, lists and maps
+
+An argument of `Yavi.arguments()` is required unless a modifier after it says otherwise,
+and can be an object, a list or a map.
+
+```java
+MapInputValidator<Address> addressValidator = Yavi.arguments()
+        ._string("street", c -> c.notBlank())
+        ._string("city", c -> c.notBlank())
+        .fromMap(Address::new); // see the next section
+
+Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<String>, User> userValidator = Yavi.arguments()
+        ._string("email", c -> c.notBlank().email())
+        ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+        ._enum("role", Role.class).recover(Role.GUEST)
+        ._object("address", addressValidator)                    // address.street
+        ._list("tags", Yavi._string(c -> c.notBlank()),          // tags[0]
+                c -> c.notEmpty().lessThanOrEqual(10).unique())  // tags
+        .apply(User::new)
+        .constraintOnTarget(user -> user.age() >= 18 || user.role() != Role.ADMIN, "role",
+                ViolationMessage.of("user.adultAdmin", "\"{0}\" must not be ADMIN for a minor"));
+```
+
+* `nullable()`, `optional()`, `defaultValue(...)`, `recover(...)` and `recoverWith(...)`
+  apply to the last added argument. `nullable()` changes the type of the value to
+  `@Nullable`.
+* `_object(name, validator)`, `_list(name, elementValidator)` and
+  `_map(name, valueValidator)` locate their violations under the name, in `name()`
+  (`address.street`, `tags[1]`, `prices.pen`) and in `path()`.
+* The constraints of `_list` and `_map` are checked when every element is valid and are
+  reported on the argument: `"tags" must be unique. [a] is/are duplicated.`
+* `constraintOnTarget` is a rule that spans several arguments. It is checked when all
+  arguments are valid.
+* `flatApply(f)` takes a function that returns a `Validated`, such as a factory method
+  that validates.
+
+## Validating a map such as a parsed JSON object
+
+`fromMap` ends the same arguments with a validator that reads them from a
+`Map<String, Object>` by their names, checks their types and creates the object, without
+a cast and without reflection.
+
+```java
+MapInputValidator<User> userValidator = Yavi.arguments()
+        ._string("email", c -> c.notBlank().email())
+        ._string("nickname", c -> c.notBlank()).optional()
+        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+        ._enum("role", Role.class)
+        ._object("address", addressValidator)
+        ._list("tags", Yavi._string(c -> c.notBlank())).defaultValue(List.of())
+        .fromMap(User::new);
+
+Validated<User> validated = userValidator.validate(Map.of(
+        "email", "jd@example.com",
+        "age", 30,
+        "role", "ADMIN",
+        "address", Map.of("street", "1-2-3", "city", "Tokyo"),
+        "tags", List.of("java", "yavi")));
+```
+
+| Input | Result |
+| --- | --- |
+| A value that does not represent the type of its argument (`"age": "30"`) | `object.type`: `"age" must be of type integer` |
+| A number that keeps its value (`30L`, `30.0` for an `Integer`) | accepted; `30.5` is `object.type` |
+| An enum constant, a temporal value | read from the name of the constant, from the ISO-8601 string |
+| An absent key | validated like `null`: accepted by `optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, otherwise `object.required` |
+| An explicit `null` | `object.notNull`, or the violation of a constraint that rejects `null` |
+| A key that no argument is defined for | ignored; `rejectingUnknownProperties()` reports `object.unknownProperty` |
+
+* An `_enum` or `_object` argument needs its type to be read from a map:
+  `_enum(name, type)`, `_object(name, type)`.
+* `ignoringCase()` reads the name of an enum constant in any case:
+  `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`.
+* `flatFromMap(f)` takes a function that returns a `Validated`:
+  `.flatFromMap(DateRange::parse)`.
+* `untyped()` turns a validator into a `ValueValidator<Object, X>`, for example to
+  combine alternatives of different types:
+  `ValueValidator.anyOf(Yavi._integer(c -> c.positive()).untyped(), Yavi._string(c -> c.uuid()).untyped())`.
+
+### A discriminated union
+
+`DiscriminatedUnionValidator` selects the validator of a map by the value of a key, which
+reads the subtypes of a sealed interface. Only the selected alternative is validated.
+
+```java
+DiscriminatedUnionValidator<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
+        .when("circle", Yavi.arguments()._integer("radius", c -> c.positive()).fromMap(Circle::new))
+        .when("square", Yavi.arguments()._integer("side", c -> c.positive()).fromMap(Square::new));
+
+shapeValidator.validate(Map.of("type", "circle", "radius", 2)); // Circle[radius=2]
+shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the following values: [circle, square]
+```
+
+### Several objects from one map, and the remaining keys
+
+`_embedded` reads the same map as the other arguments, which builds an object from the
+columns of several tables in the row of a JOIN. `_rest` collects the keys that no
+argument is defined for.
+
+```java
+record UserName(String first, String last) {}
+record Department(String name, String code) {}
+record Employee(Integer id, UserName name, @Nullable Department dept, Map<String, String> attrs) {}
+
+MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+        ._string("first_name", c -> c.notBlank())
+        ._string("last_name", c -> c.notBlank())
+        .fromMap(UserName::new);
+
+MapInputValidator<Department> departmentValidator = Yavi.arguments()
+        ._string("dept_name", c -> c.notBlank())
+        ._string("dept_code", c -> c.notBlank())
+        .fromMap(Department::new);
+
+MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+        ._integer("id")
+        ._embedded(userNameValidator)              // first_name, last_name
+        ._embedded(departmentValidator).nullable() // null if dept_name and dept_code have no value
+        ._rest(Yavi._string(c -> c.notBlank()))    // a Map<String, String> of the other keys
+        .fromMap(Employee::new);
+
+employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Yamada", "color", "red"));
+// Employee[id=1, name=UserName[first=Taro, last=Yamada], dept=null, attrs={color=red}]
+```
+
+Embedding is also the way to read more than 16 keys. `_rest()` without a validator takes
+the values as they are.
+
+### Telling an absent key from null
+
+In a partial update, such as a PATCH request (JSON Merge Patch), an absent key leaves the
+property unchanged and `null` clears it. `presence()` reads an argument as a `Presence`,
+which is `Present(value)`, `PresentNull` or `Absent`.
+
+```java
+record ProfilePatch(Presence<String> nickname, Presence<@Nullable String> bio) {}
+
+MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+        ._string("nickname", c -> c.lessThanOrEqual(50)).presence()        // may be omitted, cannot be cleared
+        ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence() // may be omitted or cleared
+        .fromMap(ProfilePatch::new);
+
+ProfilePatch patch = patchValidator.validated(Map.of("bio", "Hello")); // nickname=Absent, bio=Present[Hello]
+patch.nickname().ifPresent(profile::setNickname);                      // not called
+profile.setBio(patch.bio().orElse(profile.getBio()));                  // null if "bio" is null
+
+switch (patch.bio()) {
+    case Presence.Present<String>(String bio) -> profile.setBio(bio);
+    case Presence.PresentNull<String> cleared -> profile.setBio(null);
+    case Presence.Absent<String> unchanged -> { }
+}
+```
+
+An absent key is not validated. A key that is present is validated as without
+`presence()`: `{"nickname": null}` is `"nickname" must not be null`. `presence()` is the
+last modifier of an argument.
+
+### A structure that contains itself
+
+`ValueValidator.recursive(self -> ...)` builds a validator from a reference to itself,
+and `ValueValidator.lazy(() -> validator)` refers to a validator that is built later, for
+validators that refer to each other.
+
+```java
+record Comment(String body, List<Comment> replies) {}
+
+MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
+        ._string("body", c -> c.notBlank())
+        ._list("replies", self).defaultValue(List.of())
+        .fromMap(Comment::new));
+// a violation: replies[0].replies[0].body
+```
+
+## Validating the tree model of a JSON library
+
+`readingWith(reader)` reads the tree model of a JSON library, such as Jackson's
+`JsonNode`, as it is, with the same rules and violations as a map. The tree is not copied
+to a map. `from(reader, f)` on the arguments is `fromMap(f).readingWith(reader)`.
+
+```java
+ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
+
+Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
+```
+
+The reader applies to the nested validators too, so `addressValidator` is built with
+`fromMap` whatever input is read in the end. YAVI has no dependency on a JSON library: an
+`InputReader` is a small stateless class written once per tree model. This is the one for
+Jackson 3:
+
+```java
+public final class JsonNodeReader implements InputReader<JsonNode> {
+
+    public static final JsonNodeReader INSTANCE = new JsonNodeReader();
+
+    @Override
+    public boolean isNull(JsonNode node) {
+        return node.isNull() || node.isMissingNode();
+    }
+
+    @Override
+    public Object value(JsonNode node) { // a scalar as a JDK type
+        if (node.isString()) {
+            return node.stringValue();
+        }
+        if (node.isNumber()) {
+            return node.numberValue();
+        }
+        if (node.isBoolean()) {
+            return node.booleanValue();
+        }
+        return node;
+    }
+
+    @Override
+    public boolean isObject(JsonNode node) {
+        return node.isObject();
+    }
+
+    @Override
+    public @Nullable JsonNode property(JsonNode object, String name) {
+        return object.get(name); // null if absent
+    }
+
+    @Override
+    public Iterable<Map.Entry<String, JsonNode>> properties(JsonNode object) {
+        return object.properties();
+    }
+
+    @Override
+    public boolean isArray(JsonNode node) {
+        return node.isArray();
+    }
+
+    @Override
+    public Iterable<JsonNode> elements(JsonNode array) {
+        return array;
+    }
+
+}
+```
+
+A tree whose scalars are all strings is read with `coercingStrings()`, a decorator of any
+reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or
+`InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read
+by the rules of the next section.
+
+## Validating request parameters
+
+Request parameters and a submitted form are a flat map of strings, possibly several for
+one key. `readingParameters()` of a validator built with `fromMap` reads such a map: a
+string is text that stands for a value of the type of its argument, and a key is the path
+of a nested value.
+
+```java
+record SearchForm(String q, Integer page, Boolean includeArchived, @Nullable LocalDate since, List<String> tags,
+        @Nullable Address address) {}
+
+ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.arguments()
+        ._string("q", c -> c.notBlank())
+        ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
+        ._boolean("includeArchived").defaultValue(false)
+        ._localDate("since").nullable()
+        ._list("tags", Yavi._string(c -> c.notBlank())).defaultValue(List.of())
+        ._object("address", addressValidator).nullable()
+        .fromMap(SearchForm::new)
+        .readingParameters();
+
+@GetMapping("/search")
+Object search(@RequestParam MultiValueMap<String, String> params) {
+    // ?q=yavi&page=2&since=&tags=a&tags=b&address.street=1-2-3&address.city=Tokyo
+    Validated<SearchForm> validated = searchFormValidator.validate(params);
+    // SearchForm[q=yavi, page=2, includeArchived=false, since=null, tags=[a, b], address=Address[street=1-2-3, city=Tokyo]]
+}
+```
+
+The map is a `Map<String, String>`, a `Map<String, List<String>>` such as Spring's
+`MultiValueMap`, or the `Map<String, String[]>` of the Servlet API, whichever the
+validator is assigned to.
+
+The values:
+
+* An empty string is validated like `null`, whatever the type of its argument is. Give
+  `defaultValue("")` to a string argument that must receive `""`.
+* A number is a decimal number without surrounding white space or grouping separators:
+  `"30"` and `"30.0"` are an `Integer`; `"30.5"`, `" 30"` and `"1,000"` are not. A
+  boolean is `"true"` or `"false"`.
+* A string that does not stand for the type is reported with `object.type`
+  (`"page" must be of type integer`), never with an exception.
+
+The keys:
+
+* `address.city` and `address[city]` are the property `city` of `address`, and `tags[]`
+  is `tags`.
+* A key with several values is a list (`tags=a&tags=b`). Several values for a scalar
+  argument are reported with `object.type`.
+* Keys with indexes are a list in the order of the indexes:
+  `items[0].name=pen&items[1].name=ink`. A skipped index is a `null` element, so a
+  violation keeps the index it was sent with. An index is at most 255
+  (`ParameterTree.DEFAULT_MAX_INDEX`).
+* An empty list cannot be sent: its key is absent. Give `defaultValue(List.of())` to a
+  list that may be empty, such as checkboxes.
+
+The rules are strict on purpose. `StringCoercion` relaxes them for text written by a
+person, such as the fields of a form or the cells of a CSV file:
+
+```java
+record Signup(Integer age, Boolean subscribed) {}
+
+StringCoercion form = StringCoercion.strict().trimming().booleanWords();
+
+ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.arguments()
+        ._integer("age")
+        ._boolean("subscribed").defaultValue(false) // an unchecked checkbox sends nothing
+        .fromMap(Signup::new)
+        .readingParameters(form);
+
+signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30, subscribed=true]
+```
+
+* `trimming()`: a blank string is validated like `null`, and a string read as a number, a
+  boolean, an enum constant or a temporal value is read without its surrounding white
+  space. A `String` value is left as it is; `c.trim()` trims it.
+* `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` in any case.
+
+`recover` suits a parameter that must not fail a request:
+
+```java
+record PageRequest(Integer page, Integer size) {}
+
+ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.arguments()
+        ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
+        ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
+        .fromMap(PageRequest::new)
+        .readingParameters();
+
+pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
+```
+
+## Handling the result
+
+`Validated` is a sealed interface of the records `Valid` and `Invalid`, so a result is
+handled with an exhaustive `switch`:
+
+```java
+// before
+Validated<User> validated = userValidator.validate(map);
+if (validated.isValid()) {
+    save(validated.value());
+}
+else {
+    validated.errors().forEach(violation -> report(violation.name(), violation.message()));
+}
+
+// after
+switch (userValidator.validate(map)) {
+    case Validated.Valid<User>(User user) -> save(user);
+    case Validated.Invalid<User>(ConstraintViolations violations) ->
+        violations.forEach(violation -> report(violation.name(), violation.message()));
+}
+```
+
+`Arguments1` to `Arguments16` are records too:
+`case Validated.Valid(Arguments2(var name, var age))`.
+
+A violation knows where it is without parsing its name:
+
+```java
+violation.name();    // tags[1]
+violation.path();    // [Property[name=tags], Index[index=1]]
+violation.pointer(); // /tags/1, a JSON Pointer (RFC 6901)
+```
+
+`ConstraintViolations` has the forms that a form and an API response need:
+
+```java
+// for a form: the messages of each field
+Map<String, List<String>> byName = violations.messagesByName();
+// {email=["email" must not be blank], address.street=["address.street" must not be blank]}
+
+// the same with JSON Pointers as the keys
+Map<String, List<String>> byPointer = violations.messagesByPointer();
+// {/email=[...], /address/street=[...]}
+
+// for an API response: records that a JSON library serializes as they are
+List<ViolationDetail> details = violations.details();
+// [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
+//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
+```
+
+`args` ends with the violated value, so map the details to a type of your own if that
+value must not be sent back.
+
+A hand-written step fails with one call:
+
+```java
+// before
+return Validated.failureWith(ConstraintViolation.builder()
+        .name("")
+        .messageKey("json.invalid")
+        .defaultMessageFormat("\"{0}\" cannot be parsed as JSON")
+        .argsWithPrependedName()
+        .locale(locale)
+        .build());
+
+// after
+return Validated.failureWith(ViolationMessage.of("json.invalid", "\"{0}\" cannot be parsed as JSON"), value, locale);
+```
+
+## Describing a validator and generating a JSON Schema
+
+A validator describes the input it expects. `description()` returns a read-only tree
+(`ValueDescription`) of objects, lists, maps, alternatives and values with their
+constraints, which tools can walk. `JsonSchema` is one of them and needs no JSON library.
+
+```java
+ValueDescription description = userValidator.description();
+Map<String, Object> schema = JsonSchema.of(description);
+String json = JsonSchema.toJson(description);
+```
+
+```json
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{
+  "email":{"type":"string","minLength":1,"format":"email"},
+  "nickname":{"type":["string","null"],"minLength":1},
+  "age":{"type":["integer","null"],"minimum":0,"default":20},
+  "role":{"type":"string","enum":["ADMIN","MEMBER","GUEST"]},
+  "address":{"type":"object","properties":{"street":{"type":"string","minLength":1},"city":{"type":"string","minLength":1}},"required":["street","city"]},
+  "tags":{"type":["array","null"],"items":{"type":"string","minLength":1},"default":[]}},
+ "required":["email","role","address"]}
+```
+
+* A property is `required` unless it is `optional()`, `nullable()`, has a
+  `defaultValue(...)` or a `recover(...)`, or is read with `presence()`.
+* The constraints of a list or map are written as `minItems`, `maxItems`, `uniqueItems`,
+  `minProperties` and `maxProperties`, `rejectingUnknownProperties()` as
+  `additionalProperties: false`, and a recursive structure as `$ref`.
+* A lambda and the result of `ValueValidator.compose` are unknown; describe them with
+  `describedAs(...)`. Conditional constraints and `constraintOnTarget` are not described.
+* A bean `Validator` built with `ValidatorBuilder` is not described.
+
+## Nullness with JSpecify
+
+YAVI is annotated with [JSpecify](https://jspecify.dev), so NullAway and Kotlin check the
+nullness of its API. A value that passed validation is handed over with its declared
+type, so the function given to `apply` needs no `@Nullable` parameters and no
+`Objects.requireNonNull`:
+
+```java
+record Member(String name, @Nullable String nickname) {}
+
+Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
+        .apply(Member::new);
+```
+
+Only the value of a `nullable()` argument is `@Nullable`. See
+[Limitations of NullAway](NullAwayLimitations.md) if NullAway reports correct code.
+
+## Related pull requests
+
+| Feature | Pull request |
+| --- | --- |
+| Sealed `Validated`, `path()` | [#537](https://github.com/making/yavi/pull/537) |
+| Combinators, `_object`, `_list`, `_map`, `constraintOnTarget` | [#538](https://github.com/making/yavi/pull/538) |
+| `description()`, JSON Schema | [#539](https://github.com/making/yavi/pull/539) |
+| `fromMap`, `untyped()`, `DiscriminatedUnionValidator` | [#540](https://github.com/making/yavi/pull/540) |
+| `InputReader`, `readingWith` | [#541](https://github.com/making/yavi/pull/541) |
+| `coercingStrings()`, `readingParameters()` | [#542](https://github.com/making/yavi/pull/542), [#543](https://github.com/making/yavi/pull/543) |
+| `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
+| `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |
+| Transforms, `preprocess` | [#547](https://github.com/making/yavi/pull/547) |
+| Constraints of `_list` and `_map` | [#548](https://github.com/making/yavi/pull/548) |
+| `flatApply`, `flatFromMap`, `failureWith`, record `ArgumentsN` | [#549](https://github.com/making/yavi/pull/549) |
+| `recover`, `recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
+| `messagesByName()`, `pointer()`, `ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
+| `ignoringCase()`, `StringCoercion`, `fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
+| `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
+| `presence()` | [#555](https://github.com/making/yavi/pull/555) |
+| JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |
