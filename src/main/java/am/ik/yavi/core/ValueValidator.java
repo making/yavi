@@ -1065,7 +1065,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * value of another type.
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
+	 * ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
 	 *     ._string("email", c -> c.notBlank().email())
 	 *     .fromMap(Signup::new)
 	 *     .readingParameters()

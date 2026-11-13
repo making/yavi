@@ -329,7 +329,7 @@ answersValidator.validate(Map.of());             // q1: "Your name" is required
 ```java
 record Response(String email, Map<String, String> answers) {}
 
-ValueValidator<Map<String, String>, Response> responseValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Response> responseValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._object("answers", answersValidator) // answers.q1=...&answers.q2=...
         .fromMap(Response::new)
@@ -435,7 +435,7 @@ JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 の
 record SearchForm(String q, Integer page, Boolean includeArchived, @Nullable LocalDate since, List<String> tags,
         @Nullable Address address) {}
 
-ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, SearchForm> searchFormValidator = Yavi.schema()
         ._string("q", c -> c.notBlank())
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
@@ -453,7 +453,15 @@ Object search(@RequestParam MultiValueMap<String, String> params) {
 }
 ```
 
-マップの型は、バリデータを代入する変数の型で決まります。`Map<String, String>`、Spring の `MultiValueMap` のような `Map<String, List<String>>`、Servlet API の `Map<String, String[]>` のいずれかを指定できます。
+バリデータは、`Map<String, String>`、Spring の `MultiValueMap` のような `Map<String, List<String>>`、Servlet API の `Map<String, String[]>` のどの形のマップも受け取ります。型は代入先にかかわらず `ValueValidator<Map<String, ?>, X>` なので、`readingParameters()` の後にどのコンビネータも続けられます。
+
+```java
+ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email())
+        .fromMap(Signup::new)
+        .readingParameters()
+        .formattingWith(new MessageSourceMessageFormatter(messageSource::getMessage));
+```
 
 値のルール:
 
@@ -477,7 +485,7 @@ record Signup(Integer age, Boolean subscribed) {}
 
 StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 
-ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
         ._integer("age")
         ._boolean("subscribed").defaultValue(false) // チェックされていないチェックボックスは何も送信しない
         .fromMap(Signup::new)
@@ -494,7 +502,7 @@ signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[a
 ```java
 record Contact(String name, @Nullable String company, String password) {}
 
-ValueValidator<Map<String, String>, Contact> contactValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Contact> contactValidator = Yavi.schema()
         ._string("name", c -> c.notBlank().lessThanOrEqual(50))
         ._string("company").nullable()
         ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8)).untrimmed())
@@ -514,7 +522,7 @@ contactValidator.validate(Map.of("name", " Alice ", "company", "  ", "password",
 ```java
 record PageRequest(Integer page, Integer size) {}
 
-ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, PageRequest> pageValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         .fromMap(PageRequest::new)
@@ -530,7 +538,7 @@ pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[pag
 ```java
 record Article(String title, List<String> tags, List<Integer> related, List<URI> links) {}
 
-ValueValidator<Map<String, String>, Article> articleValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Article> articleValidator = Yavi.schema()
         ._string("title", c -> c.notBlank())
         ._list("tags", Yavi._string(c -> c.notBlank().lessThanOrEqual(10)), c -> c.unique()).splitBy(",")
         ._list("related", Yavi._integer(c -> c.positive())).splitBy(",").defaultValue(List.of())
@@ -565,7 +573,7 @@ articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "
 ```java
 record Token(String name, Integer ttl, List<String> roles) {}
 
-ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Token> tokenValidator = Yavi.schema()
         ._string("name", c -> c.notBlank()).label("Token name")
         ._integer("ttl", c -> c.positive()).typeMessage("\"{0}\" must be a number of seconds")
         ._list("roles", Yavi._string(c -> c.notBlank())).label("Roles").required("Select at least one role")
@@ -594,7 +602,7 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 MessageFormatter formatter = new MessageSourceMessageFormatter(messageSource::getMessage);
 
 // バリデータのすべての違反。ネストしたバリデータやリーダーが報告するものも含む
-ValueValidator<Map<String, List<String>>, Token> localized = tokenValidator.formattingWith(formatter);
+ValueValidator<Map<String, ?>, Token> localized = tokenValidator.formattingWith(formatter);
 
 // または違反を表示するとき
 violations.labeled(violation -> messageSource.getMessage("label." + violation.name(), null, null, locale))
@@ -612,7 +620,7 @@ Spring MVC が `BindingResult` を用意するのは、自身がバインドし�
 @Controller
 class SignupController {
 
-    static final ValueValidator<Map<String, List<String>>, Signup> signupValidator = Yavi.schema()
+    static final ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
             ._integer("age")
             ._boolean("subscribed").defaultValue(false)
             .fromMap(Signup::new)

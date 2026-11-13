@@ -155,7 +155,7 @@ Request parameters and a submitted form are a flat map of strings. `readingParam
 reads it with the properties written as for a JSON document:
 
 ```java
-ValueValidator<Map<String, List<String>>, SearchForm> validator = Yavi.schema()
+ValueValidator<Map<String, ?>, SearchForm> validator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
         ._list("tags", tagValidator).defaultValue(List.of())
