@@ -98,8 +98,13 @@ a named one shows the name. The name is given by the place where the validator i
 | `pattern(regex)` | `c.pattern(regex)` |
 | `uuid()` (returns `UUID`) | `c.uuid()`, then `.map(UUID::fromString)` |
 | `url()` (returns `URI`, `http` / `https` only) | `c.url()` (any protocol of `java.net.URL`), then `.map(URI::create)` |
+| `uri()` (returns `URI`, any scheme) | `c.uri()`, then `.map(URI::create)` |
+| `ip()`, `ipv4()`, `ipv6()` | `c.ip()`, `c.ipv4()`, `c.ipv6()` |
+| `ulid()` | `c.ulid()` |
+| `cuid()` | `c.pattern("^c[0-9a-z]{24}$")`; cuid is deprecated by its authors, so it has no constraint of its own |
 | `int_().range(0, 150)` | `c.greaterThanOrEqual(0).lessThanOrEqual(150)` |
 | `positive()`, `nonNegative()` | `c.positive()`, `c.positiveOrZero()` |
+| `int_().multipleOf(n)`, also of `long_()` and `decimal()` | `c.multipleOf(n)` of the integral types, `BigInteger` and `BigDecimal` |
 | `decimal().scale(4)` | `c.fractionDigits(4)`; `c.integerDigits(n)` bounds the digits before the decimal point |
 | `date().after(d)`, `before(d)`, `between(a, b)` | `c.after(() -> d)`, `c.before(() -> d)`, `c.between(() -> a, () -> b)` |
 | a bound taken from a clock by the caller | `c.past()`, `c.future()`, `c.past(clock)` ... |
@@ -530,9 +535,11 @@ ValueValidator<Map<String, Object>, Contact> contactValidator = ValueValidator.a
             .fromMap((kind, value) -> new PhoneContact(value)));
 ```
 
-No cast to the supertype is needed. When no alternative matches, Raoh reports one issue
-(`no variant matched`), and YAVI reports `object.anyOf` followed by the violations of
-every alternative.
+No cast to the supertype is needed. When no alternative matches, both report one issue:
+Raoh `one_of_failed` with the issues of each candidate in `meta.candidates`, and YAVI
+`object.anyOf` with the violations of each alternative in `violation.alternatives()`
+(`alternatives` of a `ViolationDetail`). They are prefixed with the violation, as
+`rebase()` does for the candidates.
 
 ### discriminate
 
@@ -741,7 +748,7 @@ ConstraintViolations violations = validated.errors();
 | Raoh | YAVI |
 | --- | --- |
 | `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
-| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`) |
+| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, `alternatives`) |
 | `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to

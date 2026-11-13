@@ -396,9 +396,10 @@ public class Validator<T> implements Validatable<T> {
 				final Validatable<T> validator = this.failFast ? pair.second().failFast(true) : pair.second();
 				final ConstraintViolations constraintViolations = validator.validate(target, locale, constraintContext);
 				for (ConstraintViolation violation : constraintViolations) {
-					final ConstraintViolation renamed = violation
-						.relocate(this.prefix + this.indexedName(violation.name(), collectionName, index), PathSegment
-							.concat(this.prefixPath, this.indexedPath(violation.path(), collectionPath, index)));
+					final ConstraintViolation renamed = violation.relocate(
+							v -> this.prefix + this.indexedName(v.name(), collectionName, index),
+							(v, newName) -> PathSegment.concat(this.prefixPath,
+									this.indexedPath(v.path(), collectionPath, index)));
 					violations.add(renamed);
 					if (!violations.isEmpty() && (this.failFast || validator.isFailFast())) {
 						return violations;

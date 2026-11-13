@@ -20,6 +20,8 @@ import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolationMessage;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
@@ -48,6 +50,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_EMAIL;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_ENDSWITH;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_FLOAT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_INTEGER;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IP;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV4;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_IPV6;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_LOCAL_DATE;
@@ -57,6 +60,8 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_NOT_BLANK;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_PATTERN;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_SHORT;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_STARTSWITH;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_ULID;
+import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_URI;
 import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
 
 /**
@@ -78,9 +83,9 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
  * The other checks inspect the value as given. No normalization or variation selector
  * removal is applied to {@link #contains(CharSequence)},
  * {@link #startsWith(CharSequence)}, {@link #endsWith(CharSequence)}, {@link #email()},
- * {@link #pattern(String)}, {@link #url()}, {@link #ipv4()}, {@link #ipv6()},
- * {@link #uuid()}, {@link #luhn()}, {@link #asByteArray()} or
- * {@link #codePoints(CodePoints)}.
+ * {@link #pattern(String)}, {@link #url()}, {@link #uri()}, {@link #ip()},
+ * {@link #ipv4()}, {@link #ipv6()}, {@link #uuid()}, {@link #ulid()}, {@link #luhn()},
+ * {@link #asByteArray()} or {@link #codePoints(CodePoints)}.
  * </p>
  *
  * <p>
@@ -110,6 +115,10 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			+ "+)*@(" + DOMAIN_PATTERN + "|" + InetAddressUtils.IPV4_REGEX + ")$", Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern VALID_UUID_REGEX = Pattern.compile("\\p{XDigit}{8}(-\\p{XDigit}{4}){4}\\p{XDigit}{8}");
+
+	// 26 characters of Crockford's Base32; the first one holds only 3 of the 128 bits
+	private static final Pattern VALID_ULID_REGEX = Pattern.compile("[0-7][0-9A-HJKMNP-TV-Z]{25}",
+			Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * The normalization form applied before the size is measured, or {@code null} if
@@ -621,6 +630,24 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
+	 * Requires the value to be an IP address of either version, that is to satisfy
+	 * {@link #ipv4()} or {@link #ipv6()}. An empty value is not valid.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code charSequence.ip}.
+	 * </p>
+	 * @return this constraint
+	 * @since 0.18.0
+	 */
+	public CharSequenceConstraint<T, E> ip() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			final String address = x.toString();
+			return InetAddressUtils.isIpv4(address) || InetAddressUtils.isIpv6(address);
+		}, CHAR_SEQUENCE_IP, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
 	 * Requires the value to be an IPv6 address. An empty value is not valid. See
 	 * {@link InetAddressUtils#isIpv6(String)} for the accepted forms, including the zone
 	 * id and the prefix length.
@@ -679,6 +706,43 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
+	 * Requires the value to be a URI with a scheme of any kind, such as
+	 * {@code https://example.com/a?b=c}, {@code mailto:a@example.com} or
+	 * {@code urn:isbn:9784774183619}. An empty value is considered valid.
+	 *
+	 * <p>
+	 * Unlike {@link #url()}, the scheme does not have to be one that {@link java.net.URL}
+	 * has a handler for. The value is parsed with {@link java.net.URI}; a reference
+	 * without a scheme ({@code /a/b}) and a value with a character outside of US-ASCII,
+	 * which RFC 3986 requires to be percent-encoded, are not valid.
+	 * </p>
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code charSequence.uri}.
+	 * </p>
+	 * @return this constraint
+	 * @since 0.18.0
+	 */
+	public CharSequenceConstraint<T, E> uri() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			final String value = x.toString();
+			if (!value.chars().allMatch(c -> c < 0x80)) {
+				return false;
+			}
+			try {
+				return new URI(value).isAbsolute();
+			}
+			catch (URISyntaxException e) {
+				return false;
+			}
+		}, CHAR_SEQUENCE_URI, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
 	 * Requires the value to be a UUID. An empty value is valid. Only the 8-4-4-4-12
 	 * hexadecimal format is checked; the version and the variant are not validated.
 	 *
@@ -695,6 +759,27 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 			}
 			return VALID_UUID_REGEX.matcher(x).matches();
 		}, CHAR_SEQUENCE_UUID, () -> new Object[] {}, VALID));
+		return this;
+	}
+
+	/**
+	 * Requires the value to be a ULID: 26 characters of Crockford's Base32, of which the
+	 * first is {@code 0} to {@code 7} because a ULID has 128 bits. Lower case letters are
+	 * accepted. An empty value is valid.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code charSequence.ulid}.
+	 * </p>
+	 * @return this constraint
+	 * @since 0.18.0
+	 */
+	public CharSequenceConstraint<T, E> ulid() {
+		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
+			return VALID_ULID_REGEX.matcher(x).matches();
+		}, CHAR_SEQUENCE_ULID, () -> new Object[] {}, VALID));
 		return this;
 	}
 

@@ -214,6 +214,13 @@ public interface ViolationMessage {
 		 */
 		NUMERIC_NEGATIVE_OR_ZERO("numeric.negativeOrZero", "\"{0}\" must be negative or zero"), //
 		/**
+		 * Message id {@code numeric.multipleOf}. Default message: {@code "{0}" must be a
+		 * multiple of {1}}. {@code {0}} is the property name and {@code {1}} is the
+		 * divisor.
+		 * @since 0.18.0
+		 */
+		NUMERIC_MULTIPLE_OF("numeric.multipleOf", "\"{0}\" must be a multiple of {1}"), //
+		/**
 		 * Message id {@code numeric.fractionDigits}. Default message: {@code "{0}" must
 		 * have at most {1} fraction digits}. {@code {0}} is the property name and
 		 * {@code {1}} is the largest number of digits after the decimal point.
@@ -278,6 +285,18 @@ public interface ViolationMessage {
 		 */
 		CHAR_SEQUENCE_IPV6("charSequence.ipv6", "\"{0}\" must be a valid IPv6"), //
 		/**
+		 * Message id {@code charSequence.ip}. Default message: {@code "{0}" must be a
+		 * valid IP address}. {@code {0}} is the property name.
+		 * @since 0.18.0
+		 */
+		CHAR_SEQUENCE_IP("charSequence.ip", "\"{0}\" must be a valid IP address"), //
+		/**
+		 * Message id {@code charSequence.uri}. Default message: {@code "{0}" must be a
+		 * valid URI}. {@code {0}} is the property name.
+		 * @since 0.18.0
+		 */
+		CHAR_SEQUENCE_URI("charSequence.uri", "\"{0}\" must be a valid URI"), //
+		/**
 		 * Message id {@code charSequence.url}. Default message: {@code "{0}" must be a
 		 * valid URL}. {@code {0}} is the property name.
 		 */
@@ -306,6 +325,12 @@ public interface ViolationMessage {
 		 * valid UUID}. {@code {0}} is the property name.
 		 */
 		CHAR_SEQUENCE_UUID("charSequence.uuid", "\"{0}\" must be a valid UUID"), //
+		/**
+		 * Message id {@code charSequence.ulid}. Default message: {@code "{0}" must be a
+		 * valid ULID}. {@code {0}} is the property name.
+		 * @since 0.18.0
+		 */
+		CHAR_SEQUENCE_ULID("charSequence.ulid", "\"{0}\" must be a valid ULID"), //
 		/**
 		 * Message id {@code charSequence.pattern}. Default message: {@code "{0}" must
 		 * match {1}}. {@code {0}} is the property name and {@code {1}} is the regular

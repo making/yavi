@@ -104,8 +104,7 @@ class YaviSchemaTest {
 			.errors();
 		// the constraints of a list or map are not checked if an element is invalid
 		assertThat(violations).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
-			.containsExactly(tuple("contact", "object.anyOf"), tuple("contact", "charSequence.email"),
-					tuple("contact", "charSequence.pattern"), tuple("nickname", "charSequence.notBlank"),
+			.containsExactly(tuple("contact", "object.anyOf"), tuple("nickname", "charSequence.notBlank"),
 					tuple("age", "numeric.greaterThanOrEqual"), tuple("address.street", "charSequence.notBlank"),
 					tuple("billing.city", "charSequence.notBlank"), tuple("roles[1]", "charSequence.notBlank"),
 					tuple("scores.math", "numeric.greaterThanOrEqual"));
@@ -114,7 +113,11 @@ class YaviSchemaTest {
 					List.of(new PathSegment.Property("address"), new PathSegment.Property("street")),
 					List.of(new PathSegment.Property("roles"), new PathSegment.Index(1)),
 					List.of(new PathSegment.Property("scores"), new PathSegment.Property("math")));
-		assertThat(violations.get(7).message()).isEqualTo("\"roles[1]\" must not be blank");
+		assertThat(violations.get(5).message()).isEqualTo("\"roles[1]\" must not be blank");
+		// why no alternative of the contact matched is under its violation
+		assertThat(violations.get(0).alternatives())
+			.extracting(alternative -> alternative.get(0).name(), alternative -> alternative.get(0).messageKey())
+			.containsExactly(tuple("contact", "charSequence.email"), tuple("contact", "charSequence.pattern"));
 		// they are checked on the validated elements and reported on the argument
 		final Map<String, String> address = Map.of("street", "1-2-3", "city", "Tokyo");
 		assertThat(validator

@@ -6,6 +6,8 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import am.ik.yavi.Address;
@@ -202,12 +204,34 @@ class ValueValidatorTest {
 		assertThat(number.validated("1")).isEqualTo(1);
 		assertThat(number.validated("1.5")).isEqualTo(new BigDecimal("1.5"));
 
-		final ConstraintViolations violations = number.prefixed("amount").validate("x").errors();
-		assertThat(violations).extracting(ConstraintViolation::messageKey)
-			.containsExactly("object.anyOf", "charSequence.integer", "charSequence.bigdecimal");
-		assertThat(violations).extracting(ConstraintViolation::name).containsOnly("amount");
-		assertThat(violations.get(0).message()).isEqualTo("\"amount\" must satisfy at least one of the 2 alternatives");
-		assertThat(violations.get(0).args()).containsExactly("amount", 2, "x");
+		// one violation; why each alternative failed is under it, located with it
+		final ConstraintViolations violations = number.prefixed("amount").validate("x").prefixed(0).errors();
+		assertThat(violations.messagesByName())
+			.isEqualTo(Map.of("[0].amount", List.of("\"[0].amount\" must satisfy at least one of the 2 alternatives")));
+		final ConstraintViolation violation = violations.get(0);
+		assertThat(violation.messageKey()).isEqualTo("object.anyOf");
+		assertThat(violation.args()).containsExactly("[0].amount", 2, "x");
+		assertThat(violation.alternatives()).hasSize(2)
+			.allSatisfy(alternative -> assertThat(alternative).extracting(ConstraintViolation::pointer)
+				.containsExactly("/0/amount"));
+		assertThat(violation.alternatives()).extracting(alternative -> alternative.get(0).messageKey())
+			.containsExactly("charSequence.integer", "charSequence.bigdecimal");
+		assertThat(violation.rename(String::toUpperCase).alternatives())
+			.extracting(alternative -> alternative.get(0).message())
+			.containsExactly("\"[0].AMOUNT\" must be a valid representation of an integer",
+					"\"[0].AMOUNT\" must be a valid representation of a big decimal");
+		assertThatThrownBy(() -> violation.alternatives().get(0).clear())
+			.isInstanceOf(UnsupportedOperationException.class);
+		final ViolationDetail detail = violation.detail();
+		assertThat(detail.alternatives()).extracting(alternative -> alternative.get(0).name())
+			.containsExactly("[0].amount", "[0].amount");
+		assertThat(detail.alternatives().get(1).get(0).alternatives()).isEmpty();
+		// an alternative that is itself a choice keeps its own alternatives
+		final ValueValidator<String, Number> nested = ValueValidator.anyOf(number,
+				StringValidatorBuilder.of("", c -> c.isLong()).build(Long::valueOf));
+		assertThat(nested.prefixed("amount").validate("x").errors().get(0).alternatives().get(0).get(0).alternatives())
+			.extracting(alternative -> alternative.get(0).name())
+			.containsExactly("amount", "amount");
 
 		assertThatThrownBy(ValueValidator::anyOf).isInstanceOf(IllegalArgumentException.class);
 	}

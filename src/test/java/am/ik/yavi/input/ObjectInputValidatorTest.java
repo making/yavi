@@ -1150,8 +1150,7 @@ class ObjectInputValidatorTest {
 				List.of(1));
 		assertThat(validator.validate(input("count", true, "id", true)).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
-			.containsExactly(tuple("count", "object.type"), tuple("id", "object.anyOf"), tuple("id", "object.type"),
-					tuple("id", "object.type"));
+			.containsExactly(tuple("count", "object.type"), tuple("id", "object.anyOf"));
 		assertThatThrownBy(() -> Yavi.schema()._object("count", coerced).fromMap(Optional::ofNullable))
 			.isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("The input type of the argument 'count' is unknown");

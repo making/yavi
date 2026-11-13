@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -21,7 +22,9 @@ import java.util.function.Function;
  * <p>
  * A violation carries the property name, the message id, the default message format, the
  * message arguments, the message formatter and the locale. The message arguments start
- * with the property name and end with the value that violated the constraint.
+ * with the property name and end with the value that violated the constraint. A violation
+ * that reports that no alternative matched also carries the violations of each
+ * {@linkplain #alternatives() alternative}.
  *
  * <p>
  * Instances are immutable in these properties, except that {@link #args()} returns the
@@ -39,6 +42,12 @@ public class ConstraintViolation {
 	 * constraint.
 	 */
 	private final Object[] args;
+
+	/**
+	 * The violations of each alternative that was tried and failed, if this violation
+	 * reports that no alternative matched; empty otherwise.
+	 */
+	private final List<ConstraintViolations> alternatives;
 
 	private static final String DEFAULT_SEPARATOR = ".";
 
@@ -89,7 +98,8 @@ public class ConstraintViolation {
 	private final String separator;
 
 	private ConstraintViolation(String name, @Nullable List<PathSegment> path, String separator, String messageKey,
-			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter, Locale locale) {
+			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter, Locale locale,
+			List<ConstraintViolations> alternatives) {
 		this.name = name;
 		this.path = path == null ? PathSegment.of(name) : path;
 		this.separator = separator;
@@ -98,6 +108,56 @@ public class ConstraintViolation {
 		this.args = args;
 		this.messageFormatter = messageFormatter;
 		this.locale = locale;
+		this.alternatives = alternatives;
+	}
+
+	/**
+	 * Returns the violations of each alternative that was tried and failed, if this
+	 * violation reports that no alternative matched.
+	 *
+	 * <p>
+	 * The violation with the message key {@code object.anyOf} that
+	 * {@link ValueValidator#anyOf(ValueValidator[])} reports is the only violation of its
+	 * result. Why each alternative failed is here: one {@link ConstraintViolations} per
+	 * alternative, in the order of the alternatives, so that a client can show the
+	 * alternative it considers the closest instead of contradictory messages of all of
+	 * them. An alternative that is itself a choice has violations with alternatives of
+	 * their own.
+	 *
+	 * <p>
+	 * The violations of the alternatives are located like this violation: they are
+	 * renamed and prefixed with it.
+	 * @return the unmodifiable violations of each alternative; empty for a violation that
+	 * is not about alternatives
+	 * @since 0.18.0
+	 * @see #withAlternatives(List)
+	 */
+	public List<ConstraintViolations> alternatives() {
+		return this.alternatives;
+	}
+
+	/**
+	 * Returns this violation with the violations of each alternative that was tried and
+	 * failed. This is for a hand-written validator that chooses between alternatives as
+	 * {@link ValueValidator#anyOf(ValueValidator[])} does.
+	 *
+	 * <p>
+	 * The violations of the alternatives must be located relative to the same value as
+	 * this violation.
+	 * @param alternatives the violations of each alternative, in the order of the
+	 * alternatives
+	 * @return a new ConstraintViolation with the given alternatives
+	 * @since 0.18.0
+	 * @see #alternatives()
+	 */
+	public ConstraintViolation withAlternatives(List<? extends List<ConstraintViolation>> alternatives) {
+		return new ConstraintViolation(this.name, this.path, this.separator, this.messageKey, this.defaultMessageFormat,
+				this.args, this.messageFormatter, this.locale,
+				alternatives.stream().map(ConstraintViolation::unmodifiable).toList());
+	}
+
+	private static ConstraintViolations unmodifiable(List<ConstraintViolation> violations) {
+		return new ConstraintViolations(List.copyOf(violations));
 	}
 
 	/**
@@ -127,7 +187,8 @@ public class ConstraintViolation {
 	 *
 	 * <p>
 	 * The returned detail contains the {@link #name()}, the {@link #pointer()}, the
-	 * message id, the formatted {@link #message()} and the arguments of this violation.
+	 * message id, the formatted {@link #message()}, the arguments and the details of the
+	 * {@link #alternatives()} of this violation.
 	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 */
 	public ViolationDetail detail() {
@@ -139,14 +200,20 @@ public class ConstraintViolation {
 	 * the provided message formatter to format the message.
 	 *
 	 * <p>
-	 * All other properties remain the same as in {@link #detail()}.
+	 * All other properties remain the same as in {@link #detail()}. The messages of the
+	 * {@link #alternatives()} are formatted with the provided formatter too.
 	 * @param messageFormatter the message formatter to use for formatting the message
 	 * @return a new {@link ViolationDetail} representing this constraint violation
 	 * @since 0.16.0
 	 */
 	public ViolationDetail detail(MessageFormatter messageFormatter) {
 		return new ViolationDetail(this.name, this.pointer(), this.messageKey, this.message(messageFormatter),
-				Collections.unmodifiableList(Arrays.asList(this.args.clone())));
+				Collections.unmodifiableList(Arrays.asList(this.args.clone())),
+				this.alternatives.stream()
+					.map(violations -> violations.stream()
+						.map(violation -> violation.detail(messageFormatter))
+						.toList())
+					.toList());
 	}
 
 	/**
@@ -261,14 +328,15 @@ public class ConstraintViolation {
 	 * Returns a string representation of this constraint violation.
 	 *
 	 * <p>
-	 * The string representation includes the name, message id, default message format and
-	 * arguments.
+	 * The string representation includes the name, message id, default message format,
+	 * arguments and, if there are any, the violations of the alternatives.
 	 * @return a string representation of this constraint violation
 	 */
 	@Override
 	public String toString() {
 		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='" + messageKey + '\''
-				+ ", defaultMessageFormat='" + defaultMessageFormat + '\'' + ", args=" + Arrays.toString(args) + '}';
+				+ ", defaultMessageFormat='" + defaultMessageFormat + '\'' + ", args=" + Arrays.toString(args)
+				+ (alternatives.isEmpty() ? "" : ", alternatives=" + alternatives) + '}';
 	}
 
 	/**
@@ -292,14 +360,15 @@ public class ConstraintViolation {
 	 * <p>
 	 * The structure of an arbitrary new name is unknown, so the {@link #path()} of the
 	 * returned violation is a single property segment holding the new name. The path is
-	 * kept if the name does not change.
+	 * kept if the name does not change. The violations of the {@link #alternatives()} are
+	 * renamed with the same function.
 	 * @param rename the function to transform the current name
 	 * @return a new ConstraintViolation with the renamed name
 	 * @since 0.7.0
 	 */
 	public ConstraintViolation rename(Function<? super String, String> rename) {
-		final String newName = rename.apply(name);
-		return this.relocate(newName, newName.equals(this.name) ? this.path : PathSegment.of(newName));
+		return this.relocate(violation -> rename.apply(violation.name),
+				(violation, newName) -> newName.equals(violation.name) ? violation.path : PathSegment.of(newName));
 	}
 
 	/**
@@ -312,7 +381,8 @@ public class ConstraintViolation {
 	 * The flat name is joined with the message key separator of the validator that
 	 * reported the violation, which is {@code .} by default, so a name stays uniform:
 	 * {@code address/street} becomes {@code order/address/street}. An empty property name
-	 * leaves the violation unchanged.
+	 * leaves the violation unchanged. The violations of the {@link #alternatives()} are
+	 * prefixed too.
 	 * @param name the name of the property that contains the violated value
 	 * @return a new ConstraintViolation under the given property
 	 * @since 0.18.0
@@ -321,21 +391,25 @@ public class ConstraintViolation {
 		if (name.isEmpty()) {
 			return this;
 		}
-		return this.relocate(this.join(name), PathSegment.concat(PathSegment.of(name), this.path));
+		final List<PathSegment> prefix = PathSegment.of(name);
+		return this.relocate(violation -> violation.join(name),
+				(violation, newName) -> PathSegment.concat(prefix, violation.path));
 	}
 
 	/**
 	 * Returns a new ConstraintViolation located under the element at the given index. An
 	 * index segment is prepended to the {@link #path()} and the name is prefixed
 	 * accordingly: {@code street} becomes {@code [0].street} and an empty name becomes
-	 * {@code [0]}. The flat name is joined like {@link #prefixed(String)} does.
+	 * {@code [0]}. The flat name is joined like {@link #prefixed(String)} does, and the
+	 * violations of the {@link #alternatives()} are prefixed too.
 	 * @param index the index of the element that contains the violated value
 	 * @return a new ConstraintViolation under the given element
 	 * @since 0.18.0
 	 */
 	public ConstraintViolation prefixed(int index) {
-		return this.relocate(this.join("[" + index + "]"),
-				PathSegment.concat(List.of(new PathSegment.Index(index)), this.path));
+		final List<PathSegment> prefix = List.of(new PathSegment.Index(index));
+		return this.relocate(violation -> violation.join("[" + index + "]"),
+				(violation, newName) -> PathSegment.concat(prefix, violation.path));
 	}
 
 	private String join(String prefix) {
@@ -345,19 +419,29 @@ public class ConstraintViolation {
 	}
 
 	/**
-	 * Returns a new ConstraintViolation with the given name and path. If the arguments
-	 * array is not empty, the first element will be updated with the new name.
-	 * @param newName the new flat name
-	 * @param newPath the new structured path
-	 * @return a new ConstraintViolation with the given name and path
+	 * Returns a new ConstraintViolation with the name and the path that the given
+	 * functions derive from this violation. If the arguments array is not empty, the
+	 * first element will be updated with the new name. The violations of the
+	 * {@link #alternatives()} are relocated with the same functions, so that they stay
+	 * relative to the same value as this violation.
+	 * @param newName the function that derives the new flat name from a violation
+	 * @param newPath the function that derives the new structured path from a violation
+	 * and its new name
+	 * @return a new ConstraintViolation with the derived name and path
 	 */
-	ConstraintViolation relocate(String newName, List<PathSegment> newPath) {
+	ConstraintViolation relocate(Function<? super ConstraintViolation, String> newName,
+			BiFunction<? super ConstraintViolation, String, List<PathSegment>> newPath) {
+		final String name = newName.apply(this);
 		final Object[] newArgs = this.args().clone();
 		if (newArgs.length > 0) {
-			newArgs[0] = newName;
+			newArgs[0] = name;
 		}
-		return new ConstraintViolation(newName, newPath, this.separator, this.messageKey, this.defaultMessageFormat,
-				newArgs, this.messageFormatter, this.locale);
+		final List<ConstraintViolations> newAlternatives = this.alternatives.stream()
+			.map(violations -> unmodifiable(
+					violations.stream().map(violation -> violation.relocate(newName, newPath)).toList()))
+			.toList();
+		return new ConstraintViolation(name, newPath.apply(this, name), this.separator, this.messageKey,
+				this.defaultMessageFormat, newArgs, this.messageFormatter, this.locale, newAlternatives);
 	}
 
 	/**
@@ -389,7 +473,7 @@ public class ConstraintViolation {
 		System.arraycopy(args, 0, completeArgs, 1, args.length);
 		completeArgs[args.length + 1] = violatedValue;
 		return new ConstraintViolation("", null, DEFAULT_SEPARATOR, message.messageKey(),
-				message.defaultMessageFormat(), completeArgs, SimpleMessageFormatter.getInstance(), locale);
+				message.defaultMessageFormat(), completeArgs, SimpleMessageFormatter.getInstance(), locale, List.of());
 	}
 
 	/**
@@ -585,7 +669,7 @@ public class ConstraintViolation {
 		public ConstraintViolation build() {
 			return new ConstraintViolation(Objects.requireNonNull(this.name), this.path, this.separator,
 					Objects.requireNonNull(this.messageKey), Objects.requireNonNull(this.defaultMessageFormat),
-					this.args, this.messageFormatter, this.locale);
+					this.args, this.messageFormatter, this.locale, List.of());
 		}
 
 	}

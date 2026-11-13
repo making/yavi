@@ -68,11 +68,12 @@ import org.jspecify.annotations.Nullable;
  * ({@code minLength}, {@code maxLength}, {@code minItems}, {@code maxItems},
  * {@code minProperties}, {@code maxProperties}), the numeric ranges ({@code minimum},
  * {@code maximum}, {@code exclusiveMinimum}, {@code exclusiveMaximum}),
- * {@code fractionDigits} ({@code multipleOf}), {@code integerDigits}
- * ({@code exclusiveMinimum}, {@code exclusiveMaximum}), {@code pattern}, {@code email},
- * {@code url}, {@code uuid}, {@code ipv4}, {@code ipv6} ({@code format}), {@code unique}
- * ({@code uniqueItems}), {@code oneOf} ({@code enum}), and {@code equalTo},
- * {@code isTrue} and {@code isFalse} ({@code const}).</li>
+ * {@code multipleOf} and {@code fractionDigits} ({@code multipleOf}),
+ * {@code integerDigits} ({@code exclusiveMinimum}, {@code exclusiveMaximum}),
+ * {@code pattern}, {@code email}, {@code url}, {@code uri}, {@code uuid}, {@code ipv4},
+ * {@code ipv6} ({@code format}), {@code unique} ({@code uniqueItems}), {@code oneOf}
+ * ({@code enum}), and {@code equalTo}, {@code isTrue} and {@code isFalse}
+ * ({@code const}).</li>
  * <li>Any other constraint and an unknown value add no restriction, so the schema may
  * accept input that the validator rejects, but not the other way around. One exception is
  * {@code notBlank}, which is written as {@code minLength: 1}.</li>
@@ -434,9 +435,10 @@ public final class JsonSchema {
 			case "numeric.positiveOrZero" -> number(schema, numeric, "minimum", 0);
 			case "numeric.negative" -> number(schema, numeric, "exclusiveMaximum", 0);
 			case "numeric.negativeOrZero" -> number(schema, numeric, "maximum", 0);
+			case "numeric.multipleOf" -> multipleOf(schema, numeric, arg);
 			case "numeric.fractionDigits" -> {
 				if (arg instanceof Integer digits) {
-					number(schema, numeric, "multipleOf", new BigDecimal(BigInteger.ONE, digits));
+					multipleOf(schema, numeric, new BigDecimal(BigInteger.ONE, digits));
 				}
 			}
 			case "numeric.integerDigits" -> {
@@ -453,7 +455,7 @@ public final class JsonSchema {
 				}
 			}
 			case "charSequence.email" -> schema.put("format", "email");
-			case "charSequence.url" -> schema.put("format", "uri");
+			case "charSequence.url", "charSequence.uri" -> schema.put("format", "uri");
 			case "charSequence.uuid" -> schema.put("format", "uuid");
 			case "charSequence.ipv4" -> schema.put("format", "ipv4");
 			case "charSequence.ipv6" -> schema.put("format", "ipv6");
@@ -483,6 +485,26 @@ public final class JsonSchema {
 	private static void number(Map<String, Object> schema, boolean numeric, String keyword, @Nullable Object bound) {
 		if (numeric && bound instanceof Number && !schema.containsKey(keyword)) {
 			schema.put(keyword, bound);
+		}
+	}
+
+	/**
+	 * Sets {@code multipleOf}. A schema has one {@code multipleOf}, so a second divisor
+	 * is written only if the multiples of one are those of the other, as the multiples of
+	 * 0.01 that are multiples of 5 are those of 5; otherwise the first one stays.
+	 */
+	private static void multipleOf(Map<String, Object> schema, boolean numeric, @Nullable Object divisor) {
+		if (!numeric || !(divisor instanceof Number number)) {
+			return;
+		}
+		if (!(schema.get("multipleOf") instanceof Number existing)) {
+			schema.put("multipleOf", number);
+			return;
+		}
+		final BigDecimal current = new BigDecimal(existing.toString());
+		final BigDecimal candidate = new BigDecimal(number.toString());
+		if (candidate.remainder(current).signum() == 0) {
+			schema.put("multipleOf", number);
 		}
 	}
 

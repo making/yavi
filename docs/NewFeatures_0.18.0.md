@@ -71,7 +71,7 @@ Every `ValueValidator` has:
 | `recover(fallback)`, `recoverWith(violations -> ...)` | never fails: produces the fallback for `null` and for an invalid value |
 | `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key |
 | `prefixed(name)` | puts a name before the names of the violations (`orders[1].id`) |
-| `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise `object.anyOf` followed by the violations of every alternative |
+| `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise one violation, `object.anyOf`, with the violations of each alternative in its `alternatives()` |
 | `ValueValidator.lazy(supplier)`, `recursive(self -> ...)` | a reference to a validator that is not built yet |
 
 ### New constraints
@@ -84,6 +84,26 @@ counterpart of `@Digits` of Bean Validation. The digits of the value are counted
 Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
 // 1.505: "price" must have at most 2 fraction digits
 ```
+
+The constraints of the integral types, `BigInteger` and `BigDecimal` have
+`multipleOf(divisor)`. `Double` and `Float` do not have it, because the remainder of a
+binary fraction is not exact.
+
+```java
+Yavi._integer("quantity", c -> c.multipleOf(12));
+// 30: "quantity" must be a multiple of 12
+Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
+```
+
+`CharSequenceConstraint` has three more formats:
+
+| Constraint | Accepts | Message key |
+| --- | --- | --- |
+| `ip()` | an IPv4 or an IPv6 address | `charSequence.ip` |
+| `uri()` | a URI with a scheme of any kind (`mailto:a@example.com`, `urn:isbn:...`, `s3://bucket/key`), unlike `url()`, which needs a protocol that `java.net.URL` handles | `charSequence.uri` |
+| `ulid()` | a ULID, in upper or lower case | `charSequence.ulid` |
+
+`JsonSchema` writes `multipleOf` and `"format": "uri"` for them.
 
 ## Optional properties, nested objects, lists and maps
 
@@ -498,8 +518,38 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // for an API response: records that a JSON library serializes as they are
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
+//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""], "alternatives": []}, ...]
 ```
+
+When no alternative of `ValueValidator.anyOf` matches, the result is one violation. The
+violations of the alternatives are not mixed into the list, where nothing would tell
+which alternative a violation belongs to; they are under that violation, one
+`ConstraintViolations` per alternative, and are prefixed with it:
+
+```java
+ConstraintViolations violations = Yavi.schema()
+    ._object("contact", ValueValidator.anyOf(emailContact, phoneContact))
+    .fromMap(contact -> contact)
+    .validate(Map.of("contact", Map.of("kind", "email", "value", "x")))
+    .errors();
+
+violations.messagesByName();
+// {contact=["contact" must satisfy at least one of the 2 alternatives]}
+
+ConstraintViolation violation = violations.get(0);
+violation.alternatives().get(0).messagesByName();
+// {contact.value=["contact.value" must be a valid email address]}
+violation.alternatives().get(1).messagesByName();
+// {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
+
+// the alternative with the fewest violations, to show instead of the summary
+ConstraintViolations closest = violation.alternatives().stream()
+    .min(Comparator.comparingInt(ConstraintViolations::size))
+    .orElseThrow();
+```
+
+`ViolationDetail` has them as `alternatives`, a list of the details of each alternative,
+which is empty for any other violation.
 
 A hand-written step fails with one call:
 
@@ -587,5 +637,6 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
+| `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()` | [#566](https://github.com/making/yavi/pull/566) |
 | Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

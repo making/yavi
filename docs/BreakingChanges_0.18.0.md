@@ -278,7 +278,7 @@ writes from them.
 ```java
 List<ViolationDetail> details = violations.details();
 // [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""], "alternatives": []}]
 ```
 
 ### Who is affected
@@ -328,7 +328,7 @@ for (ViolationDetail detail : violations.details()) {
 
 // after
 [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""], "alternatives": []}]
 ```
 
 To keep the JSON of 0.17, map the details to a type of your own:
@@ -350,7 +350,8 @@ List<LegacyDetail> details = violations.details()
 | Formatted message | `getDefaultMessage()`, JSON `defaultMessage` | `message()`, JSON `message` |
 | Arguments | `Object[] getArgs()` | `List<Object> args()`, unmodifiable |
 | Name and JSON Pointer of the value | not available | `name()`, `pointer()` |
-| Constructor | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail(name, pointer, messageKey, message, args)` |
+| Details of the alternatives of `ValueValidator.anyOf` | not available | `alternatives()`, JSON `alternatives`; empty for any other violation |
+| Constructor | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail(name, pointer, messageKey, message, args, alternatives)` |
 | List returned by `details()` | modifiable | unmodifiable |
 
 ### Why
@@ -362,6 +363,7 @@ A detail did not say which value failed: the name was only the first element of 
 
 * [#551](https://github.com/making/yavi/pull/551) makes `ViolationDetail` a record and
   adds `messagesByName()`, `messagesByPointer()` and `pointer()`.
+* [#566](https://github.com/making/yavi/pull/566) adds `alternatives`.
 
 ## The violations of a lifted collection are located under the index
 

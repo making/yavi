@@ -62,7 +62,7 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 | `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
 | `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる |
 | `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
-| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` に続けて各選択肢の違反 |
+| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。各選択肢の違反はその `alternatives()` にある |
 | `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
 
 ### 新しい制約
@@ -73,6 +73,24 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
 // 1.505: "price" must have at most 2 fraction digits
 ```
+
+整数型、`BigInteger`、`BigDecimal` の制約に `multipleOf(divisor)` が追加されました。`Double` と `Float` にはありません。2 進小数の剰余は正確ではないためです。
+
+```java
+Yavi._integer("quantity", c -> c.multipleOf(12));
+// 30: "quantity" must be a multiple of 12
+Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
+```
+
+`CharSequenceConstraint` に 3 つの形式が追加されました。
+
+| 制約 | 受け付ける値 | メッセージキー |
+| --- | --- | --- |
+| `ip()` | IPv4 または IPv6 のアドレス | `charSequence.ip` |
+| `uri()` | スキームを持つ URI（`mailto:a@example.com`、`urn:isbn:...`、`s3://bucket/key`）。`url()` と違い、`java.net.URL` が扱えるプロトコルに限らない | `charSequence.uri` |
+| `ulid()` | ULID。大文字と小文字のどちらでもよい | `charSequence.ulid` |
+
+`JsonSchema` はこれらを `multipleOf` と `"format": "uri"` として出力します。
 
 ## 省略可能なプロパティとネストしたオブジェクトやリストやマップ
 
@@ -434,8 +452,34 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // API レスポンス向け: JSON ライブラリがそのままシリアライズできる record
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
+//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""], "alternatives": []}, ...]
 ```
+
+`ValueValidator.anyOf` のどの選択肢にも一致しなかった場合、結果は違反 1 件です。各選択肢の違反は 1 つのリストに混ぜられません。混ぜると、どの違反がどの選択肢のものかがわからなくなるためです。それらはこの違反の下に、選択肢ごとの `ConstraintViolations` として保持され、この違反と一緒に名前が付け替えられます。
+
+```java
+ConstraintViolations violations = Yavi.schema()
+    ._object("contact", ValueValidator.anyOf(emailContact, phoneContact))
+    .fromMap(contact -> contact)
+    .validate(Map.of("contact", Map.of("kind", "email", "value", "x")))
+    .errors();
+
+violations.messagesByName();
+// {contact=["contact" must satisfy at least one of the 2 alternatives]}
+
+ConstraintViolation violation = violations.get(0);
+violation.alternatives().get(0).messagesByName();
+// {contact.value=["contact.value" must be a valid email address]}
+violation.alternatives().get(1).messagesByName();
+// {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
+
+// 要約の代わりに見せる、違反がもっとも少ない選択肢
+ConstraintViolations closest = violation.alternatives().stream()
+    .min(Comparator.comparingInt(ConstraintViolations::size))
+    .orElseThrow();
+```
+
+`ViolationDetail` では `alternatives` です。選択肢ごとの詳細のリストで、ほかの違反では空です。
 
 自分で書く検証ステップでは、1 回の呼び出しで失敗を返せます。
 
@@ -511,6 +555,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `recover`、`recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
 | `messagesByName()`、`pointer()`、`ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
 | `ignoringCase()`、`StringCoercion`、`fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
+| `object.anyOf` の `alternatives()`、`multipleOf`、`ip()`、`uri()`、`ulid()` | [#566](https://github.com/making/yavi/pull/566) |
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |

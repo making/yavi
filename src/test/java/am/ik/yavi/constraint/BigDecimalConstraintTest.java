@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -149,6 +150,43 @@ class BigDecimalConstraintTest {
 		assertThatThrownBy(() -> new BigDecimalConstraint<BigDecimal>().integerDigits(-1))
 			.isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(() -> new BigDecimalConstraint<BigDecimal>().fractionDigits(-1))
+			.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "0, true", "0.25, true", "-1.50, true", "1E+2, true", "0.3, false", "0.250001, false" })
+	void multipleOf(BigDecimal value, boolean valid) {
+		assertThat(retrievePredicate(c -> c.multipleOf(new BigDecimal("0.25"))).test(value)).isEqualTo(valid);
+		// the integral types share the constraint; the remainder of a negative value
+		// counts
+		final boolean integral = value.scale() <= 0;
+		final boolean multipleOfFive = integral && valid;
+		if (integral) {
+			final long n = value.longValueExact();
+			assertThat(
+					new ByteConstraint<Byte>().multipleOf((byte) 5).predicates().peekFirst().predicate().test((byte) n))
+				.isEqualTo(multipleOfFive);
+			assertThat(new ShortConstraint<Short>().multipleOf((short) 5)
+				.predicates()
+				.peekFirst()
+				.predicate()
+				.test((short) n)).isEqualTo(multipleOfFive);
+			assertThat(
+					new IntegerConstraint<Integer>().multipleOf(5).predicates().peekFirst().predicate().test((int) n))
+				.isEqualTo(multipleOfFive);
+			assertThat(new LongConstraint<Long>().multipleOf(5L).predicates().peekFirst().predicate().test(n))
+				.isEqualTo(multipleOfFive);
+			assertThat(new BigIntegerConstraint<BigInteger>().multipleOf(BigInteger.valueOf(5))
+				.predicates()
+				.peekFirst()
+				.predicate()
+				.test(BigInteger.valueOf(n))).isEqualTo(multipleOfFive);
+		}
+		assertThat(new IntegerConstraint<Integer>().multipleOf(5).predicates().peekFirst().predicate().test(-12))
+			.isFalse();
+		assertThatThrownBy(() -> new BigDecimalConstraint<BigDecimal>().multipleOf(BigDecimal.ZERO))
+			.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> new IntegerConstraint<Integer>().multipleOf(-5))
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 

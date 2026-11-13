@@ -28,6 +28,18 @@ import org.jspecify.annotations.Nullable;
  * and, by convention, end with the value that violated the constraint. Map the detail to
  * a type of your own before it is serialized if that value must not be sent back.
  *
+ * <p>
+ * The detail of the violation that {@link ValueValidator#anyOf(ValueValidator[])} reports
+ * ({@code object.anyOf}) holds the details of each alternative that was tried, in the
+ * order of the alternatives; any other detail has no alternatives:
+ *
+ * <pre>{@code
+ * {"name": "contact", "pointer": "/contact", "messageKey": "object.anyOf",
+ *  "message": "\"contact\" must satisfy at least one of the 2 alternatives", "args": ["contact", 2, "x"],
+ *  "alternatives": [[{"name": "contact", "messageKey": "charSequence.email", ...}],
+ *                   [{"name": "contact", "messageKey": "charSequence.pattern", ...}]]}
+ * }</pre>
+ *
  * @param name the name of the value that failed, such as {@code items[1].name}; empty for
  * the validated value itself
  * @param pointer the JSON Pointer (RFC 6901) to the value that failed, such as
@@ -35,9 +47,13 @@ import org.jspecify.annotations.Nullable;
  * @param messageKey the message id of the violated constraint
  * @param message the formatted message
  * @param args the message arguments, unmodifiable
+ * @param alternatives the details of the violations of each alternative that was tried
+ * and failed, unmodifiable; empty unless the violation reports that no alternative
+ * matched
  * @since 0.0.3
  * @see ConstraintViolations#details()
+ * @see ConstraintViolation#alternatives()
  */
 public record ViolationDetail(String name, String pointer, String messageKey, String message,
-		List<@Nullable Object> args) {
+		List<@Nullable Object> args, List<List<ViolationDetail>> alternatives) {
 }
