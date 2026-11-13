@@ -481,7 +481,8 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 ```
 
 * A property is required unless it says otherwise. `optional()`, `nullable()` and `defaultValue(...)` apply to the last added property: a `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
-* `optional()`, `nullable()`, `defaultValue(...)` and `recover(...)` each decide what `null` produces, so a chain in which one of them has no effect does not compile: `.nullable().optional()`, `.defaultValue(1).nullable()`, `.defaultValue(1).recover(2)`. `recover(...)` after `optional()` or `nullable()` recovers an invalid value, and `optional()`, `nullable()` or `defaultValue(...)` after `recover(...)` changes what `null` produces. A property added with a validator that accepts `null`, such as `_integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))`, takes no modifier that accepts `null` again.
+* `optional()`, `nullable()`, `defaultValue(...)` and `recover(...)` each decide what `null` produces, so a chain in which one of them has no effect does not compile: `.nullable().optional()`, `.defaultValue(1).nullable()`, `.defaultValue(1).recover(2)`. `recover(...)` after `optional()` or `nullable()` recovers an invalid value, and `optional()`, `nullable()` or `defaultValue(...)` after `recover(...)` changes what `null` produces. A property added with a validator that accepts `null`, such as `_integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))` or `_object("address", addressValidator.nullable())`, takes no modifier that accepts `null` again.
+* `nullable()` is the only modifier that produces `null`: `defaultValue(null)` and `recover(null)` of a value that is never `null` (the value of constraints, a list, a map, an `Optional`) are rejected with a `NullPointerException` when the schema is built. Write `.nullable()`, `.nullable().recover(null)` or `.optional().recover(Optional.empty())`.
 * `notNull()` is still the way to give the violation of `null` another message. `isNull()` needs `nullable()`: `._string("id", c -> c.isNull()).nullable()` accepts only `null`, whereas without `nullable()` no value is valid, because `null` is rejected as a missing value.
 * The type of a validated value tells whether it can be `null`: `nullable()` changes it from `String` to `@Nullable String` and `optional()` to `Optional<String>`. With a nullness checker that reads JSpecify (NullAway, Kotlin), the function given to `apply` may therefore take parameters that are not `@Nullable`, and `apply(User::new)` does not compile if a `nullable()` argument is given to a parameter that is not `@Nullable` (in Kotlin, to a `String` instead of a `String?`).
 * `recover(fallback)` also applies to the last added property and makes it never fail: the fallback is produced for `null` and for a value that is invalid, for example `._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)` for the size of a page. When the property is read from a map, request parameters or a JSON tree, a value that does not represent its type gives the fallback too. `recoverWith(violations -> ...)` computes the fallback from the violations, for example to log them; it is given no violation for `null`.
@@ -597,6 +598,7 @@ ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
 * The properties of an embedded validator are properties of the embedding one: they are described, are not unknown to `rejectingUnknownProperties()`, are not part of the rest, and a name defined twice is rejected when the validator is built. A `DiscriminatedUnionValidator` is embedded in the same way.
 * An embedded validator with `optional()`, `nullable()` or `defaultValue(...)` is given `null` when none of its properties has a value, like the columns of a LEFT JOIN that matches no row.
 * A violation of the rest is located under its key. `_rest()` without a validator takes the values as they are. `_rest` and `rejectingUnknownProperties()` exclude each other.
+* The rest is an empty map if there is no other key, never `null`, so it takes `recover(...)` only: `_rest().nullable()` does not compile.
 * A lambda may be embedded too. The properties it reads are unknown, so the validator can then neither reject unknown properties nor read the rest.
 * Embedding is also the way to read more than 16 keys.
 
@@ -617,7 +619,7 @@ Validated<User> validated = userValidator.validate(jsonMapper.readTree(json));
 `from(reader, f)` is `fromMap(f).readingWith(reader)`. `readingWith` is available on every validator and applies the reader to the whole validator, so nested validators such as `addressValidator` are built with `fromMap` or `from` whatever input is read in the end, and a validator of maps also serves nodes: `mapValidator.readingWith(reader)`. YAVI has no dependency on a JSON library; a reader is a small stateless class written once per tree model and shared by all validators. This is the one for Jackson 3:
 
 ```java
-public final class JsonNodeReader implements InputReader<JsonNode> {
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
     public static final JsonNodeReader INSTANCE = new JsonNodeReader();
 
@@ -671,7 +673,7 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), the incubator module `jdk.incubator.json` of JDK 28) is read in the same way. A number is read from its text, so no digit is lost:
 
 ```java
-public final class JdkJsonReader implements InputReader<JsonValue> {
+public final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
 
     public static final JdkJsonReader INSTANCE = new JdkJsonReader();
 
@@ -766,7 +768,7 @@ The keys are paths, and a key is whatever its property expects:
 
 `readingParameters()` validates the `ParameterTree` of the map, which any validator reads with `readingWith(ParameterTree.reader())`; `ParameterTree.of(map, maxIndex)` gives another limit to the indexes.
 
-A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. 
+A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every `CoercibleInputReader`, the interface a reader of a tree model implements: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. 
 The rules are strict on purpose. `StringCoercion` relaxes them for text written by a person, such as the fields of a form or the cells of a CSV file:
 
 ```java
@@ -783,7 +785,9 @@ validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30,
 
 * `trimming()`: a blank string is validated like `null`, and a string read as a number, a boolean, an enum constant or a temporal value is read without its surrounding white space. A `String` value is left as it is (`c.trim()` trims it).
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` are booleans in any case. `booleanWords(trueWords, falseWords)` takes the words of the application instead.
-* The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. For any other text, override `InputReader#value(node, type)` in a reader of your own.
+* Each rule is given once, in any order: `booleanWords(...).booleanWords()`, in which the second words would replace the first ones, does not compile.
+* The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. The reader that coerces strings is an `InputReader` and cannot be coerced again, so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are given once.
+* A validator reads with the last reader it is given: `readingWith(reader)` after `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string. For any other text, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
 

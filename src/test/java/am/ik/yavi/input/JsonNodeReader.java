@@ -6,14 +6,14 @@ package am.ik.yavi.input;
 
 import java.util.Map;
 
-import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.CoercibleInputReader;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 /**
  * Reads the tree model of Jackson 3. This is the reader shown in the README.
  */
-final class JsonNodeReader implements InputReader<JsonNode> {
+final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
 	static final JsonNodeReader INSTANCE = new JsonNodeReader();
 

@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.CoercibleInputReader;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
@@ -60,8 +61,8 @@ import org.jspecify.annotations.Nullable;
  * and any other value is the only one. This reads a {@code Map<String, String>}, a
  * {@code Map<String, List<String>>} such as the {@code MultiValueMap} of Spring and the
  * {@code Map<String, String[]>} of the Servlet API. The values are read as
- * {@link InputReader#coercingStrings()} states: a string is text that stands for a value
- * of the type it is checked as, and an empty string is {@code null}.
+ * {@link CoercibleInputReader#coercingStrings()} states: a string is text that stands for
+ * a value of the type it is checked as, and an empty string is {@code null}.
  *
  * <h2>Shape</h2>
  *
@@ -181,7 +182,7 @@ public final class ParameterTree {
 
 	/**
 	 * Returns the reader of the nodes of a tree, which reads their strings as
-	 * {@link InputReader#coercingStrings()} states.
+	 * {@link CoercibleInputReader#coercingStrings()} states.
 	 * @return the reader of parameter trees
 	 */
 	public static InputReader<ParameterTree> reader() {
@@ -195,7 +196,7 @@ public final class ParameterTree {
 	 * @return the reader of parameter trees
 	 */
 	public static InputReader<ParameterTree> reader(StringCoercion coercion) {
-		return READER.coercingStrings(coercion);
+		return Reader.INSTANCE.coercingStrings(coercion);
 	}
 
 	/**
@@ -372,7 +373,7 @@ public final class ParameterTree {
 	/**
 	 * Reads the nodes without coercing their values.
 	 */
-	private enum Reader implements InputReader<ParameterTree> {
+	private enum Reader implements CoercibleInputReader<ParameterTree> {
 
 		INSTANCE;
 

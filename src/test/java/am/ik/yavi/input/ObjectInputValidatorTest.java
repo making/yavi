@@ -556,11 +556,16 @@ class ObjectInputValidatorTest {
 		// of its reference
 		final ObjectInputValidator<Formula> formulaValidator = Yavi.schema()
 			._string("name", c -> c.notBlank())
-			._object("expr", exprValidator)
-			.nullable()
+			// null is given to a validator that accepts it
+			._object("expr", exprValidator.nullable())
 			._list("comments", commentValidator)
 			.defaultValue(List.of())
 			.fromMap(Formula::new);
+		assertThat(model.validate(formulaValidator, input("name", "sum")).value())
+			.isEqualTo(new Formula("sum", null, List.of()));
+		assertThat(model.validate(formulaValidator, input("name", "sum", "expr", map("op", "num"))).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("expr.value", "object.required"));
 		assertThat(model
 			.validate(formulaValidator, input("name", "sum", "expr", sum, "comments", List.of(map("body", "ok"))))
 			.value())
@@ -912,10 +917,10 @@ class ObjectInputValidatorTest {
 		final Map<ValueValidator<Object, @Nullable T>, @Nullable Object> expectations = new LinkedHashMap<>();
 		expectations.put(validator, expected);
 		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
-		// the rules of a reader that coerces are replaced
-		expectations.put(validator.readingWith(InputReader.ofJdkTypes()
-			.coercingStrings()
-			.coercingStrings(StringCoercion.strict().trimming().booleanWords())), lenient);
+		expectations.put(
+				validator.readingWith(
+						InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming().booleanWords())),
+				lenient);
 		expectations.forEach((untyped, value) -> {
 			final var validated = untyped.validate(input);
 			if (value == null) {

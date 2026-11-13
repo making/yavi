@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Reads the strings of another reader as text, as
- * {@link InputReader#coercingStrings(StringCoercion)} states.
+ * {@link CoercibleInputReader#coercingStrings(StringCoercion)} states.
  */
 record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coercion) implements InputReader<N> {
 
@@ -76,11 +76,6 @@ record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coerc
 	@Override
 	public Iterable<? extends @Nullable N> elements(N array) {
 		return this.reader.elements(array);
-	}
-
-	@Override
-	public InputReader<N> coercingStrings(StringCoercion coercion) {
-		return coercion == this.coercion ? this : new StringCoercingInputReader<>(this.reader, coercion);
 	}
 
 }

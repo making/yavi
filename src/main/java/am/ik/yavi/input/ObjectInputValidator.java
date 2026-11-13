@@ -62,7 +62,7 @@ import org.jspecify.annotations.Nullable;
  * {@code null}.</li>
  * <li>A value that does not represent the type of the property is reported with
  * {@code object.type}. Nothing is coerced unless the map is read with
- * {@link InputReader#coercingStrings()}.</li>
+ * {@link am.ik.yavi.core.CoercibleInputReader#coercingStrings()}.</li>
  * <li>A key that no property is defined for is ignored. With
  * {@link #rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}, and with {@code _rest} of the builders it is validated
@@ -532,8 +532,10 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * {@link ParameterTree} it stands for: a key such as {@code address.city} or
 	 * {@code items[0].name} is a path to a nested property, a key may have several values
 	 * and a value is text that stands for a value of the type of its property, as
-	 * {@link InputReader#coercingStrings()} states. This applies to the nested validators
-	 * too. The type of the map is the one the result is assigned to:
+	 * {@link am.ik.yavi.core.CoercibleInputReader#coercingStrings()} states. This applies
+	 * to the nested validators too. The returned validator given another reader with
+	 * {@link ValueValidator#readingWith(InputReader)} reads the nodes of that reader, not
+	 * parameters. The type of the map is the one the result is assigned to:
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.schema()
@@ -563,7 +565,7 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
 	 * strings
 	 * @return a validator of a map of parameters
-	 * @see InputReader#coercingStrings(StringCoercion)
+	 * @see am.ik.yavi.core.CoercibleInputReader#coercingStrings(StringCoercion)
 	 */
 	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters(StringCoercion coercion) {
 		return ParameterTree.reading(this, coercion);

@@ -18,6 +18,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -47,12 +48,17 @@ import org.jspecify.annotations.Nullable;
  * @param source what the argument is read from when its validator reads a map
  * @param strictness whether the key of an argument read from a key is told from
  * {@code null}
+ * @param neverNull whether the validated value is known never to be {@code null}: the
+ * value of constraints, a list, a map or an {@code Optional}. It is unknown for a value
+ * validator, whose type may be nullable
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
-		ObjectInputValidator.Strictness strictness) {
+		ObjectInputValidator.Strictness strictness, boolean neverNull) {
+
+	private static final String RECOVER_WITH_NULL = "Write nullable() before it, or recover with Optional.empty() after optional().";
 
 	/**
 	 * What an argument is read from when its validator reads a map.
@@ -77,13 +83,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
-			Function<InputReader<Object>, ValueValidator<Object, R>> untyped) {
-		this(name, validator, untyped, Source.PROPERTY);
-	}
-
-	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
-			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source) {
-		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL);
+			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull) {
+		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull);
 	}
 
 	/**
@@ -98,28 +99,48 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final boolean undescribed = validator.description() instanceof ValueDescription.Unknown && type != Object.class;
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
-		return new ArgumentDefinition<>(null, described, type == Object.class || type == Enum.class
-				? reader -> validator.readingWith(reader)
-				: reader -> untyped(reader, describedName(described.description()), (Class<A>) type, described));
+		return new ArgumentDefinition<>(null, described,
+				type == Object.class || type == Enum.class ? reader -> validator.readingWith(reader)
+						: reader -> untyped(reader, describedName(described.description()), (Class<A>) type, described),
+				Source.PROPERTY, false);
 	}
 
 	/**
 	 * Returns the definition of a named argument whose input type is known only to the
-	 * given validator.
+	 * given validator, which is built from constraints and so rejects {@code null}.
 	 */
-	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(String name, ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader));
+	static <A> ArgumentDefinition<A, A> value(String name, ValueValidator<A, A> validator) {
+		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader), Source.PROPERTY,
+				true);
 	}
 
-	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(String name, Class<A> type,
-			ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator));
+	/**
+	 * Returns the definition of a named argument of the given type, validated by the
+	 * given validator, which is built from constraints and so rejects {@code null}.
+	 */
+	static <A> ArgumentDefinition<A, A> value(String name, Class<A> type, ValueValidator<A, A> validator) {
+		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator),
+				Source.PROPERTY, true);
 	}
 
+	/**
+	 * Returns the definition of a nested object that rejects {@code null} under the given
+	 * name and otherwise locates the violations of the given validator under that name.
+	 */
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
 			ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, nested(name, validator, validator.description()),
-				reader -> nested(name, validator.readingWith(reader), validator.description()));
+				reader -> nested(name, validator.readingWith(reader), validator.description()), Source.PROPERTY, false);
+	}
+
+	/**
+	 * Returns the definition of a nested object whose validator decides what {@code null}
+	 * produces. The violations of any other value are located under the given name.
+	 */
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
+			NullAcceptingValueValidator<A, R> validator) {
+		return new ArgumentDefinition<>(name, validator.prefixed(name),
+				reader -> validator.readingWith(reader).prefixed(name), Source.PROPERTY, false);
 	}
 
 	/**
@@ -131,9 +152,10 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
 				constraints.descriptions());
 		final ValueValidator<List<E>, List<R>> elements = elements(elementValidator)::validate;
-		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(elements), description),
-				reader -> nested(name, constraints.constrain(elements(reader, elementValidator.readingWith(reader))),
-						description));
+		return new ArgumentDefinition<>(
+				name, nested(name, constraints.constrain(elements), description), reader -> nested(name,
+						constraints.constrain(elements(reader, elementValidator.readingWith(reader))), description),
+				Source.PROPERTY, true);
 	}
 
 	/**
@@ -146,7 +168,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final ValueDescription description = new ValueDescription.Entries(valueValidator.description(),
 				constraints.descriptions());
 		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(lifted), description),
-				reader -> nested(name, constraints.constrain(lifted.readingWith(reader)), description));
+				reader -> nested(name, constraints.constrain(lifted.readingWith(reader)), description), Source.PROPERTY,
+				true);
 	}
 
 	/**
@@ -167,7 +190,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			final ValueValidator<Object, R> checked = ofMap.untyped((Class<Map<String, Object>>) (Class<?>) Map.class);
 			untyped = reader -> checked.readingWith(reader);
 		}
-		return new ArgumentDefinition<>(null, ofMap, untyped, Source.OBJECT);
+		return new ArgumentDefinition<>(null, ofMap, untyped, Source.OBJECT, false);
 	}
 
 	/**
@@ -177,7 +200,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, V>, Map<String, R>> rest(
 			ValueValidator<V, R> valueValidator) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
-		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST);
+		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST, true);
 	}
 
 	/**
@@ -190,27 +213,59 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	ArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
 		return new ArgumentDefinition<>(this.name, this.validator.optional(),
-				reader -> this.untyped.apply(reader).optional(), this.source);
+				reader -> this.untyped.apply(reader).optional(), this.source, true);
 	}
 
 	ArgumentDefinition<A, @Nullable R> asNullable() {
 		return new ArgumentDefinition<>(this.name, this.validator.nullable(),
-				reader -> this.untyped.apply(reader).nullable(), this.source);
+				reader -> this.untyped.apply(reader).nullable(), this.source, false);
 	}
 
+	/**
+	 * @throws NullPointerException if the default value is {@code null} although the
+	 * validated value is never {@code null}
+	 */
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
-		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(defaultValue),
-				reader -> this.untyped.apply(reader).defaultValue(defaultValue), this.source);
+		final R checked = this.nonNull(defaultValue, "default value", "Write nullable() instead.");
+		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(checked),
+				reader -> this.untyped.apply(reader).defaultValue(checked), this.source, this.neverNull);
 	}
 
+	/**
+	 * @throws NullPointerException if the fallback is {@code null} although the validated
+	 * value is never {@code null}
+	 */
 	ArgumentDefinition<A, R> recovering(R fallback) {
-		return new ArgumentDefinition<>(this.name, this.validator.recover(fallback),
-				reader -> this.untyped.apply(reader).recover(fallback), this.source);
+		final R checked = this.nonNull(fallback, "fallback", RECOVER_WITH_NULL);
+		return new ArgumentDefinition<>(this.name, this.validator.recover(checked),
+				reader -> this.untyped.apply(reader).recover(checked), this.source, this.neverNull);
 	}
 
+	/**
+	 * Returns the definition of this argument with the given function as its fallback.
+	 * The function fails with {@code NullPointerException} when it returns {@code null}
+	 * although the validated value is never {@code null}.
+	 */
 	ArgumentDefinition<A, R> recoveringWith(Function<? super ConstraintViolations, ? extends R> fallback) {
-		return new ArgumentDefinition<>(this.name, this.validator.recoverWith(fallback),
-				reader -> this.untyped.apply(reader).recoverWith(fallback), this.source);
+		final Function<? super ConstraintViolations, ? extends R> checked = this.neverNull ? violations -> this
+			.nonNull(fallback.apply(violations), "result of the fallback function", RECOVER_WITH_NULL) : fallback;
+		return new ArgumentDefinition<>(this.name, this.validator.recoverWith(checked),
+				reader -> this.untyped.apply(reader).recoverWith(checked), this.source, this.neverNull);
+	}
+
+	/**
+	 * Returns the given value, which stands in for the validated value, unless it is
+	 * {@code null} although the validated value is never {@code null}: the function that
+	 * creates the result would be given a {@code null} that the type of its parameter
+	 * excludes.
+	 */
+	private <V extends @Nullable Object> V nonNull(V value, String role, String hint) {
+		if (this.neverNull && value == null) {
+			throw new NullPointerException(
+					"The " + role + " of the argument" + (this.name != null ? " '" + this.name + "'" : "")
+							+ " is null, but its validated value is never null. " + hint);
+		}
+		return value;
 	}
 
 	/**
@@ -224,7 +279,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
 			return present.<Presence<@NonNull R>>map(value -> Presence.<@NonNull R>ofNullable(value))
 				.describedAs(new ValueDescription.Presence(present.description()));
-		}, Source.PRESENCE);
+		}, Source.PRESENCE, true);
 	}
 
 	/**
@@ -236,7 +291,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
 		return new ArgumentDefinition<>(this.name,
 				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
-				this.source, strictness);
+				this.source, strictness, this.neverNull);
 	}
 
 	/**

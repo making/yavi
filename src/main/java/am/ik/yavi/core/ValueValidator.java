@@ -144,7 +144,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * <p>
 	 * The reader is applied to the whole validator: the nested validators read with it
 	 * too, whatever reader they were built for, so the returned validator can itself be
-	 * given another reader. A null node of the reader is validated like {@code null}.
+	 * given another reader. That reader replaces the given one and is not combined with
+	 * it: after {@code readingWith(reader.coercingStrings()).readingWith(reader)} no
+	 * string is coerced. A null node of the reader is validated like {@code null}.
 	 * @param reader the reader of the nodes
 	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
@@ -184,9 +186,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * </ul>
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
 	 * string. An input whose values are all strings, such as request parameters, is read
-	 * with {@link InputReader#coercingStrings()}, which takes {@code "1"} as a number
-	 * where a number is expected. For any other conversion, write a validator that takes
-	 * an {@code Object} and give it {@code Object.class}.
+	 * with {@link CoercibleInputReader#coercingStrings()}, which takes {@code "1"} as a
+	 * number where a number is expected. For any other conversion, write a validator that
+	 * takes an {@code Object} and give it {@code Object.class}.
 	 *
 	 * <p>
 	 * With another reader, the checked input is the

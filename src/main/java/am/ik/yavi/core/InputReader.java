@@ -41,7 +41,9 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * An input whose scalars are all text, such as request parameters, is read with
- * {@link #coercingStrings()}.
+ * {@link CoercibleInputReader#coercingStrings()}. Implement {@link CoercibleInputReader},
+ * which adds nothing to implement, to offer it for a tree model: this interface alone is
+ * what a validator is given, and the type of a reader that already coerces strings.
  *
  * @param <N> the type of the nodes
  * @since 0.18.0
@@ -82,7 +84,7 @@ public interface InputReader<N> {
 	 * @param node the node, which is not a null node
 	 * @param type the type the value is checked as
 	 * @return the value of the node
-	 * @see #coercingStrings()
+	 * @see CoercibleInputReader#coercingStrings()
 	 */
 	default Object value(N node, Class<?> type) {
 		return this.value(node);
@@ -137,81 +139,13 @@ public interface InputReader<N> {
 	Iterable<? extends @Nullable N> elements(N array);
 
 	/**
-	 * Returns a reader that reads the same tree as this reader and takes its strings as
-	 * text that stands for a value of the checked type. It reads an input that has no
-	 * other scalar than strings: request parameters, a submitted form, a row of a CSV
-	 * file, environment variables or properties.
-	 *
-	 * <pre>{@code
-	 * ValueValidator<Object, Integer> page = IntegerValidatorBuilder.of("page", c -> c.greaterThanOrEqual(1))
-	 *     .build()
-	 *     .readingWith(InputReader.ofJdkTypes().coercingStrings());
-	 * Validated<Integer> validated = page.validate("2");
-	 * }</pre>
-	 *
-	 * Request parameters, whose keys are paths and may have several values, are read with
-	 * {@code readingParameters()} of a validator of maps built with {@code fromMap},
-	 * which coerces strings in this way.
-	 *
-	 * The following is added to the rules of {@link ValueValidator#untyped(Class)}:
-	 * <ul>
-	 * <li>An empty string is a null node whatever it is checked as, because text has no
-	 * other way to say that a value is not given. It is validated like {@code null}, so
-	 * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to it; a
-	 * string property that must receive {@code ""} is given
-	 * {@code defaultValue("")}.</li>
-	 * <li>A string checked as a numeric type is read as a decimal number, in the grammar
-	 * of {@link java.math.BigDecimal#BigDecimal(String)}: an optional sign, digits, an
-	 * optional fraction and an optional exponent, without surrounding whitespace or
-	 * grouping separators. The number is then checked like any other number, so
-	 * {@code "30"} and {@code "30.0"} are an {@code Integer}, and {@code "30.5"} and
-	 * {@code "NaN"} are not.</li>
-	 * <li>A string checked as a {@code Boolean} is {@code "true"} or
-	 * {@code "false"}.</li>
-	 * </ul>
-	 * Any other string is left as it is, so a string that does not stand for the type is
-	 * reported with {@code object.type} like any other mismatch. A string is not trimmed,
-	 * a value that is not a string is read as this reader reads it, and nothing is
-	 * converted to a string: {@code 30} is not a {@code String}. Enum constants and
-	 * temporal types are read from a string by every reader.
-	 *
-	 * <p>
-	 * {@link #coercingStrings(StringCoercion)} takes more strings, such as {@code " 42 "}
-	 * for a number or {@code "on"} for a {@code Boolean}.
-	 * @return a reader that coerces strings
-	 */
-	default InputReader<N> coercingStrings() {
-		return this.coercingStrings(StringCoercion.strict());
-	}
-
-	/**
-	 * Returns a reader like {@link #coercingStrings()} that takes strings by the given
-	 * rules, for an input whose text is written by a person or another loose source: the
-	 * cells of a CSV file, the fields of a form.
-	 *
-	 * <pre>{@code
-	 * InputReader<Object> cells = InputReader.ofJdkTypes()
-	 *     .coercingStrings(StringCoercion.strict().trimming().booleanWords());
-	 * Yavi._boolean().readingWith(cells).validate(" Yes "); // true
-	 * }</pre>
-	 *
-	 * The rules of a reader that already coerces strings are replaced.
-	 * @param coercion the rules by which a string is taken as text
-	 * @return a reader that coerces strings
-	 * @see StringCoercion
-	 */
-	default InputReader<N> coercingStrings(StringCoercion coercion) {
-		return new StringCoercingInputReader<>(this, coercion);
-	}
-
-	/**
 	 * Returns the reader of a tree of JDK types, which is what
 	 * {@link ValueValidator#untyped()} reads: a {@link Map} whose keys are all strings is
 	 * an object, an {@link Iterable} is an array, {@code null} is the only null node and
 	 * any other object is its own value.
 	 * @return the reader of JDK types
 	 */
-	static InputReader<Object> ofJdkTypes() {
+	static CoercibleInputReader<Object> ofJdkTypes() {
 		return JdkInputReader.INSTANCE;
 	}
 

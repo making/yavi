@@ -7,7 +7,7 @@ package am.ik.yavi.input;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.CoercibleInputReader;
 import jdk.incubator.json.JsonArray;
 import jdk.incubator.json.JsonBoolean;
 import jdk.incubator.json.JsonNull;
@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * Reads the tree model of the JDK (JEP 540), which is an incubator module of JDK 28. This
  * is the reader shown in the README.
  */
-final class JdkJsonReader implements InputReader<JsonValue> {
+final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
 
 	static final JdkJsonReader INSTANCE = new JdkJsonReader();
 

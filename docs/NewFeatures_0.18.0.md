@@ -116,6 +116,9 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
 * `_object(name, validator)`, `_list(name, elementValidator)` and
   `_map(name, valueValidator)` locate their violations under the name, in `name()`
   (`address.street`, `tags[1]`, `prices.pen`) and in `path()`.
+* A validator that accepts `null` keeps doing so under a name:
+  `_object("address", addressValidator.nullable())` produces `null` for `null`, like
+  `_object("address", addressValidator).nullable()`.
 * The constraints of `_list` and `_map` are checked when every element is valid and are
   reported on the property: `"tags" must be unique. [a] is/are duplicated.`
 * `constraintOnTarget` is a rule that spans several properties. It is checked when all
@@ -181,6 +184,9 @@ shapeValidator.validate(Map.of("type", "circle", "radius", 2)); // Circle[radius
 shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the following values: [circle, square]
 ```
 
+`of("type")` alone is not a validator, because a union without alternatives would reject
+every input: the first `when` returns the validator.
+
 ### Several objects from one map, and the remaining keys
 
 `_embedded` reads the same map as the properties, which builds an object from the
@@ -214,7 +220,9 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 ```
 
 Embedding is also the way to read more than 16 keys. `_rest()` without a validator takes
-the values as they are.
+the values as they are. The rest is an empty map if there is no other key, never `null`,
+so it takes `recover(...)` only: `_rest().nullable()` and `_rest().defaultValue(...)` do
+not compile.
 
 ### Telling an absent key from null
 
@@ -290,7 +298,7 @@ would. A chain with a part that has no effect does not compile:
 | `.defaultValue(1).recover(2)` | does not compile: `recover` replaces `null` too; write `.recover(2).defaultValue(1)` |
 | `.recover(1).recover(2)` | does not compile: the first one never fails |
 
-The same holds for an `_embedded` and a `_rest` property. The combinators of a
+The same holds for an `_embedded` property. The combinators of a
 `ValueValidator` are not restricted, and return a `NullAcceptingValueValidator`: a
 validator that is known by its type to accept `null`. A property added with it takes
 `required()`, `rejectingNull()` and `presence()`, and no modifier that accepts `null`
@@ -301,6 +309,20 @@ NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> 
 
 Yavi.schema()._integer(page).rejectingNull() // 1 only if omitted
 ```
+
+`nullable()` is the only modifier that produces `null`. A `null` default value or
+fallback of a value that is never `null` (the value of constraints, a list, a map, an
+`Optional`) is what a nullness checker reports, and without one it is rejected with a
+`NullPointerException` when the schema is built, instead of giving the function a `null`
+that the type of its parameter excludes:
+
+| Chain | |
+| --- | --- |
+| `._string("x").defaultValue(null)`, `._string("x").recover(null)` | `NullPointerException`: write `.nullable()`, or `.nullable().recover(null)` |
+| `._string("x").optional().recover(null)` | `NullPointerException`: write `.optional().recover(Optional.empty())` |
+| `._string("x").recoverWith(violations -> null)` | `NullPointerException` when the function returns `null` |
+| `._string("x").nullable().recover(null)` | accepted |
+| `._string(ValueValidator.passThrough()).defaultValue(null)` | accepted: the validator produces a `@Nullable String` itself |
 
 ### A structure that contains itself
 
@@ -336,7 +358,7 @@ The reader applies to the nested validators too, so `addressValidator` is built 
 Jackson 3:
 
 ```java
-public final class JsonNodeReader implements InputReader<JsonNode> {
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
     public static final JsonNodeReader INSTANCE = new JsonNodeReader();
 
@@ -391,9 +413,14 @@ The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator
 JDK 28) is read in the same way; the README shows its reader.
 
 A tree whose scalars are all strings is read with `coercingStrings()`, a decorator of any
-reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or
+`CoercibleInputReader`, the interface a reader of a tree model implements: `JsonNodeReader.INSTANCE.coercingStrings()`, or
 `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read
-by the rules of the next section.
+by the rules of the next section. The reader that coerces strings is an `InputReader` and cannot be coerced again,
+so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are
+given once, and so is each rule of a `StringCoercion`: `booleanWords(...).booleanWords()` does
+not compile. A validator
+reads with the last reader it is given: `readingWith(reader)` after
+`readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string.
 
 ## Validating request parameters
 
@@ -631,5 +658,5 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
-| Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563) |
+| Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

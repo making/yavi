@@ -1518,7 +1518,7 @@ public final class YaviSchema
 	 * named {@code street} is reported as {@code name.street} with the corresponding
 	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. A {@code null} value is
 	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
-	 * or {@code defaultValue} is applied to the argument.
+	 * or {@code defaultValue} is applied to the argument, or to {@code validator} itself.
 	 * @param <T1> type of the value validated by {@code validator}
 	 * @param <T2> type of the value produced by {@code validator}
 	 * @param name the property name that prefixes the violations of {@code validator}
@@ -1529,6 +1529,32 @@ public final class YaviSchema
 	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(String name,
 			ValueValidator<T1, T2> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.object(name, validator));
+	}
+
+	/**
+	 * Adds the next argument as a nested object with the given name, validated by the
+	 * given value validator that accepts {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_object(String, ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: {@code null} is given to {@code validator}, which
+	 * decides what it produces, and the violations of any other value are located under
+	 * {@code name}. The returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 *
+	 * <pre>{@code
+	 * ._object("address", addressValidator.nullable())
+	 * }</pre>
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param name the property name that prefixes the violations of {@code validator}
+	 * @param validator value validator for the nested object, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<T1, T2> _object(String name,
+			NullAcceptingValueValidator<T1, T2> validator) {
+		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1663,16 +1689,22 @@ public final class YaviSchema
 	 * argument nor an embedded validator defines, and it is an empty map if there is
 	 * none. The violations of the value for the key {@code key} are located under
 	 * {@code key}; give {@code valueValidator} an empty name to report a violation on the
-	 * value itself. With {@code apply}, the argument is a map whose values are validated.
+	 * value itself. With {@code apply}, the argument is a map whose values are validated,
+	 * and {@code null} is an empty map.
+	 *
+	 * <p>
+	 * The rest is therefore never {@code null}: the returned builder has no
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue}, only
+	 * {@code recover} to replace the rest when a value is invalid.
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
 	 * @param valueValidator value validator for each value
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Modifiable<Map<String, V>, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Recoverable<Map<String, V>, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest(valueValidator));
+		return new Arguments1ValidatorBuilder.Recoverable<>(ArgumentDefinition.rest(valueValidator));
 	}
 
 	/**
@@ -1682,8 +1714,8 @@ public final class YaviSchema
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
-		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest());
+	public Arguments1ValidatorBuilder.Recoverable<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
+		return new Arguments1ValidatorBuilder.Recoverable<>(ArgumentDefinition.rest());
 	}
 
 }
