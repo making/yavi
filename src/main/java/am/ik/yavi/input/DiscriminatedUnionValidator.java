@@ -368,8 +368,11 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 						ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
 			}
 			final Object value = node == null || this.reader.isNull(node) ? null : this.reader.value(node);
-			final ValueValidator<N, ? extends X> alternative = value instanceof String ? this.alternatives.get(value)
-					: null;
+			// the text of the discriminator as the reader takes a string, which may trim
+			// it
+			final ValueValidator<N, ? extends X> alternative = node != null && value instanceof String
+					&& this.reader.value(node, String.class) instanceof String text ? this.alternatives.get(text)
+							: null;
 			if (alternative == null) {
 				return Validated
 					.failureWith(ObjectInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,

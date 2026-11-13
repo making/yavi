@@ -94,15 +94,18 @@ public sealed class StringCoercion {
 		 * <ul>
 		 * <li>A blank string is a null node whatever it is checked as, like an empty
 		 * string.</li>
-		 * <li>A string checked as a type other than a string (a number, a
-		 * {@code Boolean}, an enum constant, a temporal type, a {@code UUID}) is read
-		 * without its leading and trailing white space, so {@code " 42 "} is an
-		 * {@code Integer}.</li>
+		 * <li>Any other string is read without its leading and trailing white space,
+		 * whatever it is checked as: {@code " 42 "} is an {@code Integer} and
+		 * {@code " Acme "} is the {@code String} {@code "Acme"}, which is what the
+		 * constraints of the value see.</li>
 		 * </ul>
-		 * A string checked as a {@code String} is left as it is, because a validator
-		 * trims it with {@code c.trim()} where its white space has no meaning. White
-		 * space is what {@link Character#isWhitespace(int)} tells, and the violated value
-		 * is the string as it was given.
+		 * So one switch makes every text "trimmed, and not given if blank". A
+		 * {@code String} whose white space is a part of it, such as a password, is read
+		 * with {@code untrimmed()} of its validator
+		 * ({@code Yavi._string("password").untrimmed()}), which keeps the white space
+		 * around a value; a blank one is still not given. White space is what
+		 * {@link Character#isWhitespace(int)} tells, and the violated value of a string
+		 * that does not stand for its type is the string as it was given.
 		 * @return rules that trim
 		 */
 		public Trimming trimming() {
@@ -199,7 +202,7 @@ public sealed class StringCoercion {
 	}
 
 	/**
-	 * Returns the text of a string that is checked as another type than a string.
+	 * Returns the text of a string, which is what the string is checked as a type from.
 	 */
 	String text(String string) {
 		return this.trimming ? string.strip() : string;

@@ -159,7 +159,11 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the definition of an argument added only with a value validator. If the
 	 * validator does not describe itself, it is described as a value of the given type.
 	 * The given type is the input type of the validator unless it is {@code Object} or
-	 * {@code Enum}, which stand for a type that the builder method does not determine.
+	 * {@code Enum}, which stand for a type that the builder method does not determine. An
+	 * untyped input is read as the validator reads it, so what the validator says about
+	 * reading, such as {@code untrimmed()} of a string, holds in a schema; a validator
+	 * that does not know its input type, such as a lambda, is given a value of the given
+	 * type.
 	 */
 	@SuppressWarnings("unchecked")
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(Class<?> type,
@@ -168,9 +172,17 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
 		return new ArgumentDefinition<>(null, described,
-				type == Object.class || type == Enum.class ? reader -> validator.readingWith(reader)
-						: reader -> untyped(reader, describedName(described.description()), (Class<A>) type, described),
-				Source.PROPERTY, false);
+				type == Object.class || type == Enum.class ? reader -> validator.readingWith(reader) : reader -> {
+					if (!undescribed) {
+						try {
+							return validator.readingWith(reader);
+						}
+						catch (UnsupportedOperationException e) {
+							// the validator does not know its input type
+						}
+					}
+					return untyped(reader, describedName(described.description()), (Class<A>) type, described);
+				}, Source.PROPERTY, false);
 	}
 
 	/**

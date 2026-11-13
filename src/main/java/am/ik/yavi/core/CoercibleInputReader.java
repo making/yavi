@@ -63,7 +63,7 @@ public interface CoercibleInputReader<N> extends InputReader<N> {
 	 *
 	 * <p>
 	 * {@link #coercingStrings(StringCoercion)} takes more strings, such as {@code " 42 "}
-	 * for a number or {@code "on"} for a {@code Boolean}.
+	 * for a number or {@code "on"} for a {@code Boolean}, and trims every text.
 	 * @return a reader that coerces strings
 	 */
 	default InputReader<N> coercingStrings() {

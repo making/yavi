@@ -962,9 +962,10 @@ class ObjectInputValidatorTest {
 				lenient(Year.class, " 2026 ", Year.of(2026)),
 				lenient(UUID.class, " 123e4567-e89b-12d3-a456-426614174000 ",
 						UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
-				// a string stays a string
-				Arguments.of(String.class, " 1 ", " 1 ", " 1 ", " 1 "),
-				Arguments.of(Object.class, " 1 ", " 1 ", " 1 ", " 1 "));
+				// a string stays a string, without the white space around it for the
+				// rules that trim
+				Arguments.of(String.class, " 1 ", " 1 ", " 1 ", "1"),
+				Arguments.of(Object.class, " 1 ", " 1 ", " 1 ", "1"));
 	}
 
 	/**
@@ -1029,7 +1030,7 @@ class ObjectInputValidatorTest {
 	void lenientReadingsAreOptions(Model model) {
 		// the name of a constant is read in any case by an argument that says so,
 		// whatever the reader is
-		final Arguments1Validator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
+		final Arguments1Validator<Role, Role> role = Yavi._enum("role", Role.class).ignoringCase();
 		final ObjectInputValidator<Signup> validator = Yavi.schema()
 			._string("name")
 			.nullable()
@@ -1053,7 +1054,7 @@ class ObjectInputValidatorTest {
 		assertThat(role.map(Role::ordinal).preprocess(r -> Role.USER).lazy().untyped().validated("admin").get())
 			.isEqualTo(1);
 		assertThat(role.optional().untyped().validated("user")).contains(Role.USER);
-		assertThat(role.description()).isEqualTo(Yavi._enum("role", Role.class, c -> c.notNull()).description());
+		assertThat(role.description()).isEqualTo(Yavi._enum("role", Role.class).description());
 		assertThat(JsonSchema.toJson(validator.description())).contains("\"enum\":[\"ADMIN\",\"USER\"]");
 		// a name that differs from several constants only by its case is none of them
 		final ValueValidator<Object, Unit> unit = Yavi._enum(Unit.class).ignoringCase().untyped();
@@ -1066,9 +1067,46 @@ class ObjectInputValidatorTest {
 		final StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 		final ValueValidator<Map<String, String>, Signup> ofForm = validator.readingParameters(form);
 		assertThat(ofForm.validated(Map.of("name", " a ", "age", " 30 ", "subscribed", "on", "role", " admin ")))
-			.isEqualTo(new Signup(" a ", 30, true, Role.ADMIN));
+			.isEqualTo(new Signup("a", 30, true, Role.ADMIN));
 		assertThat(ofForm.validated(Map.of("name", " ", "age", " \t", "role", "USER")))
 			.isEqualTo(new Signup(null, 20, false, Role.USER));
+		// the constraints see the trimmed text, and so does the discriminator of a union
+		assertThat(Yavi.schema()
+			._string("name", c -> c.lessThanOrEqual(1))
+			._list("tags", Yavi._string(c -> c.lessThanOrEqual(1)))
+			.splitBy(",")
+			.fromMap((name, tags) -> name + tags)
+			.readingParameters(form)
+			.validated(Map.of("name", " a ", "tags", "b , c"))).isEqualTo("a[b, c]");
+		assertThat(shapeValidator.readingParameters(form).validated(Map.of("type", " circle ", "radius", "1")))
+			.isEqualTo(new Circle(1));
+		assertThat(shapeValidator.readingParameters(form).validate(Map.of("type", " oval ")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("type", " oval "));
+		// a string whose white space is a part of it says so, and keeps saying so; a
+		// blank one is still not given
+		final Arguments1Validator<String, String> password = Yavi._string("password").untrimmed();
+		final ValueValidator<Map<String, String>, String> ofPassword = Yavi.schema()
+			._string(Yavi._string("x", c -> c.greaterThanOrEqual(3))
+				.map(String::length)
+				.preprocess(String::toLowerCase)
+				.named("length")
+				.lazy()
+				.untrimmed())
+			._string(password)
+			.fromMap((length, value) -> length.get() + value)
+			.readingParameters(form);
+		assertThat(ofPassword.validated(Map.of("length", " a ", "password", " p "))).isEqualTo("3 p ");
+		assertThat(ofPassword.validate(Map.of("length", " a ", "password", " ")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("password", "object.required"));
+		assertThat(ofPassword.validate(Map.of("length", "a", "password", "p")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("length", "container.greaterThanOrEqual"));
+		assertThat(password.untyped().validated(" p ")).isEqualTo(" p ");
+		assertThat(password.untyped().validate(1).errors()).extracting(ConstraintViolation::message)
+			.containsExactly("\"password\" must be of type string");
+		assertThat(password.description()).isEqualTo(Yavi._string("password").description());
 		// a field left empty is required rather than null, unless a constraint has a
 		// message of its own for it
 		assertThat(ofForm.validate(Map.of("role", " ")).errors()).extracting(ConstraintViolation::message)
@@ -1356,7 +1394,7 @@ class ObjectInputValidatorTest {
 	@Test
 	void inputTypeMustBeKnownToReadFromAMap() {
 		// a value validator that takes an Object decides itself what it accepts
-		final ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer(c -> c)
+		final ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer()
 			.untyped()
 			.validate(value instanceof String string ? Integer.valueOf(string) : value, locale, context);
 		// alternatives are untyped one by one

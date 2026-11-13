@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import javax.tools.Diagnostic;
@@ -243,6 +244,11 @@ class YaviSchemaTest {
 		final ValueValidator<Map<String, Integer>, Map<String, Integer>> stock = Yavi
 			._map(Yavi._integer(c -> c.notNull()), c -> c.greaterThanOrEqual(1).containsKey("a"));
 		assertThat(tags.untyped().validated(List.of("a", "b"))).containsExactly("a", "b");
+		// without constraints of the list or the map
+		assertThat(Yavi._list(Yavi._integer()).untyped().validated(List.of(1, 2))).containsExactly(1, 2);
+		assertThat(Yavi._map(Yavi._integer()).untyped().validate(Map.of("a", "b")).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("a");
 		assertThat(stock.untyped().validated(Map.of("a", 1))).containsExactly(Map.entry("a", 1));
 		assertThat(List.of(tags.validate(null).errors(), tags.untyped().validate(List.of()).errors(),
 				stock.validate(null).errors(), stock.untyped().validate(Map.of("b", 1)).errors()))
@@ -275,13 +281,20 @@ class YaviSchemaTest {
 				v -> v._integer(Arguments1::arg1, "years", c -> c.notNull().greaterThanOrEqual(0))))
 			.build();
 		assertThat(List.of(age.validate(null).errors(), Yavi._string("name", c -> c.notBlank()).validate(null).errors(),
-				Yavi._integer(c -> c).untyped().validate(null).errors(), conditional.validate(null).errors(),
-				conditional.validate(null, strict).errors()))
+				Yavi._integer().untyped().validate(null).errors(), conditional.validate(null).errors(),
+				conditional.validate(null, strict).errors(),
+				// a name without constraints
+				Yavi._boolean("subscribed").validate(null).errors(),
+				Yavi._enum("role", Role.class).untyped().validate("x").errors(),
+				Yavi._object("id", UUID.class).untyped().validate("x").errors()))
 			.extracting(ConstraintViolations::size, violations -> violations.get(0).name(),
 					violations -> violations.get(0).message())
 			.containsExactly(tuple(1, "age", "\"age\" must not be null"),
 					tuple(1, "name", "\"name\" must not be blank"), tuple(1, "", "The value must not be null"),
-					tuple(1, "", "The value must not be null"), tuple(1, "years", "\"years\" must not be null"));
+					tuple(1, "", "The value must not be null"), tuple(1, "years", "\"years\" must not be null"),
+					tuple(1, "subscribed", "\"subscribed\" must not be null"),
+					tuple(1, "role", "\"role\" must be one of the following values: [ADMIN, USER]"),
+					tuple(1, "id", "\"id\" must be of type UUID"));
 		assertThat(age.description().acceptsNull()).isFalse();
 		// the modifiers accept null, and the type of the value says what it is then
 		final ValueValidator<Integer, @Nullable Integer> nullableAge = age.nullable();
@@ -412,6 +425,7 @@ class YaviSchemaTest {
 				"s._string(\"x\").fromMap(x -> x).constraintOnTarget(x -> true, \"x\", ViolationMessage.of(\"a\", \"b\"))"
 						+ ".rejectingUnknownProperties()",
 				"Yavi._enum(TimeUnit.class).map(unit -> unit).ignoringCase()",
+				"s._string(Yavi._string(\"x\").map(String::length).untrimmed()).nullable()",
 				// a name keeps the type of the validator
 				"Yavi._string(\"x\", c -> c.notBlank()).named(\"y\").map(String::length).named(\"z\").preprocess(x -> x)",
 				"s._string(Yavi._string(c -> c).nullable().named(\"x\")).required()",
@@ -464,6 +478,7 @@ class YaviSchemaTest {
 				// what is said once
 				"s._string(\"x\").fromMap(x -> x).rejectingUnknownProperties().rejectingUnknownProperties()",
 				"Yavi._enum(TimeUnit.class).ignoringCase().ignoringCase()",
+				"Yavi._string(\"x\").untrimmed().untrimmed()",
 				// an Optional is not wrapped in a Presence
 				"s._string(\"x\").optional().presence()", "s._integer(\"x\").recover(0).optional().presence()",
 				// only a list is split, once, before its other modifiers

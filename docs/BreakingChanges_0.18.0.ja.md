@@ -685,6 +685,20 @@ public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? ex
 
 関連するプルリクエスト: [#533](https://github.com/making/yavi/pull/533)
 
+### 文字列の形式の制約は空文字列を受け付ける
+
+`CharSequenceConstraint` の `ipv4()`、`ipv6()`、`luhn()`、`isoLocalDate()`、`localDate(pattern)` は、`email()`、`url()`、`uuid()`、`isInteger()` と同じく `""` を受け付けるようになりました。0.17 では、省略可能なテキストを空にしたときの結果が形式によって異なっていました。`""` を拒否する必要がある箇所には、`notBlank()` または `notEmpty()` を追加してください。
+
+```java
+// before: "" は違反（charSequence.ipv4）
+ValidatorBuilder.<Server>of()._string(Server::address, "address", c -> c.ipv4()).build();
+
+// after: 0.18 で同じ結果になる
+ValidatorBuilder.<Server>of()._string(Server::address, "address", c -> c.notEmpty().ipv4()).build();
+```
+
+関連するプルリクエスト: [#573](https://github.com/making/yavi/pull/573)
+
 ### メッセージキーのセパレータは `forEach` の下にも適用される
 
 `.` 以外のメッセージキーのセパレータを指定した `ValidatorBuilder` は、`forEach(..., builder -> ...)` の下の名前にもそのセパレータを使うようになりました。

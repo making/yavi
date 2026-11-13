@@ -69,7 +69,7 @@ record or class and the compiler checks that they match it.
 | --- | --- |
 | `z.string()`, `z.number()`, `z.boolean()`, `z.date()` ... as a property | `_string(name, c -> ...)`, `_integer`, `_long`, `_double`, `_bigDecimal`, `_boolean`, `_localDate`, `_instant` ... |
 | the same as a schema of its own | `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)` ... |
-| `z.enum([...])` | `_enum(name, Role.class)`; `_enum(Yavi._enum(name, Role.class, c -> c).ignoringCase())` reads the name in any case |
+| `z.enum([...])` | `_enum(name, Role.class)`; `_enum(Yavi._enum(name, Role.class).ignoringCase())` reads the name in any case |
 | `z.object({...})` nested | `_object(name, anotherObjectInputValidator)` |
 | `z.array(schema)` | `_list(name, elementValidator)`, `validator.liftList()` |
 | `z.record(z.string(), schema)` | `_map(name, valueValidator)`, `validator.liftMap()` |
@@ -297,6 +297,7 @@ Both follow the same rules, which are stricter than `z.coerce`:
 | --- | --- | --- |
 | `""` for a number | `0` | `null`, so `optional()` and `defaultValue` apply |
 | `" 30 "` for a number | `30` | `object.type`; `30` with `trimming()` |
+| `" a "` for a string | `" a "`; `"a"` with `.trim()` | `" a "`; `"a"` with `trimming()` or `c.trim()` |
 | `"0x1e"` for a number | `30` | `object.type` |
 | `"false"` for a boolean | `true` | `false` |
 | `"on"`, `"1"` for a boolean | `true` | `object.type`; `true` with `booleanWords()`, like `z.stringbool()` |
@@ -311,7 +312,7 @@ An empty string is `null` for a string property too. Any other coercion is a val
 that takes an `Object`, or a reader that overrides `InputReader#value(node, type)`:
 
 ```java
-ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer(c -> c)
+ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer()
         .untyped()
         .validate(value instanceof Boolean b ? Integer.valueOf(b ? 1 : 0) : value, locale, context);
 

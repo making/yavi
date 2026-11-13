@@ -93,6 +93,17 @@ import static am.ik.yavi.core.ViolationMessage.Default.CHAR_SEQUENCE_UUID;
  * {@link #notBlank()} reports a {@code null} value as a violation.
  * </p>
  *
+ * <p>
+ * An empty value is valid for every constraint of a format: {@link #email()},
+ * {@link #url()}, {@link #uri()}, {@link #ip()}, {@link #ipv4()}, {@link #ipv6()},
+ * {@link #uuid()}, {@link #ulid()}, {@link #luhn()}, {@link #isoLocalDate()},
+ * {@link #localDate(String)} and the representations of a number ({@link #isInteger()}
+ * and the like). A format tells what a given text must look like, not that a text is
+ * given, so an optional text has the same constraints whether it is left out as
+ * {@code null} or as {@code ""}; {@code notEmpty()} or {@link #notBlank()} requires it.
+ * {@link #pattern(String)} is not a format: the regular expression decides.
+ * </p>
+ *
  * <pre>{@code
  * Validator<Car> validator = ValidatorBuilder.<Car>of()
  *     ._string(Car::licensePlate, "licensePlate", c -> c.notBlank().lessThanOrEqual(14))
@@ -351,6 +362,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	private CharSequenceConstraint<T, E> isLocalDatePattern(String pattern) {
 		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
 			try {
 				DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT).parse(x);
 				return true;
@@ -482,7 +496,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	/**
 	 * Requires the value to be a local date in the format {@code uuuu-MM-dd}, resolved
-	 * with {@link ResolverStyle#STRICT}.
+	 * with {@link ResolverStyle#STRICT}. An empty value is valid.
 	 *
 	 * <p>
 	 * A violation is reported with the message key {@code charSequence.localdate}, where
@@ -497,7 +511,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	/**
 	 * Requires the value to be a valid local date for the given {@link DateTimeFormatter}
-	 * pattern, resolved with {@link ResolverStyle#STRICT}.
+	 * pattern, resolved with {@link ResolverStyle#STRICT}. An empty value is valid.
 	 *
 	 * <p>
 	 * The formatter is created each time a value is validated. A violation is reported
@@ -612,9 +626,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * Requires the value to be an IPv4 address in dotted decimal notation. Unlike
-	 * {@link #email()}, an empty value is not valid. See
-	 * {@link InetAddressUtils#isIpv4(String)} for the accepted form.
+	 * Requires the value to be an IPv4 address in dotted decimal notation. An empty value
+	 * is valid. See {@link InetAddressUtils#isIpv4(String)} for the accepted form.
 	 *
 	 * <p>
 	 * A violation is reported with the message key {@code charSequence.ipv4}.
@@ -624,14 +637,14 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv4() {
 		this.predicates()
-			.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv4(x.toString()), CHAR_SEQUENCE_IPV4,
-					() -> new Object[] {}, VALID));
+			.add(ConstraintPredicate.of(x -> size().applyAsInt(x) == 0 || InetAddressUtils.isIpv4(x.toString()),
+					CHAR_SEQUENCE_IPV4, () -> new Object[] {}, VALID));
 		return this;
 	}
 
 	/**
 	 * Requires the value to be an IP address of either version, that is to satisfy
-	 * {@link #ipv4()} or {@link #ipv6()}. An empty value is not valid.
+	 * {@link #ipv4()} or {@link #ipv6()}. An empty value is valid.
 	 *
 	 * <p>
 	 * A violation is reported with the message key {@code charSequence.ip}.
@@ -641,6 +654,9 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ip() {
 		this.predicates().add(ConstraintPredicate.of(x -> {
+			if (size().applyAsInt(x) == 0) {
+				return true;
+			}
 			final String address = x.toString();
 			return InetAddressUtils.isIpv4(address) || InetAddressUtils.isIpv6(address);
 		}, CHAR_SEQUENCE_IP, () -> new Object[] {}, VALID));
@@ -648,7 +664,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	}
 
 	/**
-	 * Requires the value to be an IPv6 address. An empty value is not valid. See
+	 * Requires the value to be an IPv6 address. An empty value is valid. See
 	 * {@link InetAddressUtils#isIpv6(String)} for the accepted forms, including the zone
 	 * id and the prefix length.
 	 *
@@ -660,8 +676,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> ipv6() {
 		this.predicates()
-			.add(ConstraintPredicate.of(x -> InetAddressUtils.isIpv6(x.toString()), CHAR_SEQUENCE_IPV6,
-					() -> new Object[] {}, VALID));
+			.add(ConstraintPredicate.of(x -> size().applyAsInt(x) == 0 || InetAddressUtils.isIpv6(x.toString()),
+					CHAR_SEQUENCE_IPV6, () -> new Object[] {}, VALID));
 		return this;
 	}
 
@@ -785,8 +801,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 
 	/**
 	 * Requires the value to pass the Luhn check, which is used for credit card numbers.
-	 * The value must consist of decimal digits; an empty value or a value with any other
-	 * character is not valid.
+	 * The value must consist of decimal digits; a value with any other character is not
+	 * valid. An empty value is valid.
 	 *
 	 * <p>
 	 * A violation is reported with the message key {@code charSequence.luhn}.
@@ -796,8 +812,8 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> luhn() {
 		this.predicates()
-			.add(ConstraintPredicate.of(CharSequenceConstraint::luhnCheck, CHAR_SEQUENCE_LUHN, () -> new Object[] {},
-					VALID));
+			.add(ConstraintPredicate.of(x -> size().applyAsInt(x) == 0 || luhnCheck(x), CHAR_SEQUENCE_LUHN,
+					() -> new Object[] {}, VALID));
 		return this;
 	}
 
