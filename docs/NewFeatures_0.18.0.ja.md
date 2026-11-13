@@ -425,6 +425,12 @@ Spring MVC が `BindingResult` を用意するのは、自身がバインドし�
 @Controller
 class SignupController {
 
+    static final ValueValidator<Map<String, List<String>>, Signup> signupValidator = Yavi.schema()
+            ._integer("age")
+            ._boolean("subscribed").defaultValue(false)
+            .fromMap(Signup::new)
+            .readingParameters(StringCoercion.strict().trimming().booleanWords());
+
     @ModelAttribute
     void signupForm(@RequestParam Map<String, String> params, Model model) {
         model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
@@ -436,7 +442,7 @@ class SignupController {
     }
 
     @PostMapping("/signup")
-    String signup(@RequestParam Map<String, String> params, BindingResult result) {
+    String signup(@RequestParam MultiValueMap<String, String> params, BindingResult result) {
         return switch (signupValidator.validate(params)) {
             case Validated.Valid<Signup>(Signup signup) -> {
                 register(signup);
@@ -467,7 +473,8 @@ class SignupController {
 * フィールドエラーのコードはメッセージキー（`object.type`）なので、これまでどおり `MessageSource` でメッセージを差し替えられます。
 * Thymeleaf はチェックボックスに隠しフィールド `_subscribed` を追加します。このキーに対応するプロパティは定義されていないので、このようなフォームは `rejectingUnknownProperties()` を付けたバリデータでは読めません。
 * フィールドの名前は、`th:field` が出力する形（`address.city`、`items[0].name`）にします。この形が違反の名前であり、`MapBindingResult` が値を引くキーでもあるからです。`address[city]` の形で送信された値は、検証はされますが再表示されません。
-* `Map<String, String>` は、キーの最初の値しか持ちません。チェックボックスのように複数の値を持つキー（`tags=a&tags=b`）がある場合は、そのキーの値をリストで持つマップを `MapBindingResult` に渡します。そうしないと、最初のチェックボックスしか再びチェックされません。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
+* ハンドラは `MultiValueMap` を検証します。そのため、1 つのキーに複数の値があれば、リストとして読まれるか、スカラーのプロパティでは `object.type` で報告されます。`Map<String, String>` で受けると、最初の値以外は捨てられます。
+* `@ModelAttribute` メソッドは `Map<String, String>` で受けます。`MultiValueMap` を渡すと、テキストフィールドに値のリストが `[30]` のように表示されるからです。チェックボックスのように複数の値を持つキー（`tags=a&tags=b`）がある場合は、そのキーの値をリストで持つマップを `MapBindingResult` に渡します。そうしないと、最初のチェックボックスしか再びチェックされません。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
 
 ## 結果を扱う
 

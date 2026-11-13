@@ -498,6 +498,12 @@ No library is needed.
 @Controller
 class SignupController {
 
+    static final ValueValidator<Map<String, List<String>>, Signup> signupValidator = Yavi.schema()
+            ._integer("age")
+            ._boolean("subscribed").defaultValue(false)
+            .fromMap(Signup::new)
+            .readingParameters(StringCoercion.strict().trimming().booleanWords());
+
     @ModelAttribute
     void signupForm(@RequestParam Map<String, String> params, Model model) {
         model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
@@ -509,7 +515,7 @@ class SignupController {
     }
 
     @PostMapping("/signup")
-    String signup(@RequestParam Map<String, String> params, BindingResult result) {
+    String signup(@RequestParam MultiValueMap<String, String> params, BindingResult result) {
         return switch (signupValidator.validate(params)) {
             case Validated.Valid<Signup>(Signup signup) -> {
                 register(signup);
@@ -548,10 +554,14 @@ class SignupController {
 * Name a field as `th:field` does: `address.city`, `items[0].name`. These are the names
   of the violations and the keys that `MapBindingResult` looks up. A value sent as
   `address[city]` is validated, but it is not shown again.
-* A `Map<String, String>` has only the first value of a key. For a key with several
-  values, such as checkboxes (`tags=a&tags=b`), give `MapBindingResult` a map that has
-  the list of the values for that key, or only the first checkbox is checked again. The
-  violation of an element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
+* The handler validates a `MultiValueMap`, so several values for one key are a list, or
+  `object.type` for a scalar property. A `Map<String, String>` would drop all but the
+  first.
+* The `@ModelAttribute` method takes a `Map<String, String>`, because a text field shows
+  the list of a `MultiValueMap` as `[30]`. For a key with several values, such as
+  checkboxes (`tags=a&tags=b`), give `MapBindingResult` a map that has the list of the
+  values for that key, or only the first checkbox is checked again. The violation of an
+  element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
 
 ## Handling the result
 
