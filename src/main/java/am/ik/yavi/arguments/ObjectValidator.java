@@ -18,8 +18,9 @@ import org.jspecify.annotations.Nullable;
  * {@link am.ik.yavi.builder.ObjectValidatorBuilder}, which applies a
  * {@link am.ik.yavi.constraint.ObjectConstraint} under a given name. Violations carry
  * that name and the message key of the violated constraint, for example
- * {@code object.notNull}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code object.notNull}. A {@code null} value is a violation: the one of a constraint
+ * that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * The mapper passed to the constructor or to the builder's {@code build(Function)} method
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the value produced from the validated input
  * @since 0.8.0
  */
-public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
+public class ObjectValidator<X, T extends @Nullable Object> extends DefaultArguments1Validator<X, T> {
 
 	/**
 	 * Returns a new validator that applies the given function to the result of this
@@ -44,7 +45,7 @@ public class ObjectValidator<X, T> extends DefaultArguments1Validator<X, T> {
 	private final @Nullable Class<X> type;
 
 	@Override
-	public <T2> ObjectValidator<X, T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2 extends @Nullable Object> ObjectValidator<X, T2> map(Function<? super T, ? extends T2> mapper) {
 		final Function1<X, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
 		return new ObjectValidator<>(super.validator, mapped, this.type, super.transform);
 	}

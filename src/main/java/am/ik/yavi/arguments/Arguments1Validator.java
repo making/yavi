@@ -21,6 +21,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -29,8 +30,12 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Validation is applicative: all violations are accumulated in the returned
  * {@link Validated} instead of stopping at the first one, and a value is produced only
- * when every constraint succeeds. A {@code null} argument is accepted unless a configured
- * constraint rejects it (for example {@code notNull()}); see
+ * when every constraint succeeds. Whether a {@code null} argument is accepted depends on
+ * how the validator is built: an argument added to the builders of
+ * {@code Yavi.arguments()} is required unless it is made {@code nullable()} or
+ * {@code optional()}, and a validator built with
+ * {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} accepts {@code null} unless a
+ * configured constraint rejects it (for example {@code notNull()}); see
  * {@link am.ik.yavi.core.NullAs}.
  *
  * <p>
@@ -47,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * @since 0.3.0
  */
 @FunctionalInterface
-public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
+public interface Arguments1Validator<A1, X extends @Nullable Object> extends ValueValidator<A1, X> {
 
 	/**
 	 * Returns an {@link Arguments1Validator} that validates the argument with the given
@@ -70,7 +75,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @return an arguments1 validator for the given value validator
 	 * @since 0.8.0
 	 */
-	static <A1, X> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
+	static <A1, X extends @Nullable Object> Arguments1Validator<A1, X> from(ValueValidator<A1, X> valueValidator) {
 		return new Arguments1Validator<A1, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -107,7 +112,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @return arguments1 validator that takes an A1 directly
 	 * @since 0.16.0
 	 */
-	static <A1, X> Arguments1Validator<A1, X> unwrap(Arguments1Validator<Arguments1<A1>, X> validator) {
+	static <A1, X extends @Nullable Object> Arguments1Validator<A1, X> unwrap(
+			Arguments1Validator<Arguments1<A1>, X> validator) {
 		return new Arguments1Validator<A1, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -178,7 +184,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 */
 	@Override
 	@Deprecated
-	default <X2> Arguments1Validator<A1, X2> andThen(Function<? super X, ? extends X2> mapper) {
+	default <X2 extends @Nullable Object> Arguments1Validator<A1, X2> andThen(
+			Function<? super X, ? extends X2> mapper) {
 		return this.map(mapper);
 	}
 
@@ -191,7 +198,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.17.0
 	 */
 	@Override
-	default <X2> Arguments1Validator<A1, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
+	default <X2 extends @Nullable Object> Arguments1Validator<A1, X2> map(Function<? super X, ? extends X2> mapper) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
 			public Validated<X2> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -234,7 +241,8 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @since 0.11.0
 	 */
 	@Override
-	default <X2> Arguments1Validator<A1, X2> andThen(ValueValidator<? super X, X2> validator) {
+	default <X2 extends @Nullable Object> Arguments1Validator<A1, X2> andThen(
+			ValueValidator<? super @NonNull X, X2> validator) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
 			public Validated<X2> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -286,7 +294,38 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	@Override
 	default Arguments1Validator<A1, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-		return this.andThen(ValueValidator.<X>passThrough().constraintOnTarget(predicate, name, violationMessage));
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return Arguments1Validator.this.validate(a1, locale, constraintContext)
+					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale));
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return Arguments1Validator.this.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
+						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return Arguments1Validator.this.description();
+			}
+
+			@Override
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return Arguments1Validator.this.readingWith(reader)
+					.constraintOnTarget(predicate, name, violationMessage);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return Arguments1Validator.this.preprocess(transform)
+					.constraintOnTarget(predicate, name, violationMessage);
+			}
+		};
 	}
 
 	/**
@@ -412,7 +451,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @return an arguments2 splitting instance
 	 * @since 0.7.0
 	 */
-	default <A2, Y> Arguments2Splitting<A1, A2, X, Y> split(ValueValidator<A2, Y> validator) {
+	default <A2, Y extends @Nullable Object> Arguments2Splitting<A1, A2, X, Y> split(ValueValidator<A2, Y> validator) {
 		return new Arguments2Splitting<>(this, validator);
 	}
 
@@ -428,7 +467,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @return an arguments2 combining instance
 	 * @since 0.7.0
 	 */
-	default <Y> Arguments2Combining<A1, X, Y> combine(ValueValidator<A1, Y> validator) {
+	default <Y extends @Nullable Object> Arguments2Combining<A1, X, Y> combine(ValueValidator<A1, Y> validator) {
 		return new Arguments2Combining<>(this, validator);
 	}
 
@@ -477,7 +516,7 @@ public interface Arguments1Validator<A1, X> extends ValueValidator<A1, X> {
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Optional<A1>, Optional<X>> liftOptional() {
+	default Arguments1Validator<Optional<A1>, Optional<@NonNull X>> liftOptional() {
 		return Arguments1Validator.from(ValueValidator.super.liftOptional());
 	}
 

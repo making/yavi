@@ -38,19 +38,19 @@ import org.jspecify.annotations.Nullable;
  * <pre>{@code
  * MapInputValidator<User> validator = Yavi.arguments()
  *     ._string("email", c -> c.notBlank().email())
- *     ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+  *     ._integer("age", c -> c.greaterThanOrEqual(0))
  *     ._string("nickname").optional()
  *     .fromMap(User::new);
  * Validated<User> validated = validator.validate(map);
  * }</pre>
  *
  * <ul>
- * <li>A key that is absent is validated like {@code null}, so a property that accepts
- * {@code null} may be omitted and {@code optional()}, {@code nullable()} and
- * {@code defaultValue} apply to it. If the property does not accept {@code null}, the
- * absent key is reported with the message key {@code object.required} instead of the
- * violations for {@code null}. An explicit {@code null} is reported by the constraints of
- * the property, for example {@code object.notNull}.</li>
+ * <li>A property is required unless {@code optional()}, {@code nullable()} or
+ * {@code defaultValue} is applied to it. A key that is absent is validated like
+ * {@code null}, so such a property may be omitted. The absent key of a required property
+ * is reported with the message key {@code object.required} instead of the violations for
+ * {@code null}, and an explicit {@code null} with the violation of a constraint that
+ * rejects it, or else {@code object.notNull}.</li>
  * <li>A property added with {@code presence()} of the builders tells an absent key from
  * {@code null}, which a partial update such as a PATCH request needs: an absent key is
  * {@link Presence.Absent} and is not validated, and a key that is present is validated,
@@ -72,7 +72,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <pre>{@code
  * MapInputValidator<Employee> validator = Yavi.arguments()
- *     ._integer("id", c -> c.notNull())
+ *     ._integer("id")
  *     ._embedded(userNameValidator) // first_name, last_name
  *     ._embedded(departmentValidator).nullable() // dept_name, dept_code
  *     .fromMap(Employee::new);
@@ -128,7 +128,7 @@ import org.jspecify.annotations.Nullable;
  * @since 0.18.0
  * @see DiscriminatedUnionValidator
  */
-public final class MapInputValidator<X> implements ValueValidator<Map<String, Object>, X> {
+public final class MapInputValidator<X extends @Nullable Object> implements ValueValidator<Map<String, Object>, X> {
 
 	private final List<Part<?>> parts;
 
@@ -156,7 +156,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 *
 	 * @param <R> the type of the validated value
 	 */
-	public sealed interface Part<R> {
+	public sealed interface Part<R extends @Nullable Object> {
 
 		/**
 		 * Returns the validator of the part.
@@ -176,7 +176,8 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * {@link ValueValidator#readingWith(InputReader)})
 	 * @param <R> the type of the validated value
 	 */
-	public record Property<R> (String name, ValueValidator<Object, R> validator) implements Part<R> {
+	public record Property<R extends @Nullable Object> (String name,
+			ValueValidator<Object, R> validator) implements Part<R> {
 	}
 
 	/**
@@ -205,7 +206,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * embedded, as {@link MapInputValidator} states
 	 * @param <R> the type of the validated value
 	 */
-	public record Embedded<R> (ValueValidator<Object, R> validator) implements Part<R> {
+	public record Embedded<R extends @Nullable Object> (ValueValidator<Object, R> validator) implements Part<R> {
 	}
 
 	/**
@@ -216,7 +217,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * values
 	 * @param <R> the type of the validated value
 	 */
-	public record Rest<R> (ValueValidator<Object, R> validator) implements Part<R> {
+	public record Rest<R extends @Nullable Object> (ValueValidator<Object, R> validator) implements Part<R> {
 	}
 
 	/**
@@ -233,7 +234,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * @throws IllegalStateException if a part is the rest and an embedded validator does
 	 * not describe its properties
 	 */
-	public static <X> MapInputValidator<X> of(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> MapInputValidator<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
 		return new MapInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
 				false);
@@ -256,7 +257,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	 * @throws IllegalArgumentException as {@link #of} does
 	 * @since 0.18.0
 	 */
-	public static <X> MapInputValidator<X> flatOf(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> MapInputValidator<X> flatOf(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
 		return new MapInputValidator<>(List.copyOf(parts), mapper, false);
 	}

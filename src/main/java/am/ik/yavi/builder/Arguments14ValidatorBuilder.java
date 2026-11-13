@@ -52,6 +52,8 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function14;
 import am.ik.yavi.input.MapInputValidator;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Builds an {@link Arguments14Validator} by adding one validated argument at a time.
@@ -67,10 +69,16 @@ import am.ik.yavi.input.MapInputValidator;
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name. {@code optional()}, {@code nullable()}
- * and {@code defaultValue} apply to the last added argument and make it accept
- * {@code null}; {@code recover} makes it accept any value, and {@code presence()} tells
- * an absent value from {@code null}.
+ * violations are located under the argument name.
+ *
+ * <p>
+ * An argument is required: {@code null} is a violation, and the validated value is given
+ * to the function with a type that is not nullable. {@code optional()},
+ * {@code nullable()} and {@code defaultValue} apply to the last added argument and make
+ * it accept {@code null}, which changes the type of its validated value to
+ * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
+ * {@code recover} makes it accept any value, and {@code presence()} tells an absent value
+ * from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -111,7 +119,7 @@ import am.ik.yavi.input.MapInputValidator;
  * @param <R14> type of the validated value of argument at position 14
  * @since 0.14.0
  */
-public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> permits Arguments14ValidatorBuilder.Modifiable {
+public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object> permits Arguments14ValidatorBuilder.Modifiable {
 
 	final ArgumentDefinition<A1, R1> d1;
 
@@ -174,7 +182,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _bigDecimal(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _bigDecimal(
 			ValueValidator<BigDecimal, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -188,7 +196,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BigDecimalConstraint}, for example {@code numeric.greaterThan}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -207,7 +216,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -230,7 +239,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _bigInteger(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _bigInteger(
 			ValueValidator<BigInteger, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -244,7 +253,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BigIntegerConstraint}, for example {@code numeric.greaterThan}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -263,7 +273,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -286,7 +296,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _boolean(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _boolean(
 			ValueValidator<Boolean, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -300,7 +310,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BooleanConstraint}, for example {@code boolean.isTrue}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -318,7 +329,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Boolean} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -340,7 +351,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _double(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _double(
 			ValueValidator<Double, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -354,7 +365,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link DoubleConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -372,7 +384,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Double} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -395,7 +407,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _enum(
 			ValueValidator<E, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -408,8 +420,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 *
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is
-	 * accepted unless the constraints require otherwise.
+	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is a
+	 * violation: the one of a constraint that rejects it, or else {@code object.notNull}.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
@@ -427,7 +439,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as an enum constant with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name recorded for the argument
@@ -467,7 +479,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted.
+	 * Without constraints every value other than {@code null} is accepted.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name recorded for the argument
 	 * @param type the enum type of the argument
@@ -491,7 +503,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _float(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _float(
 			ValueValidator<Float, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -505,7 +517,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link FloatConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -522,7 +535,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Float} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -545,7 +558,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _instant(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _instant(
 			ValueValidator<Instant, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -559,7 +572,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link InstantConstraint}, for example {@code temporal.past}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -578,7 +592,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -601,7 +615,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _integer(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _integer(
 			ValueValidator<Integer, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -615,7 +629,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link IntegerConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -634,7 +649,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -657,7 +672,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -671,7 +686,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -690,7 +706,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -713,7 +729,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localTime(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localTime(
 			ValueValidator<LocalTime, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -727,7 +743,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -746,7 +763,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -769,7 +786,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localDate(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _localDate(
 			ValueValidator<LocalDate, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -783,7 +800,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalDateConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -802,7 +820,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -824,7 +842,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _long(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _long(
 			ValueValidator<Long, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -838,7 +856,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LongConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -855,7 +874,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Long} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -878,7 +897,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T2> _object(
 			ValueValidator<T1, T2> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -891,7 +910,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ObjectConstraint}, for example {@code object.notNull}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param <T> type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
@@ -909,7 +929,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as an object with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param <T> type of the argument
 	 * @param name the property name recorded for the argument
@@ -949,7 +969,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted.
+	 * Without constraints every value other than {@code null} is accepted.
 	 * @param <T> type of the argument
 	 * @param name the property name recorded for the argument
 	 * @param type the type of the argument
@@ -974,7 +994,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -988,7 +1008,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link OffsetDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1007,7 +1028,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1029,7 +1050,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _short(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _short(
 			ValueValidator<Short, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1043,7 +1064,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ShortConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1060,7 +1082,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Short} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1082,7 +1104,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _string(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _string(
 			ValueValidator<String, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1096,7 +1118,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link CharSequenceConstraint}, for example {@code charSequence.notBlank}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 *
 	 * <p>
 	 * The value can be transformed before it is constrained with the transforms of
@@ -1120,7 +1143,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code String} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1143,7 +1166,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _yearMonth(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _yearMonth(
 			ValueValidator<YearMonth, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1157,7 +1180,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link YearMonthConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1176,7 +1200,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1198,7 +1222,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _year(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _year(
 			ValueValidator<Year, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1212,7 +1236,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link YearConstraint}, for example {@code temporal.past}. A {@code null} value is
-	 * accepted unless the constraints require otherwise.
+	 * a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1229,7 +1254,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Adds the next argument as a {@code Year} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1252,7 +1277,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1266,7 +1291,8 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ZonedDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1285,7 +1311,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1313,7 +1339,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T2> _object(
 			String name, ValueValidator<T1, T2> validator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1338,7 +1364,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, List<T>> _list(
+	public <E, T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, List<T>> _list(
 			String name, ValueValidator<E, T> elementValidator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1365,7 +1391,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, List<T>> _list(
+	public <E, T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, List<T>> _list(
 			String name, ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
@@ -1391,7 +1417,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1408,7 +1434,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * is valid, and their violations are reported on {@code name}.
 	 *
 	 * <pre>{@code
-	 * ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
+	 * ._map("prices", Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
 	 * }</pre>
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
@@ -1418,7 +1444,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments15ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new Arguments15ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
@@ -1442,7 +1468,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _embedded(
+	public <T extends @Nullable Object> Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, T> _embedded(
 			ValueValidator<? super Map<String, Object>, T> validator) {
 		return new Arguments15ValidatorBuilder.Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1465,7 +1491,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments15ValidatorBuilder.Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14,
@@ -1479,7 +1505,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, Object>> _rest() {
+	public Arguments15ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, Map<String, @Nullable Object>> _rest() {
 		return new Arguments15ValidatorBuilder.Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14, ArgumentDefinition.rest());
 	}
@@ -1498,7 +1524,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a new arguments validator
 	 * @since 0.14.0
 	 */
-	public <X> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> apply(
+	public <X extends @Nullable Object> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> apply(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends X> f) {
 		return ArgumentsValidators
 			.split(this.d1.validator(), this.d2.validator(), this.d3.validator(), this.d4.validator(),
@@ -1527,7 +1553,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a new arguments validator
 	 * @since 0.18.0
 	 */
-	public <X> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> flatApply(
+	public <X extends @Nullable Object> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> flatApply(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends Validated<? extends X>> f) {
 		return ArgumentsValidators
 			.split(this.d1.validator(), this.d2.validator(), this.d3.validator(), this.d4.validator(),
@@ -1568,7 +1594,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X> MapInputValidator<X> fromMap(
+	public <X extends @Nullable Object> MapInputValidator<X> fromMap(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends X> f) {
 		return MapInputValidator.of(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
@@ -1603,7 +1629,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X> MapInputValidator<X> flatFromMap(
+	public <X extends @Nullable Object> MapInputValidator<X> flatFromMap(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends Validated<? extends X>> f) {
 		return MapInputValidator.flatOf(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
@@ -1637,7 +1663,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 * @see ValueValidator#readingWith(InputReader)
 	 */
-	public <N, X> ValueValidator<N, X> from(InputReader<N> reader,
+	public <N, X extends @Nullable Object> ValueValidator<N, X> from(InputReader<N> reader,
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends X> f) {
 		return this.<X>fromMap(f).readingWith(reader);
 	}
@@ -1675,7 +1701,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R14> type of the validated value of argument at position 14
 	 * @since 0.18.0
 	 */
-	public static sealed class Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14>
+	public static sealed class Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object>
 			extends
 			Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14>permits Keyed {
 
@@ -1698,7 +1724,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#optional()
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Optional<R14>> optional() {
+		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Optional<@NonNull R14>> optional() {
 			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13, this.d14.asOptional());
 		}
@@ -1710,12 +1736,14 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * <p>
 		 * A {@code null} value succeeds with {@code null} and the constraints of the
 		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
-		 * validated as before.
+		 * validated as before. The type of the validated value becomes nullable, so a
+		 * nullness checker requires the function given to {@code apply} to accept
+		 * {@code null} for this argument.
 		 * @return a builder whose last argument accepts {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#nullable()
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> nullable() {
+		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, @Nullable R14> nullable() {
 			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13, this.d14.asNullable());
 		}
@@ -1813,7 +1841,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R14> type of the validated value of argument at position 14
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14>
+	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object>
 			extends
 			Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> {
 
@@ -1826,13 +1854,13 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Optional<R14>> optional() {
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Optional<@NonNull R14>> optional() {
 			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13, this.d14.asOptional());
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> nullable() {
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, @Nullable R14> nullable() {
 			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13, this.d14.asNullable());
 		}
@@ -1867,10 +1895,9 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and
 		 * the argument is not validated, so the key is not required. A key that is
 		 * present is validated as before, an explicit {@code null} included, and its
-		 * value is given as {@link Presence#ofNullable(Object)}: the argument still
-		 * decides whether {@code null} is accepted, with {@code notNull()} or
-		 * {@code nullable()}. A parameter with an empty value, which is read as
-		 * {@code null}, is present.
+		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
+		 * is a violation unless the argument is {@code nullable()}. A parameter with an
+		 * empty value, which is read as {@code null}, is present.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
@@ -1882,7 +1909,7 @@ public sealed class Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Presence<A14>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Presence<R14>> presence() {
+		public Arguments14ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Presence<A14>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Presence<@NonNull R14>> presence() {
 			return new Arguments14ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14.withPresence());
 		}

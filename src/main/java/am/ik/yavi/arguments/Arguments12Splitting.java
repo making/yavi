@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function12;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 12 validators that validate distinct arguments into a validator for those
@@ -48,7 +49,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R12> the type of the value produced for the argument at position 12
  * @since 0.7.0
  */
-public class Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+public class Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -135,7 +136,7 @@ public class Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 12 arguments
 	 */
-	public <X> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> apply(
+	public <X extends @Nullable Object> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> apply(
 			Function12<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? extends X> f) {
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale, constraintContext) -> Validations.apply(
@@ -172,7 +173,7 @@ public class Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 * @param <R13> the type of the value produced for the argument at position 13
 	 * @return an arguments13 splitting instance
 	 */
-	public <A13, R13> Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> split(
+	public <A13, R13 extends @Nullable Object> Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> split(
 			ValueValidator<? super A13, ? extends R13> v13) {
 		return new Arguments13Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13);
 	}

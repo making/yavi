@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.jspecify.annotations.Nullable;
 
 public class ValidatorBuilderTest {
 
@@ -283,7 +284,7 @@ public class ValidatorBuilderTest {
 	@Test
 	void conditionalValueValidators() {
 		ConstraintGroup group = ConstraintGroup.of("JP");
-		ValueValidator<String, String> passThrough = ValueValidator.passThrough();
+		ValueValidator<String, @Nullable String> passThrough = ValueValidator.passThrough();
 		ValueValidator<String, String> validator = ValidatorBuilder.<String>of()
 			.constraintOnCondition((String address, ConstraintContext c) -> !"JP".equalsIgnoreCase(c.name()),
 					passThrough)

@@ -51,12 +51,12 @@ final class UntypedInput {
 	 * to the given type and passes it to the given validator. A null node is passed as
 	 * {@code null}. It keeps the description of the given validator.
 	 */
-	static <N, T, X> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
+	static <N, T, X extends @Nullable Object> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
 			ValueValidator<T, X> validator) {
 		return new Checked<>(reader, type, validator);
 	}
 
-	private record Checked<N, T, X> (InputReader<N> reader, Class<T> type,
+	private record Checked<N, T, X extends @Nullable Object> (InputReader<N> reader, Class<T> type,
 			ValueValidator<T, X> validator) implements ValueValidator<N, X> {
 
 		@Override

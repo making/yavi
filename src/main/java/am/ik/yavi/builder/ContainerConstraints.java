@@ -36,13 +36,13 @@ record ContainerConstraints<C> (@Nullable ValueValidator<C, C> validator, List<C
 		return new ContainerConstraints<>(null, List.of());
 	}
 
-	static <T> ContainerConstraints<List<T>> ofList(
+	static <T extends @Nullable Object> ContainerConstraints<List<T>> ofList(
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
 		return of(ValidatorBuilder.<Arguments1<List<T>>>of().constraint(Arguments1::arg1, "", constraints).build(),
 				List.of());
 	}
 
-	static <V> ContainerConstraints<Map<String, V>> ofMap(
+	static <V extends @Nullable Object> ContainerConstraints<Map<String, V>> ofMap(
 			Function<MapConstraint<Arguments1<Map<String, V>>, String, V>, MapConstraint<Arguments1<Map<String, V>>, String, V>> constraints) {
 		return of(
 				ValidatorBuilder.<Arguments1<Map<String, V>>>of().constraint(Arguments1::arg1, "", constraints).build(),

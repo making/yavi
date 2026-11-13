@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.fn;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Combines validation results and applies a function to their values in applicative
  * style.
@@ -30,7 +32,7 @@ package am.ik.yavi.fn;
  * @param <T8> the value type of validation 8
  * @since 0.6.0
  */
-public class Combining8<E, T1, T2, T3, T4, T5, T6, T7, T8> {
+public class Combining8<E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object> {
 
 	/**
 	 * The validation at position 1 of this combination.
@@ -108,7 +110,8 @@ public class Combining8<E, T1, T2, T3, T4, T5, T6, T7, T8> {
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public <R, V extends Validation<E, R>> V apply(Function8<T1, T2, T3, T4, T5, T6, T7, T8, R> f) {
+	public <R extends @Nullable Object, V extends Validation<E, R>> V apply(
+			Function8<T1, T2, T3, T4, T5, T6, T7, T8, R> f) {
 		final Validation<E, Function1<T2, Function1<T3, Function1<T4, Function1<T5, Function1<T6, Function1<T7, Function1<T8, R>>>>>>>> apply1 = v1
 			.apply(Validation.success(Functions.curry(f)));
 		final Validation<E, Function1<T3, Function1<T4, Function1<T5, Function1<T6, Function1<T7, Function1<T8, R>>>>>>> apply2 = v2
@@ -129,7 +132,8 @@ public class Combining8<E, T1, T2, T3, T4, T5, T6, T7, T8> {
 	 * @param <T9> the value type of the added validation
 	 * @return the combination of 9 validations
 	 */
-	public <T9> Combining9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> combine(Validation<E, T9> v9) {
+	public <T9 extends @Nullable Object> Combining9<E, T1, T2, T3, T4, T5, T6, T7, T8, T9> combine(
+			Validation<E, T9> v9) {
 		return new Combining9<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}
 

@@ -48,7 +48,7 @@ class ValidatedTest {
 					.forEach(Item::tags, "tags", t -> t._string(tag -> tag, "", c -> c.notBlank())))
 		.build();
 
-	static <T> String describe(Validated<T> validated) {
+	static <T extends @Nullable Object> String describe(Validated<T> validated) {
 		return switch (validated) {
 			case Validated.Valid<T>(var value) -> "valid " + value;
 			case Validated.Invalid<T>(var violations) -> "invalid " + violations.size();
@@ -61,7 +61,7 @@ class ValidatedTest {
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value()).isEqualTo("OK");
 		assertThat(describe(validated)).isEqualTo("valid OK");
-		assertThat(describe(Validated.<String>successWith(null))).isEqualTo("valid null");
+		assertThat(describe(Validated.<@Nullable String>successWith(null))).isEqualTo("valid null");
 	}
 
 	@Test

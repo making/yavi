@@ -34,9 +34,12 @@ import org.jspecify.annotations.Nullable;
  * checked on the validated elements or values, whose number is the one of the input.
  *
  * <p>
- * In YAVI a value accepts {@code null} unless a constraint rejects it;
- * {@link #acceptsNull()} tells whether the described input does, and
- * {@link #acceptsAbsent()} whether a property with the described value may be omitted.
+ * A described value accepts {@code null} unless a constraint rejects it. A validator of a
+ * single value requires the value, so it is described with the constraint
+ * {@code object.notNull} if no other constraint rejects {@code null}, and one that
+ * accepts {@code null} is described as {@link Optional}. {@link #acceptsNull()} tells
+ * whether the described input accepts {@code null}, and {@link #acceptsAbsent()} whether
+ * a property with the described value may be omitted.
  *
  * @since 0.18.0
  * @see ConstraintDescription

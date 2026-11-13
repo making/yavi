@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -55,7 +56,7 @@ import org.jspecify.annotations.Nullable;
  * @see Validation
  * @see ConstraintViolations
  */
-public sealed interface Validated<T> extends Validation<ConstraintViolation, T> {
+public sealed interface Validated<T extends @Nullable Object> extends Validation<ConstraintViolation, T> {
 
 	/**
 	 * A successful validation result.
@@ -65,16 +66,11 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @param <T> value type
 	 * @since 0.18.0
 	 */
-	record Valid<T> (T value) implements Validated<T> {
+	record Valid<T extends @Nullable Object> (T value) implements Validated<T> {
 
 		@Override
 		public boolean isValid() {
 			return true;
-		}
-
-		@Override
-		public @Nullable T valueNullable() {
-			return this.value;
 		}
 
 		@Override
@@ -91,7 +87,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @param <T> value type in the case of success
 	 * @since 0.18.0
 	 */
-	record Invalid<T> (ConstraintViolations errors) implements Validated<T> {
+	record Invalid<T extends @Nullable Object> (ConstraintViolations errors) implements Validated<T> {
 
 		/**
 		 * Creates a failed validation result. The violations are wrapped as an
@@ -115,11 +111,6 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 			throw new NoSuchElementException("value of 'Invalid' does not exist. Errors=" + this.errors);
 		}
 
-		@Override
-		public @Nullable T valueNullable() {
-			return this.value();
-		}
-
 	}
 
 	/**
@@ -130,27 +121,25 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @return the validation result as a {@code Validated}
 	 */
 	@SuppressWarnings("unchecked")
-	static <T> Validated<T> of(Validation<ConstraintViolation, ? extends T> delegate) {
+	static <T extends @Nullable Object> Validated<T> of(Validation<ConstraintViolation, ? extends T> delegate) {
 		if (delegate instanceof Validated) {
 			return ((Validated<T>) delegate);
 		}
-		return delegate.isValid() ? successWith(delegate.valueNullable()) : failureWith(delegate.errors());
+		return delegate.isValid() ? successWith(delegate.value()) : failureWith(delegate.errors());
 	}
 
 	/**
 	 * Returns a successful validation result that holds the given value.
 	 *
 	 * <p>
-	 * The value may be {@code null}. In that case {@link #isValid()} returns {@code true}
-	 * and both {@link #value()} and {@link #valueNullable()} return {@code null}.
+	 * The value may be {@code null} if the value type {@code T} is nullable. In that case
+	 * {@link #isValid()} returns {@code true} and {@link #value()} returns {@code null}.
 	 * @param value the value produced by the successful validation
 	 * @param <T> value type in the case of success
 	 * @return a successful validation result
 	 * @since 0.12.0
 	 */
-	// A successful validation may hold null; T does not express that.
-	@SuppressWarnings("NullAway")
-	static <T> Validated<T> successWith(@Nullable T value) {
+	static <T extends @Nullable Object> Validated<T> successWith(T value) {
 		return new Valid<>(value);
 	}
 
@@ -163,7 +152,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @throws IllegalArgumentException if {@code errors} is empty
 	 * @since 0.12.0
 	 */
-	static <T> Validated<T> failureWith(List<ConstraintViolation> errors) {
+	static <T extends @Nullable Object> Validated<T> failureWith(List<ConstraintViolation> errors) {
 		return new Invalid<>(ConstraintViolations.of(errors));
 	}
 
@@ -175,7 +164,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @throws IllegalArgumentException if {@code errors} is empty
 	 * @since 0.12.0
 	 */
-	static <T> Validated<T> failureWith(ConstraintViolation... errors) {
+	static <T extends @Nullable Object> Validated<T> failureWith(ConstraintViolation... errors) {
 		return failureWith(Arrays.asList(errors));
 	}
 
@@ -206,8 +195,8 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @return a failed validation result
 	 * @since 0.18.0
 	 */
-	static <T> Validated<T> failureWith(ViolationMessage message, @Nullable Object violatedValue, Locale locale,
-			@Nullable Object... args) {
+	static <T extends @Nullable Object> Validated<T> failureWith(ViolationMessage message,
+			@Nullable Object violatedValue, Locale locale, @Nullable Object... args) {
 		return failureWith(ConstraintViolation.of(message, violatedValue, locale, args));
 	}
 
@@ -230,13 +219,14 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 
 	@Override
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<ConstraintViolation, U>> V yieldSuccess(@Nullable U value) {
+	default <U extends @Nullable Object, V extends Validation<ConstraintViolation, U>> V yieldSuccess(U value) {
 		return (V) Validated.successWith(value);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<ConstraintViolation, U>> V yieldFailure(List<ConstraintViolation> errors) {
+	default <U extends @Nullable Object, V extends Validation<ConstraintViolation, U>> V yieldFailure(
+			List<ConstraintViolation> errors) {
 		return (V) Validated.failureWith(errors);
 	}
 
@@ -250,7 +240,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	default <T2> Validated<T2> map(Function<? super T, ? extends T2> mapper) {
+	default <T2 extends @Nullable Object> Validated<T2> map(Function<? super T, ? extends T2> mapper) {
 		return isValid() ? Validated.successWith(mapper.apply(value())) : (Validated<T2>) this;
 	}
 
@@ -264,7 +254,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	default <T2> Validated<T2> flatMap(
+	default <T2 extends @Nullable Object> Validated<T2> flatMap(
 			Function<? super T, ? extends Validation<ConstraintViolation, ? extends T2>> mapper) {
 		return isValid() ? Validated.of(mapper.apply(value())) : (Validated<T2>) this;
 	}
@@ -323,7 +313,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * violations
 	 * @since 0.7.0
 	 */
-	static <T> Validated<List<T>> sequence(Iterable<Validated<? extends T>> values) {
+	static <T extends @Nullable Object> Validated<List<T>> sequence(Iterable<Validated<? extends T>> values) {
 		return Validated.of(Validations.sequence(values));
 	}
 
@@ -339,7 +329,8 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * violations
 	 * @since 0.7.0
 	 */
-	static <T, U> Validated<List<U>> traverse(Iterable<T> values, Function<? super T, Validated<? extends U>> mapper) {
+	static <T, U extends @Nullable Object> Validated<List<U>> traverse(Iterable<T> values,
+			Function<? super T, Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverse(values, mapper));
 	}
 
@@ -356,7 +347,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * violations
 	 * @since 0.7.0
 	 */
-	static <T, U> Validated<List<U>> traverseIndexed(@Nullable Iterable<T> values,
+	static <T, U extends @Nullable Object> Validated<List<U>> traverseIndexed(@Nullable Iterable<T> values,
 			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseIndexed(values, mapper));
 	}
@@ -375,8 +366,9 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * accumulated violations
 	 * @since 0.8.0
 	 */
-	static <T, U, C extends Collection<U>> Validated<C> traverseIndexed(@Nullable Iterable<T> values,
-			Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper, Supplier<C> factory) {
+	static <T, U extends @Nullable Object, C extends Collection<U>> Validated<C> traverseIndexed(
+			@Nullable Iterable<T> values, Validations.IndexedTraverser<? super T, Validated<? extends U>> mapper,
+			Supplier<C> factory) {
 		return Validated.of(Validations.traverseIndexed(values, mapper, factory));
 	}
 
@@ -391,7 +383,7 @@ public sealed interface Validated<T> extends Validation<ConstraintViolation, T> 
 	 * @return a validation result holding the optional produced value or the violations
 	 * @since 0.8.0
 	 */
-	static <T, U> Validated<Optional<U>> traverseOptional(@Nullable Optional<T> value,
+	static <T, U extends @Nullable Object> Validated<Optional<@NonNull U>> traverseOptional(@Nullable Optional<T> value,
 			Function<? super T, ? extends Validated<? extends U>> mapper) {
 		return Validated.of(Validations.traverseOptional(value, mapper));
 	}

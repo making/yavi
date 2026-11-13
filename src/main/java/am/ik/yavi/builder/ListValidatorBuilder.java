@@ -72,7 +72,8 @@ public final class ListValidatorBuilder<E, T> implements ValueValidatorBuilder<I
 	 * @return a new validator
 	 */
 	@Override
-	public <T2> ValueValidator<Iterable<E>, T2> build(Function<? super List<T>, ? extends @Nullable T2> mapper) {
+	public <T2 extends @Nullable Object> ValueValidator<Iterable<E>, T2> build(
+			Function<? super List<T>, ? extends T2> mapper) {
 		return this.build().map(mapper);
 	}
 

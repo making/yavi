@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * @param <R6> the type of the value produced by the validator at position 6
  * @since 0.7.0
  */
-public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
+public class Arguments6Combining<A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object> {
 
 	/** The validator applied to the input at position 1. */
 	protected final ValueValidator<? super A, ? extends R1> v1;
@@ -85,7 +85,7 @@ public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the input
 	 */
-	public <X> Arguments1Validator<A, X> apply(
+	public <X extends @Nullable Object> Arguments1Validator<A, X> apply(
 			Function6<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
@@ -119,7 +119,8 @@ public class Arguments6Combining<A, R1, R2, R3, R4, R5, R6> {
 	 * @param <R7> the type of the value produced by the additional validator
 	 * @return an arguments7 combining instance
 	 */
-	public <R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(ValueValidator<? super A, ? extends R7> v7) {
+	public <R7 extends @Nullable Object> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
+			ValueValidator<? super A, ? extends R7> v7) {
 		return new Arguments7Combining<>(v1, v2, v3, v4, v5, v6, v7);
 	}
 

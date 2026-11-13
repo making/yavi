@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
  */
-final class DescribedValueValidator<T, X> implements ValueValidator<T, X> {
+final class DescribedValueValidator<T, X extends @Nullable Object> implements ValueValidator<T, X> {
 
 	private final ValueValidator<T, X> delegate;
 

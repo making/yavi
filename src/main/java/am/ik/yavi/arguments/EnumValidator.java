@@ -25,8 +25,9 @@ import org.jspecify.annotations.Nullable;
  * {@link am.ik.yavi.builder.EnumValidatorBuilder}, which applies a
  * {@link am.ik.yavi.constraint.EnumConstraint} under a given name. Violations carry that
  * name and the message key of the violated constraint, for example {@code object.oneOf}.
- * A {@code null} value is accepted unless the configured constraints require otherwise
- * (for example {@code notNull()}).
+ * A {@code null} value is a violation: the one of a constraint that rejects it, or else
+ * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()} or
+ * {@code defaultValue(...)} of the validator.
  *
  * <p>
  * A validator that knows its enum type reads the name of a constant from an untyped
@@ -40,7 +41,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the value produced from the validated input
  * @since 0.14.0
  */
-public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Validator<E, T> {
+public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extends DefaultArguments1Validator<E, T> {
 
 	private final @Nullable Class<E> enumType;
 
@@ -57,7 +58,7 @@ public class EnumValidator<E extends Enum<E>, T> extends DefaultArguments1Valida
 	 * @return a new validator with the mapped result type
 	 */
 	@Override
-	public <T2> EnumValidator<E, T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2 extends @Nullable Object> EnumValidator<E, T2> map(Function<? super T, ? extends T2> mapper) {
 		final Function1<E, T2> mapped = s -> mapper.apply(super.mapper.apply(s));
 		return new EnumValidator<>(super.validator, mapped, this.enumType, super.transform, this.ignoringCase);
 	}

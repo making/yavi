@@ -50,9 +50,11 @@ public record Arguments2<A1, A2> (@Nullable A1 arg1, @Nullable A2 arg2) {
 	 * @param mapper the function to apply to the arguments
 	 * @return the result of applying the mapper function to the arguments
 	 */
-	// An argument may be null; the type of the function parameter does not express that.
+	// A raw argument may be null, and the function is trusted to take it: its
+	// parameters are not @Nullable so that ArgumentsValidatorBuilder.of(User::new)
+	// compiles. Yavi.arguments() gives the validated values with their types instead.
 	@SuppressWarnings("NullAway")
-	public <X> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
+	public <X extends @Nullable Object> X map(Function2<? super A1, ? super A2, ? extends X> mapper) {
 		return mapper.apply(arg1, arg2);
 	}
 

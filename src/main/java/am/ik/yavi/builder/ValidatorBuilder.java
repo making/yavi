@@ -1616,7 +1616,7 @@ public class ValidatorBuilder<T> {
 	 * @since 0.11.0
 	 * @see #constraintOnCondition(ConstraintCondition, Validator)
 	 */
-	public <R> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
+	public <R extends @Nullable Object> ValidatorBuilder<T> constraintOnCondition(ConstraintCondition<T> condition,
 			ValueValidator<T, R> applicative) {
 		this.conditionalValidators.add(new Pair<>(condition, Validatable.from(applicative)));
 		return this;
@@ -1687,7 +1687,8 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see #constraintOnGroup(ConstraintGroup, Validator)
 	 */
-	public <R> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group, ValueValidator<T, R> applicative) {
+	public <R extends @Nullable Object> ValidatorBuilder<T> constraintOnGroup(ConstraintGroup group,
+			ValueValidator<T, R> applicative) {
 		return this.constraintOnCondition(group.toCondition(), applicative);
 	}
 

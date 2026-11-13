@@ -192,7 +192,7 @@ public interface InputReader<N> {
 	 * <pre>{@code
 	 * InputReader<Object> cells = InputReader.ofJdkTypes()
 	 *     .coercingStrings(StringCoercion.strict().trimming().booleanWords());
-	 * Yavi._boolean(c -> c.notNull()).readingWith(cells).validate(" Yes "); // true
+	 * Yavi._boolean().readingWith(cells).validate(" Yes "); // true
 	 * }</pre>
 	 *
 	 * The rules of a reader that already coerces strings are replaced.

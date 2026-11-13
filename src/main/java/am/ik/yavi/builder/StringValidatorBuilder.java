@@ -20,8 +20,9 @@ import am.ik.yavi.core.Validator;
  * <p>
  * The value is validated under the name given to {@link #of} and violations are reported
  * with that name and the message key of the violated constraint, for example
- * {@code charSequence.notBlank}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code charSequence.notBlank}. A {@code null} value is a violation: the one of a
+ * constraint that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * The value can be transformed before it is constrained with the transforms of
@@ -50,7 +51,9 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 *
 	 * <p>
 	 * The function is applied once, when this method is called. The transforms it adds
@@ -101,7 +104,7 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 * @return a new validator
 	 */
 	@Override
-	public <T> StringValidator<T> build(Function<? super String, ? extends @Nullable T> mapper) {
+	public <T extends @Nullable Object> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final StringValidator<T> built = new StringValidator<>(validator, mapper::apply);
 		return this.transform == null ? built : built.preprocess(this.transform);

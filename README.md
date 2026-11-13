@@ -202,8 +202,8 @@ import am.ik.yavi.validator.Yavi;
 public final class Car {
 
 	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
-		._string("manufacturer", c -> c.notNull())
-		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+		._string("manufacturer")
+		._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
 		._integer("seatCount", c -> c.greaterThanOrEqual(2))
 		.apply(Car::new);
 
@@ -239,6 +239,8 @@ public final class Car {
 ```
 
 `Arguments3Validator<String, String, Integer, Car>` is a validator that validates three arguments (`String`, `String`, `Integer`) and creates a `Car` instance only when validation succeeds.
+
+An argument is required: `null` is reported with `object.notNull` (`"manufacturer" must not be null`), or with the violation of a constraint that rejects it such as `notBlank()`, so `notNull()` need not be written. The constructor is therefore never given `null`. An argument that may be `null` says so with `nullable()` or `optional()`, as described [below](#nested-objects-collections-and-optional-arguments). This differs from `ValidatorBuilder`, which validates an object that exists and takes a property that is `null` as valid unless a constraint rejects it.
 
 With this approach, since the `Car` class's constructor is private, you need to create a `Car` instance through the `of` factory method. The `of` method validates the arguments before creating a `Car` instance. It returns the validation result wrapped in a `Validated` type. If validation fails, you cannot obtain a `Car` instance.
 
@@ -309,8 +311,8 @@ import am.ik.yavi.validator.Yavi;
 public record Car(String manufacturer, String licensePlate, Integer seatCount) {
 
 	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
-		._string("manufacturer", c -> c.notNull())
-		._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+		._string("manufacturer")
+		._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
 		._integer("seatCount", c -> c.greaterThanOrEqual(2))
 		.apply(Car::new);
 
@@ -414,7 +416,7 @@ public final class Car {
   public static StringValidator<String> manufacturerValidator = Yavi._string("manufacturer", c -> c.notNull());
 
   public static StringValidator<String> licensePlateValidator = Yavi._string("licensePlate",
-          c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14));
+          c -> c.greaterThanOrEqual(2).lessThanOrEqual(14));
 
   public static IntegerValidator<Integer> seatCountValidator = Yavi._integer("seatCount", c -> c.greaterThanOrEqual(2));
 
@@ -450,7 +452,7 @@ A value can be transformed before it is constrained. The transforms of a `String
 StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
 emailValidator.validate("  USER@Example.COM "); // Valid[user@example.com]
 
-BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.notNull().positive())
+BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.positive())
         .preprocess(BigDecimal::stripTrailingZeros);
 ```
 
@@ -478,16 +480,16 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
                 ViolationMessage.of("user.adultAdmin", "\"{0}\" must not contain \"admin\" for a minor"));
 ```
 
-* `optional()`, `nullable()` and `defaultValue(...)` apply to the last added argument. A `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
-* The function given to `apply` receives the validated values with the types of the arguments, so with a nullness checker that reads JSpecify (NullAway, Kotlin) `User::new` may take parameters that are not `@Nullable`. A value is `null` only if its argument accepts `null`, that is with `nullable()` or without a constraint that rejects `null` such as `notNull()` or `notBlank()`; declare that parameter `@Nullable`.
+* An argument is required unless it says otherwise. `optional()`, `nullable()` and `defaultValue(...)` apply to the last added argument: a `null` value is then accepted without applying the constraints and produces `Optional.empty()`, `null` or the default value.
+* The type of a validated value tells whether it can be `null`: `nullable()` changes it from `String` to `@Nullable String` and `optional()` to `Optional<String>`. With a nullness checker that reads JSpecify (NullAway, Kotlin), the function given to `apply` may therefore take parameters that are not `@Nullable`, and `apply(User::new)` does not compile if a `nullable()` argument is given to a parameter that is not `@Nullable` (in Kotlin, to a `String` instead of a `String?`).
 * `recover(fallback)` also applies to the last added argument and makes it never fail: the fallback is produced for `null` and for a value that is invalid, for example `._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)` for the size of a page. When the argument is read from a map, request parameters or a JSON tree, a value that does not represent its type gives the fallback too. `recoverWith(violations -> ...)` computes the fallback from the violations, for example to log them; it is given no violation for `null`.
-* `_object(name, validator)`, `_list(name, elementValidator)` and `_map(name, valueValidator)` reject `null` with `object.notNull` unless one of the above is applied. The violations of a list element are located under its index (`roles[0]`, `addresses[0].street`); give an element validator an empty name to report a violation on the element itself.
+* The elements of `_list(name, elementValidator)` and the values of `_map(name, valueValidator)` are required like any value; give `elementValidator.nullable()` for a `List<@Nullable String>`. The violations of a list element are located under its index (`roles[0]`, `addresses[0].street`); give an element validator an empty name to report a violation on the element itself.
 * `_list(name, elementValidator, c -> c.notEmpty().lessThanOrEqual(10).unique())` and `_map(name, valueValidator, c -> c.notEmpty())` constrain the list or map itself. The constraints are checked on the validated elements, only when every element is valid, and reported on the argument (`roles`). `Yavi._list(elementValidator, c -> ...)` and `Yavi._map(valueValidator, c -> ...)` are the validators of a list or map that is not an argument.
 * `ValueValidator.anyOf(a, b)` tries the alternatives in order. If all of them fail, it reports `object.anyOf` followed by the violations of every alternative.
 * `ValueValidator.lazy(() -> validator)` refers to a validator that is not built yet, and `ValueValidator.recursive(self -> ...)` builds a validator from a reference to itself, for a structure that contains itself such as `record Comment(String body, List<Comment> replies)`: `ValueValidator.recursive(self -> Yavi.arguments()._string("body")._list("replies", self).defaultValue(List.of()).fromMap(Comment::new))`. (`lazy()` of an `ArgumentsNValidator` is unrelated: it defers the creation of the object.)
 * `constraintOnTarget` adds a rule that spans several arguments. It is evaluated only when all arguments are valid.
 
-The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`. `liftList()` locates the violations of an element under its index like `_list` does, so `orderValidator.liftList().prefixed("orders")` reports `orders[1].id`.
+The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, `prefixed(name)`, `liftList()`, `liftMap()`) are available on every `ValueValidator`, whose second type argument is the type of the validated value: `Yavi._string("name", c -> c.notBlank())` is a `ValueValidator<String, String>` that rejects `null`, and its `nullable()` a `ValueValidator<String, @Nullable String>`. `liftList()` locates the violations of an element under its index like `_list` does, so `orderValidator.liftList().prefixed("orders")` reports `orders[1].id`.
 
 #### Validating a map such as a parsed JSON object
 
@@ -501,8 +503,8 @@ MapInputValidator<Address> addressValidator = Yavi.arguments()
 
 MapInputValidator<User> userValidator = Yavi.arguments()
         ._string("email", c -> c.notBlank().email())
-        ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
-        ._enum("role", Role.class, c -> c.notNull()) // "ADMIN"
+        ._integer("age", c -> c.greaterThanOrEqual(0))
+        ._enum("role", Role.class) // "ADMIN"
         ._localDate("birthday") // "2000-01-01"
         ._object("address", addressValidator) // a nested map
         ._list("tags", Yavi._string(c -> c.notBlank())) // a list
@@ -520,7 +522,7 @@ Validated<User> validated = userValidator.validate(map);
 ```
 
 * A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [request parameters](#validating-request-parameters).
-* An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
+* An absent key is validated like `null`, so `optional()`, `nullable()` and `defaultValue(...)` accept it. The absent key of any other argument is reported with `object.required` (`"email" is required`), and an explicit `null` with `object.notNull` or with the violation of a constraint that rejects it.
 * `presence()` tells an absent key from `null`, as a partial update (PATCH) needs; see [below](#telling-an-absent-key-from-null).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
@@ -537,8 +539,8 @@ In a partial update, such as a PATCH request (JSON Merge Patch), an absent key l
 record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
 
 MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
-        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence() // cannot be cleared
-        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        ._string("nickname", c -> c.lessThanOrEqual(50)).presence() // cannot be cleared
+        ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence()
         .fromMap(ProfilePatch::new);
 
 ProfilePatch patch = patchValidator.validated(Map.of("bio", "Hello")); // nickname is absent
@@ -553,18 +555,18 @@ switch (patch.bio()) {
 ```
 
 * An absent key is `Absent` and is not validated, so it is never required.
-* A key that is present is validated as without `presence()`, an explicit `null` included: `notNull()` rejects it, and an argument that accepts `null` gives `PresentNull`. A nested object rejects `null` unless it is `nullable()`.
+* A key that is present is validated as without `presence()`, an explicit `null` included: it is a violation unless the argument is `nullable()`, which gives `PresentNull`.
 * `presence()` is the last modifier of an argument: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present. Writing one after it does not compile, and neither does `presence()` on an `_embedded` or `_rest` argument, which is not read from a key.
 * It works with every input. In request parameters, a parameter with an empty value (`bio=`) is present and `null`.
 * With `apply(f)`, the argument itself is a `Presence`. `ValueValidator#liftPresence()` is the combinator, and `MapInputValidator.PresenceProperty` the part for `MapInputValidator.of(parts, mapper)`.
-* In the JSON Schema the property is not `required`, and it allows `null` only if the argument accepts it.
+* In the JSON Schema the property is not `required`, and it allows `null` only if the argument is `nullable()`.
 
 `DiscriminatedUnionValidator` selects the validator of a map by the value of a key, which reads the subtypes of a sealed interface:
 
 ```java
 ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
-        .when("circle", Yavi.arguments()._integer("radius", c -> c.notNull().positive()).fromMap(Circle::new))
-        .when("square", Yavi.arguments()._integer("side", c -> c.notNull().positive()).fromMap(Square::new));
+        .when("circle", Yavi.arguments()._integer("radius", c -> c.positive()).fromMap(Circle::new))
+        .when("square", Yavi.arguments()._integer("side", c -> c.positive()).fromMap(Square::new));
 ```
 
 Only the selected alternative is validated. An absent discriminator is reported with `object.required` and an unexpected one with `object.oneOf`.
@@ -583,7 +585,7 @@ MapInputValidator<Department> departmentValidator = Yavi.arguments()
         .fromMap(Department::new);
 
 MapInputValidator<Employee> employeeValidator = Yavi.arguments()
-        ._integer("id", c -> c.notNull())
+        ._integer("id")
         ._embedded(userNameValidator) // first_name, last_name
         ._embedded(departmentValidator).nullable() // dept_name, dept_code
         ._rest(Yavi._string(c -> c.notBlank())) // a Map<String, String> of the other keys
@@ -603,7 +605,7 @@ The same arguments read the tree model of a JSON library, such as Jackson's `Jso
 ```java
 ValueValidator<JsonNode, User> userValidator = Yavi.arguments()
         ._string("email", c -> c.notBlank().email())
-        ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+        ._integer("age", c -> c.greaterThanOrEqual(0))
         ._object("address", addressValidator)
         .from(JsonNodeReader.INSTANCE, User::new);
 
@@ -715,7 +717,7 @@ The rules are strict on purpose. `StringCoercion` relaxes them for text written 
 StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 
 ValueValidator<Map<String, String>, Signup> validator = Yavi.arguments()
-        ._integer("age", c -> c.notNull())
+        ._integer("age")
         ._boolean("subscribed").defaultValue(false) // an unchecked checkbox sends nothing
         .fromMap(Signup::new)
         .readingParameters(form);
@@ -766,7 +768,7 @@ String json = JsonSchema.toJson(description);
 * A constraint is described by its message key and arguments, for example `container.lessThanOrEqual` with `[14]`.
 * An object that rejects unknown properties is written with `additionalProperties: false`, and one that reads the rest with the schema of its values.
 * The constraints of a list or map are described with it and written as `minItems`, `maxItems`, `uniqueItems`, `minProperties` and `maxProperties`.
-* A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or a `recover(...)`, whose value is written as `default`, or has no constraint that rejects `null` such as `notNull()`. A property with `presence()` is never `required`.
+* A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()` or has a `defaultValue(...)` or a `recover(...)`, whose value is written as `default`. A property with `presence()` is never `required`. A required value whose constraints accept `null` is described with the constraint `object.notNull`.
 * The combinators carry the description. A lambda and the result of `ValueValidator.compose` are unknown; describe them with `describedAs(...)`.
 * A recursive structure is described with a `ValueDescription.Reference` where it contains itself, and written as `$ref`: to `#` for the described validator itself, and otherwise to `$defs` under the name given with `ValueValidator.lazy(name, ...)` or `recursive(name, ...)`.
 * Conditional constraints and `constraintOnTarget` rules are not described. Constraints without a JSON Schema keyword are omitted from the schema.

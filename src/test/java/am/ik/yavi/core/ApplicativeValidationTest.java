@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.jspecify.annotations.Nullable;
 
 class ApplicativeValidationTest {
 
@@ -35,10 +36,10 @@ class ApplicativeValidationTest {
 		.applicative()
 		.compose(map -> new Country(Objects.requireNonNull(map).get("country")));
 
-	static final ValueValidator<Country, String> countryValidator = Country.validator()
+	static final ValueValidator<Country, @Nullable String> countryValidator = Country.validator()
 		.prefixed("country")
 		.applicative()
-		.map(Country::name);
+		.<@Nullable String>map(Country::name);
 
 	@ParameterizedTest
 	@MethodSource("validValidations")
@@ -86,14 +87,14 @@ class ApplicativeValidationTest {
 
 	@Test
 	void andThen_valid() {
-		final Validated<String> countryValidated = countryValidator.validate(new Country("JP"));
+		final Validated<@Nullable String> countryValidated = countryValidator.validate(new Country("JP"));
 		assertThat(countryValidated.isValid()).isTrue();
 		assertThat(countryValidated.value()).isEqualTo("JP");
 	}
 
 	@Test
 	void andThen_invalid() {
-		final Validated<String> countryValidated = countryValidator.validate(new Country("J"));
+		final Validated<@Nullable String> countryValidated = countryValidator.validate(new Country("J"));
 		assertThat(countryValidated.isValid()).isFalse();
 		final ConstraintViolations violations = countryValidated.errors();
 		assertThat(violations.size()).isEqualTo(1);

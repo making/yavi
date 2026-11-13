@@ -19,8 +19,9 @@ import am.ik.yavi.core.Validator;
  * <p>
  * The value is validated under the name given to {@link #of} and violations are reported
  * with that name and the message key of the violated constraint, for example
- * {@code object.oneOf}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code object.oneOf}. A {@code null} value is a violation: the one of a constraint that
+ * rejects it, or else {@code object.notNull}. It is accepted with {@code nullable()},
+ * {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * Example: <pre>{@code
@@ -43,7 +44,9 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 * @param <E> the enum type whose constants are validated
 	 * @param name the property name used as the violation name
 	 * @param constraints the function that configures the constraints
@@ -107,7 +110,7 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * @return a new validator
 	 */
 	@Override
-	public <T> EnumValidator<E, T> build(Function<? super E, ? extends @Nullable T> mapper) {
+	public <T extends @Nullable Object> EnumValidator<E, T> build(Function<? super E, ? extends T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final Class<E> type = this.type;
 		return type == null ? new EnumValidator<>(validator, mapper::apply)
@@ -119,8 +122,7 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * @return a new validator
 	 */
 	@Override
-	// A validated value may be null; the type parameter does not express it.
-	@SuppressWarnings("NullAway")
+
 	public EnumValidator<E, E> build() {
 		return build(e -> e);
 	}

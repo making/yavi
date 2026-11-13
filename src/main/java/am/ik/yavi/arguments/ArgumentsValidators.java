@@ -10,12 +10,16 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolationMessage;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.function.Function.identity;
@@ -47,11 +51,23 @@ public class ArgumentsValidators {
 	}
 
 	/**
+	 * Returns the given value if it satisfies the given predicate, or else a violation
+	 * with the given name and message. This is the rule of {@code constraintOnTarget},
+	 * applied to a value that passed validation.
+	 */
+	static <X extends @Nullable Object> Validated<X> constrained(X value, Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage, Locale locale) {
+		return predicate.test(value) ? Validated.successWith(value)
+				: Validated.failureWith(ConstraintViolation.of(violationMessage, value, locale).prefixed(name));
+	}
+
+	/**
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, X> Arguments2Validator<A1, A2, X> derived(Arguments2Validator<A1, A2, X> validator,
-			Supplier<Arguments2Validator<A1, A2, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
+	static <A1, A2, X extends @Nullable Object> Arguments2Validator<A1, A2, X> derived(
+			Arguments2Validator<A1, A2, X> validator, Supplier<Arguments2Validator<A1, A2, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
 		return new Arguments2Validator<A1, A2, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale,
@@ -75,8 +91,9 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, X> Arguments3Validator<A1, A2, A3, X> derived(Arguments3Validator<A1, A2, A3, X> validator,
-			Supplier<Arguments3Validator<A1, A2, A3, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
+	static <A1, A2, A3, X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> derived(
+			Arguments3Validator<A1, A2, A3, X> validator, Supplier<Arguments3Validator<A1, A2, A3, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
 		return new Arguments3Validator<A1, A2, A3, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
@@ -100,7 +117,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, X> Arguments4Validator<A1, A2, A3, A4, X> derived(
+	static <A1, A2, A3, A4, X extends @Nullable Object> Arguments4Validator<A1, A2, A3, A4, X> derived(
 			Arguments4Validator<A1, A2, A3, A4, X> validator,
 			Supplier<Arguments4Validator<A1, A2, A3, A4, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
 		return new Arguments4Validator<A1, A2, A3, A4, X>() {
@@ -126,7 +143,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, X> Arguments5Validator<A1, A2, A3, A4, A5, X> derived(
+	static <A1, A2, A3, A4, A5, X extends @Nullable Object> Arguments5Validator<A1, A2, A3, A4, A5, X> derived(
 			Arguments5Validator<A1, A2, A3, A4, A5, X> validator,
 			Supplier<Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -153,7 +170,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> derived(
+	static <A1, A2, A3, A4, A5, A6, X extends @Nullable Object> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> derived(
 			Arguments6Validator<A1, A2, A3, A4, A5, A6, X> validator,
 			Supplier<Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -180,7 +197,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, X> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, X extends @Nullable Object> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> derived(
 			Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> validator,
 			Supplier<Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -208,7 +225,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, X extends @Nullable Object> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> derived(
 			Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> validator,
 			Supplier<Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -236,7 +253,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X extends @Nullable Object> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> derived(
 			Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> validator,
 			Supplier<Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -264,7 +281,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X extends @Nullable Object> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> derived(
 			Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> validator,
 			Supplier<Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -292,7 +309,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X extends @Nullable Object> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> derived(
 			Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> validator,
 			Supplier<Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -320,7 +337,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X extends @Nullable Object> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> derived(
 			Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> validator,
 			Supplier<Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -349,7 +366,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X extends @Nullable Object> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> derived(
 			Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> validator,
 			Supplier<Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -379,7 +396,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X extends @Nullable Object> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> derived(
 			Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> validator,
 			Supplier<Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -409,7 +426,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X extends @Nullable Object> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> derived(
 			Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> validator,
 			Supplier<Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -439,7 +456,7 @@ public class ArgumentsValidators {
 	 * Returns a validator that validates with the given validator and takes its lazy
 	 * variant and its description from the given suppliers.
 	 */
-	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> derived(
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X extends @Nullable Object> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> derived(
 			Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> validator,
 			Supplier<Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>>> lazy,
 			Supplier<ValueDescription> description) {
@@ -476,7 +493,7 @@ public class ArgumentsValidators {
 	 * @param <R2> the type of the value produced for the argument at position 2
 	 * @return an arguments2 splitting instance
 	 */
-	public static <A1, A2, R1, R2> Arguments2Splitting<A1, A2, R1, R2> split(
+	public static <A1, A2, R1 extends @Nullable Object, R2 extends @Nullable Object> Arguments2Splitting<A1, A2, R1, R2> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2) {
 		return new Arguments2Splitting<>(v1, v2);
 	}
@@ -495,7 +512,7 @@ public class ArgumentsValidators {
 	 * @param <R3> the type of the value produced for the argument at position 3
 	 * @return an arguments3 splitting instance
 	 */
-	public static <A1, A2, A3, R1, R2, R3> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(
+	public static <A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3) {
 		return new Arguments3Splitting<>(v1, v2, v3);
@@ -518,7 +535,7 @@ public class ArgumentsValidators {
 	 * @param <R4> the type of the value produced for the argument at position 4
 	 * @return an arguments4 splitting instance
 	 */
-	public static <A1, A2, A3, A4, R1, R2, R3, R4> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split(
+	public static <A1, A2, A3, A4, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object> Arguments4Splitting<A1, A2, A3, A4, R1, R2, R3, R4> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4) {
 		return new Arguments4Splitting<>(v1, v2, v3, v4);
@@ -544,7 +561,7 @@ public class ArgumentsValidators {
 	 * @param <R5> the type of the value produced for the argument at position 5
 	 * @return an arguments5 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> split(
+	public static <A1, A2, A3, A4, A5, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object> Arguments5Splitting<A1, A2, A3, A4, A5, R1, R2, R3, R4, R5> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5) {
@@ -574,7 +591,7 @@ public class ArgumentsValidators {
 	 * @param <R6> the type of the value produced for the argument at position 6
 	 * @return an arguments6 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split(
+	public static <A1, A2, A3, A4, A5, A6, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object> Arguments6Splitting<A1, A2, A3, A4, A5, A6, R1, R2, R3, R4, R5, R6> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6) {
@@ -607,7 +624,7 @@ public class ArgumentsValidators {
 	 * @param <R7> the type of the value produced for the argument at position 7
 	 * @return an arguments7 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object> Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -644,7 +661,7 @@ public class ArgumentsValidators {
 	 * @param <R8> the type of the value produced for the argument at position 8
 	 * @return an arguments8 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -684,7 +701,7 @@ public class ArgumentsValidators {
 	 * @param <R9> the type of the value produced for the argument at position 9
 	 * @return an arguments9 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object> Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -728,7 +745,7 @@ public class ArgumentsValidators {
 	 * @param <R10> the type of the value produced for the argument at position 10
 	 * @return an arguments10 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object> Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -775,7 +792,7 @@ public class ArgumentsValidators {
 	 * @param <R11> the type of the value produced for the argument at position 11
 	 * @return an arguments11 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> Arguments11Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object> Arguments11Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -826,7 +843,7 @@ public class ArgumentsValidators {
 	 * @param <R12> the type of the value produced for the argument at position 12
 	 * @return an arguments12 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object> Arguments12Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -880,7 +897,7 @@ public class ArgumentsValidators {
 	 * @param <R13> the type of the value produced for the argument at position 13
 	 * @return an arguments13 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object> Arguments13Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -938,7 +955,7 @@ public class ArgumentsValidators {
 	 * @param <R14> the type of the value produced for the argument at position 14
 	 * @return an arguments14 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> Arguments14Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object> Arguments14Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -999,7 +1016,7 @@ public class ArgumentsValidators {
 	 * @param <R15> the type of the value produced for the argument at position 15
 	 * @return an arguments15 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object> Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -1064,7 +1081,7 @@ public class ArgumentsValidators {
 	 * @param <R16> the type of the value produced for the argument at position 16
 	 * @return an arguments16 splitting instance
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> split(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, R16 extends @Nullable Object> Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> split(
 			ValueValidator<? super A1, ? extends R1> v1, ValueValidator<? super A2, ? extends R2> v2,
 			ValueValidator<? super A3, ? extends R3> v3, ValueValidator<? super A4, ? extends R4> v4,
 			ValueValidator<? super A5, ? extends R5> v5, ValueValidator<? super A6, ? extends R6> v6,
@@ -1086,8 +1103,8 @@ public class ArgumentsValidators {
 	 * @param <R2> the type of the value produced by the validator at position 2
 	 * @return an arguments2 combining instance
 	 */
-	public static <A, R1, R2> Arguments2Combining<A, R1, R2> combine(ValueValidator<? super A, ? extends R1> v1,
-			ValueValidator<? super A, ? extends R2> v2) {
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object> Arguments2Combining<A, R1, R2> combine(
+			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2) {
 		return new Arguments2Combining<>(v1, v2);
 	}
 
@@ -1103,8 +1120,9 @@ public class ArgumentsValidators {
 	 * @param <R3> the type of the value produced by the validator at position 3
 	 * @return an arguments3 combining instance
 	 */
-	public static <A, R1, R2, R3> Arguments3Combining<A, R1, R2, R3> combine(ValueValidator<? super A, ? extends R1> v1,
-			ValueValidator<? super A, ? extends R2> v2, ValueValidator<? super A, ? extends R3> v3) {
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object> Arguments3Combining<A, R1, R2, R3> combine(
+			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
+			ValueValidator<? super A, ? extends R3> v3) {
 		return new Arguments3Combining<>(v1, v2, v3);
 	}
 
@@ -1122,7 +1140,7 @@ public class ArgumentsValidators {
 	 * @param <R4> the type of the value produced by the validator at position 4
 	 * @return an arguments4 combining instance
 	 */
-	public static <A, R1, R2, R3, R4> Arguments4Combining<A, R1, R2, R3, R4> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object> Arguments4Combining<A, R1, R2, R3, R4> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4) {
 		return new Arguments4Combining<>(v1, v2, v3, v4);
@@ -1144,7 +1162,7 @@ public class ArgumentsValidators {
 	 * @param <R5> the type of the value produced by the validator at position 5
 	 * @return an arguments5 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5> Arguments5Combining<A, R1, R2, R3, R4, R5> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object> Arguments5Combining<A, R1, R2, R3, R4, R5> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5) {
@@ -1169,7 +1187,7 @@ public class ArgumentsValidators {
 	 * @param <R6> the type of the value produced by the validator at position 6
 	 * @return an arguments6 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6> Arguments6Combining<A, R1, R2, R3, R4, R5, R6> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object> Arguments6Combining<A, R1, R2, R3, R4, R5, R6> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6) {
@@ -1196,7 +1214,7 @@ public class ArgumentsValidators {
 	 * @param <R7> the type of the value produced by the validator at position 7
 	 * @return an arguments7 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object> Arguments7Combining<A, R1, R2, R3, R4, R5, R6, R7> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1226,7 +1244,7 @@ public class ArgumentsValidators {
 	 * @param <R8> the type of the value produced by the validator at position 8
 	 * @return an arguments8 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8> Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object> Arguments8Combining<A, R1, R2, R3, R4, R5, R6, R7, R8> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1258,7 +1276,7 @@ public class ArgumentsValidators {
 	 * @param <R9> the type of the value produced by the validator at position 9
 	 * @return an arguments9 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9> Arguments9Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object> Arguments9Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1293,7 +1311,7 @@ public class ArgumentsValidators {
 	 * @param <R10> the type of the value produced by the validator at position 10
 	 * @return an arguments10 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> Arguments10Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object> Arguments10Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1330,7 +1348,7 @@ public class ArgumentsValidators {
 	 * @param <R11> the type of the value produced by the validator at position 11
 	 * @return an arguments11 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> Arguments11Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object> Arguments11Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1370,7 +1388,7 @@ public class ArgumentsValidators {
 	 * @param <R12> the type of the value produced by the validator at position 12
 	 * @return an arguments12 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> Arguments12Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object> Arguments12Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1412,7 +1430,7 @@ public class ArgumentsValidators {
 	 * @param <R13> the type of the value produced by the validator at position 13
 	 * @return an arguments13 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> Arguments13Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object> Arguments13Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1457,7 +1475,7 @@ public class ArgumentsValidators {
 	 * @param <R14> the type of the value produced by the validator at position 14
 	 * @return an arguments14 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object> Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1504,7 +1522,7 @@ public class ArgumentsValidators {
 	 * @param <R15> the type of the value produced by the validator at position 15
 	 * @return an arguments15 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object> Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1554,7 +1572,7 @@ public class ArgumentsValidators {
 	 * @param <R16> the type of the value produced by the validator at position 16
 	 * @return an arguments16 combining instance
 	 */
-	public static <A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> Arguments16Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> combine(
+	public static <A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, R16 extends @Nullable Object> Arguments16Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> combine(
 			ValueValidator<? super A, ? extends R1> v1, ValueValidator<? super A, ? extends R2> v2,
 			ValueValidator<? super A, ? extends R3> v3, ValueValidator<? super A, ? extends R4> v4,
 			ValueValidator<? super A, ? extends R5> v5, ValueValidator<? super A, ? extends R6> v6,
@@ -1578,7 +1596,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, R, T> Arguments1Validator<A1, List<R>> traverse1(Iterable<T> values,
+	public static <A1, R extends @Nullable Object, T> Arguments1Validator<A1, List<R>> traverse1(Iterable<T> values,
 			Function<? super T, ? extends Arguments1Validator<? super A1, ? extends R>> f) {
 		return (a1, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, locale, constraintContext)));
@@ -1597,7 +1615,8 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, R, T> Arguments2Validator<A1, A2, List<R>> traverse2(Iterable<T> values,
+	public static <A1, A2, R extends @Nullable Object, T> Arguments2Validator<A1, A2, List<R>> traverse2(
+			Iterable<T> values,
 			Function<? super T, ? extends Arguments2Validator<? super A1, ? super A2, ? extends R>> f) {
 		return (a1, a2, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, a2, locale, constraintContext)));
@@ -1617,7 +1636,8 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, R, T> Arguments3Validator<A1, A2, A3, List<R>> traverse3(Iterable<T> values,
+	public static <A1, A2, A3, R extends @Nullable Object, T> Arguments3Validator<A1, A2, A3, List<R>> traverse3(
+			Iterable<T> values,
 			Function<? super T, ? extends Arguments3Validator<? super A1, ? super A2, ? super A3, ? extends R>> f) {
 		return (a1, a2, a3, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, a2, a3, locale, constraintContext)));
@@ -1638,7 +1658,8 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, R, T> Arguments4Validator<A1, A2, A3, A4, List<R>> traverse4(Iterable<T> values,
+	public static <A1, A2, A3, A4, R extends @Nullable Object, T> Arguments4Validator<A1, A2, A3, A4, List<R>> traverse4(
+			Iterable<T> values,
 			Function<? super T, ? extends Arguments4Validator<? super A1, ? super A2, ? super A3, ? super A4, ? extends R>> f) {
 		return (a1, a2, a3, a4, locale, constraintContext) -> Validated.traverse(values,
 				f.andThen(validator -> validator.validate(a1, a2, a3, a4, locale, constraintContext)));
@@ -1660,7 +1681,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, R, T> Arguments5Validator<A1, A2, A3, A4, A5, List<R>> traverse5(
+	public static <A1, A2, A3, A4, A5, R extends @Nullable Object, T> Arguments5Validator<A1, A2, A3, A4, A5, List<R>> traverse5(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments5Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, locale, constraintContext) -> Validated.traverse(values,
@@ -1684,7 +1705,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, R, T> Arguments6Validator<A1, A2, A3, A4, A5, A6, List<R>> traverse6(
+	public static <A1, A2, A3, A4, A5, A6, R extends @Nullable Object, T> Arguments6Validator<A1, A2, A3, A4, A5, A6, List<R>> traverse6(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments6Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, locale, constraintContext) -> Validated.traverse(values,
@@ -1709,7 +1730,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, R, T> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, List<R>> traverse7(
+	public static <A1, A2, A3, A4, A5, A6, A7, R extends @Nullable Object, T> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, List<R>> traverse7(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments7Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, locale, constraintContext) -> Validated.traverse(values,
@@ -1735,7 +1756,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, R, T> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, List<R>> traverse8(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, R extends @Nullable Object, T> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, List<R>> traverse8(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments8Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext) -> Validated.traverse(values,
@@ -1762,7 +1783,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R, T> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, List<R>> traverse9(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R extends @Nullable Object, T> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, List<R>> traverse9(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments9Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext) -> Validated.traverse(values, f
@@ -1790,7 +1811,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R, T> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> traverse10(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R extends @Nullable Object, T> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> traverse10(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments10Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext) -> Validated.traverse(values,
@@ -1820,7 +1841,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R, T> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> traverse11(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R extends @Nullable Object, T> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> traverse11(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments11Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, locale, constraintContext) -> Validated.traverse(values,
@@ -1851,7 +1872,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R, T> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> traverse12(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R extends @Nullable Object, T> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> traverse12(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments12Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale, constraintContext) -> Validated
@@ -1883,7 +1904,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R, T> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> traverse13(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R extends @Nullable Object, T> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> traverse13(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments13Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale, constraintContext) -> Validated
@@ -1916,7 +1937,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R, T> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> traverse14(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R extends @Nullable Object, T> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> traverse14(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments14Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext) -> Validated
@@ -1950,7 +1971,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R, T> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> traverse15(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R extends @Nullable Object, T> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> traverse15(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments15Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
@@ -1985,7 +2006,7 @@ public class ArgumentsValidators {
 	 * @param <T> the type of the elements to validate
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R, T> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> traverse16(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R extends @Nullable Object, T> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> traverse16(
 			Iterable<T> values,
 			Function<? super T, ? extends Arguments16Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends R>> f) {
 		return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
@@ -2002,7 +2023,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, R> Arguments1Validator<A1, List<R>> sequence1(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<A1, List<R>> sequence1(
 			Iterable<? extends Arguments1Validator<? super A1, ? extends R>> values) {
 		return traverse1(values, identity());
 	}
@@ -2017,7 +2038,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, R> Arguments2Validator<A1, A2, List<R>> sequence2(
+	public static <A1, A2, R extends @Nullable Object> Arguments2Validator<A1, A2, List<R>> sequence2(
 			Iterable<? extends Arguments2Validator<? super A1, ? super A2, ? extends R>> values) {
 		return traverse2(values, identity());
 	}
@@ -2033,7 +2054,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, R> Arguments3Validator<A1, A2, A3, List<R>> sequence3(
+	public static <A1, A2, A3, R extends @Nullable Object> Arguments3Validator<A1, A2, A3, List<R>> sequence3(
 			Iterable<? extends Arguments3Validator<? super A1, ? super A2, ? super A3, ? extends R>> values) {
 		return traverse3(values, identity());
 	}
@@ -2050,7 +2071,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, R> Arguments4Validator<A1, A2, A3, A4, List<R>> sequence4(
+	public static <A1, A2, A3, A4, R extends @Nullable Object> Arguments4Validator<A1, A2, A3, A4, List<R>> sequence4(
 			Iterable<? extends Arguments4Validator<? super A1, ? super A2, ? super A3, ? super A4, ? extends R>> values) {
 		return traverse4(values, identity());
 	}
@@ -2068,7 +2089,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, R> Arguments5Validator<A1, A2, A3, A4, A5, List<R>> sequence5(
+	public static <A1, A2, A3, A4, A5, R extends @Nullable Object> Arguments5Validator<A1, A2, A3, A4, A5, List<R>> sequence5(
 			Iterable<? extends Arguments5Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? extends R>> values) {
 		return traverse5(values, identity());
 	}
@@ -2087,7 +2108,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, R> Arguments6Validator<A1, A2, A3, A4, A5, A6, List<R>> sequence6(
+	public static <A1, A2, A3, A4, A5, A6, R extends @Nullable Object> Arguments6Validator<A1, A2, A3, A4, A5, A6, List<R>> sequence6(
 			Iterable<? extends Arguments6Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? extends R>> values) {
 		return traverse6(values, identity());
 	}
@@ -2107,7 +2128,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, R> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, List<R>> sequence7(
+	public static <A1, A2, A3, A4, A5, A6, A7, R extends @Nullable Object> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, List<R>> sequence7(
 			Iterable<? extends Arguments7Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? extends R>> values) {
 		return traverse7(values, identity());
 	}
@@ -2128,7 +2149,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, R> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, List<R>> sequence8(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, R extends @Nullable Object> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, List<R>> sequence8(
 			Iterable<? extends Arguments8Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? extends R>> values) {
 		return traverse8(values, identity());
 	}
@@ -2150,7 +2171,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, List<R>> sequence9(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, R extends @Nullable Object> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, List<R>> sequence9(
 			Iterable<? extends Arguments9Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? extends R>> values) {
 		return traverse9(values, identity());
 	}
@@ -2173,7 +2194,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> sequence10(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R extends @Nullable Object> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, List<R>> sequence10(
 			Iterable<? extends Arguments10Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? extends R>> values) {
 		return traverse10(values, identity());
 	}
@@ -2197,7 +2218,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> sequence11(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, R extends @Nullable Object> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, List<R>> sequence11(
 			Iterable<? extends Arguments11Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? extends R>> values) {
 		return traverse11(values, identity());
 	}
@@ -2222,7 +2243,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> sequence12(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R extends @Nullable Object> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<R>> sequence12(
 			Iterable<? extends Arguments12Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? extends R>> values) {
 		return traverse12(values, identity());
 	}
@@ -2248,7 +2269,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> sequence13(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R extends @Nullable Object> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, List<R>> sequence13(
 			Iterable<? extends Arguments13Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? extends R>> values) {
 		return traverse13(values, identity());
 	}
@@ -2275,7 +2296,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> sequence14(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, R extends @Nullable Object> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, List<R>> sequence14(
 			Iterable<? extends Arguments14Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? extends R>> values) {
 		return traverse14(values, identity());
 	}
@@ -2303,7 +2324,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> sequence15(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R extends @Nullable Object> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<R>> sequence15(
 			Iterable<? extends Arguments15Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? extends R>> values) {
 		return traverse15(values, identity());
 	}
@@ -2332,7 +2353,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type of the value produced for each validator
 	 * @return a validator that produces a list of validated values
 	 */
-	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> sequence16(
+	public static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R extends @Nullable Object> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, List<R>> sequence16(
 			Iterable<? extends Arguments16Validator<? super A1, ? super A2, ? super A3, ? super A4, ? super A5, ? super A6, ? super A7, ? super A8, ? super A9, ? super A10, ? super A11, ? super A12, ? super A13, ? super A14, ? super A15, ? super A16, ? extends R>> values) {
 		return traverse16(values, identity());
 	}
@@ -2351,7 +2372,7 @@ public class ArgumentsValidators {
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+	public static <A1, R extends @Nullable Object, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return Arguments1Validator.from(ValueValidator.liftCollection(validator, factory));
 	}
@@ -2366,7 +2387,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type produced for each element
 	 * @return a validator for iterables
 	 */
-	public static <A1, R> Arguments1Validator<Iterable<A1>, List<R>> liftList(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftList(validator));
 	}
@@ -2383,7 +2404,7 @@ public class ArgumentsValidators {
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftSet(validator));
 	}
@@ -2398,7 +2419,7 @@ public class ArgumentsValidators {
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	public static <A1, R> Arguments1Validator<Optional<A1>, Optional<R>> liftOptional(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Optional<A1>, Optional<@NonNull R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftOptional(validator));
 	}

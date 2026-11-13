@@ -19,8 +19,9 @@ import am.ik.yavi.core.Validator;
  * <p>
  * The value is validated under the name given to {@link #of} and violations are reported
  * with that name and the message key of the violated constraint, for example
- * {@code numeric.lessThanOrEqual}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code numeric.lessThanOrEqual}. A {@code null} value is a violation: the one of a
+ * constraint that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * Example: <pre>{@code
@@ -41,7 +42,9 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 * @param name the property name used as the violation name
 	 * @param constraints the function that configures the constraints
 	 * @return a new builder
@@ -83,7 +86,7 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 	 * @return a new validator
 	 */
 	@Override
-	public <T> DoubleValidator<T> build(Function<? super Double, ? extends @Nullable T> mapper) {
+	public <T extends @Nullable Object> DoubleValidator<T> build(Function<? super Double, ? extends T> mapper) {
 		final Validator<Arguments1<Double>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new DoubleValidator<>(validator, mapper::apply);
 	}

@@ -48,7 +48,7 @@ import static java.util.stream.Collectors.toList;
  * @param <T> type of the value in the case of success
  * @since 0.6.0
  */
-public interface Validation<E, T> extends Serializable {
+public interface Validation<E, T extends @Nullable Object> extends Serializable {
 
 	/**
 	 * Returns whether this validation is successful.
@@ -61,11 +61,9 @@ public interface Validation<E, T> extends Serializable {
 	 * Returns the value of this validation.
 	 *
 	 * <p>
-	 * The value may be {@code null}; prefer {@link #valueNullable()} if a successful
-	 * validation can hold {@code null}.
+	 * The value is {@code null} only if the value type {@code T} is nullable.
 	 * @return the value of a successful validation
-	 * @throws NoSuchElementException if this validation is a failure or the value is
-	 * {@code null}
+	 * @throws NoSuchElementException if this validation is a failure
 	 */
 	T value();
 
@@ -74,8 +72,13 @@ public interface Validation<E, T> extends Serializable {
 	 * @return the value of a successful validation, possibly {@code null}
 	 * @throws NoSuchElementException if this validation is a failure
 	 * @since 0.8.3
+	 * @deprecated Use {@link #value()}, which returns {@code null} for a validation that
+	 * succeeded with {@code null}. Whether it can is told by the value type.
 	 */
-	@Nullable T valueNullable();
+	@Deprecated
+	default @Nullable T valueNullable() {
+		return this.value();
+	}
 
 	/**
 	 * Returns the errors of this validation. The returned list is unmodifiable.
@@ -97,7 +100,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @return the mapped successful validation or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
+	default <T2 extends @Nullable Object> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
 		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (Validation<E, T2>) this;
 	}
 
@@ -115,7 +118,8 @@ public interface Validation<E, T> extends Serializable {
 	 * @return the validation produced by the mapper or this failure
 	 */
 	@SuppressWarnings("unchecked")
-	default <T2> Validation<E, T2> flatMap(Function<? super T, ? extends Validation<E, ? extends T2>> mapper) {
+	default <T2 extends @Nullable Object> Validation<E, T2> flatMap(
+			Function<? super T, ? extends Validation<E, ? extends T2>> mapper) {
 		return isValid() ? (Validation<E, T2>) mapper.apply(value()) : (Validation<E, T2>) this;
 	}
 
@@ -171,8 +175,8 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <T2> type of the mapped value
 	 * @return the mapped successful validation or the mapped failure
 	 */
-	default <E2, T2> Validation<E2, T2> bimap(Function<? super List<E>, ? extends List<E2>> errorsMapper,
-			Function<? super T, ? extends T2> mapper) {
+	default <E2, T2 extends @Nullable Object> Validation<E2, T2> bimap(
+			Function<? super List<E>, ? extends List<E2>> errorsMapper, Function<? super T, ? extends T2> mapper) {
 		return isValid() ? Validation.success(mapper.apply(value())) : Validation.failure(errorsMapper.apply(errors()));
 	}
 
@@ -247,7 +251,8 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <U> type of the result
 	 * @return the result produced by the applied mapper
 	 */
-	default <U> U fold(Function<? super List<E>, ? extends U> errorsMapper, Function<? super T, ? extends U> mapper) {
+	default <U extends @Nullable Object> U fold(Function<? super List<E>, ? extends U> errorsMapper,
+			Function<? super T, ? extends U> mapper) {
 		return isValid() ? mapper.apply(value()) : errorsMapper.apply(errors());
 	}
 
@@ -260,7 +265,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @return a successful validation
 	 */
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<E, U>> V yieldSuccess(@Nullable U value) {
+	default <U extends @Nullable Object, V extends Validation<E, U>> V yieldSuccess(U value) {
 		return (V) Validation.success(value);
 	}
 
@@ -273,7 +278,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @return a failed validation
 	 */
 	@SuppressWarnings("unchecked")
-	default <U, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
+	default <U extends @Nullable Object, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
 		return (V) Validation.failure(errors);
 	}
 
@@ -281,25 +286,21 @@ public interface Validation<E, T> extends Serializable {
 	 * Applies the function held by the given validation to the value of this validation.
 	 *
 	 * <p>
-	 * If both validations are successful, the function is called with the value (which
-	 * may be {@code null}) and the result is returned as a success; a {@code null}
-	 * function produces a success holding {@code null}. If exactly one validation fails,
-	 * its errors are returned. If both fail, their errors are accumulated with the errors
-	 * of the given validation first, that is, in the order in which the validations were
-	 * combined.
+	 * If both validations are successful, the function is called with the value and the
+	 * result is returned as a success. If exactly one validation fails, its errors are
+	 * returned. If both fail, their errors are accumulated with the errors of the given
+	 * validation first, that is, in the order in which the validations were combined.
 	 * @param validation validation holding the function to apply
 	 * @param <U> type of the result
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result or the accumulated errors
 	 */
-	// The value may be null; the type of the function parameter does not express that.
-	@SuppressWarnings("NullAway")
-	default <U, V extends Validation<E, U>> V apply(
+	default <U extends @Nullable Object, V extends Validation<E, U>> V apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
-				final Function1<? super T, ? extends U> f = validation.valueNullable();
-				final U u = f == null ? null : f.apply(this.valueNullable());
+				final Function1<? super T, ? extends U> f = validation.value();
+				final U u = f.apply(this.value());
 				return this.yieldSuccess(u);
 			}
 			else {
@@ -328,7 +329,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <T2> type of the value of the given validation
 	 * @return the combination of the two validations
 	 */
-	default <T2> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
+	default <T2 extends @Nullable Object> Combining2<E, T, T2> combine(Validation<E, T2> validation) {
 		return new Combining2<>(this, validation);
 	}
 
@@ -339,7 +340,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <T> type of the value
 	 * @return a successful validation
 	 */
-	static <E, T> Validation<E, T> success(@Nullable T value) {
+	static <E, T extends @Nullable Object> Validation<E, T> success(T value) {
 		return new Success<>(value);
 	}
 
@@ -352,7 +353,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @return a failed validation
 	 * @throws IllegalArgumentException if {@code errors} is {@code null} or empty
 	 */
-	static <E, T> Validation<E, T> failure(List<E> errors) {
+	static <E, T extends @Nullable Object> Validation<E, T> failure(List<E> errors) {
 		return new Failure<>(errors);
 	}
 
@@ -365,7 +366,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @throws IllegalArgumentException if no error is given
 	 */
 	@SuppressWarnings("unchecked")
-	static <E, T> Validation<E, T> failure(E... errors) {
+	static <E, T extends @Nullable Object> Validation<E, T> failure(E... errors) {
 		return new Failure<>(Arrays.asList(errors));
 	}
 
@@ -373,23 +374,22 @@ public interface Validation<E, T> extends Serializable {
 	 * A successful {@link Validation} that holds a value.
 	 *
 	 * <p>
-	 * The value may be {@code null}; in that case use {@link #valueNullable()}, because
-	 * {@link #value()} throws for a {@code null} value.
+	 * The value is {@code null} only if the value type is nullable.
 	 *
 	 * @param <E> type of the errors in the case of failure
 	 * @param <T> type of the value
 	 * @since 0.6.0
 	 */
-	class Success<E, T> implements Validation<E, T> {
+	class Success<E, T extends @Nullable Object> implements Validation<E, T> {
 
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * The value held by this successful validation. May be {@code null}.
+		 * The value held by this successful validation.
 		 */
-		public final @Nullable T value;
+		public final T value;
 
-		Success(@Nullable T value) {
+		Success(T value) {
 			this.value = value;
 		}
 
@@ -400,14 +400,6 @@ public interface Validation<E, T> extends Serializable {
 
 		@Override
 		public T value() {
-			if (this.value == null) {
-				throw new NoSuchElementException("'value' is null.");
-			}
-			return this.value;
-		}
-
-		@Override
-		@Nullable public T valueNullable() {
 			return this.value;
 		}
 
@@ -443,7 +435,7 @@ public interface Validation<E, T> extends Serializable {
 	 * @param <T> type of the value in the case of success
 	 * @since 0.6.0
 	 */
-	class Failure<E, T> implements Validation<E, T> {
+	class Failure<E, T extends @Nullable Object> implements Validation<E, T> {
 
 		private static final long serialVersionUID = 1L;
 
@@ -470,11 +462,6 @@ public interface Validation<E, T> extends Serializable {
 		@Override
 		public T value() {
 			throw new NoSuchElementException("value of 'Failure' Validation does not exists. Errors=" + errors);
-		}
-
-		@Override
-		@Nullable public T valueNullable() {
-			return this.value();
 		}
 
 		@Override

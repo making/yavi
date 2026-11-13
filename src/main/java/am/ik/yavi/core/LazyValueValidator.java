@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
  */
-final class LazyValueValidator<T, X> implements ValueValidator<T, X> {
+final class LazyValueValidator<T, X extends @Nullable Object> implements ValueValidator<T, X> {
 
 	private final Supplier<? extends @Nullable ValueValidator<T, X>> supplier;
 

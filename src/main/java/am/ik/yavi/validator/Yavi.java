@@ -94,8 +94,8 @@ import java.util.function.Function;
  *
  * <pre>{@code
  * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
- *     ._string("manufacturer", c -> c.notNull())
- *     ._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+ *     ._string("manufacturer")
+ *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
  *     .apply(Car::new);
  * Validated<Car> validated = validator.validate("Toyota", "ABC-123", 5);
@@ -106,9 +106,10 @@ import java.util.function.Function;
  * {@code _list} and {@code _map} validate elements and, with constraints, the list or map
  * of the validated elements ({@code c -> c.notEmpty().unique()}), and {@code optional()},
  * {@code nullable()} and {@code defaultValue} make the last added argument accept
- * {@code null}. The violations of nested values are located under the argument name, for
- * example {@code address.street} or {@code roles[0]}. A rule that spans several arguments
- * is added to the created validator with {@code constraintOnTarget}:
+ * {@code null}, which is a violation otherwise. The violations of nested values are
+ * located under the argument name, for example {@code address.street} or
+ * {@code roles[0]}. A rule that spans several arguments is added to the created validator
+ * with {@code constraintOnTarget}:
  *
  * <pre>{@code
  * Arguments4Validator<String, String, AddressForm, List<String>, User> validator = Yavi.arguments()
@@ -128,13 +129,16 @@ import java.util.function.Function;
  * without a name is the element of a list, the value of a map, an alternative of
  * {@code anyOf} or a value validated by itself; its violations are named by the place
  * where it is used ({@code roles[0]}), or have the empty name and a message that says
- * "The value" in place of the name. {@code _list} and {@code _map} return the validator
- * of a list or a map that is not an argument, with the constraints of the list or map.
+ * "The value" in place of the name. Such a validator requires its value: {@code null} is
+ * a violation unless {@code nullable()}, {@code optional()} or {@code defaultValue(...)}
+ * is applied to it, and the type of the validated value tells which. {@code _list} and
+ * {@code _map} return the validator of a list or a map that is not an argument, with the
+ * constraints of the list or map.
  *
  * <pre>{@code
  * StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
  * StringValidator<Email> named = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
- * ValueValidator<Object, Integer> age = Yavi._integer(c -> c.notNull().positiveOrZero()).untyped();
+ * ValueValidator<Object, Integer> age = Yavi._integer(c -> c.positiveOrZero()).untyped();
  * }</pre>
  *
  * <p>
@@ -144,7 +148,7 @@ import java.util.function.Function;
  *
  * <pre>{@code
  * StringValidator<String> email = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
- * BigDecimalValidator<BigDecimal> price = Yavi._bigDecimal("price", c -> c.notNull().positive())
+ * BigDecimalValidator<BigDecimal> price = Yavi._bigDecimal("price", c -> c.positive())
  *     .preprocess(BigDecimal::stripTrailingZeros);
  * }</pre>
  *
@@ -181,6 +185,17 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code BigDecimal} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_bigDecimal(Function)
+	 */
+	public static BigDecimalValidator<BigDecimal> _bigDecimal() {
+		return _bigDecimal("", Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code BigDecimal} without a name.
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -196,9 +211,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code BigDecimal} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link BigDecimalConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link BigDecimalConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -207,6 +223,17 @@ public final class Yavi {
 	public static BigDecimalValidator<BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return BigDecimalValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code BigInteger} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_bigInteger(Function)
+	 */
+	public static BigIntegerValidator<BigInteger> _bigInteger() {
+		return _bigInteger("", Function.identity());
 	}
 
 	/**
@@ -225,9 +252,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code BigInteger} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link BigIntegerConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link BigIntegerConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -236,6 +264,17 @@ public final class Yavi {
 	public static BigIntegerValidator<BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return BigIntegerValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Boolean} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_boolean(Function)
+	 */
+	public static BooleanValidator<Boolean> _boolean() {
+		return _boolean("", Function.identity());
 	}
 
 	/**
@@ -254,9 +293,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Boolean} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link BooleanConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link BooleanConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -265,6 +305,17 @@ public final class Yavi {
 	public static BooleanValidator<Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return BooleanValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Double} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_double(Function)
+	 */
+	public static DoubleValidator<Double> _double() {
+		return _double("", Function.identity());
 	}
 
 	/**
@@ -283,9 +334,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Double} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link DoubleConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link DoubleConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -327,10 +379,12 @@ public final class Yavi {
 	 * Returns a validator of a constant of the given enum type with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link EnumConstraint}. The validator knows its enum type: its description holds
-	 * the constants, and {@code untyped()} reads the value from the name of a constant.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link EnumConstraint}. The
+	 * validator knows its enum type: its description holds the constants, and
+	 * {@code untyped()} reads the value from the name of a constant.
 	 * @param <E> the enum type of the value
 	 * @param name the name used in violation names and messages
 	 * @param type the enum type of the value
@@ -341,6 +395,17 @@ public final class Yavi {
 	public static <E extends Enum<E>> EnumValidator<E, E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return EnumValidatorBuilder.of(name, type, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Float} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_float(Function)
+	 */
+	public static FloatValidator<Float> _float() {
+		return _float("", Function.identity());
 	}
 
 	/**
@@ -359,9 +424,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Float} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link FloatConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link FloatConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -370,6 +436,17 @@ public final class Yavi {
 	public static FloatValidator<Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return FloatValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of an {@code Instant} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_instant(Function)
+	 */
+	public static InstantValidator<Instant> _instant() {
+		return _instant("", Function.identity());
 	}
 
 	/**
@@ -388,9 +465,10 @@ public final class Yavi {
 	 * Returns a validator of an {@code Instant} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link InstantConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link InstantConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -399,6 +477,17 @@ public final class Yavi {
 	public static InstantValidator<Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return InstantValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of an {@code Integer} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_integer(Function)
+	 */
+	public static IntegerValidator<Integer> _integer() {
+		return _integer("", Function.identity());
 	}
 
 	/**
@@ -417,9 +506,10 @@ public final class Yavi {
 	 * Returns a validator of an {@code Integer} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link IntegerConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link IntegerConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -460,6 +550,17 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code LocalDateTime} without a name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localDateTime(Function)
+	 */
+	public static LocalDateTimeValidator<LocalDateTime> _localDateTime() {
+		return _localDateTime("", Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code LocalDateTime} without a name.
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -475,9 +576,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code LocalDateTime} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link LocalDateTimeConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link LocalDateTimeConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -486,6 +588,17 @@ public final class Yavi {
 	public static LocalDateTimeValidator<LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return LocalDateTimeValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code LocalTime} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localTime(Function)
+	 */
+	public static LocalTimeValidator<LocalTime> _localTime() {
+		return _localTime("", Function.identity());
 	}
 
 	/**
@@ -504,9 +617,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code LocalTime} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link LocalTimeConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link LocalTimeConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -515,6 +629,17 @@ public final class Yavi {
 	public static LocalTimeValidator<LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return LocalTimeValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code LocalDate} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localDate(Function)
+	 */
+	public static LocalDateValidator<LocalDate> _localDate() {
+		return _localDate("", Function.identity());
 	}
 
 	/**
@@ -533,9 +658,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code LocalDate} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link LocalDateConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link LocalDateConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -544,6 +670,17 @@ public final class Yavi {
 	public static LocalDateValidator<LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return LocalDateValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Long} without a name and without constraints, which
+	 * accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_long(Function)
+	 */
+	public static LongValidator<Long> _long() {
+		return _long("", Function.identity());
 	}
 
 	/**
@@ -562,9 +699,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Long} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link LongConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link LongConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -590,7 +728,7 @@ public final class Yavi {
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> prices = Yavi
-	 *     ._map(Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty());
+	 *     ._map(Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty());
 	 * }</pre>
 	 * @param <V> the type of the values to validate
 	 * @param <T> the type of the validated values
@@ -602,6 +740,19 @@ public final class Yavi {
 	public static <V, T> ValueValidator<Map<String, V>, Map<String, T>> _map(ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return MapValidatorBuilder.of(valueValidator, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a value of the given type without a name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param <T> the type of the value
+	 * @param type the type of the value
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_object(Class, Function)
+	 */
+	public static <T> ObjectValidator<T, T> _object(Class<T> type) {
+		return _object("", type, Function.identity());
 	}
 
 	/**
@@ -622,10 +773,12 @@ public final class Yavi {
 	 * Returns a validator of a value of the given type with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link ObjectConstraint}. The validator knows its input type, so {@code untyped()}
-	 * accepts an instance of {@code type} only.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link ObjectConstraint}. The
+	 * validator knows its input type, so {@code untyped()} accepts an instance of
+	 * {@code type} only.
 	 * @param <T> the type of the value
 	 * @param name the name used in violation names and messages
 	 * @param type the type of the value
@@ -675,6 +828,17 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of an {@code OffsetDateTime} without a name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_offsetDateTime(Function)
+	 */
+	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime() {
+		return _offsetDateTime("", Function.identity());
+	}
+
+	/**
 	 * Returns a validator of an {@code OffsetDateTime} without a name.
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -690,9 +854,10 @@ public final class Yavi {
 	 * Returns a validator of an {@code OffsetDateTime} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link OffsetDateTimeConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link OffsetDateTimeConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -701,6 +866,17 @@ public final class Yavi {
 	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return OffsetDateTimeValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Short} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_short(Function)
+	 */
+	public static ShortValidator<Short> _short() {
+		return _short("", Function.identity());
 	}
 
 	/**
@@ -719,9 +895,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Short} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link ShortConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link ShortConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -730,6 +907,17 @@ public final class Yavi {
 	public static ShortValidator<Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return ShortValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code String} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_string(Function)
+	 */
+	public static StringValidator<String> _string() {
+		return _string("", Function.identity());
 	}
 
 	/**
@@ -748,9 +936,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code String} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link CharSequenceConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link CharSequenceConstraint}.
 	 *
 	 * <p>
 	 * The value can be transformed before it is constrained with the transforms of
@@ -765,6 +954,17 @@ public final class Yavi {
 	public static StringValidator<String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return StringValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code YearMonth} without a name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_yearMonth(Function)
+	 */
+	public static YearMonthValidator<YearMonth> _yearMonth() {
+		return _yearMonth("", Function.identity());
 	}
 
 	/**
@@ -783,9 +983,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code YearMonth} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link YearMonthConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link YearMonthConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -794,6 +995,17 @@ public final class Yavi {
 	public static YearMonthValidator<YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return YearMonthValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code Year} without a name and without constraints, which
+	 * accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_year(Function)
+	 */
+	public static YearValidator<Year> _year() {
+		return _year("", Function.identity());
 	}
 
 	/**
@@ -812,9 +1024,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code Year} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link YearConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link YearConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value
@@ -823,6 +1036,17 @@ public final class Yavi {
 	public static YearValidator<Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return YearValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a {@code ZonedDateTime} without a name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_zonedDateTime(Function)
+	 */
+	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime() {
+		return _zonedDateTime("", Function.identity());
 	}
 
 	/**
@@ -841,9 +1065,10 @@ public final class Yavi {
 	 * Returns a validator of a {@code ZonedDateTime} with the given name.
 	 *
 	 * <p>
-	 * A {@code null} value is accepted unless the constraints require otherwise.
-	 * Violations use {@code name} as their name and the message ids of
-	 * {@link ZonedDateTimeConstraint}.
+	 * A {@code null} value is a violation: the one of a constraint that rejects it, or
+	 * else {@code object.notNull}. It is accepted with {@code nullable()},
+	 * {@code optional()} or {@code defaultValue(...)} of the validator. Violations use
+	 * {@code name} as their name and the message ids of {@link ZonedDateTimeConstraint}.
 	 * @param name the name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a validator of the value

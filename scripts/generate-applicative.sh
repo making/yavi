@@ -13,6 +13,8 @@ for i in `seq 1 ${n}`;do
  */
 package am.ik.yavi.fn;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Combines validation results and applies a function to their values in applicative
  * style.
@@ -32,7 +34,7 @@ package am.ik.yavi.fn;
 $(for j in `seq 1 ${i}`;do echo " * @param <T${j}> the value type of validation ${j}";done)
  * @since 0.6.0
  */
-public class ${class}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> {
+public class ${class}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} extends @Nullable Object, ";done) | sed 's/,$//')> {
 $(for j in `seq 1 ${i}`;do echo "	/**";echo "	 * The validation at position ${j} of this combination.";echo "	 */";echo "	protected final Validation<E, T${j}> v${j};";echo;done)
 
 	/**
@@ -56,7 +58,7 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public <R, V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
+	public <R extends @Nullable Object, V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f) {
 $(for j in `seq 1 ${i}`;do
 		  if [ ${j} -lt ${i} ];then
           echo "		final Validation<E, $(for k in `seq $((j + 1)) ${i}`;do echo -n "Function1<T$k, ";done)R>$(for k in `seq $((j + 1)) ${i}`;do echo -n ">";done) apply${j} = v${j}.apply($(if [ "${j}" == "1" ];then echo "Validation.success(Functions.curry(f))";else echo "apply$((${j} - 1))";fi));"
@@ -69,7 +71,7 @@ $(for j in `seq 1 ${i}`;do
 		  fi
 		done)
 	}
-$(if [ ${i} -lt ${n} ];then echo;echo "	/**";echo "	 * Returns a combination that also includes the given validation. The validation is";echo "	 * appended after the existing ones, which determines the order of accumulated errors.";echo "	 * @param v$((${i} + 1)) the validation to add";echo "	 * @param <T$((${i} + 1))> the value type of the added validation";echo "	 * @return the combination of $((${i} + 1)) validations";echo "	 */";echo "	public <T$((${i} + 1))> Combining$((${i} + 1))<E, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine(Validation<E, T$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Combining$((${i} + 1))<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
+$(if [ ${i} -lt ${n} ];then echo;echo "	/**";echo "	 * Returns a combination that also includes the given validation. The validation is";echo "	 * appended after the existing ones, which determines the order of accumulated errors.";echo "	 * @param v$((${i} + 1)) the validation to add";echo "	 * @param <T$((${i} + 1))> the value type of the added validation";echo "	 * @return the combination of $((${i} + 1)) validations";echo "	 */";echo "	public <T$((${i} + 1)) extends @Nullable Object> Combining$((${i} + 1))<E, $(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine(Validation<E, T$((${i} + 1))> v$((${i} + 1))) {"; echo "		return new Combining$((${i} + 1))<>($(echo $(for j in `seq 1 $((${i} + 1))`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}"; else echo -n "";fi)
 }
 EOF
 done
@@ -91,6 +93,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import static java.util.function.Function.identity;
@@ -124,9 +127,9 @@ public class ${class} {
 	public ${class}() {
 	}
 
-$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Returns a combination of the given validation results. A function can be applied to";echo "	 * the values with the {@code apply} method of the returned combination.";for j in `seq 1 ${i}`;do echo "	 * @param v${j} validation ${j}";done;echo "	 * @param <E> the type of the errors of the combined validations";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the value type of validation ${j}";done;echo "	 * @return the combination of the given validations";echo "	 */";echo "	public static <E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> Combining${i}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return new Combining${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Returns a combination of the given validation results. A function can be applied to";echo "	 * the values with the {@code apply} method of the returned combination.";for j in `seq 1 ${i}`;do echo "	 * @param v${j} validation ${j}";done;echo "	 * @param <E> the type of the errors of the combined validations";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the value type of validation ${j}";done;echo "	 * @return the combination of the given validations";echo "	 */";echo "	public static <E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} extends @Nullable Object, ";done) | sed 's/,$//')> Combining${i}<E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//')> combine($(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return new Combining${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
 
-$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation results and applies the given function to their values";echo "	 * if all of them are successful. If any of them fails, returns a failure that";echo "	 * accumulates the errors in argument order; the function is not invoked.";echo "	 * @param f the function that receives the validated values";for j in `seq 1 ${i}`;do echo "	 * @param v${j} validation ${j}";done;echo "	 * @param <R> the type of the result";echo "	 * @param <E> the type of the errors of the combined validations";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the value type of validation ${j}";done;echo "	 * @param <V> the concrete validation type returned";echo "	 * @return the successful result of the function or the accumulated errors";echo "	 */";echo "	public static <R, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return combine($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation results and applies the given function to their values";echo "	 * if all of them are successful. If any of them fails, returns a failure that";echo "	 * accumulates the errors in argument order; the function is not invoked.";echo "	 * @param f the function that receives the validated values";for j in `seq 1 ${i}`;do echo "	 * @param v${j} validation ${j}";done;echo "	 * @param <R> the type of the result";echo "	 * @param <E> the type of the errors of the combined validations";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the value type of validation ${j}";done;echo "	 * @param <V> the concrete validation type returned";echo "	 * @return the successful result of the function or the accumulated errors";echo "	 */";echo "	public static <R extends @Nullable Object, E, $(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} extends @Nullable Object, ";done) | sed 's/,$//'), V extends Validation<E, R>> V apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done) | sed 's/,$//'), R> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Validation<E, T${j}> v${j}, ";done) | sed 's/,$//')) {"; echo "		return combine($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}, ";done) | sed 's/,$//')).apply(f);"; echo "	}";echo;done)
 
 	/**
 	 * Combines the given validation results into a validation result holding the list of
@@ -142,7 +145,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * @return a successful validation holding the list of values or a failure holding the
 	 * accumulated errors
 	 */
-	public static <E, T> Validation<E, List<T>> sequence(
+	public static <E, T extends @Nullable Object> Validation<E, List<T>> sequence(
 			Iterable<? extends Validation<? extends E, ? extends T>> validations) {
 		return traverse(validations, identity());
 	}
@@ -164,7 +167,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * @return a successful validation holding the list of values or a failure holding the
 	 * accumulated errors
 	 */
-	public static <E, T, U> Validation<E, List<U>> traverse(Iterable<T> values,
+	public static <E, T, U extends @Nullable Object> Validation<E, List<U>> traverse(Iterable<T> values,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
 		return traverseIndexed(values, IndexedTraverser.ignoreIndex(mapper));
 	}
@@ -176,7 +179,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * @since 0.7.0
 	 */
 	@FunctionalInterface
-	public interface IndexedTraverser<A, R> {
+	public interface IndexedTraverser<A, R extends @Nullable Object> {
 		/**
 		 * Applies this traverser to the given value and index.
 		 * @param a the value
@@ -192,7 +195,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 		 * @param <R> the type of the result
 		 * @return a traverser that ignores the index
 		 */
-		static <A, R> IndexedTraverser<A, R> ignoreIndex(Function<? super A, ? extends R> f) {
+		static <A, R extends @Nullable Object> IndexedTraverser<A, R> ignoreIndex(Function<? super A, ? extends R> f) {
 			return (a, index) -> f.apply(a);
 		}
 	}
@@ -215,7 +218,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * accumulated errors
 	 * @since 0.7.0
 	 */
-	public static <E, T, U> Validation<E, List<U>> traverseIndexed(@Nullable Iterable<T> values,
+	public static <E, T, U extends @Nullable Object> Validation<E, List<U>> traverseIndexed(@Nullable Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser) {
 		return traverseIndexed(values, traverser, ArrayList::new);
 	}
@@ -240,7 +243,7 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * holding the accumulated errors
 	 * @since 0.8.0
 	 */
-	public static <E, T, U, C extends Collection<U>> Validation<E, C> traverseIndexed(
+	public static <E, T, U extends @Nullable Object, C extends Collection<U>> Validation<E, C> traverseIndexed(
 			@Nullable Iterable<T> values,
 			IndexedTraverser<? super T, ? extends Validation<? extends E, ? extends U>> traverser,
 			Supplier<C> factory) {
@@ -275,13 +278,13 @@ $(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Combines the given validation r
 	 * @since 0.8.0
 	 */
 	@SuppressWarnings("unchecked")
-	public static <E, T, U> Validation<E, Optional<U>> traverseOptional(@Nullable Optional<T> value,
+	public static <E, T, U extends @Nullable Object> Validation<E, Optional<@NonNull U>> traverseOptional(@Nullable Optional<T> value,
 			Function<? super T, ? extends Validation<? extends E, ? extends U>> mapper) {
 		if (value == null) {
 			return Validation.success(Optional.empty());
 		}
 		return value.map(
-				t -> mapper.apply(t).bimap(es -> (List<E>) es, u -> Optional.of((U) u))) //
+				t -> mapper.apply(t).bimap(es -> (List<E>) es, u -> Optional.<@NonNull U>ofNullable(u))) //
 				.orElse(Validation.success(Optional.empty()));
 	}
 
@@ -297,6 +300,8 @@ cat <<EOF > ${file}
  * SPDX-License-Identifier: Apache-2.0
  */
 package am.ik.yavi.fn;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Currying helpers for the {@code FunctionN} interfaces.
@@ -315,6 +320,6 @@ public class ${class} {
 	public ${class}() {
 	}
 
-$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Returns a curried form of the given function: a function that takes the first";echo "	 * argument and returns a function for each of the remaining arguments, in order.";echo "	 * @param f the function to curry";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the type of argument ${j}";done;echo "	 * @param <R> the type of the result";echo "	 * @return the curried function";echo "	 */";echo "	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done)) R> $(echo $(for j in `seq 1 ${i}`;do echo -n "Function1<T${j}, ";done)) R$(echo $(for j in `seq 1 ${i}`;do echo -n ">";done)) curry(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done)) R> f) {"; echo "		return $(echo $(for j in `seq 1 ${i}`;do echo -n "t${j} -> ";done)) f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "t${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
+$(for i in `seq 1 ${n}`;do echo "	/**";echo "	 * Returns a curried form of the given function: a function that takes the first";echo "	 * argument and returns a function for each of the remaining arguments, in order.";echo "	 * @param f the function to curry";for j in `seq 1 ${i}`;do echo "	 * @param <T${j}> the type of argument ${j}";done;echo "	 * @param <R> the type of the result";echo "	 * @return the curried function";echo "	 */";echo "	public static <$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j} extends @Nullable Object, ";done)) R extends @Nullable Object> $(echo $(for j in `seq 1 ${i}`;do echo -n "Function1<T${j}, ";done)) R$(echo $(for j in `seq 1 ${i}`;do echo -n ">";done)) curry(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "T${j}, ";done)) R> f) {"; echo "		return $(echo $(for j in `seq 1 ${i}`;do echo -n "t${j} -> ";done)) f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "t${j}, ";done) | sed 's/,$//'));"; echo "	}";echo;done)
 }
 EOF

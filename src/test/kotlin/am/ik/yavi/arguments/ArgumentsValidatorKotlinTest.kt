@@ -6,6 +6,7 @@ package am.ik.yavi.arguments
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder
 import am.ik.yavi.core.ConstraintViolationsException
+import am.ik.yavi.validator.Yavi
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -25,12 +26,24 @@ class ArgumentsValidatorKotlinTest {
             }
             .build()
 
+    data class Member(val name: String, val nickname: String?, val age: Int)
+
+    // an argument is required, so its value is not nullable unless nullable() says so
+    val memberValidator: Arguments3Validator<String, String, Int, Member> = Yavi.arguments()
+            ._string("name") { it.notBlank() }
+            ._string("nickname") { it.lessThanOrEqual(10) }.nullable()
+            ._integer("age") { it.greaterThanOrEqual(0) }
+            .apply { name, nickname, age -> Member(name.trim(), nickname?.trim(), age + 0) }
+
     @Test
     fun valid() {
         val person = validator.validated("John", "Doe", 20)
         assertThat(person.firstName).isEqualTo("John")
         assertThat(person.lastName).isEqualTo("Doe")
         assertThat(person.age).isEqualTo(20)
+        assertThat(memberValidator.validated(" John ", null, 20)).isEqualTo(Member("John", null, 20))
+        assertThat(memberValidator.validate("John", "jd", null).errors().map { it.message() })
+                .containsExactly("\"age\" must not be null")
     }
 
     @Test

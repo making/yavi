@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function2;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 2 validators that validate distinct arguments into a validator for those
@@ -28,7 +29,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R2> the type of the value produced for the argument at position 2
  * @since 0.7.0
  */
-public class Arguments2Splitting<A1, A2, R1, R2> {
+public class Arguments2Splitting<A1, A2, R1 extends @Nullable Object, R2 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -60,7 +61,8 @@ public class Arguments2Splitting<A1, A2, R1, R2> {
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 2 arguments
 	 */
-	public <X> Arguments2Validator<A1, A2, X> apply(Function2<? super R1, ? super R2, ? extends X> f) {
+	public <X extends @Nullable Object> Arguments2Validator<A1, A2, X> apply(
+			Function2<? super R1, ? super R2, ? extends X> f) {
 		return ArgumentsValidators.derived(
 				(a1, a2, locale, constraintContext) -> Validations.apply(f::apply,
 						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext)),
@@ -77,7 +79,8 @@ public class Arguments2Splitting<A1, A2, R1, R2> {
 	 * @param <R3> the type of the value produced for the argument at position 3
 	 * @return an arguments3 splitting instance
 	 */
-	public <A3, R3> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(ValueValidator<? super A3, ? extends R3> v3) {
+	public <A3, R3 extends @Nullable Object> Arguments3Splitting<A1, A2, A3, R1, R2, R3> split(
+			ValueValidator<? super A3, ? extends R3> v3) {
 		return new Arguments3Splitting<>(v1, v2, v3);
 	}
 
