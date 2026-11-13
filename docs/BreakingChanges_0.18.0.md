@@ -131,31 +131,41 @@ compatible with them. The change of behavior affects every user.
 
 ### Migration
 
-1. Find the arguments and single values that are meant to accept `null`: those without
-   `notNull()`, `notBlank()`, `notEmpty()` or another constraint that rejects `null`,
-   and without `optional()`, `defaultValue(...)` or `recover(...)`. Add `.nullable()` to
-   each of them, or `.optional()` or `.defaultValue(...)` if that fits better.
-2. With NullAway or Kotlin, declare what receives the value of a `nullable()` argument
+What has to change:
+
+1. Add `.nullable()` to the arguments and single values that are meant to accept `null`:
+   those without `notNull()`, `notBlank()`, `notEmpty()` or another constraint that
+   rejects `null`, and without `optional()`, `defaultValue(...)` or `recover(...)`. Use
+   `.optional()` or `.defaultValue(...)` instead if that fits better.
+2. Add `.nullable()` to an argument or a single value that is constrained with
+   `isNull()`.
+3. With NullAway or Kotlin, declare what receives the value of a `nullable()` argument
    as nullable: the parameter of the constructor or function given to `apply`, `fromMap`
    and `build` (`@Nullable String`, in Kotlin `String?`), and the type argument of a
-   declared validator (`ValueValidator<String, @Nullable String>`).
-3. Remove `notNull()` where it only made the value required. It is still valid, and it
-   is still the way to give the violation of `null` another message.
-4. Add `.nullable()` to an argument or a single value that is constrained with
-   `isNull()`.
-5. Replace `valueNullable()` with `value()`.
-6. Declare the `null` that `ValueValidator.passThrough()` and `_rest()` pass on:
+   declared validator (`ValueValidator<String, @Nullable String>`). Declare the `null`
+   that `ValueValidator.passThrough()` and `_rest()` pass on in the same way:
    `ValueValidator<X, @Nullable X>` and `Map<String, @Nullable Object>`.
-7. With NullAway, see [Limitations of NullAway](NullAwayLimitations.md) if correct code
+4. With NullAway, see [Limitations of NullAway](NullAwayLimitations.md) if correct code
    is reported.
 
 A validator of the elements of `_list` or of the values of `_map` is a single value, so
-steps 1 and 2 apply to it too: `_list("tags", Yavi._string().nullable())` produces a
+steps 1 to 3 apply to it too: `_list("tags", Yavi._string().nullable())` produces a
 `List<@Nullable String>`.
+
+What may stay as it is:
+
+* **An existing `notNull()`.** A value that was already required with `notNull()`,
+  `notBlank()` or `notEmpty()` is validated as before and reports the same violation, so
+  that code needs no change. `notNull()` is redundant where it only made the value
+  required, and removing it makes the code shorter, but nothing depends on it. It is
+  still the way to give the violation of `null` another message.
+* **`valueNullable()`.** It is deprecated and returns what `value()` returns. Replace it
+  with `value()` when convenient.
 
 ### Before and after
 
-An argument that must be present:
+An argument that must be present. The code before still works and behaves the same;
+`notNull()` can be removed:
 
 ```java
 // before
@@ -164,7 +174,7 @@ Yavi.arguments()
         ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
         .apply(Member::new);
 
-// after
+// after (optional)
 Yavi.arguments()
         ._string("name")
         ._integer("age", c -> c.greaterThanOrEqual(0))
@@ -201,7 +211,8 @@ Yavi.arguments()
     .apply(::Member)
 ```
 
-A single value:
+A single value. Only `memo`, which accepted `null`, has to change; `code` and `integer`
+work as they were written:
 
 ```java
 // before
@@ -215,7 +226,8 @@ ValueValidator<Object, Integer> integer = Yavi._integer().untyped();
 ValueValidator<String, @Nullable String> memo = Yavi._string("memo", c -> c.lessThanOrEqual(100)).nullable();
 ```
 
-A partial update, where an absent key is told from `null`:
+A partial update, where an absent key is told from `null`. Only `bio`, which can be
+cleared, has to change:
 
 ```java
 // before
