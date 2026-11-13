@@ -28,13 +28,14 @@ import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.jspecify.annotations.Nullable;
 
 class ValueValidatorTest {
 
 	@Test
 	void passThrough() {
-		final ValueValidator<String, String> validator = ValueValidator.passThrough();
-		final Validated<String> validated = validator.validate("hello");
+		final ValueValidator<String, @Nullable String> validator = ValueValidator.passThrough();
+		final Validated<@Nullable String> validated = validator.validate("hello");
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value()).isEqualTo("hello");
 	}
@@ -42,14 +43,14 @@ class ValueValidatorTest {
 	@Test
 	void andThenChainsValidators() {
 		ValueValidator<String, Country> countryValidator = Country.validator().applicative().compose(Country::new);
-		ValueValidator<String, String> streetValidator = ValueValidator.passThrough();
+		ValueValidator<String, @Nullable String> streetValidator = ValueValidator.passThrough();
 		ValueValidator<String, PhoneNumber> phoneValidator = PhoneNumber.validator()
 			.applicative()
 			.compose(PhoneNumber::new);
 
 		Arguments3Validator<String, String, String, Address> addressValidator = Arguments1Validator
 			.from(countryValidator)
-			.split(streetValidator)
+			.<String, @Nullable String>split(streetValidator)
 			.split(phoneValidator)
 			.apply(Address::new);
 
@@ -174,14 +175,17 @@ class ValueValidatorTest {
 			.preprocess(i -> i * 10)
 			.preprocess(Math::abs);
 		assertThat(percent.validated(-5)).isEqualTo(50);
-		assertThat(percent.validated(null)).isNull();
+		// null is not transformed: it is rejected, or accepted as it is
+		assertThat(percent.validate(null).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.notNull");
+		assertThat(percent.nullable().validated(null)).isNull();
 		assertThat(percent.validate(-50).errors()).extracting(ConstraintViolation::violatedValue).containsExactly(500);
 		assertThat(percent.map(String::valueOf).nullable().preprocess(i -> i + 1).untyped().validated(4.0))
 			.isEqualTo("50");
 		assertThat(code.preprocess(s -> s + "-x").validated("ab ")).isEqualTo("AB X");
 
 		// the input type of a lambda stays unknown
-		final ValueValidator<String, String> lambda = (s, locale, context) -> Validated.successWith(s);
+		final ValueValidator<String, String> lambda = (s, locale, context) -> Validated.successWith(s == null ? "" : s);
 		final ValueValidator<String, String> stripped = lambda.describedAs(code.description())
 			.preprocess(String::strip);
 		assertThat(stripped.validated(" a ")).isEqualTo("a");

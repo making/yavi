@@ -61,8 +61,8 @@ constraints. `untyped()` makes the validator accept an `Object` and check its ty
 is what `string()` and `int_()` of Raoh do.
 
 ```java
-ValueValidator<Object, String> string = Yavi._string(c -> c.notNull()).untyped();
-ValueValidator<Object, Integer> integer = Yavi._integer(c -> c.notNull()).untyped();
+ValueValidator<Object, String> string = Yavi._string().untyped();
+ValueValidator<Object, Integer> integer = Yavi._integer().untyped();
 
 string.validate("hello"); // Valid[hello]
 integer.validate(42); // Valid[42]
@@ -72,15 +72,16 @@ integer.validate("not a number"); // object.type: The value must be of type inte
 
 | Raoh | YAVI |
 | --- | --- |
-| `string()` | `Yavi._string(c -> ...)` |
+| `string()` | `Yavi._string()`, `Yavi._string(c -> ...)` |
 | `int_()`, `long_()`, `double_()`, `float_()`, `decimal()` | `Yavi._integer`, `Yavi._long`, `Yavi._double`, `Yavi._float`, `Yavi._bigDecimal` |
-| `bool()` | `Yavi._boolean(c -> ...)` |
-| `bytes()` | `Yavi._object(byte[].class, c -> c.notNull())` |
+| `bool()` | `Yavi._boolean()` |
+| `bytes()` | `Yavi._object(byte[].class)` |
 | `date()`, `iso8601()` | `Yavi._localDate`, `Yavi._instant` and the other temporal methods |
 | `enumOf(Role.class)` | `Yavi._enum(Role.class)` |
 
-A value is not required unless a constraint says so: a Raoh decoder rejects `null`, a YAVI
-validator accepts it without `notNull()` or `notBlank()`.
+Like a Raoh decoder, a validator of a value rejects `null`. It is reported with
+`object.notNull`, or with the violation of a constraint that rejects `null` such as
+`notBlank()`.
 
 A violation of such a validator has the empty name, and its message says "The value" where
 a named one shows the name. The name is given by the place where the validator is used
@@ -106,7 +107,7 @@ a named one shows the name. The name is given by the place where the validator i
 | a trailing custom message | `.message("...")` after the constraint |
 
 ```java
-ValueValidator<Object, LocalDate> date = Yavi._localDate(c -> c.notNull().after(() -> LocalDate.of(2020, 1, 1)))
+ValueValidator<Object, LocalDate> date = Yavi._localDate(c -> c.after(() -> LocalDate.of(2020, 1, 1)))
         .untyped();
 
 date.validate("2025-06-15"); // Valid[2025-06-15]
@@ -155,7 +156,7 @@ reader takes strings as text that stands for the type.
 
 ```java
 InputReader<Object> text = InputReader.ofJdkTypes().coercingStrings();
-ValueValidator<Object, Integer> age = Yavi._integer(c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
+ValueValidator<Object, Integer> age = Yavi._integer(c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .readingWith(text);
 
 age.validate("25"); // Valid[25]
@@ -178,7 +179,7 @@ InputReader<Object> lenient = InputReader.ofJdkTypes()
         .coercingStrings(StringCoercion.strict().trimming().booleanWords());
 
 age.readingWith(lenient).validate("  25  "); // Valid[25]
-Yavi._boolean(c -> c.notNull()).readingWith(lenient).validate("Yes"); // Valid[true]
+Yavi._boolean().readingWith(lenient).validate("Yes"); // Valid[true]
 ```
 
 The rules belong to the reader, so they are chosen once per input
@@ -195,9 +196,9 @@ record Age(int value) {}
 record UserId(UUID value) {}
 
 StringValidator<Email> emailValidator = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
-IntegerValidator<Age> ageValidator = Yavi._integer("age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
+IntegerValidator<Age> ageValidator = Yavi._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .map(Age::new);
-StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.notNull().uuid())
+StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.uuid())
         .map(s -> new UserId(UUID.fromString(s)));
 ```
 
@@ -235,7 +236,7 @@ record Customer(String name, Address address) {}
 
 MapInputValidator<Address> addressValidator = Yavi.arguments()
         ._string("city", c -> c.notBlank())
-        ._string("zip", c -> c.notNull().pattern("^\\d{3}-\\d{4}$"))
+        ._string("zip", c -> c.pattern("^\\d{3}-\\d{4}$"))
         .fromMap(Address::new);
 
 MapInputValidator<Customer> customerValidator = Yavi.arguments()
@@ -304,7 +305,7 @@ record OrderItem(String productId, int quantity) {}
 
 MapInputValidator<OrderItem> orderItemValidator = Yavi.arguments()
         ._string("productId", c -> c.notBlank())
-        ._integer("quantity", c -> c.notNull().positive())
+        ._integer("quantity", c -> c.positive())
         .fromMap(OrderItem::new);
 
 MapInputValidator<List<OrderItem>> itemsValidator = Yavi.arguments()
@@ -337,7 +338,7 @@ A list that is not a property, such as the root of a document, is
 
 ```java
 Yavi.arguments()
-        ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
+        ._map("prices", Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
         .fromMap(prices -> prices);
 ```
 
@@ -359,12 +360,12 @@ ValueValidator<String, Map<String, Object>> parseJson = (s, locale, context) -> 
 record Params(String kind, int count) {}
 
 MapInputValidator<Params> paramsValidator = Yavi.arguments()
-        ._string("kind", c -> c.notNull())
-        ._integer("count", c -> c.notNull())
+        ._string("kind")
+        ._integer("count")
         .fromMap(Params::new);
 
 MapInputValidator<Params> validator = Yavi.arguments()
-        ._object("params", Yavi._string(c -> c.notNull()).andThen(parseJson).andThen(paramsValidator))
+        ._object("params", Yavi._string().andThen(parseJson).andThen(paramsValidator))
         .fromMap(params -> params);
 
 validator.validate(Map.of("params", "not json")); // params: "params" cannot be parsed as JSON
@@ -375,16 +376,20 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 
 | Raoh | YAVI |
 | --- | --- |
-| `field("email", string().email())` | `_string("email", c -> c.notNull().email())` |
-| `field("nickname", nullable(string()))` | `_string("nickname").nullable()` |
+| `field("email", string().email())` | `_string("email", c -> c.email())` |
+| `field("nickname", nullable(string()))` (`@Nullable String`) | `_string("nickname").nullable()` (`@Nullable String`) |
 | `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional()` |
 | `field("role", withDefault(decoder, value))` | `_enum("role", Role.class).defaultValue(value)` |
 | `field("size", recover(decoder, fallback))` | `_integer("size", c -> ...).recover(fallback)` |
-| `optionalNullableField("bio", string())` (`Presence<String>`) | `_string("bio").presence()` (`Presence<String>`) |
+| `optionalNullableField("bio", string())` (`Presence<String>`) | `_string("bio").nullable().presence()` (`Presence<String>`) |
+
+As in Raoh, an argument is required unless it says otherwise, and saying otherwise changes
+the type of its value, so a nullness checker that reads JSpecify (NullAway, Kotlin)
+rejects a function that takes a `nullable()` argument as a value that is not `null`.
 
 An absent key is validated like `null`, so `optional()`, `nullable()` and
-`defaultValue(...)` accept both. Only the violation differs when the argument rejects
-`null`: `object.required` for an absent key and `object.notNull` for an explicit `null`.
+`defaultValue(...)` accept both. Only the violation differs for a required argument:
+`object.required` for an absent key and `object.notNull` for an explicit `null`.
 
 `presence()` tells "leave unchanged" from "clear the value" in a PATCH request. The
 argument is a `Presence<X>` with the same three states as in Raoh: `Absent`,
@@ -394,8 +399,8 @@ argument is a `Presence<X>` with the same three states as in Raoh: `Absent`,
 record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
 
 MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
-        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence()
-        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        ._string("nickname", c -> c.lessThanOrEqual(50)).presence()
+        ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence()
         .fromMap(ProfilePatch::new);
 
 patchValidator.validate(Map.of()); // Absent, Absent
@@ -405,8 +410,8 @@ patchValidator.validate(Collections.singletonMap("nickname", null)); // nickname
 
 Unlike `optionalNullableField`, `presence()` adds only the absent state: a key that is
 present is validated by the argument, which decides whether `null` is accepted. So an
-argument with `notNull()` may be omitted but not cleared, and a nested object is cleared
-only with `nullable()` before `presence()`.
+argument may be omitted but not cleared, unless `nullable()` is written before
+`presence()`.
 
 ### Enums
 
@@ -442,7 +447,7 @@ The JSON Schema of the argument keeps `"enum": ["ADMIN", "MEMBER", "GUEST"]`.
 ```java
 MapInputValidator<ApiRequest> apiRequestValidator = Yavi.arguments()
         ._string("action", c -> c.notBlank())
-        ._integer("amount", c -> c.notNull().positive())
+        ._integer("amount", c -> c.positive())
         .fromMap(ApiRequest::new)
         .rejectingUnknownProperties();
 
@@ -497,12 +502,12 @@ record PhoneContact(String number) implements Contact {}
 
 ValueValidator<Map<String, Object>, Contact> contactValidator = ValueValidator.anyOf(
         Yavi.arguments()
-            ._string("kind", c -> c.notNull().equalTo("email"))
-            ._string("value", c -> c.notNull().email())
+            ._string("kind", c -> c.equalTo("email"))
+            ._string("value", c -> c.email())
             .fromMap((kind, value) -> new EmailContact(value)),
         Yavi.arguments()
-            ._string("kind", c -> c.notNull().equalTo("phone"))
-            ._string("value", c -> c.notNull().pattern("^\\d{10,15}$"))
+            ._string("kind", c -> c.equalTo("phone"))
+            ._string("value", c -> c.pattern("^\\d{10,15}$"))
             .fromMap((kind, value) -> new PhoneContact(value)));
 ```
 
@@ -521,10 +526,10 @@ record Circle(double radius) implements Shape {}
 record Rect(double width, double height) implements Shape {}
 
 ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
-        .when("circle", Yavi.arguments()._double("radius", c -> c.notNull().positive()).fromMap(Circle::new))
+        .when("circle", Yavi.arguments()._double("radius", c -> c.positive()).fromMap(Circle::new))
         .when("rect", Yavi.arguments()
-            ._double("width", c -> c.notNull().positive())
-            ._double("height", c -> c.notNull().positive())
+            ._double("width", c -> c.positive())
+            ._double("height", c -> c.positive())
             .fromMap(Rect::new));
 
 shapeValidator.validate(Map.of("type", "hexagon"));
@@ -543,8 +548,8 @@ only when all arguments are valid, like `flatMap`, and its name locates the viol
 record DateRange(LocalDate start, LocalDate end) {}
 
 ValueValidator<Map<String, Object>, DateRange> dateRangeValidator = Yavi.arguments()
-        ._localDate("start", c -> c.notNull())
-        ._localDate("end", c -> c.notNull())
+        ._localDate("start")
+        ._localDate("end")
         .fromMap(DateRange::new)
         .constraintOnTarget(range -> range.start().isBefore(range.end()), "",
                 ViolationMessage.of("dateRange.invalid", "start must be before end"));
@@ -562,7 +567,7 @@ record PasswordChange(String current, String newPassword) {}
 
 ValueValidator<Map<String, Object>, PasswordChange> passwordChangeValidator = Yavi.arguments()
         ._string("currentPassword", c -> c.notBlank())
-        ._string("newPassword", c -> c.notNull().greaterThanOrEqual(8).lessThanOrEqual(128))
+        ._string("newPassword", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128))
         ._string("confirmPassword", c -> c.notBlank())
         .fromMap(PasswordForm::new)
         .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
@@ -579,8 +584,8 @@ enum Currency { JPY, USD, EUR }
 record Money(BigDecimal amount, Currency currency) {}
 
 ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.arguments()
-        ._bigDecimal("amount", c -> c.notNull().positiveOrZero())
-        ._enum("currency", Currency.class, c -> c.notNull())
+        ._bigDecimal("amount", c -> c.positiveOrZero())
+        ._enum("currency", Currency.class)
         .fromMap(Money::new)
         .constraintOnTarget(money -> money.amount().scale() <= (money.currency() == Currency.JPY ? 0 : 2), "amount",
                 ViolationMessage.of("money.scale", "\"{0}\" has too many decimal places for the currency"));
@@ -601,8 +606,8 @@ record DateRange(LocalDate start, LocalDate end) {
 }
 
 MapInputValidator<DateRange> dateRangeValidator = Yavi.arguments()
-        ._localDate("start", c -> c.notNull())
-        ._localDate("end", c -> c.notNull())
+        ._localDate("start")
+        ._localDate("end")
         .flatFromMap(DateRange::parse);
 ```
 
@@ -698,7 +703,7 @@ deconstructed in a `switch`:
 ```java
 MapInputValidator<Arguments2<String, Integer>> validator = Yavi.arguments()
         ._string("name", c -> c.notBlank())
-        ._integer("age", c -> c.notNull())
+        ._integer("age")
         .fromMap(Arguments::of);
 
 switch (validator.validate(input)) {
@@ -735,7 +740,7 @@ record UserRegistration(Email email, Password password, Role role, List<Contact>
 
 MapInputValidator<UserRegistration> userRegistrationValidator = Yavi.arguments()
         ._object("email", normalizedEmail.map(Email::new))
-        ._string(Yavi._string("password", c -> c.notNull().greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
+        ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
         ._list("contacts", contactValidator)
         .fromMap(UserRegistration::new);
@@ -834,7 +839,7 @@ record MemberImport(String email, String name, int age) {}
 ValueValidator<Map<String, String>, MemberImport> rowValidator = Yavi.arguments()
         ._string("email", c -> c.notBlank().email())
         ._string("name", c -> c.notBlank().lessThanOrEqual(100))
-        ._integer("age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(150))
+        ._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .fromMap(MemberImport::new)
         .readingParameters();
 
@@ -885,8 +890,10 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
   `record.intoMap()` is validated as a map.
 * **Typed arguments.** The arguments given to `fromMap(f)` also build a validator of typed
   arguments with `apply(f)`. Raoh has no counterpart.
-* **Required.** A Raoh decoder rejects `null` and an absent field; a YAVI argument does so
-  only with `notNull()` or `notBlank()`.
+* **Required.** Both reject `null` and an absent field unless the field says otherwise.
+  In YAVI this holds for the arguments of `Yavi.arguments()` and the validators of a single
+  value; `ValidatorBuilder`, which validates an object that exists, takes a property that
+  is `null` as valid unless a constraint such as `notNull()` rejects it.
 * **Arity.** Both take up to 16 typed fields. Beyond that, YAVI groups the fields with
   `_embedded`, or has `MapInputValidator.of(parts, mapper)`, whose mapper takes a list of
   values.

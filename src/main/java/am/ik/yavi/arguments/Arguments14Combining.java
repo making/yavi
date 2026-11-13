@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * @param <R14> the type of the value produced by the validator at position 14
  * @since 0.7.0
  */
-public class Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14> {
+public class Arguments14Combining<A, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object> {
 
 	/** The validator applied to the input at position 1. */
 	protected final ValueValidator<? super A, ? extends R1> v1;
@@ -137,7 +137,7 @@ public class Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R1
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the input
 	 */
-	public <X> Arguments1Validator<A, X> apply(
+	public <X extends @Nullable Object> Arguments1Validator<A, X> apply(
 			Function14<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
@@ -190,7 +190,7 @@ public class Arguments14Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R1
 	 * @param <R15> the type of the value produced by the additional validator
 	 * @return an arguments15 combining instance
 	 */
-	public <R15> Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> combine(
+	public <R15 extends @Nullable Object> Arguments15Combining<A, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> combine(
 			ValueValidator<? super A, ? extends R15> v15) {
 		return new Arguments15Combining<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15);
 	}

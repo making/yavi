@@ -45,6 +45,8 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ValueValidator;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Builds an arguments validator by adding one validated argument at a time.
  *
@@ -55,8 +57,8 @@ import am.ik.yavi.core.ValueValidator;
  * created with {@code apply} after all arguments have been added. Instances are obtained
  * from {@link am.ik.yavi.validator.Yavi#arguments()}. For example: <pre>{@code
  * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
- *     ._string("manufacturer", c -> c.notNull())
- *     ._string("licensePlate", c -> c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+ *     ._string("manufacturer")
+ *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
  *     .apply(Car::new);
  * }</pre>
@@ -64,10 +66,16 @@ import am.ik.yavi.core.ValueValidator;
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name. On the returned builders,
+ * violations are located under the argument name.
+ *
+ * <p>
+ * An argument is required: {@code null} is a violation, and the validated value is given
+ * to the function with a type that is not nullable. On the returned builders,
  * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to the last added
- * argument and make it accept {@code null}; {@code recover} makes it accept any value,
- * and {@code presence()} tells an absent value from {@code null}.
+ * argument and make it accept {@code null}, which changes the type of its validated value
+ * to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
+ * {@code recover} makes it accept any value, and {@code presence()} tells an absent value
+ * from {@code null}.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -106,7 +114,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<BigDecimal, T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<BigDecimal, T> _bigDecimal(
+			ValueValidator<BigDecimal, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
@@ -117,7 +126,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BigDecimalConstraint}, for example {@code numeric.greaterThan}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -134,7 +144,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -156,7 +166,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(ValueValidator<BigInteger, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(
+			ValueValidator<BigInteger, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
@@ -167,7 +178,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BigIntegerConstraint}, for example {@code numeric.greaterThan}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -184,7 +196,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -206,7 +218,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Boolean, T> _boolean(ValueValidator<Boolean, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Boolean, T> _boolean(
+			ValueValidator<Boolean, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Boolean.class, validator));
 	}
 
@@ -217,7 +230,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link BooleanConstraint}, for example {@code boolean.isTrue}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -233,7 +247,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Boolean} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -254,7 +268,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Double, T> _double(ValueValidator<Double, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Double, T> _double(
+			ValueValidator<Double, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Double.class, validator));
 	}
 
@@ -265,7 +280,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link DoubleConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -281,7 +297,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Double} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -303,7 +319,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T> Arguments1ValidatorBuilder.Keyed<E, T> _enum(ValueValidator<E, T> validator) {
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<E, T> _enum(
+			ValueValidator<E, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Enum.class, validator));
 	}
 
@@ -313,8 +330,8 @@ public final class YaviArguments
 	 *
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is
-	 * accepted unless the constraints require otherwise.
+	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is a
+	 * violation: the one of a constraint that rejects it, or else {@code object.notNull}.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
@@ -331,7 +348,7 @@ public final class YaviArguments
 	 * Adds the next argument as an enum constant with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name recorded for the argument
@@ -368,7 +385,7 @@ public final class YaviArguments
 	 * no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted.
+	 * Without constraints every value other than {@code null} is accepted.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name recorded for the argument
 	 * @param type the enum type of the argument
@@ -391,7 +408,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Float, T> _float(ValueValidator<Float, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Float, T> _float(
+			ValueValidator<Float, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Float.class, validator));
 	}
 
@@ -402,7 +420,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link FloatConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -418,7 +437,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Float} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -440,7 +459,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Instant, T> _instant(ValueValidator<Instant, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Instant, T> _instant(
+			ValueValidator<Instant, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Instant.class, validator));
 	}
 
@@ -451,7 +471,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link InstantConstraint}, for example {@code temporal.past}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -468,7 +489,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -490,7 +511,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Integer, T> _integer(ValueValidator<Integer, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Integer, T> _integer(
+			ValueValidator<Integer, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Integer.class, validator));
 	}
 
@@ -501,7 +523,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link IntegerConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -518,7 +541,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -540,7 +563,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
@@ -552,7 +575,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -569,7 +593,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -591,7 +615,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<LocalTime, T> _localTime(ValueValidator<LocalTime, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalTime, T> _localTime(
+			ValueValidator<LocalTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
@@ -602,7 +627,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -619,7 +645,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -641,7 +667,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(ValueValidator<LocalDate, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(
+			ValueValidator<LocalDate, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
@@ -652,7 +679,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LocalDateConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -669,7 +697,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -690,7 +718,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Long, T> _long(ValueValidator<Long, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Long, T> _long(
+			ValueValidator<Long, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Long.class, validator));
 	}
 
@@ -701,7 +730,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link LongConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -717,7 +747,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Long} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -739,7 +769,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(ValueValidator<T1, T2> validator) {
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(
+			ValueValidator<T1, T2> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Object.class, validator));
 	}
 
@@ -749,7 +780,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ObjectConstraint}, for example {@code object.notNull}. A {@code null} value
-	 * is accepted unless the constraints require otherwise.
+	 * is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param <T> type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
@@ -766,7 +798,7 @@ public final class YaviArguments
 	 * Adds the next argument as an object with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param <T> type of the argument
 	 * @param name the property name recorded for the argument
@@ -803,7 +835,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted.
+	 * Without constraints every value other than {@code null} is accepted.
 	 * @param <T> type of the argument
 	 * @param name the property name recorded for the argument
 	 * @param type the type of the argument
@@ -827,7 +859,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<OffsetDateTime, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<OffsetDateTime, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
@@ -839,7 +871,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link OffsetDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -856,7 +889,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -877,7 +910,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Short, T> _short(ValueValidator<Short, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Short, T> _short(
+			ValueValidator<Short, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Short.class, validator));
 	}
 
@@ -888,7 +922,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ShortConstraint}, for example {@code numeric.greaterThan}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -904,7 +939,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Short} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -925,7 +960,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<String, T> _string(ValueValidator<String, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<String, T> _string(
+			ValueValidator<String, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(String.class, validator));
 	}
 
@@ -936,7 +972,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link CharSequenceConstraint}, for example {@code charSequence.notBlank}. A
-	 * {@code null} value is accepted unless the constraints require otherwise.
+	 * {@code null} value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 *
 	 * <p>
 	 * The value can be transformed before it is constrained with the transforms of
@@ -958,7 +995,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code String} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -980,7 +1017,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<YearMonth, T> _yearMonth(ValueValidator<YearMonth, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<YearMonth, T> _yearMonth(
+			ValueValidator<YearMonth, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(YearMonth.class, validator));
 	}
 
@@ -991,7 +1029,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link YearMonthConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1008,7 +1047,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1029,7 +1068,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<Year, T> _year(ValueValidator<Year, T> validator) {
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Year, T> _year(
+			ValueValidator<Year, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Year.class, validator));
 	}
 
@@ -1040,7 +1080,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link YearConstraint}, for example {@code temporal.past}. A {@code null} value is
-	 * accepted unless the constraints require otherwise.
+	 * a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1056,7 +1097,7 @@ public final class YaviArguments
 	 * Adds the next argument as a {@code Year} with the given name and no constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1078,7 +1119,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
@@ -1090,7 +1131,8 @@ public final class YaviArguments
 	 * <p>
 	 * Violations use {@code name} as the property name and the message ids of
 	 * {@link ZonedDateTimeConstraint}, for example {@code temporal.past}. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}.
 	 * @param name the property name used in violation names and messages
 	 * @param constraints function that configures the constraints
 	 * @return a builder for the next argument
@@ -1107,7 +1149,7 @@ public final class YaviArguments
 	 * constraints.
 	 *
 	 * <p>
-	 * Without constraints every value, including {@code null}, is accepted. {@code name}
+	 * Without constraints every value other than {@code null} is accepted. {@code name}
 	 * is recorded as the property name of the argument.
 	 * @param name the property name recorded for the argument
 	 * @return a builder for the next argument
@@ -1134,7 +1176,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(String name, ValueValidator<T1, T2> validator) {
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(String name,
+			ValueValidator<T1, T2> validator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.object(name, validator));
 	}
 
@@ -1156,7 +1199,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
+	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
 			ValueValidator<E, T> elementValidator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
@@ -1182,7 +1225,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
+	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
 			ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
@@ -1207,8 +1250,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(String name,
-			ValueValidator<V, T> valueValidator) {
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(
+			String name, ValueValidator<V, T> valueValidator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
@@ -1223,7 +1266,7 @@ public final class YaviArguments
 	 * is valid, and their violations are reported on {@code name}.
 	 *
 	 * <pre>{@code
-	 * ._map("prices", Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
+	 * ._map("prices", Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
 	 * }</pre>
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
@@ -1233,8 +1276,8 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(String name,
-			ValueValidator<V, T> valueValidator,
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(
+			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
@@ -1256,7 +1299,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, T> _embedded(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, T> _embedded(
 			ValueValidator<? super Map<String, Object>, T> validator) {
 		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.embedded(validator));
 	}
@@ -1277,7 +1320,7 @@ public final class YaviArguments
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder.Modifiable<Map<String, V>, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Modifiable<Map<String, V>, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest(valueValidator));
 	}
@@ -1289,7 +1332,7 @@ public final class YaviArguments
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, Map<String, Object>> _rest() {
+	public Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
 		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest());
 	}
 

@@ -31,6 +31,7 @@ import static java.util.function.Function.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import org.jspecify.annotations.Nullable;
 
 class ArgumentsValidatorTest {
 
@@ -452,9 +453,9 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void mapLazy() {
-		arguments1Validator.map(Country::name).lazy().validated("JP");
+		arguments1Validator.<@Nullable String>map(Country::name).lazy().validated("JP");
 		arguments2Validator.map(range -> range.getFrom() + "-" + range.getTo()).lazy().validated(1, 2);
-		arguments3Validator.map(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
+		arguments3Validator.<@Nullable String>map(User::getName).lazy().validated("aa", "bb@cc.dd", 18);
 	}
 
 	@Test

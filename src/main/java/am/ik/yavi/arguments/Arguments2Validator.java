@@ -17,6 +17,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,8 +26,12 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Validation is applicative: all violations are accumulated in the returned
  * {@link Validated} instead of stopping at the first one, and a value is produced only
- * when every constraint succeeds. A {@code null} argument is accepted unless a configured
- * constraint rejects it (for example {@code notNull()}); see
+ * when every constraint succeeds. Whether a {@code null} argument is accepted depends on
+ * how the validator is built: an argument added to the builders of
+ * {@code Yavi.arguments()} is required unless it is made {@code nullable()} or
+ * {@code optional()}, and a validator built with
+ * {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} accepts {@code null} unless a
+ * configured constraint rejects it (for example {@code notNull()}); see
  * {@link am.ik.yavi.core.NullAs}.
  *
  * <p>
@@ -44,7 +49,7 @@ import org.jspecify.annotations.Nullable;
  * @since 0.3.0
  */
 @FunctionalInterface
-public interface Arguments2Validator<A1, A2, X> {
+public interface Arguments2Validator<A1, A2, X extends @Nullable Object> {
 
 	/**
 	 * Returns an {@link Arguments2Validator} that takes the arguments directly instead of
@@ -60,7 +65,8 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @return arguments2 validator that takes arguments directly
 	 * @since 0.16.0
 	 */
-	static <A1, A2, X> Arguments2Validator<A1, A2, X> unwrap(Arguments1Validator<Arguments2<A1, A2>, X> validator) {
+	static <A1, A2, X extends @Nullable Object> Arguments2Validator<A1, A2, X> unwrap(
+			Arguments1Validator<Arguments2<A1, A2>, X> validator) {
 		return ArgumentsValidators
 			.derived(
 					(a1, a2, locale, constraintContext) -> validator.validate(Arguments.of(a1, a2), locale,
@@ -120,7 +126,8 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @since 0.7.0
 	 */
 	@Deprecated
-	default <X2> Arguments2Validator<A1, A2, X2> andThen(Function<? super X, ? extends X2> mapper) {
+	default <X2 extends @Nullable Object> Arguments2Validator<A1, A2, X2> andThen(
+			Function<? super X, ? extends X2> mapper) {
 		return this.map(mapper);
 	}
 
@@ -132,7 +139,8 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @return a validator with the mapped result type
 	 * @since 0.17.0
 	 */
-	default <X2> Arguments2Validator<A1, A2, X2> map(Function<? super X, ? extends @Nullable X2> mapper) {
+	default <X2 extends @Nullable Object> Arguments2Validator<A1, A2, X2> map(
+			Function<? super X, ? extends X2> mapper) {
 		return ArgumentsValidators.derived(
 				(a1, a2, locale, constraintContext) -> this.validate(a1, a2, locale, constraintContext).map(mapper),
 				() -> this.lazy()
@@ -152,7 +160,8 @@ public interface Arguments2Validator<A1, A2, X> {
 	 * @return a chained validator
 	 * @since 0.11.0
 	 */
-	default <X2> Arguments2Validator<A1, A2, X2> andThen(ValueValidator<? super X, X2> validator) {
+	default <X2 extends @Nullable Object> Arguments2Validator<A1, A2, X2> andThen(
+			ValueValidator<? super @NonNull X, X2> validator) {
 		return ArgumentsValidators.derived(
 				(a1, a2, locale, constraintContext) -> this.validate(a1, a2, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext)),
@@ -181,7 +190,14 @@ public interface Arguments2Validator<A1, A2, X> {
 	 */
 	default Arguments2Validator<A1, A2, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-		return this.andThen(ValueValidator.<X>passThrough().constraintOnTarget(predicate, name, violationMessage));
+		return ArgumentsValidators.derived(
+				(a1, a2, locale, constraintContext) -> this.validate(a1, a2, locale, constraintContext)
+					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale)),
+				() -> this.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
+						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
+						.map(x -> () -> x)),
+				this::description);
 	}
 
 	/**

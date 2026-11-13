@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * @param <R2> the type of the value produced by the validator at position 2
  * @since 0.7.0
  */
-public class Arguments2Combining<A, R1, R2> {
+public class Arguments2Combining<A, R1 extends @Nullable Object, R2 extends @Nullable Object> {
 
 	/** The validator applied to the input at position 1. */
 	protected final ValueValidator<? super A, ? extends R1> v1;
@@ -59,7 +59,8 @@ public class Arguments2Combining<A, R1, R2> {
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the input
 	 */
-	public <X> Arguments1Validator<A, X> apply(Function2<? super R1, ? super R2, ? extends X> f) {
+	public <X extends @Nullable Object> Arguments1Validator<A, X> apply(
+			Function2<? super R1, ? super R2, ? extends X> f) {
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
@@ -83,7 +84,8 @@ public class Arguments2Combining<A, R1, R2> {
 	 * @param <R3> the type of the value produced by the additional validator
 	 * @return an arguments3 combining instance
 	 */
-	public <R3> Arguments3Combining<A, R1, R2, R3> combine(ValueValidator<? super A, ? extends R3> v3) {
+	public <R3 extends @Nullable Object> Arguments3Combining<A, R1, R2, R3> combine(
+			ValueValidator<? super A, ? extends R3> v3) {
 		return new Arguments3Combining<>(v1, v2, v3);
 	}
 

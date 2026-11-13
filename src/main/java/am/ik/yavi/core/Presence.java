@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
  *
  * MapInputValidator<ProfilePatch> validator = Yavi.arguments()
- *     ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence()
+ *     ._string("nickname", c -> c.lessThanOrEqual(50)).presence()
  *     ._string("bio", c -> c.lessThanOrEqual(500)).presence()
  *     .fromMap(ProfilePatch::new);
  *

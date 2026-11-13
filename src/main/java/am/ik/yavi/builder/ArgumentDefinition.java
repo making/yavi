@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.builder;
 
+import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
-record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> validator,
+record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source) {
 
 	/**
@@ -84,7 +85,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * {@code Enum}, which stand for a type that the builder method does not determine.
 	 */
 	@SuppressWarnings("unchecked")
-	static <A, R> ArgumentDefinition<A, R> value(Class<?> type, ValueValidator<A, R> validator) {
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(Class<?> type,
+			ValueValidator<A, R> validator) {
 		final boolean undescribed = validator.description() instanceof ValueDescription.Unknown && type != Object.class;
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
@@ -97,15 +99,17 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * Returns the definition of a named argument whose input type is known only to the
 	 * given validator.
 	 */
-	static <A, R> ArgumentDefinition<A, R> value(String name, ValueValidator<A, R> validator) {
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(String name, ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader));
 	}
 
-	static <A, R> ArgumentDefinition<A, R> value(String name, Class<A> type, ValueValidator<A, R> validator) {
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(String name, Class<A> type,
+			ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator));
 	}
 
-	static <A, R> ArgumentDefinition<A, R> object(String name, ValueValidator<A, R> validator) {
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
+			ValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, nested(name, validator, validator.description()),
 				reader -> nested(name, validator.readingWith(reader), validator.description()));
 	}
@@ -114,8 +118,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * Returns the definition of a list whose elements are validated one by one and whose
 	 * constraints are checked on the validated elements, only when all of them are valid.
 	 */
-	static <E, R> ArgumentDefinition<List<E>, List<R>> list(String name, ValueValidator<E, R> elementValidator,
-			ContainerConstraints<List<R>> constraints) {
+	static <E, R extends @Nullable Object> ArgumentDefinition<List<E>, List<R>> list(String name,
+			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
 				constraints.descriptions());
 		final ValueValidator<List<E>, List<R>> elements = elements(elementValidator)::validate;
@@ -128,7 +132,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * Returns the definition of a map whose values are validated one by one and whose
 	 * constraints are checked on the validated values, only when all of them are valid.
 	 */
-	static <V, R> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
+	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
 			ValueValidator<V, R> valueValidator, ContainerConstraints<Map<String, R>> constraints) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
 		final ValueDescription description = new ValueDescription.Entries(valueValidator.description(),
@@ -143,7 +147,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * map only.
 	 */
 	@SuppressWarnings("unchecked")
-	static <R> ArgumentDefinition<Map<String, Object>, R> embedded(
+	static <R extends @Nullable Object> ArgumentDefinition<Map<String, Object>, R> embedded(
 			ValueValidator<? super Map<String, Object>, R> validator) {
 		final ValueValidator<Map<String, Object>, R> ofMap = (ValueValidator<Map<String, Object>, R>) validator;
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped;
@@ -162,7 +166,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * Returns the definition of an argument that reads the keys of the map that no other
 	 * argument reads. The violations of a value are located under its key.
 	 */
-	static <V, R> ArgumentDefinition<Map<String, V>, Map<String, R>> rest(ValueValidator<V, R> valueValidator) {
+	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, V>, Map<String, R>> rest(
+			ValueValidator<V, R> valueValidator) {
 		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
 		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST);
 	}
@@ -171,16 +176,16 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * Returns the definition of an argument that reads the keys of the map that no other
 	 * argument reads and takes their values as they are.
 	 */
-	static ArgumentDefinition<Map<String, Object>, Map<String, Object>> rest() {
+	static ArgumentDefinition<Map<String, Object>, Map<String, @Nullable Object>> rest() {
 		return rest(ValueValidator.passThrough().untyped(Object.class));
 	}
 
-	ArgumentDefinition<A, Optional<R>> asOptional() {
+	ArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
 		return new ArgumentDefinition<>(this.name, this.validator.optional(),
 				reader -> this.untyped.apply(reader).optional(), this.source);
 	}
 
-	ArgumentDefinition<A, R> asNullable() {
+	ArgumentDefinition<A, @Nullable R> asNullable() {
 		return new ArgumentDefinition<>(this.name, this.validator.nullable(),
 				reader -> this.untyped.apply(reader).nullable(), this.source);
 	}
@@ -206,10 +211,10 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * The builders offer this only for an argument that is read from a key, and no
 	 * modifier after it.
 	 */
-	ArgumentDefinition<Presence<A>, Presence<R>> withPresence() {
+	ArgumentDefinition<Presence<A>, Presence<@NonNull R>> withPresence() {
 		return new ArgumentDefinition<>(this.name, this.validator.liftPresence(), reader -> {
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
-			return present.<Presence<R>>map(Presence::ofNullable)
+			return present.<Presence<@NonNull R>>map(value -> Presence.<@NonNull R>ofNullable(value))
 				.describedAs(new ValueDescription.Presence(present.description()));
 		}, Source.PRESENCE);
 	}
@@ -253,7 +258,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * The validator of an argument read from a tree of JDK types, which reads the nodes
 	 * of another reader as the argument defines it.
 	 */
-	private record Reading<R> (ValueValidator<Object, R> validator,
+	private record Reading<R extends @Nullable Object> (ValueValidator<Object, R> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R>> reading) implements ValueValidator<Object, R> {
 
 		@Override
@@ -280,7 +285,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * locates its violations under the index of the element: {@code street} is reported
 	 * as {@code [0].street} and an empty name as {@code [0]}.
 	 */
-	private static <E, R> ValueValidator<Iterable<E>, List<R>> elements(ValueValidator<E, R> elementValidator) {
+	private static <E, R extends @Nullable Object> ValueValidator<Iterable<E>, List<R>> elements(
+			ValueValidator<E, R> elementValidator) {
 		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
 				(value, index) -> elementValidator.validate(value, locale, constraintContext).prefixed(index));
 	}
@@ -290,7 +296,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * like {@link #elements(ValueValidator)} and reports any other node with
 	 * {@code object.type}.
 	 */
-	private static <N, R> ValueValidator<N, List<R>> elements(InputReader<N> reader,
+	private static <N, R extends @Nullable Object> ValueValidator<N, List<R>> elements(InputReader<N> reader,
 			ValueValidator<N, R> elementValidator) {
 		return (node, locale, constraintContext) -> {
 			if (node == null || !reader.isArray(node)) {
@@ -309,8 +315,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * input not representing the given type under the given name and otherwise validates
 	 * like the given validator.
 	 */
-	private static <N, A, R> ValueValidator<N, R> untyped(InputReader<N> reader, String name, Class<A> type,
-			ValueValidator<A, R> validator) {
+	private static <N, A, R extends @Nullable Object> ValueValidator<N, R> untyped(InputReader<N> reader, String name,
+			Class<A> type, ValueValidator<A, R> validator) {
 		return ValueValidator.<A>passThrough()
 			.untyped(type)
 			.readingWith(reader)
@@ -358,8 +364,8 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * given name and otherwise locates the violations of the given validator under that
 	 * name. The given description is the one of a value other than {@code null}.
 	 */
-	private static <A, R> ValueValidator<A, R> nested(String name, ValueValidator<A, R> validator,
-			ValueDescription description) {
+	private static <A, R extends @Nullable Object> ValueValidator<A, R> nested(String name,
+			ValueValidator<A, R> validator, ValueDescription description) {
 		return ObjectValidatorBuilder.<A>of(name, ObjectConstraint::notNull)
 			.build()
 			.andThen(validator.prefixed(name))

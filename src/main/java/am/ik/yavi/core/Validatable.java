@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 
 import am.ik.yavi.fn.Validation;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Validates a target object and reports constraint violations.
@@ -108,7 +109,7 @@ public interface Validatable<T> {
 	 * @return regular validator
 	 * @since 0.11.0
 	 */
-	static <A1, R> Validatable<A1> from(ValueValidator<? super A1, ? extends R> applicative) {
+	static <A1, R extends @Nullable Object> Validatable<A1> from(ValueValidator<? super A1, ? extends R> applicative) {
 		return (target, locale, constraintGroup) -> applicative.validate(target, locale, constraintGroup)
 			.fold(ConstraintViolations::of, result -> new ConstraintViolations());
 	}

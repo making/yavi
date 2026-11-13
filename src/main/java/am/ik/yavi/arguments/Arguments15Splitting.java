@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function15;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 15 validators that validate distinct arguments into a validator for those
@@ -54,7 +55,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R15> the type of the value produced for the argument at position 15
  * @since 0.7.0
  */
-public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15> {
+public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -157,7 +158,7 @@ public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 15 arguments
 	 */
-	public <X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> apply(
+	public <X extends @Nullable Object> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> apply(
 			Function15<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? extends X> f) {
 		return ArgumentsValidators.derived((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
 				constraintContext) -> Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
@@ -198,7 +199,7 @@ public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 * @param <R16> the type of the value produced for the argument at position 16
 	 * @return an arguments16 splitting instance
 	 */
-	public <A16, R16> Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> split(
+	public <A16, R16 extends @Nullable Object> Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> split(
 			ValueValidator<? super A16, ? extends R16> v16) {
 		return new Arguments16Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16);
 	}

@@ -19,8 +19,9 @@ import org.jspecify.annotations.Nullable;
  * {@link am.ik.yavi.builder.YearMonthValidatorBuilder}, which applies a
  * {@link am.ik.yavi.constraint.YearMonthConstraint} under a given name. Violations carry
  * that name and the message key of the violated constraint, for example
- * {@code temporal.future}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code temporal.future}. A {@code null} value is a violation: the one of a constraint
+ * that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * The mapper passed to the constructor or to the builder's {@code build(Function)} method
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the value produced from the validated input
  * @since 0.11.0
  */
-public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth, T> {
+public class YearMonthValidator<T extends @Nullable Object> extends DefaultArguments1Validator<YearMonth, T> {
 
 	/**
 	 * Returns a new validator that applies the given function to the result of this
@@ -42,7 +43,7 @@ public class YearMonthValidator<T> extends DefaultArguments1Validator<YearMonth,
 	 * @return a new validator with the mapped result type
 	 */
 	@Override
-	public <T2> YearMonthValidator<T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2 extends @Nullable Object> YearMonthValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new YearMonthValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)), super.transform);
 	}
 

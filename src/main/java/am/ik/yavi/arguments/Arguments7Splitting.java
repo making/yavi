@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function7;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 7 validators that validate distinct arguments into a validator for those
@@ -38,7 +39,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R7> the type of the value produced for the argument at position 7
  * @since 0.7.0
  */
-public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> {
+public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -97,7 +98,7 @@ public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5,
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 7 arguments
 	 */
-	public <X> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> apply(
+	public <X extends @Nullable Object> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> apply(
 			Function7<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? extends X> f) {
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext) -> Validations.apply(f::apply,
@@ -123,7 +124,7 @@ public class Arguments7Splitting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5,
 	 * @param <R8> the type of the value produced for the argument at position 8
 	 * @return an arguments8 splitting instance
 	 */
-	public <A8, R8> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
+	public <A8, R8 extends @Nullable Object> Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> split(
 			ValueValidator<? super A8, ? extends R8> v8) {
 		return new Arguments8Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8);
 	}

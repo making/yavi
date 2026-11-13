@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static java.util.stream.Collectors.toList;
@@ -28,6 +29,11 @@ class ValidationTest {
 		assertThat(validation.flatMap(s -> Validation.success("hello " + s)).value()).isEqualTo("hello test");
 		assertThat(validation).isEqualTo(Validation.success("test"));
 		assertThat(validation.hashCode()).isEqualTo(Validation.success("test").hashCode());
+		// a success holds null if its value type is nullable
+		final Validation<String, @Nullable String> empty = Validation.success(null);
+		assertThat(empty.isValid()).isTrue();
+		assertThat(empty.value()).isNull();
+		assertThat(empty.<@Nullable String>map(s -> s).value()).isNull();
 	}
 
 	@Test

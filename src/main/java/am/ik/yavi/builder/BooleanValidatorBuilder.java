@@ -19,8 +19,9 @@ import am.ik.yavi.core.Validator;
  * <p>
  * The value is validated under the name given to {@link #of} and violations are reported
  * with that name and the message key of the violated constraint, for example
- * {@code boolean.isTrue}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code boolean.isTrue}. A {@code null} value is a violation: the one of a constraint
+ * that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * Example: <pre>{@code
@@ -41,7 +42,9 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 * @param name the property name used as the violation name
 	 * @param constraints the function that configures the constraints
 	 * @return a new builder
@@ -83,7 +86,7 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	 * @return a new validator
 	 */
 	@Override
-	public <T> BooleanValidator<T> build(Function<? super Boolean, ? extends @Nullable T> mapper) {
+	public <T extends @Nullable Object> BooleanValidator<T> build(Function<? super Boolean, ? extends T> mapper) {
 		final Validator<Arguments1<Boolean>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		return new BooleanValidator<>(validator, mapper::apply);
 	}

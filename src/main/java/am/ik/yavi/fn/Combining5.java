@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.fn;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Combines validation results and applies a function to their values in applicative
  * style.
@@ -27,7 +29,7 @@ package am.ik.yavi.fn;
  * @param <T5> the value type of validation 5
  * @since 0.6.0
  */
-public class Combining5<E, T1, T2, T3, T4, T5> {
+public class Combining5<E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object> {
 
 	/**
 	 * The validation at position 1 of this combination.
@@ -84,7 +86,7 @@ public class Combining5<E, T1, T2, T3, T4, T5> {
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public <R, V extends Validation<E, R>> V apply(Function5<T1, T2, T3, T4, T5, R> f) {
+	public <R extends @Nullable Object, V extends Validation<E, R>> V apply(Function5<T1, T2, T3, T4, T5, R> f) {
 		final Validation<E, Function1<T2, Function1<T3, Function1<T4, Function1<T5, R>>>>> apply1 = v1
 			.apply(Validation.success(Functions.curry(f)));
 		final Validation<E, Function1<T3, Function1<T4, Function1<T5, R>>>> apply2 = v2.apply(apply1);
@@ -100,7 +102,7 @@ public class Combining5<E, T1, T2, T3, T4, T5> {
 	 * @param <T6> the value type of the added validation
 	 * @return the combination of 6 validations
 	 */
-	public <T6> Combining6<E, T1, T2, T3, T4, T5, T6> combine(Validation<E, T6> v6) {
+	public <T6 extends @Nullable Object> Combining6<E, T1, T2, T3, T4, T5, T6> combine(Validation<E, T6> v6) {
 		return new Combining6<>(v1, v2, v3, v4, v5, v6);
 	}
 

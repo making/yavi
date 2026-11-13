@@ -4,6 +4,8 @@
  */
 package am.ik.yavi.fn;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Combines validation results and applies a function to their values in applicative
  * style.
@@ -23,7 +25,7 @@ package am.ik.yavi.fn;
  * @param <T1> the value type of validation 1
  * @since 0.6.0
  */
-public class Combining1<E, T1> {
+public class Combining1<E, T1 extends @Nullable Object> {
 
 	/**
 	 * The validation at position 1 of this combination.
@@ -51,7 +53,7 @@ public class Combining1<E, T1> {
 	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public <R, V extends Validation<E, R>> V apply(Function1<T1, R> f) {
+	public <R extends @Nullable Object, V extends Validation<E, R>> V apply(Function1<T1, R> f) {
 		return v1.apply(Validation.success(Functions.curry(f)));
 	}
 
@@ -62,7 +64,7 @@ public class Combining1<E, T1> {
 	 * @param <T2> the value type of the added validation
 	 * @return the combination of 2 validations
 	 */
-	public <T2> Combining2<E, T1, T2> combine(Validation<E, T2> v2) {
+	public <T2 extends @Nullable Object> Combining2<E, T1, T2> combine(Validation<E, T2> v2) {
 		return new Combining2<>(v1, v2);
 	}
 

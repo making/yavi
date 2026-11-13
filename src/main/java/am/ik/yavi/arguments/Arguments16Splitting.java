@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function16;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 16 validators that validate distinct arguments into a validator for those
@@ -56,7 +57,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R16> the type of the value produced for the argument at position 16
  * @since 0.7.0
  */
-public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> {
+public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, R16 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -165,7 +166,7 @@ public class Arguments16Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 16 arguments
 	 */
-	public <X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> apply(
+	public <X extends @Nullable Object> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> apply(
 			Function16<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? super R16, ? extends X> f) {
 		return ArgumentsValidators.derived((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16,
 				locale, constraintContext) -> Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),

@@ -36,7 +36,7 @@ record User(String email, Integer age, Optional<String> nickname) {}
 
 MapInputValidator<User> userValidator = Yavi.arguments()
         ._string("email", c -> c.notBlank().email())
-        ._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+        ._integer("age", c -> c.greaterThanOrEqual(0))
         ._string("nickname").optional()
         .fromMap(User::new);
 
@@ -76,8 +76,9 @@ compiler checks that the arguments match it.
 | `z.array(schema).nonempty().min(1).max(10)` | `_list(name, elementValidator, c -> c.notEmpty().greaterThanOrEqual(1).lessThanOrEqual(10))`, `Yavi._list(elementValidator, c -> ...)` (also `unique()`, `contains(...)`) |
 | `z.record(z.string(), schema)` with a size | `_map(name, valueValidator, c -> c.notEmpty())`, `Yavi._map(valueValidator, c -> ...)` |
 | `.optional()` | `.optional()` (produces `Optional<X>`) |
-| `.nullable()` | `.nullable()` |
-| `.optional()` that rejects `null`, `.nullable().optional()` / `.nullish()` with the two told apart | `.presence()` (produces `Presence<X>`), after `notNull()` or `nullable()` |
+| `.nullable()` | `.nullable()` (produces `@Nullable X`) |
+| `.optional()` that rejects `null` | `.presence()` (produces `Presence<X>`) |
+| `.nullable().optional()` / `.nullish()` with the two told apart | `.nullable().presence()` |
 | `.default(value)` | `.defaultValue(value)` |
 | `.catch(value)` | `.recover(value)` (also for `null` and an absent key) |
 | `.catch(ctx => ...)` | `.recoverWith(violations -> ...)` |
@@ -122,7 +123,7 @@ what a Zod schema is:
 ```java
 ValueValidator<Object, User> any = userValidator.untyped(); // rejects anything but a map
 ValueValidator<Object, Object> id = ValueValidator.anyOf(Yavi._string(c -> c.notBlank()).untyped(),
-        Yavi._integer(c -> c.notNull().positive()).untyped());
+        Yavi._integer(c -> c.positive()).untyped());
 ```
 
 The input type must be known when the validator is built. `fromMap` and `untyped()` throw
@@ -181,11 +182,17 @@ its schemas check the type and the constraints together.
 
 ### Absent and `null`
 
+Like a Zod schema, an argument is required unless it says otherwise, and saying otherwise
+changes its type: `nullable()` produces `@Nullable X` and `optional()` `Optional<X>`, as
+`z.infer` gives `X | null` and `X | undefined`. A nullness checker that reads JSpecify
+(NullAway, Kotlin) therefore rejects a function that takes a `nullable()` argument as a
+value that is not `null`.
+
 Zod tells `undefined` (`optional()`) from `null` (`nullable()`). In YAVI an absent key is
-validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and an argument
-without `notNull()` accept both. Only the violation differs when the argument rejects
-`null`: an absent key is reported with `object.required` and an explicit `null` with the
-violation of the constraint, such as `object.notNull`.
+validated like `null`, so `optional()`, `nullable()` and `defaultValue(...)` accept both.
+Only the violation differs for a required argument: an absent key is reported with
+`object.required` and an explicit `null` with `object.notNull`, or with the violation of
+a constraint that rejects `null` such as `notBlank()`.
 
 `presence()` tells them apart, for a partial update (PATCH). The argument is a
 `Presence<X>`: `Absent` for an absent key, which is not validated, and otherwise what the
@@ -202,13 +209,15 @@ const ProfilePatch = z.object({
 record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
 
 MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
-        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence()
-        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        ._string("nickname", c -> c.lessThanOrEqual(50)).presence()
+        ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence()
         .fromMap(ProfilePatch::new);
 ```
 
-A value is not required unless a constraint says so. `z.string()` rejects `undefined`,
-whereas `_string("name")` without `notNull()` or `notBlank()` accepts an absent key.
+Only the arguments of `Yavi.arguments()` and the validators of a single value
+(`Yavi._string(...)`) are required. `ValidatorBuilder` validates an object that exists,
+where a property that is `null` is valid unless a constraint such as `notNull()` rejects
+it.
 
 ### Unknown keys
 
@@ -272,8 +281,8 @@ An empty string is `null` for a string argument too. Any other coercion is a val
 that takes an `Object`, or a reader that overrides `InputReader#value(node, type)`:
 
 ```java
-ValueValidator<Object, Integer> coerced = (value, locale, context) -> ValueValidator.<Integer>passThrough()
-        .untyped(Integer.class)
+ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer(c -> c)
+        .untyped()
         .validate(value instanceof Boolean b ? Integer.valueOf(b ? 1 : 0) : value, locale, context);
 
 Yavi.arguments()._object("age", coerced.untyped(Object.class))...

@@ -8,6 +8,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function8;
 import am.ik.yavi.fn.Validations;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 8 validators that validate distinct arguments into a validator for those
@@ -40,7 +41,7 @@ import am.ik.yavi.fn.Validations;
  * @param <R8> the type of the value produced for the argument at position 8
  * @since 0.7.0
  */
-public class Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> {
+public class Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object> {
 
 	/** The validator applied to the argument at position 1. */
 	protected final ValueValidator<? super A1, ? extends R1> v1;
@@ -104,7 +105,7 @@ public class Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4,
 	 * @param <X> the type of the value produced by the function
 	 * @return a validator for the 8 arguments
 	 */
-	public <X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> apply(
+	public <X extends @Nullable Object> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> apply(
 			Function8<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? extends X> f) {
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext) -> Validations.apply(f::apply,
@@ -130,7 +131,7 @@ public class Arguments8Splitting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4,
 	 * @param <R9> the type of the value produced for the argument at position 9
 	 * @return an arguments9 splitting instance
 	 */
-	public <A9, R9> Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> split(
+	public <A9, R9 extends @Nullable Object> Arguments9Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> split(
 			ValueValidator<? super A9, ? extends R9> v9) {
 		return new Arguments9Splitting<>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
 	}

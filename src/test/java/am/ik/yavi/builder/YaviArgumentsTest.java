@@ -11,6 +11,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import am.ik.yavi.arguments.Arguments;
+import am.ik.yavi.core.ConstraintGroup;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.Arguments7Validator;
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
@@ -49,14 +52,14 @@ class YaviArgumentsTest {
 			return Arguments.of(nonNull.get("street"), nonNull.get("city"));
 		});
 
-	static final Arguments7ValidatorBuilder<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, String, Optional<String>, Integer, Address, Address, List<String>, Map<String, Integer>> builder = Yavi
+	static final Arguments7ValidatorBuilder<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, String, Optional<String>, Integer, Address, @Nullable Address, List<String>, Map<String, Integer>> builder = Yavi
 		.arguments()
 		._object("contact",
 				ValueValidator.<String, String>anyOf(Yavi._string(c -> c.email()),
 						Yavi._string(c -> c.pattern("[0-9]{10,11}"))))
 		._string("nickname", c -> c.notBlank())
 		.optional()
-		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
+		._integer("age", c -> c.greaterThanOrEqual(0))
 		.defaultValue(20)
 		._object("address", addressValidator)
 		._object("billing", addressValidator)
@@ -136,6 +139,8 @@ class YaviArgumentsTest {
 	@Test
 	void descriptionDescribesTheArguments() {
 		final ConstraintDescription notBlank = new ConstraintDescription("charSequence.notBlank", List.of(), true);
+		// a value whose constraints accept null is described as required
+		final ConstraintDescription notNull = new ConstraintDescription("object.notNull", List.of(), true);
 		final ConstraintDescription notNegative = new ConstraintDescription("numeric.greaterThanOrEqual", List.of(0),
 				false);
 		final ValueDescription address = new ValueDescription.NotNull(new ValueDescription.Properties(List.of(
@@ -146,21 +151,24 @@ class YaviArgumentsTest {
 		// constraintOnTarget keeps the description and is not part of it
 		assertThat(validator.description()).isEqualTo(
 				new ValueDescription.Properties(List.of(
-						new ValueDescription.Property("contact",
+						new ValueDescription.Property(
+								"contact",
 								new ValueDescription.NotNull(new ValueDescription.AnyOf(List.of(
 										new ValueDescription.Value("", String.class,
-												List.of(new ConstraintDescription("charSequence.email", List.of(),
-														false))),
+												List.of(notNull,
+														new ConstraintDescription("charSequence.email", List.of(),
+																false))),
 										new ValueDescription.Value("", String.class,
-												List.of(new ConstraintDescription("charSequence.pattern",
-														List.of("[0-9]{10,11}"), false))))))),
+												List.of(notNull,
+														new ConstraintDescription("charSequence.pattern",
+																List.of("[0-9]{10,11}"), false))))))),
 						new ValueDescription.Property("nickname",
-								new ValueDescription.Optional(new ValueDescription.Value("nickname", String.class, List
-									.of(notBlank)), null)),
-						new ValueDescription.Property("age",
-								new ValueDescription.Optional(new ValueDescription.Value("age", Integer.class,
-										List.of(new ConstraintDescription("object.notNull", List.of(), true),
-												notNegative)),
+								new ValueDescription.Optional(
+										new ValueDescription.Value("nickname", String.class, List.of(notBlank)), null)),
+						new ValueDescription.Property(
+								"age",
+								new ValueDescription.Optional(
+										new ValueDescription.Value("age", Integer.class, List.of(notNull, notNegative)),
 										20)),
 						new ValueDescription.Property("address", address),
 						new ValueDescription.Property("billing", new ValueDescription.Optional(address, null)),
@@ -172,7 +180,7 @@ class YaviArgumentsTest {
 												new ConstraintDescription("collection.unique", List.of(), false))))),
 						new ValueDescription.Property("scores",
 								new ValueDescription.NotNull(new ValueDescription.Entries(
-										new ValueDescription.Value("", Integer.class, List.of(notNegative)),
+										new ValueDescription.Value("", Integer.class, List.of(notNull, notNegative)),
 										List.of(new ConstraintDescription("container.lessThanOrEqual", List.of(1),
 												false))))))));
 		final String addressSchema = """
@@ -187,7 +195,7 @@ class YaviArgumentsTest {
 				"address":{"type":"object",%s,\
 				"billing":{"type":["object","null"],%s,\
 				"roles":{"type":"array","items":{"type":"string","minLength":1},"maxItems":2,"uniqueItems":true},\
-				"scores":{"type":"object","additionalProperties":{"type":["integer","null"],"minimum":0},\
+				"scores":{"type":"object","additionalProperties":{"type":"integer","minimum":0},\
 				"maxProperties":1}},\
 				"required":["contact","address","roles","scores"]}""".formatted(addressSchema, addressSchema));
 	}
@@ -238,6 +246,39 @@ class YaviArgumentsTest {
 		assertThat(Yavi._string("email", c -> c.notBlank()).validate(" ").errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::message)
 			.containsExactly(tuple("email", "\"email\" must not be blank"));
+		// a value is required: null is reported by a constraint that rejects it, or else
+		// with object.notNull, whether the constraints are conditional or not
+		final IntegerValidator<Integer> age = Yavi._integer("age", c -> c.greaterThanOrEqual(0));
+		final ConstraintGroup strict = ConstraintGroup.of("strict");
+		final IntegerValidator<Integer> conditional = IntegerValidatorBuilder.wrap(b -> b.constraintOnGroup(strict,
+				v -> v._integer(Arguments1::arg1, "years", c -> c.notNull().greaterThanOrEqual(0))))
+			.build();
+		assertThat(List.of(age.validate(null).errors(), Yavi._string("name", c -> c.notBlank()).validate(null).errors(),
+				Yavi._integer(c -> c).untyped().validate(null).errors(), conditional.validate(null).errors(),
+				conditional.validate(null, strict).errors()))
+			.extracting(ConstraintViolations::size, violations -> violations.get(0).name(),
+					violations -> violations.get(0).message())
+			.containsExactly(tuple(1, "age", "\"age\" must not be null"),
+					tuple(1, "name", "\"name\" must not be blank"), tuple(1, "", "The value must not be null"),
+					tuple(1, "", "The value must not be null"), tuple(1, "years", "\"years\" must not be null"));
+		assertThat(age.description().acceptsNull()).isFalse();
+		// the modifiers accept null, and the type of the value says what it is then
+		final ValueValidator<Integer, @Nullable Integer> nullableAge = age.nullable();
+		final ValueValidator<Integer, Optional<Integer>> optionalAge = age.optional();
+		assertThat(nullableAge.validated(null)).isNull();
+		assertThat(nullableAge.description().acceptsNull()).isTrue();
+		assertThat(optionalAge.validated(null)).isEmpty();
+		assertThat(age.defaultValue(20).validated(null)).isEqualTo(20);
+		assertThat(nullableAge.validate(-1).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("numeric.greaterThanOrEqual");
+		// isNull() alone is never satisfied by a required value; with nullable() the
+		// value must be null
+		final IntegerValidator<Integer> mustBeNull = Yavi._integer("id", c -> c.isNull());
+		assertThat(List.of(mustBeNull.validate(null).errors(), mustBeNull.validate(1).errors(),
+				mustBeNull.nullable().validate(1).errors()))
+			.extracting(violations -> violations.get(0).messageKey())
+			.containsExactly("object.notNull", "object.isNull", "object.isNull");
+		assertThat(mustBeNull.nullable().validate(null).isValid()).isTrue();
 	}
 
 }

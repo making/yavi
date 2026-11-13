@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Example: <pre>{@code
  * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> validator = MapValidatorBuilder
- *     .of(Yavi._bigDecimal(c -> c.notNull().positive()), c -> c.notEmpty())
+ *     .of(Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
  *     .build();
  * }</pre>
  *
@@ -71,8 +71,8 @@ public final class MapValidatorBuilder<V, T> implements ValueValidatorBuilder<Ma
 	 * @return a new validator
 	 */
 	@Override
-	public <T2> ValueValidator<Map<String, V>, T2> build(
-			Function<? super Map<String, T>, ? extends @Nullable T2> mapper) {
+	public <T2 extends @Nullable Object> ValueValidator<Map<String, V>, T2> build(
+			Function<? super Map<String, T>, ? extends T2> mapper) {
 		return this.build().map(mapper);
 	}
 

@@ -19,21 +19,14 @@ lets the generic code in `am.ik.yavi.fn` (`map`, `apply`, `CombiningN.apply`) re
 - The public `ConstraintViolation` constructor: `@Deprecated` in favor of `builder()`
   and unused inside the repository. Remove it, or make it private if the builder still
   needs it.
-- `valueNullable()`: `Validated.Valid.value()` now returns `null` for a validation that
-  succeeded with `null`, so on a `Validated` it equals `value()`.
-  `Validation.Success.value()` still throws `NoSuchElementException` for `null`, which
-  makes the two inconsistent.
-  - Make `Validation.Success.value()` return `null` as well, then deprecate
-    `valueNullable()` as an alias of `value()`. Do not remove it in the same release;
-    it is used by the Kotlin extensions and by user code.
-  - Express the nullable success in the type (`T extends @Nullable Object`) instead of
-    suppressing NullAway, if that fits the outcome of 023.
+- `valueNullable()`: since 0.18.0 `Validation#value()` returns `null` for a validation that
+  succeeded with `null` (the value type says whether it can: `T extends @Nullable Object`)
+  and `valueNullable()` is a `@Deprecated` alias of it. Remove it in a later release; it
+  may still be used by user code.
 
 ## Scope
 
 - Remove the two deprecated members and migrate their call sites and tests.
-- Align `value()` on a `null` success across `Validation` and `Validated`, deprecate
-  `valueNullable()` and replace its internal uses.
 - List the changes in the release notes as breaking.
 
 ## Notes

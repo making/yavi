@@ -19,8 +19,9 @@ import am.ik.yavi.core.Validator;
  * <p>
  * The value is validated under the name given to {@link #of} and violations are reported
  * with that name and the message key of the violated constraint, for example
- * {@code object.notNull}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code object.notNull}. A {@code null} value is a violation: the one of a constraint
+ * that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * Example: <pre>{@code
@@ -43,7 +44,9 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
-	 * value is accepted unless the constraints require otherwise.
+	 * value is a violation: the one of a constraint that rejects it, or else
+	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
+	 * or {@code defaultValue(...)} of the validator.
 	 * @param <X> the type of the value to validate
 	 * @param name the property name used as the violation name
 	 * @param constraints the function that configures the constraints
@@ -108,7 +111,7 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ObjectValidator<X, T> build(Function<? super X, ? extends @Nullable T> mapper) {
+	public <T extends @Nullable Object> ObjectValidator<X, T> build(Function<? super X, ? extends T> mapper) {
 		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final Class<X> type = this.type;
 		return type == null ? new ObjectValidator<>(validator, mapper::apply)
@@ -120,8 +123,7 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 * @return a new validator
 	 */
 	@Override
-	// A validated value may be null; the type parameter does not express it.
-	@SuppressWarnings("NullAway")
+
 	public ObjectValidator<X, X> build() {
 		return build(x -> x);
 	}

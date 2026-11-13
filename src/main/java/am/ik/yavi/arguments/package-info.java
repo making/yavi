@@ -10,15 +10,20 @@
  * {@link am.ik.yavi.arguments.Arguments} creates immutable containers of one to sixteen
  * arguments. The generated {@code ArgumentsNValidator} types validate such arguments
  * applicatively and produce a result only when all constraints succeed; all violations
- * are accumulated. A {@code null} argument is accepted unless a constraint such as
- * {@code notNull()} rejects it.
+ * are accumulated.
  *
  * <p>
  * Nullness is annotated with JSpecify. An argument given to a validator may be
  * {@code null}, so the parameters of the {@code validate} methods and the components of
  * the containers are {@code @Nullable}. The function that creates the result receives the
- * validated arguments with their declared types and is not obliged to accept
- * {@code null}: an argument is {@code null} only if its constraints accept {@code null}.
+ * validated values with their declared types, and the type tells whether a value can be
+ * {@code null}. A validator of a single value, such as
+ * {@link am.ik.yavi.arguments.StringValidator}, requires the value: {@code null} is a
+ * violation unless {@code nullable()}, {@code optional()} or {@code defaultValue(...)} is
+ * applied, and {@code nullable()} makes the type of the value {@code @Nullable}. Only a
+ * validator built with {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} validates raw
+ * arguments, which are {@code null} unless a constraint such as {@code notNull()} rejects
+ * it.
  *
  * <p>
  * {@link am.ik.yavi.arguments.ArgumentsValidators} and the {@code split} and

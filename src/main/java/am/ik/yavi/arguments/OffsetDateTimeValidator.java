@@ -19,8 +19,9 @@ import org.jspecify.annotations.Nullable;
  * {@link am.ik.yavi.builder.OffsetDateTimeValidatorBuilder}, which applies a
  * {@link am.ik.yavi.constraint.OffsetDateTimeConstraint} under a given name. Violations
  * carry that name and the message key of the violated constraint, for example
- * {@code temporal.after}. A {@code null} value is accepted unless the configured
- * constraints require otherwise (for example {@code notNull()}).
+ * {@code temporal.after}. A {@code null} value is a violation: the one of a constraint
+ * that rejects it, or else {@code object.notNull}. It is accepted with
+ * {@code nullable()}, {@code optional()} or {@code defaultValue(...)} of the validator.
  *
  * <p>
  * The mapper passed to the constructor or to the builder's {@code build(Function)} method
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the value produced from the validated input
  * @since 0.10.0
  */
-public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<OffsetDateTime, T> {
+public class OffsetDateTimeValidator<T extends @Nullable Object> extends DefaultArguments1Validator<OffsetDateTime, T> {
 
 	/**
 	 * Returns a new validator that applies the given function to the result of this
@@ -42,7 +43,7 @@ public class OffsetDateTimeValidator<T> extends DefaultArguments1Validator<Offse
 	 * @return a new validator with the mapped result type
 	 */
 	@Override
-	public <T2> OffsetDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
+	public <T2 extends @Nullable Object> OffsetDateTimeValidator<T2> map(Function<? super T, ? extends T2> mapper) {
 		return new OffsetDateTimeValidator<>(super.validator, s -> mapper.apply(super.mapper.apply(s)),
 				super.transform);
 	}

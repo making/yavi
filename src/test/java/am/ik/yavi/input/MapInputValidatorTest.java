@@ -24,6 +24,7 @@ import am.ik.yavi.arguments.EnumValidator;
 import am.ik.yavi.builder.EnumValidatorBuilder;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
@@ -137,6 +138,7 @@ class MapInputValidatorTest {
 		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
 		._enum("role", Role.class, c -> c.notNull())
 		._localDate("birthday")
+		.nullable()
 		._object("address", addressValidator)
 		._list("tags", StringValidatorBuilder.of("", c -> c.notBlank()).build(), c -> c.unique())
 		._map("scores", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build(), c -> c.lessThanOrEqual(2))
@@ -159,7 +161,7 @@ class MapInputValidatorTest {
 					.rejectingUnknownProperties())
 		// an alternative may define the discriminator itself, and ignores unknown
 		// properties by default
-		.when("square", Yavi.arguments()._string("type")._integer("side", c -> c.notNull()).fromMap(Square::new));
+		.when("square", Yavi.arguments()._string("type").nullable()._integer("side").fromMap(Square::new));
 
 	static Map<String, @Nullable Object> map(@Nullable Object... keysAndValues) {
 		final Map<String, @Nullable Object> map = new LinkedHashMap<>();
@@ -675,9 +677,13 @@ class MapInputValidatorTest {
 			._embedded(size)
 			.fromMap((id, count) -> List.of(id, count));
 		assertThat(sized.validated(input("id", "e1", "color", "red"))).containsExactly("e1", 2);
-		assertThat(sized.description()).isEqualTo(new ValueDescription.Properties(
-				List.of(new ValueDescription.Property("id", new ValueDescription.Value("id", String.class, List.of()))),
-				new ValueDescription.Unknown()));
+		assertThat(
+				sized.description())
+			.isEqualTo(new ValueDescription.Properties(
+					List.of(new ValueDescription.Property("id",
+							new ValueDescription.Value("id", String.class,
+									List.of(new ConstraintDescription("object.notNull", List.of(), true))))),
+					new ValueDescription.Unknown()));
 		assertThatThrownBy(sized::rejectingUnknownProperties).isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("unknown properties cannot be rejected");
 		assertThatThrownBy(() -> Yavi.arguments()._embedded(sized)._rest().fromMap((a, b) -> ""))
@@ -721,6 +727,7 @@ class MapInputValidatorTest {
 			._map("stock", IntegerValidatorBuilder.of("", c -> c.greaterThanOrEqual(0)).build())
 			.defaultValue(Map.of())
 			._object("note", Object.class)
+			.nullable()
 			.fromMap(Order::new)
 			.rejectingUnknownProperties()
 			.readingParameters();
@@ -785,8 +792,8 @@ class MapInputValidatorTest {
 					tuple("l", "object.type", Map.of("", "x", "0", "y")),
 					tuple("o", "object.type", Map.of("", "x", "street", "y")));
 		// the largest index is given with the tree, which is what any validator reads
-		final ValueValidator<ParameterTree, Optional<List<Integer>>> coupons = Yavi.arguments()
-			._list("coupons", IntegerValidatorBuilder.of("", c -> c.positive()).build())
+		final ValueValidator<ParameterTree, Optional<List<@Nullable Integer>>> coupons = Yavi.arguments()
+			._list("coupons", IntegerValidatorBuilder.of("", c -> c.positive()).build().nullable())
 			.from(ParameterTree.reader(), Optional::ofNullable);
 		assertThat(coupons.validated(ParameterTree.of(Map.of("coupons[1]", "5"), 1))).contains(Arrays.asList(null, 5));
 		assertThat(coupons.validate(ParameterTree.of(Map.of("coupons[2]", "5"), 1)).errors())
@@ -860,8 +867,8 @@ class MapInputValidatorTest {
 	@MethodSource("untypedInputs")
 	<T> void untypedInputMustRepresentTheType(Class<T> type, Object input, @Nullable Object expected,
 			@Nullable Object coerced, @Nullable Object lenient) {
-		final ValueValidator<Object, T> validator = ValueValidator.<T>passThrough().untyped(type);
-		final Map<ValueValidator<Object, T>, @Nullable Object> expectations = new LinkedHashMap<>();
+		final ValueValidator<Object, @Nullable T> validator = ValueValidator.<T>passThrough().untyped(type);
+		final Map<ValueValidator<Object, @Nullable T>, @Nullable Object> expectations = new LinkedHashMap<>();
 		expectations.put(validator, expected);
 		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
 		// the rules of a reader that coerces are replaced
@@ -869,7 +876,7 @@ class MapInputValidatorTest {
 			.coercingStrings()
 			.coercingStrings(StringCoercion.strict().trimming().booleanWords())), lenient);
 		expectations.forEach((untyped, value) -> {
-			final Validated<T> validated = untyped.validate(input);
+			final var validated = untyped.validate(input);
 			if (value == null) {
 				// the violated value is the input as it was given
 				assertThat(validated.errors())
@@ -899,6 +906,7 @@ class MapInputValidatorTest {
 		final EnumValidator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
 		final MapInputValidator<Signup> validator = Yavi.arguments()
 			._string("name")
+			.nullable()
 			._integer("age")
 			.defaultValue(20)
 			._boolean("subscribed")
@@ -966,9 +974,10 @@ class MapInputValidatorTest {
 	@EnumSource(Model.class)
 	void absentKeyIsToldFromNull(Model model) {
 		final var arguments = Yavi.arguments()
-			._string("nickname", c -> c.notNull().lessThanOrEqual(5))
+			._string("nickname", c -> c.lessThanOrEqual(5))
 			.presence()
 			._string("bio")
+			.nullable()
 			.presence()
 			._object("address", addressValidator)
 			.nullable()
@@ -1033,9 +1042,8 @@ class MapInputValidatorTest {
 	@Test
 	void inputTypeMustBeKnownToReadFromAMap() {
 		// a value validator that takes an Object decides itself what it accepts
-		final ValueValidator<Object, Integer> coerced = (value, locale, context) -> ValueValidator
-			.<Integer>passThrough()
-			.untyped(Integer.class)
+		final ValueValidator<Object, Integer> coerced = (value, locale, context) -> Yavi._integer(c -> c)
+			.untyped()
 			.validate(value instanceof String string ? Integer.valueOf(string) : value, locale, context);
 		// alternatives are untyped one by one
 		final ValueValidator<Object, Object> id = ValueValidator.anyOf(
@@ -1044,7 +1052,8 @@ class MapInputValidatorTest {
 		final var arguments = Yavi.arguments()
 			._object("count", coerced.untyped(Object.class))
 			._object("id", id)
-			._object("payload", Object.class);
+			._object("payload", Object.class)
+			.nullable();
 		final MapInputValidator<List<Object>> validator = arguments
 			.fromMap((count, i, payload) -> Arrays.asList(count, i, payload));
 		assertThat(validator.validated(input("count", "10", "id", 7, "payload", List.of(1)))).containsExactly(10, 7,
@@ -1087,7 +1096,8 @@ class MapInputValidatorTest {
 		// coerced, and its null node and an empty string are both null
 		final ValueValidator<JsonNode, Square> square = Yavi.arguments()
 			._string("type")
-			._integer("side", c -> c.notNull())
+			.nullable()
+			._integer("side")
 			.from(JsonNodeReader.INSTANCE.coercingStrings(), Square::new);
 		assertThat(square.validated(jsonMapper.readTree("""
 				{"type":"","side":"3"}"""))).isEqualTo(new Square(null, 3));
