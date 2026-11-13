@@ -730,7 +730,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `InputReader`、`readingWith` | [#541](https://github.com/making/yavi/pull/541) |
 | `coercingStrings()`、`readingParameters()` | [#542](https://github.com/making/yavi/pull/542)、[#543](https://github.com/making/yavi/pull/543) |
 | Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
-| `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#PRNUM](https://github.com/making/yavi/pull/PRNUM) |
+| `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` など | [#546](https://github.com/making/yavi/pull/546) |
