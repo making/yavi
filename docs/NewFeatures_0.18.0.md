@@ -40,8 +40,7 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
 ```
 
 * The name can be omitted for a value that is not a property, such as the element of a
-  list: `Yavi._string(c -> c.notBlank())`. Its message says "The value" in place of the
-  name (`The value must not be blank`).
+  list: `Yavi._string(c -> c.notBlank())`.
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` and
   `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it.
 
@@ -58,9 +57,8 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
         .preprocess(BigDecimal::stripTrailingZeros);
 ```
 
-`c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.toNormalForm(form)` and
-`c.transform(f)` are available wherever the constraints of a `String` value are written,
-such as `Yavi.schema()._string("email", c -> ...)`.
+The transforms of a `String` are `trim()`, `toLowerCase()`, `toUpperCase()`,
+`toNormalForm(form)` and `transform(f)`.
 
 ### Combinators
 
@@ -111,19 +109,14 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
 ```
 
 * `nullable()`, `optional()`, `defaultValue(...)`, `recover(...)` and `recoverWith(...)`
-  apply to the last added property. `nullable()` changes the type of the value to
-  `@Nullable`.
+  apply to the last added property.
 * `_object(name, validator)`, `_list(name, elementValidator)` and
   `_map(name, valueValidator)` locate their violations under the name, in `name()`
   (`address.street`, `tags[1]`, `prices.pen`) and in `path()`.
-* A validator that accepts `null` keeps doing so under a name:
-  `_object("address", addressValidator.nullable())` produces `null` for `null`, like
-  `_object("address", addressValidator).nullable()`.
 * The constraints of `_list` and `_map` are checked when every element is valid and are
   reported on the property: `"tags" must be unique. [a] is/are duplicated.`
 * `constraintOnTarget` is a rule that spans several properties. It is checked when all
-  properties are valid. After `fromMap` it returns an `ObjectInputValidator`, so
-  `rejectingUnknownProperties()` and `readingParameters()` can follow it.
+  properties are valid.
 * `flatApply(f)` takes a function that returns a `Validated`, such as a factory method
   that validates.
 
@@ -160,8 +153,6 @@ Validated<User> validated = userValidator.validate(Map.of(
 | An explicit `null` | `object.notNull`, or the violation of a constraint that rejects `null`; always `object.notNull` after `rejectingNull()` |
 | A key that no property is defined for | ignored; `rejectingUnknownProperties()` reports `object.unknownProperty` |
 
-* An `_enum` or `_object` property needs its type to be read from a map:
-  `_enum(name, type)`, `_object(name, type)`.
 * `ignoringCase()` reads the name of an enum constant in any case:
   `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`.
 * `flatFromMap(f)` takes a function that returns a `Validated`:
@@ -183,9 +174,6 @@ DiscriminatedUnionValidator<Shape> shapeValidator = DiscriminatedUnionValidator.
 shapeValidator.validate(Map.of("type", "circle", "radius", 2)); // Circle[radius=2]
 shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the following values: [circle, square]
 ```
-
-`of("type")` alone is not a validator, because a union without alternatives would reject
-every input: the first `when` returns the validator.
 
 ### Several objects from one map, and the remaining keys
 
@@ -220,10 +208,8 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 ```
 
 Embedding is also the way to read more than 16 keys. `_rest()` without a validator takes
-the values as they are. The rest is an empty map if there is no other key, never `null`,
-so it takes `recover(...)` only: `_rest().nullable()` and `_rest().defaultValue(...)` do
-not compile. `_rest` is the last property of a schema, so it is written once, and the
-validator of such a schema has no `rejectingUnknownProperties()`: no key is unknown.
+the values as they are. `_rest` is the last property of a schema, and its value is an
+empty map if there is no other key, never `null`.
 
 ### Telling an absent key from null
 
@@ -251,8 +237,7 @@ switch (patch.bio()) {
 ```
 
 An absent key is not validated. A key that is present is validated as without
-`presence()`: `{"nickname": null}` is `"nickname" must not be null`. `presence()` is the
-last modifier of a property.
+`presence()`: `{"nickname": null}` is `"nickname" must not be null`.
 
 A contract that is not a partial update often accepts only one of the two. `required()`
 and `rejectingNull()` say which, without changing the type of the value:
@@ -270,72 +255,17 @@ accountValidator.validate(Map.of());                                  // "delete
 accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, bio=Optional.empty, page=1]
 ```
 
-| Property | `fromMap`: an absent key | `fromMap`: an explicit `null` | `apply`: a `null` argument | JSON Schema |
-| --- | --- | --- | --- | --- |
-| `_string("x")` | `object.required` | `object.notNull` | `object.notNull` | `required`, `"type": "string"` |
-| `.nullable()`, `.optional()`, `.defaultValue(...)`, `.recover(...)` | accepted | accepted | accepted | `"type": ["string", "null"]` |
-| followed by `.required()` | `object.required` | accepted | accepted | `required`, `"type": ["string", "null"]` |
-| followed by `.rejectingNull()` | accepted | `object.notNull` | accepted | `"type": "string"` |
-| `.presence()` | `Absent` | validated by the property | `Absent` (the argument is a `Presence`) | `"type": "string"` |
+| Property | An absent key | An explicit `null` |
+| --- | --- | --- |
+| `_string("x")` | `object.required` | `object.notNull` |
+| `.nullable()`, `.optional()`, `.defaultValue(...)`, `.recover(...)` | accepted | accepted |
+| followed by `.required()` | `object.required` | accepted |
+| followed by `.rejectingNull()` | accepted | `object.notNull` |
+| `.presence()` | `Absent` | validated by the property |
 
-Both are the last modifier of a property, like `presence()`, and are written after
-`optional()`, `nullable()`, `defaultValue(...)` or `recover(...)`: a property that does
-not accept `null` rejects both anyway, so `_string("x").required()` does not compile. They tell an absent key
-from `null`, so they apply to an input that has keys: a map, a tree read with
-`readingWith(reader)` and parameters, where a parameter with an empty value is read as
-`null` and is therefore present. Typed arguments (`apply`) have no absent state: `null`
-stands for an absent value and is validated as without the modifier, also after
-`rejectingNull()`. The JSON Schema is the same for `fromMap` and `apply`.
-
-Each of `optional()`, `nullable()`, `defaultValue(...)` and `recover(...)` decides what
-`null` produces before the property is validated, so of two of them only the last one
-would. A chain with a part that has no effect does not compile:
-
-| Chain | |
-| --- | --- |
-| `.optional().recover(Optional.empty())`, `.nullable().recover(null)` | compiles: an invalid value is recovered as an absent one |
-| `.recover(0).nullable()`, `.recover(0).optional()`, `.recover(0).defaultValue(1)` | compiles: `null` produces something else than the fallback of an invalid value |
-| `.nullable().optional()`, `.defaultValue(1).nullable()`, `.optional().defaultValue(...)` | does not compile: what the first one produces for `null` is never produced |
-| `.defaultValue(1).recover(2)` | does not compile: `recover` replaces `null` too; write `.recover(2).defaultValue(1)` |
-| `.recover(1).recover(2)` | does not compile: the first one never fails |
-
-The same holds for an `_embedded` property. The combinators of a
-`ValueValidator` are not restricted, and return a `NullAcceptingValueValidator`: a
-validator that is known by its type to accept `null`. A property added with it takes
-`required()`, `rejectingNull()` and `presence()`, and no modifier that accepts `null`
-again:
-
-```java
-NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> c.positive()).defaultValue(1);
-
-Yavi.schema()._integer(page).rejectingNull() // 1 only if omitted
-```
-
-The other parts of a schema are staged in the same way, so that what would have no
-effect, or would fail when the validator is built, does not compile:
-
-| Chain | |
-| --- | --- |
-| `.optional().presence()` | does not compile: the `Optional` would be wrapped in a `Presence`; write `.nullable().presence()` |
-| `._rest()._rest()`, `._rest()._string("x")` | does not compile: the rest is the last property |
-| `._rest().fromMap(f).rejectingUnknownProperties()` | does not compile: no key is unknown |
-| `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | does not compile: `fromMap` returns an `ObjectInputValidator.IgnoringUnknown`, which is told once |
-| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | does not compile: `ignoringCase()` returns an `Arguments1Validator`, so it is written once |
-| `._enum("role")`, `._object("address")` | do not exist: an enum and an object are added with their type, which `fromMap` needs |
-
-`nullable()` is the only modifier that produces `null`. A `null` default value or
-fallback of a value that is never `null` (the value of constraints, a list, a map, an
-`Optional`) is what a nullness checker reports, and without one it is rejected with a
-`NullPointerException` when the schema is built, instead of giving the function a `null`
-that the type of its parameter excludes:
-
-| Chain | |
-| --- | --- |
-| `._string("x").defaultValue(null)`, `._string("x").recover(null)` | `NullPointerException`: write `.nullable()`, or `.nullable().recover(null)` |
-| `._string("x").optional().recover(null)` | `NullPointerException`: write `.optional().recover(Optional.empty())` |
-| `._string("x").recoverWith(violations -> null)` | `NullPointerException` when the function returns `null` |
-| `._string("x").nullable().recover(null)` | accepted |
-| `._string(ValueValidator.passThrough()).defaultValue(null)` | accepted: the validator produces a `@Nullable String` itself |
+`required()` and `rejectingNull()` are written after `optional()`, `nullable()`,
+`defaultValue(...)` or `recover(...)`. Typed arguments (`apply`) have no absent state, so
+`null` is validated there as without them.
 
 ### A structure that contains itself
 
@@ -367,73 +297,14 @@ Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
 
 The reader applies to the nested validators too, so `addressValidator` is built with
 `fromMap` whatever input is read in the end. YAVI has no dependency on a JSON library: an
-`InputReader` is a small stateless class written once per tree model. This is the one for
-Jackson 3:
+`InputReader` is a small stateless class written once per tree model. The
+[README](../README.md#validating-the-tree-model-of-a-json-library) has the readers of
+Jackson 3 and of the tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540)).
 
-```java
-public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
-
-    public static final JsonNodeReader INSTANCE = new JsonNodeReader();
-
-    @Override
-    public boolean isNull(JsonNode node) {
-        return node.isNull() || node.isMissingNode();
-    }
-
-    @Override
-    public Object value(JsonNode node) { // a scalar as a JDK type
-        if (node.isString()) {
-            return node.stringValue();
-        }
-        if (node.isNumber()) {
-            return node.numberValue();
-        }
-        if (node.isBoolean()) {
-            return node.booleanValue();
-        }
-        return node;
-    }
-
-    @Override
-    public boolean isObject(JsonNode node) {
-        return node.isObject();
-    }
-
-    @Override
-    public @Nullable JsonNode property(JsonNode object, String name) {
-        return object.get(name); // null if absent
-    }
-
-    @Override
-    public Iterable<Map.Entry<String, JsonNode>> properties(JsonNode object) {
-        return object.properties();
-    }
-
-    @Override
-    public boolean isArray(JsonNode node) {
-        return node.isArray();
-    }
-
-    @Override
-    public Iterable<JsonNode> elements(JsonNode array) {
-        return array;
-    }
-
-}
-```
-
-The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator module of
-JDK 28) is read in the same way; the README shows its reader.
-
-A tree whose scalars are all strings is read with `coercingStrings()`, a decorator of any
-`CoercibleInputReader`, the interface a reader of a tree model implements: `JsonNodeReader.INSTANCE.coercingStrings()`, or
+A tree whose scalars are all strings is read with `coercingStrings()` of its reader:
+`JsonNodeReader.INSTANCE.coercingStrings()`, or
 `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read
-by the rules of the next section. The reader that coerces strings is an `InputReader` and cannot be coerced again,
-so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are
-given once, and so is each rule of a `StringCoercion`: `booleanWords(...).booleanWords()` does
-not compile. A validator
-reads with the last reader it is given: `readingWith(reader)` after
-`readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string.
+by the rules of the next section.
 
 ## Validating request parameters
 
@@ -485,14 +356,12 @@ The keys:
 * A key with several values is a list (`tags=a&tags=b`). Several values for a scalar
   property are reported with `object.type`.
 * Keys with indexes are a list in the order of the indexes:
-  `items[0].name=pen&items[1].name=ink`. A skipped index is a `null` element, so a
-  violation keeps the index it was sent with. An index is at most 255
-  (`ParameterTree.DEFAULT_MAX_INDEX`).
+  `items[0].name=pen&items[1].name=ink`.
 * An empty list cannot be sent: its key is absent. Give `defaultValue(List.of())` to a
   list that may be empty, such as checkboxes.
 
-The rules are strict on purpose. `StringCoercion` relaxes them for text written by a
-person, such as the fields of a form or the cells of a CSV file:
+`StringCoercion` relaxes these rules for text written by a person, such as the fields
+of a form or the cells of a CSV file:
 
 ```java
 record Signup(Integer age, Boolean subscribed) {}
@@ -512,20 +381,6 @@ signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[a
   boolean, an enum constant or a temporal value is read without its surrounding white
   space. A `String` value is left as it is; `c.trim()` trims it.
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` in any case.
-
-`recover` suits a parameter that must not fail a request:
-
-```java
-record PageRequest(Integer page, Integer size) {}
-
-ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
-        ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
-        ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
-        .fromMap(PageRequest::new)
-        .readingParameters();
-
-pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
-```
 
 ## Handling the result
 
@@ -578,9 +433,6 @@ List<ViolationDetail> details = violations.details();
 //   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
 ```
 
-`args` ends with the violated value, so map the details to a type of your own if that
-value must not be sent back.
-
 A hand-written step fails with one call:
 
 ```java
@@ -620,16 +472,12 @@ String json = JsonSchema.toJson(description);
  "required":["email","role","address"]}
 ```
 
-* A property is `required` unless it is `optional()`, `nullable()`, has a
-  `defaultValue(...)` or a `recover(...)` without `required()`, or is read with
-  `presence()`. Such a property allows the type `null` unless it ends with
-  `rejectingNull()`.
-* The constraints of a list or map are written as `minItems`, `maxItems`, `uniqueItems`,
-  `minProperties` and `maxProperties`, `rejectingUnknownProperties()` as
-  `additionalProperties: false`, and a recursive structure as `$ref`.
-* A lambda and the result of `ValueValidator.compose` are unknown; describe them with
-  `describedAs(...)`. Conditional constraints and `constraintOnTarget` are not described.
-* A bean `Validator` built with `ValidatorBuilder` is not described.
+* A property is `required` unless it accepts an absent key.
+* The constraints of a list or map are written as `minItems`, `uniqueItems` and so on,
+  `rejectingUnknownProperties()` as `additionalProperties: false`, and a recursive
+  structure as `$ref`.
+* A lambda, a conditional constraint, `constraintOnTarget` and a bean `Validator` built
+  with `ValidatorBuilder` are not described. `describedAs(...)` describes a lambda.
 
 ## Nullness with JSpecify
 
