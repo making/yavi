@@ -1602,8 +1602,9 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 
 	/**
 	 * The builder after an argument that is read from a key is added: its absence can be
-	 * told from {@code null} with {@link #required()}, {@link #rejectingNull()} and
-	 * {@link #presence()}.
+	 * told from {@code null} with {@link #presence()}, and with
+	 * {@link NullAccepting#required()} and {@link NullAccepting#rejectingNull()} once the
+	 * argument accepts {@code null}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -1611,36 +1612,37 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @param <R2> type of the validated value of argument at position 2
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<A1, A2, R1 extends @Nullable Object, R2 extends @Nullable Object>
-			extends Modifiable<A1, A2, R1, R2> {
+	public static sealed class Keyed<A1, A2, R1 extends @Nullable Object, R2 extends @Nullable Object>
+			extends Modifiable<A1, A2, R1, R2>permits NullAccepting {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2) {
 			super(d1, d2);
 		}
 
 		@Override
-		public Keyed<A1, A2, R1, Optional<@NonNull R2>> optional() {
-			return new Keyed<>(this.d1, this.d2.asOptional());
+		public NullAccepting<A1, A2, R1, Optional<@NonNull R2>> optional() {
+			return new NullAccepting<>(this.d1, this.d2.asOptional());
 		}
 
 		@Override
-		public Keyed<A1, A2, R1, @Nullable R2> nullable() {
-			return new Keyed<>(this.d1, this.d2.asNullable());
+		public NullAccepting<A1, A2, R1, @Nullable R2> nullable() {
+			return new NullAccepting<>(this.d1, this.d2.asNullable());
 		}
 
 		@Override
-		public Keyed<A1, A2, R1, R2> defaultValue(R2 defaultValue) {
-			return new Keyed<>(this.d1, this.d2.withDefault(defaultValue));
+		public NullAccepting<A1, A2, R1, R2> defaultValue(R2 defaultValue) {
+			return new NullAccepting<>(this.d1, this.d2.withDefault(defaultValue));
 		}
 
 		@Override
-		public Keyed<A1, A2, R1, R2> recover(R2 fallback) {
-			return new Keyed<>(this.d1, this.d2.recovering(fallback));
+		public NullAccepting<A1, A2, R1, R2> recover(R2 fallback) {
+			return new NullAccepting<>(this.d1, this.d2.recovering(fallback));
 		}
 
 		@Override
-		public Keyed<A1, A2, R1, R2> recoverWith(Function<? super ConstraintViolations, ? extends R2> fallback) {
-			return new Keyed<>(this.d1, this.d2.recoveringWith(fallback));
+		public NullAccepting<A1, A2, R1, R2> recoverWith(
+				Function<? super ConstraintViolations, ? extends R2> fallback) {
+			return new NullAccepting<>(this.d1, this.d2.recoveringWith(fallback));
 		}
 
 		/**
@@ -1670,6 +1672,27 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 			return new Arguments2ValidatorBuilder<>(this.d1, this.d2.withPresence());
 		}
 
+	}
+
+	/**
+	 * The builder after an argument that is read from a key accepts {@code null}, with
+	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}: an
+	 * absent key and an explicit {@code null}, which are both accepted, can be told apart
+	 * with {@link #required()} and {@link #rejectingNull()}.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @since 0.18.0
+	 */
+	public static final class NullAccepting<A1, A2, R1 extends @Nullable Object, R2 extends @Nullable Object>
+			extends Keyed<A1, A2, R1, R2> {
+
+		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2) {
+			super(d1, d2);
+		}
+
 		/**
 		 * Requires the key of the last added argument although its value may be
 		 * {@code null}, for a contract such as "{@code deletedAt} must be sent, as
@@ -1687,7 +1710,8 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * before this modifier. The argument is described as a
 		 * {@link am.ik.yavi.core.ValueDescription.Required}, so its JSON Schema is
 		 * {@code required} and allows the type {@code null}. An argument that does not
-		 * accept {@code null} requires its key anyway.
+		 * accept {@code null} requires its key anyway, so its builder does not have this
+		 * modifier.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as

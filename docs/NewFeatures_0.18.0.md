@@ -269,7 +269,9 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 | followed by `.rejectingNull()` | accepted | `object.notNull` | accepted | `"type": "string"` |
 | `.presence()` | `Absent` | validated by the property | `Absent` (the argument is a `Presence`) | `"type": "string"` |
 
-Both are the last modifier of a property, like `presence()`. They tell an absent key
+Both are the last modifier of a property, like `presence()`, and are written after
+`optional()`, `nullable()`, `defaultValue(...)` or `recover(...)`: a property that does
+not accept `null` rejects both anyway, so `_string("x").required()` does not compile. They tell an absent key
 from `null`, so they apply to an input that has keys: a map, a tree read with
 `readingWith(reader)` and parameters, where a parameter with an empty value is read as
 `null` and is therefore present. Typed arguments (`apply`) have no absent state: `null`

@@ -232,7 +232,7 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 | 上記に `.rejectingNull()` を続ける | 受け付ける | `object.notNull` | 受け付ける | `"type": "string"` |
 | `.presence()` | `Absent` | プロパティが検証する | `Absent`（引数の型は `Presence`） | `"type": "string"` |
 
-どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして書きます。この 2 つは存在しないキーと `null` を区別するものなので、キーを持つ入力（マップ、`readingWith(reader)` で読むツリー、パラメーター）に対して働きます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。型付きの引数（`apply`）には「存在しない」という状態がありません。`null` が存在しない値を表すため、`rejectingNull()` を付けた場合も含めて、これらを付けない場合と同じように検証されます。JSON Schema は `fromMap` と `apply` で同じです。
+どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして、`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` のいずれかの後に書きます。`null` を受け付けないプロパティは存在しないキーも `null` も拒否するので、`_string("x").required()` はコンパイルできません。この 2 つは存在しないキーと `null` を区別するものなので、キーを持つ入力（マップ、`readingWith(reader)` で読むツリー、パラメーター）に対して働きます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。型付きの引数（`apply`）には「存在しない」という状態がありません。`null` が存在しない値を表すため、`rejectingNull()` を付けた場合も含めて、これらを付けない場合と同じように検証されます。JSON Schema は `fromMap` と `apply` で同じです。
 
 ### 自分自身を含む構造
 

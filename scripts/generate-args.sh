@@ -3765,42 +3765,43 @@ cat <<EOD
 
 	/**
 	 * The builder after an argument that is read from a key is added: its absence can
-	 * be told from {@code null} with {@link #required()}, {@link #rejectingNull()} and
-	 * {@link #presence()}.
+	 * be told from {@code null} with {@link #presence()}, and with
+	 * {@link NullAccepting#required()} and {@link NullAccepting#rejectingNull()} once the
+	 * argument accepts {@code null}.
 	 *
 	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
 	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
+	public static sealed class Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> permits NullAccepting {
 
 		Keyed($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
 			super($(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//'));
 		}
 
 		@Override
-		public Keyed<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}Optional<@NonNull R${i}>> optional() {
-			return new Keyed<>(${init_definitions}this.d${i}.asOptional());
+		public NullAccepting<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}Optional<@NonNull R${i}>> optional() {
+			return new NullAccepting<>(${init_definitions}this.d${i}.asOptional());
 		}
 
 		@Override
-		public Keyed<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}@Nullable R${i}> nullable() {
-			return new Keyed<>(${init_definitions}this.d${i}.asNullable());
+		public NullAccepting<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}@Nullable R${i}> nullable() {
+			return new NullAccepting<>(${init_definitions}this.d${i}.asNullable());
 		}
 
 		@Override
-		public Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> defaultValue(R${i} defaultValue) {
-			return new Keyed<>(${init_definitions}this.d${i}.withDefault(defaultValue));
+		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> defaultValue(R${i} defaultValue) {
+			return new NullAccepting<>(${init_definitions}this.d${i}.withDefault(defaultValue));
 		}
 
 		@Override
-		public Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recover(R${i} fallback) {
-			return new Keyed<>(${init_definitions}this.d${i}.recovering(fallback));
+		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recover(R${i} fallback) {
+			return new NullAccepting<>(${init_definitions}this.d${i}.recovering(fallback));
 		}
 
 		@Override
-		public Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
-			return new Keyed<>(${init_definitions}this.d${i}.recoveringWith(fallback));
+		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
+			return new NullAccepting<>(${init_definitions}this.d${i}.recoveringWith(fallback));
 		}
 
 		/**
@@ -3830,6 +3831,24 @@ cat <<EOD
 			return new ${class}<>(${init_definitions}this.d${i}.withPresence());
 		}
 
+	}
+
+	/**
+	 * The builder after an argument that is read from a key accepts {@code null}, with
+	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}:
+	 * an absent key and an explicit {@code null}, which are both accepted, can be told
+	 * apart with {@link #required()} and {@link #rejectingNull()}.
+	 *
+	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
+	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
+	 * @since 0.18.0
+	 */
+	public static final class NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
+
+		NullAccepting($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
+			super($(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//'));
+		}
+
 		/**
 		 * Requires the key of the last added argument although its value may be
 		 * {@code null}, for a contract such as "{@code deletedAt} must be sent, as
@@ -3847,7 +3866,7 @@ cat <<EOD
 		 * before this modifier. The argument is described as a
 		 * {@link am.ik.yavi.core.ValueDescription.Required}, so its JSON Schema is {@code required} and
 		 * allows the type {@code null}. An argument that does not accept {@code null}
-		 * requires its key anyway.
+		 * requires its key anyway, so its builder does not have this modifier.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as

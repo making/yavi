@@ -1725,8 +1725,9 @@ public sealed class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R
 
 	/**
 	 * The builder after an argument that is read from a key is added: its absence can be
-	 * told from {@code null} with {@link #required()}, {@link #rejectingNull()} and
-	 * {@link #presence()}.
+	 * told from {@code null} with {@link #presence()}, and with
+	 * {@link NullAccepting#required()} and {@link NullAccepting#rejectingNull()} once the
+	 * argument accepts {@code null}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -1746,8 +1747,8 @@ public sealed class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R
 	 * @param <R8> type of the validated value of argument at position 8
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object>
-			extends Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> {
+	public static sealed class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object>
+			extends Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8>permits NullAccepting {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1756,31 +1757,34 @@ public sealed class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, Optional<@NonNull R8>> optional() {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8.asOptional());
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, Optional<@NonNull R8>> optional() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8.asOptional());
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, @Nullable R8> nullable() {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8.asNullable());
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, @Nullable R8> nullable() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8.asNullable());
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> defaultValue(R8 defaultValue) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> defaultValue(
+				R8 defaultValue) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8.withDefault(defaultValue));
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> recover(R8 fallback) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> recover(R8 fallback) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8.recovering(fallback));
 		}
 
 		@Override
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> recoverWith(
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> recoverWith(
 				Function<? super ConstraintViolations, ? extends R8> fallback) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8.recoveringWith(fallback));
 		}
 
@@ -1812,6 +1816,41 @@ public sealed class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R
 					this.d8.withPresence());
 		}
 
+	}
+
+	/**
+	 * The builder after an argument that is read from a key accepts {@code null}, with
+	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}: an
+	 * absent key and an explicit {@code null}, which are both accepted, can be told apart
+	 * with {@link #required()} and {@link #rejectingNull()}.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @since 0.18.0
+	 */
+	public static final class NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object>
+			extends Keyed<A1, A2, A3, A4, A5, A6, A7, A8, R1, R2, R3, R4, R5, R6, R7, R8> {
+
+		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8);
+		}
+
 		/**
 		 * Requires the key of the last added argument although its value may be
 		 * {@code null}, for a contract such as "{@code deletedAt} must be sent, as
@@ -1829,7 +1868,8 @@ public sealed class Arguments8ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, R
 		 * before this modifier. The argument is described as a
 		 * {@link am.ik.yavi.core.ValueDescription.Required}, so its JSON Schema is
 		 * {@code required} and allows the type {@code null}. An argument that does not
-		 * accept {@code null} requires its key anyway.
+		 * accept {@code null} requires its key anyway, so its builder does not have this
+		 * modifier.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument has no absent state and is validated as
