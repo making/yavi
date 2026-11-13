@@ -468,16 +468,28 @@ ConstraintViolations violations = Yavi.schema()
 violations.messagesByName();
 // {contact=["contact" must satisfy at least one of the 2 alternatives]}
 
-ConstraintViolation.NoAlternativeMatched violation = (ConstraintViolation.NoAlternativeMatched) violations.get(0);
-violation.alternatives().get(0).messagesByName();
-// {contact.value=["contact.value" must be a valid email address]}
-violation.alternatives().get(1).messagesByName();
-// {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
+if (violations.get(0) instanceof ConstraintViolation.NoAlternativeMatched unmatched) {
+    unmatched.alternatives().get(0).messagesByName();
+    // {contact.value=["contact.value" must be a valid email address]}
+    unmatched.alternatives().get(1).messagesByName();
+    // {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
 
-// 要約の代わりに見せる、違反がもっとも少ない選択肢
-ConstraintViolations closest = violation.alternatives().stream()
-    .min(Comparator.comparingInt(ConstraintViolations::size))
-    .orElseThrow();
+    // 要約の代わりに見せる、違反がもっとも少ない選択肢
+    ConstraintViolations closest = unmatched.alternatives().stream()
+        .min(Comparator.comparingInt(ConstraintViolations::size))
+        .orElseThrow();
+}
+
+// 詳細に対する switch に default は要らない。record はこの 2 つだけ
+for (ViolationDetail detail : violations.details()) {
+    List<String> messages = switch (detail) {
+        case ViolationDetail.Simple simple -> List.of(simple.message());
+        case ViolationDetail.NoAlternativeMatched unmatched -> unmatched.alternatives().stream()
+            .flatMap(List::stream)
+            .map(ViolationDetail::message)
+            .toList();
+    };
+}
 ```
 
 `ViolationDetail` は 2 つの record からなる sealed interface です。この違反の詳細は `ViolationDetail.NoAlternativeMatched` で、選択肢ごとの詳細のリストである `alternatives` を持ちます。ほかの詳細は `ViolationDetail.Simple` なので、JSON にこのプロパティは出ません。

@@ -538,16 +538,28 @@ ConstraintViolations violations = Yavi.schema()
 violations.messagesByName();
 // {contact=["contact" must satisfy at least one of the 2 alternatives]}
 
-ConstraintViolation.NoAlternativeMatched violation = (ConstraintViolation.NoAlternativeMatched) violations.get(0);
-violation.alternatives().get(0).messagesByName();
-// {contact.value=["contact.value" must be a valid email address]}
-violation.alternatives().get(1).messagesByName();
-// {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
+if (violations.get(0) instanceof ConstraintViolation.NoAlternativeMatched unmatched) {
+    unmatched.alternatives().get(0).messagesByName();
+    // {contact.value=["contact.value" must be a valid email address]}
+    unmatched.alternatives().get(1).messagesByName();
+    // {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
 
-// the alternative with the fewest violations, to show instead of the summary
-ConstraintViolations closest = violation.alternatives().stream()
-    .min(Comparator.comparingInt(ConstraintViolations::size))
-    .orElseThrow();
+    // the alternative with the fewest violations, to show instead of the summary
+    ConstraintViolations closest = unmatched.alternatives().stream()
+        .min(Comparator.comparingInt(ConstraintViolations::size))
+        .orElseThrow();
+}
+
+// a switch over the details needs no default: the two records are all there is
+for (ViolationDetail detail : violations.details()) {
+    List<String> messages = switch (detail) {
+        case ViolationDetail.Simple simple -> List.of(simple.message());
+        case ViolationDetail.NoAlternativeMatched unmatched -> unmatched.alternatives().stream()
+            .flatMap(List::stream)
+            .map(ViolationDetail::message)
+            .toList();
+    };
+}
 ```
 
 `ViolationDetail` is a sealed interface of two records. The detail of this violation is a
