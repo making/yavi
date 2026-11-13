@@ -782,7 +782,8 @@ ResponseEntity<?> register(@RequestBody JsonNode body) {
 ```
 
 The same validator reads a map and a `JsonNode`; nothing is imported differently. The
-README shows `JsonNodeReader`.
+README shows `JsonNodeReader` and the two features of the mapper that keep a number as it
+is written and refuse a key written twice.
 
 ### Converting a list to a map
 
@@ -913,6 +914,13 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
   `JooqRecordDecoders`). YAVI has one definition and an `InputReader` per input, and reads
   request parameters with paths and string coercion. It has no reader for a jOOQ `Record`;
   `record.intoMap()` is validated as a map.
+* **Numbers of a JSON document.** Raoh parses the document itself (`JsonDecoders.readTree`)
+  so that a number is kept as it is written and a key written twice is refused. YAVI
+  validates the tree the caller parsed: with Jackson, enable
+  `DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS` and
+  `StreamReadFeature.STRICT_DUPLICATE_DETECTION` on the mapper, as the README shows.
+  Otherwise a number with a fraction is a `double` before it is validated. The sign of
+  `-0.0` is not kept.
 * **Typed arguments.** The schema given to `fromMap(f)` also builds a validator of typed
   arguments with `apply(f)`. Raoh has no counterpart.
 * **Required.** Both reject `null` and an absent field unless the field says otherwise.

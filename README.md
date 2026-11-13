@@ -670,7 +670,28 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 }
 ```
 
-The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), the incubator module `jdk.incubator.json` of JDK 28) is read in the same way. A number is read from its text, so no digit is lost:
+A reader returns a number as the tree holds it, and a validator cannot see what the parser dropped. A default `JsonMapper` holds a number with a fraction as a `double`, in a tree and in a map (`readValue(json, Map.class)`) alike, and keeps the last of a key written twice:
+
+| JSON | Read by a default mapper |
+| --- | --- |
+| `0.10` | `_bigDecimal` receives `0.1`; the scale is lost |
+| `12345678901234567.89` | `_bigDecimal` receives `12345678901234568`; only 17 digits are kept |
+| `19.990000000000000000001` | `_bigDecimal` receives `19.99`, which `fractionDigits(2)` accepts |
+| `1e400` | `_double` receives `Infinity`; `_bigDecimal` reports `object.type` |
+| `{"role": "user", "role": "admin"}` | `role` is `admin` |
+
+Tell the mapper to keep a number as it is written and to refuse a key written twice:
+
+```java
+JsonMapper jsonMapper = JsonMapper.builder()
+        .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS) // 0.10 is the BigDecimal 0.10
+        .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION) // {"role": "user", "role": "admin"} is refused
+        .build();
+```
+
+`_bigDecimal` then receives the number with every digit and its scale, `_double` and `_float` round it once, and `1e400` is not a `Double`. A document with a duplicated key is refused by the parser with a `JacksonException`, before validation.
+
+The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), the incubator module `jdk.incubator.json` of JDK 28) is read in the same way. A number is read from its text, so no digit is lost, and `Json.parse` refuses a key written twice:
 
 ```java
 public final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
@@ -686,10 +707,19 @@ public final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
     public Object value(JsonValue node) {
         return switch (node) {
             case JsonString string -> string.asString();
-            case JsonNumber number -> new BigDecimal(number.toString());
+            case JsonNumber number -> decimal(number);
             case JsonBoolean bool -> bool.asBoolean();
             default -> node;
         };
+    }
+
+    private static Object decimal(JsonNumber number) {
+        try {
+            return new BigDecimal(number.toString());
+        }
+        catch (NumberFormatException e) { // an exponent that no BigDecimal holds, such as 1e3000000000
+            return number; // reported as object.type
+        }
     }
 
     @Override

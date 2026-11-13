@@ -46,6 +46,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -99,23 +103,11 @@ class ObjectInputValidatorTest {
 		// the reader is compiled only by a JDK that has the model
 		JDK_JSON {
 			@Override
-			@SuppressWarnings("unchecked")
 			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
 					@Nullable Map<String, Object> input) {
-				assumeTrue(Runtime.version().feature() >= 28, "jdk.incubator.json is a module of JDK 28 or later");
-				try {
-					final InputReader<Object> reader = (InputReader<Object>) Class
-						.forName("am.ik.yavi.input.JdkJsonReader")
-						.getDeclaredField("INSTANCE")
-						.get(null);
-					final Object tree = Class.forName("jdk.incubator.json.Json")
-						.getMethod("parse", String.class)
-						.invoke(null, jsonMapper.writeValueAsString(input));
-					return validator.readingWith(reader).validate(tree);
-				}
-				catch (ReflectiveOperationException e) {
-					throw new IllegalStateException(e);
-				}
+				assumeTrue(hasJdkJson(), "jdk.incubator.json is a module of JDK 28 or later");
+				return validator.readingWith(jdkJsonReader())
+					.validate(parseJdkJson(jsonMapper.writeValueAsString(input)));
 			}
 		},
 		// a tree whose scalars are all strings, such as request parameters; a string is
@@ -144,6 +136,31 @@ class ObjectInputValidatorTest {
 	}
 
 	static final JsonMapper jsonMapper = new JsonMapper();
+
+	static boolean hasJdkJson() {
+		return Runtime.version().feature() >= 28;
+	}
+
+	@SuppressWarnings("unchecked")
+	static InputReader<Object> jdkJsonReader() {
+		try {
+			return (InputReader<Object>) Class.forName("am.ik.yavi.input.JdkJsonReader")
+				.getDeclaredField("INSTANCE")
+				.get(null);
+		}
+		catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	static Object parseJdkJson(String json) {
+		try {
+			return Class.forName("jdk.incubator.json.Json").getMethod("parse", String.class).invoke(null, json);
+		}
+		catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 
 	sealed interface Shape {
 
@@ -1209,6 +1226,77 @@ class ObjectInputValidatorTest {
 			.containsExactly("object.notNull");
 		assertThatThrownBy(() -> lambda.readingWith(JsonNodeReader.INSTANCE))
 			.isInstanceOf(UnsupportedOperationException.class);
+	}
+
+	@Test
+	void numbersAndKeysAreReadAsTheParserKeepsThem() {
+		final ObjectInputValidator<BigDecimal> price = Yavi.schema()
+			._bigDecimal("price", c -> c.fractionDigits(2))
+			.fromMap(p -> p);
+		final ValueValidator<JsonNode, BigDecimal> node = price.readingWith(JsonNodeReader.INSTANCE);
+		final String scaled = """
+				{"price": 0.10}""";
+		final String large = """
+				{"price": 12345678901234567.89}""";
+		final String longFraction = """
+				{"price": 19.990000000000000000001}""";
+		final String huge = """
+				{"price": 1e400}""";
+		final String duplicated = """
+				{"price": 1, "price": 2}""";
+		// a default mapper holds a number with a fraction as a double, in a tree and in a
+		// map: the scale and the digits beyond the 17th are lost before a validator reads
+		// the number, 1e400 is infinite and the last of the same keys replaces the others
+		assertThat(node.validated(jsonMapper.readTree(scaled))).isEqualTo(new BigDecimal("0.1"));
+		assertThat(node.validated(jsonMapper.readTree(large))).isEqualTo(new BigDecimal("12345678901234568"));
+		assertThat(node.validated(jsonMapper.readTree(longFraction))).isEqualTo(new BigDecimal("19.99"));
+		assertThat(node.validate(jsonMapper.readTree(huge)).errors())
+			.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("object.type", Double.POSITIVE_INFINITY));
+		assertThat(Yavi.schema()
+			._double("price")
+			.from(JsonNodeReader.INSTANCE, p -> p)
+			.validated(jsonMapper.readTree(huge))).isEqualTo(Double.POSITIVE_INFINITY);
+		assertThat(node.validated(jsonMapper.readTree(duplicated))).isEqualTo(new BigDecimal("2"));
+		assertThat(price.validated(jsonMapper.readValue(scaled, new TypeReference<>() {
+		}))).isEqualTo(new BigDecimal("0.1"));
+		// a mapper that is told to keeps the number as it is written and refuses the
+		// document that has a key twice
+		final JsonMapper exactMapper = JsonMapper.builder()
+			.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+			.enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+			.build();
+		assertThat(node.validated(exactMapper.readTree(scaled))).isEqualTo(new BigDecimal("0.10"));
+		assertThat(node.validated(exactMapper.readTree(large))).isEqualTo(new BigDecimal("12345678901234567.89"));
+		assertThat(node.validate(exactMapper.readTree(longFraction)).errors())
+			.extracting(ConstraintViolation::messageKey)
+			.containsExactly("numeric.fractionDigits");
+		assertThat(Yavi._bigDecimal()
+			.readingWith(JsonNodeReader.INSTANCE)
+			.validated(exactMapper.readTree(huge).get("price"))).isEqualTo(new BigDecimal("1E+400"));
+		assertThat(Yavi.schema()
+			._double("price")
+			.from(JsonNodeReader.INSTANCE, p -> p)
+			.validate(exactMapper.readTree(huge))
+			.errors()).extracting(ConstraintViolation::messageKey).containsExactly("object.type");
+		assertThatThrownBy(() -> exactMapper.readTree(duplicated)).isInstanceOf(JacksonException.class);
+		assertThat(price.validated(exactMapper.readValue(scaled, new TypeReference<>() {
+		}))).isEqualTo(new BigDecimal("0.10"));
+		if (!hasJdkJson()) {
+			return;
+		}
+		// the tree model of the JDK keeps the text of a number and refuses a key written
+		// twice; a number that no BigDecimal holds is not a number of any type
+		final ValueValidator<Object, BigDecimal> jdk = price.readingWith(jdkJsonReader());
+		assertThat(jdk.validated(parseJdkJson(scaled))).isEqualTo(new BigDecimal("0.10"));
+		assertThat(jdk.validated(parseJdkJson(large))).isEqualTo(new BigDecimal("12345678901234567.89"));
+		assertThat(jdk.validate(parseJdkJson(longFraction)).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("numeric.fractionDigits");
+		assertThat(jdk.validate(parseJdkJson("""
+				{"price": 1e3000000000}""")).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.type");
+		assertThatThrownBy(() -> parseJdkJson(duplicated)).isInstanceOf(IllegalStateException.class)
+			.hasStackTraceContaining("Duplicate member name");
 	}
 
 }
