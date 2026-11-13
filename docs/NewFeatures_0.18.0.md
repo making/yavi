@@ -261,17 +261,20 @@ accountValidator.validate(Map.of());                                  // "delete
 accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, bio=Optional.empty, page=1]
 ```
 
-| Property | An absent key | An explicit `null` | JSON Schema |
-| --- | --- | --- | --- |
-| `_string("x")` | `object.required` | `object.notNull` | `required`, `"type": "string"` |
-| `.nullable()`, `.optional()`, `.defaultValue(...)`, `.recover(...)` | accepted | accepted | `"type": ["string", "null"]` |
-| followed by `.required()` | `object.required` | accepted | `required`, `"type": ["string", "null"]` |
-| followed by `.rejectingNull()` | accepted | `object.notNull` | `"type": "string"` |
-| `.presence()` | `Absent` | validated by the property | `"type": "string"` |
+| Property | `fromMap`: an absent key | `fromMap`: an explicit `null` | `apply`: a `null` argument | JSON Schema |
+| --- | --- | --- | --- | --- |
+| `_string("x")` | `object.required` | `object.notNull` | `object.notNull` | `required`, `"type": "string"` |
+| `.nullable()`, `.optional()`, `.defaultValue(...)`, `.recover(...)` | accepted | accepted | accepted | `"type": ["string", "null"]` |
+| followed by `.required()` | `object.required` | accepted | accepted | `required`, `"type": ["string", "null"]` |
+| followed by `.rejectingNull()` | accepted | `object.notNull` | accepted | `"type": "string"` |
+| `.presence()` | `Absent` | validated by the property | `Absent` (the argument is a `Presence`) | `"type": "string"` |
 
-Both are the last modifier of a property, like `presence()`. Typed arguments (`apply`)
-have no absent state and are validated as without the modifier. A parameter with an empty
-value is read as `null`, so it is present.
+Both are the last modifier of a property, like `presence()`. They tell an absent key
+from `null`, so they apply to an input that has keys: a map, a tree read with
+`readingWith(reader)` and parameters, where a parameter with an empty value is read as
+`null` and is therefore present. Typed arguments (`apply`) have no absent state: `null`
+stands for an absent value and is validated as without the modifier, also after
+`rejectingNull()`. The JSON Schema is the same for `fromMap` and `apply`.
 
 ### A structure that contains itself
 

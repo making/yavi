@@ -224,15 +224,15 @@ accountValidator.validate(Map.of());                                  // "delete
 accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, bio=Optional.empty, page=1]
 ```
 
-| プロパティ | 存在しないキー | 明示的な `null` | JSON Schema |
-| --- | --- | --- | --- |
-| `_string("x")` | `object.required` | `object.notNull` | `required`、`"type": "string"` |
-| `.nullable()`、`.optional()`、`.defaultValue(...)`、`.recover(...)` | 受け付ける | 受け付ける | `"type": ["string", "null"]` |
-| 上記に `.required()` を続ける | `object.required` | 受け付ける | `required`、`"type": ["string", "null"]` |
-| 上記に `.rejectingNull()` を続ける | 受け付ける | `object.notNull` | `"type": "string"` |
-| `.presence()` | `Absent` | プロパティが検証する | `"type": "string"` |
+| プロパティ | `fromMap`: 存在しないキー | `fromMap`: 明示的な `null` | `apply`: 引数が `null` | JSON Schema |
+| --- | --- | --- | --- | --- |
+| `_string("x")` | `object.required` | `object.notNull` | `object.notNull` | `required`、`"type": "string"` |
+| `.nullable()`、`.optional()`、`.defaultValue(...)`、`.recover(...)` | 受け付ける | 受け付ける | 受け付ける | `"type": ["string", "null"]` |
+| 上記に `.required()` を続ける | `object.required` | 受け付ける | 受け付ける | `required`、`"type": ["string", "null"]` |
+| 上記に `.rejectingNull()` を続ける | 受け付ける | `object.notNull` | 受け付ける | `"type": "string"` |
+| `.presence()` | `Absent` | プロパティが検証する | `Absent`（引数の型は `Presence`） | `"type": "string"` |
 
-どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして書きます。型付きの引数（`apply`）には「存在しない」という状態がないため、これらを付けない場合と同じように検証されます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。
+どちらも `presence()` と同じく、プロパティの最後の修飾メソッドとして書きます。この 2 つは存在しないキーと `null` を区別するものなので、キーを持つ入力（マップ、`readingWith(reader)` で読むツリー、パラメーター）に対して働きます。値が空のパラメーターは `null` として読み取られるので、キーは存在する扱いになります。型付きの引数（`apply`）には「存在しない」という状態がありません。`null` が存在しない値を表すため、`rejectingNull()` を付けた場合も含めて、これらを付けない場合と同じように検証されます。JSON Schema は `fromMap` と `apply` で同じです。
 
 ### 自分自身を含む構造
 
