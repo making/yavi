@@ -23,6 +23,12 @@ arguments of `Yavi.schema()`. The gap was found when
 `docs/ComparisonWithRaoh.md`, `docs/ComparisonWithZod.md` and the description of #552
 without compiling. Those documents now use `Yavi._enum("role", Role.class, c -> c)`.
 
+`Yavi._list` and `Yavi._map` have the opposite gap: they always take constraints, so
+the validator of a list without constraints is `elementValidator.liftList()` or
+`Yavi._list(elementValidator, c -> c)`, while `Yavi.schema()` has
+`_list(name, elementValidator)`. Decide `Yavi._list(elementValidator)` and
+`Yavi._map(valueValidator)` together with the forms above.
+
 ## First step: decide whether to add them
 
 Arguments for:
