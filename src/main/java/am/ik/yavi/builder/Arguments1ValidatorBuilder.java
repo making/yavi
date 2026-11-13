@@ -1332,6 +1332,9 @@ public sealed class Arguments1ValidatorBuilder<A1, R1> permits Arguments1Validat
 	 * @return a new arguments validator
 	 * @since 0.18.0
 	 */
+	// The validated value may be null; the type of the function parameter does not
+	// express that.
+	@SuppressWarnings("NullAway")
 	public <X> Arguments1Validator<A1, X> flatApply(Function1<? super R1, ? extends Validated<? extends X>> f) {
 		return Arguments1Validator
 			.from(this.d1.validator().<X>andThen((value, locale, constraintContext) -> Validated.of(f.apply(value))));

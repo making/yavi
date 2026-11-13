@@ -84,9 +84,9 @@ public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, I
 	 * @return a new validator
 	 */
 	@Override
-	public <T> InstantValidator<T> build(Function<@Nullable Instant, ? extends @Nullable T> mapper) {
+	public <T> InstantValidator<T> build(Function<? super Instant, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Instant>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new InstantValidator<>(validator, value -> mapper.apply(value));
+		return new InstantValidator<>(validator, mapper::apply);
 	}
 
 	/**

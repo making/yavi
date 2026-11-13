@@ -6,13 +6,17 @@ package am.ik.yavi.arguments;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
+import org.jspecify.annotations.Nullable;
 
 import static java.util.function.Function.identity;
 
@@ -40,6 +44,425 @@ public class ArgumentsValidators {
 	 * Creates an instance. Use the static factory methods instead.
 	 */
 	public ArgumentsValidators() {
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, X> Arguments2Validator<A1, A2, X> derived(Arguments2Validator<A1, A2, X> validator,
+			Supplier<Arguments2Validator<A1, A2, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
+		return new Arguments2Validator<A1, A2, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments2Validator<A1, A2, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, X> Arguments3Validator<A1, A2, A3, X> derived(Arguments3Validator<A1, A2, A3, X> validator,
+			Supplier<Arguments3Validator<A1, A2, A3, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
+		return new Arguments3Validator<A1, A2, A3, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, X> Arguments4Validator<A1, A2, A3, A4, X> derived(
+			Arguments4Validator<A1, A2, A3, A4, X> validator,
+			Supplier<Arguments4Validator<A1, A2, A3, A4, Supplier<X>>> lazy, Supplier<ValueDescription> description) {
+		return new Arguments4Validator<A1, A2, A3, A4, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, X> Arguments5Validator<A1, A2, A3, A4, A5, X> derived(
+			Arguments5Validator<A1, A2, A3, A4, A5, X> validator,
+			Supplier<Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments5Validator<A1, A2, A3, A4, A5, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, X> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> derived(
+			Arguments6Validator<A1, A2, A3, A4, A5, A6, X> validator,
+			Supplier<Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments6Validator<A1, A2, A3, A4, A5, A6, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, X> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> derived(
+			Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> validator,
+			Supplier<Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, X> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> derived(
+			Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> validator,
+			Supplier<Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> derived(
+			Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> validator,
+			Supplier<Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> derived(
+			Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> validator,
+			Supplier<Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> derived(
+			Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> validator,
+			Supplier<Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> derived(
+			Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> validator,
+			Supplier<Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale, constraintContext);
+			}
+
+			@Override
+			public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> derived(
+			Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> validator,
+			Supplier<Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> derived(
+			Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> validator,
+			Supplier<Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> derived(
+			Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> validator,
+			Supplier<Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					@Nullable A15 a15, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that validates with the given validator and takes its lazy
+	 * variant and its description from the given suppliers.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> derived(
+			Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> validator,
+			Supplier<Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>>> lazy,
+			Supplier<ValueDescription> description) {
+		return new Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					@Nullable A15 a15, @Nullable A16 a16, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
+						constraintContext);
+			}
+
+			@Override
+			public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
+				return lazy.get();
+			}
+
+			@Override
+			public ValueDescription description() {
+				return description.get();
+			}
+		};
 	}
 
 	/**

@@ -82,9 +82,9 @@ public class ShortValidatorBuilder implements ValueValidatorBuilder<Short, Short
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ShortValidator<T> build(Function<@Nullable Short, ? extends @Nullable T> mapper) {
+	public <T> ShortValidator<T> build(Function<? super Short, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Short>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ShortValidator<>(validator, value -> mapper.apply(value));
+		return new ShortValidator<>(validator, mapper::apply);
 	}
 
 	/**

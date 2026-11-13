@@ -4,7 +4,6 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Objects;
 import am.ik.yavi.arguments.User.Role;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validated;
@@ -19,8 +18,7 @@ public class UserValidatorTest {
 		._string("email", c -> c.notBlank().email())
 		._string("name", c -> c.notBlank())
 		.<Role>_enum("role", c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))
-		.apply((email, name, role) -> new User(Objects.requireNonNull(email), Objects.requireNonNull(name),
-				Objects.requireNonNull(role)));
+		.apply((email, name, role) -> new User(email, name, role));
 
 	@Test
 	void valid() {

@@ -4,16 +4,10 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Locale;
-import java.util.function.Supplier;
-
-import am.ik.yavi.core.ConstraintContext;
-import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function15;
 import am.ik.yavi.fn.Validations;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 15 validators that validate distinct arguments into a validator for those
@@ -165,11 +159,16 @@ public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 	 */
 	public <X> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> apply(
 			Function15<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? super R12, ? super R13, ? super R14, ? super R15, ? extends X> f) {
-		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X>() {
-
-			@Override
-			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy() {
-				return ((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+		return ArgumentsValidators.derived((a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+				constraintContext) -> Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
+						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
+						v4.validate(a4, locale, constraintContext), v5.validate(a5, locale, constraintContext),
+						v6.validate(a6, locale, constraintContext), v7.validate(a7, locale, constraintContext),
+						v8.validate(a8, locale, constraintContext), v9.validate(a9, locale, constraintContext),
+						v10.validate(a10, locale, constraintContext), v11.validate(a11, locale, constraintContext),
+						v12.validate(a12, locale, constraintContext), v13.validate(a13, locale, constraintContext),
+						v14.validate(a14, locale, constraintContext), v15.validate(a15, locale, constraintContext)),
+				() -> (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
 						constraintContext) -> Validations.apply(
 								(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14,
 										r15) -> () -> f.apply(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13,
@@ -184,32 +183,11 @@ public class Arguments15Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, 
 								v12.validate(a12, locale, constraintContext),
 								v13.validate(a13, locale, constraintContext),
 								v14.validate(a14, locale, constraintContext),
-								v15.validate(a15, locale, constraintContext)));
-			}
-
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
-					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
-					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
-					@Nullable A15 a15, Locale locale, ConstraintContext constraintContext) {
-				return Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
-						v4.validate(a4, locale, constraintContext), v5.validate(a5, locale, constraintContext),
-						v6.validate(a6, locale, constraintContext), v7.validate(a7, locale, constraintContext),
-						v8.validate(a8, locale, constraintContext), v9.validate(a9, locale, constraintContext),
-						v10.validate(a10, locale, constraintContext), v11.validate(a11, locale, constraintContext),
-						v12.validate(a12, locale, constraintContext), v13.validate(a13, locale, constraintContext),
-						v14.validate(a14, locale, constraintContext), v15.validate(a15, locale, constraintContext));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
+								v15.validate(a15, locale, constraintContext)),
+				() -> ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
 						v4.description(), v5.description(), v6.description(), v7.description(), v8.description(),
 						v9.description(), v10.description(), v11.description(), v12.description(), v13.description(),
-						v14.description(), v15.description());
-			}
-		};
+						v14.description(), v15.description()));
 	}
 
 	/**

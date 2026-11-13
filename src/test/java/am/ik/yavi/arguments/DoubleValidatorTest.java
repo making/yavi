@@ -82,11 +82,10 @@ class DoubleValidatorTest {
 
 	static Stream<DoubleValidator<Price>> validators() {
 		return Stream.of(
-				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
-					.build(value -> new Price(Objects.requireNonNull(value))),
+				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0)).build(Price::new),
 				DoubleValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((double) 0))
 					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+					.map(Price::new));
 	}
 
 	public static class Price {

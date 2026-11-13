@@ -85,9 +85,9 @@ public class ZonedDateTimeValidatorBuilder implements ValueValidatorBuilder<Zone
 	 * @return a new validator
 	 */
 	@Override
-	public <T> ZonedDateTimeValidator<T> build(Function<@Nullable ZonedDateTime, ? extends @Nullable T> mapper) {
+	public <T> ZonedDateTimeValidator<T> build(Function<? super ZonedDateTime, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<ZonedDateTime>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ZonedDateTimeValidator<>(validator, value -> mapper.apply(value));
+		return new ZonedDateTimeValidator<>(validator, mapper::apply);
 	}
 
 	/**

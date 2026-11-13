@@ -84,9 +84,9 @@ public class BigIntegerValidatorBuilder implements ValueValidatorBuilder<BigInte
 	 * @return a new validator
 	 */
 	@Override
-	public <T> BigIntegerValidator<T> build(Function<@Nullable BigInteger, ? extends @Nullable T> mapper) {
+	public <T> BigIntegerValidator<T> build(Function<? super BigInteger, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<BigInteger>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BigIntegerValidator<>(validator, value -> mapper.apply(value));
+		return new BigIntegerValidator<>(validator, mapper::apply);
 	}
 
 	/**

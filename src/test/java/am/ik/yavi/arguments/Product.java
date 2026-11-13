@@ -4,7 +4,6 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder;
@@ -17,8 +16,7 @@ public class Product {
 	private final int price;
 
 	static final Arguments2Validator<String, Integer, Product> validator = ArgumentsValidatorBuilder
-		.<String, Integer, Product>of(
-				(name, price) -> new Product(Objects.requireNonNull(name), Objects.requireNonNull(price))) //
+		.<String, Integer, Product>of(Product::new) //
 		.builder(b -> b //
 			._string(Arguments2::arg1, "name", c -> c.notEmpty())
 			._integer(Arguments2::arg2, "price", c -> c.greaterThan(0)))

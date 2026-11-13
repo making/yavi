@@ -14,8 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -57,12 +57,12 @@ class MapInputValidatorTest {
 
 	}
 
-	record Address(@Nullable String street, @Nullable String city) {
+	record Address(String street, String city) {
 	}
 
-	record User(@Nullable String email, @Nullable Integer age, @Nullable Role role, @Nullable LocalDate birthday,
-			@Nullable Address address, @Nullable List<String> tags, @Nullable Map<String, Integer> scores,
-			@Nullable Optional<String> nickname, @Nullable Double rate) {
+	record User(String email, Integer age, Role role, @Nullable LocalDate birthday, Address address,
+			@Nullable List<String> tags, @Nullable Map<String, Integer> scores, Optional<String> nickname,
+			Double rate) {
 
 		boolean hasTagIfAdmin() {
 			return this.role != Role.ADMIN || (this.tags != null && !this.tags.isEmpty());
@@ -120,10 +120,10 @@ class MapInputValidatorTest {
 
 	}
 
-	record Circle(@Nullable Integer radius) implements Shape {
+	record Circle(Integer radius) implements Shape {
 	}
 
-	record Square(@Nullable String type, @Nullable Integer side) implements Shape {
+	record Square(@Nullable String type, Integer side) implements Shape {
 	}
 
 	static final MapInputValidator<Address> addressValidator = Yavi.arguments()
@@ -325,14 +325,13 @@ class MapInputValidatorTest {
 			.containsExactly("The value must be of type object");
 	}
 
-	record Booking(@Nullable DateRange period) {
+	record Booking(DateRange period) {
 	}
 
 	record DateRange(LocalDate start, LocalDate end) {
 
-		static Validated<DateRange> parse(@Nullable LocalDate start, @Nullable LocalDate end) {
-			return start != null && end != null && start.isBefore(end)
-					? Validated.successWith(new DateRange(start, end))
+		static Validated<DateRange> parse(LocalDate start, LocalDate end) {
+			return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
 					: Validated.failureWith(ViolationMessage.of("dateRange.invalid", "\"{0}\" must start before {1}"),
 							start, Locale.ENGLISH, end);
 		}
@@ -376,7 +375,7 @@ class MapInputValidatorTest {
 			.validate(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 31))
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("", "dateRange.invalid"));
-		assertThat(Yavi.arguments()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(Objects.requireNonNull(name).length())).validate("abc").value())
+		assertThat(Yavi.arguments()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(name.length())).validate("abc").value())
 			.isEqualTo(3);
 		final String described = switch (Yavi.arguments()
 			._string("name", c -> c.notBlank())
@@ -432,20 +431,20 @@ class MapInputValidatorTest {
 				"side":{"type":"integer"}},"required":["side"]}]}}},"required":["shapes"]}""");
 	}
 
-	record Comment(@Nullable String body, @Nullable List<Comment> replies) {
+	record Comment(String body, List<Comment> replies) {
 	}
 
 	sealed interface Expr {
 
 	}
 
-	record Num(@Nullable Integer value) implements Expr {
+	record Num(Integer value) implements Expr {
 	}
 
-	record Add(@Nullable Expr left, @Nullable Expr right) implements Expr {
+	record Add(Expr left, Expr right) implements Expr {
 	}
 
-	record Formula(@Nullable String name, @Nullable Expr expr, @Nullable List<Comment> comments) {
+	record Formula(String name, @Nullable Expr expr, List<Comment> comments) {
 	}
 
 	static final MapInputValidator<Comment> commentValidator = ValueValidator.recursive("Comment",
@@ -578,14 +577,13 @@ class MapInputValidatorTest {
 			.isEqualTo("{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}");
 	}
 
-	record UserName(@Nullable String first, @Nullable String last) {
+	record UserName(String first, String last) {
 	}
 
-	record Department(@Nullable String name, @Nullable String code) {
+	record Department(String name, String code) {
 	}
 
-	record Employee(@Nullable Integer id, @Nullable UserName name, @Nullable Department department,
-			@Nullable Map<String, Integer> scores) {
+	record Employee(Integer id, UserName name, @Nullable Department department, Map<String, Integer> scores) {
 	}
 
 	@ParameterizedTest
@@ -695,14 +693,14 @@ class MapInputValidatorTest {
 			.hasMessageContaining("The property 'dept_code' is defined twice");
 	}
 
-	record Page(@Nullable Integer size, @Nullable Role role, @Nullable Address address) {
+	record Page(Integer size, Role role, Address address) {
 	}
 
-	record Item(@Nullable String name, @Nullable Integer quantity) {
+	record Item(String name, Integer quantity) {
 	}
 
-	record Order(@Nullable String customer, @Nullable List<Item> items, @Nullable List<Integer> coupons,
-			@Nullable Map<String, Integer> stock, @Nullable Object note) {
+	record Order(String customer, List<Item> items, @Nullable List<Integer> coupons, Map<String, Integer> stock,
+			@Nullable Object note) {
 	}
 
 	@Test
@@ -884,7 +882,7 @@ class MapInputValidatorTest {
 		});
 	}
 
-	record Signup(@Nullable String name, @Nullable Integer age, @Nullable Boolean subscribed, @Nullable Role role) {
+	record Signup(@Nullable String name, Integer age, Boolean subscribed, Role role) {
 	}
 
 	enum Unit {

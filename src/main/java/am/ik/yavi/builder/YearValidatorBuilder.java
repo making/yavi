@@ -83,9 +83,9 @@ public class YearValidatorBuilder implements ValueValidatorBuilder<Year, Year> {
 	 * @return a new validator
 	 */
 	@Override
-	public <T> YearValidator<T> build(Function<@Nullable Year, ? extends @Nullable T> mapper) {
+	public <T> YearValidator<T> build(Function<? super Year, ? extends @Nullable T> mapper) {
 		final Validator<Arguments1<Year>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new YearValidator<>(validator, value -> mapper.apply(value));
+		return new YearValidator<>(validator, mapper::apply);
 	}
 
 	/**

@@ -14,6 +14,13 @@
  * {@code notNull()} rejects it.
  *
  * <p>
+ * Nullness is annotated with JSpecify. An argument given to a validator may be
+ * {@code null}, so the parameters of the {@code validate} methods and the components of
+ * the containers are {@code @Nullable}. The function that creates the result receives the
+ * validated arguments with their declared types and is not obliged to accept
+ * {@code null}: an argument is {@code null} only if its constraints accept {@code null}.
+ *
+ * <p>
  * {@link am.ik.yavi.arguments.ArgumentsValidators} and the {@code split} and
  * {@code combine} methods of a validator compose multiple validators: {@code split}
  * validates distinct arguments with separate validators, while {@code combine} applies

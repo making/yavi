@@ -80,12 +80,8 @@ class IntegerValidatorTest {
 	}
 
 	static Stream<IntegerValidator<Price>> validators() {
-		return Stream.of(
-				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0))
-					.build(value -> new Price(Objects.requireNonNull(value))),
-				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0))
-					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+		return Stream.of(IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0)).build(Price::new),
+				IntegerValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual(0)).build().map(Price::new));
 	}
 
 	public static class Price {

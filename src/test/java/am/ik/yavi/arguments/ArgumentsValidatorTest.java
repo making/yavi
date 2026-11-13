@@ -40,7 +40,7 @@ class ArgumentsValidatorTest {
 		.build();
 
 	final Arguments2Validator<Integer, Integer, Range> arguments2Validator = ArgumentsValidatorBuilder
-		.<Integer, Integer, Range>of((from, to) -> new Range(Objects.requireNonNull(from), Objects.requireNonNull(to)))
+		.<Integer, Integer, Range>of(Range::new)
 		.builder(b -> b._integer(Arguments2::arg1, "from", c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
 			._integer(Arguments2::arg2, "to", c -> c.greaterThanOrEqual(0).lessThanOrEqual(9))
 			.constraintOnTarget(a -> Objects.requireNonNull(a.arg1()) < Objects.requireNonNull(a.arg2()), "range",
@@ -48,8 +48,7 @@ class ArgumentsValidatorTest {
 		.build();
 
 	final Arguments3Validator<String, String, Integer, User> arguments3Validator = ArgumentsValidatorBuilder
-		.<String, String, Integer, User>of((email, name, role) -> new User(Objects.requireNonNull(email),
-				Objects.requireNonNull(name), Objects.requireNonNull(role)))
+		.<String, String, Integer, User>of((email, name, role) -> new User(email, name, role))
 		.builder(b -> b._string(Arguments3::arg1, "name", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(20))
 			._string(Arguments3::arg2, "email", c -> c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
 			._integer(Arguments3::arg3, "age", c -> c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200)))
@@ -60,7 +59,7 @@ class ArgumentsValidatorTest {
 
 	static final Arguments1Validator<String, PhoneNumber> phoneNumberValidator = StringValidatorBuilder
 		.of("phoneNumber", c -> c.notBlank().greaterThanOrEqual(8).lessThanOrEqual(16))
-		.build(value -> new PhoneNumber(Objects.requireNonNull(value)))
+		.build(PhoneNumber::new)
 		.compose(identity());
 
 	@Test
@@ -275,6 +274,8 @@ class ArgumentsValidatorTest {
 		assertThat(validated.isValid()).isTrue();
 		assertThat(validated.value()).isNotNull();
 		assertThat(validated.value().name()).isNull();
+		// a builder without rules builds a validator that only maps the arguments
+		assertThat(ArgumentsValidatorBuilder.of(Country::new).build().validated("J").name()).isEqualTo("J");
 	}
 
 	@Test
@@ -355,8 +356,7 @@ class ArgumentsValidatorTest {
 
 		public static Arguments2Validator<LocalTime, LocalTime, TimeSlot> validator = startTimeValidator
 			.split(endTimeValidator)
-			.apply((startTime, endTime) -> new TimeSlot(Objects.requireNonNull(startTime),
-					Objects.requireNonNull(endTime)));
+			.apply((startTime, endTime) -> new TimeSlot(startTime, endTime));
 
 		public TimeSlot(LocalTime startTime, LocalTime endTime) {
 			validator.lazy().validate(startTime, endTime);
@@ -382,8 +382,7 @@ class ArgumentsValidatorTest {
 			.wrap()
 			.<Arguments3<LocalDate, LocalTime, LocalTime>>compose(a -> Objects.requireNonNull(a).first1())
 			.combine(TimeSlot.validator.wrap().compose(a -> Objects.requireNonNull(a).last2()))
-			.apply((localDate, timeSlot) -> new Reservation(Objects.requireNonNull(localDate),
-					Objects.requireNonNull(timeSlot).startTime, timeSlot.endTime));
+			.apply((localDate, timeSlot) -> new Reservation(localDate, timeSlot.startTime, timeSlot.endTime));
 
 		public static final Arguments3Validator<LocalDate, LocalTime, LocalTime, Reservation> validator = Arguments3Validator
 			.unwrap(v1);
@@ -423,7 +422,7 @@ class ArgumentsValidatorTest {
 
 		Arguments1Validator<Arguments5<Integer, Integer, String, String, Integer>, Pair<Range, User>> combinedValidator = composedRangeValidator
 			.combine(composedUserValidator)
-			.apply((range, user) -> new Pair<>(Objects.requireNonNull(range), Objects.requireNonNull(user)));
+			.apply((range, user) -> new Pair<>(range, user));
 
 		Arguments5Validator<Integer, Integer, String, String, Integer, Pair<Range, User>> unwrapValidator = Arguments5Validator
 			.unwrap(combinedValidator);

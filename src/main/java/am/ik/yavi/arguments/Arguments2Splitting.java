@@ -4,16 +4,10 @@
  */
 package am.ik.yavi.arguments;
 
-import java.util.Locale;
-import java.util.function.Supplier;
-
-import am.ik.yavi.core.ConstraintContext;
-import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function2;
 import am.ik.yavi.fn.Validations;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Combines 2 validators that validate distinct arguments into a validator for those
@@ -67,26 +61,12 @@ public class Arguments2Splitting<A1, A2, R1, R2> {
 	 * @return a validator for the 2 arguments
 	 */
 	public <X> Arguments2Validator<A1, A2, X> apply(Function2<? super R1, ? super R2, ? extends X> f) {
-		return new Arguments2Validator<A1, A2, X>() {
-
-			@Override
-			public Arguments2Validator<A1, A2, Supplier<X>> lazy() {
-				return ((a1, a2, locale, constraintContext) -> Validations.apply((r1, r2) -> () -> f.apply(r1, r2),
-						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext)));
-			}
-
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale,
-					ConstraintContext constraintContext) {
-				return Validations.apply(f::apply, v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return ValueDescription.Properties.ofArguments(v1.description(), v2.description());
-			}
-		};
+		return ArgumentsValidators.derived(
+				(a1, a2, locale, constraintContext) -> Validations.apply(f::apply,
+						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext)),
+				() -> (a1, a2, locale, constraintContext) -> Validations.apply((r1, r2) -> () -> f.apply(r1, r2),
+						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext)),
+				() -> ValueDescription.Properties.ofArguments(v1.description(), v2.description()));
 	}
 
 	/**

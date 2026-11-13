@@ -72,7 +72,7 @@ public final class MapValidatorBuilder<V, T> implements ValueValidatorBuilder<Ma
 	 */
 	@Override
 	public <T2> ValueValidator<Map<String, V>, T2> build(
-			Function<@Nullable Map<String, T>, ? extends @Nullable T2> mapper) {
+			Function<? super Map<String, T>, ? extends @Nullable T2> mapper) {
 		return this.build().map(mapper);
 	}
 

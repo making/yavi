@@ -81,11 +81,10 @@ class LongValidatorTest {
 
 	static Stream<LongValidator<Price>> validators() {
 		return Stream.of(
-				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
-					.build(value -> new Price(Objects.requireNonNull(value))),
+				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0)).build(Price::new),
 				LongValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((long) 0))
 					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+					.map(Price::new));
 	}
 
 	public static class Price {

@@ -161,7 +161,7 @@ public class ValidatorBuilder<T> {
 
 	final List<ConstraintPredicates<T, ?>> predicatesList = new ArrayList<>();
 
-	@Nullable MessageFormatter messageFormatter;
+	MessageFormatter messageFormatter = SimpleMessageFormatter.getInstance();
 
 	boolean failFast = false;
 
@@ -280,9 +280,7 @@ public class ValidatorBuilder<T> {
 	public Validator<T> build() {
 		return new Validator<>(messageKeySeparator,
 				new PredicatesList<>(this.conflictStrategy, this.predicatesList).toList(), this.collectionValidators,
-				this.conditionalValidators,
-				this.messageFormatter == null ? SimpleMessageFormatter.getInstance() : this.messageFormatter,
-				this.failFast);
+				this.conditionalValidators, this.messageFormatter, this.failFast);
 	}
 
 	/**
@@ -2108,8 +2106,8 @@ public class ValidatorBuilder<T> {
 	 * @return this builder
 	 * @see MessageFormatter
 	 */
-	public ValidatorBuilder<T> messageFormatter(MessageFormatter messageFormatter) {
-		this.messageFormatter = messageFormatter;
+	public ValidatorBuilder<T> messageFormatter(@Nullable MessageFormatter messageFormatter) {
+		this.messageFormatter = messageFormatter == null ? SimpleMessageFormatter.getInstance() : messageFormatter;
 		return this;
 	}
 

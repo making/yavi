@@ -81,11 +81,10 @@ class ShortValidatorTest {
 
 	static Stream<ShortValidator<Price>> validators() {
 		return Stream.of(
-				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
-					.build(value -> new Price(Objects.requireNonNull(value))),
+				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0)).build(Price::new),
 				ShortValidatorBuilder.of("price", c -> c.notNull().greaterThanOrEqual((short) 0))
 					.build()
-					.map(value -> new Price(Objects.requireNonNull(value))));
+					.map(Price::new));
 	}
 
 	public static class Price {

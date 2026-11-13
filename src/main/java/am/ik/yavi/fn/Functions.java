@@ -24,8 +24,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <R> the type of the result
@@ -37,8 +36,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -51,8 +49,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -66,8 +63,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -83,8 +79,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -101,8 +96,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -120,8 +114,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -140,8 +133,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -161,8 +153,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -183,8 +174,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -207,8 +197,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -232,8 +221,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -258,8 +246,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -285,8 +272,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -313,8 +299,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
@@ -342,8 +327,7 @@ public class Functions {
 
 	/**
 	 * Returns a curried form of the given function: a function that takes the first
-	 * argument and returns a function for each of the remaining arguments, in order. The
-	 * returned functions accept {@code null} arguments.
+	 * argument and returns a function for each of the remaining arguments, in order.
 	 * @param f the function to curry
 	 * @param <T1> the type of argument 1
 	 * @param <T2> the type of argument 2
