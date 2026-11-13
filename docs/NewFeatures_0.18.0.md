@@ -533,7 +533,69 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // for an API response: records that a JSON library serializes as they are
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
+//   "message": "\"address.street\" must not be blank", "params": {}}, ...]
+```
+
+`params` of a detail holds the arguments of the violation by name, so that a client can
+render a message of its own from `messageKey` without knowing which position of the
+message format holds what. The value that violated the constraint is not in a detail: it
+may be a password or a token, and the client has sent it. `ConstraintViolation` has both,
+as `args()` and `violatedValue()`.
+
+```java
+// _string("password", c -> c.greaterThanOrEqual(8)) and _integer("age", c -> c.lessThanOrEqual(150))
+List<ViolationDetail> details = violations.details();
+// [{"name": "password", "pointer": "/password", "messageKey": "container.greaterThanOrEqual",
+//   "message": "The size of \"password\" must be greater than or equal to 8. The given size is 6",
+//   "params": {"min": 8, "actualSize": 6}},
+//  {"name": "age", "pointer": "/age", "messageKey": "numeric.lessThanOrEqual",
+//   "message": "\"age\" must be less than or equal to 150", "params": {"max": 150}}]
+
+ConstraintViolation violation = violations.get(1);
+violation.params();        // {max=150}
+violation.args();          // ["age", 150, 300], the positional arguments of the message format
+violation.violatedValue(); // 300
+```
+
+The names are those of the parameters of the constraint method. What a constraint computes
+from the value has a name too (`actualSize`, `duplicates`, `missing`, `notAllowed`). A
+message key that is not listed has no parameters:
+
+| Message key | Names in `params` |
+| --- | --- |
+| `object.equalTo`, `map.containsValue` | `value` |
+| `object.oneOf`, `object.notOneOf`, `charSequence.url.protocol`, `charSequence.url.host`, `charSequence.url.port` | `values` |
+| `object.anyOf` | `count` |
+| `object.type` | `type` |
+| `numeric.greaterThan`, `numeric.greaterThanOrEqual` | `min` |
+| `numeric.lessThan`, `numeric.lessThanOrEqual`, `numeric.fractionDigits`, `numeric.integerDigits` | `max` |
+| `numeric.multipleOf` | `divisor` |
+| `container.greaterThan`, `container.greaterThanOrEqual`, `byteSize.greaterThan`, `byteSize.greaterThanOrEqual` | `min`, `actualSize` |
+| `container.lessThan`, `container.lessThanOrEqual`, `byteSize.lessThan`, `byteSize.lessThanOrEqual` | `max`, `actualSize` |
+| `container.fixedSize`, `byteSize.fixedSize` | `size`, `actualSize` |
+| `charSequence.contains` | `substring` |
+| `charSequence.startsWith` | `prefix` |
+| `charSequence.endsWith` | `suffix` |
+| `charSequence.pattern`, `charSequence.localdate` | `pattern` |
+| `collection.contains`, `array.contains` | `element` |
+| `collection.unique` | `duplicates` |
+| `collection.containsAll` | `values`, `missing` |
+| `map.containsKey` | `key` |
+| `codePoints.asWhiteList`, `codePoints.asBlackList` | `notAllowed` |
+| `password.required` | `policy` |
+| `password.optional` | `min`, `policies` |
+| `temporal.before`, `temporal.beforeOrEqual`, `temporal.after`, `temporal.afterOrEqual` | `other` |
+| `temporal.between` | `rangeFrom`, `rangeTo` |
+| `temporal.field` | `field` |
+
+A message of your own names its arguments from `{1}` on in `ViolationMessage.of`. Without
+names the violation has no parameters. The message format keeps referring to the arguments
+by position:
+
+```java
+ViolationMessage outOfStock = ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}", "stock");
+return Validated.failureWith(outOfStock, quantity, locale, stock);
+// "messageKey": "order.outOfStock", "params": {"stock": 3}
 ```
 
 When no alternative of `ValueValidator.anyOf` matches, the result is one violation. The
@@ -663,6 +725,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `flatApply`, `flatFromMap`, `failureWith`, record `ArgumentsN` | [#549](https://github.com/making/yavi/pull/549) |
 | `recover`, `recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
 | `messagesByName()`, `pointer()`, `ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
+| `params()` of a violation and of a detail, `ViolationMessage#paramNames()` | [#568](https://github.com/making/yavi/pull/568) |
 | `ignoringCase()`, `StringCoercion`, `fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |

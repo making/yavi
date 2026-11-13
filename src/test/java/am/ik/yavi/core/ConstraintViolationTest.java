@@ -8,6 +8,7 @@ import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,9 +104,11 @@ class ConstraintViolationTest {
 			.messageKey(messageKey)
 			.defaultMessageFormat(defaultMessage)
 			.argsWithPrependedNameAndAppendedViolatedValue(middleArgs, violatedValue)
+			.paramNames(List.of("min", "max"))
 			.locale(Locale.ENGLISH)
 			.build();
 
+		assertThat(violation.params()).containsExactly(Map.entry("min", 4), Map.entry("max", 20));
 		assertThat(violation.args()).hasSize(4);
 		assertThat(violation.args()[0]).isEqualTo(name);
 		assertThat(violation.args()[1]).isEqualTo(4);

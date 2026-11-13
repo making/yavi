@@ -273,12 +273,13 @@ Kotlin can check.
 
 `ConstraintViolations#details()` returns records that say which value failed. Their
 accessors have other names, and so have the properties of the JSON that a JSON library
-writes from them.
+writes from them. The positional `args` are replaced by `params`, the arguments by name
+without the name of the value and without the value that violated the constraint.
 
 ```java
 List<ViolationDetail> details = violations.details();
-// [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+// [{"name": "items[1].quantity", "pointer": "/items/1/quantity", "messageKey": "numeric.lessThanOrEqual",
+//   "message": "\"items[1].quantity\" must be less than or equal to 99", "params": {"max": 99}}]
 ```
 
 ### Who is affected
@@ -287,7 +288,9 @@ Affected:
 
 * Code that calls `getKey()`, `getArgs()` or `getDefaultMessage()` of a
   `ViolationDetail`, or its constructor.
-* A client of an API that returns `details()` as JSON.
+* A client of an API that returns `details()` as JSON, in particular one that reads `args`.
+* A custom constraint or a hand-written violation whose arguments a client reads: they are
+  in `params` only if the message names them.
 * Code that modifies the list returned by `details()`.
 
 Not affected:
@@ -296,7 +299,7 @@ Not affected:
 
 ### Migration
 
-#### 1. Rename the accessors
+#### 1. Rename the accessors and read the arguments from the violation
 
 ```java
 // before
@@ -306,17 +309,18 @@ for (ViolationDetail detail : violations.details()) {
     String message = detail.getDefaultMessage();
 }
 
-// after
-for (ViolationDetail detail : violations.details()) {
-    String key = detail.messageKey();
-    List<Object> args = detail.args();
-    String message = detail.message();
+// after: a detail has no positional arguments, a violation has
+for (ConstraintViolation violation : violations) {
+    String key = violation.messageKey();
+    Object[] args = violation.args();
+    String message = violation.message();
 }
 
 // after (new API)
 for (ViolationDetail detail : violations.details()) {
-    String name = detail.name();       // items[1].name
-    String pointer = detail.pointer(); // /items/1/name, a JSON Pointer
+    String name = detail.name();                // items[1].quantity
+    String pointer = detail.pointer();          // /items/1/quantity, a JSON Pointer
+    Map<String, Object> params = detail.params(); // {max=99}
 }
 ```
 
@@ -328,18 +332,32 @@ for (ViolationDetail detail : violations.details()) {
 
 // after
 [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
+  "message": "\"items[1].name\" must not be blank", "params": {}}]
 ```
 
-To keep the JSON of 0.17, map the details to a type of your own:
+To keep the JSON of 0.17, which sends the violated value back, map the violations to a
+type of your own:
 
 ```java
 record LegacyDetail(String key, List<Object> args, String defaultMessage) {}
 
-List<LegacyDetail> details = violations.details()
-        .stream()
-        .map(detail -> new LegacyDetail(detail.messageKey(), detail.args(), detail.message()))
+List<LegacyDetail> details = violations.stream()
+        .map(violation -> new LegacyDetail(violation.messageKey(), Arrays.asList(violation.args()), violation.message()))
         .toList();
+```
+
+#### 3. Name the arguments of your own messages
+
+The arguments of a built-in constraint have names (see
+[New features in 0.18.0](NewFeatures_0.18.0.md#handling-the-result)). Those of a message of
+your own are in `params` only if the message names them:
+
+```java
+// before: "args": ["quantity", 3, 5]
+ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}");
+
+// after (new API): "params": {"stock": 3}
+ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}", "stock");
 ```
 
 ### All changes
@@ -348,11 +366,11 @@ List<LegacyDetail> details = violations.details()
 | --- | --- | --- |
 | Message key | `getKey()`, JSON `key` | `messageKey()`, JSON `messageKey` |
 | Formatted message | `getDefaultMessage()`, JSON `defaultMessage` | `message()`, JSON `message` |
-| Arguments | `Object[] getArgs()` | `List<Object> args()`, unmodifiable |
+| Arguments | `Object[] getArgs()`, JSON `args`: positional, starting with the name and ending with the violated value | `Map<String, Object> params()`, JSON `params`: by name, without the name and the violated value, unmodifiable. The positional arguments are `ConstraintViolation#args()` |
 | Name and JSON Pointer of the value | not available | `name()`, `pointer()` |
 | Type | a class | a sealed interface of the records `ViolationDetail.Simple` and `ViolationDetail.NoAlternativeMatched` |
 | Details of the alternatives of `ValueValidator.anyOf` | not available | `alternatives()` of `ViolationDetail.NoAlternativeMatched`, JSON `alternatives` |
-| Constructor | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail.Simple(name, pointer, messageKey, message, args)` |
+| Constructor | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail.Simple(name, pointer, messageKey, message, params)` |
 | List returned by `details()` | modifiable | unmodifiable |
 
 ### Why
@@ -360,12 +378,18 @@ List<LegacyDetail> details = violations.details()
 A detail did not say which value failed: the name was only the first element of `args`.
 `defaultMessage` was the formatted message, not the default one.
 
+A client that rendered its own message had to know, for each message key, which position
+of `args` holds what, and that table was not part of the API. `args` also ended with the
+violated value, so returning `details()` sent a rejected password or token back unless
+every caller mapped the details to a type of its own.
+
 ### Related pull requests
 
 * [#551](https://github.com/making/yavi/pull/551) makes `ViolationDetail` a record and
   adds `messagesByName()`, `messagesByPointer()` and `pointer()`.
 * [#566](https://github.com/making/yavi/pull/566) makes it a sealed interface of two
   records, of which `ViolationDetail.NoAlternativeMatched` has `alternatives`.
+* [#568](https://github.com/making/yavi/pull/568) replaces `args` with `params`.
 
 ## The violations of a lifted collection are located under the index
 

@@ -841,10 +841,12 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // for an API response: records that a JSON library serializes as they are
 List<ViolationDetail> details = violations.details();
 // [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}, ...]
+//   "message": "\"items[1].name\" must not be blank", "params": {}},
+//  {"name": "age", "pointer": "/age", "messageKey": "numeric.lessThanOrEqual",
+//   "message": "\"age\" must be less than or equal to 150", "params": {"max": 150}}, ...]
 ```
 
-`pointer` is what the `errors[].pointer` of an RFC 9457 problem detail holds; a single violation has it as `violation.pointer()`. `args` ends with the violated value by convention, so map the details to a type of your own if that value must not be sent back.
+`pointer` is what the `errors[].pointer` of an RFC 9457 problem detail holds; a single violation has it as `violation.pointer()`. `params` holds the arguments of the violation by name (the names of the built-in constraints are listed in [New features in 0.18.0](docs/NewFeatures_0.18.0.md#handling-the-result); a message of your own names them with `ViolationMessage.of(key, format, names...)`). The violated value is not in a detail; `violation.args()` and `violation.violatedValue()` have it.
 
 #### Describing a validator and generating a JSON Schema
 

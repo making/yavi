@@ -4,11 +4,13 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -69,13 +71,67 @@ public class ConstraintViolationsTest {
 		List<ViolationDetail> details = violations.details();
 		assertThat(details).hasSize(5);
 		assertThat(details.get(1)).isEqualTo(new ViolationDetail.Simple("items[1].name", "/items/1/name",
-				"charSequence.notBlank", "\"items[1].name\" must not be blank", Arrays.asList("items[1].name", " ")));
-		assertThat(details.get(3).args()).containsExactly("", null);
-		// a detail is serialized as it is
-		assertThat(new JsonMapper().writeValueAsString(details.subList(1, 2))).isEqualTo("""
-				[{"name":"items[1].name","pointer":"/items/1/name","messageKey":"charSequence.notBlank",\
-				"message":"\\"items[1].name\\" must not be blank","args":["items[1].name"," "]}]""");
+				"charSequence.notBlank", "\"items[1].name\" must not be blank", Map.of()));
 		assertThat(new ConstraintViolations().messagesByName()).isEmpty();
+	}
+
+	@Test
+	void detailsNameTheParametersAndLeaveOutTheViolatedValue() {
+		Validator<String> validator = ValidatorBuilder.<String>of()
+			._string(s -> s, "password", c -> c.greaterThanOrEqual(8)
+				.pattern("[0-9]+")
+				// a replaced message keeps the names of the arguments of the constraint
+				.message(ViolationMessage.of("password.digits", "\"{0}\" must consist of digits"))
+				.endsWith("9")
+				.message("\"{0}\" must end with {1}"))
+			.build();
+		ConstraintViolations violations = new ConstraintViolations();
+		violations.addAll(validator.validate("secret", Locale.ENGLISH));
+		// the names of a hand-written violation are those of its message, if any
+		violations
+			.add(ConstraintViolation.of(ViolationMessage.of("password.reused", "\"{0}\" was used {1} times", "times"),
+					"secret", Locale.ENGLISH, 2));
+		violations.add(ConstraintViolation.of(ViolationMessage.of("password.weak", "\"{0}\" is weak ({1})"), "secret",
+				Locale.ENGLISH, "dictionary"));
+
+		assertThat(violations).extracting(ConstraintViolation::params)
+			.containsExactly(Map.of("min", 8, "actualSize", 6), Map.of("pattern", "[0-9]+"), Map.of("suffix", "9"),
+					Map.of("times", 2), Map.of());
+		assertThat(violations.get(0).params().keySet()).containsExactly("min", "actualSize");
+		assertThat(violations.get(1).args()).containsExactly("password", "[0-9]+", "secret");
+		assertThat(violations.get(1).violatedValue()).isEqualTo("secret");
+		assertThatThrownBy(() -> violations.get(0).params().clear()).isInstanceOf(UnsupportedOperationException.class);
+		// a detail is serialized as it is, and what was sent is not sent back
+		assertThat(new JsonMapper().writeValueAsString(violations.details())).isEqualTo("""
+				[{"name":"password","pointer":"/password","messageKey":"container.greaterThanOrEqual",\
+				"message":"The size of \\"password\\" must be greater than or equal to 8. The given size is 6",\
+				"params":{"min":8,"actualSize":6}},\
+				{"name":"password","pointer":"/password","messageKey":"password.digits",\
+				"message":"\\"password\\" must consist of digits","params":{"pattern":"[0-9]+"}},\
+				{"name":"password","pointer":"/password","messageKey":"charSequence.endsWith",\
+				"message":"\\"password\\" must end with 9","params":{"suffix":"9"}},\
+				{"name":"","pointer":"","messageKey":"password.reused",\
+				"message":"The value was used 2 times","params":{"times":2}},\
+				{"name":"","pointer":"","messageKey":"password.weak",\
+				"message":"The value is weak (dictionary)","params":{}}]""");
+	}
+
+	@Test
+	void builtInMessagesNameEveryArgumentButTheNameAndTheViolatedValue() {
+		for (ViolationMessage.Default message : ViolationMessage.Default.values()) {
+			// the highest placeholder of the format, which no other argument follows
+			int placeholders = Pattern.compile("\\{(\\d)}")
+				.matcher(message.defaultMessageFormat())
+				.results()
+				.mapToInt(result -> Integer.parseInt(result.group(1)))
+				.max()
+				.orElse(0);
+			// the only built-in format that shows the violated value itself
+			int unnamed = message == ViolationMessage.Default.CHAR_SEQUENCE_LOCAL_DATE ? 1 : 0;
+			assertThat(message.paramNames()).as(message.messageKey())
+				.doesNotHaveDuplicates()
+				.hasSize(placeholders - unnamed);
+		}
 	}
 
 	static class BindingResult {

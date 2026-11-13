@@ -462,7 +462,61 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // API レスポンス向け: JSON ライブラリがそのままシリアライズできる record
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
+//   "message": "\"address.street\" must not be blank", "params": {}}, ...]
+```
+
+詳細の `params` は、違反の引数を名前で持ちます。クライアントは、メッセージフォーマットのどの位置に何が入るかを知らなくても、`messageKey` から独自のメッセージを組み立てられます。制約に違反した値は詳細に含まれません。パスワードやトークンかもしれず、クライアントが送ってきた値でもあるためです。位置引数と違反値は `ConstraintViolation` の `args()` と `violatedValue()` で取れます。
+
+```java
+// _string("password", c -> c.greaterThanOrEqual(8)) と _integer("age", c -> c.lessThanOrEqual(150))
+List<ViolationDetail> details = violations.details();
+// [{"name": "password", "pointer": "/password", "messageKey": "container.greaterThanOrEqual",
+//   "message": "The size of \"password\" must be greater than or equal to 8. The given size is 6",
+//   "params": {"min": 8, "actualSize": 6}},
+//  {"name": "age", "pointer": "/age", "messageKey": "numeric.lessThanOrEqual",
+//   "message": "\"age\" must be less than or equal to 150", "params": {"max": 150}}]
+
+ConstraintViolation violation = violations.get(1);
+violation.params();        // {max=150}
+violation.args();          // ["age", 150, 300]。メッセージフォーマットの位置引数
+violation.violatedValue(); // 300
+```
+
+名前は制約メソッドのパラメータ名です。制約が値から求めたもの (`actualSize`、`duplicates`、`missing`、`notAllowed`) にも名前があります。表にないメッセージキーにパラメータはありません。
+
+| メッセージキー | `params` の名前 |
+| --- | --- |
+| `object.equalTo`, `map.containsValue` | `value` |
+| `object.oneOf`, `object.notOneOf`, `charSequence.url.protocol`, `charSequence.url.host`, `charSequence.url.port` | `values` |
+| `object.anyOf` | `count` |
+| `object.type` | `type` |
+| `numeric.greaterThan`, `numeric.greaterThanOrEqual` | `min` |
+| `numeric.lessThan`, `numeric.lessThanOrEqual`, `numeric.fractionDigits`, `numeric.integerDigits` | `max` |
+| `numeric.multipleOf` | `divisor` |
+| `container.greaterThan`, `container.greaterThanOrEqual`, `byteSize.greaterThan`, `byteSize.greaterThanOrEqual` | `min`, `actualSize` |
+| `container.lessThan`, `container.lessThanOrEqual`, `byteSize.lessThan`, `byteSize.lessThanOrEqual` | `max`, `actualSize` |
+| `container.fixedSize`, `byteSize.fixedSize` | `size`, `actualSize` |
+| `charSequence.contains` | `substring` |
+| `charSequence.startsWith` | `prefix` |
+| `charSequence.endsWith` | `suffix` |
+| `charSequence.pattern`, `charSequence.localdate` | `pattern` |
+| `collection.contains`, `array.contains` | `element` |
+| `collection.unique` | `duplicates` |
+| `collection.containsAll` | `values`, `missing` |
+| `map.containsKey` | `key` |
+| `codePoints.asWhiteList`, `codePoints.asBlackList` | `notAllowed` |
+| `password.required` | `policy` |
+| `password.optional` | `min`, `policies` |
+| `temporal.before`, `temporal.beforeOrEqual`, `temporal.after`, `temporal.afterOrEqual` | `other` |
+| `temporal.between` | `rangeFrom`, `rangeTo` |
+| `temporal.field` | `field` |
+
+独自のメッセージでは、`ViolationMessage.of` で `{1}` 以降の引数に名前を付けます。名前を付けなければ、その違反にパラメータはありません。メッセージフォーマットはこれまでどおり位置で引数を参照します。
+
+```java
+ViolationMessage outOfStock = ViolationMessage.of("order.outOfStock", "\"{0}\" exceeds the stock of {1}", "stock");
+return Validated.failureWith(outOfStock, quantity, locale, stock);
+// "messageKey": "order.outOfStock", "params": {"stock": 3}
 ```
 
 `ValueValidator.anyOf` のどの選択肢にも一致しなかった場合、結果は違反 1 件です。各選択肢の違反は 1 つのリストに混ぜられません。混ぜると、どの違反がどの選択肢のものかがわからなくなるためです。この違反は `ConstraintViolation.NoAlternativeMatched` です。`alternatives()` を持つのはこの型だけで、選択肢ごとの `ConstraintViolations` を返します。それらはこの違反と一緒に名前が付け替えられます。
@@ -576,6 +630,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `flatApply`、`flatFromMap`、`failureWith`、record の `ArgumentsN` | [#549](https://github.com/making/yavi/pull/549) |
 | `recover`、`recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
 | `messagesByName()`、`pointer()`、`ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
+| 違反と詳細の `params()`、`ViolationMessage#paramNames()` | [#568](https://github.com/making/yavi/pull/568) |
 | `ignoringCase()`、`StringCoercion`、`fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
 | `object.anyOf` の `alternatives()`、`multipleOf`、`ip()`、`uri()`、`ulid()`、文字列からの `UUID`、`URI`、`Duration`、`Period` | [#566](https://github.com/making/yavi/pull/566) |
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |

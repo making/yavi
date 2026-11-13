@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -36,18 +37,22 @@ public class ConstraintPredicate<V> {
 
 	private final NullAs nullAs;
 
+	private final List<String> paramNames;
+
 	private final Predicate<V> predicate;
 
 	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage, Supplier<Object[]> args,
 			NullAs nullAs) {
-		this(predicate, violationMessage.messageKey(), violationMessage.defaultMessageFormat(), args, nullAs);
+		this(predicate, violationMessage.messageKey(), violationMessage.defaultMessageFormat(),
+				violationMessage.paramNames(), args, nullAs);
 	}
 
 	private ConstraintPredicate(Predicate<V> predicate, String messageKey, String defaultMessageFormat,
-			Supplier<Object[]> args, NullAs nullAs) {
+			List<String> paramNames, Supplier<Object[]> args, NullAs nullAs) {
 		this.predicate = predicate;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
+		this.paramNames = paramNames;
 		this.args = args;
 		this.nullAs = nullAs;
 	}
@@ -115,6 +120,16 @@ public class ConstraintPredicate<V> {
 	}
 
 	/**
+	 * Returns the names of the message arguments, which are those of the violation
+	 * message (see {@link ViolationMessage#paramNames()}).
+	 * @return the unmodifiable names of the arguments
+	 * @since 0.18.0
+	 */
+	public final List<String> paramNames() {
+		return this.paramNames;
+	}
+
+	/**
 	 * Returns the handling of {@code null} values.
 	 * @return the handling of {@code null} values
 	 */
@@ -124,11 +139,17 @@ public class ConstraintPredicate<V> {
 
 	/**
 	 * Returns a new constraint predicate with the given violation message.
+	 *
+	 * <p>
+	 * The arguments stay those of this constraint, so their names are kept unless the
+	 * given message names them itself.
 	 * @param message the new violation message
 	 * @return a constraint predicate with the given violation message
 	 */
 	public ConstraintPredicate<V> overrideMessage(ViolationMessage message) {
-		return new ConstraintPredicate<V>(this.predicate, message, this.args, this.nullAs) {
+		final List<String> names = message.paramNames().isEmpty() ? this.paramNames : message.paramNames();
+		return new ConstraintPredicate<V>(this.predicate, message.messageKey(), message.defaultMessageFormat(), names,
+				this.args, this.nullAs) {
 			@Override
 			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return ConstraintPredicate.this.violatedValue(target);
@@ -143,7 +164,8 @@ public class ConstraintPredicate<V> {
 	 * @return a constraint predicate with the given default message format
 	 */
 	public ConstraintPredicate<V> overrideMessage(String message) {
-		return new ConstraintPredicate<V>(this.predicate, this.messageKey, message, this.args, this.nullAs) {
+		return new ConstraintPredicate<V>(this.predicate, this.messageKey, message, this.paramNames, this.args,
+				this.nullAs) {
 			@Override
 			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return ConstraintPredicate.this.violatedValue(target);
