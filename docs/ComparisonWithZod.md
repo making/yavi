@@ -75,11 +75,12 @@ record or class and the compiler checks that they match it.
 | `z.record(z.string(), schema)` | `_map(name, valueValidator)`, `validator.liftMap()` |
 | `z.array(schema).nonempty().min(1).max(10)` | `_list(name, elementValidator, c -> c.notEmpty().greaterThanOrEqual(1).lessThanOrEqual(10))`, `Yavi._list(elementValidator, c -> ...)` (also `unique()`, `contains(...)`) |
 | `z.record(z.string(), schema)` with a size | `_map(name, valueValidator, c -> c.notEmpty())`, `Yavi._map(valueValidator, c -> ...)` |
-| `.optional()` | `.optional()` (produces `Optional<X>`) |
-| `.nullable()` | `.nullable()` (produces `@Nullable X`) |
-| `.optional()` that rejects `null` | `.presence()` (produces `Presence<X>`) |
-| `.nullable().optional()` / `.nullish()` with the two told apart | `.nullable().presence()` |
-| `.default(value)` | `.defaultValue(value)` |
+| `.optional()` | `.optional().rejectingNull()` (produces `Optional<X>`) |
+| `.nullable()` | `.nullable().required()` (produces `@Nullable X`) |
+| `.nullish()` | `.optional()` or `.nullable()` |
+| `.optional()` with `undefined` told from a value in the result | `.presence()` (produces `Presence<X>`) |
+| `.nullable().optional()` / `.nullish()` with the two told apart in the result | `.nullable().presence()` |
+| `.default(value)` | `.defaultValue(value).rejectingNull()`; `.defaultValue(value)` also replaces `null` |
 | `.catch(value)` | `.recover(value)` (also for `null` and an absent key) |
 | `.catch(ctx => ...)` | `.recoverWith(violations -> ...)` |
 | `z.union([a, b])` | `ValueValidator.anyOf(a, b)` |
@@ -194,7 +195,29 @@ Only the violation differs for a required property: an absent key is reported wi
 `object.required` and an explicit `null` with `object.notNull`, or with the violation of
 a constraint that rejects `null` such as `notBlank()`.
 
-`presence()` tells them apart, for a partial update (PATCH). The property is a
+The last modifier of a property keeps the two apart as Zod does. `required()` rejects an
+absent key although `null` is accepted, and `rejectingNull()` rejects an explicit `null`
+although the key may be absent. The type of the value does not change.
+
+```ts
+const Account = z.object({
+  deletedAt: z.iso.datetime().nullable(), // the key is required
+  middleName: z.string().optional(),      // null is rejected
+  page: z.number().int().default(1),      // null is rejected
+});
+```
+
+```java
+record Account(@Nullable Instant deletedAt, Optional<String> middleName, int page) {}
+
+ObjectInputValidator<Account> accountValidator = Yavi.schema()
+        ._instant("deletedAt").nullable().required()
+        ._string("middleName").optional().rejectingNull()
+        ._integer("page").defaultValue(1).rejectingNull()
+        .fromMap(Account::new);
+```
+
+`presence()` gives the three states to the created object, for a partial update (PATCH). The property is a
 `Presence<X>`: `Absent` for an absent key, which is not validated, and otherwise what the
 property makes of the value, `null` included.
 

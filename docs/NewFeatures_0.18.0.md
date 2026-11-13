@@ -153,8 +153,8 @@ Validated<User> validated = userValidator.validate(Map.of(
 | A value that does not represent the type of its property (`"age": "30"`) | `object.type`: `"age" must be of type integer` |
 | A number that keeps its value (`30L`, `30.0` for an `Integer`) | accepted; `30.5` is `object.type` |
 | An enum constant, a temporal value | read from the name of the constant, from the ISO-8601 string |
-| An absent key | validated like `null`: accepted by `optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, otherwise `object.required` |
-| An explicit `null` | `object.notNull`, or the violation of a constraint that rejects `null` |
+| An absent key | validated like `null`: accepted by `optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, otherwise `object.required`; always `object.required` after `required()` |
+| An explicit `null` | `object.notNull`, or the violation of a constraint that rejects `null`; always `object.notNull` after `rejectingNull()` |
 | A key that no property is defined for | ignored; `rejectingUnknownProperties()` reports `object.unknownProperty` |
 
 * An `_enum` or `_object` property needs its type to be read from a map:
@@ -244,6 +244,39 @@ switch (patch.bio()) {
 An absent key is not validated. A key that is present is validated as without
 `presence()`: `{"nickname": null}` is `"nickname" must not be null`. `presence()` is the
 last modifier of a property.
+
+A contract that is not a partial update often accepts only one of the two. `required()`
+and `rejectingNull()` say which, without changing the type of the value:
+
+```java
+record Account(@Nullable Instant deletedAt, Optional<String> bio, int page) {}
+
+ObjectInputValidator<Account> accountValidator = Yavi.schema()
+        ._instant("deletedAt").nullable().required()      // must be sent, as null if there is none
+        ._string("bio").optional().rejectingNull()        // may be omitted, a text if it is sent
+        ._integer("page").defaultValue(1).rejectingNull() // 1 only if omitted
+        .fromMap(Account::new);
+
+accountValidator.validate(Map.of());                                  // "deletedAt" is required
+accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Account[deletedAt=null, bio=Optional.empty, page=1]
+```
+
+| Property | `fromMap`: an absent key | `fromMap`: an explicit `null` | `apply`: a `null` argument | JSON Schema |
+| --- | --- | --- | --- | --- |
+| `_string("x")` | `object.required` | `object.notNull` | `object.notNull` | `required`, `"type": "string"` |
+| `.nullable()`, `.optional()`, `.defaultValue(...)`, `.recover(...)` | accepted | accepted | accepted | `"type": ["string", "null"]` |
+| followed by `.required()` | `object.required` | accepted | accepted | `required`, `"type": ["string", "null"]` |
+| followed by `.rejectingNull()` | accepted | `object.notNull` | accepted | `"type": "string"` |
+| `.presence()` | `Absent` | validated by the property | `Absent` (the argument is a `Presence`) | `"type": "string"` |
+
+Both are the last modifier of a property, like `presence()`, and are written after
+`optional()`, `nullable()`, `defaultValue(...)` or `recover(...)`: a property that does
+not accept `null` rejects both anyway, so `_string("x").required()` does not compile. They tell an absent key
+from `null`, so they apply to an input that has keys: a map, a tree read with
+`readingWith(reader)` and parameters, where a parameter with an empty value is read as
+`null` and is therefore present. Typed arguments (`apply`) have no absent state: `null`
+stands for an absent value and is validated as without the modifier, also after
+`rejectingNull()`. The JSON Schema is the same for `fromMap` and `apply`.
 
 ### A structure that contains itself
 
@@ -524,7 +557,9 @@ String json = JsonSchema.toJson(description);
 ```
 
 * A property is `required` unless it is `optional()`, `nullable()`, has a
-  `defaultValue(...)` or a `recover(...)`, or is read with `presence()`.
+  `defaultValue(...)` or a `recover(...)` without `required()`, or is read with
+  `presence()`. Such a property allows the type `null` unless it ends with
+  `rejectingNull()`.
 * The constraints of a list or map are written as `minItems`, `maxItems`, `uniqueItems`,
   `minProperties` and `maxProperties`, `rejectingUnknownProperties()` as
   `additionalProperties: false`, and a recursive structure as `$ref`.
@@ -571,4 +606,5 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `ignoringCase()`, `StringCoercion`, `fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
+| `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

@@ -39,7 +39,9 @@ import org.jspecify.annotations.Nullable;
  * {@code object.notNull} if no other constraint rejects {@code null}, and one that
  * accepts {@code null} is described as {@link Optional}. {@link #acceptsNull()} tells
  * whether the described input accepts {@code null}, and {@link #acceptsAbsent()} whether
- * a property with the described value may be omitted.
+ * a property with the described value may be omitted. The two are the same unless the
+ * property tells an absent key from {@code null}, as {@link Presence} and
+ * {@link Required} describe.
  *
  * @since 0.18.0
  * @see ConstraintDescription
@@ -129,9 +131,9 @@ public sealed interface ValueDescription {
 		 *
 		 * <p>
 		 * A property takes the name under which the violations of its value are reported
-		 * (see {@link Value#name()}, also inside {@link Optional}, {@link NotNull} and
-		 * {@link Presence}). If that name is empty or unknown, the property is named
-		 * {@code argN}, where {@code N} is its position starting at 1.
+		 * (see {@link Value#name()}, also inside {@link Optional}, {@link NotNull},
+		 * {@link Presence} and {@link Required}). If that name is empty or unknown, the
+		 * property is named {@code argN}, where {@code N} is its position starting at 1.
 		 * @param values the descriptions of the property values
 		 * @return the description of the object
 		 */
@@ -148,6 +150,9 @@ public sealed interface ValueDescription {
 					}
 					else if (value instanceof Presence presence) {
 						value = presence.value();
+					}
+					else if (value instanceof Required required) {
+						value = required.value();
 					}
 					else {
 						break;
@@ -262,13 +267,38 @@ public sealed interface ValueDescription {
 	/**
 	 * The value of a property that may be omitted whatever the described value accepts,
 	 * and whose absence is told from {@code null}: an absent property is not validated,
-	 * and one that is present is validated as described, {@code null} included.
+	 * and one that is present is validated as described, {@code null} included. This
+	 * describes a property read as a {@link am.ik.yavi.core.Presence} and one that
+	 * accepts an absent key and rejects an explicit {@code null}.
 	 *
 	 * @param value the description of the value of a property that is present
+	 * @param defaultValue the value produced for an absent property; {@code null} if
+	 * there is no default value
 	 * @see am.ik.yavi.core.Presence
 	 * @see ValueValidator#liftPresence()
 	 */
-	record Presence(ValueDescription value) implements ValueDescription {
+	record Presence(ValueDescription value, @Nullable Object defaultValue) implements ValueDescription {
+
+		/**
+		 * Creates the description of a property that may be omitted and has no default
+		 * value.
+		 * @param value the description of the value of a property that is present
+		 */
+		public Presence(ValueDescription value) {
+			this(value, null);
+		}
+	}
+
+	/**
+	 * The value of a property that must not be omitted whatever the described value
+	 * accepts: an absent property is rejected with {@code object.required}, and one that
+	 * is present is validated as described, {@code null} included. This is the opposite
+	 * of {@link Presence}, for a property whose key is required and whose value may be
+	 * {@code null}.
+	 *
+	 * @param value the description of the value of a property that is present
+	 */
+	record Required(ValueDescription value) implements ValueDescription {
 	}
 
 	/**
@@ -358,8 +388,8 @@ public sealed interface ValueDescription {
 	 * A {@link Value} accepts {@code null} unless one of its constraints rejects it,
 	 * {@link Elements} and {@link Entries} accept {@code null} as an empty list or map
 	 * unless one of their constraints rejects it, an object with {@link Properties} does
-	 * not accept {@code null}, and a {@link Presence} and a {@link Reference} accept what
-	 * their value or target accepts.
+	 * not accept {@code null}, and a {@link Presence}, a {@link Required} and a
+	 * {@link Reference} accept what their value or target accepts.
 	 * @return {@code true} if {@code null} is accepted or nothing is known about the
 	 * input
 	 */
@@ -373,6 +403,7 @@ public sealed interface ValueDescription {
 			case Entries entries -> entries.constraints().stream().noneMatch(ConstraintDescription::rejectsNull);
 			case Optional optional -> true;
 			case Presence presence -> presence.value().acceptsNull();
+			case Required required -> required.value().acceptsNull();
 			case Unknown unknown -> true;
 			case Never never -> false;
 			case Reference reference -> reference.target().acceptsNull();
@@ -382,12 +413,15 @@ public sealed interface ValueDescription {
 	/**
 	 * Returns whether a property with the described value may be omitted from its object:
 	 * the value accepts {@code null}, as which an absent property is validated, or it is
-	 * a {@link Presence}, which an absent property is not validated for.
+	 * a {@link Presence}, which an absent property is not validated for. A
+	 * {@link Required} property may not be omitted although its value accepts
+	 * {@code null}.
 	 * @return {@code true} if the property is not required
 	 */
 	default boolean acceptsAbsent() {
 		return switch (this) {
 			case Presence presence -> true;
+			case Required required -> false;
 			case AnyOf anyOf -> anyOf.alternatives().stream().anyMatch(ValueDescription::acceptsAbsent);
 			case Reference reference -> reference.target().acceptsAbsent();
 			default -> this.acceptsNull();
