@@ -1697,7 +1697,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
 		return new Arguments10ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
@@ -1723,7 +1723,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new Arguments10ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
@@ -1780,7 +1780,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Rest<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Rest<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments10ValidatorBuilder.Rest<>(new Arguments10ValidatorBuilder<>(this.d1, this.d2, this.d3,
 				this.d4, this.d5, this.d6, this.d7, this.d8, this.d9, ArgumentDefinition.rest(valueValidator)));
@@ -1793,7 +1793,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments10ValidatorBuilder.Rest<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, @Nullable Object>> _rest() {
+	public Arguments10ValidatorBuilder.Rest<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, ?>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, @Nullable Object>> _rest() {
 		return new Arguments10ValidatorBuilder.Rest<>(new Arguments10ValidatorBuilder<>(this.d1, this.d2, this.d3,
 				this.d4, this.d5, this.d6, this.d7, this.d8, this.d9, ArgumentDefinition.rest()));
 	}
@@ -2510,7 +2510,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, Presence<A9>, R1, R2, R3, R4, R5, R6, R7, R8, Presence<@NonNull R9>> presence() {
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, Presence<? extends A9>, R1, R2, R3, R4, R5, R6, R7, R8, Presence<@NonNull R9>> presence() {
 			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9.withPresence());
 		}
@@ -2544,11 +2544,12 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 */
 	public static final class KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, E, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, T extends @Nullable Object>
-			extends Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> {
+			extends Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> {
 
 		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
-				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<List<E>, List<T>> d9) {
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8,
+				ArgumentDefinition<List<? extends E>, List<T>> d9) {
 			super(d1, d2, d3, d4, d5, d6, d7, d8, d9);
 		}
 
@@ -2564,7 +2565,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * @throws IllegalArgumentException if the separator is empty
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> splitBy(
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> splitBy(
 				String separator) {
 			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
 		}
@@ -2596,7 +2597,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * @throws IllegalArgumentException if the pattern matches the empty string
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> splitBy(
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, List<T>> splitBy(
 				Pattern separator) {
 			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
 					this.d9.separatedBy(separator));
@@ -3228,7 +3229,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, Presence<A9>, R1, R2, R3, R4, R5, R6, R7, R8, Presence<@NonNull R9>> presence() {
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, Presence<? extends A9>, R1, R2, R3, R4, R5, R6, R7, R8, Presence<@NonNull R9>> presence() {
 			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9.withPresence());
 		}

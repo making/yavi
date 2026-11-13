@@ -112,7 +112,7 @@ Every `ValueValidator` has:
 | --- | --- |
 | `nullable()`, `optional()`, `defaultValue(value)` | accepts `null` and produces `null`, `Optional.empty()` or the default value |
 | `recover(fallback)`, `recoverWith(violations -> ...)` | never fails: produces the fallback for `null` and for an invalid value |
-| `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key |
+| `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key; the elements may be of a subtype of the input, so a validator of `Object` lifted to a list validates a `List<String>` |
 | `liftList(separator)` | `liftList()` that also reads the list from one text, such as `1,2,3` |
 | `prefixed(name)` | puts a name before the names of the violations (`orders[1].id`) |
 | `named(name)` | reports the violations of the value under another name |
@@ -173,7 +173,7 @@ ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("city", c -> c.notBlank())
         .fromMap(Address::new); // see the next section
 
-Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<String>, User> userValidator = Yavi.schema()
+Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<? extends String>, User> userValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
@@ -1076,6 +1076,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | A text written in code is not looked up, `ViolationMessage#withText`, `localizable()`, `Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |

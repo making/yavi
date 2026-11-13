@@ -238,7 +238,7 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void liftOptionalValid() {
-		Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
+		Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
 			.liftOptional();
 
 		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator.validate(Optional.of("012012345678"));
@@ -252,7 +252,7 @@ class ArgumentsValidatorTest {
 
 	@Test
 	void liftOptionalInvalid() {
-		Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
+		Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phoneNumberOptionalValidator = phoneNumberValidator
 			.liftOptional();
 
 		Validated<Optional<PhoneNumber>> actual = phoneNumberOptionalValidator.validate(Optional.of(""));

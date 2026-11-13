@@ -416,7 +416,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	private static <N, A1, R extends @Nullable Object> ValueValidator<N, Optional<@NonNull R>> untypedOptional(
 			InputReader<N> reader, ValueValidator<? super A1, ? extends R> validator) {
 		return describedNamed(
-				UntypedInput.checked(reader, (Class<Optional<N>>) (Class<?>) Optional.class,
+				UntypedInput.checked(reader, (Class<Optional<? extends N>>) (Class<?>) Optional.class,
 						ValueValidator.liftOptional(validator.readingWith(reader))),
 				() -> new ValueDescription.Optional(validator.description(), null),
 				other -> untypedOptional(other, validator), name -> untypedOptional(reader, validator.named(name)));
@@ -1093,12 +1093,14 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * Returns a validator that validates every element of the input iterable with this
 	 * validator and collects the validated values into a collection created by the given
 	 * factory. The violations of an element are located under its index ({@code [0]},
-	 * {@code [0].name}) and the violations of all failing elements are accumulated.
+	 * {@code [0].name}) and the violations of all failing elements are accumulated. The
+	 * elements may be of a subtype of {@code T}, as for every {@code lift*} method: a
+	 * validator of {@code Object} lifted to a list validates a {@code List<String>}.
 	 * @param factory supplier of the collection that receives the validated values
 	 * @param <C> the type of the resulting collection
 	 * @return a value validator for iterables
 	 */
-	default <C extends Collection<X>> ValueValidator<Iterable<T>, C> liftCollection(Supplier<C> factory) {
+	default <C extends Collection<X>> ValueValidator<Iterable<? extends T>, C> liftCollection(Supplier<C> factory) {
 		return ValueValidator.liftCollection(this, factory);
 	}
 
@@ -1109,9 +1111,19 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * violations of all failing elements are accumulated. A {@code null} iterable
 	 * validates successfully with an empty list. The list itself is constrained with
 	 * {@code Yavi._list(elementValidator, constraints)}.
+	 *
+	 * <p>
+	 * The elements may be of a subtype of {@code T}, so the rows of a CSV file are
+	 * validated as they are:
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, ?>, Member> rowValidator = memberValidator.readingParameters();
+	 * List<Map<String, String>> rows = ...;
+	 * Validated<List<Member>> members = rowValidator.liftList().validate(rows);
+	 * }</pre>
 	 * @return a value validator for iterables
 	 */
-	default ValueValidator<Iterable<T>, List<X>> liftList() {
+	default ValueValidator<Iterable<? extends T>, List<X>> liftList() {
 		return ValueValidator.liftList(this);
 	}
 
@@ -1157,7 +1169,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @throws IllegalArgumentException if the pattern matches the empty string
 	 * @since 0.18.0
 	 */
-	default ValueValidator<Iterable<T>, List<X>> liftList(Pattern separator) {
+	default ValueValidator<Iterable<? extends T>, List<X>> liftList(Pattern separator) {
 		if (separator.matcher("").matches()) {
 			throw new IllegalArgumentException("The separator '" + separator.pattern() + "' matches the empty string.");
 		}
@@ -1175,7 +1187,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * [0]}, {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @return a value validator for iterables
 	 */
-	default ValueValidator<Iterable<T>, Set<X>> liftSet() {
+	default ValueValidator<Iterable<? extends T>, Set<X>> liftSet() {
 		return ValueValidator.liftSet(this);
 	}
 
@@ -1184,12 +1196,12 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * and collects the validated values into a {@link Map} with the same keys in
 	 * iteration order. The violations of a value are located under its key and the
 	 * violations of all failing values are accumulated. A {@code null} map validates
-	 * successfully with an empty map. The map itself is constrained with
-	 * {@code Yavi._map(valueValidator, constraints)}.
+	 * successfully with an empty map. The values may be of a subtype of {@code T}. The
+	 * map itself is constrained with {@code Yavi._map(valueValidator, constraints)}.
 	 * @return a value validator for maps
 	 * @since 0.18.0
 	 */
-	default ValueValidator<Map<String, T>, Map<String, X>> liftMap() {
+	default ValueValidator<Map<String, ? extends T>, Map<String, X>> liftMap() {
 		return described((values, locale, constraintContext) -> {
 			final Map<String, X> results = new LinkedHashMap<>();
 			final List<ConstraintViolation> violations = new ArrayList<>();
@@ -1211,10 +1223,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	/**
 	 * Returns a validator that validates the value contained in the input
 	 * {@link Optional}, if any, and returns an {@link Optional} with the validated value.
-	 * An empty optional validates successfully.
+	 * An empty optional validates successfully. The value may be of a subtype of
+	 * {@code T}.
 	 * @return a value validator for optionals
 	 */
-	default ValueValidator<Optional<T>, Optional<@NonNull X>> liftOptional() {
+	default ValueValidator<Optional<? extends T>, Optional<@NonNull X>> liftOptional() {
 		return ValueValidator.liftOptional(this);
 	}
 
@@ -1225,13 +1238,13 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * [0]}, {@code [0].name}) and the violations of all failing elements are accumulated.
 	 * @param validator the validator applied to each element
 	 * @param factory supplier of the collection that receives the validated values
-	 * @param <A1> the element type of the input iterable
+	 * @param <A1> the type that the elements of the input iterable are a subtype of
 	 * @param <R> the type produced for each element
 	 * @param <C> the type of the resulting collection
 	 * @return a value validator for iterables
 	 * @since 0.8.1
 	 */
-	static <A1, R extends @Nullable Object, C extends Collection<R>> ValueValidator<Iterable<A1>, C> liftCollection(
+	static <A1, R extends @Nullable Object, C extends Collection<R>> ValueValidator<Iterable<? extends A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return described(
 				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
@@ -1251,7 +1264,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @return a value validator for iterables
 	 * @since 0.8.1
 	 */
-	static <A1, R extends @Nullable Object> ValueValidator<Iterable<A1>, List<R>> liftList(
+	static <A1, R extends @Nullable Object> ValueValidator<Iterable<? extends A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return ValueValidator.liftCollection(validator, ArrayList::new);
 
@@ -1269,7 +1282,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @return a value validator for iterables
 	 * @since 0.8.1
 	 */
-	static <A1, R extends @Nullable Object> ValueValidator<Iterable<A1>, Set<R>> liftSet(
+	static <A1, R extends @Nullable Object> ValueValidator<Iterable<? extends A1>, Set<R>> liftSet(
 			ValueValidator<? super A1, ? extends R> validator) {
 		// Since Index is attached to the name of ConstraintViolation,
 		// we need a consistent order. This is why we use LinkedHashSet.
@@ -1285,7 +1298,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @return a value validator for optionals
 	 * @since 0.8.1
 	 */
-	static <A1, R extends @Nullable Object> ValueValidator<Optional<A1>, Optional<@NonNull R>> liftOptional(
+	static <A1, R extends @Nullable Object> ValueValidator<Optional<? extends A1>, Optional<@NonNull R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return describedNamed(
 				(value, locale, constraintContext) -> Validated.traverseOptional(value,
@@ -1300,10 +1313,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * value of a {@link Presence} that is present is validated by this validator, as
 	 * {@code null} for {@link Presence.PresentNull}. This validator therefore decides
 	 * whether {@code null} is accepted, and the produced value is given as
-	 * {@link Presence#ofNullable(Object)}. A {@code null} input is taken as absent.
+	 * {@link Presence#ofNullable(Object)}. A {@code null} input is taken as absent. The
+	 * value may be of a subtype of {@code T}.
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Presence<String>, Presence<String>> nickname = Yavi
+	 * ValueValidator<Presence<? extends String>, Presence<String>> nickname = Yavi
 	 *     ._string("nickname", c -> c.lessThanOrEqual(50))
 	 *     .liftPresence();
 	 * nickname.validate(Presence.absent()); // valid: Absent
@@ -1319,7 +1333,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @return a value validator for a value that may be absent
 	 * @since 0.18.0
 	 */
-	default ValueValidator<Presence<T>, Presence<@NonNull X>> liftPresence() {
+	default ValueValidator<Presence<? extends T>, Presence<@NonNull X>> liftPresence() {
 		return describedNamed(
 				(presence, locale, constraintContext) -> presence == null || presence.isAbsent()
 						? Validated.successWith(Presence.absent())

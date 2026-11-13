@@ -42,7 +42,8 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the validated elements
  * @since 0.18.0
  */
-public final class ListValidator<E, T extends @Nullable Object> implements ValueValidator<Iterable<E>, List<T>> {
+public final class ListValidator<E, T extends @Nullable Object>
+		implements ValueValidator<Iterable<? extends E>, List<T>> {
 
 	private final ValueValidator<E, T> elementValidator;
 
@@ -52,7 +53,7 @@ public final class ListValidator<E, T extends @Nullable Object> implements Value
 
 	private final @Nullable Pattern separator;
 
-	private final ValueValidator<Iterable<E>, List<T>> elements;
+	private final ValueValidator<Iterable<? extends E>, List<T>> elements;
 
 	/**
 	 * Creates the validator of a list.
@@ -109,7 +110,7 @@ public final class ListValidator<E, T extends @Nullable Object> implements Value
 	}
 
 	@Override
-	public Validated<List<T>> validate(@Nullable Iterable<E> values, Locale locale,
+	public Validated<List<T>> validate(@Nullable Iterable<? extends E> values, Locale locale,
 			ConstraintContext constraintContext) {
 		return this.constrain(this.elements).validate(values, locale, constraintContext);
 	}

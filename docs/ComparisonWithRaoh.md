@@ -874,7 +874,7 @@ ValueValidator<Map<String, ?>, MemberImport> rowValidator = Yavi.schema()
         .fromMap(MemberImport::new)
         .readingParameters();
 
-List<Map<String, ?>> rows = List.copyOf(csvRows); // the List<Map<String, String>> of a CSV library
+List<Map<String, String>> rows = ...; // the rows of a CSV library
 Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows").validate(rows);
 // rows[1].email, rows[1].name, rows[1].age, rows[3].email, rows[3].age
 ```

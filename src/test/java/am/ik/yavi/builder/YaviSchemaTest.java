@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import javax.tools.Diagnostic;
@@ -33,6 +34,7 @@ import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.PathSegment;
+import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ViolationMessage;
@@ -68,7 +70,7 @@ class YaviSchemaTest {
 			return Arguments.of(nonNull.get("street"), nonNull.get("city"));
 		});
 
-	static final Arguments7ValidatorBuilder<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, String, Optional<String>, Integer, Address, @Nullable Address, List<String>, Map<String, Integer>> builder = Yavi
+	static final Arguments7ValidatorBuilder<String, String, Integer, Map<String, String>, Map<String, String>, List<? extends String>, Map<String, ? extends Integer>, String, Optional<String>, Integer, Address, @Nullable Address, List<String>, Map<String, Integer>> builder = Yavi
 		.arguments()
 		._object("contact",
 				ValueValidator.<String, String>anyOf(Yavi._string(c -> c.email()),
@@ -82,7 +84,7 @@ class YaviSchemaTest {
 		._list("roles", Yavi._string(c -> c.trim().notBlank()), c -> c.lessThanOrEqual(2).unique())
 		._map("scores", Yavi._integer(c -> c.greaterThanOrEqual(0)), c -> c.lessThanOrEqual(1));
 
-	static final Arguments7Validator<String, String, Integer, Map<String, String>, Map<String, String>, List<String>, Map<String, Integer>, User> validator = builder
+	static final Arguments7Validator<String, String, Integer, Map<String, String>, Map<String, String>, List<? extends String>, Map<String, ? extends Integer>, User> validator = builder
 		.apply(User::new)
 		.constraintOnTarget(User::isAdultIfAdmin, "roles",
 				ViolationMessage.of("user.adultAdmin", "\"{0}\" must not contain \"admin\" for a minor"));
@@ -239,9 +241,9 @@ class YaviSchemaTest {
 			.containsExactly(List.of("a"));
 		// a list or map that is not an argument is null as an empty one, and is not
 		// optional if a constraint rejects an empty one
-		final ValueValidator<Iterable<String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.notBlank()),
-				c -> c.notEmpty().lessThanOrEqual(2));
-		final ValueValidator<Map<String, Integer>, Map<String, Integer>> stock = Yavi
+		final ValueValidator<Iterable<? extends String>, List<String>> tags = Yavi
+			._list(Yavi._string(c -> c.notBlank()), c -> c.notEmpty().lessThanOrEqual(2));
+		final ValueValidator<Map<String, ? extends Integer>, Map<String, Integer>> stock = Yavi
 			._map(Yavi._integer(c -> c.notNull()), c -> c.greaterThanOrEqual(1).containsKey("a"));
 		assertThat(tags.untyped().validated(List.of("a", "b"))).containsExactly("a", "b");
 		// without constraints of the list or the map
@@ -366,6 +368,32 @@ class YaviSchemaTest {
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("email", "charSequence.email"), tuple("backupEmail", "charSequence.email"),
 					tuple("replyTo", "object.required"));
+		// a lifted validator takes a container of a subtype of the input of its validator
+		final List<Map<String, String>> rows = List.of(Map.of("email", "a@b.c", "replyTo", "c@d.e"),
+				Map.of("email", "a", "replyTo", "c@d.e"));
+		assertThat(contact.readingParameters().liftList().validate(rows).errors()).extracting(ConstraintViolation::name)
+			.containsExactly("[1].email");
+		final ValueValidator<Object, String> word = Yavi._string(c -> c.notBlank()).untyped();
+		final List<String> words = List.of("a", "b");
+		final Map<String, String> wordByKey = Map.of("k", "a");
+		final Optional<String> optionalWord = Optional.of("a");
+		final Presence<String> presentWord = Presence.of("a");
+		assertThat(List.of(word.liftList().validated(words), ValueValidator.liftList(word).validated(words),
+				word.liftList(Pattern.compile(",")).validated(words), Yavi._list(word).validated(words),
+				List.copyOf(word.liftSet().validated(words)),
+				word.liftCollection(ArrayList<String>::new).validated(words)))
+			.containsOnly(words);
+		assertThat(List.of(word.liftMap().validated(wordByKey), Yavi._map(word).validated(wordByKey)))
+			.containsOnly(wordByKey);
+		assertThat(word.liftOptional().validated(optionalWord)).isEqualTo(optionalWord);
+		assertThat(word.liftPresence().validated(presentWord)).isEqualTo(presentWord);
+		assertThat(Yavi.arguments()
+			._list("words", word)
+			._map("wordByKey", word)
+			._object("word", word)
+			.presence()
+			.apply((list, map, presence) -> List.of(list, map, presence))
+			.validated(words, wordByKey, presentWord)).containsExactly(words, wordByKey, presentWord);
 	}
 
 	@Test

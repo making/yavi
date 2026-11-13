@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * Example: <pre>{@code
- * ValueValidator<Iterable<String>, List<String>> validator = ListValidatorBuilder
+ * ValueValidator<Iterable<? extends String>, List<String>> validator = ListValidatorBuilder
  *     .of(Yavi._string(c -> c.trim().notBlank()), c -> c.notEmpty().lessThanOrEqual(10).unique())
  *     .build();
  * }</pre>
@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the validated elements
  * @since 0.18.0
  */
-public final class ListValidatorBuilder<E, T> implements ValueValidatorBuilder<Iterable<E>, List<T>> {
+public final class ListValidatorBuilder<E, T> implements ValueValidatorBuilder<Iterable<? extends E>, List<T>> {
 
 	private final ValueValidator<E, T> elementValidator;
 
@@ -72,7 +72,7 @@ public final class ListValidatorBuilder<E, T> implements ValueValidatorBuilder<I
 	 * @return a new validator
 	 */
 	@Override
-	public <T2 extends @Nullable Object> ValueValidator<Iterable<E>, T2> build(
+	public <T2 extends @Nullable Object> ValueValidator<Iterable<? extends E>, T2> build(
 			Function<? super List<T>, ? extends T2> mapper) {
 		return this.build().map(mapper);
 	}

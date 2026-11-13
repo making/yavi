@@ -1563,7 +1563,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
@@ -1589,7 +1589,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new Arguments1ValidatorBuilder.Keyed<>(
@@ -1644,7 +1644,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Rest<Map<String, V>, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Rest<Map<String, ? extends V>, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments1ValidatorBuilder.Rest<>(
 				new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest(valueValidator)));
@@ -1657,7 +1657,7 @@ public final class YaviSchema
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments1ValidatorBuilder.Rest<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
+	public Arguments1ValidatorBuilder.Rest<Map<String, ?>, Map<String, @Nullable Object>> _rest() {
 		return new Arguments1ValidatorBuilder.Rest<>(new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest()));
 	}
 

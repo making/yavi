@@ -874,6 +874,28 @@ public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? ex
 
 Related pull request: [#572](https://github.com/making/yavi/pull/572)
 
+### A lifted validator takes a container of a subtype
+
+`liftList()`, `liftSet()`, `liftCollection(factory)` and `liftOptional()` of
+`ValueValidator` and `Arguments1Validator`, and the static methods of the same names of
+`ValueValidator` and `ArgumentsValidators`, return a validator of
+`Iterable<? extends T>` or `Optional<? extends T>`. They returned a validator of
+`Iterable<T>` or `Optional<T>`, which rejected a `List<String>` where `T` is `Object`. A
+call that validates at once compiles as before. A variable, a parameter or a return type
+that declares the lifted validator declares the new type, or `var`.
+
+```java
+// before
+ValueValidator<Iterable<String>, List<String>> tags = tagValidator.liftList();
+Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phone = phoneNumberValidator.liftOptional();
+
+// after
+ValueValidator<Iterable<? extends String>, List<String>> tags = tagValidator.liftList();
+Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phone = phoneNumberValidator.liftOptional();
+```
+
+Related pull request: [#576](https://github.com/making/yavi/pull/576)
+
 ### `emoji()` counts extended grapheme clusters
 
 A few sequences that are not emoji count as one where they counted as two: `"\r\n"`, or

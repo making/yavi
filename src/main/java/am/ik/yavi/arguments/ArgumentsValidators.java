@@ -2372,7 +2372,7 @@ public class ArgumentsValidators {
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+	public static <A1, R extends @Nullable Object, C extends Collection<R>> Arguments1Validator<Iterable<? extends A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return Arguments1Validator.from(ValueValidator.liftCollection(validator, factory));
 	}
@@ -2387,7 +2387,7 @@ public class ArgumentsValidators {
 	 * @param <R> the type produced for each element
 	 * @return a validator for iterables
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, List<R>> liftList(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<? extends A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftList(validator));
 	}
@@ -2404,7 +2404,7 @@ public class ArgumentsValidators {
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<? extends A1>, Set<R>> liftSet(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftSet(validator));
 	}
@@ -2419,7 +2419,7 @@ public class ArgumentsValidators {
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Optional<A1>, Optional<@NonNull R>> liftOptional(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Optional<? extends A1>, Optional<@NonNull R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftOptional(validator));
 	}

@@ -502,7 +502,8 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(Supplier<C> factory) {
+	default <C extends Collection<X>> Arguments1Validator<Iterable<? extends A1>, C> liftCollection(
+			Supplier<C> factory) {
 		return Arguments1Validator.from(ValueValidator.super.liftCollection(factory));
 	}
 
@@ -514,7 +515,7 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
+	default Arguments1Validator<Iterable<? extends A1>, List<X>> liftList() {
 		return Arguments1Validator.from(ValueValidator.super.liftList());
 	}
 
@@ -526,7 +527,7 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
+	default Arguments1Validator<Iterable<? extends A1>, Set<X>> liftSet() {
 		return Arguments1Validator.from(ValueValidator.super.liftSet());
 	}
 
@@ -537,7 +538,7 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Optional<A1>, Optional<@NonNull X>> liftOptional() {
+	default Arguments1Validator<Optional<? extends A1>, Optional<@NonNull X>> liftOptional() {
 		return Arguments1Validator.from(ValueValidator.super.liftOptional());
 	}
 
