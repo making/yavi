@@ -676,6 +676,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `fromMap`、`untyped()`、`DiscriminatedUnionValidator` | [#540](https://github.com/making/yavi/pull/540) |
 | `InputReader`、`readingWith` | [#541](https://github.com/making/yavi/pull/541) |
 | `coercingStrings()`、`readingParameters()` | [#542](https://github.com/making/yavi/pull/542)、[#543](https://github.com/making/yavi/pull/543) |
+| Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` など | [#546](https://github.com/making/yavi/pull/546) |
 | 変換、`preprocess` | [#547](https://github.com/making/yavi/pull/547) |
