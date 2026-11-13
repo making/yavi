@@ -418,6 +418,51 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
 
+### プロパティのラベルとメッセージ
+
+フォームは項目をラベルで呼びます。また、値がない（`object.required`）、型が違う（`object.type`）という違反は制約を検査する前に報告されるため、制約の `message(...)` では変えられません。これらの読ませ方はプロパティに指定します。
+
+```java
+record Token(String name, Integer ttl, List<String> roles) {}
+
+ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank()).label("Token name")
+        ._integer("ttl", c -> c.positive()).typeMessage("\"{0}\" must be a number of seconds")
+        ._list("roles", Yavi._string(c -> c.notBlank())).label("Roles").required("Select at least one role")
+        .fromMap(Token::new)
+        .readingParameters();
+
+tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).errors().messagesByName();
+// {name=["Token name" must not be blank], ttl=["ttl" must be a number of seconds], roles=[Select at least one role]}
+```
+
+| 修飾子 | 変わるもの |
+| --- | --- |
+| `label("Token name")` | プロパティとその要素（`roles`、`roles[1]`）のすべてのメッセージの `{0}`。違反の名前、パス、ポインタは変わらないので、`messagesByName()` のキーと `ViolationDetail` の `name` は元のままです。ラベルは `violation.label()` で取れます。 |
+| `typeMessage(format)` | プロパティとその要素の `object.type` のメッセージ。`{1}` は型の名前、`{2}` は値です。 |
+| `required(format)` | `object.required` のメッセージ。キーがない場合と、値のないテキストの場合に報告されます。`optional()`、`nullable()`、`defaultValue(...)` の後では、`required()` と同じくキーも必須にします。 |
+
+* `typeMessage` と `required` は `ViolationMessage` も受け取ります。この場合はメッセージキーも置き換わります: `required(ViolationMessage.of("token.roles", "Select at least one role"))`。
+* `label` と `typeMessage` はプロパティを追加した直後、`optional()` などの前に書きます。`required(...)` は最後の修飾子で、`.required("...").optional()` はコンパイルできません。
+* ネストしたプロパティ（`address.street`）の違反は、そのプロパティの指定に従います。明示的な `null` と、存在しない enum 定数は従来どおり報告されます（`object.notNull`、`object.oneOf`）。
+* `ObjectInputValidator.of(parts, mapper)` のプロパティには、同じ内容を `PropertyMessages` で渡します。
+
+制約のメッセージは、`ValidatorBuilder` と同じく `MessageFormatter` で決まります。`formattingWith` はバリデータが報告するすべての違反をそのフォーマッタで整形します。違反を受け取った後に、フォーマッタやリソースバンドルのラベルを与えることもできます。
+
+```java
+MessageFormatter formatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+
+// バリデータのすべての違反。ネストしたバリデータやリーダーが報告するものも含む
+ValueValidator<Map<String, List<String>>, Token> localized = tokenValidator.formattingWith(formatter);
+
+// または違反を表示するとき
+violations.labeled(violation -> messageSource.getMessage("label." + violation.name(), null, null, locale))
+        .formattedWith(formatter)
+        .messagesByName();
+```
+
+`labeled` は、関数が `null` を返した違反をそのままにします。
+
 ### Spring MVC でフォームを再表示する
 
 Spring MVC が `BindingResult` を用意するのは、自身がバインドしたフォームオブジェクトに対してだけです。パラメータのマップには用意されません。そこで、コントローラの `@ModelAttribute` メソッドで、パラメータの `MapBindingResult` をモデルに入れます。こうすると、ハンドラは `BindingResult` を引数で受け取れます。Thymeleaf の `th:object`、`th:field`、`#fields` も、フォームオブジェクトの場合と同じように使えます。追加のライブラリは要りません。
@@ -471,7 +516,7 @@ class SignupController {
 * `@ModelAttribute` メソッドはコントローラのすべてのハンドラの前に実行されるので、GET のハンドラでも空のフォームを表示できます。このメソッドがないと、リクエストは `An Errors/BindingResult argument is expected to be declared immediately after the model attribute` で失敗します。
 * Spring が引数に渡すのは、モデルの最後の属性になっている `BindingResult` です。`BindingResult` の前には、モデルに属性を追加する引数を置かないでください。
 * フィールドには、送信されたテキストがそのまま再表示されます。プロパティの型を表さないテキスト（`age` に対する `abc`）も再表示されます。
-* フィールドエラーのコードはメッセージキー（`object.type`）なので、これまでどおり `MessageSource` でメッセージを差し替えられます。
+* フィールドエラーのコードはメッセージキー（`object.type`）なので、これまでどおり `MessageSource` でメッセージを差し替えられます。プロパティにラベルがあれば、そのメッセージの `{0}` はラベルです。
 * Thymeleaf はチェックボックスに隠しフィールド `_subscribed` を追加します。このキーに対応するプロパティは定義されていないので、このようなフォームは `rejectingUnknownProperties()` を付けたバリデータでは読めません。
 * フィールドの名前は、`th:field` が出力する形（`address.city`、`items[0].name`）にします。この形が違反の名前であり、`MapBindingResult` が値を引くキーでもあるからです。`address[city]` の形で送信された値は、検証はされますが再表示されません。
 * ハンドラは `MultiValueMap` を検証します。そのため、1 つのキーに複数の値があれば、リストとして読まれるか、スカラーのプロパティでは `object.type` で報告されます。`Map<String, String>` で受けると、最初の値以外は捨てられます。
@@ -685,6 +730,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `InputReader`、`readingWith` | [#541](https://github.com/making/yavi/pull/541) |
 | `coercingStrings()`、`readingParameters()` | [#542](https://github.com/making/yavi/pull/542)、[#543](https://github.com/making/yavi/pull/543) |
 | Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
+| `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#PRNUM](https://github.com/making/yavi/pull/PRNUM) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` など | [#546](https://github.com/making/yavi/pull/546) |

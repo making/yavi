@@ -2267,8 +2267,74 @@ cat <<EOD
 EOD
 }
 
+# Prints the modifiers of the messages of an argument read from a key: $1 is the stage
+# class that has them, which they return.
+modifier_messages() {
+cat <<EOD
+		@Override
+		public $1<${type_uses}> label(String label) {
+			return new $1<>(${init_definitions}this.d${i}.withMessages(this.d${i}.messages().withLabel(label)));
+		}
+
+		@Override
+		public $1<${type_uses}> typeMessage(ViolationMessage message) {
+			return new $1<>(${init_definitions}this.d${i}.withMessages(this.d${i}.messages().withType(message)));
+		}
+EOD
+}
+
+# Prints the modifiers that give the message of a missing value: $1 is what is written
+# before ".withMessages" to require the key, and $2 what the javadoc says about the key.
+modifier_required_message() {
+cat <<EOD
+		/**
+		 * Requires $2 and reports a
+		 * missing value with the given message format instead of the one of
+		 * {@code object.required}, for a value that only a person can tell how to give,
+		 * such as a group of checkboxes that sends no key when no box is checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> required(String messageFormat) {
+			return this.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires $2 and reports a
+		 * missing value with the given message instead of the one of
+		 * {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> required(ViolationMessage message) {
+			return new ${class}<>(${init_definitions}this.d${i}$1.withMessages(this.d${i}.messages().withRequired(message)));
+		}
+EOD
+}
+
 # Prints the declaration and the constructor of a stage class: $1 is its name, $2 its
-# modifiers, $3 the stage class it extends and $4 its permits clause, if any.
+# modifiers, $3 the stage class it extends, $4 its permits clause, if any, and $5
+# "messages" if it has the modifiers of the messages of an argument read from a key.
 stage_class() {
 cat <<EOD
 	 *
@@ -2276,7 +2342,7 @@ cat <<EOD
 	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
 	 * @since 0.18.0
 	 */
-	public static $2 class $1<${type_decls}> extends $3<${type_uses}>$4 {
+	public static $2 class $1<${type_decls}> extends $3<${type_uses}>$(if [ "$5" == "messages" ];then echo -n " implements MessageModifiers<$1<${type_uses}>>";fi)$4 {
 
 		$1(${ctor_params}) {
 			super(${ctor_args});
@@ -2390,6 +2456,7 @@ import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then pr
 import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
+import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Function${i};
 import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.NonNull;
@@ -4292,7 +4359,11 @@ $(modifier_default_value "${class}")
 	 * invalid value with an empty {@code Optional} or {@code null}, and
 	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
 	 * {@code recover}, to produce something else than the fallback for {@code null}.
-$(stage_class Keyed final "${class}")
+$(stage_class Keyed final "${class}" "" messages)
+
+$(modifier_messages Keyed)
+
+$(modifier_required_message "" "the last added argument, which it is unless a modifier accepts {@code null}")
 
 $(modifier_optional KeyedOptional)
 
@@ -4330,9 +4401,13 @@ $(modifier_recover OptionalAccepting)
 	 * accepted, can be told apart with {@link #required()} and {@link #rejectingNull()}.
 	 * There is no {@code presence()}, which would wrap the {@code Optional} in a
 	 * {@code Presence}: {@code nullable().presence()} gives the three states.
-$(stage_class OptionalAccepting sealed "${class}" " permits KeyedOptional")
+$(stage_class OptionalAccepting sealed "${class}" " permits KeyedOptional" messages)
+
+$(modifier_messages OptionalAccepting)
 
 $(modifier_required)
+
+$(modifier_required_message ".withStrictness(ObjectInputValidator.Strictness.REQUIRED)" "the key of the last added argument, as {@link #required()} does")
 
 $(modifier_rejecting_null)
 
@@ -4358,9 +4433,13 @@ $(modifier_default_value NullAccepting)
 	 * {@link NullAcceptingValueValidator}: an absent key and an explicit
 	 * {@code null}, which are both accepted, can be told apart with {@link #required()},
 	 * {@link #rejectingNull()} and {@link #presence()}.
-$(stage_class NullAccepting sealed "${class}" " permits KeyedRecoverable, KeyedRecovered")
+$(stage_class NullAccepting sealed "${class}" " permits KeyedRecoverable, KeyedRecovered" messages)
+
+$(modifier_messages NullAccepting)
 
 $(modifier_required)
+
+$(modifier_required_message ".withStrictness(ObjectInputValidator.Strictness.REQUIRED)" "the key of the last added argument, as {@link #required()} does")
 
 $(modifier_rejecting_null)
 

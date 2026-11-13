@@ -15,6 +15,9 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.function.Function;
 
+import am.ik.yavi.message.MessageFormatter;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A mutable {@link List} of {@link ConstraintViolation} instances.
  *
@@ -340,6 +343,61 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 	 */
 	public Map<String, List<String>> messagesByPointer() {
 		return this.messagesBy(ConstraintViolation::pointer);
+	}
+
+	/**
+	 * Returns the violations with the labels that the given function gives them, so that
+	 * a message calls the value {@code Email address} instead of {@code email} (see
+	 * {@link ConstraintViolation#labeled(String)}). The names and the paths are
+	 * unchanged, so {@link #messagesByName()} still has the name of the field as the key:
+	 *
+	 * <pre>{@code
+	 * Map<String, String> labels = Map.of("email", "Email address");
+	 * violations.labeled(violation -> labels.get(violation.name())).messagesByName();
+	 * // {email=["Email address" must not be blank]}
+	 * }</pre>
+	 *
+	 * The function is the place to look a label up in a resource bundle, and to decide
+	 * what a nested value such as {@code items[1].name} is called from its
+	 * {@link ConstraintViolation#path() path}.
+	 * @param label the function that returns the label of a violation, or {@code null} to
+	 * leave the violation as it is
+	 * @return new violations with the labels
+	 * @since 0.18.0
+	 */
+	public ConstraintViolations labeled(Function<? super ConstraintViolation, ? extends @Nullable String> label) {
+		final List<ConstraintViolation> labeled = new ArrayList<>(this.delegate.size());
+		for (ConstraintViolation violation : this.delegate) {
+			final String given = label.apply(violation);
+			labeled.add(given == null ? violation : violation.labeled(given));
+		}
+		return new ConstraintViolations(labeled);
+	}
+
+	/**
+	 * Returns the violations with the given message formatter instead of the one of the
+	 * validator that reported them, so that {@link #messagesByName()},
+	 * {@link #messagesByPointer()}, {@link #details()} and {@link #apply(Callback)}
+	 * format the messages with it:
+	 *
+	 * <pre>{@code
+	 * violations.formattedWith(new MessageSourceMessageFormatter(messageSource::getMessage))
+	 *     .messagesByName();
+	 * }</pre>
+	 *
+	 * A validator does this to every violation it reports with
+	 * {@link ValueValidator#formattingWith(MessageFormatter)}.
+	 * @param messageFormatter the message formatter of the returned violations
+	 * @return new violations with the message formatter
+	 * @since 0.18.0
+	 * @see ConstraintViolation#formattedWith(MessageFormatter)
+	 */
+	public ConstraintViolations formattedWith(MessageFormatter messageFormatter) {
+		final List<ConstraintViolation> formatted = new ArrayList<>(this.delegate.size());
+		for (ConstraintViolation violation : this.delegate) {
+			formatted.add(violation.formattedWith(messageFormatter));
+		}
+		return new ConstraintViolations(formatted);
 	}
 
 	private Map<String, List<String>> messagesBy(Function<ConstraintViolation, String> key) {

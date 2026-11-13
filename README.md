@@ -712,6 +712,26 @@ List<ViolationDetail> details = violations.details();
 //   "message": "\"age\" must be less than or equal to 150", "params": {"max": 150}}, ...]
 ```
 
+A form calls a field by its label, and a missing value or a value of another type is reported by no constraint. A property of `Yavi.schema()` says how they read, and a `MessageFormatter` is given to a validator or to its violations:
+
+```java
+ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank()).label("Token name") // {0} of its messages
+        ._integer("ttl", c -> c.positive()).typeMessage("\"{0}\" must be a number of seconds") // object.type
+        ._list("roles", Yavi._string()).required("Select at least one role") // object.required
+        .fromMap(Token::new)
+        .readingParameters()
+        .formattingWith(new MessageSourceMessageFormatter(messageSource::getMessage)); // every violation
+
+violations.messagesByName();
+// {name=["Token name" must not be blank], ttl=["ttl" must be a number of seconds], roles=[Select at least one role]}
+
+// labels of a resource bundle and another formatter, when the violations are shown
+violations.labeled(violation -> labels.get(violation.name())).formattedWith(formatter).messagesByName();
+```
+
+The name, the path and the pointer of a violation are unchanged by a label; `violation.label()` returns it. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#labels-and-messages-of-a-property).
+
 `pointer` is what the `errors[].pointer` of an RFC 9457 problem detail holds; a single violation has it as `violation.pointer()`. `params` holds the arguments of the violation by name (the names of the built-in constraints are listed in [New features in 0.18.0](docs/NewFeatures_0.18.0.md#handling-the-result); a message of your own names them with `ViolationMessage.of(key, format, names...)`). The violated value is not in a detail; `violation.args()` and `violation.violatedValue()` have it.
 
 #### Describing a validator and generating a JSON Schema

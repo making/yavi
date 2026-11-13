@@ -51,6 +51,7 @@ import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Function1;
 import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.NonNull;
@@ -2075,10 +2076,66 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	 * @param <R1> type of the validated value of the first argument
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<A1, R1 extends @Nullable Object> extends Arguments1ValidatorBuilder<A1, R1> {
+	public static final class Keyed<A1, R1 extends @Nullable Object> extends Arguments1ValidatorBuilder<A1, R1>
+			implements MessageModifiers<Keyed<A1, R1>> {
 
 		Keyed(ArgumentDefinition<A1, R1> d1) {
 			super(d1);
+		}
+
+		@Override
+		public Keyed<A1, R1> label(String label) {
+			return new Keyed<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public Keyed<A1, R1> typeMessage(ViolationMessage message) {
+			return new Keyed<>(this.d1.withMessages(this.d1.messages().withType(message)));
+		}
+
+		/**
+		 * Requires the last added argument, which it is unless a modifier accepts
+		 * {@code null} and reports a missing value with the given message format instead
+		 * of the one of {@code object.required}, for a value that only a person can tell
+		 * how to give, such as a group of checkboxes that sends no key when no box is
+		 * checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the last added argument, which it is unless a modifier accepts
+		 * {@code null} and reports a missing value with the given message instead of the
+		 * one of {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(ViolationMessage message) {
+			return new Arguments1ValidatorBuilder<>(this.d1.withMessages(this.d1.messages().withRequired(message)));
 		}
 
 		/**
@@ -2335,10 +2392,21 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	 * @since 0.18.0
 	 */
 	public static sealed class OptionalAccepting<A1, R1 extends @Nullable Object>
-			extends Arguments1ValidatorBuilder<A1, R1>permits KeyedOptional {
+			extends Arguments1ValidatorBuilder<A1, R1>
+			implements MessageModifiers<OptionalAccepting<A1, R1>>permits KeyedOptional {
 
 		OptionalAccepting(ArgumentDefinition<A1, R1> d1) {
 			super(d1);
+		}
+
+		@Override
+		public OptionalAccepting<A1, R1> label(String label) {
+			return new OptionalAccepting<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public OptionalAccepting<A1, R1> typeMessage(ViolationMessage message) {
+			return new OptionalAccepting<>(this.d1.withMessages(this.d1.messages().withType(message)));
 		}
 
 		/**
@@ -2371,6 +2439,51 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 		 */
 		public Arguments1ValidatorBuilder<A1, R1> required() {
 			return new Arguments1ValidatorBuilder<>(this.d1.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message format instead of the one of
+		 * {@code object.required}, for a value that only a person can tell how to give,
+		 * such as a group of checkboxes that sends no key when no box is checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message instead of the one of
+		 * {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(ViolationMessage message) {
+			return new Arguments1ValidatorBuilder<>(this.d1.withStrictness(ObjectInputValidator.Strictness.REQUIRED)
+				.withMessages(this.d1.messages().withRequired(message)));
 		}
 
 		/**
@@ -2492,11 +2605,21 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	 * @param <R1> type of the validated value of the first argument
 	 * @since 0.18.0
 	 */
-	public static sealed class NullAccepting<A1, R1 extends @Nullable Object>
-			extends Arguments1ValidatorBuilder<A1, R1>permits KeyedRecoverable,KeyedRecovered {
+	public static sealed class NullAccepting<A1, R1 extends @Nullable Object> extends Arguments1ValidatorBuilder<A1, R1>
+			implements MessageModifiers<NullAccepting<A1, R1>>permits KeyedRecoverable,KeyedRecovered {
 
 		NullAccepting(ArgumentDefinition<A1, R1> d1) {
 			super(d1);
+		}
+
+		@Override
+		public NullAccepting<A1, R1> label(String label) {
+			return new NullAccepting<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public NullAccepting<A1, R1> typeMessage(ViolationMessage message) {
+			return new NullAccepting<>(this.d1.withMessages(this.d1.messages().withType(message)));
 		}
 
 		/**
@@ -2529,6 +2652,51 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 		 */
 		public Arguments1ValidatorBuilder<A1, R1> required() {
 			return new Arguments1ValidatorBuilder<>(this.d1.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message format instead of the one of
+		 * {@code object.required}, for a value that only a person can tell how to give,
+		 * such as a group of checkboxes that sends no key when no box is checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message instead of the one of
+		 * {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments1ValidatorBuilder<A1, R1> required(ViolationMessage message) {
+			return new Arguments1ValidatorBuilder<>(this.d1.withStrictness(ObjectInputValidator.Strictness.REQUIRED)
+				.withMessages(this.d1.messages().withRequired(message)));
 		}
 
 		/**
