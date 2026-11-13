@@ -432,7 +432,7 @@ The name of the constant is matched exactly, whereas `enumOf` ignores the ASCII 
 
 ```java
 MapInputValidator<Role> lenientRoleValidator = Yavi.arguments()
-        ._enum(Yavi._enum("role", Role.class).ignoringCase()).defaultValue(Role.MEMBER)
+        ._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase()).defaultValue(Role.MEMBER)
         .fromMap(role -> role);
 
 lenientRoleValidator.validate(Map.of("role", "admin")); // Valid[ADMIN]

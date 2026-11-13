@@ -69,7 +69,7 @@ compiler checks that the arguments match it.
 | --- | --- |
 | `z.string()`, `z.number()`, `z.boolean()`, `z.date()` ... as a property | `_string(name, c -> ...)`, `_integer`, `_long`, `_double`, `_bigDecimal`, `_boolean`, `_localDate`, `_instant` ... |
 | the same as a schema of its own | `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)` ... |
-| `z.enum([...])` | `_enum(name, Role.class)`; `_enum(Yavi._enum(name, Role.class).ignoringCase())` reads the name in any case |
+| `z.enum([...])` | `_enum(name, Role.class)`; `_enum(Yavi._enum(name, Role.class, c -> c).ignoringCase())` reads the name in any case |
 | `z.object({...})` nested | `_object(name, anotherMapInputValidator)` |
 | `z.array(schema)` | `_list(name, elementValidator)`, `validator.liftList()` |
 | `z.record(z.string(), schema)` | `_map(name, valueValidator)`, `validator.liftMap()` |
