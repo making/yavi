@@ -44,8 +44,10 @@ import org.jspecify.annotations.Nullable;
  *
  * <ul>
  * <li>An object is written with {@code properties}; a property is {@code required} unless
- * its value accepts {@code null} (see {@link ValueDescription#acceptsNull()}). A value
- * that accepts {@code null} also allows the type {@code null}.</li>
+ * it may be omitted (see {@link ValueDescription#acceptsAbsent()}). A value that accepts
+ * {@code null} (see {@link ValueDescription#acceptsNull()}) also allows the type
+ * {@code null}, so a {@link ValueDescription.Presence} that rejects {@code null} is
+ * neither required nor nullable.</li>
  * <li>A list is written with {@code items}, a map with {@code additionalProperties},
  * alternatives with {@code anyOf} and a default value with {@code default}. The
  * constraints of a list or a map are written like those of a value ({@code minItems},
@@ -187,6 +189,7 @@ public final class JsonSchema {
 				case ValueDescription.AnyOf anyOf -> anyOf.alternatives().forEach(this::collect);
 				case ValueDescription.NotNull notNull -> this.collect(notNull.value());
 				case ValueDescription.Optional optional -> this.collect(optional.value());
+				case ValueDescription.Presence presence -> this.collect(presence.value());
 				case ValueDescription.Reference reference -> {
 					if (this.byReference.containsKey(reference)) {
 						return;
@@ -270,9 +273,8 @@ public final class JsonSchema {
 					final Map<String, Object> schemas = new LinkedHashMap<>();
 					final List<Object> required = new ArrayList<>();
 					for (ValueDescription.Property property : properties.properties()) {
-						final boolean optional = property.value().acceptsNull();
-						schemas.put(property.name(), this.schema(property.value(), optional));
-						if (!optional) {
+						schemas.put(property.name(), this.schema(property.value(), property.value().acceptsNull()));
+						if (!property.value().acceptsAbsent()) {
 							required.add(property.name());
 						}
 					}
@@ -316,6 +318,7 @@ public final class JsonSchema {
 				}
 				// the caller has decided whether null is accepted here
 				case ValueDescription.NotNull notNull -> schema.putAll(this.schema(notNull.value(), nullable));
+				case ValueDescription.Presence presence -> schema.putAll(this.schema(presence.value(), nullable));
 				case ValueDescription.Optional optional -> {
 					schema.putAll(this.schema(optional.value(), true));
 					final Object defaultValue = optional.defaultValue();

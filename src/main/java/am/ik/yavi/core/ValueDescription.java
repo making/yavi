@@ -35,7 +35,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * In YAVI a value accepts {@code null} unless a constraint rejects it;
- * {@link #acceptsNull()} tells whether the described input does.
+ * {@link #acceptsNull()} tells whether the described input does, and
+ * {@link #acceptsAbsent()} whether a property with the described value may be omitted.
  *
  * @since 0.18.0
  * @see ConstraintDescription
@@ -125,9 +126,9 @@ public sealed interface ValueDescription {
 		 *
 		 * <p>
 		 * A property takes the name under which the violations of its value are reported
-		 * (see {@link Value#name()}, also inside {@link Optional} and {@link NotNull}).
-		 * If that name is empty or unknown, the property is named {@code argN}, where
-		 * {@code N} is its position starting at 1.
+		 * (see {@link Value#name()}, also inside {@link Optional}, {@link NotNull} and
+		 * {@link Presence}). If that name is empty or unknown, the property is named
+		 * {@code argN}, where {@code N} is its position starting at 1.
 		 * @param values the descriptions of the property values
 		 * @return the description of the object
 		 */
@@ -141,6 +142,9 @@ public sealed interface ValueDescription {
 					}
 					else if (value instanceof NotNull notNull) {
 						value = notNull.value();
+					}
+					else if (value instanceof Presence presence) {
+						value = presence.value();
 					}
 					else {
 						break;
@@ -253,6 +257,18 @@ public sealed interface ValueDescription {
 	}
 
 	/**
+	 * The value of a property that may be omitted whatever the described value accepts,
+	 * and whose absence is told from {@code null}: an absent property is not validated,
+	 * and one that is present is validated as described, {@code null} included.
+	 *
+	 * @param value the description of the value of a property that is present
+	 * @see am.ik.yavi.core.Presence
+	 * @see ValueValidator#liftPresence()
+	 */
+	record Presence(ValueDescription value) implements ValueDescription {
+	}
+
+	/**
 	 * A value about which nothing is known.
 	 */
 	record Unknown() implements ValueDescription {
@@ -333,14 +349,14 @@ public sealed interface ValueDescription {
 	}
 
 	/**
-	 * Returns whether the described input accepts {@code null}. A property whose value
-	 * accepts {@code null} may be omitted.
+	 * Returns whether the described input accepts {@code null}.
 	 *
 	 * <p>
 	 * A {@link Value} accepts {@code null} unless one of its constraints rejects it,
 	 * {@link Elements} and {@link Entries} accept {@code null} as an empty list or map
 	 * unless one of their constraints rejects it, an object with {@link Properties} does
-	 * not accept {@code null}, and a {@link Reference} accepts what its target accepts.
+	 * not accept {@code null}, and a {@link Presence} and a {@link Reference} accept what
+	 * their value or target accepts.
 	 * @return {@code true} if {@code null} is accepted or nothing is known about the
 	 * input
 	 */
@@ -353,9 +369,25 @@ public sealed interface ValueDescription {
 			case Elements elements -> elements.constraints().stream().noneMatch(ConstraintDescription::rejectsNull);
 			case Entries entries -> entries.constraints().stream().noneMatch(ConstraintDescription::rejectsNull);
 			case Optional optional -> true;
+			case Presence presence -> presence.value().acceptsNull();
 			case Unknown unknown -> true;
 			case Never never -> false;
 			case Reference reference -> reference.target().acceptsNull();
+		};
+	}
+
+	/**
+	 * Returns whether a property with the described value may be omitted from its object:
+	 * the value accepts {@code null}, as which an absent property is validated, or it is
+	 * a {@link Presence}, which an absent property is not validated for.
+	 * @return {@code true} if the property is not required
+	 */
+	default boolean acceptsAbsent() {
+		return switch (this) {
+			case Presence presence -> true;
+			case AnyOf anyOf -> anyOf.alternatives().stream().anyMatch(ValueDescription::acceptsAbsent);
+			case Reference reference -> reference.target().acceptsAbsent();
+			default -> this.acceptsNull();
 		};
 	}
 

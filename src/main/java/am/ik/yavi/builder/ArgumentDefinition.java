@@ -17,6 +17,7 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -56,6 +57,12 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 
 		/** The value of the key that is the name of the argument. */
 		PROPERTY,
+
+		/**
+		 * The key that is the name of the argument: whether the map has it, and its
+		 * value.
+		 */
+		PRESENCE,
 
 		/** The map itself. */
 		OBJECT,
@@ -194,6 +201,20 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	}
 
 	/**
+	 * Returns the definition of this argument as a value that may be absent. The untyped
+	 * validator reads the value of a key that is present; the part tells an absent key.
+	 * The builders offer this only for an argument that is read from a key, and no
+	 * modifier after it.
+	 */
+	ArgumentDefinition<Presence<A>, Presence<R>> withPresence() {
+		return new ArgumentDefinition<>(this.name, this.validator.liftPresence(), reader -> {
+			final ValueValidator<Object, R> present = this.untyped.apply(reader);
+			return present.<Presence<R>>map(Presence::ofNullable)
+				.describedAs(new ValueDescription.Presence(present.description()));
+		}, Source.PRESENCE);
+	}
+
+	/**
 	 * Returns the part that reads this argument from a map. The key of a property is the
 	 * name of the argument, or else the name under which its validator reports
 	 * violations.
@@ -201,9 +222,10 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	 * @throws IllegalStateException if the argument is a property that has no name, or if
 	 * its input type is unknown
 	 */
+	@SuppressWarnings("unchecked")
 	MapInputValidator.Part<R> part(int position) {
 		final String name = this.name != null ? this.name : describedName(this.validator.description());
-		if (this.source == Source.PROPERTY && name.isEmpty()) {
+		if ((this.source == Source.PROPERTY || this.source == Source.PRESENCE) && name.isEmpty()) {
 			throw new IllegalStateException("The argument at position " + position
 					+ " has no name. Add it with a name to read it from a map, or with _embedded to read the map itself.");
 		}
@@ -212,13 +234,16 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 			reading = new Reading<>(this.untyped.apply(InputReader.ofJdkTypes()), this.untyped);
 		}
 		catch (UnsupportedOperationException e) {
-			throw new IllegalStateException("The input type of the argument "
-					+ (this.source == Source.PROPERTY ? "'" + name + "'" : "at position " + position)
-					+ " is unknown. Add it with a type (for example _enum(name, type) or _object(name, type)),"
-					+ " or with a validator that knows its input type (see ValueValidator#untyped).", e);
+			throw new IllegalStateException(
+					"The input type of the argument " + (name.isEmpty() ? "at position " + position : "'" + name + "'")
+							+ " is unknown. Add it with a type (for example _enum(name, type) or _object(name, type)),"
+							+ " or with a validator that knows its input type (see ValueValidator#untyped).",
+					e);
 		}
 		return switch (this.source) {
 			case PROPERTY -> new MapInputValidator.Property<>(name, reading);
+			case PRESENCE -> (MapInputValidator.Part<R>) new MapInputValidator.PresenceProperty<>(name,
+					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading);
 			case OBJECT -> new MapInputValidator.Embedded<>(reading);
 			case REST -> new MapInputValidator.Rest<>(reading);
 		};
@@ -302,6 +327,7 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 		return switch (description) {
 			case ValueDescription.Optional optional -> describedName(optional.value());
 			case ValueDescription.NotNull notNull -> describedName(notNull.value());
+			case ValueDescription.Presence presence -> describedName(presence.value());
 			case ValueDescription.Value value -> value.name();
 			default -> "";
 		};

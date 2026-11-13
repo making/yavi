@@ -520,12 +520,43 @@ Validated<User> validated = userValidator.validate(map);
 
 * A value must represent the type of its argument, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [request parameters](#validating-request-parameters).
 * An absent key is validated like `null`, so `optional()`, `nullable()`, `defaultValue(...)` and arguments without `notNull()` accept it. If the argument rejects `null`, the absent key is reported with `object.required` (`"email" is required`); an explicit `null` is reported by the constraints (`object.notNull`).
+* `presence()` tells an absent key from `null`, as a partial update (PATCH) needs; see [below](#telling-an-absent-key-from-null).
 * A key that no argument is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` argument needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
 * The name of an enum constant is matched exactly. `ignoringCase()` of its validator reads it in any case, whatever the input is read with: `._enum(Yavi._enum("role", Role.class).ignoringCase())` takes `"admin"`. The description and the JSON Schema keep the names of the constants.
 * `flatFromMap(f)` takes a function that creates the object itself and can fail: it returns a `Validated`, for example `Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, locale)`, and is applied only when all arguments are valid. `flatApply(f)` is its counterpart for arguments.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
+
+#### Telling an absent key from null
+
+In a partial update, such as a PATCH request (JSON Merge Patch), an absent key leaves the property unchanged and `null` clears it. `presence()` reads an argument as a `Presence`, which is `Present(value)`, `PresentNull` or `Absent`:
+
+```java
+record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
+
+MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence() // cannot be cleared
+        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        .fromMap(ProfilePatch::new);
+
+ProfilePatch patch = patchValidator.validated(Map.of("bio", "Hello")); // nickname is absent
+patch.nickname().ifPresent(profile::setNickname); // not called
+profile.setBio(patch.bio().orElse(profile.getBio())); // null if the key is null
+
+switch (patch.bio()) {
+    case Presence.Present<String>(String bio) -> profile.setBio(bio);
+    case Presence.PresentNull<String> cleared -> profile.setBio(null);
+    case Presence.Absent<String> unchanged -> { }
+}
+```
+
+* An absent key is `Absent` and is not validated, so it is never required.
+* A key that is present is validated as without `presence()`, an explicit `null` included: `notNull()` rejects it, and an argument that accepts `null` gives `PresentNull`. A nested object rejects `null` unless it is `nullable()`.
+* `presence()` is the last modifier of an argument: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present. Writing one after it does not compile, and neither does `presence()` on an `_embedded` or `_rest` argument, which is not read from a key.
+* It works with every input. In request parameters, a parameter with an empty value (`bio=`) is present and `null`.
+* With `apply(f)`, the argument itself is a `Presence`. `ValueValidator#liftPresence()` is the combinator, and `MapInputValidator.PresenceProperty` the part for `MapInputValidator.of(parts, mapper)`.
+* In the JSON Schema the property is not `required`, and it allows `null` only if the argument accepts it.
 
 `DiscriminatedUnionValidator` selects the validator of a map by the value of a key, which reads the subtypes of a sealed interface:
 
@@ -734,7 +765,7 @@ String json = JsonSchema.toJson(description);
 * A constraint is described by its message key and arguments, for example `container.lessThanOrEqual` with `[14]`.
 * An object that rejects unknown properties is written with `additionalProperties: false`, and one that reads the rest with the schema of its values.
 * The constraints of a list or map are described with it and written as `minItems`, `maxItems`, `uniqueItems`, `minProperties` and `maxProperties`.
-* A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or a `recover(...)`, whose value is written as `default`, or has no constraint that rejects `null` such as `notNull()`.
+* A property is `required` unless its value accepts `null`, that is unless it is `optional()`, `nullable()`, has a `defaultValue(...)` or a `recover(...)`, whose value is written as `default`, or has no constraint that rejects `null` such as `notNull()`. A property with `presence()` is never `required`.
 * The combinators carry the description. A lambda and the result of `ValueValidator.compose` are unknown; describe them with `describedAs(...)`.
 * A recursive structure is described with a `ValueDescription.Reference` where it contains itself, and written as `$ref`: to `#` for the described validator itself, and otherwise to `$defs` under the name given with `ValueValidator.lazy(name, ...)` or `recursive(name, ...)`.
 * Conditional constraints and `constraintOnTarget` rules are not described. Constraints without a JSON Schema keyword are omitted from the schema.

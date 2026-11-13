@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -50,6 +51,10 @@ import org.jspecify.annotations.Nullable;
  * absent key is reported with the message key {@code object.required} instead of the
  * violations for {@code null}. An explicit {@code null} is reported by the constraints of
  * the property, for example {@code object.notNull}.</li>
+ * <li>A property added with {@code presence()} of the builders tells an absent key from
+ * {@code null}, which a partial update such as a PATCH request needs: an absent key is
+ * {@link Presence.Absent} and is not validated, and a key that is present is validated,
+ * {@code null} included, so the property decides whether it can be cleared.</li>
  * <li>A value that does not represent the type of the property is reported with
  * {@code object.type}. Nothing is coerced unless the map is read with
  * {@link InputReader#coercingStrings()}.</li>
@@ -175,6 +180,23 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 	}
 
 	/**
+	 * A property read from the input map whose absence is told from {@code null}. An
+	 * absent key is {@link Presence.Absent} and no violation; the property is not
+	 * required whatever its validator accepts.
+	 *
+	 * @param name the key of the property in the map
+	 * @param validator the validator of the value of a key that is present, which reports
+	 * its violations under {@code name}; an explicit {@code null} is validated as
+	 * {@code null}. It is {@link ValueValidator#liftPresence()} of a validator that is
+	 * read with a reader, or a validator of an untyped value mapped with
+	 * {@link Presence#ofNullable(Object)}
+	 * @param <R> the type of the validated value
+	 */
+	public record PresenceProperty<R> (String name,
+			ValueValidator<Object, Presence<R>> validator) implements Part<Presence<R>> {
+	}
+
+	/**
 	 * A validator that reads the input map itself, next to the other parts, such as the
 	 * columns of one table in the row of a JOIN.
 	 *
@@ -257,6 +279,10 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 			switch (part) {
 				case Property<?> property ->
 					added = List.of(List.of(new ValueDescription.Property(property.name(), described)));
+				case PresenceProperty<?> property ->
+					added = List.of(List.of(new ValueDescription.Property(property.name(),
+							described instanceof ValueDescription.Presence ? described
+									: new ValueDescription.Presence(described))));
 				case Embedded<?> embedded -> {
 					added = alternativesOf(described, false);
 					if (added != null) {
@@ -332,7 +358,7 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 			case ValueDescription.Properties properties when properties.isClosed() -> List.of(optional
 					? properties.properties()
 						.stream()
-						.map(property -> property.value().acceptsNull() ? property
+						.map(property -> property.value().acceptsAbsent() ? property
 								: new ValueDescription.Property(property.name(),
 										new ValueDescription.Optional(property.value(), null)))
 						.toList()
@@ -543,6 +569,14 @@ public final class MapInputValidator<X> implements ValueValidator<Map<String, Ob
 						validated = read.isValid() || value != null || this.reader.hasProperty(input, name) ? read
 								: Validated.failureWith(violation(name, ViolationMessage.Default.OBJECT_REQUIRED,
 										null, locale));
+					}
+					case PresenceProperty<?> property -> {
+						final String name = property.name();
+						final N value = this.reader.property(input, name);
+						validated = value == null && !this.reader.hasProperty(input, name)
+								? Validated.successWith(Presence.absent()) : validator.validate(
+										value == null || this.reader.isNull(value) ? null : value, locale,
+										constraintContext);
 					}
 					case Embedded<?> embedded -> {
 						final Group group = MapInputValidator.this.groups.get(i);

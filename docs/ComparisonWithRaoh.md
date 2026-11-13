@@ -380,12 +380,33 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 | `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional()` |
 | `field("role", withDefault(decoder, value))` | `_enum("role", Role.class).defaultValue(value)` |
 | `field("size", recover(decoder, fallback))` | `_integer("size", c -> ...).recover(fallback)` |
-| `optionalNullableField("bio", string())` (`Presence<String>`) | not available |
+| `optionalNullableField("bio", string())` (`Presence<String>`) | `_string("bio").presence()` (`Presence<String>`) |
 
 An absent key is validated like `null`, so `optional()`, `nullable()` and
-`defaultValue(...)` accept both, and "clear the value" cannot be told from "leave
-unchanged" in a PATCH request. Only the violation differs when the argument rejects
+`defaultValue(...)` accept both. Only the violation differs when the argument rejects
 `null`: `object.required` for an absent key and `object.notNull` for an explicit `null`.
+
+`presence()` tells "leave unchanged" from "clear the value" in a PATCH request. The
+argument is a `Presence<X>` with the same three states as in Raoh: `Absent`,
+`PresentNull` and `Present(value)`.
+
+```java
+record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
+
+MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+        ._string("nickname", c -> c.notNull().lessThanOrEqual(50)).presence()
+        ._string("bio", c -> c.lessThanOrEqual(500)).presence()
+        .fromMap(ProfilePatch::new);
+
+patchValidator.validate(Map.of()); // Absent, Absent
+patchValidator.validate(Collections.singletonMap("bio", null)); // Absent, PresentNull
+patchValidator.validate(Collections.singletonMap("nickname", null)); // nickname: "nickname" must not be null
+```
+
+Unlike `optionalNullableField`, `presence()` adds only the absent state: a key that is
+present is validated by the argument, which decides whether `null` is accepted. So an
+argument with `notNull()` may be omitted but not cleared, and a nested object is cleared
+only with `nullable()` before `presence()`.
 
 ### Enums
 
@@ -876,5 +897,4 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 
 ## Not available
 
-* Three states of a field (`Presence`: absent, `null`, value).
 * Encoders (a domain object to a map).

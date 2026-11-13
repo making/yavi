@@ -31,8 +31,8 @@ import java.util.function.Supplier;
  * be chained with {@link #andThen(ValueValidator)}, mapped with {@link #map(Function)},
  * adapted to another input type with {@link #compose(Function)}, given an input
  * transformed within its type with {@link #preprocess(Function)}, and lifted to
- * collections, maps or optionals with {@code lift*} methods. A {@code null} input can be
- * accepted with {@link #optional()}, {@link #nullable()} or
+ * collections, maps, optionals or {@link Presence} with {@code lift*} methods. A
+ * {@code null} input can be accepted with {@link #optional()}, {@link #nullable()} or
  * {@link #defaultValue(Object)}, any failure is replaced with a fallback with
  * {@link #recover(Object)}, alternatives are combined with
  * {@link #anyOf(ValueValidator[])}, a validator that is not built yet is referred to with
@@ -291,6 +291,21 @@ public interface ValueValidator<T, X> {
 						ValueValidator.liftOptional(validator.readingWith(reader))),
 				() -> new ValueDescription.Optional(validator.description(), null),
 				other -> untypedOptional(other, validator));
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of a value that may be absent: the
+	 * node is the value of a property that is present.
+	 */
+	private static <N, T, X> ValueValidator<N, Presence<X>> untypedPresence(InputReader<N> reader,
+			ValueValidator<T, X> validator) {
+		final ValueValidator<N, X> present = validator.readingWith(reader);
+		return described(
+				(node, locale, constraintContext) -> present
+					.validate(UntypedInput.orNull(reader, node), locale, constraintContext)
+					.map(Presence::ofNullable),
+				() -> new ValueDescription.Presence(validator.description()),
+				other -> untypedPresence(other, validator));
 	}
 
 	/**
@@ -966,6 +981,39 @@ public interface ValueValidator<T, X> {
 						v -> validator.validate(v, locale, constraintContext)),
 				() -> new ValueDescription.Optional(validator.description(), null),
 				reader -> untypedOptional(reader, validator));
+	}
+
+	/**
+	 * Returns a validator of a value that may be absent, which is told from {@code null}:
+	 * {@link Presence.Absent} succeeds as it is without invoking this validator, and the
+	 * value of a {@link Presence} that is present is validated by this validator, as
+	 * {@code null} for {@link Presence.PresentNull}. This validator therefore decides
+	 * whether {@code null} is accepted, and the produced value is given as
+	 * {@link Presence#ofNullable(Object)}. A {@code null} input is taken as absent.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Presence<String>, Presence<String>> nickname = Yavi
+	 *     ._string("nickname", c -> c.notNull().lessThanOrEqual(50))
+	 *     .liftPresence();
+	 * nickname.validate(Presence.absent()); // valid: Absent
+	 * nickname.validate(Presence.presentNull()); // invalid: object.notNull
+	 * }</pre>
+	 *
+	 * <p>
+	 * The node of an untyped input is the value of a property that is present, so with
+	 * {@link #readingWith(InputReader)} the validator never produces
+	 * {@link Presence.Absent}. Whether an object has a property is told by the validator
+	 * of the object: {@code presence()} of the builders returned by
+	 * {@code Yavi.arguments()}, or {@code MapInputValidator.PresenceProperty}.
+	 * @return a value validator for a value that may be absent
+	 * @since 0.18.0
+	 */
+	default ValueValidator<Presence<T>, Presence<X>> liftPresence() {
+		return described(
+				(presence, locale, constraintContext) -> presence == null || presence.isAbsent()
+						? Validated.successWith(Presence.absent())
+						: this.validate(presence.orElse(null), locale, constraintContext).map(Presence::ofNullable),
+				() -> new ValueDescription.Presence(this.description()), reader -> untypedPresence(reader, this));
 	}
 
 	/**
