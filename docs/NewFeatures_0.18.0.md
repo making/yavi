@@ -71,7 +71,7 @@ Every `ValueValidator` has:
 | `recover(fallback)`, `recoverWith(violations -> ...)` | never fails: produces the fallback for `null` and for an invalid value |
 | `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key |
 | `prefixed(name)` | puts a name before the names of the violations (`orders[1].id`) |
-| `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise one violation, `object.anyOf`, with the violations of each alternative in its `alternatives()` |
+| `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise one violation, `object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with the violations of each alternative in its `alternatives()` |
 | `ValueValidator.lazy(supplier)`, `recursive(self -> ...)` | a reference to a validator that is not built yet |
 
 ### New constraints
@@ -519,13 +519,14 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // for an API response: records that a JSON library serializes as they are
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""], "alternatives": []}, ...]
+//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
 ```
 
 When no alternative of `ValueValidator.anyOf` matches, the result is one violation. The
 violations of the alternatives are not mixed into the list, where nothing would tell
-which alternative a violation belongs to; they are under that violation, one
-`ConstraintViolations` per alternative, and are prefixed with it:
+which alternative a violation belongs to. The violation is a
+`ConstraintViolation.NoAlternativeMatched`, the only type that has `alternatives()`: one
+`ConstraintViolations` per alternative, prefixed with the violation:
 
 ```java
 ConstraintViolations violations = Yavi.schema()
@@ -537,7 +538,7 @@ ConstraintViolations violations = Yavi.schema()
 violations.messagesByName();
 // {contact=["contact" must satisfy at least one of the 2 alternatives]}
 
-ConstraintViolation violation = violations.get(0);
+ConstraintViolation.NoAlternativeMatched violation = (ConstraintViolation.NoAlternativeMatched) violations.get(0);
 violation.alternatives().get(0).messagesByName();
 // {contact.value=["contact.value" must be a valid email address]}
 violation.alternatives().get(1).messagesByName();
@@ -549,8 +550,10 @@ ConstraintViolations closest = violation.alternatives().stream()
     .orElseThrow();
 ```
 
-`ViolationDetail` has them as `alternatives`, a list of the details of each alternative,
-which is empty for any other violation.
+`ViolationDetail` is a sealed interface of two records. The detail of this violation is a
+`ViolationDetail.NoAlternativeMatched`, which has `alternatives`, a list of the details of
+each alternative; any other detail is a `ViolationDetail.Simple`, so its JSON has no such
+property.
 
 A hand-written step fails with one call:
 

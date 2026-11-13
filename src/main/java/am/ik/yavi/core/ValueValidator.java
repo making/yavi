@@ -726,9 +726,10 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * value itself and takes the name of the property the validator is applied to. The
 	 * violations of the alternatives are not in the result: a list of them would not tell
 	 * which alternative a violation belongs to and would show contradictory messages for
-	 * one value. They are kept per alternative, in the given order, in
-	 * {@link ConstraintViolation#alternatives()} of the violation, and are renamed and
-	 * prefixed with it.
+	 * one value. The violation is a {@link ConstraintViolation.NoAlternativeMatched},
+	 * which keeps them per alternative, in the given order, in
+	 * {@link ConstraintViolation.NoAlternativeMatched#alternatives() alternatives()};
+	 * they are renamed and prefixed with it.
 	 * @param validators the alternatives, tried in the given order
 	 * @param <T> the type of the object to be validated
 	 * @param <X> the common type of the values produced by the alternatives

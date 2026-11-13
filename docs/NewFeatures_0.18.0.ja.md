@@ -62,7 +62,7 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 | `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
 | `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる |
 | `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
-| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。各選択肢の違反はその `alternatives()` にある |
+| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。この違反は `ConstraintViolation.NoAlternativeMatched` で、各選択肢の違反はその `alternatives()` にある |
 | `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
 
 ### 新しい制約
@@ -453,10 +453,10 @@ Map<String, List<String>> byPointer = violations.messagesByPointer();
 // API レスポンス向け: JSON ライブラリがそのままシリアライズできる record
 List<ViolationDetail> details = violations.details();
 // [{"name": "address.street", "pointer": "/address/street", "messageKey": "charSequence.notBlank",
-//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""], "alternatives": []}, ...]
+//   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
 ```
 
-`ValueValidator.anyOf` のどの選択肢にも一致しなかった場合、結果は違反 1 件です。各選択肢の違反は 1 つのリストに混ぜられません。混ぜると、どの違反がどの選択肢のものかがわからなくなるためです。それらはこの違反の下に、選択肢ごとの `ConstraintViolations` として保持され、この違反と一緒に名前が付け替えられます。
+`ValueValidator.anyOf` のどの選択肢にも一致しなかった場合、結果は違反 1 件です。各選択肢の違反は 1 つのリストに混ぜられません。混ぜると、どの違反がどの選択肢のものかがわからなくなるためです。この違反は `ConstraintViolation.NoAlternativeMatched` です。`alternatives()` を持つのはこの型だけで、選択肢ごとの `ConstraintViolations` を返します。それらはこの違反と一緒に名前が付け替えられます。
 
 ```java
 ConstraintViolations violations = Yavi.schema()
@@ -468,7 +468,7 @@ ConstraintViolations violations = Yavi.schema()
 violations.messagesByName();
 // {contact=["contact" must satisfy at least one of the 2 alternatives]}
 
-ConstraintViolation violation = violations.get(0);
+ConstraintViolation.NoAlternativeMatched violation = (ConstraintViolation.NoAlternativeMatched) violations.get(0);
 violation.alternatives().get(0).messagesByName();
 // {contact.value=["contact.value" must be a valid email address]}
 violation.alternatives().get(1).messagesByName();
@@ -480,7 +480,7 @@ ConstraintViolations closest = violation.alternatives().stream()
     .orElseThrow();
 ```
 
-`ViolationDetail` では `alternatives` です。選択肢ごとの詳細のリストで、ほかの違反では空です。
+`ViolationDetail` は 2 つの record からなる sealed interface です。この違反の詳細は `ViolationDetail.NoAlternativeMatched` で、選択肢ごとの詳細のリストである `alternatives` を持ちます。ほかの詳細は `ViolationDetail.Simple` なので、JSON にこのプロパティは出ません。
 
 自分で書く検証ステップでは、1 回の呼び出しで失敗を返せます。
 

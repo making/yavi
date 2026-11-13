@@ -322,8 +322,8 @@ Yavi.schema()._object("age", coerced.untyped(Object.class))...
 
 `z.union` and `ValueValidator.anyOf` try the alternatives in order and report one issue
 when none matches: `invalid_union` with `errors`, the issues of each alternative, and
-`object.anyOf` with `violation.alternatives()`, the violations of each alternative
-(`alternatives` of a `ViolationDetail`).
+`object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with `alternatives()`, the
+violations of each alternative (`alternatives` of a `ViolationDetail.NoAlternativeMatched`).
 `DiscriminatedUnionValidator` applies only the alternative selected by the discriminator,
 like `z.discriminatedUnion`. An alternative does not have to define the discriminator as
 `z.literal(...)`: the key is hidden from an alternative that does not define it.
@@ -339,7 +339,7 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 | Zod | YAVI |
 | --- | --- |
 | `z.flattenError(error)` | `violations.messagesByName()`, a map of the name to the messages; the messages of the root are under the empty name |
-| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, `alternatives`) |
+| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
 
 `z.treeifyError` has no counterpart: the keys of `messagesByPointer()` address the
 nested values instead.

@@ -536,8 +536,8 @@ ValueValidator<Map<String, Object>, Contact> contactValidator = ValueValidator.a
 
 No cast to the supertype is needed. When no alternative matches, both report one issue:
 Raoh `one_of_failed` with the issues of each candidate in `meta.candidates`, and YAVI
-`object.anyOf` with the violations of each alternative in `violation.alternatives()`
-(`alternatives` of a `ViolationDetail`). They are prefixed with the violation, as
+`object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with the violations of each
+alternative in `alternatives()` (`alternatives` of a `ViolationDetail.NoAlternativeMatched`). They are prefixed with the violation, as
 `rebase()` does for the candidates.
 
 ### discriminate
@@ -747,7 +747,7 @@ ConstraintViolations violations = validated.errors();
 | Raoh | YAVI |
 | --- | --- |
 | `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
-| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, `alternatives`) |
+| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
 | `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to

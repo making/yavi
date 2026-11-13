@@ -244,7 +244,7 @@ validator.validate("Taro", null); // 変更前: validate から NullPointerExcep
 ```java
 List<ViolationDetail> details = violations.details();
 // [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""], "alternatives": []}]
+//   "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
 ```
 
 ### 影響を受けるユーザー
@@ -293,7 +293,7 @@ for (ViolationDetail detail : violations.details()) {
 
 // after
 [{"name": "items[1].name", "pointer": "/items/1/name", "messageKey": "charSequence.notBlank",
-  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""], "alternatives": []}]
+  "message": "\"items[1].name\" must not be blank", "args": ["items[1].name", ""]}]
 ```
 
 0.17 の JSON を維持するには、独自の型に詰め替えます。
@@ -315,8 +315,9 @@ List<LegacyDetail> details = violations.details()
 | フォーマット済みのメッセージ | `getDefaultMessage()`、JSON では `defaultMessage` | `message()`、JSON では `message` |
 | 引数 | `Object[] getArgs()` | `List<Object> args()`。変更不可 |
 | 値の名前と JSON Pointer | なし | `name()`、`pointer()` |
-| `ValueValidator.anyOf` の各選択肢の詳細 | なし | `alternatives()`、JSON では `alternatives`。ほかの違反では空 |
-| コンストラクタ | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail(name, pointer, messageKey, message, args, alternatives)` |
+| 型 | クラス | record の `ViolationDetail.Simple` と `ViolationDetail.NoAlternativeMatched` からなる sealed interface |
+| `ValueValidator.anyOf` の各選択肢の詳細 | なし | `ViolationDetail.NoAlternativeMatched` の `alternatives()`、JSON では `alternatives` |
+| コンストラクタ | `ViolationDetail(key, args, defaultMessage)` | `ViolationDetail.Simple(name, pointer, messageKey, message, args)` |
 | `details()` が返すリスト | 変更可 | 変更不可 |
 
 ### 理由
@@ -326,7 +327,7 @@ List<LegacyDetail> details = violations.details()
 ### 関連するプルリクエスト
 
 * [#551](https://github.com/making/yavi/pull/551): `ViolationDetail` を record にし、`messagesByName()`、`messagesByPointer()`、`pointer()` を追加します。
-* [#566](https://github.com/making/yavi/pull/566): `alternatives` を追加します。
+* [#566](https://github.com/making/yavi/pull/566): 2 つの record からなる sealed interface にします。`alternatives` を持つのは `ViolationDetail.NoAlternativeMatched` です。
 
 ## liftList などの違反名はインデックスが先になる
 

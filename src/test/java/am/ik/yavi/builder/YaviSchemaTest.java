@@ -115,9 +115,11 @@ class YaviSchemaTest {
 					List.of(new PathSegment.Property("scores"), new PathSegment.Property("math")));
 		assertThat(violations.get(5).message()).isEqualTo("\"roles[1]\" must not be blank");
 		// why no alternative of the contact matched is under its violation
-		assertThat(violations.get(0).alternatives())
-			.extracting(alternative -> alternative.get(0).name(), alternative -> alternative.get(0).messageKey())
-			.containsExactly(tuple("contact", "charSequence.email"), tuple("contact", "charSequence.pattern"));
+		assertThat(violations.get(0)).isInstanceOfSatisfying(ConstraintViolation.NoAlternativeMatched.class,
+				contact -> assertThat(contact.alternatives())
+					.extracting(alternative -> alternative.get(0).name(),
+							alternative -> alternative.get(0).messageKey())
+					.containsExactly(tuple("contact", "charSequence.email"), tuple("contact", "charSequence.pattern")));
 		// they are checked on the validated elements and reported on the argument
 		final Map<String, String> address = Map.of("street", "1-2-3", "city", "Tokyo");
 		assertThat(validator
