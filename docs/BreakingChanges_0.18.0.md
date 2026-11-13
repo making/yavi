@@ -15,10 +15,35 @@ An argument of `Yavi.arguments()` and a validator of a single value (`Yavi._stri
 that may be `null` says so with `nullable()`, `optional()` or `defaultValue(...)`, and
 `nullable()` changes the type of the validated value to `@Nullable`.
 
-`ValidatorBuilder` is not affected. It validates an object that exists, and a property
-that is `null` is valid unless a constraint such as `notNull()` rejects it.
-`ArgumentsValidatorBuilder`, which validates raw arguments with a `ValidatorBuilder`, is
-not affected either.
+#### Not affected: `ValidatorBuilder`
+
+Code that validates an object with `ValidatorBuilder` behaves as before and needs no
+change:
+
+```java
+Validator<Car> validator = ValidatorBuilder.<Car>of()
+        .constraint(Car::manufacturer, "manufacturer", c -> c.notNull())
+        .constraint(Car::seatCount, "seatCount", c -> c.greaterThanOrEqual(2)) // null is still valid
+        .build();
+```
+
+* `ValidatorBuilder` and `Validator` validate an object that exists. A property that is
+  `null` is valid unless a constraint such as `notNull()` rejects it, so `notNull()` is
+  still needed there.
+* `ArgumentsValidatorBuilder.of(f).builder(b -> ...)` validates raw arguments with the
+  rules of a `ValidatorBuilder`, so it is not affected either, and neither are the meta
+  classes that the annotation processor generates for it.
+* `validator.applicative()` is unchanged.
+
+A project that uses `ValidatorBuilder` is affected only where it also uses one of these:
+
+* A validator of a single value built with `StringValidatorBuilder`,
+  `IntegerValidatorBuilder` and so on, with `of(name, constraints)` or with
+  `wrap(b -> ...)`. It produces a value, so it rejects `null`, although the rules given
+  to `wrap` are those of a `ValidatorBuilder`.
+* `ValueValidator.passThrough()`, whose type is `ValueValidator<X, @Nullable X>` now.
+* `Validation` used directly: `Validation.success(null).value()` returns `null` instead
+  of throwing, and `valueNullable()` is deprecated.
 
 ### Background
 
