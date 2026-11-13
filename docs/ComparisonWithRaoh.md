@@ -662,7 +662,7 @@ violations of both:
 ```java
 Validated<UserName> name = userNameValidator.validate(nameRow);
 Validated<Department> department = departmentValidator.validate(departmentRow);
-Validated<Employee> employee = Validated.of(name.combine(department).apply(Employee::new));
+Validated<Employee> employee = name.combine(department).apply(Employee::new);
 ```
 
 ### Result.traverse

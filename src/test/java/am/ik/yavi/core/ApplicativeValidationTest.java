@@ -14,7 +14,6 @@ import am.ik.yavi.Address;
 import am.ik.yavi.Country;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
-import am.ik.yavi.fn.Validations;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -106,20 +105,26 @@ class ApplicativeValidationTest {
 		final Validated<Country> countryValidation = Country.of("jp");
 		final Validated<String> streetValidation = streetValidator.validate("xyz");
 		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("12345678");
-		return Stream.of(
-				arguments(
-						countryValidation.combine(streetValidation).combine(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation, streetValidation, phoneNumberValidation)));
+		// declared with var: the combination of Validated results is typed as Validated
+		final var chained = countryValidation.combine(streetValidation)
+			.combine(phoneNumberValidation)
+			.apply(Address::new);
+		final var combined = new ValidatedCombining3<>(countryValidation, streetValidation, phoneNumberValidation)
+			.apply(Address::new);
+		return Stream.<Validated<Address>>of(chained, combined).map(Arguments::arguments);
 	}
 
 	static Stream<Arguments> invalidValidations() {
 		final Validated<Country> countryValidation = Country.of("j");
 		final Validated<String> streetValidation = streetValidator.validate("");
 		final Validated<PhoneNumber> phoneNumberValidation = PhoneNumber.of("1234567");
-		return Stream.of(
-				arguments(
-						countryValidation.combine(streetValidation).combine(phoneNumberValidation).apply(Address::new)),
-				arguments(Validations.apply(Address::new, countryValidation, streetValidation, phoneNumberValidation)));
+		// declared with var: the combination of Validated results is typed as Validated
+		final var chained = countryValidation.combine(streetValidation)
+			.combine(phoneNumberValidation)
+			.apply(Address::new);
+		final var combined = new ValidatedCombining3<>(countryValidation, streetValidation, phoneNumberValidation)
+			.apply(Address::new);
+		return Stream.<Validated<Address>>of(chained, combined).map(Arguments::arguments);
 	}
 
 }

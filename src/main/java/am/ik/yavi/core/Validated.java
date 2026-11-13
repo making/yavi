@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import am.ik.yavi.fn.Function1;
 import am.ik.yavi.fn.Validation;
 import am.ik.yavi.fn.Validations;
 import org.jspecify.annotations.NonNull;
@@ -27,9 +28,9 @@ import org.jspecify.annotations.Nullable;
  * A {@code Validated} is either a success that holds a value or a failure that holds
  * {@link ConstraintViolations}. It is returned by applicative validators
  * ({@link ApplicativeValidator}, {@link ValueValidator}) and the generated
- * {@code am.ik.yavi.arguments.ArgumentsNValidator} types. The {@code combine} and
- * {@code apply} methods inherited from {@link Validation} accumulate the violations of
- * all combined validations.
+ * {@code am.ik.yavi.arguments.ArgumentsNValidator} types. {@link #combine(Validation)}
+ * accumulates the violations of all combined validations and produces a
+ * {@code Validated}.
  *
  * <p>
  * Example: <pre>{@code
@@ -217,19 +218,6 @@ public sealed interface Validated<T extends @Nullable Object> extends Validation
 	@Override
 	ConstraintViolations errors();
 
-	@Override
-	@SuppressWarnings("unchecked")
-	default <U extends @Nullable Object, V extends Validation<ConstraintViolation, U>> V yieldSuccess(U value) {
-		return (V) Validated.successWith(value);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	default <U extends @Nullable Object, V extends Validation<ConstraintViolation, U>> V yieldFailure(
-			List<ConstraintViolation> errors) {
-		return (V) Validated.failureWith(errors);
-	}
-
 	/**
 	 * Returns a validation result that holds the result of applying the given function to
 	 * the validated value. The function is not applied if the validation failed; in that
@@ -257,6 +245,35 @@ public sealed interface Validated<T extends @Nullable Object> extends Validation
 	default <T2 extends @Nullable Object> Validated<T2> flatMap(
 			Function<? super T, ? extends Validation<ConstraintViolation, ? extends T2>> mapper) {
 		return isValid() ? Validated.of(mapper.apply(value())) : (Validated<T2>) this;
+	}
+
+	/**
+	 * Applies the function held by the given validation result to the validated value. If
+	 * both validations failed, their violations are accumulated with those of the given
+	 * validation result first.
+	 * @param validation the validation result holding the function to apply
+	 * @param <U> the type of the result
+	 * @return the successful result or the accumulated violations
+	 */
+	@Override
+	default <U extends @Nullable Object> Validated<U> apply(
+			Validation<ConstraintViolation, ? extends Function1<? super T, ? extends U>> validation) {
+		return Validated.of(Validation.super.apply(validation));
+	}
+
+	/**
+	 * Returns a combination of this validation result and the given one. Its
+	 * {@code apply} method returns a {@code Validated} that holds the result of the
+	 * function or the accumulated violations of both. Further validation results can be
+	 * added with the {@code combine} method of the returned combination, up to 16.
+	 * @param validation the validation result to combine
+	 * @param <T2> the value type of the given validation result
+	 * @return the combination of the two validation results
+	 */
+	@Override
+	default <T2 extends @Nullable Object> ValidatedCombining2<T, T2> combine(
+			Validation<ConstraintViolation, T2> validation) {
+		return new ValidatedCombining2<>(this, Validated.of(validation));
 	}
 
 	/**

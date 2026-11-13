@@ -502,6 +502,71 @@ Validated<Integer> number = validated.<Integer>map(Integer::valueOf);
 
 関連するプルリクエスト: [#537](https://github.com/making/yavi/pull/537)、[#549](https://github.com/making/yavi/pull/549)
 
+### バリデーション結果の組み合わせは宣言どおりの型を返す
+
+組み合わせの `apply` は、呼び出し側が選んだ型を返していました。その選択をコンパイラは検査していませんでした。これからは宣言どおりの型を返します。
+
+* `Validated#combine` は新しい `ValidatedCombiningN` を返します。その `apply` は `Validated<R>` を返します。
+* `Validation#apply`、`CombiningN#apply`、`Validations.apply` は `Validation<E, R>` を返します。
+* `Validation#yieldSuccess` と `yieldFailure` は削除されました。
+
+`Validated` の結果を `combine` で組み合わせて `Validated` に代入しているコードは、そのままコンパイルできます。`var` や `switch` でも、結果は `Validated` になりました。
+
+```java
+// before
+Validated<Address> address = Validations.apply(Address::new, country, street);
+Validated<Address> address = Validations.combine(country, street).apply(Address::new);
+Validated<Address> address = country.combine(street).<Address, Validated<Address>>apply(Address::new);
+
+// after
+Validated<Address> address = country.combine(street).apply(Address::new);
+```
+
+`Validation<ConstraintViolation, T>` から始まる組み合わせは `Validation` を返すので、`Validated` には代入できません。先頭を `Validated.of` で変換してください。これまでは、組み合わせの最後のバリデーション結果が実行時に型を決めていました。それが `Validated` でなければ、代入は `ClassCastException` で失敗していました。
+
+```java
+Validation<ConstraintViolation, Country> country = ...;
+
+// before
+Validated<Address> address = country.combine(street).apply(Address::new);
+
+// after
+Validated<Address> address = Validated.of(country).combine(street).apply(Address::new);
+```
+
+`yieldSuccess` と `yieldFailure` をオーバーライドして独自の型を返していた `Validation` の実装は、`Validated` と同じように、代わりに `map`、`apply`、`combine` をオーバーライドします。
+
+関連するプルリクエスト: [#558](https://github.com/making/yavi/pull/558)
+
+### 非推奨のメンバーと冗長なメンバーは削除された
+
+| 削除されたもの | 代わりに使うもの |
+| --- | --- |
+| `ValueValidator#andThen(Function)`、`ArgumentsNValidator#andThen(Function)` | `map(Function)`。`andThen(ValueValidator)` は影響を受けません。 |
+| `new ConstraintViolation(...)` | `ConstraintViolation.builder()` または `ConstraintViolation.of(...)` |
+| `new SimpleMessageFormatter()` | `SimpleMessageFormatter.getInstance()` |
+| `new Validations()`、`new Functions()` | なし。どちらも static メソッドだけを持ちます。 |
+| フィールド `Validation.Success#value` | `value()` |
+
+```java
+// before
+new ConstraintViolation("name", "notBlank", "\"{0}\" must not be blank", new Object[] { "name", "" },
+        new SimpleMessageFormatter(), Locale.ENGLISH);
+
+// after
+ConstraintViolation.builder()
+        .name("name")
+        .messageKey("notBlank")
+        .defaultMessageFormat("\"{0}\" must not be blank")
+        .args("name", "")
+        .locale(Locale.ENGLISH)
+        .build();
+```
+
+`Validation.Success` と `Validation.Failure` は record になりました。`toString()` は `Success[value=a]` や `Failure[errors=[e]]` を返します。
+
+関連するプルリクエスト: [#558](https://github.com/making/yavi/pull/558)
+
 ### `ArgumentsNValidatorBuilder` のコンストラクタは削除された
 
 ```java

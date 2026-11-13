@@ -4,10 +4,10 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValidatedCombining10;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function10;
-import am.ik.yavi.fn.Validations;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -124,20 +124,23 @@ public class Arguments10Splitting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, R1 ex
 	public <X extends @Nullable Object> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> apply(
 			Function10<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? extends X> f) {
 		return ArgumentsValidators.derived(
-				(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext) -> Validations.apply(f::apply,
-						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext),
-						v3.validate(a3, locale, constraintContext), v4.validate(a4, locale, constraintContext),
-						v5.validate(a5, locale, constraintContext), v6.validate(a6, locale, constraintContext),
-						v7.validate(a7, locale, constraintContext), v8.validate(a8, locale, constraintContext),
-						v9.validate(a9, locale, constraintContext), v10.validate(a10, locale, constraintContext)),
-				() -> (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext) -> Validations.apply(
-						(r1, r2, r3, r4, r5, r6, r7, r8, r9,
-								r10) -> () -> f.apply(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10),
-						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext),
-						v3.validate(a3, locale, constraintContext), v4.validate(a4, locale, constraintContext),
-						v5.validate(a5, locale, constraintContext), v6.validate(a6, locale, constraintContext),
-						v7.validate(a7, locale, constraintContext), v8.validate(a8, locale, constraintContext),
-						v9.validate(a9, locale, constraintContext), v10.validate(a10, locale, constraintContext)),
+				(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
+						constraintContext) -> new ValidatedCombining10<>(v1.validate(a1, locale, constraintContext),
+								v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
+								v4.validate(a4, locale, constraintContext), v5.validate(a5, locale, constraintContext),
+								v6.validate(a6, locale, constraintContext), v7.validate(a7, locale, constraintContext),
+								v8.validate(a8, locale, constraintContext), v9.validate(a9, locale, constraintContext),
+								v10.validate(a10, locale, constraintContext))
+							.apply(f::apply),
+				() -> (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale,
+						constraintContext) -> new ValidatedCombining10<>(v1.validate(a1, locale, constraintContext),
+								v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext),
+								v4.validate(a4, locale, constraintContext), v5.validate(a5, locale, constraintContext),
+								v6.validate(a6, locale, constraintContext), v7.validate(a7, locale, constraintContext),
+								v8.validate(a8, locale, constraintContext), v9.validate(a9, locale, constraintContext),
+								v10.validate(a10, locale, constraintContext))
+							.apply((r1, r2, r3, r4, r5, r6, r7, r8, r9,
+									r10) -> () -> f.apply(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10)),
 				() -> ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description(),
 						v4.description(), v5.description(), v6.description(), v7.description(), v8.description(),
 						v9.description(), v10.description()));

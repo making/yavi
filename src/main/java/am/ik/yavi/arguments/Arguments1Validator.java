@@ -175,21 +175,6 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	}
 
 	/**
-	 * Returns a validator that maps the validated value with the given function.
-	 * @param mapper the function applied to the validated value
-	 * @param <X2> the type of the value produced after mapping
-	 * @return a validator with the mapped result type
-	 * @deprecated Use {@link #map(Function)} instead.
-	 * @since 0.7.0
-	 */
-	@Override
-	@Deprecated
-	default <X2 extends @Nullable Object> Arguments1Validator<A1, X2> andThen(
-			Function<? super X, ? extends X2> mapper) {
-		return this.map(mapper);
-	}
-
-	/**
 	 * Returns a validator that maps the value produced on success with the given
 	 * function. The function is not applied when validation fails.
 	 * @param mapper the function applied to the validated value

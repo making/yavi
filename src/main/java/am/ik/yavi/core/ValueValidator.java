@@ -457,18 +457,6 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	}
 
 	/**
-	 * Returns a validator that maps the validated value using the given function.
-	 * @param mapper function to transform the validated value
-	 * @param <X2> the type after transformation
-	 * @return a value validator that applies the mapping function after validation
-	 * @deprecated Use {@link #map(Function)} instead.
-	 */
-	@Deprecated
-	default <X2 extends @Nullable Object> ValueValidator<T, X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return this.map(mapper);
-	}
-
-	/**
 	 * Returns a validator that maps the value produced on success using the given
 	 * function. The mapper is not applied when validation fails. The mapped value is
 	 * {@code null} only if the function is declared to return a nullable type.

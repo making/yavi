@@ -792,20 +792,6 @@ fi)
 	}
 
 	/**
-	 * Returns a validator that maps the validated value with the given function.
-	 *
-	 * @param mapper the function applied to the validated value
-	 * @param <X2> the type of the value produced after mapping
-	 * @return a validator with the mapped result type
-	 * @deprecated Use {@link #map(Function)} instead.
-	 * @since 0.7.0
-	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
-	@Deprecated
-	default <X2 extends @Nullable Object> ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X2> andThen(Function<? super X, ? extends X2> mapper) {
-		return this.map(mapper);
-	}
-
-	/**
 	 * Returns a validator that maps the value produced on success with the given
 	 * function. The function is not applied when validation fails.
 	 *
@@ -1641,10 +1627,10 @@ for i in `seq 2 ${nn}`;do
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValidatedCombining${i};
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function${i};
-import am.ik.yavi.fn.Validations;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -1695,11 +1681,11 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 	public <X extends @Nullable Object> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(
 			Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ArgumentsValidators.derived(
-				($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) -> Validations.apply(f::apply,
-						$(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//')),
-				() -> ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) -> Validations.apply(
-						($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')) -> () -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')),
-						$(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//')),
+				($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) -> new ValidatedCombining${i}<>(
+						$(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//')).apply(f::apply),
+				() -> ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext) -> new ValidatedCombining${i}<>(
+						$(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.validate(a${j}, locale, constraintContext), ";done) | sed 's/,$//'))
+					.apply(($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')) -> () -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//'))),
 				() -> ValueDescription.Properties.ofArguments($(echo $(for j in `seq 1 ${i}`;do echo -n "v${j}.description(), ";done) | sed 's/,$//')));
 	}
 $(if [ ${i} -lt ${nn} ];then
@@ -1734,9 +1720,9 @@ package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValidatedCombining${i};
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function${i};
-import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
@@ -1786,13 +1772,14 @@ $(for j in `seq 1 ${i}`;do echo "		this.v${j} = v${j};";done)
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
-				return Validations.apply(f::apply, $(echo $(for j in `seq 1 ${i}`;do echo -n "${class}.this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//'));
+				return new ValidatedCombining${i}<>($(echo $(for j in `seq 1 ${i}`;do echo -n "${class}.this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//')).apply(f::apply);
 			}
 
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
-				return (a, locale, constraintContext) -> Validations.apply(($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')) -> () -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')),
-						$(echo $(for j in `seq 1 ${i}`;do echo -n "${class}.this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//'));
+				return (a, locale, constraintContext) -> new ValidatedCombining${i}<>(
+						$(echo $(for j in `seq 1 ${i}`;do echo -n "${class}.this.v${j}.validate(a, locale, constraintContext), ";done) | sed 's/,$//'))
+					.apply(($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')) -> () -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "r${j}, ";done) | sed 's/,$//')));
 			}
 		};
 	}

@@ -4,10 +4,10 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.ValidatedCombining3;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function3;
-import am.ik.yavi.fn.Validations;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -71,12 +71,14 @@ public class Arguments3Splitting<A1, A2, A3, R1 extends @Nullable Object, R2 ext
 	public <X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> apply(
 			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
 		return ArgumentsValidators.derived(
-				(a1, a2, a3, locale, constraintContext) -> Validations.apply(f::apply,
-						v1.validate(a1, locale, constraintContext), v2.validate(a2, locale, constraintContext),
-						v3.validate(a3, locale, constraintContext)),
-				() -> (a1, a2, a3, locale, constraintContext) -> Validations.apply(
-						(r1, r2, r3) -> () -> f.apply(r1, r2, r3), v1.validate(a1, locale, constraintContext),
-						v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext)),
+				(a1, a2, a3, locale,
+						constraintContext) -> new ValidatedCombining3<>(v1.validate(a1, locale, constraintContext),
+								v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext))
+							.apply(f::apply),
+				() -> (a1, a2, a3, locale,
+						constraintContext) -> new ValidatedCombining3<>(v1.validate(a1, locale, constraintContext),
+								v2.validate(a2, locale, constraintContext), v3.validate(a3, locale, constraintContext))
+							.apply((r1, r2, r3) -> () -> f.apply(r1, r2, r3)),
 				() -> ValueDescription.Properties.ofArguments(v1.description(), v2.description(), v3.description()));
 	}
 

@@ -15,13 +15,9 @@ import org.jspecify.annotations.Nullable;
  *
  * @since 0.6.0
  */
-public class Functions {
+public final class Functions {
 
-	/**
-	 * Creates an instance of this class. All methods are static, so an instance is
-	 * normally not needed.
-	 */
-	public Functions() {
+	private Functions() {
 	}
 
 	/**

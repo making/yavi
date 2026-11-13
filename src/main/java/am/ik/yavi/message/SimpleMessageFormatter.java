@@ -18,7 +18,7 @@ import java.util.Locale;
  *
  * @since 0.0.1
  */
-public class SimpleMessageFormatter implements MessageFormatter {
+public final class SimpleMessageFormatter implements MessageFormatter {
 
 	private static final SimpleMessageFormatter INSTANCE = new SimpleMessageFormatter();
 
@@ -30,14 +30,7 @@ public class SimpleMessageFormatter implements MessageFormatter {
 		return INSTANCE;
 	}
 
-	/**
-	 * Constructor.
-	 * @deprecated Use {@link #getInstance()} instead to get the singleton instance. This
-	 * constructor will be removed in a future version.
-	 */
-	@Deprecated
-	public SimpleMessageFormatter() {
-		// Public constructor kept for backward compatibility
+	private SimpleMessageFormatter() {
 	}
 
 	/**

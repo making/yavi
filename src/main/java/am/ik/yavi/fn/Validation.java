@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -73,9 +72,10 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	 * @throws NoSuchElementException if this validation is a failure
 	 * @since 0.8.3
 	 * @deprecated Use {@link #value()}, which returns {@code null} for a validation that
-	 * succeeded with {@code null}. Whether it can is told by the value type.
+	 * succeeded with {@code null}. Whether it can is told by the value type. This method
+	 * will be removed in the release after 0.18.
 	 */
-	@Deprecated
+	@Deprecated(since = "0.18.0", forRemoval = true)
 	default @Nullable T valueNullable() {
 		return this.value();
 	}
@@ -101,7 +101,7 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	 */
 	@SuppressWarnings("unchecked")
 	default <T2 extends @Nullable Object> Validation<E, T2> map(Function<? super T, ? extends T2> mapper) {
-		return isValid() ? this.yieldSuccess(mapper.apply(value())) : (Validation<E, T2>) this;
+		return isValid() ? Validation.success(mapper.apply(value())) : (Validation<E, T2>) this;
 	}
 
 	/**
@@ -257,32 +257,6 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	}
 
 	/**
-	 * Returns a successful validation holding the given value. Implementations can
-	 * override this to return their own type, as {@link am.ik.yavi.core.Validated} does.
-	 * @param value the value, possibly {@code null}
-	 * @param <U> type of the value
-	 * @param <V> the concrete validation type returned
-	 * @return a successful validation
-	 */
-	@SuppressWarnings("unchecked")
-	default <U extends @Nullable Object, V extends Validation<E, U>> V yieldSuccess(U value) {
-		return (V) Validation.success(value);
-	}
-
-	/**
-	 * Returns a failed validation holding the given errors. Implementations can override
-	 * this to return their own type, as {@link am.ik.yavi.core.Validated} does.
-	 * @param errors the errors
-	 * @param <U> type of the value in the case of success
-	 * @param <V> the concrete validation type returned
-	 * @return a failed validation
-	 */
-	@SuppressWarnings("unchecked")
-	default <U extends @Nullable Object, V extends Validation<E, U>> V yieldFailure(List<E> errors) {
-		return (V) Validation.failure(errors);
-	}
-
-	/**
 	 * Applies the function held by the given validation to the value of this validation.
 	 *
 	 * <p>
@@ -290,41 +264,39 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	 * result is returned as a success. If exactly one validation fails, its errors are
 	 * returned. If both fail, their errors are accumulated with the errors of the given
 	 * validation first, that is, in the order in which the validations were combined.
+	 *
+	 * <p>
+	 * An implementation with its own type overrides this method to return that type, as
+	 * {@link am.ik.yavi.core.Validated} does.
 	 * @param validation validation holding the function to apply
 	 * @param <U> type of the result
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result or the accumulated errors
 	 */
-	default <U extends @Nullable Object, V extends Validation<E, U>> V apply(
+	default <U extends @Nullable Object> Validation<E, U> apply(
 			Validation<E, ? extends Function1<? super T, ? extends U>> validation) {
 		if (isValid()) {
 			if (validation.isValid()) {
 				final Function1<? super T, ? extends U> f = validation.value();
-				final U u = f.apply(this.value());
-				return this.yieldSuccess(u);
+				return Validation.success(f.apply(this.value()));
 			}
-			else {
-				final List<E> errors = validation.errors();
-				return this.yieldFailure(errors);
-			}
+			return Validation.failure(validation.errors());
 		}
-		else {
-			final List<E> errors = this.errors();
-			if (validation.isValid()) {
-				return this.yieldFailure(errors);
-			}
-			else {
-				final List<E> errorsList = new ArrayList<>(validation.errors());
-				errorsList.addAll(errors);
-				return this.yieldFailure(errorsList);
-			}
+		if (validation.isValid()) {
+			return Validation.failure(this.errors());
 		}
+		final List<E> errors = new ArrayList<>(validation.errors());
+		errors.addAll(this.errors());
+		return Validation.failure(errors);
 	}
 
 	/**
 	 * Returns a combination of this validation and the given one, which can be applied to
 	 * a function with {@link Combining2#apply(Function2)}. Further validations can be
 	 * added with the {@code combine} method of the returned combination, up to 16.
+	 *
+	 * <p>
+	 * An implementation with its own type overrides this method to return a combination
+	 * that produces that type, as {@link am.ik.yavi.core.Validated} does.
 	 * @param validation the validation to combine
 	 * @param <T2> type of the value of the given validation
 	 * @return the combination of the two validations
@@ -373,25 +345,12 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	/**
 	 * A successful {@link Validation} that holds a value.
 	 *
-	 * <p>
-	 * The value is {@code null} only if the value type is nullable.
-	 *
+	 * @param value the value, which is {@code null} only if the value type is nullable
 	 * @param <E> type of the errors in the case of failure
 	 * @param <T> type of the value
 	 * @since 0.6.0
 	 */
-	class Success<E, T extends @Nullable Object> implements Validation<E, T> {
-
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * The value held by this successful validation.
-		 */
-		public final T value;
-
-		Success(T value) {
-			this.value = value;
-		}
+	record Success<E, T extends @Nullable Object> (T value) implements Validation<E, T> {
 
 		@Override
 		public boolean isValid() {
@@ -399,28 +358,8 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 		}
 
 		@Override
-		public T value() {
-			return this.value;
-		}
-
-		@Override
-		public List<E> errors() throws RuntimeException {
+		public List<E> errors() {
 			throw new NoSuchElementException("errors of 'Success' Validation does not exist.");
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o)
-				return true;
-			if (o == null || getClass() != o.getClass())
-				return false;
-			Success<?, ?> success = (Success<?, ?>) o;
-			return Objects.equals(value, success.value);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(value);
 		}
 
 	}
@@ -428,30 +367,26 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 	/**
 	 * A failed {@link Validation} that holds errors.
 	 *
-	 * <p>
-	 * The error list must contain at least one error.
-	 *
+	 * @param errors the errors, which are not empty
 	 * @param <E> type of the errors
 	 * @param <T> type of the value in the case of success
 	 * @since 0.6.0
 	 */
-	class Failure<E, T extends @Nullable Object> implements Validation<E, T> {
-
-		private static final long serialVersionUID = 1L;
+	record Failure<E, T extends @Nullable Object> (List<E> errors) implements Validation<E, T> {
 
 		/**
-		 * The errors held by this failed validation.
+		 * Creates a failed validation. The errors are wrapped as an unmodifiable view and
+		 * are not copied.
+		 * @throws IllegalArgumentException if {@code errors} is {@code null} or empty
 		 */
-		private final List<E> errors;
-
-		Failure(List<E> errors) {
+		public Failure {
 			if (errors == null) {
 				throw new IllegalArgumentException("'errors' must not be null.");
 			}
 			if (errors.isEmpty()) {
 				throw new IllegalArgumentException("'errors' must not be empty.");
 			}
-			this.errors = Collections.unmodifiableList(errors);
+			errors = Collections.unmodifiableList(errors);
 		}
 
 		@Override
@@ -461,27 +396,7 @@ public interface Validation<E, T extends @Nullable Object> extends Serializable 
 
 		@Override
 		public T value() {
-			throw new NoSuchElementException("value of 'Failure' Validation does not exists. Errors=" + errors);
-		}
-
-		@Override
-		public List<E> errors() {
-			return this.errors;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o)
-				return true;
-			if (o == null || getClass() != o.getClass())
-				return false;
-			Failure<?, ?> failure = (Failure<?, ?>) o;
-			return errors.equals(failure.errors);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(errors);
+			throw new NoSuchElementException("value of 'Failure' Validation does not exists. Errors=" + this.errors);
 		}
 
 	}

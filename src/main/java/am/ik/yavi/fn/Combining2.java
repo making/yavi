@@ -58,10 +58,9 @@ public class Combining2<E, T1 extends @Nullable Object, T2 extends @Nullable Obj
 	 * returned as a failure; the function is not invoked.
 	 * @param f the function that receives the validated values
 	 * @param <R> the type of the result
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public <R extends @Nullable Object, V extends Validation<E, R>> V apply(Function2<T1, T2, R> f) {
+	public <R extends @Nullable Object> Validation<E, R> apply(Function2<T1, T2, R> f) {
 		final Validation<E, Function1<T2, R>> apply1 = v1.apply(Validation.success(Functions.curry(f)));
 		return v2.apply(apply1);
 	}
