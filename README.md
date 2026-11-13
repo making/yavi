@@ -80,19 +80,19 @@ your `pom.xml`:
 
 The latest release is 0.17.3; see [the reference documentation](https://yavi.ik.am) for its API.
 
-This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed:
+This tutorial uses JUnit and AssertJ. Add the following dependencies as needed:
 
 ```xml
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter-api</artifactId>
-    <version>5.11.4</version>
+    <version>6.1.3</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>3.26.3</version>
+    <version>3.27.7</version>
     <scope>test</scope>
 </dependency>
 ```
