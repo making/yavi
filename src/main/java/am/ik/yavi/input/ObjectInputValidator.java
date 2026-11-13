@@ -533,7 +533,9 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * {@code items[0].name} is a path to a nested property, a key may have several values
 	 * and a value is text that stands for a value of the type of its property, as
 	 * {@link InputReader#coercingStrings()} states. This applies to the nested validators
-	 * too. The type of the map is the one the result is assigned to:
+	 * too. The returned validator given another reader with
+	 * {@link ValueValidator#readingWith(InputReader)} reads the nodes of that reader, not
+	 * parameters. The type of the map is the one the result is assigned to:
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.schema()

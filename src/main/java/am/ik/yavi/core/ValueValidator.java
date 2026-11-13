@@ -144,7 +144,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * <p>
 	 * The reader is applied to the whole validator: the nested validators read with it
 	 * too, whatever reader they were built for, so the returned validator can itself be
-	 * given another reader. A null node of the reader is validated like {@code null}.
+	 * given another reader. That reader replaces the given one and is not combined with
+	 * it: after {@code readingWith(reader.coercingStrings()).readingWith(reader)} no
+	 * string is coerced. A null node of the reader is validated like {@code null}.
 	 * @param reader the reader of the nodes
 	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input

@@ -85,14 +85,46 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	private final Reading<Object> reading;
 
 	/**
-	 * Returns a validator without alternatives that selects by the given key. Add the
-	 * alternatives with {@link #when(String, ValueValidator)}.
+	 * Returns the discriminator of a union that selects by the given key. It is not a
+	 * validator yet: the first alternative, added with
+	 * {@link Discriminator#when(String, ValueValidator)}, makes it one.
 	 * @param discriminator the key whose value selects the alternative
 	 * @param <X> the common type of the objects created by the alternatives
-	 * @return a validator that rejects every input until an alternative is added
+	 * @return the discriminator, to which the first alternative is added
 	 */
-	public static <X> DiscriminatedUnionValidator<X> of(String discriminator) {
-		return new DiscriminatedUnionValidator<>(discriminator, Map.of(), List.of());
+	public static <X> Discriminator<X> of(String discriminator) {
+		return new Discriminator<>(discriminator);
+	}
+
+	/**
+	 * The key that selects the alternative of a union to which no alternative has been
+	 * added. A union without alternatives would reject every input, so it is not a
+	 * validator: {@link #when(String, ValueValidator)} returns the validator.
+	 *
+	 * @param <X> the common type of the objects created by the alternatives
+	 * @since 0.18.0
+	 */
+	public static final class Discriminator<X> {
+
+		private final String key;
+
+		private Discriminator(String key) {
+			this.key = key;
+		}
+
+		/**
+		 * Returns a validator that validates a map whose discriminator is the given value
+		 * with the given validator. Add the other alternatives with
+		 * {@link DiscriminatedUnionValidator#when(String, ValueValidator)}.
+		 * @param value the value of the discriminator that selects the alternative
+		 * @param validator the validator of the alternative
+		 * @return a validator with the alternative
+		 */
+		public DiscriminatedUnionValidator<X> when(String value,
+				ValueValidator<? super Map<String, Object>, ? extends X> validator) {
+			return new DiscriminatedUnionValidator<>(this.key, Map.of(value, validator), List.of());
+		}
+
 	}
 
 	private DiscriminatedUnionValidator(String discriminator,

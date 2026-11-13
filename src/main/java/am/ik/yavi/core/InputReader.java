@@ -177,7 +177,8 @@ public interface InputReader<N> {
 	 *
 	 * <p>
 	 * {@link #coercingStrings(StringCoercion)} takes more strings, such as {@code " 42 "}
-	 * for a number or {@code "on"} for a {@code Boolean}.
+	 * for a number or {@code "on"} for a {@code Boolean}. A reader that already coerces
+	 * strings returns itself, so the rules it was given are kept.
 	 * @return a reader that coerces strings
 	 */
 	default InputReader<N> coercingStrings() {
@@ -195,7 +196,9 @@ public interface InputReader<N> {
 	 * Yavi._boolean().readingWith(cells).validate(" Yes "); // true
 	 * }</pre>
 	 *
-	 * The rules of a reader that already coerces strings are replaced.
+	 * The rules of a reader that already coerces strings are replaced by the given ones,
+	 * as a whole: {@code coercingStrings(StringCoercion.strict().trimming())} followed by
+	 * {@code coercingStrings(StringCoercion.strict().booleanWords())} does not trim.
 	 * @param coercion the rules by which a string is taken as text
 	 * @return a reader that coerces strings
 	 * @see StringCoercion

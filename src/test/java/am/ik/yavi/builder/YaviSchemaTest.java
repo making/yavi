@@ -35,9 +35,11 @@ import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.jsonschema.JsonSchema;
 import am.ik.yavi.validator.Yavi;
 import org.jspecify.annotations.Nullable;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 class YaviSchemaTest {
@@ -72,8 +74,7 @@ class YaviSchemaTest {
 		._integer("age", c -> c.greaterThanOrEqual(0))
 		.defaultValue(20)
 		._object("address", addressValidator)
-		._object("billing", addressValidator)
-		.nullable()
+		._object("billing", addressValidator.nullable())
 		._list("roles", Yavi._string(c -> c.trim().notBlank()), c -> c.lessThanOrEqual(2).unique())
 		._map("scores", Yavi._integer(c -> c.greaterThanOrEqual(0)), c -> c.lessThanOrEqual(1));
 
@@ -153,11 +154,12 @@ class YaviSchemaTest {
 		final ConstraintDescription notNull = new ConstraintDescription("object.notNull", List.of(), true);
 		final ConstraintDescription notNegative = new ConstraintDescription("numeric.greaterThanOrEqual", List.of(0),
 				false);
-		final ValueDescription address = new ValueDescription.NotNull(new ValueDescription.Properties(List.of(
+		final ValueDescription properties = new ValueDescription.Properties(List.of(
 				new ValueDescription.Property("street",
 						new ValueDescription.Value("street", String.class, List.of(notBlank))),
 				new ValueDescription.Property("city",
-						new ValueDescription.Value("city", String.class, List.of(notBlank))))));
+						new ValueDescription.Value("city", String.class, List.of(notBlank)))));
+		final ValueDescription address = new ValueDescription.NotNull(properties);
 		// constraintOnTarget keeps the description and is not part of it
 		assertThat(validator.description()).isEqualTo(
 				new ValueDescription.Properties(List.of(
@@ -181,7 +183,8 @@ class YaviSchemaTest {
 										new ValueDescription.Value("age", Integer.class, List.of(notNull, notNegative)),
 										20)),
 						new ValueDescription.Property("address", address),
-						new ValueDescription.Property("billing", new ValueDescription.Optional(address, null)),
+						// a validator that accepts null describes itself
+						new ValueDescription.Property("billing", new ValueDescription.Optional(properties, null)),
 						new ValueDescription.Property("roles",
 								new ValueDescription.NotNull(new ValueDescription.Elements(
 										new ValueDescription.Value("", String.class, List.of(notBlank)),
@@ -292,7 +295,40 @@ class YaviSchemaTest {
 	}
 
 	@Test
-	void modifierChainWithoutEffectDoesNotCompile() throws Exception {
+	// a nullness checker reports these chains, the compiler alone does not
+	@SuppressWarnings("NullAway")
+	void nullIsNotAFallbackOfAValueThatIsNeverNull() {
+		// the function that creates the result would be given a null that the type of
+		// its parameter excludes, an Optional included
+		final YaviSchema schema = Yavi.schema();
+		final List<ThrowingCallable> rejected = List.of(() -> schema._string("x").defaultValue(null),
+				() -> schema._string("x").recover(null), () -> schema._string("x").optional().recover(null),
+				() -> schema._string("x").recover("a").defaultValue(null),
+				() -> schema._list("x", Yavi._string(c -> c.notBlank())).defaultValue(null),
+				() -> schema._rest().recover(null),
+				() -> schema._string("x").recoverWith(violations -> null).apply(x -> x).validate(null),
+				() -> schema._string("x")
+					.optional()
+					.recoverWith(violations -> null)
+					.fromMap(x -> x)
+					.validate(Map.of()));
+		assertThat(rejected).allSatisfy(chain -> assertThatThrownBy(chain).isInstanceOf(NullPointerException.class)
+			.hasMessageContaining("of the argument")
+			.hasMessageContaining("is null, but its validated value is never null"));
+		// nullable() says null, and a value validator may produce null on its own
+		assertThat(schema._string("x", c -> c.notBlank())
+			.nullable()
+			.recover(null)
+			.apply(x -> Optional.ofNullable(x))
+			.validated(" ")).isEmpty();
+		assertThat(schema._string(ValueValidator.<String>passThrough())
+			.defaultValue(null)
+			.apply(x -> Optional.ofNullable(x))
+			.validated((String) null)).isEmpty();
+	}
+
+	@Test
+	void chainWithoutEffectDoesNotCompile() throws Exception {
 		// every chain is one line of a source file: the lines that do not compile are
 		// reported by the compiler
 		final List<String> accepted = List.of(
@@ -308,8 +344,11 @@ class YaviSchemaTest {
 				"s._integer(Yavi._integer(\"x\", c -> c.positive()).nullable()).presence()",
 				// a lambda is not taken for a validator that accepts null
 				"s._string((value, locale, context) -> Validated.successWith(value)).nullable().required()",
-				"s._rest().nullable().recover(null)", "s._rest().recover(Map.of()).defaultValue(Map.of())",
-				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional()");
+				"s._object(\"o\", s._string(\"x\").fromMap(x -> x).nullable()).required()",
+				// the rest is never null
+				"s._rest().recover(Map.of())", "s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
+				"DiscriminatedUnionValidator.<String>of(\"type\").when(\"a\", s._string(\"x\").fromMap(x -> x))"
+						+ ".validate(Map.of())");
 		final List<String> rejected = List.of(
 				// only the last one would decide what null produces
 				"s._string(\"x\").nullable().optional()", "s._string(\"x\").optional().nullable()",
@@ -330,15 +369,19 @@ class YaviSchemaTest {
 				// a validator that accepts null
 				"s._integer(Yavi._integer(\"x\", c -> c.positive()).defaultValue(1)).nullable()",
 				"s._integer(Yavi._integer(\"x\", c -> c.positive()).nullable()).recover(2)",
-				// an argument that is not read from a key
-				"s._rest().nullable().optional()", "s._rest().defaultValue(Map.of()).nullable()",
-				"s._rest().recover(Map.of()).recover(Map.of())", "s._rest().optional().required()",
-				"s._rest().presence()");
+				"s._object(\"o\", s._string(\"x\").fromMap(x -> x).nullable()).nullable()",
+				// the rest is never null, and is not read from a key
+				"s._rest().nullable()", "s._rest().optional()", "s._rest().defaultValue(Map.of())",
+				"s._rest().recover(Map.of()).recover(Map.of())", "s._rest().presence()",
+				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional().required()",
+				// a union without alternatives would reject every input
+				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())");
 		final List<String> chains = new ArrayList<>(accepted);
 		chains.addAll(rejected);
 		final String source = """
 				import java.util.Map; import java.util.Optional; import am.ik.yavi.builder.YaviSchema; \
-				import am.ik.yavi.core.Validated; import am.ik.yavi.validator.Yavi; \
+				import am.ik.yavi.core.Validated; import am.ik.yavi.input.DiscriminatedUnionValidator; \
+				import am.ik.yavi.validator.Yavi; \
 				class Chains { void chains(YaviSchema s) { Object[] chains = {
 				%s
 				}; } }""".formatted(String.join(",\n", chains));

@@ -99,6 +99,7 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
 
 * `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。`nullable()` は値の型を `@Nullable` に変えます。
 * `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
+* `null` を受け付けるバリデータは、名前を付けて渡しても `null` を受け付けます。`_object("address", addressValidator.nullable())` は、`_object("address", addressValidator).nullable()` と同じく `null` に対して `null` を返します。
 * `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
 * `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。`fromMap` の後では `ObjectInputValidator` を返すので、続けて `rejectingUnknownProperties()` や `readingParameters()` を書けます。
 * `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
@@ -152,6 +153,8 @@ shapeValidator.validate(Map.of("type", "circle", "radius", 2)); // Circle[radius
 shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the following values: [circle, square]
 ```
 
+`of("type")` だけではバリデータになりません。選択肢のないユニオンはどんな入力も拒否するためです。最初の `when` がバリデータを返します。
+
 ### 1 つのマップから複数のオブジェクトと残りのキーを読む
 
 `_embedded` は、ほかのプロパティと同じマップを読みます。JOIN の結果の 1 行にある複数テーブルの列から、オブジェクトを組み立てるときに使えます。`_rest` は、どのプロパティにも定義されていないキーを集めます。
@@ -182,7 +185,7 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 // Employee[id=1, name=UserName[first=Taro, last=Yamada], dept=null, attrs={color=red}]
 ```
 
-16 個を超えるキーを読む場合も `_embedded` を使います。バリデータを渡さない `_rest()` は、値をそのまま受け取ります。
+16 個を超えるキーを読む場合も `_embedded` を使います。バリデータを渡さない `_rest()` は、値をそのまま受け取ります。残りのキーがなければ `_rest` の値は空のマップで、`null` にはなりません。そのため続けられる修飾メソッドは `recover(...)` だけで、`_rest().nullable()` や `_rest().defaultValue(...)` はコンパイルできません。
 
 ### 存在しないキーと null を区別する
 
@@ -244,13 +247,23 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 | `.defaultValue(1).recover(2)` | コンパイルできない。`recover` は `null` も置き換える。`.recover(2).defaultValue(1)` と書く |
 | `.recover(1).recover(2)` | コンパイルできない。1 つ目は失敗しない |
 
-`_embedded` と `_rest` のプロパティも同じです。`ValueValidator` のコンビネーターには制限がなく、`NullAcceptingValueValidator` を返します。これは `null` を受け付けることが型でわかるバリデーターです。このバリデーターで追加したプロパティには `required()`、`rejectingNull()`、`presence()` を続けられ、`null` を重ねて受け付ける修飾メソッドは続けられません。
+`_embedded` のプロパティも同じです。`ValueValidator` のコンビネーターには制限がなく、`NullAcceptingValueValidator` を返します。これは `null` を受け付けることが型でわかるバリデーターです。このバリデーターで追加したプロパティには `required()`、`rejectingNull()`、`presence()` を続けられ、`null` を重ねて受け付ける修飾メソッドは続けられません。
 
 ```java
 NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> c.positive()).defaultValue(1);
 
 Yavi.schema()._integer(page).rejectingNull() // 省略したときだけ 1
 ```
+
+`null` を返す修飾メソッドは `nullable()` だけです。`null` にならない値（制約で検証した値、リスト、マップ、`Optional`）のデフォルト値やフォールバック値に `null` を渡すと、nullness チェッカーがあればコンパイル時に報告されます。チェッカーがない場合も、スキーマを組み立てた時点で `NullPointerException` になります。引数の型が `null` を許さない関数に `null` が渡ることはありません。
+
+| 連鎖 | |
+| --- | --- |
+| `._string("x").defaultValue(null)`、`._string("x").recover(null)` | `NullPointerException`。`.nullable()` または `.nullable().recover(null)` と書く |
+| `._string("x").optional().recover(null)` | `NullPointerException`。`.optional().recover(Optional.empty())` と書く |
+| `._string("x").recoverWith(violations -> null)` | 関数が `null` を返した時点で `NullPointerException` |
+| `._string("x").nullable().recover(null)` | 受け付ける |
+| `._string(ValueValidator.passThrough()).defaultValue(null)` | 受け付ける。バリデータ自身が `@Nullable String` を返す |
 
 ### 自分自身を含む構造
 
@@ -332,7 +345,7 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 
 JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 のインキュベータモジュール）も同じ方法で読み取れます。そのリーダーは README にあります。
 
-スカラーがすべて文字列であるツリーは、`coercingStrings()` で読み取ります。これは任意のリーダーに付けられるデコレータです（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。
+スカラーがすべて文字列であるツリーは、`coercingStrings()` で読み取ります。これは任意のリーダーに付けられるデコレータです（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。すでに文字列を変換しているリーダーに `coercingStrings()` を呼んでもルールは変わらず、`coercingStrings(coercion)` を呼ぶとルールが置き換わります。バリデータは最後に渡されたリーダーで読み取ります。`readingWith(reader.coercingStrings())` や `readingParameters()` の後に `readingWith(reader)` を呼ぶと、文字列は変換されません。
 
 ## リクエストパラメータを検証する
 

@@ -1648,7 +1648,7 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * named {@code street} is reported as {@code name.street} with the corresponding
 	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. A {@code null} value is
 	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
-	 * or {@code defaultValue} is applied to the argument.
+	 * or {@code defaultValue} is applied to the argument, or to {@code validator} itself.
 	 * @param <T1> type of the value validated by {@code validator}
 	 * @param <T2> type of the value produced by {@code validator}
 	 * @param name the property name that prefixes the violations of {@code validator}
@@ -1660,6 +1660,33 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 			String name, ValueValidator<T1, T2> validator) {
 		return new Arguments10ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, ArgumentDefinition.object(name, validator));
+	}
+
+	/**
+	 * Adds the next argument as a nested object with the given name, validated by the
+	 * given value validator that accepts {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_object(String, ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: {@code null} is given to {@code validator}, which
+	 * decides what it produces, and the violations of any other value are located under
+	 * {@code name}. The returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 *
+	 * <pre>{@code
+	 * ._object("address", addressValidator.nullable())
+	 * }</pre>
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param name the property name that prefixes the violations of {@code validator}
+	 * @param validator value validator for the nested object, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T1, T2 extends @Nullable Object> Arguments10ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, T2> _object(
+			String name, NullAcceptingValueValidator<T1, T2> validator) {
+		return new Arguments10ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, ArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1797,16 +1824,22 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * argument nor an embedded validator defines, and it is an empty map if there is
 	 * none. The violations of the value for the key {@code key} are located under
 	 * {@code key}; give {@code valueValidator} an empty name to report a violation on the
-	 * value itself. With {@code apply}, the argument is a map whose values are validated.
+	 * value itself. With {@code apply}, the argument is a map whose values are validated,
+	 * and {@code null} is an empty map.
+	 *
+	 * <p>
+	 * The rest is therefore never {@code null}: the returned builder has no
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue}, only
+	 * {@code recover} to replace the rest when a value is invalid.
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
 	 * @param valueValidator value validator for each value
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments10ValidatorBuilder.Recoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments10ValidatorBuilder.Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new Arguments10ValidatorBuilder.Recoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, this.d8, this.d9, ArgumentDefinition.rest(valueValidator));
 	}
 
@@ -1817,8 +1850,8 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments10ValidatorBuilder.Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, @Nullable Object>> _rest() {
-		return new Arguments10ValidatorBuilder.Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+	public Arguments10ValidatorBuilder.Recoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, Map<String, Object>, R1, R2, R3, R4, R5, R6, R7, R8, R9, Map<String, @Nullable Object>> _rest() {
+		return new Arguments10ValidatorBuilder.Recoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, this.d8, this.d9, ArgumentDefinition.rest());
 	}
 
@@ -1976,8 +2009,8 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	}
 
 	/**
-	 * The builder after an argument that is not read from a key is added, with
-	 * {@code _embedded} or {@code _rest}: the modifiers apply to that argument.
+	 * The builder after an argument that reads the same map as the other arguments is
+	 * added with {@code _embedded}: the modifiers apply to that argument.
 	 *
 	 * <p>
 	 * Each of {@code optional()}, {@code nullable()}, {@code defaultValue},
@@ -2063,6 +2096,9 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * other value is validated as before.
 		 * @param defaultValue the value produced for a {@code null} value
 		 * @return a builder whose last argument falls back to the default value
+		 * @throws NullPointerException if {@code defaultValue} is {@code null} although
+		 * the validated value is never {@code null}, as that of constraints, a list or a
+		 * map is; {@code nullable()} is what produces {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#defaultValue(Object)
 		 */
@@ -2083,6 +2119,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * of a value read from a map that does not represent the type of the argument.
 		 * @param fallback the value produced instead of a failure
 		 * @return a builder whose last argument falls back to the given value
+		 * @throws NullPointerException if {@code fallback} is {@code null} although the
+		 * validated value is never {@code null}, as that of constraints, a list, a map or
+		 * {@code optional()} is; write {@code nullable()} before to recover with
+		 * {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#recover(Object)
 		 */
@@ -2098,6 +2138,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * <p>
 		 * The function is given the violations of the invalid value, and no violation for
 		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * It must not return {@code null} for a validated value that is never
+		 * {@code null}, as that of constraints, a list, a map or {@code optional()} is:
+		 * the validation then fails with {@code NullPointerException}. Write
+		 * {@code nullable()} before to recover with {@code null}.
 		 * @param fallback the function that produces a value from the violations
 		 * @return a builder whose last argument falls back to the result of the function
 		 * @since 0.18.0
@@ -2113,7 +2157,8 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 
 	/**
 	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
-	 * not read from a key: an invalid value can still be replaced with {@code recover}.
+	 * not read from a key, or after {@code _rest}, which is never {@code null}: an
+	 * invalid value can still be replaced with {@code recover}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -2155,6 +2200,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * of a value read from a map that does not represent the type of the argument.
 		 * @param fallback the value produced instead of a failure
 		 * @return a builder whose last argument falls back to the given value
+		 * @throws NullPointerException if {@code fallback} is {@code null} although the
+		 * validated value is never {@code null}, as that of constraints, a list, a map or
+		 * {@code optional()} is; write {@code nullable()} before to recover with
+		 * {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#recover(Object)
 		 */
@@ -2171,6 +2220,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * <p>
 		 * The function is given the violations of the invalid value, and no violation for
 		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * It must not return {@code null} for a validated value that is never
+		 * {@code null}, as that of constraints, a list, a map or {@code optional()} is:
+		 * the validation then fails with {@code NullPointerException}. Write
+		 * {@code nullable()} before to recover with {@code null}.
 		 * @param fallback the function that produces a value from the violations
 		 * @return a builder whose last argument falls back to the result of the function
 		 * @since 0.18.0
@@ -2263,6 +2316,9 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * other value is validated as before.
 		 * @param defaultValue the value produced for a {@code null} value
 		 * @return a builder whose last argument falls back to the default value
+		 * @throws NullPointerException if {@code defaultValue} is {@code null} although
+		 * the validated value is never {@code null}, as that of constraints, a list or a
+		 * map is; {@code nullable()} is what produces {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#defaultValue(Object)
 		 */
@@ -2364,6 +2420,9 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * other value is validated as before.
 		 * @param defaultValue the value produced for a {@code null} value
 		 * @return a builder whose last argument falls back to the default value
+		 * @throws NullPointerException if {@code defaultValue} is {@code null} although
+		 * the validated value is never {@code null}, as that of constraints, a list or a
+		 * map is; {@code nullable()} is what produces {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#defaultValue(Object)
 		 */
@@ -2384,6 +2443,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * of a value read from a map that does not represent the type of the argument.
 		 * @param fallback the value produced instead of a failure
 		 * @return a builder whose last argument falls back to the given value
+		 * @throws NullPointerException if {@code fallback} is {@code null} although the
+		 * validated value is never {@code null}, as that of constraints, a list, a map or
+		 * {@code optional()} is; write {@code nullable()} before to recover with
+		 * {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#recover(Object)
 		 */
@@ -2400,6 +2463,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * <p>
 		 * The function is given the violations of the invalid value, and no violation for
 		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * It must not return {@code null} for a validated value that is never
+		 * {@code null}, as that of constraints, a list, a map or {@code optional()} is:
+		 * the validation then fails with {@code NullPointerException}. Write
+		 * {@code nullable()} before to recover with {@code null}.
 		 * @param fallback the function that produces a value from the violations
 		 * @return a builder whose last argument falls back to the result of the function
 		 * @since 0.18.0
@@ -2421,8 +2488,11 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * the argument is not validated, so the key is not required. A key that is
 		 * present is validated as before, an explicit {@code null} included, and its
 		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
-		 * is a violation unless the argument is {@code nullable()}. A parameter with an
-		 * empty value, which is read as {@code null}, is present.
+		 * is a violation unless the argument is {@code nullable()}. After
+		 * {@code optional()} an explicit {@code null} is a present empty
+		 * {@code Optional}; {@code nullable()} gives the three states without the
+		 * {@code Optional}. A parameter with an empty value, which is read as
+		 * {@code null}, is present.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
@@ -2485,6 +2555,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * of a value read from a map that does not represent the type of the argument.
 		 * @param fallback the value produced instead of a failure
 		 * @return a builder whose last argument falls back to the given value
+		 * @throws NullPointerException if {@code fallback} is {@code null} although the
+		 * validated value is never {@code null}, as that of constraints, a list, a map or
+		 * {@code optional()} is; write {@code nullable()} before to recover with
+		 * {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#recover(Object)
 		 */
@@ -2501,6 +2575,10 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * <p>
 		 * The function is given the violations of the invalid value, and no violation for
 		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * It must not return {@code null} for a validated value that is never
+		 * {@code null}, as that of constraints, a list, a map or {@code optional()} is:
+		 * the validation then fails with {@code NullPointerException}. Write
+		 * {@code nullable()} before to recover with {@code null}.
 		 * @param fallback the function that produces a value from the violations
 		 * @return a builder whose last argument falls back to the result of the function
 		 * @since 0.18.0
@@ -2593,6 +2671,9 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * other value is validated as before.
 		 * @param defaultValue the value produced for a {@code null} value
 		 * @return a builder whose last argument falls back to the default value
+		 * @throws NullPointerException if {@code defaultValue} is {@code null} although
+		 * the validated value is never {@code null}, as that of constraints, a list or a
+		 * map is; {@code nullable()} is what produces {@code null}
 		 * @since 0.18.0
 		 * @see ValueValidator#defaultValue(Object)
 		 */
@@ -2720,8 +2801,11 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		 * the argument is not validated, so the key is not required. A key that is
 		 * present is validated as before, an explicit {@code null} included, and its
 		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
-		 * is a violation unless the argument is {@code nullable()}. A parameter with an
-		 * empty value, which is read as {@code null}, is present.
+		 * is a violation unless the argument is {@code nullable()}. After
+		 * {@code optional()} an explicit {@code null} is a present empty
+		 * {@code Optional}; {@code nullable()} gives the three states without the
+		 * {@code Optional}. A parameter with an empty value, which is read as
+		 * {@code null}, is present.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a {@link Presence} that is validated in the

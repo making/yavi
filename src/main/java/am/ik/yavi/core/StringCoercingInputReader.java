@@ -15,6 +15,15 @@ import org.jspecify.annotations.Nullable;
  */
 record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coercion) implements InputReader<N> {
 
+	/**
+	 * Returns this reader: it coerces strings already, and by rules that the caller chose
+	 * on purpose.
+	 */
+	@Override
+	public InputReader<N> coercingStrings() {
+		return this;
+	}
+
 	@Override
 	public boolean isNull(N node) {
 		return this.reader.isNull(node)
