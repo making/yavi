@@ -280,7 +280,7 @@ A mismatch is reported with `object.type` (`"age" must be of type integer`).
 input, not to a property, so the schema does not change:
 
 * `readingParameters()` coerces the strings of request parameters.
-* `InputReader#coercingStrings()` decorates any reader, for a tree whose scalars are all
+* `CoercibleInputReader#coercingStrings()` decorates a reader of a tree model, for a tree whose scalars are all
   strings: `validator.readingWith(JsonNodeReader.INSTANCE.coercingStrings())` reads a JSON
   document whose numbers are sent as strings.
 

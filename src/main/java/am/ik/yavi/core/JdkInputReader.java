@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The reader of a tree of JDK types, as {@link InputReader#ofJdkTypes()} states.
  */
-enum JdkInputReader implements InputReader<Object> {
+enum JdkInputReader implements CoercibleInputReader<Object> {
 
 	INSTANCE;
 

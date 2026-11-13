@@ -14,11 +14,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The rules by which a reader takes a string as text that stands for a value of another
- * type, given to {@link InputReader#coercingStrings(StringCoercion)}.
+ * type, given to {@link CoercibleInputReader#coercingStrings(StringCoercion)}.
  *
  * <p>
- * {@link #strict()} is the rules of {@link InputReader#coercingStrings()}. The methods of
- * an instance return a copy that takes more strings:
+ * {@link #strict()} is the rules of {@link CoercibleInputReader#coercingStrings()}. The
+ * methods of an instance return a copy that takes more strings:
  *
  * <pre>{@code
  * InputReader<Object> cells = InputReader.ofJdkTypes()
@@ -47,8 +47,8 @@ public final class StringCoercion {
 	}
 
 	/**
-	 * Returns the rules of {@link InputReader#coercingStrings()}: a string is not
-	 * trimmed, and a {@code Boolean} is {@code "true"} or {@code "false"}.
+	 * Returns the rules of {@link CoercibleInputReader#coercingStrings()}: a string is
+	 * not trimmed, and a {@code Boolean} is {@code "true"} or {@code "false"}.
 	 * @return the strict rules
 	 */
 	public static StringCoercion strict() {

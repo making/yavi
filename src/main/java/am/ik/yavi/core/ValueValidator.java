@@ -186,9 +186,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * </ul>
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
 	 * string. An input whose values are all strings, such as request parameters, is read
-	 * with {@link InputReader#coercingStrings()}, which takes {@code "1"} as a number
-	 * where a number is expected. For any other conversion, write a validator that takes
-	 * an {@code Object} and give it {@code Object.class}.
+	 * with {@link CoercibleInputReader#coercingStrings()}, which takes {@code "1"} as a
+	 * number where a number is expected. For any other conversion, write a validator that
+	 * takes an {@code Object} and give it {@code Object.class}.
 	 *
 	 * <p>
 	 * With another reader, the checked input is the

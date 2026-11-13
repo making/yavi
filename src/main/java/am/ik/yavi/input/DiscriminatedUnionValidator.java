@@ -204,7 +204,7 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 * @param <M> the type of the map, whose values are strings, or iterables or arrays of
 	 * strings
 	 * @return a validator of a map of parameters
-	 * @see InputReader#coercingStrings(StringCoercion)
+	 * @see am.ik.yavi.core.CoercibleInputReader#coercingStrings(StringCoercion)
 	 */
 	public <M extends Map<String, ?>> ValueValidator<M, X> readingParameters(StringCoercion coercion) {
 		return ParameterTree.reading(this, coercion);

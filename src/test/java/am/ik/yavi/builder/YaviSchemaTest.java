@@ -345,6 +345,7 @@ class YaviSchemaTest {
 				// a lambda is not taken for a validator that accepts null
 				"s._string((value, locale, context) -> Validated.successWith(value)).nullable().required()",
 				"s._object(\"o\", s._string(\"x\").fromMap(x -> x).nullable()).required()",
+				"InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming())",
 				// the rest is never null
 				"s._rest().recover(Map.of())", "s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
 				"DiscriminatedUnionValidator.<String>of(\"type\").when(\"a\", s._string(\"x\").fromMap(x -> x))"
@@ -374,13 +375,18 @@ class YaviSchemaTest {
 				"s._rest().nullable()", "s._rest().optional()", "s._rest().defaultValue(Map.of())",
 				"s._rest().recover(Map.of()).recover(Map.of())", "s._rest().presence()",
 				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional().required()",
+				// a reader that coerces strings is given its rules once
+				"InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming()).coercingStrings()",
+				"ParameterTree.reader().coercingStrings(StringCoercion.strict().trimming())",
 				// a union without alternatives would reject every input
 				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())");
 		final List<String> chains = new ArrayList<>(accepted);
 		chains.addAll(rejected);
 		final String source = """
 				import java.util.Map; import java.util.Optional; import am.ik.yavi.builder.YaviSchema; \
+				import am.ik.yavi.core.InputReader; import am.ik.yavi.core.StringCoercion; \
 				import am.ik.yavi.core.Validated; import am.ik.yavi.input.DiscriminatedUnionValidator; \
+				import am.ik.yavi.input.ParameterTree; \
 				import am.ik.yavi.validator.Yavi; \
 				class Chains { void chains(YaviSchema s) { Object[] chains = {
 				%s

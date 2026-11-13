@@ -292,7 +292,7 @@ Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
 リーダーはネストしたバリデータにも適用されます。そのため `addressValidator` は、最終的にどの入力を読む場合でも `fromMap` で作ります。YAVI は JSON ライブラリに依存しません。`InputReader` は、ツリーモデルごとに一度だけ書く、状態を持たない小さなクラスです。Jackson 3 向けのものを次に示します。
 
 ```java
-public final class JsonNodeReader implements InputReader<JsonNode> {
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
     public static final JsonNodeReader INSTANCE = new JsonNodeReader();
 
@@ -345,7 +345,7 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 
 JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 のインキュベータモジュール）も同じ方法で読み取れます。そのリーダーは README にあります。
 
-スカラーがすべて文字列であるツリーは、`coercingStrings()` で読み取ります。これは任意のリーダーに付けられるデコレータです（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。すでに文字列を変換しているリーダーに `coercingStrings()` を呼んでもルールは変わらず、`coercingStrings(coercion)` を呼ぶとルールが置き換わります。バリデータは最後に渡されたリーダーで読み取ります。`readingWith(reader.coercingStrings())` や `readingParameters()` の後に `readingWith(reader)` を呼ぶと、文字列は変換されません。
+スカラーがすべて文字列であるツリーは、`coercingStrings()` で読み取ります。これは `CoercibleInputReader`（ツリーモデルのリーダーが実装するインターフェース）に付けられるデコレータです（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。文字列を変換するリーダーの型は `InputReader` で、重ねて変換することはできません。`reader.coercingStrings(rules).coercingStrings()` はコンパイルできないので、ルールは一度にまとめて渡します。バリデータは最後に渡されたリーダーで読み取ります。`readingWith(reader.coercingStrings())` や `readingParameters()` の後に `readingWith(reader)` を呼ぶと、文字列は変換されません。
 
 ## リクエストパラメータを検証する
 

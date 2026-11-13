@@ -917,12 +917,10 @@ class ObjectInputValidatorTest {
 		final Map<ValueValidator<Object, @Nullable T>, @Nullable Object> expectations = new LinkedHashMap<>();
 		expectations.put(validator, expected);
 		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
-		// the rules of a reader that coerces are replaced by other rules, and kept
-		// without
-		expectations.put(validator.readingWith(InputReader.ofJdkTypes()
-			.coercingStrings()
-			.coercingStrings(StringCoercion.strict().trimming().booleanWords())
-			.coercingStrings()), lenient);
+		expectations.put(
+				validator.readingWith(
+						InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming().booleanWords())),
+				lenient);
 		expectations.forEach((untyped, value) -> {
 			final var validated = untyped.validate(input);
 			if (value == null) {

@@ -358,7 +358,7 @@ The reader applies to the nested validators too, so `addressValidator` is built 
 Jackson 3:
 
 ```java
-public final class JsonNodeReader implements InputReader<JsonNode> {
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
     public static final JsonNodeReader INSTANCE = new JsonNodeReader();
 
@@ -413,10 +413,11 @@ The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator
 JDK 28) is read in the same way; the README shows its reader.
 
 A tree whose scalars are all strings is read with `coercingStrings()`, a decorator of any
-reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or
+`CoercibleInputReader`, the interface a reader of a tree model implements: `JsonNodeReader.INSTANCE.coercingStrings()`, or
 `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read
-by the rules of the next section. A reader that already coerces strings keeps its rules
-with `coercingStrings()` and replaces them with `coercingStrings(coercion)`. A validator
+by the rules of the next section. The reader that coerces strings is an `InputReader` and cannot be coerced again,
+so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are
+given once. A validator
 reads with the last reader it is given: `readingWith(reader)` after
 `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string.
 

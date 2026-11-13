@@ -619,7 +619,7 @@ Validated<User> validated = userValidator.validate(jsonMapper.readTree(json));
 `from(reader, f)` is `fromMap(f).readingWith(reader)`. `readingWith` is available on every validator and applies the reader to the whole validator, so nested validators such as `addressValidator` are built with `fromMap` or `from` whatever input is read in the end, and a validator of maps also serves nodes: `mapValidator.readingWith(reader)`. YAVI has no dependency on a JSON library; a reader is a small stateless class written once per tree model and shared by all validators. This is the one for Jackson 3:
 
 ```java
-public final class JsonNodeReader implements InputReader<JsonNode> {
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
     public static final JsonNodeReader INSTANCE = new JsonNodeReader();
 
@@ -673,7 +673,7 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), the incubator module `jdk.incubator.json` of JDK 28) is read in the same way. A number is read from its text, so no digit is lost:
 
 ```java
-public final class JdkJsonReader implements InputReader<JsonValue> {
+public final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
 
     public static final JdkJsonReader INSTANCE = new JdkJsonReader();
 
@@ -768,7 +768,7 @@ The keys are paths, and a key is whatever its property expects:
 
 `readingParameters()` validates the `ParameterTree` of the map, which any validator reads with `readingWith(ParameterTree.reader())`; `ParameterTree.of(map, maxIndex)` gives another limit to the indexes.
 
-A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. 
+A tree whose scalars are all strings, such as a JSON document whose numbers are sent as strings, is read with `coercingStrings()`, a decorator available on every `CoercibleInputReader`, the interface a reader of a tree model implements: `JsonNodeReader.INSTANCE.coercingStrings()`, or `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read by the rules above. 
 The rules are strict on purpose. `StringCoercion` relaxes them for text written by a person, such as the fields of a form or the cells of a CSV file:
 
 ```java
@@ -785,7 +785,7 @@ validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30,
 
 * `trimming()`: a blank string is validated like `null`, and a string read as a number, a boolean, an enum constant or a temporal value is read without its surrounding white space. A `String` value is left as it is (`c.trim()` trims it).
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` are booleans in any case. `booleanWords(trueWords, falseWords)` takes the words of the application instead.
-* The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. A reader that already coerces strings keeps its rules with `coercingStrings()` and replaces them with `coercingStrings(coercion)`.
+* The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. The reader that coerces strings is an `InputReader` and cannot be coerced again, so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are given once.
 * A validator reads with the last reader it is given: `readingWith(reader)` after `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string. For any other text, override `InputReader#value(node, type)` in a reader of your own.
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
