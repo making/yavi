@@ -64,6 +64,14 @@ public interface InputReader<N> {
 	 * {@code String}, a {@code Number} or a {@code Boolean}. Any other node is returned
 	 * as it is; it represents only a type it is an instance of. The returned value is
 	 * also the one reported in a violation.
+	 *
+	 * <p>
+	 * A number is returned as exactly as the tree holds it: as a {@code BigDecimal} or a
+	 * {@code BigInteger} if it does not fit a primitive type. A validator cannot recover
+	 * what the parser of the tree dropped: a tree that holds a number with a fraction as
+	 * a {@code double} gives {@code 0.10} as {@code 0.1}, keeps 17 digits and gives
+	 * {@code 1e400} as an infinite value, whatever type the number is checked as. Have
+	 * the parser keep such a number as a {@code BigDecimal}.
 	 * @param node the node, which is not a null node
 	 * @return the value of the node
 	 * @see ValueValidator#untyped(Class)

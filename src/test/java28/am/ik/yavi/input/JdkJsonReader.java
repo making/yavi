@@ -34,11 +34,21 @@ final class JdkJsonReader implements CoercibleInputReader<JsonValue> {
 	public Object value(JsonValue node) {
 		return switch (node) {
 			case JsonString string -> string.asString();
-			// the text of the number, so that no digit is lost
-			case JsonNumber number -> new BigDecimal(number.toString());
+			case JsonNumber number -> decimal(number);
 			case JsonBoolean bool -> bool.asBoolean();
 			default -> node;
 		};
+	}
+
+	// the text of the number, so that no digit is lost
+	private static Object decimal(JsonNumber number) {
+		try {
+			return new BigDecimal(number.toString());
+		}
+		catch (NumberFormatException e) {
+			// an exponent that no BigDecimal holds, such as 1e3000000000
+			return number;
+		}
 	}
 
 	@Override

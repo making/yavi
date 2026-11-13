@@ -40,5 +40,7 @@ working until then.
 
 - A number is read as `new BigDecimal(number.toString())`; check that the final API still
   returns the text of the number.
+  A number whose exponent no `BigDecimal` holds (`1e3000000000`) is returned as the node,
+  so that it is reported as `object.type`.
 - A property is read with `asMap().get(name)`; `JsonValue#get(name)` throws for an absent
   member.

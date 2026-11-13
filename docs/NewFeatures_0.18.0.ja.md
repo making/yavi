@@ -330,7 +330,16 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 }
 ```
 
-JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 のインキュベータモジュール）も同じ方法で読み取れます。
+リーダーは、ツリーが保持している数値をそのまま返します。既定の `JsonMapper` は、ツリーでもマップでも、小数部を持つ数値を `double` として保持します。そのため `_bigDecimal` は `0.10` を `0.1`、`12345678901234567.89` を `12345678901234568` として受け取り、`_double` は `1e400` を `Infinity` として受け取ります。また、同じキーが 2 回書かれていると、最後の値が残ります。数値を書かれたとおりに保持し、重複したキーを拒否するには、マッパーを次のように設定します。
+
+```java
+JsonMapper jsonMapper = JsonMapper.builder()
+        .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS) // 0.10 は BigDecimal の 0.10 になる
+        .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION) // {"role": "user", "role": "admin"} を拒否する
+        .build();
+```
+
+JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 のインキュベータモジュール）も同じ方法で読み取れます。README に示すリーダーは数値をそのテキストから読み取り、パーサーは重複したキーを拒否します。
 
 スカラーがすべて文字列であるツリーは、リーダーの `coercingStrings()` で読み取ります（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。
 

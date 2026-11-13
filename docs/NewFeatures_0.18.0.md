@@ -374,8 +374,22 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 }
 ```
 
+A reader returns a number as the tree holds it. A default `JsonMapper` holds a number with
+a fraction as a `double`, in a tree and in a map alike: `_bigDecimal` receives `0.10` as
+`0.1` and `12345678901234567.89` as `12345678901234568`, `_double` receives `1e400` as
+`Infinity`, and the last of a key written twice replaces the others. Tell the mapper to
+keep a number as it is written and to refuse a key written twice:
+
+```java
+JsonMapper jsonMapper = JsonMapper.builder()
+        .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS) // 0.10 is the BigDecimal 0.10
+        .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION) // {"role": "user", "role": "admin"} is refused
+        .build();
+```
+
 The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator module of
-JDK 28) is read in the same way.
+JDK 28) is read in the same way. Its reader, shown in the README, reads a number from its
+text, and its parser refuses a key written twice.
 
 A tree whose scalars are all strings is read with `coercingStrings()` of its reader:
 `JsonNodeReader.INSTANCE.coercingStrings()`, or
