@@ -222,6 +222,28 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	}
 
 	/**
+	 * Returns a described validator that accepts a {@code null} input without invoking
+	 * another validator, whose input it does not change.
+	 */
+	private static <T, X extends @Nullable Object> NullAcceptingValueValidator<T, X> nullAccepting(
+			ValueValidator<T, X> validator, Supplier<ValueDescription> description,
+			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
+		return new DescribedNullAcceptingValueValidator<>(validator, description, nullAware(untyped), preprocessed);
+	}
+
+	/**
+	 * Returns the description of a value that is described by the given description
+	 * unless it is {@code null}, for which the given value is produced. A description
+	 * that accepts {@code null} itself is replaced: its default value is never produced.
+	 */
+	private static ValueDescription acceptingNull(ValueDescription description, @Nullable Object defaultValue) {
+		return new ValueDescription.Optional(
+				description instanceof ValueDescription.Optional optional ? optional.value() : description,
+				defaultValue);
+	}
+
+	/**
 	 * Returns the untyped counterpart of a combinator that treats {@code null}: the
 	 * result of the given function, which additionally takes a null node of its reader as
 	 * {@code null}.
@@ -559,13 +581,12 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @see #nullable()
 	 * @see #defaultValue(Object)
 	 */
-	default ValueValidator<T, Optional<@NonNull X>> optional() {
-		return described(
+	default NullAcceptingValueValidator<T, Optional<@NonNull X>> optional() {
+		return nullAccepting(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(Optional.empty())
 						: ValueValidator.this.validate(t, locale, constraintContext)
 							.map(x -> Optional.<@NonNull X>ofNullable(x)),
-				() -> new ValueDescription.Optional(this.description(), null),
-				nullAware(reader -> this.readingWith(reader).optional()),
+				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).optional(),
 				transform -> this.preprocess(transform).optional());
 	}
 
@@ -581,9 +602,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 * @see #optional()
 	 */
-	default ValueValidator<T, @Nullable X> nullable() {
+	default NullAcceptingValueValidator<T, @Nullable X> nullable() {
 		// not a lambda: NullAway does not see the nullable type argument of its target
-		return described(new ValueValidator<T, @Nullable X>() {
+		return nullAccepting(new ValueValidator<T, @Nullable X>() {
 			@Override
 			public Validated<@Nullable X> validate(@Nullable T t, Locale locale, ConstraintContext constraintContext) {
 				if (t == null) {
@@ -591,8 +612,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				}
 				return ValueValidator.this.validate(t, locale, constraintContext).map(x -> x);
 			}
-		}, () -> new ValueDescription.Optional(this.description(), null),
-				nullAware(reader -> this.readingWith(reader).nullable()),
+		}, () -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).nullable(),
 				transform -> this.preprocess(transform).nullable());
 	}
 
@@ -608,12 +628,12 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 * @see #recover(Object)
 	 */
-	default ValueValidator<T, X> defaultValue(X defaultValue) {
-		return described(
+	default NullAcceptingValueValidator<T, X> defaultValue(X defaultValue) {
+		return nullAccepting(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(defaultValue)
 						: ValueValidator.this.validate(t, locale, constraintContext),
-				() -> new ValueDescription.Optional(this.description(), defaultValue),
-				nullAware(reader -> this.readingWith(reader).defaultValue(defaultValue)),
+				() -> acceptingNull(this.description(), defaultValue),
+				reader -> this.readingWith(reader).defaultValue(defaultValue),
 				transform -> this.preprocess(transform).defaultValue(defaultValue));
 	}
 
@@ -643,12 +663,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 * @see #recoverWith(Function)
 	 */
-	default ValueValidator<T, X> recover(X fallback) {
-		return described(
+	default NullAcceptingValueValidator<T, X> recover(X fallback) {
+		return nullAccepting(
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(fallback)
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), violations -> fallback),
-				() -> new ValueDescription.Optional(this.description(), fallback),
-				nullAware(reader -> this.readingWith(reader).recover(fallback)),
+				() -> acceptingNull(this.description(), fallback), reader -> this.readingWith(reader).recover(fallback),
 				transform -> this.preprocess(transform).recover(fallback));
 	}
 
@@ -675,13 +694,13 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 * @see #recover(Object)
 	 */
-	default ValueValidator<T, X> recoverWith(Function<? super ConstraintViolations, ? extends X> fallback) {
-		return described(
+	default NullAcceptingValueValidator<T, X> recoverWith(
+			Function<? super ConstraintViolations, ? extends X> fallback) {
+		return nullAccepting(
 				(t, locale, constraintContext) -> t == null
 						? Validated.successWith(fallback.apply(new ConstraintViolations()))
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), fallback),
-				() -> new ValueDescription.Optional(this.description(), null),
-				nullAware(reader -> this.readingWith(reader).recoverWith(fallback)),
+				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).recoverWith(fallback),
 				transform -> this.preprocess(transform).recoverWith(fallback));
 	}
 

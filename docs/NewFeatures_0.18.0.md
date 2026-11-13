@@ -278,6 +278,30 @@ from `null`, so they apply to an input that has keys: a map, a tree read with
 stands for an absent value and is validated as without the modifier, also after
 `rejectingNull()`. The JSON Schema is the same for `fromMap` and `apply`.
 
+Each of `optional()`, `nullable()`, `defaultValue(...)` and `recover(...)` decides what
+`null` produces before the property is validated, so of two of them only the last one
+would. A chain with a part that has no effect does not compile:
+
+| Chain | |
+| --- | --- |
+| `.optional().recover(Optional.empty())`, `.nullable().recover(null)` | compiles: an invalid value is recovered as an absent one |
+| `.recover(0).nullable()`, `.recover(0).optional()`, `.recover(0).defaultValue(1)` | compiles: `null` produces something else than the fallback of an invalid value |
+| `.nullable().optional()`, `.defaultValue(1).nullable()`, `.optional().defaultValue(...)` | does not compile: what the first one produces for `null` is never produced |
+| `.defaultValue(1).recover(2)` | does not compile: `recover` replaces `null` too; write `.recover(2).defaultValue(1)` |
+| `.recover(1).recover(2)` | does not compile: the first one never fails |
+
+The same holds for an `_embedded` and a `_rest` property. The combinators of a
+`ValueValidator` are not restricted, and return a `NullAcceptingValueValidator`: a
+validator that is known by its type to accept `null`. A property added with it takes
+`required()`, `rejectingNull()` and `presence()`, and no modifier that accepts `null`
+again:
+
+```java
+NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> c.positive()).defaultValue(1);
+
+Yavi.schema()._integer(page).rejectingNull() // 1 only if omitted
+```
+
 ### A structure that contains itself
 
 `ValueValidator.recursive(self -> ...)` builds a validator from a reference to itself,
@@ -607,4 +631,5 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
+| Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

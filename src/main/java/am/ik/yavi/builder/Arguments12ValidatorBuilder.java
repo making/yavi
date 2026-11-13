@@ -47,6 +47,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
@@ -115,7 +116,7 @@ import org.jspecify.annotations.Nullable;
  * @param <R12> type of the validated value of argument at position 12
  * @since 0.14.0
  */
-public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object> permits Arguments12ValidatorBuilder.Modifiable {
+public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object> permits Arguments12ValidatorBuilder.Modifiable,Arguments12ValidatorBuilder.Recoverable,Arguments12ValidatorBuilder.Recovered,Arguments12ValidatorBuilder.Keyed,Arguments12ValidatorBuilder.NullAccepting {
 
 	final ArgumentDefinition<A1, R1> d1;
 
@@ -179,6 +180,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _bigDecimal(
+			NullAcceptingValueValidator<BigDecimal, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(BigDecimal.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code BigDecimal} with the given name and configured
 	 * constraints.
 	 *
@@ -232,6 +253,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<BigInteger, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(BigInteger.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _bigInteger(
+			NullAcceptingValueValidator<BigInteger, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -291,6 +332,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _boolean(
+			NullAcceptingValueValidator<Boolean, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Boolean.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Boolean} with the given name and configured
 	 * constraints.
 	 *
@@ -342,6 +403,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<Double, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(Double.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_double(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _double(
+			NullAcceptingValueValidator<Double, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -397,6 +478,27 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<E, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(Enum.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <E> the enum type of the argument
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _enum(
+			NullAcceptingValueValidator<E, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -495,6 +597,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_float(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _float(
+			NullAcceptingValueValidator<Float, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Float.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Float} with the given name and configured
 	 * constraints.
 	 *
@@ -546,6 +668,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<Instant, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(Instant.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _instant(
+			NullAcceptingValueValidator<Instant, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -602,6 +744,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<Integer, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(Integer.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _integer(
+			NullAcceptingValueValidator<Integer, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Integer.class, validator));
 	}
 
 	/**
@@ -662,6 +824,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _localDateTime(
+			NullAcceptingValueValidator<LocalDateTime, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(LocalDateTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code LocalDateTime} with the given name and
 	 * configured constraints.
 	 *
@@ -715,6 +897,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<LocalTime, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(LocalTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _localTime(
+			NullAcceptingValueValidator<LocalTime, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -774,6 +976,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _localDate(
+			NullAcceptingValueValidator<LocalDate, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(LocalDate.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code LocalDate} with the given name and configured
 	 * constraints.
 	 *
@@ -829,6 +1051,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_long(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _long(
+			NullAcceptingValueValidator<Long, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Long.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Long} with the given name and configured
 	 * constraints.
 	 *
@@ -880,6 +1122,27 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<T1, T2> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(Object.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_object(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T1, T2 extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T2> _object(
+			NullAcceptingValueValidator<T1, T2> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -980,6 +1243,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _offsetDateTime(
+			NullAcceptingValueValidator<OffsetDateTime, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(OffsetDateTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as an {@code OffsetDateTime} with the given name and
 	 * configured constraints.
 	 *
@@ -1035,6 +1318,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_short(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _short(
+			NullAcceptingValueValidator<Short, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Short.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Short} with the given name and configured
 	 * constraints.
 	 *
@@ -1085,6 +1388,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<String, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, ArgumentDefinition.value(String.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_string(ValueValidator)} for a validator that is known by its type
+	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _string(
+			NullAcceptingValueValidator<String, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -1149,6 +1472,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _yearMonth(
+			NullAcceptingValueValidator<YearMonth, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(YearMonth.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code YearMonth} with the given name and configured
 	 * constraints.
 	 *
@@ -1204,6 +1547,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_year(ValueValidator)} for a validator that is known by its type to
+	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _year(
+			NullAcceptingValueValidator<Year, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(Year.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Year} with the given name and configured
 	 * constraints.
 	 *
@@ -1255,6 +1618,26 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments13ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12,
+				ArgumentDefinition.value(ZonedDateTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
+	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> Arguments13ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, T> _zonedDateTime(
+			NullAcceptingValueValidator<ZonedDateTime, T> validator) {
+		return new Arguments13ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12,
 				ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
@@ -1637,7 +2020,18 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
-	 * The builder after an argument is added: the modifiers apply to that argument.
+	 * The builder after an argument that is not read from a key is added, with
+	 * {@code _embedded} or {@code _rest}: the modifiers apply to that argument.
+	 *
+	 * <p>
+	 * Each of {@code optional()}, {@code nullable()}, {@code defaultValue},
+	 * {@code recover} and {@code recoverWith} decides what {@code null} produces, before
+	 * the argument is validated, so only the last one written would. The builders
+	 * returned by the modifiers therefore offer only what still has an effect:
+	 * {@code recover} after {@code optional()} or {@code nullable()}, to replace an
+	 * invalid value with an empty {@code Optional} or {@code null}, and
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
+	 * {@code recover}, to produce something else than the fallback for {@code null}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -1665,9 +2059,9 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R12> type of the validated value of argument at position 12
 	 * @since 0.18.0
 	 */
-	public static sealed class Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+	public static final class Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
 			extends
-			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>permits Keyed {
+			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
 
 		Modifiable(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1687,8 +2081,8 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#optional()
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
-			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+		public Recoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
+			return new Recoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.asOptional());
 		}
 
@@ -1706,8 +2100,8 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#nullable()
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
-			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+		public Recoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
+			return new Recoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.asNullable());
 		}
 
@@ -1724,10 +2118,10 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#defaultValue(Object)
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> defaultValue(
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> defaultValue(
 				R12 defaultValue) {
-			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
-					this.d10, this.d11, this.d12.withDefault(defaultValue));
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.withDefault(defaultValue));
 		}
 
 		/**
@@ -1744,9 +2138,9 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#recover(Object)
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
+		public Recovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
 				R12 fallback) {
-			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new Recovered<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.recovering(fallback));
 		}
 
@@ -1762,19 +2156,17 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @since 0.18.0
 		 * @see ValueValidator#recoverWith(Function)
 		 */
-		public Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
+		public Recovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
 				Function<? super ConstraintViolations, ? extends R12> fallback) {
-			return new Modifiable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new Recovered<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.recoveringWith(fallback));
 		}
 
 	}
 
 	/**
-	 * The builder after an argument that is read from a key is added: its absence can be
-	 * told from {@code null} with {@link #presence()}, and with
-	 * {@link NullAccepting#required()} and {@link NullAccepting#rejectingNull()} once the
-	 * argument accepts {@code null}.
+	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
+	 * not read from a key: an invalid value can still be replaced with {@code recover}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -1802,9 +2194,200 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R12> type of the validated value of argument at position 12
 	 * @since 0.18.0
 	 */
-	public static sealed class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+	public static final class Recoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
 			extends
-			Modifiable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>permits NullAccepting {
+			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+
+		Recoverable(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+		}
+
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the fallback and the constraints of the
+		 * argument are not applied to it; the fallback itself is not validated. Every
+		 * violation of any other value is replaced with the fallback, including the one
+		 * of a value read from a map that does not represent the type of the argument.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder whose last argument falls back to the given value
+		 * @since 0.18.0
+		 * @see ValueValidator#recover(Object)
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
+				R12 fallback) {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.recovering(fallback));
+		}
+
+		/**
+		 * Produces the result of the given function when the value of the last added
+		 * argument is {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * The function is given the violations of the invalid value, and no violation for
+		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder whose last argument falls back to the result of the function
+		 * @since 0.18.0
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
+				Function<? super ConstraintViolations, ? extends R12> fallback) {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.recoveringWith(fallback));
+		}
+
+	}
+
+	/**
+	 * The builder after {@code recover} or {@code recoverWith} of an argument that is not
+	 * read from a key: what {@code null} produces can still be changed, while an invalid
+	 * value is replaced with the fallback.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @since 0.18.0
+	 */
+	public static final class Recovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+			extends
+			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+
+		Recovered(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+		}
+
+		/**
+		 * Accepts a {@code null} value for the last added argument as an absent value.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with an empty {@link Optional} and the
+		 * constraints of the argument, such as {@code notNull()}, are not applied to it.
+		 * Any other value is validated as before and wrapped in an {@link Optional}.
+		 * @return a builder whose last argument produces an optional value
+		 * @since 0.18.0
+		 * @see ValueValidator#optional()
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.asOptional());
+		}
+
+		/**
+		 * Accepts a {@code null} value for the last added argument and produces
+		 * {@code null} for it.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with {@code null} and the constraints of the
+		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
+		 * validated as before. The type of the validated value becomes nullable, so a
+		 * nullness checker requires the function given to {@code apply} to accept
+		 * {@code null} for this argument.
+		 * @return a builder whose last argument accepts {@code null}
+		 * @since 0.18.0
+		 * @see ValueValidator#nullable()
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.asNullable());
+		}
+
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null}.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the default value and the constraints of the
+		 * argument are not applied to it; the default value itself is not validated. Any
+		 * other value is validated as before.
+		 * @param defaultValue the value produced for a {@code null} value
+		 * @return a builder whose last argument falls back to the default value
+		 * @since 0.18.0
+		 * @see ValueValidator#defaultValue(Object)
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> defaultValue(
+				R12 defaultValue) {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.withDefault(defaultValue));
+		}
+
+	}
+
+	/**
+	 * The builder after an argument that is read from a key is added: the modifiers apply
+	 * to that argument. Its absence can be told from {@code null} with
+	 * {@link #presence()}, and with {@link NullAccepting#required()} and
+	 * {@link NullAccepting#rejectingNull()} once the argument accepts {@code null}.
+	 *
+	 * <p>
+	 * Each of {@code optional()}, {@code nullable()}, {@code defaultValue},
+	 * {@code recover} and {@code recoverWith} decides what {@code null} produces, before
+	 * the argument is validated, so only the last one written would. The builders
+	 * returned by the modifiers therefore offer only what still has an effect:
+	 * {@code recover} after {@code optional()} or {@code nullable()}, to replace an
+	 * invalid value with an empty {@code Optional} or {@code null}, and
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
+	 * {@code recover}, to produce something else than the fallback for {@code null}.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @since 0.18.0
+	 */
+	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+			extends
+			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1813,36 +2396,95 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
 		}
 
-		@Override
-		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
-			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
-					this.d10, this.d11, this.d12.asOptional());
+		/**
+		 * Accepts a {@code null} value for the last added argument as an absent value.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with an empty {@link Optional} and the
+		 * constraints of the argument, such as {@code notNull()}, are not applied to it.
+		 * Any other value is validated as before and wrapped in an {@link Optional}.
+		 * @return a builder whose last argument produces an optional value
+		 * @since 0.18.0
+		 * @see ValueValidator#optional()
+		 */
+		public KeyedRecoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
+			return new KeyedRecoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9, this.d10, this.d11, this.d12.asOptional());
 		}
 
-		@Override
-		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
-			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
-					this.d10, this.d11, this.d12.asNullable());
+		/**
+		 * Accepts a {@code null} value for the last added argument and produces
+		 * {@code null} for it.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with {@code null} and the constraints of the
+		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
+		 * validated as before. The type of the validated value becomes nullable, so a
+		 * nullness checker requires the function given to {@code apply} to accept
+		 * {@code null} for this argument.
+		 * @return a builder whose last argument accepts {@code null}
+		 * @since 0.18.0
+		 * @see ValueValidator#nullable()
+		 */
+		public KeyedRecoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
+			return new KeyedRecoverable<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9, this.d10, this.d11, this.d12.asNullable());
 		}
 
-		@Override
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null}.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the default value and the constraints of the
+		 * argument are not applied to it; the default value itself is not validated. Any
+		 * other value is validated as before.
+		 * @param defaultValue the value produced for a {@code null} value
+		 * @return a builder whose last argument falls back to the default value
+		 * @since 0.18.0
+		 * @see ValueValidator#defaultValue(Object)
+		 */
 		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> defaultValue(
 				R12 defaultValue) {
 			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.withDefault(defaultValue));
 		}
 
-		@Override
-		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the fallback and the constraints of the
+		 * argument are not applied to it; the fallback itself is not validated. Every
+		 * violation of any other value is replaced with the fallback, including the one
+		 * of a value read from a map that does not represent the type of the argument.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder whose last argument falls back to the given value
+		 * @since 0.18.0
+		 * @see ValueValidator#recover(Object)
+		 */
+		public KeyedRecovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
 				R12 fallback) {
-			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new KeyedRecovered<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.recovering(fallback));
 		}
 
-		@Override
-		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
+		/**
+		 * Produces the result of the given function when the value of the last added
+		 * argument is {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * The function is given the violations of the invalid value, and no violation for
+		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder whose last argument falls back to the result of the function
+		 * @since 0.18.0
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public KeyedRecovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
 				Function<? super ConstraintViolations, ? extends R12> fallback) {
-			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new KeyedRecovered<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12.recoveringWith(fallback));
 		}
 
@@ -1877,10 +2519,8 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
-	 * The builder after an argument that is read from a key accepts {@code null}, with
-	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}: an
-	 * absent key and an explicit {@code null}, which are both accepted, can be told apart
-	 * with {@link #required()} and {@link #rejectingNull()}.
+	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
+	 * read from a key: an invalid value can still be replaced with {@code recover}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -1908,9 +2548,191 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <R12> type of the validated value of argument at position 12
 	 * @since 0.18.0
 	 */
-	public static final class NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+	public static final class KeyedRecoverable<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
 			extends
-			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+			NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+
+		KeyedRecoverable(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+		}
+
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the fallback and the constraints of the
+		 * argument are not applied to it; the fallback itself is not validated. Every
+		 * violation of any other value is replaced with the fallback, including the one
+		 * of a value read from a map that does not represent the type of the argument.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder whose last argument falls back to the given value
+		 * @since 0.18.0
+		 * @see ValueValidator#recover(Object)
+		 */
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recover(
+				R12 fallback) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.recovering(fallback));
+		}
+
+		/**
+		 * Produces the result of the given function when the value of the last added
+		 * argument is {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * The function is given the violations of the invalid value, and no violation for
+		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder whose last argument falls back to the result of the function
+		 * @since 0.18.0
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> recoverWith(
+				Function<? super ConstraintViolations, ? extends R12> fallback) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.recoveringWith(fallback));
+		}
+
+	}
+
+	/**
+	 * The builder after {@code recover} or {@code recoverWith} of an argument that is
+	 * read from a key: what {@code null} produces can still be changed, while an invalid
+	 * value is replaced with the fallback.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @since 0.18.0
+	 */
+	public static final class KeyedRecovered<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+			extends
+			NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> {
+
+		KeyedRecovered(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+		}
+
+		/**
+		 * Accepts a {@code null} value for the last added argument as an absent value.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with an empty {@link Optional} and the
+		 * constraints of the argument, such as {@code notNull()}, are not applied to it.
+		 * Any other value is validated as before and wrapped in an {@link Optional}.
+		 * @return a builder whose last argument produces an optional value
+		 * @since 0.18.0
+		 * @see ValueValidator#optional()
+		 */
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Optional<@NonNull R12>> optional() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.asOptional());
+		}
+
+		/**
+		 * Accepts a {@code null} value for the last added argument and produces
+		 * {@code null} for it.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with {@code null} and the constraints of the
+		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
+		 * validated as before. The type of the validated value becomes nullable, so a
+		 * nullness checker requires the function given to {@code apply} to accept
+		 * {@code null} for this argument.
+		 * @return a builder whose last argument accepts {@code null}
+		 * @since 0.18.0
+		 * @see ValueValidator#nullable()
+		 */
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, @Nullable R12> nullable() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.asNullable());
+		}
+
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null}.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the default value and the constraints of the
+		 * argument are not applied to it; the default value itself is not validated. Any
+		 * other value is validated as before.
+		 * @param defaultValue the value produced for a {@code null} value
+		 * @return a builder whose last argument falls back to the default value
+		 * @since 0.18.0
+		 * @see ValueValidator#defaultValue(Object)
+		 */
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12> defaultValue(
+				R12 defaultValue) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12.withDefault(defaultValue));
+		}
+
+	}
+
+	/**
+	 * The builder after an argument that is read from a key accepts {@code null}, with
+	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}, or
+	 * with a {@link NullAcceptingValueValidator}: an absent key and an explicit
+	 * {@code null}, which are both accepted, can be told apart with {@link #required()},
+	 * {@link #rejectingNull()} and {@link #presence()}.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @since 0.18.0
+	 */
+	public static sealed class NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object>
+			extends
+			Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12>permits KeyedRecoverable,KeyedRecovered {
 
 		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1988,6 +2810,34 @@ public sealed class Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11,
 					this.d12.withStrictness(ObjectInputValidator.Strictness.REJECTING_NULL));
+		}
+
+		/**
+		 * Tells an absent value of the last added argument from {@code null}, which a
+		 * partial update such as a PATCH request needs to leave a property unchanged or
+		 * to clear it.
+		 *
+		 * <p>
+		 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and
+		 * the argument is not validated, so the key is not required. A key that is
+		 * present is validated as before, an explicit {@code null} included, and its
+		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
+		 * is a violation unless the argument is {@code nullable()}. A parameter with an
+		 * empty value, which is read as {@code null}, is present.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
+		 * same way. This is the last modifier of an argument: the returned builder has
+		 * none, so {@code optional()}, {@code nullable()}, {@code defaultValue} and
+		 * {@code recover} are written before it and apply to the value of a key that is
+		 * present.
+		 * @return a builder whose last argument is a value that may be absent
+		 * @since 0.18.0
+		 * @see ValueValidator#liftPresence()
+		 */
+		public Arguments12ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Presence<A12>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, Presence<@NonNull R12>> presence() {
+			return new Arguments12ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9, this.d10, this.d11, this.d12.withPresence());
 		}
 
 	}

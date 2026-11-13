@@ -2041,6 +2041,162 @@ done)
 }
 EOF
 
+# The modifiers of the last added argument. Each function prints one method of a stage
+# class of the builder; $1 is the stage class of the returned builder, or the builder
+# class itself when the argument takes no further modifier.
+
+stage_type() {
+  if [ "$1" == "${class}" ];then echo -n "${class}";else echo -n "$1";fi
+}
+
+modifier_optional() {
+cat <<EOD
+		/**
+		 * Accepts a {@code null} value for the last added argument as an absent value.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with an empty {@link Optional} and the constraints of
+		 * the argument, such as {@code notNull()}, are not applied to it. Any other value is
+		 * validated as before and wrapped in an {@link Optional}.
+		 * @return a builder whose last argument produces an optional value
+		 * @since 0.18.0
+		 * @see ValueValidator#optional()
+		 */
+		public $1<${init_arguments}A${i}, ${init_results}Optional<@NonNull R${i}>> optional() {
+			return new $1<>(${init_definitions}this.d${i}.asOptional());
+		}
+EOD
+}
+
+modifier_nullable() {
+cat <<EOD
+		/**
+		 * Accepts a {@code null} value for the last added argument and produces {@code null}
+		 * for it.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with {@code null} and the constraints of the
+		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
+		 * validated as before. The type of the validated value becomes nullable, so a
+		 * nullness checker requires the function given to {@code apply} to accept
+		 * {@code null} for this argument.
+		 * @return a builder whose last argument accepts {@code null}
+		 * @since 0.18.0
+		 * @see ValueValidator#nullable()
+		 */
+		public $1<${init_arguments}A${i}, ${init_results}@Nullable R${i}> nullable() {
+			return new $1<>(${init_definitions}this.d${i}.asNullable());
+		}
+EOD
+}
+
+modifier_default_value() {
+cat <<EOD
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null}.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the default value and the constraints of the
+		 * argument are not applied to it; the default value itself is not validated. Any
+		 * other value is validated as before.
+		 * @param defaultValue the value produced for a {@code null} value
+		 * @return a builder whose last argument falls back to the default value
+		 * @since 0.18.0
+		 * @see ValueValidator#defaultValue(Object)
+		 */
+		public $1<${type_uses}> defaultValue(R${i} defaultValue) {
+			return new $1<>(${init_definitions}this.d${i}.withDefault(defaultValue));
+		}
+EOD
+}
+
+modifier_recover() {
+cat <<EOD
+		/**
+		 * Produces the given value when the value of the last added argument is {@code null}
+		 * or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the fallback and the constraints of the argument
+		 * are not applied to it; the fallback itself is not validated. Every violation of
+		 * any other value is replaced with the fallback, including the one of a value read
+		 * from a map that does not represent the type of the argument.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder whose last argument falls back to the given value
+		 * @since 0.18.0
+		 * @see ValueValidator#recover(Object)
+		 */
+		public $1<${type_uses}> recover(R${i} fallback) {
+			return new $1<>(${init_definitions}this.d${i}.recovering(fallback));
+		}
+
+		/**
+		 * Produces the result of the given function when the value of the last added
+		 * argument is {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * The function is given the violations of the invalid value, and no violation for a
+		 * {@code null} value, to which the constraints of the argument are not applied.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder whose last argument falls back to the result of the function
+		 * @since 0.18.0
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public $1<${type_uses}> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
+			return new $1<>(${init_definitions}this.d${i}.recoveringWith(fallback));
+		}
+EOD
+}
+
+modifier_presence() {
+cat <<EOD
+		/**
+		 * Tells an absent value of the last added argument from {@code null}, which a
+		 * partial update such as a PATCH request needs to leave a property unchanged or to
+		 * clear it.
+		 *
+		 * <p>
+		 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and
+		 * the argument is not validated, so the key is not required. A key that is present
+		 * is validated as before, an explicit {@code null} included, and its value is
+		 * given as {@link Presence#ofNullable(Object)}: an explicit {@code null} is a
+		 * violation unless the argument is {@code nullable()}.
+		 * A parameter with an empty value, which is read as {@code null}, is present.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
+		 * same way. This is the last modifier of an argument: the returned builder has
+		 * none, so {@code optional()}, {@code nullable()}, {@code defaultValue} and
+		 * {@code recover} are written before it and apply to the value of a key that is
+		 * present.
+		 * @return a builder whose last argument is a value that may be absent
+		 * @since 0.18.0
+		 * @see ValueValidator#liftPresence()
+		 */
+		public ${class}<${init_arguments}Presence<A${i}>, ${init_results}Presence<@NonNull R${i}>> presence() {
+			return new ${class}<>(${init_definitions}this.d${i}.withPresence());
+		}
+EOD
+}
+
+# Prints the declaration and the constructor of a stage class: $1 is its name, $2 its
+# modifiers, $3 the stage class it extends and $4 its permits clause, if any.
+stage_class() {
+cat <<EOD
+	 *
+	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
+	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
+	 * @since 0.18.0
+	 */
+	public static $2 class $1<${type_decls}> extends $3<${type_uses}>$4 {
+
+		$1(${ctor_params}) {
+			super(${ctor_args});
+		}
+EOD
+}
+
 for i in `seq 0 ${n}`;do
 if [ "${i}" -gt 0 ];then
   class="Arguments${i}ValidatorBuilder"
@@ -2060,6 +2216,16 @@ fi
     init_definitions="$(for j in `seq 1 $((i - 1))`;do echo -n "this.d${j}, ";done)"
     init_results="$(for j in `seq 1 $((i - 1))`;do echo -n "R${j}, ";done)"
     init_arguments="$(for j in `seq 1 $((i - 1))`;do echo -n "A${j}, ";done)"
+  fi
+  type_decls=""
+  type_uses=""
+  ctor_params=""
+  ctor_args=""
+  if [ "${i}" -gt 0 ];then
+    type_decls="$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)$(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')"
+    type_uses="$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)$(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')"
+    ctor_params="$(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')"
+    ctor_args="$(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//')"
   fi
   file="$(dirname $0)/../src/main/java/am/ik/yavi/builder/${class}.java"
   echo $file
@@ -2132,7 +2298,8 @@ import am.ik.yavi.constraint.ShortConstraint;
 import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
-import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
+import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;'; fi)
+import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
 import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
@@ -2238,7 +2405,7 @@ cat <<EOD
 <$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')>
 EOD
 fi)
-$(if [ "${i}" -gt 0 ];then echo " permits ${class}.Modifiable";fi)
+$(if [ "${i}" -gt 0 ];then echo " permits ${class}.Modifiable, ${class}.Recoverable, ${class}.Recovered, ${class}.Keyed, ${class}.NullAccepting";fi)
 {
 
 $(if [ "${i}" -gt 0 ];then
@@ -2282,6 +2449,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(BigDecimal.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(NullAcceptingValueValidator<BigDecimal, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -2335,6 +2520,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(NullAcceptingValueValidator<BigInteger, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(BigInteger.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code BigInteger} with the given name and configured
 	 * constraints.
 	 *
@@ -2382,6 +2585,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(ValueValidator<Boolean, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Boolean.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(NullAcceptingValueValidator<Boolean, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Boolean.class, validator));
 	}
 
 	/**
@@ -2435,6 +2656,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_double(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(NullAcceptingValueValidator<Double, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Double.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Double} with the given name and configured
 	 * constraints.
 	 *
@@ -2483,6 +2722,25 @@ cat <<EOD
 	 */
 	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(ValueValidator<E, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Enum.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <E> the enum type of the argument
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(NullAcceptingValueValidator<E, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -2575,6 +2833,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_float(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(NullAcceptingValueValidator<Float, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Float.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Float} with the given name and configured
 	 * constraints.
 	 *
@@ -2622,6 +2898,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(ValueValidator<Instant, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Instant.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(NullAcceptingValueValidator<Instant, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -2675,6 +2969,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(NullAcceptingValueValidator<Integer, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Integer.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as an {@code Integer} with the given name and configured
 	 * constraints.
 	 *
@@ -2722,6 +3034,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(LocalDateTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(NullAcceptingValueValidator<LocalDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -2775,6 +3105,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(NullAcceptingValueValidator<LocalTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code LocalTime} with the given name and configured
 	 * constraints.
 	 *
@@ -2822,6 +3170,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(ValueValidator<LocalDate, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(LocalDate.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(NullAcceptingValueValidator<LocalDate, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -2875,6 +3241,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_long(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(NullAcceptingValueValidator<Long, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Long.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Long} with the given name and configured
 	 * constraints.
 	 *
@@ -2923,6 +3307,25 @@ cat <<EOD
 	 */
 	public <T1, T2 extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(ValueValidator<T1, T2> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Object.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_object(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T1> type of the value validated by {@code validator}
+	 * @param <T2> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T1, T2 extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(NullAcceptingValueValidator<T1, T2> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -3015,6 +3418,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(NullAcceptingValueValidator<OffsetDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(OffsetDateTime.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as an {@code OffsetDateTime} with the given name and configured
 	 * constraints.
 	 *
@@ -3065,6 +3486,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_short(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(NullAcceptingValueValidator<Short, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Short.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Short} with the given name and configured
 	 * constraints.
 	 *
@@ -3112,6 +3551,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(ValueValidator<String, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(String.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_string(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(NullAcceptingValueValidator<String, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -3171,6 +3628,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(NullAcceptingValueValidator<YearMonth, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(YearMonth.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code YearMonth} with the given name and configured
 	 * constraints.
 	 *
@@ -3221,6 +3696,24 @@ cat <<EOD
 	}
 
 	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_year(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(NullAcceptingValueValidator<Year, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Year.class, validator));
+	}
+
+	/**
 	 * Adds the next argument as a {@code Year} with the given name and configured
 	 * constraints.
 	 *
@@ -3268,6 +3761,24 @@ cat <<EOD
 	 */
 	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(ZonedDateTime.class, validator));
+	}
+
+	/**
+	 * Adds the next argument, validated by the given value validator that accepts
+	 * {@code null}.
+	 *
+	 * <p>
+	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by its
+	 * type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
+	 * again.
+	 * @param <T> type of the value produced by {@code validator}
+	 * @param validator value validator for the argument, which accepts {@code null}
+	 * @return a builder for the next argument
+	 * @since 0.18.0
+	 */
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(NullAcceptingValueValidator<ZonedDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -3665,189 +4176,112 @@ $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 
 	/**
-	 * The builder after an argument is added: the modifiers apply to that argument.
+	 * The builder after an argument that is not read from a key is added, with
+	 * {@code _embedded} or {@code _rest}: the modifiers apply to that argument.
 	 *
-	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
-	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
-	 * @since 0.18.0
-	 */
-	public static sealed class Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> permits Keyed {
+	 * <p>
+	 * Each of {@code optional()}, {@code nullable()}, {@code defaultValue},
+	 * {@code recover} and {@code recoverWith} decides what {@code null} produces, before
+	 * the argument is validated, so only the last one written would. The builders
+	 * returned by the modifiers therefore offer only what still has an effect:
+	 * {@code recover} after {@code optional()} or {@code nullable()}, to replace an
+	 * invalid value with an empty {@code Optional} or {@code null}, and
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
+	 * {@code recover}, to produce something else than the fallback for {@code null}.
+$(stage_class Modifiable final "${class}")
 
-		Modifiable($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
-			super($(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//'));
-		}
+$(modifier_optional Recoverable)
 
-		/**
-		 * Accepts a {@code null} value for the last added argument as an absent value.
-		 *
-		 * <p>
-		 * A {@code null} value succeeds with an empty {@link Optional} and the constraints of
-		 * the argument, such as {@code notNull()}, are not applied to it. Any other value is
-		 * validated as before and wrapped in an {@link Optional}.
-		 * @return a builder whose last argument produces an optional value
-		 * @since 0.18.0
-		 * @see ValueValidator#optional()
-		 */
-		public Modifiable<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}Optional<@NonNull R${i}>> optional() {
-			return new Modifiable<>(${init_definitions}this.d${i}.asOptional());
-		}
+$(modifier_nullable Recoverable)
 
-		/**
-		 * Accepts a {@code null} value for the last added argument and produces {@code null}
-		 * for it.
-		 *
-		 * <p>
-		 * A {@code null} value succeeds with {@code null} and the constraints of the
-		 * argument, such as {@code notNull()}, are not applied to it. Any other value is
-		 * validated as before. The type of the validated value becomes nullable, so a
-		 * nullness checker requires the function given to {@code apply} to accept
-		 * {@code null} for this argument.
-		 * @return a builder whose last argument accepts {@code null}
-		 * @since 0.18.0
-		 * @see ValueValidator#nullable()
-		 */
-		public Modifiable<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}@Nullable R${i}> nullable() {
-			return new Modifiable<>(${init_definitions}this.d${i}.asNullable());
-		}
+$(modifier_default_value "${class}")
 
-		/**
-		 * Produces the given value when the value of the last added argument is
-		 * {@code null}.
-		 *
-		 * <p>
-		 * A {@code null} value succeeds with the default value and the constraints of the
-		 * argument are not applied to it; the default value itself is not validated. Any
-		 * other value is validated as before.
-		 * @param defaultValue the value produced for a {@code null} value
-		 * @return a builder whose last argument falls back to the default value
-		 * @since 0.18.0
-		 * @see ValueValidator#defaultValue(Object)
-		 */
-		public Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> defaultValue(R${i} defaultValue) {
-			return new Modifiable<>(${init_definitions}this.d${i}.withDefault(defaultValue));
-		}
-
-		/**
-		 * Produces the given value when the value of the last added argument is {@code null}
-		 * or invalid, so that the argument never fails.
-		 *
-		 * <p>
-		 * A {@code null} value succeeds with the fallback and the constraints of the argument
-		 * are not applied to it; the fallback itself is not validated. Every violation of
-		 * any other value is replaced with the fallback, including the one of a value read
-		 * from a map that does not represent the type of the argument.
-		 * @param fallback the value produced instead of a failure
-		 * @return a builder whose last argument falls back to the given value
-		 * @since 0.18.0
-		 * @see ValueValidator#recover(Object)
-		 */
-		public Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recover(R${i} fallback) {
-			return new Modifiable<>(${init_definitions}this.d${i}.recovering(fallback));
-		}
-
-		/**
-		 * Produces the result of the given function when the value of the last added
-		 * argument is {@code null} or invalid, so that the argument never fails.
-		 *
-		 * <p>
-		 * The function is given the violations of the invalid value, and no violation for a
-		 * {@code null} value, to which the constraints of the argument are not applied.
-		 * @param fallback the function that produces a value from the violations
-		 * @return a builder whose last argument falls back to the result of the function
-		 * @since 0.18.0
-		 * @see ValueValidator#recoverWith(Function)
-		 */
-		public Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
-			return new Modifiable<>(${init_definitions}this.d${i}.recoveringWith(fallback));
-		}
+$(modifier_recover Recovered)
 
 	}
 
 	/**
-	 * The builder after an argument that is read from a key is added: its absence can
-	 * be told from {@code null} with {@link #presence()}, and with
-	 * {@link NullAccepting#required()} and {@link NullAccepting#rejectingNull()} once the
-	 * argument accepts {@code null}.
+	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
+	 * not read from a key: an invalid value can still be replaced with {@code recover}.
+$(stage_class Recoverable final "${class}")
+
+$(modifier_recover "${class}")
+
+	}
+
+	/**
+	 * The builder after {@code recover} or {@code recoverWith} of an argument that is
+	 * not read from a key: what {@code null} produces can still be changed, while an
+	 * invalid value is replaced with the fallback.
+$(stage_class Recovered final "${class}")
+
+$(modifier_optional "${class}")
+
+$(modifier_nullable "${class}")
+
+$(modifier_default_value "${class}")
+
+	}
+
+	/**
+	 * The builder after an argument that is read from a key is added: the modifiers
+	 * apply to that argument. Its absence can be told from {@code null} with
+	 * {@link #presence()}, and with {@link NullAccepting#required()} and
+	 * {@link NullAccepting#rejectingNull()} once the argument accepts {@code null}.
 	 *
-	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
-	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
-	 * @since 0.18.0
-	 */
-	public static sealed class Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends Modifiable<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> permits NullAccepting {
+	 * <p>
+	 * Each of {@code optional()}, {@code nullable()}, {@code defaultValue},
+	 * {@code recover} and {@code recoverWith} decides what {@code null} produces, before
+	 * the argument is validated, so only the last one written would. The builders
+	 * returned by the modifiers therefore offer only what still has an effect:
+	 * {@code recover} after {@code optional()} or {@code nullable()}, to replace an
+	 * invalid value with an empty {@code Optional} or {@code null}, and
+	 * {@code optional()}, {@code nullable()} or {@code defaultValue} after
+	 * {@code recover}, to produce something else than the fallback for {@code null}.
+$(stage_class Keyed final "${class}")
 
-		Keyed($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
-			super($(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//'));
-		}
+$(modifier_optional KeyedRecoverable)
 
-		@Override
-		public NullAccepting<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}Optional<@NonNull R${i}>> optional() {
-			return new NullAccepting<>(${init_definitions}this.d${i}.asOptional());
-		}
+$(modifier_nullable KeyedRecoverable)
 
-		@Override
-		public NullAccepting<$(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)${init_results}@Nullable R${i}> nullable() {
-			return new NullAccepting<>(${init_definitions}this.d${i}.asNullable());
-		}
+$(modifier_default_value NullAccepting)
 
-		@Override
-		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> defaultValue(R${i} defaultValue) {
-			return new NullAccepting<>(${init_definitions}this.d${i}.withDefault(defaultValue));
-		}
+$(modifier_recover KeyedRecovered)
 
-		@Override
-		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recover(R${i} fallback) {
-			return new NullAccepting<>(${init_definitions}this.d${i}.recovering(fallback));
-		}
+$(modifier_presence)
 
-		@Override
-		public NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> recoverWith(Function<? super ConstraintViolations, ? extends R${i}> fallback) {
-			return new NullAccepting<>(${init_definitions}this.d${i}.recoveringWith(fallback));
-		}
+	}
 
-		/**
-		 * Tells an absent value of the last added argument from {@code null}, which a
-		 * partial update such as a PATCH request needs to leave a property unchanged or to
-		 * clear it.
-		 *
-		 * <p>
-		 * With {@code fromMap}, an absent key succeeds with {@link Presence.Absent} and
-		 * the argument is not validated, so the key is not required. A key that is present
-		 * is validated as before, an explicit {@code null} included, and its value is
-		 * given as {@link Presence#ofNullable(Object)}: an explicit {@code null} is a
-		 * violation unless the argument is {@code nullable()}.
-		 * A parameter with an empty value, which is read as {@code null}, is present.
-		 *
-		 * <p>
-		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
-		 * same way. This is the last modifier of an argument: the returned builder has
-		 * none, so {@code optional()}, {@code nullable()}, {@code defaultValue} and
-		 * {@code recover} are written before it and apply to the value of a key that is
-		 * present.
-		 * @return a builder whose last argument is a value that may be absent
-		 * @since 0.18.0
-		 * @see ValueValidator#liftPresence()
-		 */
-		public ${class}<${init_arguments}Presence<A${i}>, ${init_results}Presence<@NonNull R${i}>> presence() {
-			return new ${class}<>(${init_definitions}this.d${i}.withPresence());
-		}
+	/**
+	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
+	 * read from a key: an invalid value can still be replaced with {@code recover}.
+$(stage_class KeyedRecoverable final NullAccepting)
+
+$(modifier_recover NullAccepting)
+
+	}
+
+	/**
+	 * The builder after {@code recover} or {@code recoverWith} of an argument that is
+	 * read from a key: what {@code null} produces can still be changed, while an invalid
+	 * value is replaced with the fallback.
+$(stage_class KeyedRecovered final NullAccepting)
+
+$(modifier_optional NullAccepting)
+
+$(modifier_nullable NullAccepting)
+
+$(modifier_default_value NullAccepting)
 
 	}
 
 	/**
 	 * The builder after an argument that is read from a key accepts {@code null}, with
-	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}:
-	 * an absent key and an explicit {@code null}, which are both accepted, can be told
-	 * apart with {@link #required()} and {@link #rejectingNull()}.
-	 *
-	 * @param <A1> type of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <A%s> type of argument at position %s' "${j}" "${j}";fi;done)
-	 * @param <R1> type of the validated value of the first argument$(for j in `seq 1 ${i}`;do if [ "${j}" -gt 1 ];then printf '\n\t * @param <R%s> type of the validated value of argument at position %s' "${j}" "${j}";fi;done)
-	 * @since 0.18.0
-	 */
-	public static final class NullAccepting<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')> extends Keyed<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), $(echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')> {
-
-		NullAccepting($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
-			super($(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//'));
-		}
+	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover},
+	 * or with a {@link NullAcceptingValueValidator}: an absent key and an explicit
+	 * {@code null}, which are both accepted, can be told apart with {@link #required()},
+	 * {@link #rejectingNull()} and {@link #presence()}.
+$(stage_class NullAccepting sealed "${class}" " permits KeyedRecoverable, KeyedRecovered")
 
 		/**
 		 * Requires the key of the last added argument although its value may be
@@ -3914,6 +4348,8 @@ cat <<EOD
 		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> rejectingNull() {
 			return new ${class}<>(${init_definitions}this.d${i}.withStrictness(ObjectInputValidator.Strictness.REJECTING_NULL));
 		}
+
+$(modifier_presence)
 
 	}
 EOD

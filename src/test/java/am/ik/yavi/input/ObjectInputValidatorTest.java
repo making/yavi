@@ -1009,7 +1009,7 @@ class ObjectInputValidatorTest {
 			Presence<Integer> age) {
 	}
 
-	record Account(@Nullable String deletedAt, Optional<String> bio, Integer page, String note) {
+	record Account(@Nullable String deletedAt, Optional<String> bio, Integer page, @Nullable String note) {
 	}
 
 	// the arguments of a function are nullable, and a Presence never is
@@ -1090,14 +1090,16 @@ class ObjectInputValidatorTest {
 			._string("bio", c -> c.notBlank())
 			.optional()
 			.rejectingNull()
-			._integer("page")
-			.defaultValue(1)
+			// a validator that accepts null is taken as it is
+			._integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))
 			.rejectingNull()
-			._string("note")
+			// null produces null, an invalid value the fallback
+			._string("note", c -> c.notBlank())
 			.recover("-")
+			.nullable()
 			.required();
 		final ObjectInputValidator<Account> account = strict.fromMap(Account::new);
-		assertThat(model.validate(account, input("deletedAt", null, "note", null)).value())
+		assertThat(model.validate(account, input("deletedAt", null, "note", " ")).value())
 			.isEqualTo(new Account(null, Optional.empty(), 1, "-"));
 		assertThat(model.validate(account, input("bio", null, "page", null, "note", 1)).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
@@ -1114,14 +1116,14 @@ class ObjectInputValidatorTest {
 				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
 				"deletedAt":{"type":["string","null"]},\
 				"bio":{"type":"string","minLength":1},\
-				"page":{"type":"integer","default":1},\
-				"note":{"type":["string","null"],"default":"-"}},\
+				"page":{"type":"integer","exclusiveMinimum":0,"default":1},\
+				"note":{"type":["string","null"],"minLength":1}},\
 				"required":["deletedAt","note"]}""";
 		assertThat(JsonSchema.toJson(account.description())).isEqualTo(schema);
 		// typed arguments have no absent state and are described alike
 		final var typedAccount = strict.apply(Account::new);
 		assertThat(typedAccount.validated(null, null, null, null))
-			.isEqualTo(new Account(null, Optional.empty(), 1, "-"));
+			.isEqualTo(new Account(null, Optional.empty(), 1, null));
 		assertThat(JsonSchema.toJson(typedAccount.description())).isEqualTo(schema);
 	}
 
