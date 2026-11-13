@@ -135,7 +135,8 @@ import org.jspecify.annotations.Nullable;
  * @see am.ik.yavi.arguments.ObjectValidator the validator of a typed object, which is not
  * read from an input
  */
-public final class ObjectInputValidator<X extends @Nullable Object> implements ValueValidator<Map<String, Object>, X> {
+public sealed class ObjectInputValidator<X extends @Nullable Object>
+		implements ValueValidator<Map<String, Object>, X>permits ObjectInputValidator.IgnoringUnknown {
 
 	private final List<Part<?>> parts;
 
@@ -310,10 +311,10 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * @throws IllegalStateException if a part is the rest and an embedded validator does
 	 * not describe its properties
 	 */
-	public static <X extends @Nullable Object> ObjectInputValidator<X> of(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> IgnoringUnknown<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
-		return new ObjectInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
-				false, List.of());
+		return new IgnoringUnknown<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
+				List.of());
 	}
 
 	/**
@@ -333,9 +334,9 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * @throws IllegalArgumentException as {@link #of} does
 	 * @since 0.18.0
 	 */
-	public static <X extends @Nullable Object> ObjectInputValidator<X> flatOf(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> IgnoringUnknown<X> flatOf(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
-		return new ObjectInputValidator<>(List.copyOf(parts), mapper, false, List.of());
+		return new IgnoringUnknown<>(List.copyOf(parts), mapper, List.of());
 	}
 
 	private ObjectInputValidator(List<Part<?>> parts,
@@ -496,23 +497,58 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	}
 
 	/**
-	 * Returns a validator that reports the keys of the input map that no property is
-	 * defined for with {@code object.unknownProperty}, instead of ignoring them. The
-	 * properties of the embedded validators are defined. It applies to this map only: a
-	 * nested validator decides for its own map.
-	 * @return a validator that rejects unknown properties
-	 * @throws IllegalStateException if the validator reads the rest of the properties, or
-	 * if an embedded validator does not describe its properties
+	 * A validator that ignores the keys of the input map that no property is defined for,
+	 * and that can be told to reject them with {@link #rejectingUnknownProperties()}.
+	 * This is what {@code fromMap} and {@link ObjectInputValidator#of} return, unless the
+	 * rest of the keys is read with {@code _rest}: no key is unknown then.
+	 *
+	 * @param <X> the type of the created object
+	 * @since 0.18.0
 	 */
-	public ObjectInputValidator<X> rejectingUnknownProperties() {
-		return new ObjectInputValidator<>(this.parts, this.mapper, true, this.rules);
+	public static final class IgnoringUnknown<X extends @Nullable Object> extends ObjectInputValidator<X> {
+
+		private IgnoringUnknown(List<Part<?>> parts,
+				Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
+				List<TargetRule<X>> rules) {
+			super(parts, mapper, false, rules);
+		}
+
+		/**
+		 * Returns a validator that reports the keys of the input map that no property is
+		 * defined for with {@code object.unknownProperty}, instead of ignoring them. The
+		 * properties of the embedded validators are defined. It applies to this map only:
+		 * a nested validator decides for its own map.
+		 * @return a validator that rejects unknown properties
+		 * @throws IllegalStateException if an embedded validator does not describe its
+		 * properties, or if the validator was created from parts with a {@link Rest}
+		 */
+		public ObjectInputValidator<X> rejectingUnknownProperties() {
+			return new ObjectInputValidator<>(super.parts, super.mapper, true, super.rules);
+		}
+
+		/**
+		 * Returns a validator that additionally checks the created object with the given
+		 * predicate, as {@link ValueValidator#constraintOnTarget} states. The returned
+		 * validator can still be told to reject unknown properties.
+		 * @param predicate the rule that the created object must satisfy
+		 * @param name the name of the reported violation
+		 * @param violationMessage the message key and the default message format of the
+		 * reported violation
+		 * @return a validator with the additional rule
+		 */
+		@Override
+		public IgnoringUnknown<X> constraintOnTarget(Predicate<? super X> predicate, String name,
+				ViolationMessage violationMessage) {
+			return new IgnoringUnknown<>(super.parts, super.mapper,
+					TargetRule.append(super.rules, new TargetRule<>(predicate, name, violationMessage)));
+		}
+
 	}
 
 	/**
 	 * Returns a validator that additionally checks the created object with the given
 	 * predicate, as {@link ValueValidator#constraintOnTarget} states. The returned
-	 * validator still reads the properties, so it can be embedded, reject unknown
-	 * properties and read parameters.
+	 * validator still reads the properties, so it can be embedded and read parameters.
 	 * @param predicate the rule that the created object must satisfy
 	 * @param name the name of the reported violation
 	 * @param violationMessage the message key and the default message format of the

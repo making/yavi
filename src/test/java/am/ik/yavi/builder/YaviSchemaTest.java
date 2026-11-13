@@ -346,9 +346,14 @@ class YaviSchemaTest {
 				"s._string((value, locale, context) -> Validated.successWith(value)).nullable().required()",
 				"s._object(\"o\", s._string(\"x\").fromMap(x -> x).nullable()).required()",
 				"InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming())",
-				"StringCoercion.strict().booleanWords().trimming()",
-				// the rest is never null
-				"s._rest().recover(Map.of())", "s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
+				"StringCoercion.strict().booleanWords().trimming()", "s._string(\"x\").nullable().presence()",
+				// a rule on the created object keeps what the validator can be told
+				"s._string(\"x\").fromMap(x -> x).constraintOnTarget(x -> true, \"x\", ViolationMessage.of(\"a\", \"b\"))"
+						+ ".rejectingUnknownProperties()",
+				"Yavi._enum(TimeUnit.class).map(unit -> unit).ignoringCase()",
+				// the rest is never null, and is the last property
+				"s._string(\"x\")._rest().recover(Map.of()).fromMap((x, rest) -> x)", "s._rest().recover(Map.of())",
+				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
 				"DiscriminatedUnionValidator.<String>of(\"type\").when(\"a\", s._string(\"x\").fromMap(x -> x))"
 						+ ".validate(Map.of())");
 		final List<String> rejected = List.of(
@@ -382,12 +387,23 @@ class YaviSchemaTest {
 				"StringCoercion.strict().booleanWords(java.util.List.of(\"Y\"), java.util.List.of(\"N\")).booleanWords()",
 				"StringCoercion.strict().trimming().booleanWords().trimming()",
 				"StringCoercion.strict().trimming().trimming()",
+				// the rest is defined once, and leaves no key unknown
+				"s._rest()._rest()", "s._rest()._string(\"x\")",
+				"s._rest().fromMap(rest -> rest).rejectingUnknownProperties()",
+				// what is said once
+				"s._string(\"x\").fromMap(x -> x).rejectingUnknownProperties().rejectingUnknownProperties()",
+				"Yavi._enum(TimeUnit.class).ignoringCase().ignoringCase()",
+				// an Optional is not wrapped in a Presence
+				"s._string(\"x\").optional().presence()", "s._integer(\"x\").recover(0).optional().presence()",
+				// an enum or an object without its type cannot be read from a map
+				"s._enum(\"x\")", "s._object(\"x\")", "s.<String>_object(\"x\", c -> c.notNull())",
 				// a union without alternatives would reject every input
 				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())");
 		final List<String> chains = new ArrayList<>(accepted);
 		chains.addAll(rejected);
 		final String source = """
-				import java.util.Map; import java.util.Optional; import am.ik.yavi.builder.YaviSchema; \
+				import java.util.Map; import java.util.Optional; import java.util.concurrent.TimeUnit; \
+				import am.ik.yavi.builder.YaviSchema; import am.ik.yavi.core.ViolationMessage; \
 				import am.ik.yavi.core.InputReader; import am.ik.yavi.core.StringCoercion; \
 				import am.ik.yavi.core.Validated; import am.ik.yavi.input.DiscriminatedUnionValidator; \
 				import am.ik.yavi.input.ParameterTree; \

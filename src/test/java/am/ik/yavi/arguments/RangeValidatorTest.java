@@ -19,7 +19,7 @@ public class RangeValidatorTest {
 		._integer("from", c -> c.greaterThanOrEqual(0))
 		._integer("to", c -> c.greaterThanOrEqual(0))
 		.apply(Range::new)
-		.andThen(Yavi.schema().<Range>_object("to", c -> c.predicate(RangeConstraint.SINGLETON)).get());
+		.andThen(Yavi._object("to", Range.class, c -> c.predicate(RangeConstraint.SINGLETON)));
 
 	@Test
 	void valid() {

@@ -106,15 +106,6 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	/**
-	 * Returns the definition of a named argument whose input type is known only to the
-	 * given validator, which is built from constraints and so rejects {@code null}.
-	 */
-	static <A> ArgumentDefinition<A, A> value(String name, ValueValidator<A, A> validator) {
-		return new ArgumentDefinition<>(name, validator, reader -> validator.readingWith(reader), Source.PROPERTY,
-				true);
-	}
-
-	/**
 	 * Returns the definition of a named argument of the given type, validated by the
 	 * given validator, which is built from constraints and so rejects {@code null}.
 	 */
@@ -314,10 +305,9 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			reading = new Reading<>(this.untyped.apply(InputReader.ofJdkTypes()), this.untyped);
 		}
 		catch (UnsupportedOperationException e) {
-			throw new IllegalStateException(
-					"The input type of the argument " + (name.isEmpty() ? "at position " + position : "'" + name + "'")
-							+ " is unknown. Add it with a type (for example _enum(name, type) or _object(name, type)),"
-							+ " or with a validator that knows its input type (see ValueValidator#untyped).",
+			throw new IllegalStateException("The input type of the argument "
+					+ (name.isEmpty() ? "at position " + position : "'" + name + "'")
+					+ " is unknown. Add it with a validator that knows its input type (see ValueValidator#untyped).",
 					e);
 		}
 		return switch (this.source) {
@@ -419,6 +409,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the description of an object whose properties are the given arguments in
 	 * order. An argument without a name is named as
 	 * {@link ValueDescription.Properties#ofArguments} states.
+	 * @throws IllegalArgumentException if two arguments have the same name
 	 */
 	static ValueDescription describe(ArgumentDefinition<?, ?>... definitions) {
 		final List<ValueDescription.Property> inferred = ValueDescription.Properties
@@ -429,8 +420,12 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final List<ValueDescription.Property> properties = new ArrayList<>(definitions.length);
 		for (int i = 0; i < definitions.length; i++) {
 			final String name = definitions[i].name();
-			properties
-				.add(name != null ? new ValueDescription.Property(name, inferred.get(i).value()) : inferred.get(i));
+			final ValueDescription.Property property = name != null
+					? new ValueDescription.Property(name, inferred.get(i).value()) : inferred.get(i);
+			if (properties.stream().anyMatch(defined -> defined.name().equals(property.name()))) {
+				throw new IllegalArgumentException("The property '" + property.name() + "' is defined twice.");
+			}
+			properties.add(property);
 		}
 		return new ValueDescription.Properties(properties);
 	}

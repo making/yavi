@@ -421,48 +421,12 @@ public final class YaviSchema
 	}
 
 	/**
-	 * Adds the next argument as an enum constant with the given name and configured
-	 * constraints.
-	 *
-	 * <p>
-	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is a
-	 * violation: the one of a constraint that rejects it, or else {@code object.notNull}.
-	 * @param <E> the enum type of the argument
-	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name,
-			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
-				ArgumentDefinition.value(name, EnumValidatorBuilder.of(name, constraints).build()));
-	}
-
-	/**
-	 * Adds the next argument as an enum constant with the given name and no constraints.
-	 *
-	 * <p>
-	 * Without constraints every value other than {@code null} is accepted. {@code name}
-	 * is recorded as the property name of the argument.
-	 * @param <E> the enum type of the argument
-	 * @param name the property name recorded for the argument
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name) {
-		return this._enum(name, Function.identity());
-	}
-
-	/**
 	 * Adds the next argument as a constant of the given enum type with the given name and
 	 * configured constraints.
 	 *
 	 * <p>
-	 * Unlike {@link #_enum(String, Function)}, the argument knows its enum type: its
-	 * description holds the constants, and {@code fromMap} reads it from the name of a
-	 * constant.
+	 * The argument knows its enum type: its description holds the constants, and
+	 * {@code fromMap} reads it from the name of a constant.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param type the enum type of the argument
@@ -1016,48 +980,15 @@ public final class YaviSchema
 	}
 
 	/**
-	 * Adds the next argument as an object with the given name and configured constraints.
-	 *
-	 * <p>
-	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link ObjectConstraint}, for example {@code object.notNull}. A {@code null} value
-	 * is a violation: the one of a constraint that rejects it, or else
-	 * {@code object.notNull}.
-	 * @param <T> type of the argument
-	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name,
-			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
-				ArgumentDefinition.value(name, ObjectValidatorBuilder.of(name, constraints).build()));
-	}
-
-	/**
-	 * Adds the next argument as an object with the given name and no constraints.
-	 *
-	 * <p>
-	 * Without constraints every value other than {@code null} is accepted. {@code name}
-	 * is recorded as the property name of the argument.
-	 * @param <T> type of the argument
-	 * @param name the property name recorded for the argument
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name) {
-		return this._object(name, Function.identity());
-	}
-
-	/**
 	 * Adds the next argument as an object of the given type with the given name and
 	 * configured constraints.
 	 *
 	 * <p>
-	 * Unlike {@link #_object(String, Function)}, the argument knows its type, so
-	 * {@code fromMap} can read it: the value in the map must be an instance of the type
-	 * or represent it. Give {@code Object.class} to take any value as it is.
+	 * The argument knows its type, so {@code fromMap} can read it: the value in the map
+	 * must be an instance of the type or represent it. Give {@code Object.class} to take
+	 * any value as it is. A type that has no class literal, such as {@code List<String>},
+	 * is added with a value validator:
+	 * {@code _object(Yavi.<List<String>>_object(name, constraints))}.
 	 * @param <T> type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param type the type of the argument
@@ -1696,26 +1627,32 @@ public final class YaviSchema
 	 * The rest is therefore never {@code null}: the returned builder has no
 	 * {@code optional()}, {@code nullable()} or {@code defaultValue}, only
 	 * {@code recover} to replace the rest when a value is invalid.
+	 *
+	 * <p>
+	 * The rest is the last argument: the returned builder adds no argument, so the rest
+	 * is defined once, and the validator that {@code fromMap} creates cannot reject
+	 * unknown keys, of which there is none.
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
 	 * @param valueValidator value validator for each value
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Recoverable<Map<String, V>, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Rest<Map<String, V>, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments1ValidatorBuilder.Recoverable<>(ArgumentDefinition.rest(valueValidator));
+		return new Arguments1ValidatorBuilder.Rest<>(
+				new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest(valueValidator)));
 	}
 
 	/**
 	 * Adds the next argument as a {@code Map} of the properties that no other argument is
 	 * defined for, whose values are taken as they are.
-	 * @return a builder for the next argument
+	 * @return a builder that creates the validator
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments1ValidatorBuilder.Recoverable<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
-		return new Arguments1ValidatorBuilder.Recoverable<>(ArgumentDefinition.rest());
+	public Arguments1ValidatorBuilder.Rest<Map<String, Object>, Map<String, @Nullable Object>> _rest() {
+		return new Arguments1ValidatorBuilder.Rest<>(new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest()));
 	}
 
 }

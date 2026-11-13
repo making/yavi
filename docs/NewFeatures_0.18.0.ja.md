@@ -185,7 +185,7 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 // Employee[id=1, name=UserName[first=Taro, last=Yamada], dept=null, attrs={color=red}]
 ```
 
-16 個を超えるキーを読む場合も `_embedded` を使います。バリデータを渡さない `_rest()` は、値をそのまま受け取ります。残りのキーがなければ `_rest` の値は空のマップで、`null` にはなりません。そのため続けられる修飾メソッドは `recover(...)` だけで、`_rest().nullable()` や `_rest().defaultValue(...)` はコンパイルできません。
+16 個を超えるキーを読む場合も `_embedded` を使います。バリデータを渡さない `_rest()` は、値をそのまま受け取ります。残りのキーがなければ `_rest` の値は空のマップで、`null` にはなりません。そのため続けられる修飾メソッドは `recover(...)` だけで、`_rest().nullable()` や `_rest().defaultValue(...)` はコンパイルできません。`_rest` はスキーマの最後のプロパティなので、書けるのは 1 回だけです。`_rest` を持つスキーマのバリデータには未知のキーがないので、`rejectingUnknownProperties()` はありません。
 
 ### 存在しないキーと null を区別する
 
@@ -254,6 +254,17 @@ NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> 
 
 Yavi.schema()._integer(page).rejectingNull() // 省略したときだけ 1
 ```
+
+スキーマのほかの部分も同じように段階化されています。効果のない書き方や、バリデータを作る時点で失敗する書き方はコンパイルできません。
+
+| 連鎖 | |
+| --- | --- |
+| `.optional().presence()` | コンパイルできない。`Optional` が `Presence` に包まれてしまう。`.nullable().presence()` と書く |
+| `._rest()._rest()`、`._rest()._string("x")` | コンパイルできない。`_rest` は最後のプロパティ |
+| `._rest().fromMap(f).rejectingUnknownProperties()` | コンパイルできない。未知のキーがない |
+| `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | コンパイルできない。`fromMap` は `ObjectInputValidator.IgnoringUnknown` を返し、指定できるのは 1 回だけ |
+| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | コンパイルできない。`ignoringCase()` は `map` の後、最後に書く |
+| `._enum("role")`、`._object("address")` | 存在しない。enum とオブジェクトは、`fromMap` に必要な型を付けて追加する |
 
 `null` を返す修飾メソッドは `nullable()` だけです。`null` にならない値（制約で検証した値、リスト、マップ、`Optional`）のデフォルト値やフォールバック値に `null` を渡すと、nullness チェッカーがあればコンパイル時に報告されます。チェッカーがない場合も、スキーマを組み立てた時点で `NullPointerException` になります。引数の型が `null` を許さない関数に `null` が渡ることはありません。
 

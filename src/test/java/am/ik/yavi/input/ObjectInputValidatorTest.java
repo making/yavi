@@ -20,8 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import am.ik.yavi.arguments.Arguments2;
-import am.ik.yavi.arguments.EnumValidator;
-import am.ik.yavi.builder.EnumValidatorBuilder;
+import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintDescription;
@@ -718,7 +717,7 @@ class ObjectInputValidatorTest {
 		// properties that are read are unknown
 		final ValueValidator<Map<String, Object>, Integer> size = (map, locale, context) -> Validated
 			.successWith(Objects.requireNonNull(map).size());
-		final ObjectInputValidator<List<Object>> sized = Yavi.schema()
+		final ObjectInputValidator.IgnoringUnknown<List<Object>> sized = Yavi.schema()
 			._string("id")
 			._embedded(size)
 			.fromMap((id, count) -> List.of(id, count));
@@ -735,10 +734,10 @@ class ObjectInputValidatorTest {
 		assertThatThrownBy(() -> Yavi.schema()._embedded(sized)._rest().fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("rest of the properties cannot be told");
-		assertThatThrownBy(() -> Yavi.schema()._rest().fromMap(Optional::ofNullable).rejectingUnknownProperties())
-			.isInstanceOf(IllegalStateException.class);
-		assertThatThrownBy(() -> Yavi.schema()._rest()._rest().fromMap((a, b) -> ""))
-			.isInstanceOf(IllegalArgumentException.class);
+		// a name is defined once, whatever the validator is created with
+		assertThatThrownBy(() -> Yavi.schema()._string("a")._integer("a").apply((a, b) -> ""))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("The property 'a' is defined twice");
 		assertThatThrownBy(
 				() -> Yavi.schema()._string("dept_code")._embedded(departmentValidator).fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class)
@@ -949,7 +948,7 @@ class ObjectInputValidatorTest {
 	void lenientReadingsAreOptions(Model model) {
 		// the name of a constant is read in any case by an argument that says so,
 		// whatever the reader is
-		final EnumValidator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
+		final Arguments1Validator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
 		final ObjectInputValidator<Signup> validator = Yavi.schema()
 			._string("name")
 			.nullable()
@@ -981,8 +980,6 @@ class ObjectInputValidatorTest {
 		assertThat(unit.validated("g")).isEqualTo(Unit.G);
 		assertThat(unit.validate("kG").errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.oneOf");
-		assertThatThrownBy(() -> EnumValidatorBuilder.<Role>of("role", c -> c).build().ignoringCase())
-			.isInstanceOf(IllegalStateException.class);
 		// a form: the fields are trimmed, a blank one is not given, and a checkbox is
 		// "on" or absent
 		final StringCoercion form = StringCoercion.strict().trimming().booleanWords();
@@ -1155,11 +1152,9 @@ class ObjectInputValidatorTest {
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("count", "object.type"), tuple("id", "object.anyOf"), tuple("id", "object.type"),
 					tuple("id", "object.type"));
-		assertThatThrownBy(() -> Yavi.schema().<Role>_enum("role").fromMap(Optional::ofNullable))
-			.isInstanceOf(IllegalStateException.class)
-			.hasMessageContaining("The input type of the argument 'role' is unknown");
 		assertThatThrownBy(() -> Yavi.schema()._object("count", coerced).fromMap(Optional::ofNullable))
-			.isInstanceOf(IllegalStateException.class);
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("The input type of the argument 'count' is unknown");
 		assertThatThrownBy(
 				() -> Yavi.schema()._integer(coerced.untyped(Object.class)::validate).fromMap(Optional::ofNullable))
 			.isInstanceOf(IllegalStateException.class)

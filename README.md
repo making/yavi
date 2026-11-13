@@ -529,7 +529,7 @@ Validated<User> validated = userValidator.validate(map);
 * `presence()` tells an absent key from `null`, as a partial update (PATCH) needs; see [below](#telling-an-absent-key-from-null).
 * A key that no property is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` property needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
-* The name of an enum constant is matched exactly. `ignoringCase()` of its validator reads it in any case, whatever the input is read with: `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`. The description and the JSON Schema keep the names of the constants.
+* The name of an enum constant is matched exactly. `ignoringCase()` of its validator reads it in any case, whatever the input is read with: `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`. It is written last, after `map`, and once. The description and the JSON Schema keep the names of the constants.
 * `flatFromMap(f)` takes a function that creates the object itself and can fail: it returns a `Validated`, for example `Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, locale)`, and is applied only when all arguments are valid. `flatApply(f)` is its counterpart for arguments.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
@@ -559,7 +559,7 @@ switch (patch.bio()) {
 
 * An absent key is `Absent` and is not validated, so it is never required.
 * A key that is present is validated as without `presence()`, an explicit `null` included: it is a violation unless the property is `nullable()`, which gives `PresentNull`.
-* `presence()` is the last modifier of a property: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present. Writing one after it does not compile, and neither does `presence()` on an `_embedded` or `_rest` property, which is not read from a key.
+* `presence()` is the last modifier of a property: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present. Writing one after it does not compile, and neither does `presence()` on an `_embedded` or `_rest` property, which is not read from a key, or after `optional()`, whose `Optional` would be wrapped in a `Presence`.
 * It works with every input. In request parameters, a parameter with an empty value (`bio=`) is present and `null`.
 * With `apply(f)`, the argument itself is a `Presence`. `ValueValidator#liftPresence()` is the combinator, and `ObjectInputValidator.PresenceProperty` the part for `ObjectInputValidator.of(parts, mapper)`.
 * In the JSON Schema the property is not `required`, and it allows `null` only if the property is `nullable()`.
@@ -597,7 +597,7 @@ ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
 
 * The properties of an embedded validator are properties of the embedding one: they are described, are not unknown to `rejectingUnknownProperties()`, are not part of the rest, and a name defined twice is rejected when the validator is built. A `DiscriminatedUnionValidator` is embedded in the same way.
 * An embedded validator with `optional()`, `nullable()` or `defaultValue(...)` is given `null` when none of its properties has a value, like the columns of a LEFT JOIN that matches no row.
-* A violation of the rest is located under its key. `_rest()` without a validator takes the values as they are. `_rest` and `rejectingUnknownProperties()` exclude each other.
+* A violation of the rest is located under its key. `_rest()` without a validator takes the values as they are. `_rest` is the last property of a schema, and the validator of a schema with `_rest` has no `rejectingUnknownProperties()`, because no key is unknown.
 * The rest is an empty map if there is no other key, never `null`, so it takes `recover(...)` only: `_rest().nullable()` does not compile.
 * A lambda may be embedded too. The properties it reads are unknown, so the validator can then neither reject unknown properties nor read the rest.
 * Embedding is also the way to read more than 16 keys.

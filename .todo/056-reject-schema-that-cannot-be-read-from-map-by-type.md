@@ -22,8 +22,18 @@ The same cause outside `fromMap`: `Yavi._enum("role", c -> c).ignoringCase()` th
 `_enum(name, type)` return the same `EnumValidator`.
 
 They fail fast, when the validator is built, so nothing wrong is validated. But the
-policy is that types reject what they can tell, and the first two rows are plain
+policy is that types reject what they can tell, wherever they can, even at the price of
+more stage types (stated by the maintainer on #564), and the first two rows are plain
 method choices.
+
+Chains that compile although a part is repeated, found on #564. Nothing is dropped, but
+types can tell:
+
+| Chain | |
+| --- | --- |
+| `fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | the second one does nothing |
+| `Yavi._enum("role", Role.class).ignoringCase().ignoringCase()` | the second one does nothing |
+| `._string("x").optional().presence()` | `Presence<Optional<X>>`: the same three states as `.nullable().presence()`, wrapped twice |
 
 `apply` does not check a name that is defined twice:
 `._string("a")._string("a").apply(f)` builds a validator whose description, and so its
@@ -44,11 +54,21 @@ Enumerate per row what types can tell and what it costs:
   validator would tell, at the price of a second overload per `_xxx(validator)` (see
   how #563 did it for `NullAcceptingValueValidator`).
 - `_rest` twice, `rejectingUnknownProperties()` with `_rest`: a builder family or a
-  result type that remembers `_rest`. Probably not worth 16 more builders; say so.
+  result type that remembers `_rest`. By the policy above the price is not a reason to
+  skip it; look for the cheapest design.
+  For `rejectingUnknownProperties()`: a result type of `fromMap` without it (returned by
+  `fromMap` after `_rest`, and by `rejectingUnknownProperties()` itself, which also
+  rejects the repeated call) next to the one with it. `constraintOnTarget` must keep
+  the type it is called on.
   A cheaper way for `_rest` twice: since #564 `_rest` returns the `Recoverable` stage,
   which extends the builder. A stage of its own that has the terminals and `recover`
   but no `_xxx` makes `_rest` the last property by type. Price: no property can be
   written after `_rest`, so the rest is always the last argument of the function.
+- `ignoringCase()` twice: the validator it returns has no `ignoringCase()`; design it
+  together with the enum validator without a type.
+- `optional().presence()`: a stage after `optional()` with `required()` and
+  `rejectingNull()` but no `presence()` (two more stage classes per builder, see the
+  decision recorded on #564).
 - A name defined twice: types cannot tell. Make `apply` consistent with `fromMap`
   (reject), or say why not.
 

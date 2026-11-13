@@ -222,7 +222,8 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 Embedding is also the way to read more than 16 keys. `_rest()` without a validator takes
 the values as they are. The rest is an empty map if there is no other key, never `null`,
 so it takes `recover(...)` only: `_rest().nullable()` and `_rest().defaultValue(...)` do
-not compile.
+not compile. `_rest` is the last property of a schema, so it is written once, and the
+validator of such a schema has no `rejectingUnknownProperties()`: no key is unknown.
 
 ### Telling an absent key from null
 
@@ -309,6 +310,18 @@ NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> 
 
 Yavi.schema()._integer(page).rejectingNull() // 1 only if omitted
 ```
+
+The other parts of a schema are staged in the same way, so that what would have no
+effect, or would fail when the validator is built, does not compile:
+
+| Chain | |
+| --- | --- |
+| `.optional().presence()` | does not compile: the `Optional` would be wrapped in a `Presence`; write `.nullable().presence()` |
+| `._rest()._rest()`, `._rest()._string("x")` | does not compile: the rest is the last property |
+| `._rest().fromMap(f).rejectingUnknownProperties()` | does not compile: no key is unknown |
+| `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | does not compile: `fromMap` returns an `ObjectInputValidator.IgnoringUnknown`, which is told once |
+| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | does not compile: write `ignoringCase()` last, after `map` |
+| `._enum("role")`, `._object("address")` | do not exist: an enum and an object are added with their type, which `fromMap` needs |
 
 `nullable()` is the only modifier that produces `null`. A `null` default value or
 fallback of a value that is never `null` (the value of constraints, a list, a map, an

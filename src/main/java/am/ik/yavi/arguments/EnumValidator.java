@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * {@code defaultValue(...)} of the validator.
  *
  * <p>
- * A validator that knows its enum type reads the name of a constant from an untyped
+ * The validator knows its enum type, so it reads the name of a constant from an untyped
  * input, and with {@link #ignoringCase()} whatever the case of the name is.
  *
  * <p>
@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  */
 public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extends DefaultArguments1Validator<E, T> {
 
-	private final @Nullable Class<E> enumType;
+	private final Class<E> enumType;
 
 	private final boolean ignoringCase;
 
@@ -105,15 +105,15 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	 *     .fromMap(role -> role)
 	 *     .validate(Map.of("role", "admin")); // ADMIN
 	 * }</pre>
+	 *
+	 * <p>
+	 * The returned validator is not an {@code EnumValidator}, so the case is ignored
+	 * once: write this after {@code map} and {@code preprocess}, whose results keep
+	 * ignoring the case.
 	 * @return a new validator that ignores the case of the name of a constant
-	 * @throws IllegalStateException if the enum type of this validator is unknown
 	 * @since 0.18.0
 	 */
-	public EnumValidator<E, T> ignoringCase() {
-		if (this.enumType == null) {
-			throw new IllegalStateException(
-					"The enum type of this validator is unknown. Create it with the type, for example _enum(name, type).");
-		}
+	public Arguments1Validator<E, T> ignoringCase() {
 		return new EnumValidator<>(super.validator, super.mapper, this.enumType, super.transform, true);
 	}
 
@@ -124,14 +124,13 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	 * @param reader the reader of the nodes
 	 * @param <N> the type of the nodes
 	 * @return a value validator for an untyped input
-	 * @throws UnsupportedOperationException if the enum type is unknown
 	 * @since 0.18.0
 	 */
 	@Override
 	public <N> ValueValidator<N, T> readingWith(InputReader<N> reader) {
 		final ValueValidator<N, T> exact = super.readingWith(reader);
 		final Class<E> type = this.enumType;
-		if (!this.ignoringCase || type == null) {
+		if (!this.ignoringCase) {
 			return exact;
 		}
 		return new ValueValidator<>() {
@@ -179,29 +178,17 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	}
 
 	private EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
-			@Nullable Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform,
-			boolean ignoringCase) {
-		super(validator, mapper, enumType == null ? Enum.class : enumType, transform);
+			Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform, boolean ignoringCase) {
+		super(validator, mapper, enumType, transform);
 		this.enumType = enumType;
 		this.ignoringCase = ignoringCase;
 	}
 
 	/**
 	 * Creates a validator that applies the given {@link Validator} to {@code Arguments1}
-	 * and maps the validated value with the given function.
-	 * @param validator the validator applied to the value
-	 * @param mapper the function applied to the validated value
-	 */
-	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper) {
-		super(validator, mapper, Enum.class);
-		this.enumType = null;
-		this.ignoringCase = false;
-	}
-
-	/**
-	 * Creates a validator like {@link #EnumValidator(Validator, Function1)} that also
-	 * knows the enum type, which is reported by {@link #description()} and lets
-	 * {@link #untyped()} accept the name of a constant.
+	 * and maps the validated value with the given function. It knows the enum type, which
+	 * is reported by {@link #description()} and lets {@link #untyped()} accept the name
+	 * of a constant.
 	 * @param validator the validator applied to the value
 	 * @param mapper the function applied to the validated value
 	 * @param enumType the enum type of the value
