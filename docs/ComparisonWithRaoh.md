@@ -96,10 +96,15 @@ a named one shows the name. The name is given by the place where the validator i
 | `fixedLength(n)` | `c.fixedSize(n)` |
 | `nonBlank()` | `c.notBlank()` |
 | `pattern(regex)` | `c.pattern(regex)` |
-| `uuid()` (returns `UUID`) | `c.uuid()`, then `.map(UUID::fromString)` |
-| `url()` (returns `URI`, `http` / `https` only) | `c.url()` (any protocol of `java.net.URL`), then `.map(URI::create)` |
+| `uuid()` (returns `UUID`) | `_object(name, UUID.class)`, which reads the canonical string; `c.uuid()` for a `String` |
+| `url()` (returns `URI`, `http` / `https` only) | `_object(name, URI.class)`, which reads any URI reference; `c.url()` (any protocol of `java.net.URL`) for a `String` |
+| `uri()` (returns `URI`, any scheme) | `_object(name, URI.class)`; `c.uri()` for a `String` |
+| `ip()`, `ipv4()`, `ipv6()` | `c.ip()`, `c.ipv4()`, `c.ipv6()` |
+| `ulid()` | `c.ulid()` |
+| `cuid()` | `c.pattern("^c[0-9a-z]{24}$")`; cuid is deprecated by its authors, so it has no constraint of its own |
 | `int_().range(0, 150)` | `c.greaterThanOrEqual(0).lessThanOrEqual(150)` |
 | `positive()`, `nonNegative()` | `c.positive()`, `c.positiveOrZero()` |
+| `int_().multipleOf(n)`, also of `long_()` and `decimal()` | `c.multipleOf(n)` of the integral types, `BigInteger` and `BigDecimal` |
 | `decimal().scale(4)` | `c.fractionDigits(4)`; `c.integerDigits(n)` bounds the digits before the decimal point |
 | `date().after(d)`, `before(d)`, `between(a, b)` | `c.after(() -> d)`, `c.before(() -> d)`, `c.between(() -> a, () -> b)` |
 | a bound taken from a clock by the caller | `c.past()`, `c.future()`, `c.past(clock)` ... |
@@ -198,8 +203,7 @@ record UserId(UUID value) {}
 StringValidator<Email> emailValidator = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
 IntegerValidator<Age> ageValidator = Yavi._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .map(Age::new);
-StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.uuid())
-        .map(s -> new UserId(UUID.fromString(s)));
+ObjectValidator<UUID, UserId> userIdValidator = Yavi._object("id", UUID.class, c -> c).map(UserId::new);
 ```
 
 ## Objects
@@ -210,13 +214,13 @@ StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.uuid())
 record User(UserId id, Email email, Age age) {}
 
 ObjectInputValidator<User> userValidator = Yavi.schema()
-        ._string(userIdValidator)
+        ._object(userIdValidator)
         ._string(emailValidator)
         ._integer(ageValidator)
         .fromMap(User::new);
 
 userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300));
-// id: "id" must be a valid UUID
+// id: "id" must be of type UUID
 // email: "email" must be a valid email address
 // age: "age" must be less than or equal to 150
 ```
@@ -530,9 +534,11 @@ ValueValidator<Map<String, Object>, Contact> contactValidator = ValueValidator.a
             .fromMap((kind, value) -> new PhoneContact(value)));
 ```
 
-No cast to the supertype is needed. When no alternative matches, Raoh reports one issue
-(`no variant matched`), and YAVI reports `object.anyOf` followed by the violations of
-every alternative.
+No cast to the supertype is needed. When no alternative matches, both report one issue:
+Raoh `one_of_failed` with the issues of each candidate in `meta.candidates`, and YAVI
+`object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with the violations of each
+alternative in `alternatives()` (`alternatives` of a `ViolationDetail.NoAlternativeMatched`). They are prefixed with the violation, as
+`rebase()` does for the candidates.
 
 ### discriminate
 
@@ -741,7 +747,7 @@ ConstraintViolations violations = validated.errors();
 | Raoh | YAVI |
 | --- | --- |
 | `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
-| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`) |
+| `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
 | `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to

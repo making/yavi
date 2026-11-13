@@ -6,7 +6,7 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumericConstraintBase;
+import am.ik.yavi.constraint.base.ExactNumericConstraintBase;
 
 /**
  * Constraints on an {@link Integer} value.
@@ -19,7 +19,7 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
  * @param <T> the type of the object that owns the property
  * @since 0.0.1
  */
-public class IntegerConstraint<T> extends NumericConstraintBase<T, Integer, IntegerConstraint<T>> {
+public class IntegerConstraint<T> extends ExactNumericConstraintBase<T, Integer, IntegerConstraint<T>> {
 
 	/**
 	 * Creates a new constraint without any predicate.
@@ -50,6 +50,11 @@ public class IntegerConstraint<T> extends NumericConstraintBase<T, Integer, Inte
 	@Override
 	protected Predicate<Integer> isLessThanOrEqual(Integer max) {
 		return x -> x <= max;
+	}
+
+	@Override
+	protected Predicate<Integer> isMultipleOf(Integer divisor) {
+		return x -> x % divisor == 0;
 	}
 
 	@Override

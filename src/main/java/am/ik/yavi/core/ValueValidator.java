@@ -182,6 +182,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * {@code LocalDateTime}, {@code OffsetDateTime}, {@code ZonedDateTime},
 	 * {@code Instant}, {@code Year} and {@code YearMonth}, or an integral number for
 	 * {@code Year},</li>
+	 * <li>an ISO-8601 string for {@code Duration} ({@code PT1H30M}) and {@code Period}
+	 * ({@code P1Y2M}),</li>
+	 * <li>the canonical string (8-4-4-4-12 hexadecimal digits) for {@code UUID}, and a
+	 * string that {@link java.net.URI} parses, which may be a reference without a scheme,
+	 * for {@code URI},</li>
 	 * <li>a map whose keys are all strings for {@code Map}.</li>
 	 * </ul>
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
@@ -717,9 +722,14 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 *
 	 * <p>
 	 * If every alternative fails, the result holds one violation with the message key
-	 * {@code object.anyOf} followed by the violations of all alternatives in the given
-	 * order. The leading violation has an empty name, so it is reported on the validated
-	 * value itself and takes the name of the property the validator is applied to.
+	 * {@code object.anyOf}. It has an empty name, so it is reported on the validated
+	 * value itself and takes the name of the property the validator is applied to. The
+	 * violations of the alternatives are not in the result: a list of them would not tell
+	 * which alternative a violation belongs to and would show contradictory messages for
+	 * one value. The violation is a {@link ConstraintViolation.NoAlternativeMatched},
+	 * which keeps them per alternative, in the given order, in
+	 * {@link ConstraintViolation.NoAlternativeMatched#alternatives() alternatives()};
+	 * they are renamed and prefixed with it.
 	 * @param validators the alternatives, tried in the given order
 	 * @param <T> the type of the object to be validated
 	 * @param <X> the common type of the values produced by the alternatives
@@ -740,17 +750,17 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				.map(alternative -> alternative.readingWith(reader))
 				.toArray(ValueValidator[]::new));
 		return ValueValidator.<T, X>described((t, locale, constraintContext) -> {
-			final List<ConstraintViolation> violations = new ArrayList<>();
+			final List<ConstraintViolations> violations = new ArrayList<>();
 			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
 				final Validated<? extends X> validated = alternative.validate(t, locale, constraintContext);
 				if (validated.isValid()) {
 					return Validated.successWith(validated.value());
 				}
-				violations.addAll(validated.errors());
+				violations.add(validated.errors());
 			}
-			violations.add(0,
-					ConstraintViolation.of(ViolationMessage.Default.OBJECT_ANY_OF, t, locale, alternatives.size()));
-			return Validated.failureWith(violations);
+			return Validated.failureWith(
+					ConstraintViolation.of(ViolationMessage.Default.OBJECT_ANY_OF, t, locale, alternatives.size())
+						.withAlternatives(violations));
 		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()), untyped);
 	}
 

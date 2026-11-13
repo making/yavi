@@ -62,7 +62,7 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 | `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
 | `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる |
 | `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
-| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` に続けて各選択肢の違反 |
+| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。この違反は `ConstraintViolation.NoAlternativeMatched` で、各選択肢の違反はその `alternatives()` にある |
 | `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
 
 ### 新しい制約
@@ -73,6 +73,24 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
 // 1.505: "price" must have at most 2 fraction digits
 ```
+
+整数型、`BigInteger`、`BigDecimal` の制約に `multipleOf(divisor)` が追加されました。`Double` と `Float` にはありません。2 進小数の剰余は正確ではないためです。
+
+```java
+Yavi._integer("quantity", c -> c.multipleOf(12));
+// 30: "quantity" must be a multiple of 12
+Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
+```
+
+`CharSequenceConstraint` に 3 つの形式が追加されました。
+
+| 制約 | 受け付ける値 | メッセージキー |
+| --- | --- | --- |
+| `ip()` | IPv4 または IPv6 のアドレス | `charSequence.ip` |
+| `uri()` | スキームを持つ URI（`mailto:a@example.com`、`urn:isbn:...`、`s3://bucket/key`）。`url()` と違い、`java.net.URL` が扱えるプロトコルに限らない | `charSequence.uri` |
+| `ulid()` | ULID。大文字と小文字のどちらでもよい | `charSequence.ulid` |
+
+`JsonSchema` はこれらを `multipleOf` と `"format": "uri"` として出力します。
 
 ## 省略可能なプロパティとネストしたオブジェクトやリストやマップ
 
@@ -130,6 +148,7 @@ Validated<User> validated = userValidator.validate(Map.of(
 | プロパティの型を表さない値（`"age": "30"`） | `object.type`: `"age" must be of type integer` |
 | 値が変わらない数値（`Integer` に対する `30L`、`30.0`） | 受け付ける。`30.5` は `object.type` |
 | enum の定数、日時の値 | 定数の名前、ISO-8601 形式の文字列から読み取る |
+| `UUID`、`URI`、`Duration`、`Period`（`_object("id", UUID.class)`） | UUID の正規形の文字列、URI の文字列、ISO-8601 形式の文字列（`PT1H30M`、`P1Y2M`）から読み取る。それ以外は `object.type`: `"id" must be of type UUID` |
 | 存在しないキー | `null` と同じように検証する。`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` があれば受け付け、なければ `object.required`。`required()` を付けると常に `object.required` |
 | 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反。`rejectingNull()` を付けると常に `object.notNull` |
 | プロパティが定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
@@ -437,6 +456,44 @@ List<ViolationDetail> details = violations.details();
 //   "message": "\"address.street\" must not be blank", "args": ["address.street", ""]}, ...]
 ```
 
+`ValueValidator.anyOf` のどの選択肢にも一致しなかった場合、結果は違反 1 件です。各選択肢の違反は 1 つのリストに混ぜられません。混ぜると、どの違反がどの選択肢のものかがわからなくなるためです。この違反は `ConstraintViolation.NoAlternativeMatched` です。`alternatives()` を持つのはこの型だけで、選択肢ごとの `ConstraintViolations` を返します。それらはこの違反と一緒に名前が付け替えられます。
+
+```java
+ConstraintViolations violations = Yavi.schema()
+    ._object("contact", ValueValidator.anyOf(emailContact, phoneContact))
+    .fromMap(contact -> contact)
+    .validate(Map.of("contact", Map.of("kind", "email", "value", "x")))
+    .errors();
+
+violations.messagesByName();
+// {contact=["contact" must satisfy at least one of the 2 alternatives]}
+
+if (violations.get(0) instanceof ConstraintViolation.NoAlternativeMatched unmatched) {
+    unmatched.alternatives().get(0).messagesByName();
+    // {contact.value=["contact.value" must be a valid email address]}
+    unmatched.alternatives().get(1).messagesByName();
+    // {contact.kind=["contact.kind" must be equal to phone], contact.value=["contact.value" must match ^\d{10,15}$]}
+
+    // 要約の代わりに見せる、違反がもっとも少ない選択肢
+    ConstraintViolations closest = unmatched.alternatives().stream()
+        .min(Comparator.comparingInt(ConstraintViolations::size))
+        .orElseThrow();
+}
+
+// 詳細に対する switch に default は要らない。record はこの 2 つだけ
+for (ViolationDetail detail : violations.details()) {
+    List<String> messages = switch (detail) {
+        case ViolationDetail.Simple simple -> List.of(simple.message());
+        case ViolationDetail.NoAlternativeMatched unmatched -> unmatched.alternatives().stream()
+            .flatMap(List::stream)
+            .map(ViolationDetail::message)
+            .toList();
+    };
+}
+```
+
+`ViolationDetail` は 2 つの record からなる sealed interface です。この違反の詳細は `ViolationDetail.NoAlternativeMatched` で、選択肢ごとの詳細のリストである `alternatives` を持ちます。ほかの詳細は `ViolationDetail.Simple` なので、JSON にこのプロパティは出ません。
+
 自分で書く検証ステップでは、1 回の呼び出しで失敗を返せます。
 
 ```java
@@ -511,6 +568,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `recover`、`recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
 | `messagesByName()`、`pointer()`、`ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
 | `ignoringCase()`、`StringCoercion`、`fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
+| `object.anyOf` の `alternatives()`、`multipleOf`、`ip()`、`uri()`、`ulid()`、文字列からの `UUID`、`URI`、`Duration`、`Period` | [#566](https://github.com/making/yavi/pull/566) |
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |

@@ -9,6 +9,7 @@ import am.ik.yavi.constraint.charsequence.variant.MongolianFreeVariationSelector
 import am.ik.yavi.core.ConstraintPredicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -470,6 +471,7 @@ class CharSequenceConstraintTest {
 	void validIpv4(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv4());
 		assertThat(predicate.test(value)).isTrue();
+		assertThat(retrievePredicate(c -> c.ip()).test(value)).isTrue();
 	}
 
 	@ParameterizedTest
@@ -486,6 +488,7 @@ class CharSequenceConstraintTest {
 	void validIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
 		assertThat(predicate.test(value)).isTrue();
+		assertThat(retrievePredicate(c -> c.ip()).test(value)).isTrue();
 	}
 
 	@ParameterizedTest
@@ -493,6 +496,22 @@ class CharSequenceConstraintTest {
 	void invalidIpv6(String value) {
 		final Predicate<String> predicate = retrievePredicate(c -> c.ipv6());
 		assertThat(predicate.test(value)).isFalse();
+		assertThat(retrievePredicate(c -> c.ip()).test(value)).isFalse();
+		assertThat(retrievePredicate(c -> c.ip()).test("")).isFalse();
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "ulid, '', true", "ulid, 01ARZ3NDEKTSV4RRFFQ69G5FAV, true", "ulid, 01arz3ndektsv4rrffq69g5fav, true",
+			"ulid, 7ZZZZZZZZZZZZZZZZZZZZZZZZZ, true", "ulid, 8ZZZZZZZZZZZZZZZZZZZZZZZZZ, false",
+			"ulid, 01ARZ3NDEKTSV4RRFFQ69G5FA, false", "ulid, 01ARZ3NDEKTSV4RRFFQ69G5FAVX, false",
+			"ulid, 01ARZ3NDEKTSV4RRFFQ69G5FAI, false", "ulid, 01ARZ3NDEKTSV4RRFFQ69G5FAU, false", "uri, '', true",
+			"uri, https://example.com/a?b=c#d, true", "uri, mailto:a@example.com, true",
+			"uri, urn:isbn:9784774183619, true", "uri, s3://bucket/key, true", "uri, /a/b, false",
+			"uri, example.com, false", "uri, https://example.com/a b, false", "uri, https://example.com/あ, false",
+			"uri, https://example.com/%E3%81%82, true", "uri, ':a', false" })
+	void validatesUlidAndUri(String format, String value, boolean valid) {
+		final Predicate<String> predicate = retrievePredicate("ulid".equals(format) ? c -> c.ulid() : c -> c.uri());
+		assertThat(predicate.test(value)).isEqualTo(valid);
 	}
 
 	@ParameterizedTest

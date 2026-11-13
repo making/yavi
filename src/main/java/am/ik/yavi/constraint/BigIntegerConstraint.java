@@ -7,7 +7,7 @@ package am.ik.yavi.constraint;
 import java.math.BigInteger;
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumericConstraintBase;
+import am.ik.yavi.constraint.base.ExactNumericConstraintBase;
 
 /**
  * Constraints on a {@link BigInteger} value.
@@ -20,7 +20,7 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
  * @param <T> the type of the object that owns the property
  * @since 0.0.1
  */
-public class BigIntegerConstraint<T> extends NumericConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
+public class BigIntegerConstraint<T> extends ExactNumericConstraintBase<T, BigInteger, BigIntegerConstraint<T>> {
 
 	/**
 	 * Creates a new constraint without any predicate.
@@ -51,6 +51,11 @@ public class BigIntegerConstraint<T> extends NumericConstraintBase<T, BigInteger
 	@Override
 	protected Predicate<BigInteger> isLessThanOrEqual(BigInteger max) {
 		return x -> x.compareTo(max) <= 0;
+	}
+
+	@Override
+	protected Predicate<BigInteger> isMultipleOf(BigInteger divisor) {
+		return x -> x.mod(divisor).signum() == 0;
 	}
 
 	@Override

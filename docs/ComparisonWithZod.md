@@ -86,6 +86,11 @@ record or class and the compiler checks that they match it.
 | `z.union([a, b])` | `ValueValidator.anyOf(a, b)` |
 | `z.discriminatedUnion("type", [...])` | `DiscriminatedUnionValidator.<X>of("type").when("circle", a).when("square", b)` |
 | `z.lazy(() => schema)`, a getter that refers to the schema | `ValueValidator.lazy(() -> validator)`, `ValueValidator.recursive(self -> ...)` |
+| `z.number().multipleOf(n)` | `c.multipleOf(n)` of the integral types, `BigInteger` and `BigDecimal` (not of `Double` and `Float`) |
+| `z.email()`, `z.uuid()`, `z.ipv4()`, `z.ipv6()`, `z.ulid()` | `c.email()`, `c.uuid()`, `c.ipv4()`, `c.ipv6()`, `c.ulid()` |
+| `z.union([z.ipv4(), z.ipv6()])` | `c.ip()` |
+| `z.url()` | `c.uri()` (any scheme), `c.url()` (a protocol of `java.net.URL`) |
+| `z.cuid()`, `z.cuid2()` | `c.pattern(regex)` |
 | `.refine(predicate)` on a value | a constraint (`c -> c.predicate(...)`) |
 | `.refine(predicate)` on an object | `.constraintOnTarget(predicate, name, violationMessage)` |
 | `.transform(f)` | `.map(f)` |
@@ -269,7 +274,9 @@ document has for the type of the property:
 * a number whatever its Java type is, as long as the value is kept (`30L` and `30.0` are an
   `Integer`, `30.5` is not),
 * the name of a constant for an enum,
-* an ISO-8601 string for `LocalDate`, `Instant` and the other temporal types.
+* an ISO-8601 string for `LocalDate`, `Instant` and the other temporal types, `Duration`
+  and `Period`,
+* the string form of a `UUID` and a `URI` (`_object("id", UUID.class)`).
 
 A mismatch is reported with `object.type` (`"age" must be of type integer`).
 
@@ -313,8 +320,10 @@ Yavi.schema()._object("age", coerced.untyped(Object.class))...
 
 ### Unions
 
-`z.union` and `ValueValidator.anyOf` try the alternatives in order and report the failures
-of all of them (`object.anyOf` followed by the violations of every alternative).
+`z.union` and `ValueValidator.anyOf` try the alternatives in order and report one issue
+when none matches: `invalid_union` with `errors`, the issues of each alternative, and
+`object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with `alternatives()`, the
+violations of each alternative (`alternatives` of a `ViolationDetail.NoAlternativeMatched`).
 `DiscriminatedUnionValidator` applies only the alternative selected by the discriminator,
 like `z.discriminatedUnion`. An alternative does not have to define the discriminator as
 `z.literal(...)`: the key is hidden from an alternative that does not define it.
@@ -330,7 +339,7 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 | Zod | YAVI |
 | --- | --- |
 | `z.flattenError(error)` | `violations.messagesByName()`, a map of the name to the messages; the messages of the root are under the empty name |
-| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`) |
+| `error.issues` as JSON | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `args`, and `alternatives` for `object.anyOf`) |
 
 `z.treeifyError` has no counterpart: the keys of `messagesByPointer()` address the
 nested values instead.

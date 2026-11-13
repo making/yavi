@@ -6,7 +6,7 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumericConstraintBase;
+import am.ik.yavi.constraint.base.ExactNumericConstraintBase;
 
 /**
  * Constraints on a {@link Byte} value.
@@ -19,7 +19,7 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
  * @param <T> the type of the object that owns the property
  * @since 0.0.1
  */
-public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstraint<T>> {
+public class ByteConstraint<T> extends ExactNumericConstraintBase<T, Byte, ByteConstraint<T>> {
 
 	/**
 	 * Creates a new constraint without any predicate.
@@ -50,6 +50,11 @@ public class ByteConstraint<T> extends NumericConstraintBase<T, Byte, ByteConstr
 	@Override
 	protected Predicate<Byte> isLessThanOrEqual(Byte max) {
 		return x -> x <= max;
+	}
+
+	@Override
+	protected Predicate<Byte> isMultipleOf(Byte divisor) {
+		return x -> x % divisor == 0;
 	}
 
 	@Override

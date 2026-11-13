@@ -6,19 +6,24 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
@@ -38,12 +43,31 @@ final class UntypedInput {
 	 */
 	private static final int MAX_INTEGER_EXPONENT = 10_000;
 
-	private static final Map<Class<?>, Function<String, Object>> PARSERS = Map.of(LocalDate.class, LocalDate::parse,
-			LocalTime.class, LocalTime::parse, LocalDateTime.class, LocalDateTime::parse, OffsetDateTime.class,
-			OffsetDateTime::parse, ZonedDateTime.class, ZonedDateTime::parse, Instant.class, Instant::parse, Year.class,
-			Year::parse, YearMonth.class, YearMonth::parse);
+	/**
+	 * The types that are read from their string form. A parser rejects a string with a
+	 * {@code DateTimeException} or an {@code IllegalArgumentException}.
+	 */
+	private static final Map<Class<?>, Function<String, Object>> PARSERS = Map.ofEntries(
+			Map.entry(LocalDate.class, LocalDate::parse), Map.entry(LocalTime.class, LocalTime::parse),
+			Map.entry(LocalDateTime.class, LocalDateTime::parse),
+			Map.entry(OffsetDateTime.class, OffsetDateTime::parse),
+			Map.entry(ZonedDateTime.class, ZonedDateTime::parse), Map.entry(Instant.class, Instant::parse),
+			Map.entry(Year.class, Year::parse), Map.entry(YearMonth.class, YearMonth::parse),
+			Map.entry(Duration.class, Duration::parse), Map.entry(Period.class, Period::parse),
+			Map.entry(UUID.class, UntypedInput::parseUuid), Map.entry(URI.class, URI::create));
+
+	// UUID.fromString also takes forms that are not canonical, such as 1-1-1-1-1
+	private static final Pattern CANONICAL_UUID = Pattern
+		.compile("\\p{XDigit}{8}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{12}");
 
 	private UntypedInput() {
+	}
+
+	private static UUID parseUuid(String string) {
+		if (!CANONICAL_UUID.matcher(string).matches()) {
+			throw new IllegalArgumentException("Not a canonical UUID");
+		}
+		return UUID.fromString(string);
 	}
 
 	/**
@@ -137,7 +161,7 @@ final class UntypedInput {
 				try {
 					return parser.apply(string);
 				}
-				catch (DateTimeException e) {
+				catch (DateTimeException | IllegalArgumentException e) {
 					return MISMATCH;
 				}
 			}

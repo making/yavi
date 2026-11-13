@@ -68,7 +68,7 @@ public class ConstraintViolationsTest {
 
 		List<ViolationDetail> details = violations.details();
 		assertThat(details).hasSize(5);
-		assertThat(details.get(1)).isEqualTo(new ViolationDetail("items[1].name", "/items/1/name",
+		assertThat(details.get(1)).isEqualTo(new ViolationDetail.Simple("items[1].name", "/items/1/name",
 				"charSequence.notBlank", "\"items[1].name\" must not be blank", Arrays.asList("items[1].name", " ")));
 		assertThat(details.get(3).args()).containsExactly("", null);
 		// a detail is serialized as it is

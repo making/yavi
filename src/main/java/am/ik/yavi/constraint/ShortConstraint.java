@@ -6,7 +6,7 @@ package am.ik.yavi.constraint;
 
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumericConstraintBase;
+import am.ik.yavi.constraint.base.ExactNumericConstraintBase;
 
 /**
  * Constraints on a {@link Short} value.
@@ -19,7 +19,7 @@ import am.ik.yavi.constraint.base.NumericConstraintBase;
  * @param <T> the type of the object that owns the property
  * @since 0.0.1
  */
-public class ShortConstraint<T> extends NumericConstraintBase<T, Short, ShortConstraint<T>> {
+public class ShortConstraint<T> extends ExactNumericConstraintBase<T, Short, ShortConstraint<T>> {
 
 	/**
 	 * Creates a new constraint without any predicate.
@@ -50,6 +50,11 @@ public class ShortConstraint<T> extends NumericConstraintBase<T, Short, ShortCon
 	@Override
 	protected Predicate<Short> isLessThanOrEqual(Short max) {
 		return x -> x <= max;
+	}
+
+	@Override
+	protected Predicate<Short> isMultipleOf(Short divisor) {
+		return x -> x % divisor == 0;
 	}
 
 	@Override

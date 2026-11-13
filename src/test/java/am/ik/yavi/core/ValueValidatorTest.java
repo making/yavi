@@ -6,6 +6,8 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import am.ik.yavi.Address;
@@ -22,6 +24,7 @@ import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.validator.Yavi;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -202,12 +205,52 @@ class ValueValidatorTest {
 		assertThat(number.validated("1")).isEqualTo(1);
 		assertThat(number.validated("1.5")).isEqualTo(new BigDecimal("1.5"));
 
-		final ConstraintViolations violations = number.prefixed("amount").validate("x").errors();
-		assertThat(violations).extracting(ConstraintViolation::messageKey)
-			.containsExactly("object.anyOf", "charSequence.integer", "charSequence.bigdecimal");
-		assertThat(violations).extracting(ConstraintViolation::name).containsOnly("amount");
-		assertThat(violations.get(0).message()).isEqualTo("\"amount\" must satisfy at least one of the 2 alternatives");
-		assertThat(violations.get(0).args()).containsExactly("amount", 2, "x");
+		// one violation; why each alternative failed is under it, located with it
+		final ConstraintViolations violations = number.prefixed("amount").validate("x").prefixed(0).errors();
+		assertThat(violations.messagesByName())
+			.isEqualTo(Map.of("[0].amount", List.of("\"[0].amount\" must satisfy at least one of the 2 alternatives")));
+		final ConstraintViolation.NoAlternativeMatched violation = (ConstraintViolation.NoAlternativeMatched) violations
+			.get(0);
+		assertThat(violation.messageKey()).isEqualTo("object.anyOf");
+		assertThat(violation.args()).containsExactly("[0].amount", 2, "x");
+		assertThat(violation.alternatives()).hasSize(2)
+			.allSatisfy(alternative -> assertThat(alternative).extracting(ConstraintViolation::pointer)
+				.containsExactly("/0/amount"));
+		assertThat(violation.alternatives()).extracting(alternative -> alternative.get(0).messageKey())
+			.containsExactly("charSequence.integer", "charSequence.bigdecimal");
+		assertThat(violation.rename(String::toUpperCase).alternatives())
+			.extracting(alternative -> alternative.get(0).message())
+			.containsExactly("\"[0].AMOUNT\" must be a valid representation of an integer",
+					"\"[0].AMOUNT\" must be a valid representation of a big decimal");
+		assertThatThrownBy(() -> violation.alternatives().get(0).clear())
+			.isInstanceOf(UnsupportedOperationException.class);
+		// the type of a detail tells whether it has alternatives, and so does its JSON
+		assertThat(violations.details()).singleElement()
+			.isInstanceOfSatisfying(ViolationDetail.NoAlternativeMatched.class,
+					detail -> assertThat(detail.alternatives()).hasSize(2)
+						.allSatisfy(alternative -> assertThat(alternative).singleElement()
+							.isInstanceOf(ViolationDetail.Simple.class)
+							.extracting(ViolationDetail::name)
+							.isEqualTo("[0].amount")));
+		assertThat(new JsonMapper().writeValueAsString(violations.details())).isEqualTo("""
+				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"object.anyOf",\
+				"message":"\\"[0].amount\\" must satisfy at least one of the 2 alternatives",\
+				"args":["[0].amount",2,"x"],"alternatives":[\
+				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"charSequence.integer",\
+				"message":"\\"[0].amount\\" must be a valid representation of an integer","args":["[0].amount","x"]}],\
+				[{"name":"[0].amount","pointer":"/0/amount","messageKey":"charSequence.bigdecimal",\
+				"message":"\\"[0].amount\\" must be a valid representation of a big decimal",\
+				"args":["[0].amount","x"]}]]}]""");
+		// an alternative that is itself a choice keeps its own alternatives
+		final ValueValidator<String, Number> nested = ValueValidator.anyOf(number,
+				StringValidatorBuilder.of("", c -> c.isLong()).build(Long::valueOf));
+		assertThat(nested.prefixed("amount").validate("x").errors()).singleElement()
+			.isInstanceOfSatisfying(ConstraintViolation.NoAlternativeMatched.class,
+					outer -> assertThat(outer.alternatives().get(0)).singleElement()
+						.isInstanceOfSatisfying(ConstraintViolation.NoAlternativeMatched.class,
+								inner -> assertThat(inner.alternatives())
+									.extracting(alternative -> alternative.get(0).name())
+									.containsExactly("amount", "amount")));
 
 		assertThatThrownBy(ValueValidator::anyOf).isInstanceOf(IllegalArgumentException.class);
 	}

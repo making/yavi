@@ -7,7 +7,7 @@ package am.ik.yavi.constraint;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
 
-import am.ik.yavi.constraint.base.NumericConstraintBase;
+import am.ik.yavi.constraint.base.ExactNumericConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 
 import static am.ik.yavi.core.NullAs.VALID;
@@ -27,7 +27,7 @@ import static am.ik.yavi.core.ViolationMessage.Default.NUMERIC_INTEGER_DIGITS;
  * @param <T> the type of the object that owns the property
  * @since 0.0.1
  */
-public class BigDecimalConstraint<T> extends NumericConstraintBase<T, BigDecimal, BigDecimalConstraint<T>> {
+public class BigDecimalConstraint<T> extends ExactNumericConstraintBase<T, BigDecimal, BigDecimalConstraint<T>> {
 
 	/**
 	 * Creates a new constraint without any predicate.
@@ -116,6 +116,11 @@ public class BigDecimalConstraint<T> extends NumericConstraintBase<T, BigDecimal
 	@Override
 	protected Predicate<BigDecimal> isLessThanOrEqual(BigDecimal max) {
 		return x -> x.compareTo(max) <= 0;
+	}
+
+	@Override
+	protected Predicate<BigDecimal> isMultipleOf(BigDecimal divisor) {
+		return x -> x.remainder(divisor).signum() == 0;
 	}
 
 	@Override
