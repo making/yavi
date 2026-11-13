@@ -12,10 +12,10 @@ not shown as soon as the application has a message for that key:
 MessageFormatter formatter = new MessageSourceMessageFormatter(messageSource::getMessage);
 // messages.properties: object.required={0} is required.
 
-ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Token> tokenValidator = Yavi.schema()
         ._list("roles", Yavi._string()).required("Select at least one role")
         .fromMap(Token::new)
-        .<Map<String, List<String>>>readingParameters()
+        .readingParameters()
         .formattingWith(formatter);
 
 tokenValidator.validate(Map.of()); // roles is required.   not: Select at least one role
