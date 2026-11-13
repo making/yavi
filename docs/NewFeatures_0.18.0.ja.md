@@ -36,7 +36,8 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
 ```
 
 * リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。そのメッセージは、名前の代わりに「The value」と表示します（`The value must not be blank`）。
-* `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。
+* `Yavi.schema()` のプロパティと同じく、名前の有無にかかわらず制約も省略できます（`Yavi._boolean("subscribed")`、`Yavi._enum("role", Role.class)`、`Yavi._object("id", UUID.class)`、`Yavi._string()`）。
+* `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。`Yavi._list(elementValidator)` と `Yavi._map(valueValidator)` は、要素や値だけを検証します。
 * `named(name)` は、バリデータを別の名前で使います。[後述](#ルールを別の名前で使う)します。
 
 ### 制約の前に値を変換する
@@ -123,6 +124,14 @@ Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
 
 `JsonSchema` はこれらを `multipleOf` と `"format": "uri"` として出力します。
 
+形式の制約はすべて、`email()` や `url()` と同じく空文字列を受け付けます。形式の制約は与えられたテキストの形を決めるもので、テキストが与えられていることは `notBlank()` や `notEmpty()` が決めます。そのため、省略可能なテキストの制約は形式によらず同じ書き方になります。`ipv4()`、`ipv6()`、`luhn()`、`isoLocalDate()`、`localDate(pattern)` は 0.17 では `""` を拒否していました。[破壊的変更](BreakingChanges_0.18.0.ja.md#文字列の形式の制約は空文字列を受け付ける)を参照してください。
+
+```java
+Yavi._string("homepage", c -> c.url()).validate("");       // valid
+Yavi._string("proxy", c -> c.ip()).validate("");           // valid
+Yavi._string("proxy", c -> c.notBlank().ip()).validate(""); // "proxy" must not be blank
+```
+
 ## 省略可能なプロパティとネストしたオブジェクトやリストやマップ
 
 `Yavi.schema()` のプロパティは、直後の修飾メソッドで変えない限り `null` を拒否します。プロパティには、オブジェクト、リスト、マップも指定できます。
@@ -184,7 +193,7 @@ Validated<User> validated = userValidator.validate(Map.of(
 | 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反。`rejectingNull()` を付けると常に `object.notNull` |
 | プロパティが定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
 
-* `ignoringCase()` を付けると、enum の定数名の大文字と小文字を区別せずに読み取ります。`._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` は `"admin"` を受け付けます。
+* `ignoringCase()` を付けると、enum の定数名の大文字と小文字を区別せずに読み取ります。`._enum(Yavi._enum("role", Role.class).ignoringCase())` は `"admin"` を受け付けます。
 * `flatFromMap(f)` は `Validated` を返す関数を受け取ります（`.flatFromMap(DateRange::parse)`）。
 * `untyped()` は、バリデータを `ValueValidator<Object, X>` に変えます。たとえば、型の異なる選択肢を組み合わせるときに使います（`ValueValidator.anyOf(Yavi._integer(c -> c.positive()).untyped(), Yavi._string(c -> c.uuid()).untyped())`）。
 
@@ -477,8 +486,28 @@ ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
 signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30, subscribed=true]
 ```
 
-* `trimming()`: 空白だけの文字列は `null` と同じように検証されます。数値、真偽値、enum の定数、日時の値として読む文字列は、前後の空白を除いて読み取られます。`String` の値はそのままです（`c.trim()` でトリムします）。
+* `trimming()`: どのプロパティのテキストも、前後の空白を除いて読み取られます。空白だけの文字列は `null` と同じように検証されます。
 * `booleanWords()`: `true`、`1`、`yes`、`on` と `false`、`0`、`no`、`off` を、大文字と小文字を区別せずに真偽値として読み取ります。
+
+`trimming()` は `String` のプロパティもトリムします。これだけで、すべてのフィールドが「トリムされ、空白だけなら値なし」になり、プロパティごとに `c.trim()` を書く必要はありません。パスワードのように空白も値の一部である `String` は、バリデータの `untrimmed()` でそのことを示します。
+
+```java
+record Contact(String name, @Nullable String company, String password) {}
+
+ValueValidator<Map<String, String>, Contact> contactValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank().lessThanOrEqual(50))
+        ._string("company").nullable()
+        ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8)).untrimmed())
+        .fromMap(Contact::new)
+        .readingParameters(StringCoercion.strict().trimming());
+
+contactValidator.validate(Map.of("name", " Alice ", "company", "  ", "password", " pass word "));
+// Contact[name=Alice, company=null, password= pass word ]
+```
+
+* 制約はトリムされたテキストを見ます。`" Alice "` は 5 文字です。
+* `untrimmed()` は値の前後の空白を残します。空白だけの値は、この場合も値なしです。`Arguments1Validator` を返すので、`map` や `named` の後に 1 度だけ書きます。
+* トリムしないリーダー（`readingParameters()`、JSON のツリー）は、`String` を与えられたとおりに読みます。その場合は `c.trim()` でトリムします。
 
 リクエストを失敗させたくないパラメータには `recover` が使えます。
 
@@ -845,6 +874,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` など | [#546](https://github.com/making/yavi/pull/546) |
 | 変換、`preprocess` | [#547](https://github.com/making/yavi/pull/547) |

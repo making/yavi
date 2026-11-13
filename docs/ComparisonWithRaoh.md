@@ -177,6 +177,7 @@ The rules are stricter than those of Raoh unless the reader is given others
 | --- | --- | --- | --- |
 | `"1"`, `"yes"`, `"on"` for a boolean | `true` (`toBool()`) | `object.type`; only `"true"` and `"false"` are taken | `true`, in any case |
 | `"  42  "` for a number | `string().trim().toInt()` | `object.type` | `42` |
+| `"  Acme  "` for a string | `string().trim()` | `"  Acme  "`; `c.trim()` trims it | `"Acme"` |
 | `""` | an error of `toInt()` | `null`, so `optional()` and `defaultValue` apply | `null`, and so is a blank string |
 
 ```java
@@ -188,8 +189,9 @@ Yavi._boolean().readingWith(lenient).validate("Yes"); // Valid[true]
 ```
 
 The rules belong to the reader, so they are chosen once per input
-(`readingParameters(coercion)` for a form or a CSV row) and not per field. A `String`
-value is not trimmed by the reader; `c.trim()` does it.
+(`readingParameters(coercion)` for a form or a CSV row) and not per field. `trimming()`
+trims a `String` value too; one whose white space is a part of it, such as a password,
+is read with `untrimmed()` of its validator (`Yavi._string("password").untrimmed()`).
 
 ### Domain primitives
 
@@ -203,7 +205,7 @@ record UserId(UUID value) {}
 StringValidator<Email> emailValidator = Yavi._string("email", c -> c.notBlank().email()).map(Email::new);
 IntegerValidator<Age> ageValidator = Yavi._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
         .map(Age::new);
-ObjectValidator<UUID, UserId> userIdValidator = Yavi._object("id", UUID.class, c -> c).map(UserId::new);
+ObjectValidator<UUID, UserId> userIdValidator = Yavi._object("id", UUID.class).map(UserId::new);
 ```
 
 ## Objects
@@ -455,7 +457,7 @@ The name of the constant is matched exactly, whereas `enumOf` ignores the ASCII 
 
 ```java
 ObjectInputValidator<Role> lenientRoleValidator = Yavi.schema()
-        ._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase()).defaultValue(Role.MEMBER)
+        ._enum(Yavi._enum("role", Role.class).ignoringCase()).defaultValue(Role.MEMBER)
         .fromMap(role -> role);
 
 lenientRoleValidator.validate(Map.of("role", "admin")); // Valid[ADMIN]
@@ -877,9 +879,8 @@ Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows")
 ```
 
 A header that holds `.` or `[` is read as a path. A cell is not trimmed unless the row is
-read with `readingParameters(StringCoercion.strict().trimming())`, which trims the cell of
-a number, a boolean, an enum or a date and takes a blank cell as `null` (a `String`
-property is trimmed with `c.trim()`).
+read with `readingParameters(StringCoercion.strict().trimming())`, which trims every
+cell and takes a blank cell as `null`.
 
 ### Configuration files
 

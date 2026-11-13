@@ -772,6 +772,23 @@ a half-width katakana with a voiced sound mark (`ｶﾞ`). The class `Emoji` is 
 
 Related pull request: [#533](https://github.com/making/yavi/pull/533)
 
+### The formats of a string accept an empty string
+
+`ipv4()`, `ipv6()`, `luhn()`, `isoLocalDate()` and `localDate(pattern)` of
+`CharSequenceConstraint` accept `""`, as `email()`, `url()`, `uuid()` and `isInteger()`
+always did. In 0.17 an optional text was valid or not when left empty depending on its
+format. Add `notBlank()` or `notEmpty()` where `""` must be rejected.
+
+```java
+// before: "" is a violation (charSequence.ipv4)
+ValidatorBuilder.<Server>of()._string(Server::address, "address", c -> c.ipv4()).build();
+
+// after: the same result with 0.18
+ValidatorBuilder.<Server>of()._string(Server::address, "address", c -> c.notEmpty().ipv4()).build();
+```
+
+Related pull request: [#573](https://github.com/making/yavi/pull/573)
+
 ### The message key separator applies under `forEach`
 
 A `ValidatorBuilder` with a message key separator other than `.` uses it in the names

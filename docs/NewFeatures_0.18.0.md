@@ -42,8 +42,13 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
 * The name can be omitted for a value that is not a property, such as the element of a
   list: `Yavi._string(c -> c.notBlank())`. Its message says "The value" in place of the
   name (`The value must not be blank`).
+* The constraints can be omitted too, with or without a name, as for a property of
+  `Yavi.schema()`: `Yavi._boolean("subscribed")`, `Yavi._enum("role", Role.class)`,
+  `Yavi._object("id", UUID.class)`, `Yavi._string()`.
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` and
-  `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it.
+  `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it;
+  `Yavi._list(elementValidator)` and `Yavi._map(valueValidator)` only validate the
+  elements or values.
 * `named(name)` uses a validator under another name; see
   [below](#using-a-rule-under-another-name).
 
@@ -145,6 +150,18 @@ Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
 
 `JsonSchema` writes `multipleOf` and `"format": "uri"` for them.
 
+Every format accepts an empty string, as `email()` and `url()` always did: a format tells
+what a given text looks like, and `notBlank()` or `notEmpty()` tells that it is given. So
+an optional text has the same constraints whatever its format is. `ipv4()`, `ipv6()`,
+`luhn()`, `isoLocalDate()` and `localDate(pattern)` rejected `""` in 0.17; see the
+[breaking changes](BreakingChanges_0.18.0.md#the-formats-of-a-string-accept-an-empty-string).
+
+```java
+Yavi._string("homepage", c -> c.url()).validate("");       // valid
+Yavi._string("proxy", c -> c.ip()).validate("");           // valid
+Yavi._string("proxy", c -> c.notBlank().ip()).validate(""); // "proxy" must not be blank
+```
+
 ## Optional properties, nested objects, lists and maps
 
 A property of `Yavi.schema()` is required unless a modifier after it says otherwise,
@@ -216,7 +233,7 @@ Validated<User> validated = userValidator.validate(Map.of(
 | A key that no property is defined for | ignored; `rejectingUnknownProperties()` reports `object.unknownProperty` |
 
 * `ignoringCase()` reads the name of an enum constant in any case:
-  `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`.
+  `._enum(Yavi._enum("role", Role.class).ignoringCase())` takes `"admin"`.
 * `flatFromMap(f)` takes a function that returns a `Validated`:
   `.flatFromMap(DateRange::parse)`.
 * `untyped()` turns a validator into a `ValueValidator<Object, X>`, for example to
@@ -567,10 +584,33 @@ ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
 signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30, subscribed=true]
 ```
 
-* `trimming()`: a blank string is validated like `null`, and a string read as a number, a
-  boolean, an enum constant or a temporal value is read without its surrounding white
-  space. A `String` value is left as it is; `c.trim()` trims it.
+* `trimming()`: every text is read without its surrounding white space, whatever its
+  property is, and a blank string is validated like `null`.
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` in any case.
+
+`trimming()` trims a `String` property too, so one switch makes every field "trimmed, and
+not given if blank"; no property repeats `c.trim()`. A `String` whose white space is a
+part of it, such as a password, says so with `untrimmed()` of its validator.
+
+```java
+record Contact(String name, @Nullable String company, String password) {}
+
+ValueValidator<Map<String, String>, Contact> contactValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank().lessThanOrEqual(50))
+        ._string("company").nullable()
+        ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8)).untrimmed())
+        .fromMap(Contact::new)
+        .readingParameters(StringCoercion.strict().trimming());
+
+contactValidator.validate(Map.of("name", " Alice ", "company", "  ", "password", " pass word "));
+// Contact[name=Alice, company=null, password= pass word ]
+```
+
+* The constraints see the trimmed text: `" Alice "` has 5 characters.
+* `untrimmed()` keeps the white space around a value. A blank value is still not given.
+  It returns an `Arguments1Validator`, so it is written once, after `map` and `named`.
+* A reader that does not trim (`readingParameters()`, a JSON tree) reads a `String` as it
+  is given; `c.trim()` trims it there.
 
 `recover` suits a parameter that must not fail a request:
 
@@ -1005,6 +1045,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `label`, `required(message)`, `typeMessage`, `formattingWith`, `labeled`, `formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |
 | Transforms, `preprocess` | [#547](https://github.com/making/yavi/pull/547) |

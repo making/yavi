@@ -160,15 +160,15 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * The other methods return a validator of a single value: {@code _string},
  * {@code _integer}, {@code _localDate} and so on have the names of the properties of
- * {@link YaviSchema} and take the constraints, with or without a name. A validator
- * without a name is the element of a list, the value of a map, an alternative of
- * {@code anyOf} or a value validated by itself; its violations are named by the place
- * where it is used ({@code roles[0]}), or have the empty name and a message that says
- * "The value" in place of the name. Such a validator requires its value: {@code null} is
- * a violation unless {@code nullable()}, {@code optional()} or {@code defaultValue(...)}
- * is applied to it, and the type of the validated value tells which. {@code _list} and
- * {@code _map} return the validator of a list or a map that is not a property, with the
- * constraints of the list or map.
+ * {@link YaviSchema} and take a name, the constraints, both or neither, as the properties
+ * of a schema do. A validator without a name is the element of a list, the value of a
+ * map, an alternative of {@code anyOf} or a value validated by itself; its violations are
+ * named by the place where it is used ({@code roles[0]}), or have the empty name and a
+ * message that says "The value" in place of the name. Such a validator requires its
+ * value: {@code null} is a violation unless {@code nullable()}, {@code optional()} or
+ * {@code defaultValue(...)} is applied to it, and the type of the validated value tells
+ * which. {@code _list} and {@code _map} return the validator of a list or a map that is
+ * not a property, with or without the constraints of the list or map.
  *
  * <pre>{@code
  * StringValidator<String> email = Yavi._string(c -> c.notBlank().email());
@@ -297,6 +297,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code BigDecimal} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_bigDecimal(String, Function)
+	 */
+	public static BigDecimalValidator<BigDecimal> _bigDecimal(String name) {
+		return _bigDecimal(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code BigDecimal} with the given name.
 	 *
 	 * <p>
@@ -335,6 +347,18 @@ public final class Yavi {
 	public static BigIntegerValidator<BigInteger> _bigInteger(
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return _bigInteger("", constraints);
+	}
+
+	/**
+	 * Returns a validator of a {@code BigInteger} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_bigInteger(String, Function)
+	 */
+	public static BigIntegerValidator<BigInteger> _bigInteger(String name) {
+		return _bigInteger(name, Function.identity());
 	}
 
 	/**
@@ -379,6 +403,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code Boolean} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_boolean(String, Function)
+	 */
+	public static BooleanValidator<Boolean> _boolean(String name) {
+		return _boolean(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code Boolean} with the given name.
 	 *
 	 * <p>
@@ -417,6 +453,18 @@ public final class Yavi {
 	public static DoubleValidator<Double> _double(
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return _double("", constraints);
+	}
+
+	/**
+	 * Returns a validator of a {@code Double} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_double(String, Function)
+	 */
+	public static DoubleValidator<Double> _double(String name) {
+		return _double(name, Function.identity());
 	}
 
 	/**
@@ -465,6 +513,24 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a constant of the given enum type with the given name and
+	 * without constraints, which accepts every constant.
+	 *
+	 * <pre>{@code
+	 * Arguments1Validator<Role, Role> role = Yavi._enum("role", Role.class).ignoringCase();
+	 * }</pre>
+	 * @param <E> the enum type of the value
+	 * @param name the name used in violation names and messages
+	 * @param type the enum type of the value
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_enum(String, Class, Function)
+	 */
+	public static <E extends Enum<E>> EnumValidator<E, E> _enum(String name, Class<E> type) {
+		return _enum(name, type, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a constant of the given enum type with the given name.
 	 *
 	 * <p>
@@ -510,6 +576,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code Float} with the given name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_float(String, Function)
+	 */
+	public static FloatValidator<Float> _float(String name) {
+		return _float(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code Float} with the given name.
 	 *
 	 * <p>
@@ -548,6 +626,18 @@ public final class Yavi {
 	public static InstantValidator<Instant> _instant(
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return _instant("", constraints);
+	}
+
+	/**
+	 * Returns a validator of an {@code Instant} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_instant(String, Function)
+	 */
+	public static InstantValidator<Instant> _instant(String name) {
+		return _instant(name, Function.identity());
 	}
 
 	/**
@@ -592,6 +682,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of an {@code Integer} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_integer(String, Function)
+	 */
+	public static IntegerValidator<Integer> _integer(String name) {
+		return _integer(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of an {@code Integer} with the given name.
 	 *
 	 * <p>
@@ -607,6 +709,20 @@ public final class Yavi {
 	public static IntegerValidator<Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return IntegerValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a list without a name that validates every element with the
+	 * given validator, without constraints on the list itself.
+	 * @param <E> the type of the elements to validate
+	 * @param <T> the type of the validated elements
+	 * @param elementValidator value validator for each element
+	 * @return a validator of the list
+	 * @since 0.18.0
+	 * @see #_list(ValueValidator, Function)
+	 */
+	public static <E, T> ListValidator<E, T> _list(ValueValidator<E, T> elementValidator) {
+		return _list(elementValidator, Function.identity());
 	}
 
 	/**
@@ -662,6 +778,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code LocalDateTime} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localDateTime(String, Function)
+	 */
+	public static LocalDateTimeValidator<LocalDateTime> _localDateTime(String name) {
+		return _localDateTime(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code LocalDateTime} with the given name.
 	 *
 	 * <p>
@@ -700,6 +828,18 @@ public final class Yavi {
 	public static LocalTimeValidator<LocalTime> _localTime(
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return _localTime("", constraints);
+	}
+
+	/**
+	 * Returns a validator of a {@code LocalTime} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localTime(String, Function)
+	 */
+	public static LocalTimeValidator<LocalTime> _localTime(String name) {
+		return _localTime(name, Function.identity());
 	}
 
 	/**
@@ -744,6 +884,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code LocalDate} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_localDate(String, Function)
+	 */
+	public static LocalDateValidator<LocalDate> _localDate(String name) {
+		return _localDate(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code LocalDate} with the given name.
 	 *
 	 * <p>
@@ -785,6 +937,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code Long} with the given name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_long(String, Function)
+	 */
+	public static LongValidator<Long> _long(String name) {
+		return _long(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code Long} with the given name.
 	 *
 	 * <p>
@@ -800,6 +964,20 @@ public final class Yavi {
 	public static LongValidator<Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return LongValidatorBuilder.of(name, constraints).build();
+	}
+
+	/**
+	 * Returns a validator of a map with string keys without a name that validates every
+	 * value with the given validator, without constraints on the map itself.
+	 * @param <V> the type of the values to validate
+	 * @param <T> the type of the validated values
+	 * @param valueValidator value validator for each value
+	 * @return a validator of the map
+	 * @since 0.18.0
+	 * @see #_map(ValueValidator, Function)
+	 */
+	public static <V, T> ValueValidator<Map<String, V>, Map<String, T>> _map(ValueValidator<V, T> valueValidator) {
+		return _map(valueValidator, Function.identity());
 	}
 
 	/**
@@ -855,6 +1033,24 @@ public final class Yavi {
 	public static <T> ObjectValidator<T, T> _object(Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return _object("", type, constraints);
+	}
+
+	/**
+	 * Returns a validator of a value of the given type with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 *
+	 * <p>
+	 * A value of a type that has no class literal has no such form: a validator that
+	 * neither knows its type nor has a constraint validates nothing.
+	 * @param <T> the type of the value
+	 * @param name the name used in violation names and messages
+	 * @param type the type of the value
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_object(String, Class, Function)
+	 */
+	public static <T> ObjectValidator<T, T> _object(String name, Class<T> type) {
+		return _object(name, type, Function.identity());
 	}
 
 	/**
@@ -939,6 +1135,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of an {@code OffsetDateTime} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_offsetDateTime(String, Function)
+	 */
+	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime(String name) {
+		return _offsetDateTime(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of an {@code OffsetDateTime} with the given name.
 	 *
 	 * <p>
@@ -980,6 +1188,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code Short} with the given name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_short(String, Function)
+	 */
+	public static ShortValidator<Short> _short(String name) {
+		return _short(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code Short} with the given name.
 	 *
 	 * <p>
@@ -1018,6 +1238,18 @@ public final class Yavi {
 	public static StringValidator<String> _string(
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return _string("", constraints);
+	}
+
+	/**
+	 * Returns a validator of a {@code String} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_string(String, Function)
+	 */
+	public static StringValidator<String> _string(String name) {
+		return _string(name, Function.identity());
 	}
 
 	/**
@@ -1068,6 +1300,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code YearMonth} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_yearMonth(String, Function)
+	 */
+	public static YearMonthValidator<YearMonth> _yearMonth(String name) {
+		return _yearMonth(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code YearMonth} with the given name.
 	 *
 	 * <p>
@@ -1109,6 +1353,18 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a validator of a {@code Year} with the given name and without constraints,
+	 * which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_year(String, Function)
+	 */
+	public static YearValidator<Year> _year(String name) {
+		return _year(name, Function.identity());
+	}
+
+	/**
 	 * Returns a validator of a {@code Year} with the given name.
 	 *
 	 * <p>
@@ -1147,6 +1403,18 @@ public final class Yavi {
 	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime(
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return _zonedDateTime("", constraints);
+	}
+
+	/**
+	 * Returns a validator of a {@code ZonedDateTime} with the given name and without
+	 * constraints, which accepts every value other than {@code null}.
+	 * @param name the name used in violation names and messages
+	 * @return a validator of the value
+	 * @since 0.18.0
+	 * @see #_zonedDateTime(String, Function)
+	 */
+	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime(String name) {
+		return _zonedDateTime(name, Function.identity());
 	}
 
 	/**

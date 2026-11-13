@@ -34,10 +34,13 @@ record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coerc
 	@Override
 	public Object value(N node, Class<?> type) {
 		final Object value = this.reader.value(node, type);
-		if (!(value instanceof String string) || type.isInstance(value)) {
+		if (!(value instanceof String string)) {
 			return value;
 		}
 		final String text = this.coercion.text(string);
+		if (type.isInstance(text)) {
+			return text;
+		}
 		if (type == Boolean.class) {
 			final Boolean bool = this.coercion.toBoolean(text);
 			return bool != null ? bool : text;
