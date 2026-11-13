@@ -297,9 +297,63 @@ Validated<User> validated = nodeValidator.validate(jsonMapper.readTree(json));
 
 The reader applies to the nested validators too, so `addressValidator` is built with
 `fromMap` whatever input is read in the end. YAVI has no dependency on a JSON library: an
-`InputReader` is a small stateless class written once per tree model. The
-[README](../README.md#validating-the-tree-model-of-a-json-library) has the readers of
-Jackson 3 and of the tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540)).
+`InputReader` is a small stateless class written once per tree model. This is the one for
+Jackson 3:
+
+```java
+public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
+
+    public static final JsonNodeReader INSTANCE = new JsonNodeReader();
+
+    @Override
+    public boolean isNull(JsonNode node) {
+        return node.isNull() || node.isMissingNode();
+    }
+
+    @Override
+    public Object value(JsonNode node) { // a scalar as a JDK type
+        if (node.isString()) {
+            return node.stringValue();
+        }
+        if (node.isNumber()) {
+            return node.numberValue();
+        }
+        if (node.isBoolean()) {
+            return node.booleanValue();
+        }
+        return node;
+    }
+
+    @Override
+    public boolean isObject(JsonNode node) {
+        return node.isObject();
+    }
+
+    @Override
+    public @Nullable JsonNode property(JsonNode object, String name) {
+        return object.get(name); // null if absent
+    }
+
+    @Override
+    public Iterable<Map.Entry<String, JsonNode>> properties(JsonNode object) {
+        return object.properties();
+    }
+
+    @Override
+    public boolean isArray(JsonNode node) {
+        return node.isArray();
+    }
+
+    @Override
+    public Iterable<JsonNode> elements(JsonNode array) {
+        return array;
+    }
+
+}
+```
+
+The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator module of
+JDK 28) is read in the same way.
 
 A tree whose scalars are all strings is read with `coercingStrings()` of its reader:
 `JsonNodeReader.INSTANCE.coercingStrings()`, or
