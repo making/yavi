@@ -95,8 +95,9 @@ public sealed class StringCoercion {
 		 * <li>A blank string is a null node whatever it is checked as, like an empty
 		 * string.</li>
 		 * <li>A string checked as a type other than a string (a number, a
-		 * {@code Boolean}, an enum constant, a temporal type) is read without its leading
-		 * and trailing white space, so {@code " 42 "} is an {@code Integer}.</li>
+		 * {@code Boolean}, an enum constant, a temporal type, a {@code UUID}) is read
+		 * without its leading and trailing white space, so {@code " 42 "} is an
+		 * {@code Integer}.</li>
 		 * </ul>
 		 * A string checked as a {@code String} is left as it is, because a validator
 		 * trims it with {@code c.trim()} where its white space has no meaning. White

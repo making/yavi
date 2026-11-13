@@ -524,7 +524,7 @@ Map<String, Object> map = Map.of(
 Validated<User> validated = userValidator.validate(map);
 ```
 
-* A value must represent the type of its property, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name and a temporal value from its ISO-8601 string. Nothing else is coerced: `"30"` is not a number, unless the map is read as [request parameters](#validating-request-parameters).
+* A value must represent the type of its property, otherwise `object.type` is reported (`"age" must be of type integer`). A number is taken whatever its Java type is as long as the value is kept (`30L` and `30.0` are an `Integer`, `30.5` is not), an enum constant is read from its name, a temporal value, a `Duration` and a `Period` from their ISO-8601 string, and a `UUID` and a `URI` from their string form (`_object("id", UUID.class)`). Nothing else is coerced: `"30"` is not a number, unless the map is read as [request parameters](#validating-request-parameters).
 * An absent key is validated like `null`, so `optional()`, `nullable()` and `defaultValue(...)` accept it. The absent key of any other property is reported with `object.required` (`"email" is required`), and an explicit `null` with `object.notNull` or with the violation of a constraint that rejects it.
 * `presence()` tells an absent key from `null`, as a partial update (PATCH) needs; see [below](#telling-an-absent-key-from-null).
 * A key that no property is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.

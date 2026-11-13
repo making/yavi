@@ -148,6 +148,7 @@ Validated<User> validated = userValidator.validate(Map.of(
 | プロパティの型を表さない値（`"age": "30"`） | `object.type`: `"age" must be of type integer` |
 | 値が変わらない数値（`Integer` に対する `30L`、`30.0`） | 受け付ける。`30.5` は `object.type` |
 | enum の定数、日時の値 | 定数の名前、ISO-8601 形式の文字列から読み取る |
+| `UUID`、`URI`、`Duration`、`Period`（`_object("id", UUID.class)`） | UUID の正規形の文字列、URI の文字列、ISO-8601 形式の文字列（`PT1H30M`、`P1Y2M`）から読み取る。それ以外は `object.type`: `"id" must be of type UUID` |
 | 存在しないキー | `null` と同じように検証する。`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` があれば受け付け、なければ `object.required`。`required()` を付けると常に `object.required` |
 | 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反。`rejectingNull()` を付けると常に `object.notNull` |
 | プロパティが定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
@@ -555,7 +556,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `recover`、`recoverWith` | [#550](https://github.com/making/yavi/pull/550) |
 | `messagesByName()`、`pointer()`、`ViolationDetail` | [#551](https://github.com/making/yavi/pull/551) |
 | `ignoringCase()`、`StringCoercion`、`fractionDigits` | [#552](https://github.com/making/yavi/pull/552) |
-| `object.anyOf` の `alternatives()`、`multipleOf`、`ip()`、`uri()`、`ulid()` | [#566](https://github.com/making/yavi/pull/566) |
+| `object.anyOf` の `alternatives()`、`multipleOf`、`ip()`、`uri()`、`ulid()`、文字列からの `UUID`、`URI`、`Duration`、`Period` | [#566](https://github.com/making/yavi/pull/566) |
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |

@@ -182,6 +182,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * {@code LocalDateTime}, {@code OffsetDateTime}, {@code ZonedDateTime},
 	 * {@code Instant}, {@code Year} and {@code YearMonth}, or an integral number for
 	 * {@code Year},</li>
+	 * <li>an ISO-8601 string for {@code Duration} ({@code PT1H30M}) and {@code Period}
+	 * ({@code P1Y2M}),</li>
+	 * <li>the canonical string (8-4-4-4-12 hexadecimal digits) for {@code UUID}, and a
+	 * string that {@link java.net.URI} parses, which may be a reference without a scheme,
+	 * for {@code URI},</li>
 	 * <li>a map whose keys are all strings for {@code Map}.</li>
 	 * </ul>
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a

@@ -170,6 +170,7 @@ Validated<User> validated = userValidator.validate(Map.of(
 | A value that does not represent the type of its property (`"age": "30"`) | `object.type`: `"age" must be of type integer` |
 | A number that keeps its value (`30L`, `30.0` for an `Integer`) | accepted; `30.5` is `object.type` |
 | An enum constant, a temporal value | read from the name of the constant, from the ISO-8601 string |
+| A `UUID`, a `URI`, a `Duration`, a `Period` (`_object("id", UUID.class)`) | read from the canonical string of the UUID, the string of the URI, the ISO-8601 string (`PT1H30M`, `P1Y2M`); otherwise `object.type`: `"id" must be of type UUID` |
 | An absent key | validated like `null`: accepted by `optional()`, `nullable()`, `defaultValue(...)`, `recover(...)`, otherwise `object.required`; always `object.required` after `required()` |
 | An explicit `null` | `object.notNull`, or the violation of a constraint that rejects `null`; always `object.notNull` after `rejectingNull()` |
 | A key that no property is defined for | ignored; `rejectingUnknownProperties()` reports `object.unknownProperty` |
@@ -637,6 +638,6 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
-| `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()` | [#566](https://github.com/making/yavi/pull/566) |
+| `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()`, `UUID`, `URI`, `Duration` and `Period` from a string | [#566](https://github.com/making/yavi/pull/566) |
 | Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

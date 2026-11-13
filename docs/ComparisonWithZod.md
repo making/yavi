@@ -274,7 +274,9 @@ document has for the type of the property:
 * a number whatever its Java type is, as long as the value is kept (`30L` and `30.0` are an
   `Integer`, `30.5` is not),
 * the name of a constant for an enum,
-* an ISO-8601 string for `LocalDate`, `Instant` and the other temporal types.
+* an ISO-8601 string for `LocalDate`, `Instant` and the other temporal types, `Duration`
+  and `Period`,
+* the string form of a `UUID` and a `URI` (`_object("id", UUID.class)`).
 
 A mismatch is reported with `object.type` (`"age" must be of type integer`).
 

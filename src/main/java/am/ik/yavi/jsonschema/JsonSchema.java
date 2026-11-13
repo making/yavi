@@ -7,13 +7,17 @@ package am.ik.yavi.jsonschema;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.time.Year;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ValueDescription;
@@ -49,6 +54,10 @@ import org.jspecify.annotations.Nullable;
  * {@code null}, so a {@link ValueDescription.Presence} that rejects {@code null} is
  * neither required nor nullable, and a {@link ValueDescription.Required} that accepts
  * {@code null} is both.</li>
+ * <li>A type that is read from its string form is a {@code string} with a {@code format}:
+ * {@code date} for {@code LocalDate}, {@code date-time} for {@code Instant} and
+ * {@code OffsetDateTime}, {@code uuid} for {@code UUID}, {@code uri-reference} for
+ * {@code URI} and {@code duration} for {@code Duration} and {@code Period}.</li>
  * <li>A list is written with {@code items}, a map with {@code additionalProperties},
  * alternatives with {@code anyOf} and a default value with {@code default}. The
  * constraints of a list or a map are written like those of a value ({@code minItems},
@@ -371,6 +380,16 @@ public final class JsonSchema {
 		else if (javaType == Instant.class || javaType == OffsetDateTime.class) {
 			schema.put("format", "date-time");
 		}
+		else if (javaType == UUID.class) {
+			schema.put("format", "uuid");
+		}
+		else if (javaType == URI.class) {
+			// a URI may be a reference without a scheme
+			schema.put("format", "uri-reference");
+		}
+		else if (javaType == Duration.class || javaType == Period.class) {
+			schema.put("format", "duration");
+		}
 		final Object[] constants = javaType.getEnumConstants();
 		if (constants != null) {
 			schema.put("enum", jsonArray(Arrays.asList(constants)));
@@ -526,7 +545,8 @@ public final class JsonSchema {
 		if (Number.class.isAssignableFrom(type)) {
 			return "number";
 		}
-		if (Temporal.class.isAssignableFrom(type)) {
+		if (Temporal.class.isAssignableFrom(type) || TemporalAmount.class.isAssignableFrom(type) || type == UUID.class
+				|| type == URI.class) {
 			return "string";
 		}
 		if (Iterable.class.isAssignableFrom(type) || type.isArray()) {

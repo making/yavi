@@ -5,7 +5,11 @@
 package am.ik.yavi.jsonschema;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.time.Duration;
+import java.time.Period;
 import java.util.List;
+import java.util.UUID;
 
 import am.ik.yavi.arguments.ArgumentsValidators;
 import am.ik.yavi.builder.BigDecimalValidatorBuilder;
@@ -14,6 +18,7 @@ import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.validator.Yavi;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +71,21 @@ class JsonSchemaTest {
 				"arg5":{},\
 				"flag":{"type":["boolean","null"]}},\
 				"required":["code","price"]}""");
+		// a type that is read from its string form is a string with a format
+		assertThat(JsonSchema.toJson(Yavi.schema()
+			._object("id", UUID.class)
+			._object("site", URI.class)
+			._object("ttl", Duration.class)
+			._object("term", Period.class)
+			.defaultValue(Period.ofMonths(1))
+			.fromMap((id, site, ttl, term) -> id)
+			.description())).isEqualTo("""
+					{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
+					"id":{"type":"string","format":"uuid"},\
+					"site":{"type":"string","format":"uri-reference"},\
+					"ttl":{"type":"string","format":"duration"},\
+					"term":{"type":["string","null"],"format":"duration","default":"P1M"}},\
+					"required":["id","site","ttl"]}""");
 	}
 
 }

@@ -6,7 +6,10 @@ package am.ik.yavi.input;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -860,6 +864,16 @@ class ObjectInputValidatorTest {
 				exact(BigDecimal.class, 0.1, new BigDecimal("0.1")), exact(String.class, 1, null),
 				exact(Role.class, Role.USER, Role.USER), exact(Role.class, "user", null),
 				exact(Year.class, 2026, Year.of(2026)), exact(Year.class, "2026", Year.of(2026)),
+				// a type with a single string form is read from it
+				exact(UUID.class, "123E4567-e89b-12d3-a456-426614174000",
+						UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
+				exact(UUID.class, UUID.fromString("123e4567-e89b-12d3-a456-426614174000"),
+						UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
+				exact(UUID.class, "1-1-1-1-1", null), exact(UUID.class, 1, null),
+				exact(URI.class, "https://example.com/a?b=c", URI.create("https://example.com/a?b=c")),
+				exact(URI.class, "/a/b", URI.create("/a/b")), exact(URI.class, "https://example.com/a b", null),
+				exact(Duration.class, "PT1H30M", Duration.ofMinutes(90)), exact(Duration.class, "1h", null),
+				exact(Period.class, "P1Y2M", Period.of(1, 2, 0)), exact(Period.class, "PT1H", null),
 				exact(Map.class, Map.of(1, 2), null), exact(Object.class, List.of(1), List.of(1)),
 				// a string is a number or a boolean only when strings are coerced
 				coerced(Integer.class, "1", 1), coerced(Integer.class, "+1.0e1", 10),
@@ -881,6 +895,8 @@ class ObjectInputValidatorTest {
 				lenient(Boolean.class, "no", false), lenient(Boolean.class, "0", false),
 				lenient(Boolean.class, "2", null), lenient(Role.class, " USER ", Role.USER),
 				lenient(Year.class, " 2026 ", Year.of(2026)),
+				lenient(UUID.class, " 123e4567-e89b-12d3-a456-426614174000 ",
+						UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
 				// a string stays a string
 				Arguments.of(String.class, " 1 ", " 1 ", " 1 ", " 1 "),
 				Arguments.of(Object.class, " 1 ", " 1 ", " 1 ", " 1 "));
