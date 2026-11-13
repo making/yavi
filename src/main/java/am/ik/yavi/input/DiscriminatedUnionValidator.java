@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintDescription;
@@ -79,6 +80,8 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 */
 	private final Map<String, ValueDescription.Reference> references;
 
+	private final List<TargetRule<X>> rules;
+
 	private final Reading<Object> reading;
 
 	/**
@@ -89,12 +92,14 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 * @return a validator that rejects every input until an alternative is added
 	 */
 	public static <X> DiscriminatedUnionValidator<X> of(String discriminator) {
-		return new DiscriminatedUnionValidator<>(discriminator, Map.of());
+		return new DiscriminatedUnionValidator<>(discriminator, Map.of(), List.of());
 	}
 
 	private DiscriminatedUnionValidator(String discriminator,
-			Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives) {
+			Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
+			List<TargetRule<X>> rules) {
 		this.discriminator = discriminator;
+		this.rules = rules;
 		this.alternatives = alternatives;
 		final Map<String, ValueDescription.Reference> references = new HashMap<>();
 		final Map<String, ValueValidator<Object, ? extends X>> ofMaps = new LinkedHashMap<>();
@@ -124,7 +129,26 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 		if (alternatives.put(value, validator) != null) {
 			throw new IllegalArgumentException("The alternative '" + value + "' is defined twice.");
 		}
-		return new DiscriminatedUnionValidator<>(this.discriminator, Collections.unmodifiableMap(alternatives));
+		return new DiscriminatedUnionValidator<>(this.discriminator, Collections.unmodifiableMap(alternatives),
+				this.rules);
+	}
+
+	/**
+	 * Returns a validator that additionally checks the object created by the selected
+	 * alternative with the given predicate, as {@link ValueValidator#constraintOnTarget}
+	 * states. The rule applies to every alternative, those added later included, and the
+	 * returned validator can still be given alternatives and read parameters.
+	 * @param predicate the rule that the created object must satisfy
+	 * @param name the name of the reported violation
+	 * @param violationMessage the message key and the default message format of the
+	 * reported violation
+	 * @return a validator with the additional rule
+	 */
+	@Override
+	public DiscriminatedUnionValidator<X> constraintOnTarget(Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage) {
+		return new DiscriminatedUnionValidator<>(this.discriminator, this.alternatives,
+				TargetRule.append(this.rules, new TargetRule<>(predicate, name, violationMessage)));
 	}
 
 	/**
@@ -319,7 +343,8 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 					.failureWith(ObjectInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
 							value, locale, List.copyOf(this.alternatives.keySet())));
 			}
-			return Validated.of(alternative.validate(input, locale, constraintContext));
+			return TargetRule.check(DiscriminatedUnionValidator.this.rules,
+					Validated.of(alternative.validate(input, locale, constraintContext)), locale);
 		}
 
 		@Override

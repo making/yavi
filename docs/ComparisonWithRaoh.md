@@ -547,7 +547,7 @@ only when all properties are valid, like `flatMap`, and its name locates the vio
 ```java
 record DateRange(LocalDate start, LocalDate end) {}
 
-ValueValidator<Map<String, Object>, DateRange> dateRangeValidator = Yavi.schema()
+ObjectInputValidator<DateRange> dateRangeValidator = Yavi.schema()
         ._localDate("start")
         ._localDate("end")
         .fromMap(DateRange::new)
@@ -583,7 +583,7 @@ The rule of amount and currency is the same:
 enum Currency { JPY, USD, EUR }
 record Money(BigDecimal amount, Currency currency) {}
 
-ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.schema()
+ObjectInputValidator<Money> moneyValidator = Yavi.schema()
         ._bigDecimal("amount", c -> c.positiveOrZero())
         ._enum("currency", Currency.class)
         .fromMap(Money::new)

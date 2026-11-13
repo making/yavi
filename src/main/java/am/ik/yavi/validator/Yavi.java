@@ -120,7 +120,7 @@ import java.util.function.Function;
  *     ._string("street", c -> c.notBlank())
  *     ._string("city", c -> c.notBlank())
  *     .fromMap(Address::new);
- * ValueValidator<Map<String, Object>, User> validator = Yavi.schema()
+ * ObjectInputValidator<User> validator = Yavi.schema()
  *     ._string("email", c -> c.notBlank().email())
  *     ._string("nickname", c -> c.notBlank()).optional()
  *     ._object("address", addressValidator)

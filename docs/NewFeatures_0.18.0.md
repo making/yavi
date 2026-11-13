@@ -119,7 +119,8 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
 * The constraints of `_list` and `_map` are checked when every element is valid and are
   reported on the property: `"tags" must be unique. [a] is/are duplicated.`
 * `constraintOnTarget` is a rule that spans several properties. It is checked when all
-  properties are valid.
+  properties are valid. After `fromMap` it returns an `ObjectInputValidator`, so
+  `rejectingUnknownProperties()` and `readingParameters()` can follow it.
 * `flatApply(f)` takes a function that returns a `Validated`, such as a factory method
   that validates.
 
