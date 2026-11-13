@@ -346,6 +346,7 @@ class YaviSchemaTest {
 				"s._string((value, locale, context) -> Validated.successWith(value)).nullable().required()",
 				"s._object(\"o\", s._string(\"x\").fromMap(x -> x).nullable()).required()",
 				"InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming())",
+				"StringCoercion.strict().booleanWords().trimming()",
 				// the rest is never null
 				"s._rest().recover(Map.of())", "s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
 				"DiscriminatedUnionValidator.<String>of(\"type\").when(\"a\", s._string(\"x\").fromMap(x -> x))"
@@ -378,6 +379,9 @@ class YaviSchemaTest {
 				// a reader that coerces strings is given its rules once
 				"InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming()).coercingStrings()",
 				"ParameterTree.reader().coercingStrings(StringCoercion.strict().trimming())",
+				"StringCoercion.strict().booleanWords(java.util.List.of(\"Y\"), java.util.List.of(\"N\")).booleanWords()",
+				"StringCoercion.strict().trimming().booleanWords().trimming()",
+				"StringCoercion.strict().trimming().trimming()",
 				// a union without alternatives would reject every input
 				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())");
 		final List<String> chains = new ArrayList<>(accepted);

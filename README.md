@@ -785,6 +785,7 @@ validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30,
 
 * `trimming()`: a blank string is validated like `null`, and a string read as a number, a boolean, an enum constant or a temporal value is read without its surrounding white space. A `String` value is left as it is (`c.trim()` trims it).
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` are booleans in any case. `booleanWords(trueWords, falseWords)` takes the words of the application instead.
+* Each rule is given once, in any order: `booleanWords(...).booleanWords()`, in which the second words would replace the first ones, does not compile.
 * The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. The reader that coerces strings is an `InputReader` and cannot be coerced again, so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are given once.
 * A validator reads with the last reader it is given: `readingWith(reader)` after `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string. For any other text, override `InputReader#value(node, type)` in a reader of your own.
 

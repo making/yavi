@@ -417,7 +417,8 @@ A tree whose scalars are all strings is read with `coercingStrings()`, a decorat
 `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read
 by the rules of the next section. The reader that coerces strings is an `InputReader` and cannot be coerced again,
 so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are
-given once. A validator
+given once, and so is each rule of a `StringCoercion`: `booleanWords(...).booleanWords()` does
+not compile. A validator
 reads with the last reader it is given: `readingWith(reader)` after
 `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string.
 
