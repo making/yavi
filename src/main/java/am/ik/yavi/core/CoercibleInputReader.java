@@ -42,8 +42,10 @@ public interface CoercibleInputReader<N> extends InputReader<N> {
 	 * <li>An empty string is a null node whatever it is checked as, because text has no
 	 * other way to say that a value is not given. It is validated like {@code null}, so
 	 * {@code optional()}, {@code nullable()} and {@code defaultValue} apply to it; a
-	 * string property that must receive {@code ""} is given
-	 * {@code defaultValue("")}.</li>
+	 * string property that must receive {@code ""} is given {@code defaultValue("")}.
+	 * Text has no {@code null}, so a property that rejects an empty string with
+	 * {@code object.notNull} reports {@code object.required} instead, as it does for an
+	 * absent key ({@link #isEmptyText}).</li>
 	 * <li>A string checked as a numeric type is read as a decimal number, in the grammar
 	 * of {@link java.math.BigDecimal#BigDecimal(String)}: an optional sign, digits, an
 	 * optional fraction and an optional exponent, without surrounding whitespace or

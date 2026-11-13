@@ -52,6 +52,11 @@ record Projection<N> (N object, Predicate<String> names) {
 		}
 
 		@Override
+		public boolean isEmptyText(Object node) {
+			return this.reader.isEmptyText(this.node(node));
+		}
+
+		@Override
 		public Object value(Object node) {
 			return this.reader.value(this.node(node));
 		}

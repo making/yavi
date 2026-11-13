@@ -22,6 +22,11 @@ record StringCoercingInputReader<N> (InputReader<N> reader, StringCoercion coerc
 	}
 
 	@Override
+	public boolean isEmptyText(N node) {
+		return !this.reader.isNull(node) || this.reader.isEmptyText(node);
+	}
+
+	@Override
 	public Object value(N node) {
 		return this.reader.value(node);
 	}

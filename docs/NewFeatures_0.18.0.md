@@ -433,6 +433,10 @@ The values:
 
 * An empty string is validated like `null`, whatever the type of its property is. Give
   `defaultValue("")` to a string property that must receive `""`.
+* Text has no `null`, so a property that would report an empty string with
+  `object.notNull` reports `object.required` (`"page" is required`), as it does for an
+  absent key. The violation of a constraint that rejects `null`, such as `notBlank()` or
+  `notNull().message(...)`, is reported as it is.
 * A number is a decimal number without surrounding white space or grouping separators:
   `"30"` and `"30.0"` are an `Integer`; `"30.5"`, `" 30"` and `"1,000"` are not. A
   boolean is `"true"` or `"false"`.
@@ -797,6 +801,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `InputReader`, `readingWith` | [#541](https://github.com/making/yavi/pull/541) |
 | `coercingStrings()`, `readingParameters()` | [#542](https://github.com/making/yavi/pull/542), [#543](https://github.com/making/yavi/pull/543) |
 | `BindingResult` of request parameters in Spring MVC (documentation) | [#569](https://github.com/making/yavi/pull/569) |
+| `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |
 | Transforms, `preprocess` | [#547](https://github.com/making/yavi/pull/547) |

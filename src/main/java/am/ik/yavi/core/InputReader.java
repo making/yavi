@@ -60,6 +60,23 @@ public interface InputReader<N> {
 	boolean isNull(N node);
 
 	/**
+	 * Tells whether a null node is text without a value, such as an empty request
+	 * parameter, rather than a {@code null} of the input. Such a node is validated like
+	 * {@code null}, but the input it comes from has no {@code null}: a property that
+	 * rejects it with {@code object.notNull} reports {@code object.required} instead, as
+	 * it does for an absent key.
+	 *
+	 * <p>
+	 * The default implementation returns {@code false}.
+	 * @param node the node, which is a null node
+	 * @return {@code true} if the node is text without a value
+	 * @see CoercibleInputReader#coercingStrings()
+	 */
+	default boolean isEmptyText(N node) {
+		return false;
+	}
+
+	/**
 	 * Returns the value of a scalar node as the JDK type it is checked as: a
 	 * {@code String}, a {@code Number} or a {@code Boolean}. Any other node is returned
 	 * as it is; it represents only a type it is an instance of. The returned value is
