@@ -318,8 +318,9 @@ class ObjectInputValidatorTest {
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("tags", "collection.unique"), tuple("scores", "container.lessThanOrEqual"));
 		if (model == Model.STRINGS || model == Model.PARAMETERS) {
-			// an empty string is a null node wherever it is, and a string that does not
-			// stand for the type is reported like any other mismatch
+			// an empty string is a null node wherever it is, which a property requires
+			// rather than rejects as null, and a string that does not stand for the type
+			// is reported like any other mismatch
 			final Validated<User> coerced = model.validate(userValidator,
 					input("email", "", "age", "", "role", "", "birthday", "", "address", map("street", "1-2-3"), "tags",
 							List.of("a", ""), "scores", map("math", "-1", "art", "1.5", "music", " 1"), "nickname", "",
@@ -327,8 +328,8 @@ class ObjectInputValidatorTest {
 			assertThat(coerced.errors())
 				.extracting(ConstraintViolation::name, ConstraintViolation::messageKey,
 						violation -> violation.violatedValue())
-				.containsExactly(tuple("email", "charSequence.notBlank", null), tuple("age", "object.notNull", null),
-						tuple("role", "object.notNull", null), tuple("address.city", "object.required", null),
+				.containsExactly(tuple("email", "charSequence.notBlank", null), tuple("age", "object.required", null),
+						tuple("role", "object.required", null), tuple("address.city", "object.required", null),
 						tuple("tags[1]", "charSequence.notBlank", null),
 						tuple("scores.math", "numeric.greaterThanOrEqual", -1),
 						tuple("scores.art", "object.type", "1.5"), tuple("scores.music", "object.type", " 1"),
@@ -1021,6 +1022,19 @@ class ObjectInputValidatorTest {
 			.isEqualTo(new Signup(" a ", 30, true, Role.ADMIN));
 		assertThat(ofForm.validated(Map.of("name", " ", "age", " \t", "role", "USER")))
 			.isEqualTo(new Signup(null, 20, false, Role.USER));
+		// a field left empty is required rather than null, unless a constraint has a
+		// message of its own for it
+		assertThat(ofForm.validate(Map.of("role", " ")).errors()).extracting(ConstraintViolation::message)
+			.containsExactly("\"role\" is required");
+		assertThat(Yavi.schema()
+			._string("name", c -> c.notBlank())
+			._integer("age", c -> c.notNull().message("Give \"{0}\""))
+			._object("address", addressValidator)
+			.fromMap((name, age, address) -> name)
+			.readingParameters()
+			.validate(Map.of("name", "", "age", "", "address", ""))
+			.errors()).extracting(ConstraintViolation::message)
+			.containsExactly("\"name\" must not be blank", "Give \"age\"", "\"address\" is required");
 		assertThat(validator.readingParameters()
 			.validate(Map.of("age", " 30 ", "subscribed", "on", "role", "USER"))
 			.errors())
@@ -1143,10 +1157,14 @@ class ObjectInputValidatorTest {
 		assertThat(model.validate(account, input("deletedAt", "2026-11-13", "bio", " ", "page", 2)).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("bio", "charSequence.notBlank"), tuple("note", "object.required"));
-		// a parameter with an empty value is present and null
+		// a parameter with an empty value is present and null, which text cannot say: it
+		// is rejected as a value that is required
 		assertThat(account.readingParameters().validate(Map.of("deletedAt", "", "bio", "")).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
-			.containsExactly(tuple("bio", "object.notNull"), tuple("note", "object.required"));
+			.containsExactly(tuple("bio", "object.required"), tuple("note", "object.required"));
+		assertThat(validator.readingParameters().validate(Map.of("nickname", "")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("nickname", "object.required"));
 		final String schema = """
 				{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
 				"deletedAt":{"type":["string","null"]},\
@@ -1213,7 +1231,8 @@ class ObjectInputValidatorTest {
 			.of(List.of(new ObjectInputValidator.Property<>("count", coerced)), values -> values.get(0));
 		assertThat(lambda.untyped().validated(map("count", "10"))).isEqualTo(10);
 		// the node is read as it is under another reader, coerced or not: its strings are
-		// coerced, and its null node and an empty string are both null
+		// coerced, and its null node and an empty string are both null, of which only the
+		// null node is reported as null
 		final ValueValidator<JsonNode, Square> square = Yavi.schema()
 			._string("type")
 			.nullable()
@@ -1223,6 +1242,9 @@ class ObjectInputValidatorTest {
 				{"type":"","side":"3"}"""))).isEqualTo(new Square(null, 3));
 		assertThat(square.validate(jsonMapper.readTree("""
 				{"type":null,"side":""}""")).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.required");
+		assertThat(square.validate(jsonMapper.readTree("""
+				{"type":null,"side":null}""")).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
 		assertThatThrownBy(() -> lambda.readingWith(JsonNodeReader.INSTANCE))
 			.isInstanceOf(UnsupportedOperationException.class);

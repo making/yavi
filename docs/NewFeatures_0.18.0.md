@@ -433,6 +433,10 @@ The values:
 
 * An empty string is validated like `null`, whatever the type of its property is. Give
   `defaultValue("")` to a string property that must receive `""`.
+* Text has no `null`, so a property that would report an empty string with
+  `object.notNull` reports `object.required` (`"page" is required`), as it does for an
+  absent key. The violation of a constraint that rejects `null`, such as `notBlank()` or
+  `notNull().message(...)`, is reported as it is.
 * A number is a decimal number without surrounding white space or grouping separators:
   `"30"` and `"30.0"` are an `Integer`; `"30.5"`, `" 30"` and `"1,000"` are not. A
   boolean is `"true"` or `"false"`.

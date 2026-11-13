@@ -648,7 +648,7 @@ The type of the map is the one the validator is assigned to: a `Map<String, Stri
 
 The values are text:
 
-* An empty string is validated like `null` whatever the type of its property is, because text has no other way to say that a value is not given. `optional()`, `nullable()` and `defaultValue(...)` apply to it; give `defaultValue("")` to a string property that must receive `""`.
+* An empty string is validated like `null` whatever the type of its property is, because text has no other way to say that a value is not given. `optional()`, `nullable()` and `defaultValue(...)` apply to it; give `defaultValue("")` to a string property that must receive `""`. Text has no `null`, so a property that would report an empty string with `object.notNull` reports `object.required` (`"page" is required`), as it does for an absent key; the violation of a constraint that rejects `null`, such as `notBlank()` or `notNull().message(...)`, is reported as it is.
 * A string is a number if it is a decimal number: an optional sign, digits, an optional fraction and an optional exponent (the grammar of `new BigDecimal(String)`), without surrounding whitespace or grouping separators. It is then checked like any other number: `"30"` and `"30.0"` are an `Integer`, `"30.5"`, `" 30"` and `"1,000"` are not.
 * A string is a boolean if it is `"true"` or `"false"`.
 * A string that does not stand for the type is reported with `object.type` like any other mismatch (`"page" must be of type integer`), never with an exception. The text of a number, a boolean or a date is not trimmed (`" 42 "` is not an integer; a `String` argument is trimmed with `c.trim()`) and nothing is converted to a string.

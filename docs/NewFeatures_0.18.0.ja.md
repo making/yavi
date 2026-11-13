@@ -374,6 +374,7 @@ Object search(@RequestParam MultiValueMap<String, String> params) {
 値のルール:
 
 * 空文字列は、プロパティの型にかかわらず `null` と同じように検証されます。`""` を受け取りたい文字列のプロパティには `defaultValue("")` を付けます。
+* テキストには `null` がありません。そのため、空文字列が `object.notNull` で報告されるはずのプロパティでは、存在しないキーと同じ `object.required`（`"page" is required`）で報告されます。`notBlank()` や `notNull().message(...)` のように `null` を拒否する制約の違反は、そのまま報告されます。
 * 数値は、前後の空白や桁区切りのない 10 進数です。`"30"` と `"30.0"` は `Integer` として読めますが、`"30.5"`、`" 30"`、`"1,000"` は読めません。真偽値は `"true"` または `"false"` です。
 * 型を表さない文字列は、例外ではなく `object.type` で報告されます（`"page" must be of type integer`）。
 

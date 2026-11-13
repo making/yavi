@@ -699,25 +699,34 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 						final N value = this.reader.property(input, name);
 						final boolean absent = value == null && !this.reader.hasProperty(input, name);
 						final boolean isNull = value == null || this.reader.isNull(value);
+						final boolean empty = value != null && isNull && this.reader.isEmptyText(value);
 						final Validated<?> read = switch (property.strictness()) {
 							case REQUIRED -> absent ? null : validator.validate(isNull ? null : value, locale, constraintContext);
 							case REJECTING_NULL -> isNull && !absent
-									? Validated.failureWith(
-											violation(name, ViolationMessage.Default.OBJECT_NOT_NULL, null, locale))
+									? Validated.failureWith(violation(name,
+											empty ? ViolationMessage.Default.OBJECT_REQUIRED
+													: ViolationMessage.Default.OBJECT_NOT_NULL,
+											null, locale))
 									: validator.validate(isNull ? null : value, locale, constraintContext);
 							case ABSENT_AS_NULL -> validator.validate(isNull ? null : value, locale, constraintContext);
 						};
-						// an absent key is required rather than null
-						validated = read != null && (read.isValid() || !absent) ? read : Validated
-							.failureWith(violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
+						// an absent key is required rather than null, and so is text without
+						// a value unless a constraint has a message of its own for it
+						validated = read != null && (read.isValid() || !(absent || (empty && rejectsNull(read)))) ? read
+								: Validated.failureWith(
+										violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
 					}
 					case PresenceProperty<?> property -> {
 						final String name = property.name();
 						final N value = this.reader.property(input, name);
-						validated = value == null && !this.reader.hasProperty(input, name)
-								? Validated.successWith(Presence.absent()) : validator.validate(
-										value == null || this.reader.isNull(value) ? null : value, locale,
-										constraintContext);
+						final boolean isNull = value == null || this.reader.isNull(value);
+						final Validated<?> read = value == null && !this.reader.hasProperty(input, name)
+								? Validated.successWith(Presence.absent())
+								: validator.validate(isNull ? null : value, locale, constraintContext);
+						validated = value != null && isNull && this.reader.isEmptyText(value) && rejectsNull(read)
+								? Validated.failureWith(
+										violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale))
+								: read;
 					}
 					case Embedded<?> embedded -> {
 						final Group group = ObjectInputValidator.this.groups.get(i);
@@ -749,6 +758,20 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 			return violations.isEmpty() ? TargetRule.check(ObjectInputValidator.this.rules,
 					Validated.of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values))), locale)
 					: Validated.failureWith(violations);
+		}
+
+		/**
+		 * Returns whether the result is the violation that rejects {@code null} with the
+		 * message of {@code object.notNull}.
+		 */
+		private static boolean rejectsNull(Validated<?> validated) {
+			if (validated.isValid() || validated.errors().size() != 1) {
+				return false;
+			}
+			final ConstraintViolation violation = validated.errors().get(0);
+			final ViolationMessage notNull = ViolationMessage.Default.OBJECT_NOT_NULL;
+			return notNull.messageKey().equals(violation.messageKey())
+					&& notNull.defaultMessageFormat().equals(violation.defaultMessageFormat());
 		}
 
 		/**
