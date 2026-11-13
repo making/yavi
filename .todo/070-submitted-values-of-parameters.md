@@ -80,7 +80,10 @@ Decide:
   API response does not show the input again.
 
 Not in scope: the map of an object that is already stored, for the first display of an
-edit form. That is an encoder (041).
+edit form. That is an encoder; see 041 (A use case for the decision: the first display
+of an edit form). If 041 is accepted, its map has the shape that is decided here, so
+that a template is given one kind of data in both situations. Decide the shape with that
+in mind, but do not wait for 041.
 
 ## If accepted
 
