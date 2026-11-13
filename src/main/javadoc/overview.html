@@ -55,7 +55,7 @@ Example of an arguments validator that creates a value only from valid arguments
 </p>
 
 <pre>
-Arguments2Validator&lt;String, Integer, Person&gt; validator = Yavi.arguments()
+Arguments2Validator&lt;String, Integer, Person&gt; validator = Yavi.schema()
     ._string("name", c -&gt; c.notBlank())
     ._integer("age", c -&gt; c.greaterThanOrEqual(0))
     .apply(Person::new);
@@ -70,8 +70,8 @@ for property and arguments validators.</li>
 <li><a href="am/ik/yavi/arguments/package-summary.html">am.ik.yavi.arguments</a>:
 immutable argument containers and validators that produce a validated result.</li>
 <li><a href="am/ik/yavi/validator/package-summary.html">am.ik.yavi.validator</a>: the
-<a href="am/ik/yavi/validator/Yavi.html">Yavi</a> entry point for argument
-validation.</li>
+<a href="am/ik/yavi/validator/Yavi.html">Yavi</a> entry point for the schema of an
+input and for validators of single values.</li>
 <li><a href="am/ik/yavi/core/package-summary.html">am.ik.yavi.core</a>: the validation
 engine, violations, groups, conditions and applicative value validators.</li>
 <li><a href="am/ik/yavi/constraint/package-summary.html">am.ik.yavi.constraint</a>:

@@ -644,6 +644,23 @@ Yavi.arguments()._string(nameValidator)._integer(ageValidator).apply(Member::new
 
 Related pull request: [#538](https://github.com/making/yavi/pull/538)
 
+### `Yavi.arguments()` is deprecated and `YaviArguments` is `YaviSchema`
+
+`Yavi.schema()` is the new name of `Yavi.arguments()`, which still works and is
+deprecated. The builder now describes an input that is read from typed arguments, a map,
+a JSON tree or request parameters, so its type `YaviArguments` is renamed to
+`YaviSchema`. Code that declares a variable of that type must rename it.
+
+```java
+// before
+YaviArguments builder = Yavi.arguments();
+
+// after
+YaviSchema builder = Yavi.schema();
+```
+
+The examples of this document keep `Yavi.arguments()`, as code written for 0.17 does.
+
 ### `Arguments1` to `Arguments16` are records
 
 `toString()` returns `Arguments2[arg1=a, arg2=1]`. It was `Arguments2{arg1=a, arg2=1}`.

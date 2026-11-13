@@ -51,7 +51,7 @@ import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function11;
-import am.ik.yavi.input.MapInputValidator;
+import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -64,7 +64,7 @@ import org.jspecify.annotations.Nullable;
  * reported and the result is created only when all arguments are valid. The validator is
  * created with {@code apply} after all arguments have been added, or with {@code fromMap}
  * to read the arguments from a {@code Map<String, Object>} by their names. Instances are
- * obtained from {@link YaviArguments} or from the builder of the previous argument count.
+ * obtained from {@link YaviSchema} or from the builder of the previous argument count.
  *
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
@@ -1425,7 +1425,7 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * instead of the value of a key, and its violations are reported as they are. Its
 	 * properties are defined for the built validator, and with {@code optional()},
 	 * {@code nullable()} or {@code defaultValue} it is given {@code null} when none of
-	 * them has a value; see {@link am.ik.yavi.input.MapInputValidator}. With
+	 * them has a value; see {@link am.ik.yavi.input.ObjectInputValidator}. With
 	 * {@code apply}, the argument is a map validated by the validator.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the map
@@ -1527,7 +1527,7 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
-	 * Builds a {@link MapInputValidator} that reads the added arguments from a
+	 * Builds a {@link ObjectInputValidator} that reads the added arguments from a
 	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
 	 * creates the result with the given function.
 	 *
@@ -1535,16 +1535,16 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * Each value of the map must represent the type of its argument (see
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
 	 * absent key is validated like {@code null}, unless the argument is added with
-	 * {@code presence()}, and an unknown key is ignored; see {@link MapInputValidator}
+	 * {@code presence()}, and an unknown key is ignored; see {@link ObjectInputValidator}
 	 * for the violations of absent keys and for rejecting unknown keys. An
 	 * {@code _embedded} argument reads the map itself and a {@code _rest} argument the
 	 * keys that no other argument defines. A nested {@code _object}, {@code _list} or
 	 * {@code _map} argument reads a map or a list whose content is checked by the
 	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
-	 * nested object is added with another {@code MapInputValidator}.
+	 * nested object is added with another {@code ObjectInputValidator}.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
-	 * @return a new map input validator
+	 * @return a new object input validator
 	 * @throws IllegalStateException if an argument has no name, or if its input type is
 	 * unknown: an {@code _enum} or {@code _object} argument added without a type, or a
 	 * value validator that does not know its input type; also if there is a {@code _rest}
@@ -1554,9 +1554,9 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> MapInputValidator<X> fromMap(
+	public <X extends @Nullable Object> ObjectInputValidator<X> fromMap(
 			Function11<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? extends X> f) {
-		return MapInputValidator.of(
+		return ObjectInputValidator.of(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
 						this.d6.part(6), this.d7.part(7), this.d8.part(8), this.d9.part(9), this.d10.part(10),
 						this.d11.part(11)),
@@ -1566,7 +1566,7 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
-	 * Builds a {@link MapInputValidator} that reads the added arguments like
+	 * Builds a {@link ObjectInputValidator} that reads the added arguments like
 	 * {@link #fromMap} and creates the result with the given function, which validates
 	 * the arguments together and returns the result or the violations. This is
 	 * {@code fromMap} for a function that can fail, such as a factory method that checks
@@ -1582,15 +1582,15 @@ public sealed class Arguments11ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values or reports
 	 * violations
-	 * @return a new map input validator
+	 * @return a new object input validator
 	 * @throws IllegalStateException as {@link #fromMap} does
 	 * @throws IllegalArgumentException as {@link #fromMap} does
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> MapInputValidator<X> flatFromMap(
+	public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(
 			Function11<? super R1, ? super R2, ? super R3, ? super R4, ? super R5, ? super R6, ? super R7, ? super R8, ? super R9, ? super R10, ? super R11, ? extends Validated<? extends X>> f) {
-		return MapInputValidator.flatOf(
+		return ObjectInputValidator.flatOf(
 				List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3), this.d4.part(4), this.d5.part(5),
 						this.d6.part(6), this.d7.part(7), this.d8.part(8), this.d9.part(9), this.d10.part(10),
 						this.d11.part(11)),

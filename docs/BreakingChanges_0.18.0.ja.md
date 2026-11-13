@@ -579,6 +579,20 @@ Yavi.arguments()._string(nameValidator)._integer(ageValidator).apply(Member::new
 
 関連するプルリクエスト: [#538](https://github.com/making/yavi/pull/538)
 
+### `Yavi.arguments()` は非推奨になり、`YaviArguments` は `YaviSchema` になった
+
+`Yavi.schema()` は `Yavi.arguments()` の新しい名前です。`Yavi.arguments()` は非推奨ですが、引き続き使えます。このビルダーは、型付きの引数、マップ、JSON のツリー、リクエストパラメータから読み取る入力を記述するものになったため、型の名前を `YaviArguments` から `YaviSchema` に変えました。この型の変数を宣言しているコードは、型名を変える必要があります。
+
+```java
+// before
+YaviArguments builder = Yavi.arguments();
+
+// after
+YaviSchema builder = Yavi.schema();
+```
+
+このドキュメントのコード例は、0.17 向けのコードと同じく `Yavi.arguments()` のままにしています。
+
 ### `Arguments1` から `Arguments16` は record になった
 
 `toString()` は `Arguments2[arg1=a, arg2=1]` を返します。これまでは `Arguments2{arg1=a, arg2=1}` でした。

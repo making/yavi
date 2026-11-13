@@ -23,7 +23,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
-import am.ik.yavi.input.MapInputValidator;
+import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -228,7 +228,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * its input type is unknown
 	 */
 	@SuppressWarnings("unchecked")
-	MapInputValidator.Part<R> part(int position) {
+	ObjectInputValidator.Part<R> part(int position) {
 		final String name = this.name != null ? this.name : describedName(this.validator.description());
 		if ((this.source == Source.PROPERTY || this.source == Source.PRESENCE) && name.isEmpty()) {
 			throw new IllegalStateException("The argument at position " + position
@@ -246,11 +246,11 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 					e);
 		}
 		return switch (this.source) {
-			case PROPERTY -> new MapInputValidator.Property<>(name, reading);
-			case PRESENCE -> (MapInputValidator.Part<R>) new MapInputValidator.PresenceProperty<>(name,
+			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading);
+			case PRESENCE -> (ObjectInputValidator.Part<R>) new ObjectInputValidator.PresenceProperty<>(name,
 					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading);
-			case OBJECT -> new MapInputValidator.Embedded<>(reading);
-			case REST -> new MapInputValidator.Rest<>(reading);
+			case OBJECT -> new ObjectInputValidator.Embedded<>(reading);
+			case REST -> new ObjectInputValidator.Rest<>(reading);
 		};
 	}
 

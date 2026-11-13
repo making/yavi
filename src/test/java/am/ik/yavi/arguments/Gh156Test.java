@@ -37,7 +37,7 @@ public class Gh156Test {
 
 	}
 
-	final Arguments3Validator<String, String, String, Person> personValidator = Yavi.arguments()
+	final Arguments3Validator<String, String, String, Person> personValidator = Yavi.schema()
 		._string("firstName", c -> c.notBlank().lessThanOrEqual(128))
 		._string("middleName", c -> c.lessThanOrEqual(128))
 		.nullable()

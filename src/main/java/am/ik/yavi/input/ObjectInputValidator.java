@@ -33,10 +33,10 @@ import org.jspecify.annotations.Nullable;
  * Every property is read from the map by its name, checked against the type it must
  * represent (see {@link ValueValidator#untyped(Class)}) and validated. All violations are
  * accumulated and the object is created only when there is none. Instances are usually
- * created with {@code fromMap} of the builders returned by {@code Yavi.arguments()}:
+ * created with {@code fromMap} of the builders returned by {@code Yavi.schema()}:
  *
  * <pre>{@code
- * MapInputValidator<User> validator = Yavi.arguments()
+ * ObjectInputValidator<User> validator = Yavi.schema()
  *     ._string("email", c -> c.notBlank().email())
   *     ._integer("age", c -> c.greaterThanOrEqual(0))
  *     ._string("nickname").optional()
@@ -66,12 +66,12 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * A validator may be embedded in another with {@code _embedded} of the builders: it reads
- * the same map as the other arguments instead of the value of a key, which builds an
- * object from the columns of several tables in the row of a JOIN, or from more keys than
- * a builder has arguments.
+ * the same map as the properties instead of the value of a key, which builds an object
+ * from the columns of several tables in the row of a JOIN, or from more keys than a
+ * builder has arguments.
  *
  * <pre>{@code
- * MapInputValidator<Employee> validator = Yavi.arguments()
+ * ObjectInputValidator<Employee> validator = Yavi.schema()
  *     ._integer("id")
  *     ._embedded(userNameValidator) // first_name, last_name
  *     ._embedded(departmentValidator).nullable() // dept_name, dept_code
@@ -127,8 +127,10 @@ import org.jspecify.annotations.Nullable;
  * @param <X> the type of the created object
  * @since 0.18.0
  * @see DiscriminatedUnionValidator
+ * @see am.ik.yavi.arguments.ObjectValidator the validator of a typed object, which is not
+ * read from an input
  */
-public final class MapInputValidator<X extends @Nullable Object> implements ValueValidator<Map<String, Object>, X> {
+public final class ObjectInputValidator<X extends @Nullable Object> implements ValueValidator<Map<String, Object>, X> {
 
 	private final List<Part<?>> parts;
 
@@ -151,8 +153,8 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	private final Reading<Object> reading;
 
 	/**
-	 * A part of the object created by a {@link MapInputValidator}: the validated value of
-	 * one property, of an embedded validator or of the rest of the properties.
+	 * A part of the object created by a {@link ObjectInputValidator}: the validated value
+	 * of one property, of an embedded validator or of the rest of the properties.
 	 *
 	 * @param <R> the type of the validated value
 	 */
@@ -203,7 +205,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	 *
 	 * @param validator the validator of the map, which reports its violations as they
 	 * are. What it {@linkplain ValueValidator#description() describes} decides how it is
-	 * embedded, as {@link MapInputValidator} states
+	 * embedded, as {@link ObjectInputValidator} states
 	 * @param <R> the type of the validated value
 	 */
 	public record Embedded<R extends @Nullable Object> (ValueValidator<Object, R> validator) implements Part<R> {
@@ -234,9 +236,9 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	 * @throws IllegalStateException if a part is the rest and an embedded validator does
 	 * not describe its properties
 	 */
-	public static <X extends @Nullable Object> MapInputValidator<X> of(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> ObjectInputValidator<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
-		return new MapInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
+		return new ObjectInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
 				false);
 	}
 
@@ -257,12 +259,12 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	 * @throws IllegalArgumentException as {@link #of} does
 	 * @since 0.18.0
 	 */
-	public static <X extends @Nullable Object> MapInputValidator<X> flatOf(List<? extends Part<?>> parts,
+	public static <X extends @Nullable Object> ObjectInputValidator<X> flatOf(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
-		return new MapInputValidator<>(List.copyOf(parts), mapper, false);
+		return new ObjectInputValidator<>(List.copyOf(parts), mapper, false);
 	}
 
-	private MapInputValidator(List<Part<?>> parts,
+	private ObjectInputValidator(List<Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
 			boolean rejectUnknownProperties) {
 		// the described object: the properties of every way to read it, which are several
@@ -390,7 +392,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 			case ValueDescription.Properties properties -> properties.rest() instanceof ValueDescription.Never;
 			case ValueDescription.NotNull notNull -> rejectsOthers(notNull.value());
 			case ValueDescription.Optional nullable -> rejectsOthers(nullable.value());
-			case ValueDescription.AnyOf anyOf -> anyOf.alternatives().stream().anyMatch(MapInputValidator::rejectsOthers);
+			case ValueDescription.AnyOf anyOf -> anyOf.alternatives().stream().anyMatch(ObjectInputValidator::rejectsOthers);
 			default -> false;
 		};
 	}
@@ -427,8 +429,8 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	 * @throws IllegalStateException if the validator reads the rest of the properties, or
 	 * if an embedded validator does not describe its properties
 	 */
-	public MapInputValidator<X> rejectingUnknownProperties() {
-		return new MapInputValidator<>(this.parts, this.mapper, true);
+	public ObjectInputValidator<X> rejectingUnknownProperties() {
+		return new ObjectInputValidator<>(this.parts, this.mapper, true);
 	}
 
 	/**
@@ -441,7 +443,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 	 * too. The type of the map is the one the result is assigned to:
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.arguments()
+	 * ValueValidator<Map<String, String>, SearchForm> validator = Yavi.schema()
 	 *     ._string("q", c -> c.notBlank())
 	 *     ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
 	 *     .fromMap(SearchForm::new)
@@ -553,8 +555,8 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 				return Validated.failureWith(violation("", ViolationMessage.Default.OBJECT_TYPE,
 						this.reader.value(input), locale, "object"));
 			}
-			final List<Part<?>> parts = MapInputValidator.this.parts;
-			final Set<String> names = MapInputValidator.this.names;
+			final List<Part<?>> parts = ObjectInputValidator.this.parts;
+			final Set<String> names = ObjectInputValidator.this.names;
 			final List<@Nullable Object> values = new ArrayList<>(parts.size());
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			for (int i = 0; i < parts.size(); i++) {
@@ -580,7 +582,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 										constraintContext);
 					}
 					case Embedded<?> embedded -> {
-						final Group group = MapInputValidator.this.groups.get(i);
+						final Group group = ObjectInputValidator.this.groups.get(i);
 						final Object object = group == null ? input
 								: group.nullable() && this.hasNoValue(input, group.names()) ? null
 										: group.projected() ? this.projection(input, group.names()::contains) : input;
@@ -596,7 +598,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 					violations.addAll(validated.errors());
 				}
 			}
-			if (MapInputValidator.this.rejectUnknownProperties) {
+			if (ObjectInputValidator.this.rejectUnknownProperties) {
 				for (Map.Entry<String, ? extends @Nullable N> property : this.reader.properties(input)) {
 					if (!names.contains(property.getKey())) {
 						final N value = property.getValue();
@@ -607,7 +609,7 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 				}
 			}
 			return violations.isEmpty()
-					? Validated.of(MapInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+					? Validated.of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
 					: Validated.failureWith(violations);
 		}
 
@@ -637,12 +639,12 @@ public final class MapInputValidator<X extends @Nullable Object> implements Valu
 
 		@Override
 		public ValueDescription description() {
-			return MapInputValidator.this.description();
+			return ObjectInputValidator.this.description();
 		}
 
 		@Override
 		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
-			return MapInputValidator.this.readingWith(reader);
+			return ObjectInputValidator.this.readingWith(reader);
 		}
 
 	}

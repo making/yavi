@@ -29,6 +29,8 @@ import org.jspecify.annotations.Nullable;
  * @param <X> the type of the value to validate
  * @param <T> the type of the value produced from the validated input
  * @since 0.8.0
+ * @see am.ik.yavi.input.ObjectInputValidator the validator that reads the properties of
+ * an object from an untyped input such as a map
  */
 public class ObjectValidator<X, T extends @Nullable Object> extends DefaultArguments1Validator<X, T> {
 

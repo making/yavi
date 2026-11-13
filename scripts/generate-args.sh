@@ -331,7 +331,7 @@ public record ${class_definition}(${constructor_params}) {
 	 */
 	// A raw argument may be null, and the function is trusted to take it: its
 	// parameters are not @Nullable so that ArgumentsValidatorBuilder.of(User::new)
-	// compiles. Yavi.arguments() gives the validated values with their types instead.
+	// compiles. Yavi.schema() gives the validated values with their types instead.
 	@SuppressWarnings("NullAway")
 	public <X extends @Nullable Object> X map(Function${i}<${function_params}, ? extends X> mapper) {
 		return mapper.apply(${map_args});
@@ -386,7 +386,7 @@ import java.util.function.Function;
  * The rules validate the raw arguments, so an argument is {@code null} unless a rule
  * such as {@code notNull()} rejects it, and the mapper is trusted to take it: a nullness
  * checker cannot tell from the rules which parameter of the mapper may be {@code null}.
- * The builders returned by {@code Yavi.arguments()} do tell it: an argument is required
+ * The builders returned by {@code Yavi.schema()} do tell it: an argument is required
  * there, and {@code nullable()} changes the type of its validated value.
  *
  * <p>
@@ -597,7 +597,7 @@ fi)
  * {@link Validated} instead of stopping at the first one, and a value is produced only
  * when every constraint succeeds. Whether a {@code null} argument is accepted depends
  * on how the validator is built: an argument added to the builders of
- * {@code Yavi.arguments()} is required unless it is made {@code nullable()} or
+ * {@code Yavi.schema()} is required unless it is made {@code nullable()} or
  * {@code optional()}, and a validator built with
  * {@link am.ik.yavi.builder.ArgumentsValidatorBuilder} accepts {@code null} unless a
  * configured constraint rejects it (for example {@code notNull()}); see
@@ -2045,7 +2045,7 @@ for i in `seq 0 ${n}`;do
 if [ "${i}" -gt 0 ];then
   class="Arguments${i}ValidatorBuilder"
 else
-  class="YaviArguments";
+  class="YaviSchema";
 fi
   next_class="Arguments$((i + 1))ValidatorBuilder"
   # "seq 1 0" counts down on macOS, so the ranges that may be empty are guarded
@@ -2137,7 +2137,7 @@ import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 import am.ik.yavi.fn.Function${i};
-import am.ik.yavi.input.MapInputValidator;
+import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.NonNull;
 EOD
 fi)
@@ -2154,7 +2154,7 @@ cat <<EOD
  * reported and the result is created only when all arguments are valid. The validator is
  * created with {@code apply} after all arguments have been added, or with
  * {@code fromMap} to read the arguments from a {@code Map<String, Object>} by their
- * names. Instances are obtained from {@link YaviArguments} or from the builder of the
+ * names. Instances are obtained from {@link YaviSchema} or from the builder of the
  * previous argument count.
  *
  * <p>
@@ -2187,15 +2187,19 @@ cat <<EOD
 EOD
 else
 cat <<EOD
- * Builds an arguments validator by adding one validated argument at a time.
+ * An empty schema: describes the properties of an input by adding one at a time, and
+ * builds a validator that reads them.
  *
  * <p>
- * Each {@code _xxx} method adds the next argument and returns the builder for the
- * following argument. The arguments are validated together, so every violation is
- * reported and the result is created only when all arguments are valid. The validator is
- * created with {@code apply} after all arguments have been added. Instances are obtained
- * from {@link am.ik.yavi.validator.Yavi#arguments()}. For example: <pre>{@code
- * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+ * Each {@code _xxx} method adds the next property and returns the builder for the
+ * following one. A property is an argument of the function that creates the result, so
+ * the builders call it an argument. The arguments are validated together, so every
+ * violation is reported and the result is created only when all arguments are valid. The
+ * validator is created after all arguments have been added: with {@code apply} to take
+ * them as typed arguments, or with {@code fromMap} to read them from a
+ * {@code Map<String, Object>} by their names. Instances are obtained from
+ * {@link am.ik.yavi.validator.Yavi#schema()}. For example: <pre>{@code
+ * Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
  *     ._string("manufacturer")
  *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
@@ -2253,7 +2257,7 @@ cat <<EOD
 	 *
 	 * <p>
 	 * Instances are normally obtained from
-	 * {@link am.ik.yavi.validator.Yavi#arguments()}.
+	 * {@link am.ik.yavi.validator.Yavi#schema()}.
 	 * @since 0.14.0
 	 */
 	public ${class}() {
@@ -3424,7 +3428,7 @@ cat <<EOD
 	 * instead of the value of a key, and its violations are reported as they are. Its
 	 * properties are defined for the built validator, and with {@code optional()},
 	 * {@code nullable()} or {@code defaultValue} it is given {@code null} when none of
-	 * them has a value; see {@link am.ik.yavi.input.MapInputValidator}. With
+	 * them has a value; see {@link am.ik.yavi.input.ObjectInputValidator}. With
 	 * {@code apply}, the argument is a map validated by the validator.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the map
@@ -3568,7 +3572,7 @@ $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 
 	/**
-	 * Builds a {@link MapInputValidator} that reads the added arguments from a
+	 * Builds a {@link ObjectInputValidator} that reads the added arguments from a
 	 * {@code Map<String, Object>}, such as a parsed JSON object, by their names and
 	 * creates the result with the given function.
 	 *
@@ -3577,16 +3581,16 @@ cat <<EOD
 	 * {@link ValueValidator#untyped(Class)}) and is then validated like the argument. An
 	 * absent key is validated like {@code null}, unless the argument is added with
 	 * {@code presence()}, and an unknown key is ignored; see
-	 * {@link MapInputValidator} for the violations of absent keys and for rejecting
+	 * {@link ObjectInputValidator} for the violations of absent keys and for rejecting
 	 * unknown keys. An {@code _embedded} argument reads the map itself and a
 	 * {@code _rest} argument the keys that no other argument defines. A nested
 	 * {@code _object}, {@code _list} or
 	 * {@code _map} argument reads a map or a list whose content is checked by the
 	 * {@linkplain ValueValidator#untyped() untyped} counterpart of its validator, so a
-	 * nested object is added with another {@code MapInputValidator}.
+	 * nested object is added with another {@code ObjectInputValidator}.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
-	 * @return a new map input validator
+	 * @return a new object input validator
 	 * @throws IllegalStateException if an argument has no name, or if its input type is
 	 * unknown: an {@code _enum} or {@code _object} argument added without a type, or a
 	 * value validator that does not know its input type; also if there is a
@@ -3596,13 +3600,13 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> MapInputValidator<X> fromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
-		return MapInputValidator.of(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
+	public <X extends @Nullable Object> ObjectInputValidator<X> fromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
+		return ObjectInputValidator.of(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
 				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')));
 	}
 
 	/**
-	 * Builds a {@link MapInputValidator} that reads the added arguments like
+	 * Builds a {@link ObjectInputValidator} that reads the added arguments like
 	 * {@link #fromMap} and creates the result with the given function, which validates
 	 * the arguments together and returns the result or the violations. This is
 	 * {@code fromMap} for a function that can fail, such as a factory method that
@@ -3618,14 +3622,14 @@ cat <<EOD
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values or reports
 	 * violations
-	 * @return a new map input validator
+	 * @return a new object input validator
 	 * @throws IllegalStateException as {@link #fromMap} does
 	 * @throws IllegalArgumentException as {@link #fromMap} does
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> MapInputValidator<X> flatFromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f) {
-		return MapInputValidator.flatOf(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
+	public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f) {
+		return ObjectInputValidator.flatOf(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
 				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')));
 	}
 

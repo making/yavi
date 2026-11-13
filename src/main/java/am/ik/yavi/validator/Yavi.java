@@ -42,7 +42,7 @@ import am.ik.yavi.builder.ObjectValidatorBuilder;
 import am.ik.yavi.builder.OffsetDateTimeValidatorBuilder;
 import am.ik.yavi.builder.ShortValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
-import am.ik.yavi.builder.YaviArguments;
+import am.ik.yavi.builder.YaviSchema;
 import am.ik.yavi.builder.YearMonthValidatorBuilder;
 import am.ik.yavi.builder.YearValidatorBuilder;
 import am.ik.yavi.builder.ZonedDateTimeValidatorBuilder;
@@ -84,16 +84,68 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Entry point for building validators of arguments and of single values.
+ * Entry point for describing an input as a schema and for building validators of single
+ * values.
  *
  * <p>
- * {@link #arguments()} returns a builder that validates the arguments of a constructor or
- * factory method and produces the result only when every argument is valid. All
- * violations are accumulated, so an invalid input reports every failed constraint at
- * once. The following example builds a validator for a constructor with three arguments:
+ * {@link #schema()} returns a builder that describes the properties of an input and
+ * produces the result only when every property is valid. All violations are accumulated,
+ * so an invalid input reports every failed constraint at once. {@code fromMap} ends the
+ * schema with a validator that reads the properties from a {@code Map<String, Object>},
+ * such as a parsed JSON object, by their names, checks their types and gives them to a
+ * constructor or factory method:
  *
  * <pre>{@code
- * Arguments3Validator<String, String, Integer, Car> validator = Yavi.arguments()
+ * ObjectInputValidator<Car> validator = Yavi.schema()
+ *     ._string("manufacturer")
+ *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
+ *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
+ *     .fromMap(Car::new);
+ * Validated<Car> validated = validator
+ *     .validate(Map.of("manufacturer", "Toyota", "licensePlate", "ABC-123", "seatCount", 5));
+ * }</pre>
+ *
+ * <p>
+ * Properties can be composed: {@code _object(name, validator)} nests another validator,
+ * {@code _list} and {@code _map} validate elements and, with constraints, the list or map
+ * of the validated elements ({@code c -> c.notEmpty().unique()}), and {@code optional()},
+ * {@code nullable()} and {@code defaultValue} make the last added property accept
+ * {@code null} and an absent key, which are violations otherwise. The violations of
+ * nested values are located under the property name, for example {@code address.street}
+ * or {@code roles[0]}. A rule that spans several properties is added to the created
+ * validator with {@code constraintOnTarget}:
+ *
+ * <pre>{@code
+ * ObjectInputValidator<Address> addressValidator = Yavi.schema()
+ *     ._string("street", c -> c.notBlank())
+ *     ._string("city", c -> c.notBlank())
+ *     .fromMap(Address::new);
+ * ValueValidator<Map<String, Object>, User> validator = Yavi.schema()
+ *     ._string("email", c -> c.notBlank().email())
+ *     ._string("nickname", c -> c.notBlank()).optional()
+ *     ._object("address", addressValidator)
+ *     ._list("roles", Yavi._string(c -> c.notBlank())).defaultValue(List.of())
+ *     .fromMap(User::new)
+ *     .constraintOnTarget(user -> !user.roles().isEmpty() || user.nickname().isEmpty(), "roles",
+ *         ViolationMessage.of("user.roles", "\"{0}\" must not be empty when a nickname is given"));
+ * }</pre>
+ *
+ * <p>
+ * The same schema reads other inputs: {@code readingWith(reader)} of the validator reads
+ * the tree model of a JSON library and {@code readingParameters()} request parameters or
+ * a submitted form, where {@code "5"} is an {@code Integer}.
+ *
+ * <pre>{@code
+ * ValueValidator<JsonNode, Car> nodeValidator = validator.readingWith(jsonNodeReader);
+ * ValueValidator<Map<String, String>, Car> formValidator = validator.readingParameters();
+ * }</pre>
+ *
+ * <p>
+ * {@code apply} ends the schema with a validator of typed arguments instead, for values
+ * that are already bound to their types:
+ *
+ * <pre>{@code
+ * Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
  *     ._string("manufacturer")
  *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
@@ -102,37 +154,16 @@ import java.util.function.Function;
  * }</pre>
  *
  * <p>
- * Arguments can be composed: {@code _object(name, validator)} nests another validator,
- * {@code _list} and {@code _map} validate elements and, with constraints, the list or map
- * of the validated elements ({@code c -> c.notEmpty().unique()}), and {@code optional()},
- * {@code nullable()} and {@code defaultValue} make the last added argument accept
- * {@code null}, which is a violation otherwise. The violations of nested values are
- * located under the argument name, for example {@code address.street} or
- * {@code roles[0]}. A rule that spans several arguments is added to the created validator
- * with {@code constraintOnTarget}:
- *
- * <pre>{@code
- * Arguments4Validator<String, String, AddressForm, List<String>, User> validator = Yavi.arguments()
- *     ._string("email", c -> c.notBlank().email())
- *     ._string("nickname", c -> c.notBlank()).optional()
- *     ._object("address", addressValidator)
- *     ._list("roles", Yavi._string(c -> c.notBlank()))
- *     .apply(User::new)
- *     .constraintOnTarget(user -> !user.roles().isEmpty() || user.nickname().isEmpty(), "roles",
- *         ViolationMessage.of("user.roles", "\"{0}\" must not be empty when a nickname is given"));
- * }</pre>
- *
- * <p>
  * The other methods return a validator of a single value: {@code _string},
- * {@code _integer}, {@code _localDate} and so on have the names of the arguments of
- * {@link YaviArguments} and take the constraints, with or without a name. A validator
+ * {@code _integer}, {@code _localDate} and so on have the names of the properties of
+ * {@link YaviSchema} and take the constraints, with or without a name. A validator
  * without a name is the element of a list, the value of a map, an alternative of
  * {@code anyOf} or a value validated by itself; its violations are named by the place
  * where it is used ({@code roles[0]}), or have the empty name and a message that says
  * "The value" in place of the name. Such a validator requires its value: {@code null} is
  * a violation unless {@code nullable()}, {@code optional()} or {@code defaultValue(...)}
  * is applied to it, and the type of the validated value tells which. {@code _list} and
- * {@code _map} return the validator of a list or a map that is not an argument, with the
+ * {@code _map} return the validator of a list or a map that is not a property, with the
  * constraints of the list or map.
  *
  * <pre>{@code
@@ -153,7 +184,7 @@ import java.util.function.Function;
  * }</pre>
  *
  * <p>
- * This class only provides the entry points; {@link YaviArguments}, the returned builders
+ * This class only provides the entry points; {@link YaviSchema}, the returned builders
  * and the builders of {@code am.ik.yavi.builder} do the work.
  *
  * @since 0.14.0
@@ -161,27 +192,41 @@ import java.util.function.Function;
 public final class Yavi {
 
 	/**
-	 * Returns a new builder for an arguments validator.
+	 * Returns a new, empty schema: the description of the properties of an input.
 	 *
 	 * <p>
-	 * Each {@code _xxx} method of the returned {@link YaviArguments} adds one argument
-	 * with its name and constraints, and {@code apply} creates the validator. For
-	 * example:
+	 * Each {@code _xxx} method of the returned {@link YaviSchema} adds one property with
+	 * its name and constraints. The schema becomes a validator when it is told how the
+	 * input is given: {@code fromMap} creates a validator that reads the properties from
+	 * a map and {@code apply} one of typed arguments. For example:
 	 *
 	 * <pre>{@code
-	 * Arguments2Validator<String, Integer, Person> validator = Yavi.arguments()
+	 * ObjectInputValidator<Person> validator = Yavi.schema()
 	 *     ._string("name", c -> c.notBlank())
 	 *     ._integer("age", c -> c.greaterThanOrEqual(0))
-	 *     .apply(Person::new);
+	 *     .fromMap(Person::new);
+	 * Validated<Person> validated = validator.validate(Map.of("name", "Alice", "age", 20));
 	 * }</pre>
 	 *
 	 * <p>
-	 * Every call returns a new, empty builder.
-	 * @return a new arguments validator builder
-	 * @since 0.14.0
+	 * Every call returns a new, empty schema.
+	 * @return a new schema
+	 * @since 0.18.0
 	 */
-	public static YaviArguments arguments() {
-		return new YaviArguments();
+	public static YaviSchema schema() {
+		return new YaviSchema();
+	}
+
+	/**
+	 * Returns a new, empty schema.
+	 * @return a new schema
+	 * @since 0.14.0
+	 * @deprecated in favor of {@link #schema()}, which is the same under the name that
+	 * says what the builder has become
+	 */
+	@Deprecated(since = "0.18.0")
+	public static YaviSchema arguments() {
+		return schema();
 	}
 
 	/**
@@ -529,9 +574,9 @@ public final class Yavi {
 	 * violations of an element are located under its index, and a {@code null} list is
 	 * validated as an empty list. The constraints are checked on the produced elements,
 	 * only when every element is valid, and their violations are reported on the list
-	 * itself. This is the validator of a list that is not an argument, such as the root
-	 * of a JSON document; an argument is added with
-	 * {@code _list(name, elementValidator, constraints)} of {@link YaviArguments}.
+	 * itself. This is the validator of a list that is not a property, such as the root of
+	 * a JSON document; a property is added with
+	 * {@code _list(name, elementValidator, constraints)} of {@link YaviSchema}.
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Iterable<String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.trim().notBlank()),
@@ -722,9 +767,8 @@ public final class Yavi {
 	 * The values are validated like {@link ValueValidator#liftMap()} does: the violations
 	 * of a value are located under its key, and a {@code null} map is validated as an
 	 * empty map. The constraints are checked on the produced values, only when every
-	 * value is valid, and their violations are reported on the map itself. An argument is
-	 * added with {@code _map(name, valueValidator, constraints)} of
-	 * {@link YaviArguments}.
+	 * value is valid, and their violations are reported on the map itself. A property is
+	 * added with {@code _map(name, valueValidator, constraints)} of {@link YaviSchema}.
 	 *
 	 * <pre>{@code
 	 * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> prices = Yavi

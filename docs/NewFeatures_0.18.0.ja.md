@@ -2,10 +2,10 @@
 
 [English](NewFeatures_0.18.0.md)
 
-YAVI 0.18.0 では、`Yavi.arguments()` で入力を一度記述すれば、型付きの引数、マップ、JSON のツリー、リクエストパラメータのどれからでも読み取れるようになりました。
+YAVI 0.18.0 では、`Yavi.schema()` で入力を一度記述すれば、型付きの引数、マップ、JSON のツリー、リクエストパラメータのどれからでも読み取れるようになりました。`Yavi.schema()` は `Yavi.arguments()` を置き換えるもので、`Yavi.arguments()` は非推奨になりました。
 
 * [単一の値のバリデータ](#単一の値のバリデータ)
-* [省略可能な引数とネストしたオブジェクトやリストやマップ](#省略可能な引数とネストしたオブジェクトやリストやマップ)
+* [省略可能なプロパティとネストしたオブジェクトやリストやマップ](#省略可能なプロパティとネストしたオブジェクトやリストやマップ)
 * [パース済みの JSON オブジェクトなどのマップを検証する](#パース済みの-json-オブジェクトなどのマップを検証する)
 * [JSON ライブラリのツリーモデルを検証する](#json-ライブラリのツリーモデルを検証する)
 * [リクエストパラメータを検証する](#リクエストパラメータを検証する)
@@ -25,7 +25,7 @@ record User(String email, Optional<String> nickname, Integer age, Role role, Add
 
 ## 単一の値のバリデータ
 
-`Yavi._string`、`Yavi._integer`、`Yavi._localDate` などは、1 つの値のバリデータを、ビルダークラスと `build()` なしで作ります。メソッド名は `Yavi.arguments()` の引数と同じです。
+`Yavi._string`、`Yavi._integer`、`Yavi._localDate` などは、1 つの値のバリデータを、ビルダークラスと `build()` なしで作ります。メソッド名は `Yavi.schema()` のプロパティと同じです。
 
 ```java
 // before
@@ -50,7 +50,7 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
         .preprocess(BigDecimal::stripTrailingZeros);
 ```
 
-`c.trim()`、`c.toLowerCase()`、`c.toUpperCase()`、`c.toNormalForm(form)`、`c.transform(f)` は、`Yavi.arguments()._string("email", c -> ...)` のように、`String` の値の制約を書く場所ならどこでも使えます。
+`c.trim()`、`c.toLowerCase()`、`c.toUpperCase()`、`c.toNormalForm(form)`、`c.transform(f)` は、`Yavi.schema()._string("email", c -> ...)` のように、`String` の値の制約を書く場所ならどこでも使えます。
 
 ### コンビネータ
 
@@ -74,17 +74,17 @@ Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
 // 1.505: "price" must have at most 2 fraction digits
 ```
 
-## 省略可能な引数とネストしたオブジェクトやリストやマップ
+## 省略可能なプロパティとネストしたオブジェクトやリストやマップ
 
-`Yavi.arguments()` の引数は、直後の修飾メソッドで変えない限り `null` を拒否します。引数には、オブジェクト、リスト、マップも指定できます。
+`Yavi.schema()` のプロパティは、直後の修飾メソッドで変えない限り `null` を拒否します。プロパティには、オブジェクト、リスト、マップも指定できます。
 
 ```java
-MapInputValidator<Address> addressValidator = Yavi.arguments()
+ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("street", c -> c.notBlank())
         ._string("city", c -> c.notBlank())
         .fromMap(Address::new); // 次の節を参照
 
-Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<String>, User> userValidator = Yavi.arguments()
+Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<String>, User> userValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
@@ -97,18 +97,18 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
                 ViolationMessage.of("user.adultAdmin", "\"{0}\" must not be ADMIN for a minor"));
 ```
 
-* `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加した引数に適用されます。`nullable()` は値の型を `@Nullable` に変えます。
-* `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、引数の名前の下に位置づけられます。
-* `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、引数に対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
-* `constraintOnTarget` は、複数の引数にまたがるルールです。すべての引数が有効な場合に検査されます。
+* `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。`nullable()` は値の型を `@Nullable` に変えます。
+* `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
+* `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
+* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。
 * `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
 
 ## パース済みの JSON オブジェクトなどのマップを検証する
 
-`fromMap` は、同じ引数の定義から、`Map<String, Object>` を読むバリデータを作ります。このバリデータは、引数を名前で読み取り、型を検査し、オブジェクトを生成します。キャストもリフレクションも使いません。
+`fromMap` は、同じプロパティの定義から、`Map<String, Object>` を読むバリデータを作ります。このバリデータは、プロパティを名前で読み取り、型を検査し、オブジェクトを生成します。キャストもリフレクションも使いません。
 
 ```java
-MapInputValidator<User> userValidator = Yavi.arguments()
+ObjectInputValidator<User> userValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional()
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
@@ -127,14 +127,14 @@ Validated<User> validated = userValidator.validate(Map.of(
 
 | 入力 | 結果 |
 | --- | --- |
-| 引数の型を表さない値（`"age": "30"`） | `object.type`: `"age" must be of type integer` |
+| プロパティの型を表さない値（`"age": "30"`） | `object.type`: `"age" must be of type integer` |
 | 値が変わらない数値（`Integer` に対する `30L`、`30.0`） | 受け付ける。`30.5` は `object.type` |
 | enum の定数、日時の値 | 定数の名前、ISO-8601 形式の文字列から読み取る |
 | 存在しないキー | `null` と同じように検証する。`optional()`、`nullable()`、`defaultValue(...)`、`recover(...)` があれば受け付け、なければ `object.required` |
 | 明示的な `null` | `object.notNull`、または `null` を拒否する制約の違反 |
-| 引数が定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
+| プロパティが定義されていないキー | 無視する。`rejectingUnknownProperties()` を付けると `object.unknownProperty` を報告する |
 
-* `_enum` と `_object` の引数をマップから読むには、型の指定が必要です（`_enum(name, type)`、`_object(name, type)`）。
+* `_enum` と `_object` のプロパティをマップから読むには、型の指定が必要です（`_enum(name, type)`、`_object(name, type)`）。
 * `ignoringCase()` を付けると、enum の定数名の大文字と小文字を区別せずに読み取ります。`._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` は `"admin"` を受け付けます。
 * `flatFromMap(f)` は `Validated` を返す関数を受け取ります（`.flatFromMap(DateRange::parse)`）。
 * `untyped()` は、バリデータを `ValueValidator<Object, X>` に変えます。たとえば、型の異なる選択肢を組み合わせるときに使います（`ValueValidator.anyOf(Yavi._integer(c -> c.positive()).untyped(), Yavi._string(c -> c.uuid()).untyped())`）。
@@ -145,8 +145,8 @@ Validated<User> validated = userValidator.validate(Map.of(
 
 ```java
 DiscriminatedUnionValidator<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
-        .when("circle", Yavi.arguments()._integer("radius", c -> c.positive()).fromMap(Circle::new))
-        .when("square", Yavi.arguments()._integer("side", c -> c.positive()).fromMap(Square::new));
+        .when("circle", Yavi.schema()._integer("radius", c -> c.positive()).fromMap(Circle::new))
+        .when("square", Yavi.schema()._integer("side", c -> c.positive()).fromMap(Square::new));
 
 shapeValidator.validate(Map.of("type", "circle", "radius", 2)); // Circle[radius=2]
 shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the following values: [circle, square]
@@ -154,24 +154,24 @@ shapeValidator.validate(Map.of("type", "x")); // "type" must be one of the follo
 
 ### 1 つのマップから複数のオブジェクトと残りのキーを読む
 
-`_embedded` は、ほかの引数と同じマップを読みます。JOIN の結果の 1 行にある複数テーブルの列から、オブジェクトを組み立てるときに使えます。`_rest` は、どの引数にも定義されていないキーを集めます。
+`_embedded` は、ほかのプロパティと同じマップを読みます。JOIN の結果の 1 行にある複数テーブルの列から、オブジェクトを組み立てるときに使えます。`_rest` は、どのプロパティにも定義されていないキーを集めます。
 
 ```java
 record UserName(String first, String last) {}
 record Department(String name, String code) {}
 record Employee(Integer id, UserName name, @Nullable Department dept, Map<String, String> attrs) {}
 
-MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+ObjectInputValidator<UserName> userNameValidator = Yavi.schema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
         .fromMap(UserName::new);
 
-MapInputValidator<Department> departmentValidator = Yavi.arguments()
+ObjectInputValidator<Department> departmentValidator = Yavi.schema()
         ._string("dept_name", c -> c.notBlank())
         ._string("dept_code", c -> c.notBlank())
         .fromMap(Department::new);
 
-MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
         ._integer("id")
         ._embedded(userNameValidator)              // first_name, last_name
         ._embedded(departmentValidator).nullable() // dept_name と dept_code に値がなければ null
@@ -186,12 +186,12 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 
 ### 存在しないキーと null を区別する
 
-PATCH リクエスト（JSON Merge Patch）のような部分更新では、存在しないキーはプロパティを変更せず、`null` はプロパティをクリアします。`presence()` は引数を `Presence` として読み取ります。`Presence` は `Present(value)`、`PresentNull`、`Absent` のいずれかです。
+PATCH リクエスト（JSON Merge Patch）のような部分更新では、存在しないキーはプロパティを変更せず、`null` はプロパティをクリアします。`presence()` はプロパティを `Presence` として読み取ります。`Presence` は `Present(value)`、`PresentNull`、`Absent` のいずれかです。
 
 ```java
 record ProfilePatch(Presence<String> nickname, Presence<@Nullable String> bio) {}
 
-MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+ObjectInputValidator<ProfilePatch> patchValidator = Yavi.schema()
         ._string("nickname", c -> c.lessThanOrEqual(50)).presence()        // 省略できるが、クリアはできない
         ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence() // 省略もクリアもできる
         .fromMap(ProfilePatch::new);
@@ -207,7 +207,7 @@ switch (patch.bio()) {
 }
 ```
 
-存在しないキーは検証されません。存在するキーは、`presence()` がない場合と同じように検証されます（`{"nickname": null}` は `"nickname" must not be null`）。`presence()` は、引数の最後の修飾メソッドとして書きます。
+存在しないキーは検証されません。存在するキーは、`presence()` がない場合と同じように検証されます（`{"nickname": null}` は `"nickname" must not be null`）。`presence()` は、プロパティの最後の修飾メソッドとして書きます。
 
 ### 自分自身を含む構造
 
@@ -216,7 +216,7 @@ switch (patch.bio()) {
 ```java
 record Comment(String body, List<Comment> replies) {}
 
-MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
+ObjectInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.schema()
         ._string("body", c -> c.notBlank())
         ._list("replies", self).defaultValue(List.of())
         .fromMap(Comment::new));
@@ -225,7 +225,7 @@ MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Y
 
 ## JSON ライブラリのツリーモデルを検証する
 
-`readingWith(reader)` は、Jackson の `JsonNode` のような JSON ライブラリのツリーモデルを、マップと同じルールと違反でそのまま読み取ります。ツリーをマップにコピーすることはありません。引数のビルダーの `from(reader, f)` は、`fromMap(f).readingWith(reader)` と同じです。
+`readingWith(reader)` は、Jackson の `JsonNode` のような JSON ライブラリのツリーモデルを、マップと同じルールと違反でそのまま読み取ります。ツリーをマップにコピーすることはありません。スキーマの `from(reader, f)` は、`fromMap(f).readingWith(reader)` と同じです。
 
 ```java
 ValueValidator<JsonNode, User> nodeValidator = userValidator.readingWith(JsonNodeReader.INSTANCE);
@@ -293,13 +293,13 @@ JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 の
 
 ## リクエストパラメータを検証する
 
-リクエストパラメータや送信されたフォームは、文字列のフラットなマップであり、1 つのキーに複数の値を持つこともあります。`fromMap` で作ったバリデータの `readingParameters()` は、このようなマップを読み取ります。文字列は、引数の型の値を表すテキストとして扱われ、キーはネストした値へのパスとして扱われます。
+リクエストパラメータや送信されたフォームは、文字列のフラットなマップであり、1 つのキーに複数の値を持つこともあります。`fromMap` で作ったバリデータの `readingParameters()` は、このようなマップを読み取ります。文字列は、プロパティの型の値を表すテキストとして扱われ、キーはネストした値へのパスとして扱われます。
 
 ```java
 record SearchForm(String q, Integer page, Boolean includeArchived, @Nullable LocalDate since, List<String> tags,
         @Nullable Address address) {}
 
-ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.arguments()
+ValueValidator<Map<String, List<String>>, SearchForm> searchFormValidator = Yavi.schema()
         ._string("q", c -> c.notBlank())
         ._integer("page", c -> c.greaterThanOrEqual(1)).defaultValue(1)
         ._boolean("includeArchived").defaultValue(false)
@@ -321,14 +321,14 @@ Object search(@RequestParam MultiValueMap<String, String> params) {
 
 値のルール:
 
-* 空文字列は、引数の型にかかわらず `null` と同じように検証されます。`""` を受け取りたい文字列の引数には `defaultValue("")` を付けます。
+* 空文字列は、プロパティの型にかかわらず `null` と同じように検証されます。`""` を受け取りたい文字列のプロパティには `defaultValue("")` を付けます。
 * 数値は、前後の空白や桁区切りのない 10 進数です。`"30"` と `"30.0"` は `Integer` として読めますが、`"30.5"`、`" 30"`、`"1,000"` は読めません。真偽値は `"true"` または `"false"` です。
 * 型を表さない文字列は、例外ではなく `object.type` で報告されます（`"page" must be of type integer`）。
 
 キーのルール:
 
 * `address.city` と `address[city]` は、`address` の `city` プロパティです。`tags[]` は `tags` と同じです。
-* 複数の値を持つキーはリストです（`tags=a&tags=b`）。スカラーの引数に複数の値がある場合は `object.type` で報告されます。
+* 複数の値を持つキーはリストです（`tags=a&tags=b`）。スカラーのプロパティに複数の値がある場合は `object.type` で報告されます。
 * インデックス付きのキーは、インデックス順のリストです（`items[0].name=pen&items[1].name=ink`）。飛ばされたインデックスは `null` の要素になるので、違反は送信時のインデックスを保ちます。インデックスの上限は 255 です（`ParameterTree.DEFAULT_MAX_INDEX`）。
 * 空のリストは送信できません。キーが存在しないことになります。チェックボックスのように空になりうるリストには `defaultValue(List.of())` を付けます。
 
@@ -339,7 +339,7 @@ record Signup(Integer age, Boolean subscribed) {}
 
 StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 
-ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
         ._integer("age")
         ._boolean("subscribed").defaultValue(false) // チェックされていないチェックボックスは何も送信しない
         .fromMap(Signup::new)
@@ -356,7 +356,7 @@ signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[a
 ```java
 record PageRequest(Integer page, Integer size) {}
 
-ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         .fromMap(PageRequest::new)
@@ -465,13 +465,13 @@ YAVI には [JSpecify](https://jspecify.dev) のアノテーションが付い�
 ```java
 record Member(String name, @Nullable String nickname) {}
 
-Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.arguments()
+Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
         .apply(Member::new);
 ```
 
-`@Nullable` になるのは、`nullable()` を付けた引数の値だけです。NullAway が正しいコードを報告する場合は、[NullAway の制限事項](NullAwayLimitations.md) を参照してください。
+`@Nullable` になるのは、`nullable()` を付けたプロパティの値だけです。NullAway が正しいコードを報告する場合は、[NullAway の制限事項](NullAwayLimitations.md) を参照してください。
 
 ## 関連するプルリクエスト
 

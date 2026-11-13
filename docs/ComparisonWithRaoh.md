@@ -36,18 +36,18 @@ import am.ik.yavi.validator.Yavi;
 | `Ok(value)` / `Err(issues)` | `Validated.Valid(value)` / `Validated.Invalid(violations)`, a sealed interface |
 | `Issue` (`path`, `code`, `message`, `meta`) | `ConstraintViolation` (`path()` / `name()`, `messageKey()`, `message()`, `args()`) |
 | path `/address/zip`, `/items/1/name` | `pointer()` `/address/zip`, `/items/1/name`; `name()` `address.zip`, `items[1].name` |
-| `combine(field(...), ...).map(f)` | `Yavi.arguments()._xxx(...).fromMap(f)` (`MapInputValidator<X>`) |
+| `combine(field(...), ...).map(f)` | `Yavi.schema()._xxx(...).fromMap(f)` (`ObjectInputValidator<X>`) |
 | `ObjectDecoders` (input `Object`) | `validator.untyped()` |
 | `MapDecoders` / `JsonDecoders` / `JooqRecordDecoders` | `fromMap(f)` / `from(reader, f)` with an `InputReader` |
 | `decoder.map(f)` | `validator.map(f)` |
 | `decoder.pipe(next)` | `validator.andThen(next)` |
 | `decoder.flatMap(f)` | `validator.andThen(next)`, or `constraintOnTarget` for a predicate |
-| `combine(field(...), ...).flatMap(f)` | `Yavi.arguments()._xxx(...).flatFromMap(f)` (`flatApply(f)` for arguments) |
+| `combine(field(...), ...).flatMap(f)` | `Yavi.schema()._xxx(...).flatFromMap(f)` (`flatApply(f)` for arguments) |
 | `Result.fail(code, message)` | `Validated.failureWith(ViolationMessage.of(key, format), value, locale)` |
 | `result.map(f)` / `result.flatMap(f)` | `validated.map(f)` / `validated.flatMap(f)` |
 
 In Raoh the kind of input is chosen first, with the static import (`MapDecoders.*` or
-`JsonDecoders.*`). In YAVI the arguments are written once and the input is chosen last:
+`JsonDecoders.*`). In YAVI the schema is written once and the input is chosen last:
 `fromMap(f)` for a map, `.readingWith(reader)` for a JSON tree, `.readingParameters()` for
 request parameters, `apply(f)` for typed arguments.
 
@@ -56,7 +56,7 @@ request parameters, `apply(f)` for typed arguments.
 ### Primitive values
 
 A validator of a single value is built with `Yavi._string(c -> ...)`, `Yavi._integer(c -> ...)`
-and so on: the methods have the names of the arguments of `Yavi.arguments()` and take the
+and so on: the methods have the names of the properties of `Yavi.schema()` and take the
 constraints. `untyped()` makes the validator accept an `Object` and check its type, which
 is what `string()` and `int_()` of Raoh do.
 
@@ -138,7 +138,7 @@ normalizedEmail.validate("  USER@Example.COM  "); // Valid[user@example.com]
   compile. `null` is not transformed.
 * A value of another type is transformed with `preprocess` on its validator:
   `Yavi._bigDecimal("price", c -> c.positive()).preprocess(BigDecimal::stripTrailingZeros)`.
-* A transform keeps the description and the input type, so the validator is an argument of
+* A transform keeps the description and the input type, so the validator is a property of
   `fromMap`, where the transform runs after the type check. `compose` keeps neither:
   `email.compose(String::trim)` must be given its type again with `untyped(String.class)`.
 * The constraints of a property (`ValidatorBuilder#constraint`) have no transforms: that
@@ -188,7 +188,7 @@ value is not trimmed by the reader; `c.trim()` does it.
 
 ### Domain primitives
 
-`map(f)` creates the domain type. A named validator is reused as an argument:
+`map(f)` creates the domain type. A named validator is reused as a property:
 
 ```java
 record Email(String value) {}
@@ -209,7 +209,7 @@ StringValidator<UserId> userIdValidator = Yavi._string("id", c -> c.uuid())
 ```java
 record User(UserId id, Email email, Age age) {}
 
-MapInputValidator<User> userValidator = Yavi.arguments()
+ObjectInputValidator<User> userValidator = Yavi.schema()
         ._string(userIdValidator)
         ._string(emailValidator)
         ._integer(ageValidator)
@@ -221,7 +221,7 @@ userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300))
 // age: "age" must be less than or equal to 150
 ```
 
-An argument is also written in place
+A property is also written in place
 (`._string("email", c -> c.trim().toLowerCase().notBlank().email())`), and a validator
 without a name is given one with `_object(name, validator)`:
 `._object("email", normalizedEmail.map(Email::new))`.
@@ -234,12 +234,12 @@ without a name is given one with `_object(name, validator)`:
 record Address(String city, String zip) {}
 record Customer(String name, Address address) {}
 
-MapInputValidator<Address> addressValidator = Yavi.arguments()
+ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("city", c -> c.notBlank())
         ._string("zip", c -> c.pattern("^\\d{3}-\\d{4}$"))
         .fromMap(Address::new);
 
-MapInputValidator<Customer> customerValidator = Yavi.arguments()
+ObjectInputValidator<Customer> customerValidator = Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._object("address", addressValidator)
         .fromMap(Customer::new);
@@ -251,30 +251,30 @@ customerValidator.validate(Map.of("name", "", "address", Map.of("city", "", "zip
 ### Flat data
 
 `combine(flat(a), flat(b))` is `_embedded`: the embedded validators read the same map as
-the other arguments.
+the properties.
 
 ```java
 record UserName(String first, String last) {}
 record Department(String name, String code) {}
 record Employee(UserName name, Department dept) {}
 
-MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+ObjectInputValidator<UserName> userNameValidator = Yavi.schema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
         .fromMap(UserName::new);
 
-MapInputValidator<Department> departmentValidator = Yavi.arguments()
+ObjectInputValidator<Department> departmentValidator = Yavi.schema()
         ._string("dept_name", c -> c.notBlank())
         ._string("dept_code", c -> c.notBlank())
         .fromMap(Department::new);
 
-MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
         ._embedded(userNameValidator)
         ._embedded(departmentValidator)
         .fromMap(Employee::new);
 ```
 
-The result is a `MapInputValidator` like any other: it is nested, reads a JSON tree or
+The result is a `ObjectInputValidator` like any other: it is nested, reads a JSON tree or
 request parameters and describes the four properties. Unlike `flat`, it can be strict: the
 properties of the embedded validators are known to `rejectingUnknownProperties()`. A name
 that two of them define is rejected when the validator is built.
@@ -283,7 +283,7 @@ A LEFT JOIN whose columns are all `null` is an embedded validator that accepts `
 is given `null` when none of its properties has a value.
 
 ```java
-MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
         ._embedded(userNameValidator)
         ._embedded(departmentValidator).nullable()
         .fromMap(Employee::new);
@@ -303,12 +303,12 @@ a violation is located under its index.
 ```java
 record OrderItem(String productId, int quantity) {}
 
-MapInputValidator<OrderItem> orderItemValidator = Yavi.arguments()
+ObjectInputValidator<OrderItem> orderItemValidator = Yavi.schema()
         ._string("productId", c -> c.notBlank())
         ._integer("quantity", c -> c.positive())
         .fromMap(OrderItem::new);
 
-MapInputValidator<List<OrderItem>> itemsValidator = Yavi.arguments()
+ObjectInputValidator<List<OrderItem>> itemsValidator = Yavi.schema()
         ._list("items", orderItemValidator)
         .fromMap(items -> items);
 
@@ -323,7 +323,7 @@ the third argument of `_list`. They are checked on the validated elements, only 
 every element is valid, and reported on the list (`tags`):
 
 ```java
-Yavi.arguments()
+Yavi.schema()
         ._list("tags", Yavi._string(c -> c.trim().notBlank()), c -> c.notEmpty().lessThanOrEqual(10).unique())
         .fromMap(tags -> tags);
 ```
@@ -337,7 +337,7 @@ A list that is not a property, such as the root of a document, is
 (`prices.apple`). The constraints of the map (`minSize`) are the third argument.
 
 ```java
-Yavi.arguments()
+Yavi.schema()
         ._map("prices", Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
         .fromMap(prices -> prices);
 ```
@@ -359,12 +359,12 @@ ValueValidator<String, Map<String, Object>> parseJson = (s, locale, context) -> 
 
 record Params(String kind, int count) {}
 
-MapInputValidator<Params> paramsValidator = Yavi.arguments()
+ObjectInputValidator<Params> paramsValidator = Yavi.schema()
         ._string("kind")
         ._integer("count")
         .fromMap(Params::new);
 
-MapInputValidator<Params> validator = Yavi.arguments()
+ObjectInputValidator<Params> validator = Yavi.schema()
         ._object("params", Yavi._string().andThen(parseJson).andThen(paramsValidator))
         .fromMap(params -> params);
 
@@ -383,22 +383,22 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 | `field("size", recover(decoder, fallback))` | `_integer("size", c -> ...).recover(fallback)` |
 | `optionalNullableField("bio", string())` (`Presence<String>`) | `_string("bio").nullable().presence()` (`Presence<String>`) |
 
-As in Raoh, an argument is required unless it says otherwise, and saying otherwise changes
+As in Raoh, a property is required unless it says otherwise, and saying otherwise changes
 the type of its value, so a nullness checker that reads JSpecify (NullAway, Kotlin)
-rejects a function that takes a `nullable()` argument as a value that is not `null`.
+rejects a function that takes a `nullable()` property as a value that is not `null`.
 
 An absent key is validated like `null`, so `optional()`, `nullable()` and
-`defaultValue(...)` accept both. Only the violation differs for a required argument:
+`defaultValue(...)` accept both. Only the violation differs for a required property:
 `object.required` for an absent key and `object.notNull` for an explicit `null`.
 
 `presence()` tells "leave unchanged" from "clear the value" in a PATCH request. The
-argument is a `Presence<X>` with the same three states as in Raoh: `Absent`,
+property is a `Presence<X>` with the same three states as in Raoh: `Absent`,
 `PresentNull` and `Present(value)`.
 
 ```java
 record ProfilePatch(Presence<String> nickname, Presence<String> bio) {}
 
-MapInputValidator<ProfilePatch> patchValidator = Yavi.arguments()
+ObjectInputValidator<ProfilePatch> patchValidator = Yavi.schema()
         ._string("nickname", c -> c.lessThanOrEqual(50)).presence()
         ._string("bio", c -> c.lessThanOrEqual(500)).nullable().presence()
         .fromMap(ProfilePatch::new);
@@ -409,8 +409,8 @@ patchValidator.validate(Collections.singletonMap("nickname", null)); // nickname
 ```
 
 Unlike `optionalNullableField`, `presence()` adds only the absent state: a key that is
-present is validated by the argument, which decides whether `null` is accepted. So an
-argument may be omitted but not cleared, unless `nullable()` is written before
+present is validated by the property, which decides whether `null` is accepted. So a
+property may be omitted but not cleared, unless `nullable()` is written before
 `presence()`.
 
 ### Enums
@@ -418,7 +418,7 @@ argument may be omitted but not cleared, unless `nullable()` is written before
 ```java
 enum Role { ADMIN, MEMBER, GUEST }
 
-MapInputValidator<Role> roleValidator = Yavi.arguments()
+ObjectInputValidator<Role> roleValidator = Yavi.schema()
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
         .fromMap(role -> role);
 
@@ -431,21 +431,21 @@ The name of the constant is matched exactly, whereas `enumOf` ignores the ASCII 
 `ignoringCase()` of the validator of the enum does the same for every reader:
 
 ```java
-MapInputValidator<Role> lenientRoleValidator = Yavi.arguments()
+ObjectInputValidator<Role> lenientRoleValidator = Yavi.schema()
         ._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase()).defaultValue(Role.MEMBER)
         .fromMap(role -> role);
 
 lenientRoleValidator.validate(Map.of("role", "admin")); // Valid[ADMIN]
 ```
 
-The JSON Schema of the argument keeps `"enum": ["ADMIN", "MEMBER", "GUEST"]`.
+The JSON Schema of the property keeps `"enum": ["ADMIN", "MEMBER", "GUEST"]`.
 
 ### Strict mode
 
 `strict(f)` is `rejectingUnknownProperties()`:
 
 ```java
-MapInputValidator<ApiRequest> apiRequestValidator = Yavi.arguments()
+ObjectInputValidator<ApiRequest> apiRequestValidator = Yavi.schema()
         ._string("action", c -> c.notBlank())
         ._integer("amount", c -> c.positive())
         .fromMap(ApiRequest::new)
@@ -465,7 +465,7 @@ the validator, so that no variable is referred to before it is assigned:
 ```java
 record Comment(String body, List<Comment> replies) {}
 
-MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.arguments()
+ObjectInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Yavi.schema()
         ._string("body", c -> c.notBlank())
         ._list("replies", self).defaultValue(List.of())
         .fromMap(Comment::new));
@@ -474,7 +474,7 @@ MapInputValidator<Comment> commentValidator = ValueValidator.recursive(self -> Y
 A field refers to itself, or to a field declared later, by its qualified name:
 
 ```java
-static final MapInputValidator<Comment> VALIDATOR = Yavi.arguments()
+static final ObjectInputValidator<Comment> VALIDATOR = Yavi.schema()
         ._string("body", c -> c.notBlank())
         ._list("replies", ValueValidator.lazy("Comment", () -> Comment.VALIDATOR)).defaultValue(List.of())
         .fromMap(Comment::new);
@@ -501,11 +501,11 @@ record EmailContact(String address) implements Contact {}
 record PhoneContact(String number) implements Contact {}
 
 ValueValidator<Map<String, Object>, Contact> contactValidator = ValueValidator.anyOf(
-        Yavi.arguments()
+        Yavi.schema()
             ._string("kind", c -> c.equalTo("email"))
             ._string("value", c -> c.email())
             .fromMap((kind, value) -> new EmailContact(value)),
-        Yavi.arguments()
+        Yavi.schema()
             ._string("kind", c -> c.equalTo("phone"))
             ._string("value", c -> c.pattern("^\\d{10,15}$"))
             .fromMap((kind, value) -> new PhoneContact(value)));
@@ -526,8 +526,8 @@ record Circle(double radius) implements Shape {}
 record Rect(double width, double height) implements Shape {}
 
 ValueValidator<Map<String, Object>, Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
-        .when("circle", Yavi.arguments()._double("radius", c -> c.positive()).fromMap(Circle::new))
-        .when("rect", Yavi.arguments()
+        .when("circle", Yavi.schema()._double("radius", c -> c.positive()).fromMap(Circle::new))
+        .when("rect", Yavi.schema()
             ._double("width", c -> c.positive())
             ._double("height", c -> c.positive())
             .fromMap(Rect::new));
@@ -542,12 +542,12 @@ the same validator: `DiscriminatedUnionValidator.<Payment>of("method").when("cre
 ## Cross-field rules
 
 A rule that is a predicate on the created object is `constraintOnTarget`. It is evaluated
-only when all arguments are valid, like `flatMap`, and its name locates the violation.
+only when all properties are valid, like `flatMap`, and its name locates the violation.
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {}
 
-ValueValidator<Map<String, Object>, DateRange> dateRangeValidator = Yavi.arguments()
+ValueValidator<Map<String, Object>, DateRange> dateRangeValidator = Yavi.schema()
         ._localDate("start")
         ._localDate("end")
         .fromMap(DateRange::new)
@@ -565,7 +565,7 @@ creates the result:
 record PasswordForm(String current, String newPassword, String confirm) {}
 record PasswordChange(String current, String newPassword) {}
 
-ValueValidator<Map<String, Object>, PasswordChange> passwordChangeValidator = Yavi.arguments()
+ValueValidator<Map<String, Object>, PasswordChange> passwordChangeValidator = Yavi.schema()
         ._string("currentPassword", c -> c.notBlank())
         ._string("newPassword", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128))
         ._string("confirmPassword", c -> c.notBlank())
@@ -583,7 +583,7 @@ The rule of amount and currency is the same:
 enum Currency { JPY, USD, EUR }
 record Money(BigDecimal amount, Currency currency) {}
 
-ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.arguments()
+ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.schema()
         ._bigDecimal("amount", c -> c.positiveOrZero())
         ._enum("currency", Currency.class)
         .fromMap(Money::new)
@@ -593,7 +593,7 @@ ValueValidator<Map<String, Object>, Money> moneyValidator = Yavi.arguments()
 
 A step that creates the result itself and can fail, such as a factory method, is given to
 `flatFromMap` (`flatApply` for arguments) in place of `fromMap`. It receives the validated
-arguments and returns a `Validated`:
+properties and returns a `Validated`:
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {
@@ -605,7 +605,7 @@ record DateRange(LocalDate start, LocalDate end) {
     }
 }
 
-MapInputValidator<DateRange> dateRangeValidator = Yavi.arguments()
+ObjectInputValidator<DateRange> dateRangeValidator = Yavi.schema()
         ._localDate("start")
         ._localDate("end")
         .flatFromMap(DateRange::parse);
@@ -623,10 +623,10 @@ value that is present but invalid is a violation.
 
 `recover(decoder, fallback)` is `recover(fallback)`: it applies to an absent key and to
 `null` like `defaultValue(...)`, and to a value that is present but invalid, so the
-argument never fails. It is for a parameter that must not break a request.
+property never fails. It is for a parameter that must not break a request.
 
 ```java
-MapInputValidator<Integer> pageSizeValidator = Yavi.arguments()
+ObjectInputValidator<Integer> pageSizeValidator = Yavi.schema()
         ._integer("pageSize", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         .fromMap(pageSize -> pageSize);
 
@@ -701,7 +701,7 @@ Validated<List<OrderWithLines>> orders = rowValidator.liftList()
 deconstructed in a `switch`:
 
 ```java
-MapInputValidator<Arguments2<String, Integer>> validator = Yavi.arguments()
+ObjectInputValidator<Arguments2<String, Integer>> validator = Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._integer("age")
         .fromMap(Arguments::of);
@@ -738,7 +738,7 @@ formatted later.
 record Password(String value) {}
 record UserRegistration(Email email, Password password, Role role, List<Contact> contacts) {}
 
-MapInputValidator<UserRegistration> userRegistrationValidator = Yavi.arguments()
+ObjectInputValidator<UserRegistration> userRegistrationValidator = Yavi.schema()
         ._object("email", normalizedEmail.map(Email::new))
         ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
@@ -764,7 +764,7 @@ README shows `JsonNodeReader`.
 ```java
 record Product(String id, BigDecimal price) {}
 
-ValueValidator<Map<String, Object>, Map<String, BigDecimal>> priceMapValidator = Yavi.arguments()
+ValueValidator<Map<String, Object>, Map<String, BigDecimal>> priceMapValidator = Yavi.schema()
         ._list("products", productValidator)
         .fromMap(products -> products)
         .constraintOnTarget(products -> products.stream().map(Product::id).distinct().count() == products.size(),
@@ -774,14 +774,14 @@ ValueValidator<Map<String, Object>, Map<String, BigDecimal>> priceMapValidator =
 
 ### Known fields and the remaining fields
 
-`_rest` is an argument that collects the keys no other argument is defined for. Its values
+`_rest` collects the keys that no property is defined for and gives them as a map. Its values
 are validated, with a violation located under the key, which the lambda of Raoh does not
 do:
 
 ```java
 record Item(String name, Map<String, String> attrs) {}
 
-MapInputValidator<Item> itemValidator = Yavi.arguments()
+ObjectInputValidator<Item> itemValidator = Yavi.schema()
         ._string("name", c -> c.notBlank())
         ._rest(Yavi._string(c -> c.notBlank()))
         .fromMap(Item::new);
@@ -795,13 +795,13 @@ itemValidator.validate(Map.of("name", "pen", "color", "")); // color: "color" mu
 ### Pagination and query parameters
 
 The tutorial of Raoh decodes a map that already holds numbers. Query parameters are
-strings, which `readingParameters()` reads with the same arguments:
+strings, which `readingParameters()` reads with the same schema:
 
 ```java
 enum SortOrder { ASC, DESC }
 record PageRequest(int page, int size, SortOrder order) {}
 
-ValueValidator<Map<String, String>, PageRequest> pageRequestValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, PageRequest> pageRequestValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).defaultValue(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).defaultValue(20)
         ._enum("sort", SortOrder.class).defaultValue(SortOrder.ASC)
@@ -817,7 +817,7 @@ pageRequestValidator.validate(Map.of("page", "-1")); // page: "page" must be gre
 `defaultValue`, they fall back like an absent parameter:
 
 ```java
-ValueValidator<Map<String, String>, PageRequest> lenientPageRequestValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, PageRequest> lenientPageRequestValidator = Yavi.schema()
         ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
         ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
         ._enum("sort", SortOrder.class).recover(SortOrder.ASC)
@@ -836,7 +836,7 @@ the rows with `liftList`:
 ```java
 record MemberImport(String email, String name, int age) {}
 
-ValueValidator<Map<String, String>, MemberImport> rowValidator = Yavi.arguments()
+ValueValidator<Map<String, String>, MemberImport> rowValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("name", c -> c.notBlank().lessThanOrEqual(100))
         ._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150))
@@ -850,7 +850,7 @@ Validated<List<MemberImport>> members = rowValidator.liftList().prefixed("rows")
 A header that holds `.` or `[` is read as a path. A cell is not trimmed unless the row is
 read with `readingParameters(StringCoercion.strict().trimming())`, which trims the cell of
 a number, a boolean, an enum or a date and takes a blank cell as `null` (a `String`
-argument is trimmed with `c.trim()`).
+property is trimmed with `c.trim()`).
 
 ### Configuration files
 
@@ -859,19 +859,19 @@ record DbConfig(String host, int port, String database) {}
 record CacheConfig(String host, int port, int ttlSeconds) {}
 record AppConfig(DbConfig db, CacheConfig cache, String logLevel) {}
 
-MapInputValidator<DbConfig> dbConfigValidator = Yavi.arguments()
+ObjectInputValidator<DbConfig> dbConfigValidator = Yavi.schema()
         ._string("host", c -> c.notBlank())
         ._integer("port", c -> c.greaterThanOrEqual(1).lessThanOrEqual(65535)).defaultValue(5432)
         ._string("database", c -> c.notBlank())
         .fromMap(DbConfig::new);
 
-MapInputValidator<CacheConfig> cacheConfigValidator = Yavi.arguments()
+ObjectInputValidator<CacheConfig> cacheConfigValidator = Yavi.schema()
         ._string("host", c -> c.notBlank()).defaultValue("localhost")
         ._integer("port", c -> c.greaterThanOrEqual(1).lessThanOrEqual(65535)).defaultValue(6379)
         ._integer("ttlSeconds", c -> c.positive()).defaultValue(300)
         .fromMap(CacheConfig::new);
 
-MapInputValidator<AppConfig> appConfigValidator = Yavi.arguments()
+ObjectInputValidator<AppConfig> appConfigValidator = Yavi.schema()
         ._object("db", dbConfigValidator)
         ._object("cache", cacheConfigValidator).defaultValue(new CacheConfig("localhost", 6379, 300))
         ._string("logLevel", c -> c.notBlank()).defaultValue("INFO")
@@ -888,14 +888,14 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
   `JooqRecordDecoders`). YAVI has one definition and an `InputReader` per input, and reads
   request parameters with paths and string coercion. It has no reader for a jOOQ `Record`;
   `record.intoMap()` is validated as a map.
-* **Typed arguments.** The arguments given to `fromMap(f)` also build a validator of typed
+* **Typed arguments.** The schema given to `fromMap(f)` also builds a validator of typed
   arguments with `apply(f)`. Raoh has no counterpart.
 * **Required.** Both reject `null` and an absent field unless the field says otherwise.
-  In YAVI this holds for the arguments of `Yavi.arguments()` and the validators of a single
+  In YAVI this holds for the properties of `Yavi.schema()` and the validators of a single
   value; `ValidatorBuilder`, which validates an object that exists, takes a property that
   is `null` as valid unless a constraint such as `notNull()` rejects it.
 * **Arity.** Both take up to 16 typed fields. Beyond that, YAVI groups the fields with
-  `_embedded`, or has `MapInputValidator.of(parts, mapper)`, whose mapper takes a list of
+  `_embedded`, or has `ObjectInputValidator.of(parts, mapper)`, whose mapper takes a list of
   values.
 * **Description.** A YAVI validator describes its input (`description()`), from which
   `JsonSchema` generates a JSON Schema.

@@ -51,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-class MapInputValidatorTest {
+class ObjectInputValidatorTest {
 
 	enum Role {
 
@@ -152,13 +152,13 @@ class MapInputValidatorTest {
 	record Square(@Nullable String type, Integer side) implements Shape {
 	}
 
-	static final MapInputValidator<Address> addressValidator = Yavi.arguments()
+	static final ObjectInputValidator<Address> addressValidator = Yavi.schema()
 		._string("street", c -> c.notBlank())
 		._string("city", c -> c.notBlank())
 		.fromMap(Address::new)
 		.rejectingUnknownProperties();
 
-	static final ValueValidator<Map<String, Object>, User> userValidator = Yavi.arguments()
+	static final ValueValidator<Map<String, Object>, User> userValidator = Yavi.schema()
 		._string("email", c -> c.trim().toLowerCase().notBlank().email())
 		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
 		._enum("role", Role.class, c -> c.notNull())
@@ -180,13 +180,13 @@ class MapInputValidatorTest {
 		// the discriminator is not an unknown property of an alternative that rejects
 		// them
 		.when("circle",
-				Yavi.arguments()
+				Yavi.schema()
 					._integer("radius", c -> c.notNull().positive())
 					.fromMap(Circle::new)
 					.rejectingUnknownProperties())
 		// an alternative may define the discriminator itself, and ignores unknown
 		// properties by default
-		.when("square", Yavi.arguments()._string("type").nullable()._integer("side").fromMap(Square::new));
+		.when("square", Yavi.schema()._string("type").nullable()._integer("side").fromMap(Square::new));
 
 	static Map<String, @Nullable Object> map(@Nullable Object... keysAndValues) {
 		final Map<String, @Nullable Object> map = new LinkedHashMap<>();
@@ -206,7 +206,7 @@ class MapInputValidatorTest {
 			return strings;
 		}
 		if (node instanceof List<?>array) {
-			return array.stream().map(MapInputValidatorTest::strings).toList();
+			return array.stream().map(ObjectInputValidatorTest::strings).toList();
 		}
 		return node == null ? null : node.toString();
 	}
@@ -251,7 +251,7 @@ class MapInputValidatorTest {
 		final BigInteger integer = new BigInteger("123456789012345678901234567890");
 		final BigDecimal decimal = new BigDecimal("1e400");
 		assertThat(model
-			.validate(Yavi.arguments()._bigInteger("integer")._bigDecimal("decimal").fromMap(List::of),
+			.validate(Yavi.schema()._bigInteger("integer")._bigDecimal("decimal").fromMap(List::of),
 					input("integer", integer, "decimal", decimal))
 			.value()).isEqualTo(List.of(integer, decimal));
 		// an absent key is validated like null
@@ -270,7 +270,7 @@ class MapInputValidatorTest {
 		// is validated, and an absent key, a violated constraint, a value that does not
 		// represent the type and an invalid embedded object give the fallback
 		final Address nowhere = new Address("", "");
-		final MapInputValidator<Page> page = Yavi.arguments()
+		final ObjectInputValidator<Page> page = Yavi.schema()
 			._integer("size", c -> c.notNull().greaterThanOrEqual(1).lessThanOrEqual(100))
 			.recover(20)
 			._enum("role", Role.class, c -> c.notNull())
@@ -375,12 +375,12 @@ class MapInputValidatorTest {
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void functionOfTheValidatedArgumentsCanFail(Model model) {
-		final MapInputValidator<DateRange> rangeValidator = Yavi.arguments()
+		final ObjectInputValidator<DateRange> rangeValidator = Yavi.schema()
 			._localDate("start", c -> c.notNull())
 			._localDate("end", c -> c.notNull())
 			.flatFromMap(DateRange::parse)
 			.rejectingUnknownProperties();
-		final ValueValidator<Map<String, Object>, Booking> validator = Yavi.arguments()
+		final ValueValidator<Map<String, Object>, Booking> validator = Yavi.schema()
 			._object("period", rangeValidator)
 			.fromMap(Booking::new);
 		assertThat(model.validate(validator, input("period", map("start", "2026-01-01", "end", "2026-01-31"))).value())
@@ -402,16 +402,16 @@ class MapInputValidatorTest {
 			return;
 		}
 		// the same function over arguments, and the arguments themselves as a record
-		assertThat(Yavi.arguments()
+		assertThat(Yavi.schema()
 			._localDate("start", c -> c.notNull())
 			._localDate("end", c -> c.notNull())
 			.flatApply(DateRange::parse)
 			.validate(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 31))
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("", "dateRange.invalid"));
-		assertThat(Yavi.arguments()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(name.length())).validate("abc").value())
+		assertThat(Yavi.schema()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(name.length())).validate("abc").value())
 			.isEqualTo(3);
-		final String described = switch (Yavi.arguments()
+		final String described = switch (Yavi.schema()
 			._string("name", c -> c.notBlank())
 			._integer("age", c -> c.notNull())
 			.fromMap(am.ik.yavi.arguments.Arguments::of)
@@ -449,7 +449,7 @@ class MapInputValidatorTest {
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("city", "charSequence.notBlank"));
 		// a union is nested like any other validator
-		final MapInputValidator<Optional<List<Shape>>> drawing = Yavi.arguments()
+		final ObjectInputValidator<Optional<List<Shape>>> drawing = Yavi.schema()
 			._list("shapes", shapeValidator)
 			.fromMap(Optional::ofNullable);
 		assertThat(model.validate(drawing, input("shapes", List.of(map("type", "circle"), "square"))).errors())
@@ -481,8 +481,8 @@ class MapInputValidatorTest {
 	record Formula(String name, @Nullable Expr expr, List<Comment> comments) {
 	}
 
-	static final MapInputValidator<Comment> commentValidator = ValueValidator.recursive("Comment",
-			self -> Yavi.arguments()
+	static final ObjectInputValidator<Comment> commentValidator = ValueValidator.recursive("Comment",
+			self -> Yavi.schema()
 				._string("body", c -> c.notBlank())
 				._list("replies", self)
 				.defaultValue(List.of())
@@ -492,13 +492,13 @@ class MapInputValidatorTest {
 
 	// an alternative that is built later, and that rejects unknown properties
 	static final DiscriminatedUnionValidator<Expr> exprValidator = DiscriminatedUnionValidator.<Expr>of("op")
-		.when("num", Yavi.arguments()._integer("value", c -> c.notNull()).fromMap(Num::new))
+		.when("num", Yavi.schema()._integer("value", c -> c.notNull()).fromMap(Num::new))
 		.when("add", ValueValidator.lazy("Add", () -> {
 			addSupplied.incrementAndGet();
-			return MapInputValidatorTest.addValidator;
+			return ObjectInputValidatorTest.addValidator;
 		}));
 
-	static final MapInputValidator<Add> addValidator = Yavi.arguments()
+	static final ObjectInputValidator<Add> addValidator = Yavi.schema()
 		._object("left", exprValidator)
 		._object("right", exprValidator)
 		.fromMap(Add::new)
@@ -545,7 +545,7 @@ class MapInputValidatorTest {
 
 		// a structure that is referred to from elsewhere is defined once, under the name
 		// of its reference
-		final MapInputValidator<Formula> formulaValidator = Yavi.arguments()
+		final ObjectInputValidator<Formula> formulaValidator = Yavi.schema()
 			._string("name", c -> c.notBlank())
 			._object("expr", exprValidator)
 			.nullable()
@@ -624,16 +624,16 @@ class MapInputValidatorTest {
 	@EnumSource(Model.class)
 	void embeddedValidatorsAndTheRestReadTheSameMap(Model model) {
 		// an embedded validator that rejects unknown properties sees only its own
-		final MapInputValidator<UserName> userNameValidator = Yavi.arguments()
+		final ObjectInputValidator<UserName> userNameValidator = Yavi.schema()
 			._string("first_name", c -> c.notBlank())
 			._string("last_name", c -> c.notBlank())
 			.fromMap(UserName::new)
 			.rejectingUnknownProperties();
-		final MapInputValidator<Department> departmentValidator = Yavi.arguments()
+		final ObjectInputValidator<Department> departmentValidator = Yavi.schema()
 			._string("dept_name", c -> c.notBlank())
 			._string("dept_code", c -> c.notBlank())
 			.fromMap(Department::new);
-		final MapInputValidator<Employee> employeeValidator = Yavi.arguments()
+		final ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
 			._integer("id", c -> c.notNull())
 			._embedded(userNameValidator)
 			._embedded(departmentValidator)
@@ -669,7 +669,7 @@ class MapInputValidatorTest {
 				"additionalProperties":{"type":"integer","exclusiveMinimum":0}}""");
 		// the properties of an embedded union are those of its alternatives: the selected
 		// one reports those of the others if it rejects unknown properties
-		final MapInputValidator<List<Object>> eventValidator = Yavi.arguments()
+		final ObjectInputValidator<List<Object>> eventValidator = Yavi.schema()
 			._string("id", c -> c.notBlank())
 			._embedded(shapeValidator)
 			.fromMap((id, shape) -> List.of(id, shape))
@@ -690,12 +690,12 @@ class MapInputValidatorTest {
 				"required":["id","side"],"additionalProperties":false}]}""");
 		// the rest is taken as it is without a validator, and arguments that are not read
 		// from a key are still arguments of apply
-		assertThat(Yavi.arguments()
+		assertThat(Yavi.schema()
 			._string("id")
 			._rest()
 			.fromMap((id, rest) -> Optional.ofNullable(rest))
 			.validated(input("id", "e1", "tags", List.of("a")))).contains(Map.of("tags", List.of("a")));
-		assertThat(Yavi.arguments()
+		assertThat(Yavi.schema()
 			._embedded(departmentValidator)
 			._rest()
 			.apply((department, rest) -> Optional.ofNullable(rest))
@@ -704,7 +704,7 @@ class MapInputValidatorTest {
 		// properties that are read are unknown
 		final ValueValidator<Map<String, Object>, Integer> size = (map, locale, context) -> Validated
 			.successWith(Objects.requireNonNull(map).size());
-		final MapInputValidator<List<Object>> sized = Yavi.arguments()
+		final ObjectInputValidator<List<Object>> sized = Yavi.schema()
 			._string("id")
 			._embedded(size)
 			.fromMap((id, count) -> List.of(id, count));
@@ -718,15 +718,15 @@ class MapInputValidatorTest {
 					new ValueDescription.Unknown()));
 		assertThatThrownBy(sized::rejectingUnknownProperties).isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("unknown properties cannot be rejected");
-		assertThatThrownBy(() -> Yavi.arguments()._embedded(sized)._rest().fromMap((a, b) -> ""))
+		assertThatThrownBy(() -> Yavi.schema()._embedded(sized)._rest().fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("rest of the properties cannot be told");
-		assertThatThrownBy(() -> Yavi.arguments()._rest().fromMap(Optional::ofNullable).rejectingUnknownProperties())
+		assertThatThrownBy(() -> Yavi.schema()._rest().fromMap(Optional::ofNullable).rejectingUnknownProperties())
 			.isInstanceOf(IllegalStateException.class);
-		assertThatThrownBy(() -> Yavi.arguments()._rest()._rest().fromMap((a, b) -> ""))
+		assertThatThrownBy(() -> Yavi.schema()._rest()._rest().fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(
-				() -> Yavi.arguments()._string("dept_code")._embedded(departmentValidator).fromMap((a, b) -> ""))
+				() -> Yavi.schema()._string("dept_code")._embedded(departmentValidator).fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessageContaining("The property 'dept_code' is defined twice");
 	}
@@ -743,10 +743,10 @@ class MapInputValidatorTest {
 
 	@Test
 	void parametersAreReadAsTheTreeTheyStandFor() {
-		final ValueValidator<Map<String, ?>, Order> validator = Yavi.arguments()
+		final ValueValidator<Map<String, ?>, Order> validator = Yavi.schema()
 			._string("customer", c -> c.notBlank())
 			._list("items",
-					Yavi.arguments()
+					Yavi.schema()
 						._string("name", c -> c.notBlank())
 						._integer("quantity", c -> c.positive())
 						.defaultValue(1)
@@ -809,7 +809,7 @@ class MapInputValidatorTest {
 					tuple("deep" + ".x".repeat(ParameterTree.MAX_DEPTH), "object.unknownProperty", "1"),
 					tuple("extra", "object.unknownProperty", Map.of("b", List.of("1"))));
 		// a key with values and nested keys is neither a scalar, a list nor an object
-		assertThat(Yavi.arguments()
+		assertThat(Yavi.schema()
 			._string("s")
 			._list("l", StringValidatorBuilder.of("", c -> c.notBlank()).build())
 			._object("o", addressValidator)
@@ -824,7 +824,7 @@ class MapInputValidatorTest {
 					tuple("l", "object.type", Map.of("", "x", "0", "y")),
 					tuple("o", "object.type", Map.of("", "x", "street", "y")));
 		// the largest index is given with the tree, which is what any validator reads
-		final ValueValidator<ParameterTree, Optional<List<@Nullable Integer>>> coupons = Yavi.arguments()
+		final ValueValidator<ParameterTree, Optional<List<@Nullable Integer>>> coupons = Yavi.schema()
 			._list("coupons", IntegerValidatorBuilder.of("", c -> c.positive()).build().nullable())
 			.from(ParameterTree.reader(), Optional::ofNullable);
 		assertThat(coupons.validated(ParameterTree.of(Map.of("coupons[1]", "5"), 1))).contains(Arrays.asList(null, 5));
@@ -936,7 +936,7 @@ class MapInputValidatorTest {
 		// the name of a constant is read in any case by an argument that says so,
 		// whatever the reader is
 		final EnumValidator<Role, Role> role = Yavi._enum("role", Role.class, c -> c.notNull()).ignoringCase();
-		final MapInputValidator<Signup> validator = Yavi.arguments()
+		final ObjectInputValidator<Signup> validator = Yavi.schema()
 			._string("name")
 			.nullable()
 			._integer("age")
@@ -1005,7 +1005,7 @@ class MapInputValidatorTest {
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void absentKeyIsToldFromNull(Model model) {
-		final var arguments = Yavi.arguments()
+		final var arguments = Yavi.schema()
 			._string("nickname", c -> c.lessThanOrEqual(5))
 			.presence()
 			._string("bio")
@@ -1017,7 +1017,7 @@ class MapInputValidatorTest {
 			._integer("age", c -> c.greaterThanOrEqual(0))
 			.defaultValue(20)
 			.presence();
-		final MapInputValidator<ProfilePatch> validator = arguments.fromMap(ProfilePatch::new)
+		final ObjectInputValidator<ProfilePatch> validator = arguments.fromMap(ProfilePatch::new)
 			.rejectingUnknownProperties();
 		// an absent key is not validated, so it is not required
 		assertThat(model.validate(validator, input()).value())
@@ -1062,8 +1062,8 @@ class MapInputValidatorTest {
 			.extracting(ConstraintViolation::name)
 			.containsExactly("nickname", "age");
 		// a part defined without the builders
-		final MapInputValidator<Object> bio = MapInputValidator.of(
-				List.of(new MapInputValidator.PresenceProperty<>("bio",
+		final ObjectInputValidator<Object> bio = ObjectInputValidator.of(
+				List.of(new ObjectInputValidator.PresenceProperty<>("bio",
 						StringValidatorBuilder.of("bio", c -> c.notBlank()).build().liftPresence().untyped())),
 				values -> values.get(0));
 		assertThat(model.validate(bio, input()).value()).isEqualTo(Presence.absent());
@@ -1081,12 +1081,12 @@ class MapInputValidatorTest {
 		final ValueValidator<Object, Object> id = ValueValidator.anyOf(
 				StringValidatorBuilder.of("", c -> c.notBlank()).build().untyped(),
 				IntegerValidatorBuilder.of("", c -> c.positive()).build().untyped());
-		final var arguments = Yavi.arguments()
+		final var arguments = Yavi.schema()
 			._object("count", coerced.untyped(Object.class))
 			._object("id", id)
 			._object("payload", Object.class)
 			.nullable();
-		final MapInputValidator<List<Object>> validator = arguments
+		final ObjectInputValidator<List<Object>> validator = arguments
 			.fromMap((count, i, payload) -> Arrays.asList(count, i, payload));
 		assertThat(validator.validated(input("count", "10", "id", 7, "payload", List.of(1)))).containsExactly(10, 7,
 				List.of(1));
@@ -1094,16 +1094,16 @@ class MapInputValidatorTest {
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("count", "object.type"), tuple("id", "object.anyOf"), tuple("id", "object.type"),
 					tuple("id", "object.type"));
-		assertThatThrownBy(() -> Yavi.arguments().<Role>_enum("role").fromMap(Optional::ofNullable))
+		assertThatThrownBy(() -> Yavi.schema().<Role>_enum("role").fromMap(Optional::ofNullable))
 			.isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("The input type of the argument 'role' is unknown");
-		assertThatThrownBy(() -> Yavi.arguments()._object("count", coerced).fromMap(Optional::ofNullable))
+		assertThatThrownBy(() -> Yavi.schema()._object("count", coerced).fromMap(Optional::ofNullable))
 			.isInstanceOf(IllegalStateException.class);
 		assertThatThrownBy(
-				() -> Yavi.arguments()._integer(coerced.untyped(Object.class)::validate).fromMap(Optional::ofNullable))
+				() -> Yavi.schema()._integer(coerced.untyped(Object.class)::validate).fromMap(Optional::ofNullable))
 			.isInstanceOf(IllegalStateException.class)
 			.hasMessageContaining("The argument at position 1 has no name");
-		assertThatThrownBy(() -> Yavi.arguments()._string("a")._integer("a").fromMap((a, b) -> ""))
+		assertThatThrownBy(() -> Yavi.schema()._string("a")._integer("a").fromMap((a, b) -> ""))
 			.isInstanceOf(IllegalArgumentException.class);
 		// the same arguments are read from a node: a validator that takes an Object is
 		// given the value of the node, a null node is null wherever it is, and the result
@@ -1121,12 +1121,12 @@ class MapInputValidatorTest {
 			.readingWith(JsonNodeReader.INSTANCE)
 			.validated(jsonMapper.nullNode())).isEmpty();
 		// a property or an alternative that is a lambda is read only from JDK types
-		final MapInputValidator<Object> lambda = MapInputValidator
-			.of(List.of(new MapInputValidator.Property<>("count", coerced)), values -> values.get(0));
+		final ObjectInputValidator<Object> lambda = ObjectInputValidator
+			.of(List.of(new ObjectInputValidator.Property<>("count", coerced)), values -> values.get(0));
 		assertThat(lambda.untyped().validated(map("count", "10"))).isEqualTo(10);
 		// the node is read as it is under another reader, coerced or not: its strings are
 		// coerced, and its null node and an empty string are both null
-		final ValueValidator<JsonNode, Square> square = Yavi.arguments()
+		final ValueValidator<JsonNode, Square> square = Yavi.schema()
 			._string("type")
 			.nullable()
 			._integer("side")

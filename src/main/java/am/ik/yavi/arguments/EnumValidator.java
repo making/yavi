@@ -100,7 +100,7 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	 * Schema, holds the names of the constants as they are declared.
 	 *
 	 * <pre>{@code
-	 * Yavi.arguments()
+	 * Yavi.schema()
 	 *     ._enum(Yavi._enum("role", Role.class).ignoringCase())
 	 *     .fromMap(role -> role)
 	 *     .validate(Map.of("role", "admin")); // ADMIN
