@@ -222,7 +222,8 @@ employeeValidator.validate(Map.of("id", 1, "first_name", "Taro", "last_name", "Y
 Embedding is also the way to read more than 16 keys. `_rest()` without a validator takes
 the values as they are. The rest is an empty map if there is no other key, never `null`,
 so it takes `recover(...)` only: `_rest().nullable()` and `_rest().defaultValue(...)` do
-not compile.
+not compile. `_rest` is the last property of a schema, so it is written once, and the
+validator of such a schema has no `rejectingUnknownProperties()`: no key is unknown.
 
 ### Telling an absent key from null
 
@@ -309,6 +310,18 @@ NullAcceptingValueValidator<Integer, Integer> page = Yavi._integer("page", c -> 
 
 Yavi.schema()._integer(page).rejectingNull() // 1 only if omitted
 ```
+
+The other parts of a schema are staged in the same way, so that what would have no
+effect, or would fail when the validator is built, does not compile:
+
+| Chain | |
+| --- | --- |
+| `.optional().presence()` | does not compile: the `Optional` would be wrapped in a `Presence`; write `.nullable().presence()` |
+| `._rest()._rest()`, `._rest()._string("x")` | does not compile: the rest is the last property |
+| `._rest().fromMap(f).rejectingUnknownProperties()` | does not compile: no key is unknown |
+| `.fromMap(f).rejectingUnknownProperties().rejectingUnknownProperties()` | does not compile: `fromMap` returns an `ObjectInputValidator.IgnoringUnknown`, which is told once |
+| `Yavi._enum(Role.class).ignoringCase().ignoringCase()` | does not compile: `ignoringCase()` returns an `Arguments1Validator`, so it is written once |
+| `._enum("role")`, `._object("address")` | do not exist: an enum and an object are added with their type, which `fromMap` needs |
 
 `nullable()` is the only modifier that produces `null`. A `null` default value or
 fallback of a value that is never `null` (the value of constraints, a list, a map, an
@@ -658,5 +671,5 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `lazy`, `recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
-| Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564) |
+| Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |

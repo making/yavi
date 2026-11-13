@@ -581,6 +581,51 @@ Yavi.schema()._string(nameValidator)._integer(ageValidator).apply(Member::new);
 
 関連するプルリクエスト: [#538](https://github.com/making/yavi/pull/538)
 
+### スキーマの enum とオブジェクトは型を付けて追加する
+
+型を付けずに追加したプロパティは、マップから読めませんでした。`fromMap` がバリデータを作る時点で `IllegalStateException` を投げていました。型を取らないメソッドを削除したので、1 つのスキーマを `apply` にも `fromMap` にも使えます。
+
+| 削除されたもの | 代わりに使うもの |
+| --- | --- |
+| スキーマのビルダーの `_enum(name)`、`_enum(name, constraints)` | `_enum(name, type)`、`_enum(name, type, constraints)` |
+| スキーマのビルダーの `_object(name)`、`_object(name, constraints)` | `_object(name, type)`、`_object(name, type, constraints)`。クラスリテラルのない型には `_object(Yavi.<List<String>>_object(name, constraints))` |
+| `EnumValidatorBuilder.of(name, constraints)`、`EnumValidatorBuilder.wrap(builder)` | `EnumValidatorBuilder.of(name, type, constraints)`、`EnumValidatorBuilder.wrap(type, builder)` |
+| `new EnumValidator<>(validator, mapper)` | `new EnumValidator<>(validator, mapper, type)` |
+
+```java
+// before
+Yavi.arguments()
+        ._string("name")
+        .<Role>_enum("role", c -> c.oneOf(Role.USER, Role.ADMIN))
+        .<Address>_object("address")
+        .apply(User::new);
+
+// after
+Yavi.schema()
+        ._string("name")
+        ._enum("role", Role.class, c -> c.oneOf(Role.USER, Role.ADMIN))
+        ._object("address", Address.class)
+        .apply(User::new);
+```
+
+この enum の description は定数を持つようになるので、JSON Schema に `enum` が出力されます。
+
+関連するプルリクエスト: [#565](https://github.com/making/yavi/pull/565)
+
+### `apply` の 2 つの引数に同じ名前は付けられない
+
+2 つの引数が同じ名前を持つと、`apply` と `flatApply` は `fromMap` と同じく `IllegalArgumentException` を投げます。そのままでは、1 つのプロパティが 2 つの引数を表すオブジェクトとして記述されてしまうためです。引数ごとに別の名前を付けてください。
+
+```java
+// before: JSON Schema のプロパティ "value" 1 つが 2 つの引数を表すバリデータができていた
+Yavi.arguments()._integer("value")._integer("value").apply(Range::new);
+
+// after
+Yavi.schema()._integer("from")._integer("to").apply(Range::new);
+```
+
+関連するプルリクエスト: [#565](https://github.com/making/yavi/pull/565)
+
 ### `Yavi.arguments()` は非推奨になり、`YaviArguments` は `YaviSchema` になった
 
 `Yavi.schema()` は `Yavi.arguments()` の新しい名前です。`Yavi.arguments()` は非推奨ですが、引き続き使えます。このビルダーは、型付きの引数、マップ、JSON のツリー、リクエストパラメータから読み取る入力を記述するものになったため、型の名前を `YaviArguments` から `YaviSchema` に変えました。この型の変数を宣言しているコードは、型名を変える必要があります。

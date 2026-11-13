@@ -98,7 +98,7 @@ import org.jspecify.annotations.Nullable;
  * @param <R3> type of the validated value of argument at position 3
  * @since 0.14.0
  */
-public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object> permits Arguments3ValidatorBuilder.Modifiable,Arguments3ValidatorBuilder.Recoverable,Arguments3ValidatorBuilder.Recovered,Arguments3ValidatorBuilder.Keyed,Arguments3ValidatorBuilder.NullAccepting {
+public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object> permits Arguments3ValidatorBuilder.Modifiable,Arguments3ValidatorBuilder.Recoverable,Arguments3ValidatorBuilder.Recovered,Arguments3ValidatorBuilder.Keyed,Arguments3ValidatorBuilder.NullAccepting,Arguments3ValidatorBuilder.OptionalAccepting {
 
 	final ArgumentDefinition<A1, R1> d1;
 
@@ -437,48 +437,12 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	}
 
 	/**
-	 * Adds the next argument as an enum constant with the given name and configured
-	 * constraints.
-	 *
-	 * <p>
-	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link EnumConstraint}, for example {@code object.oneOf}. A {@code null} value is a
-	 * violation: the one of a constraint that rejects it, or else {@code object.notNull}.
-	 * @param <E> the enum type of the argument
-	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <E extends Enum<E>> Arguments4ValidatorBuilder.Keyed<A1, A2, A3, E, R1, R2, R3, E> _enum(String name,
-			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments4ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3,
-				ArgumentDefinition.value(name, EnumValidatorBuilder.of(name, constraints).build()));
-	}
-
-	/**
-	 * Adds the next argument as an enum constant with the given name and no constraints.
-	 *
-	 * <p>
-	 * Without constraints every value other than {@code null} is accepted. {@code name}
-	 * is recorded as the property name of the argument.
-	 * @param <E> the enum type of the argument
-	 * @param name the property name recorded for the argument
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <E extends Enum<E>> Arguments4ValidatorBuilder.Keyed<A1, A2, A3, E, R1, R2, R3, E> _enum(String name) {
-		return this._enum(name, Function.identity());
-	}
-
-	/**
 	 * Adds the next argument as a constant of the given enum type with the given name and
 	 * configured constraints.
 	 *
 	 * <p>
-	 * Unlike {@link #_enum(String, Function)}, the argument knows its enum type: its
-	 * description holds the constants, and {@code fromMap} reads it from the name of a
-	 * constant.
+	 * The argument knows its enum type: its description holds the constants, and
+	 * {@code fromMap} reads it from the name of a constant.
 	 * @param <E> the enum type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param type the enum type of the argument
@@ -1051,48 +1015,15 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	}
 
 	/**
-	 * Adds the next argument as an object with the given name and configured constraints.
-	 *
-	 * <p>
-	 * Violations use {@code name} as the property name and the message ids of
-	 * {@link ObjectConstraint}, for example {@code object.notNull}. A {@code null} value
-	 * is a violation: the one of a constraint that rejects it, or else
-	 * {@code object.notNull}.
-	 * @param <T> type of the argument
-	 * @param name the property name used in violation names and messages
-	 * @param constraints function that configures the constraints
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <T> Arguments4ValidatorBuilder.Keyed<A1, A2, A3, T, R1, R2, R3, T> _object(String name,
-			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments4ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3,
-				ArgumentDefinition.value(name, ObjectValidatorBuilder.of(name, constraints).build()));
-	}
-
-	/**
-	 * Adds the next argument as an object with the given name and no constraints.
-	 *
-	 * <p>
-	 * Without constraints every value other than {@code null} is accepted. {@code name}
-	 * is recorded as the property name of the argument.
-	 * @param <T> type of the argument
-	 * @param name the property name recorded for the argument
-	 * @return a builder for the next argument
-	 * @since 0.14.0
-	 */
-	public <T> Arguments4ValidatorBuilder.Keyed<A1, A2, A3, T, R1, R2, R3, T> _object(String name) {
-		return this._object(name, Function.identity());
-	}
-
-	/**
 	 * Adds the next argument as an object of the given type with the given name and
 	 * configured constraints.
 	 *
 	 * <p>
-	 * Unlike {@link #_object(String, Function)}, the argument knows its type, so
-	 * {@code fromMap} can read it: the value in the map must be an instance of the type
-	 * or represent it. Give {@code Object.class} to take any value as it is.
+	 * The argument knows its type, so {@code fromMap} can read it: the value in the map
+	 * must be an instance of the type or represent it. Give {@code Object.class} to take
+	 * any value as it is. A type that has no class literal, such as {@code List<String>},
+	 * is added with a value validator:
+	 * {@code _object(Yavi.<List<String>>_object(name, constraints))}.
 	 * @param <T> type of the argument
 	 * @param name the property name used in violation names and messages
 	 * @param type the type of the argument
@@ -1749,27 +1680,33 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	 * The rest is therefore never {@code null}: the returned builder has no
 	 * {@code optional()}, {@code nullable()} or {@code defaultValue}, only
 	 * {@code recover} to replace the rest when a value is invalid.
+	 *
+	 * <p>
+	 * The rest is the last argument: the returned builder adds no argument, so the rest
+	 * is defined once, and the validator that {@code fromMap} creates cannot reject
+	 * unknown keys, of which there is none.
 	 * @param <V> type of the values validated by {@code valueValidator}
 	 * @param <T> type of the values produced by {@code valueValidator}
 	 * @param valueValidator value validator for each value
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments4ValidatorBuilder.Recoverable<A1, A2, A3, Map<String, V>, R1, R2, R3, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments4ValidatorBuilder.Rest<A1, A2, A3, Map<String, V>, R1, R2, R3, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments4ValidatorBuilder.Recoverable<>(this.d1, this.d2, this.d3,
-				ArgumentDefinition.rest(valueValidator));
+		return new Arguments4ValidatorBuilder.Rest<>(
+				new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3, ArgumentDefinition.rest(valueValidator)));
 	}
 
 	/**
 	 * Adds the next argument as a {@code Map} of the properties that no other argument is
 	 * defined for, whose values are taken as they are.
-	 * @return a builder for the next argument
+	 * @return a builder that creates the validator
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments4ValidatorBuilder.Recoverable<A1, A2, A3, Map<String, Object>, R1, R2, R3, Map<String, @Nullable Object>> _rest() {
-		return new Arguments4ValidatorBuilder.Recoverable<>(this.d1, this.d2, this.d3, ArgumentDefinition.rest());
+	public Arguments4ValidatorBuilder.Rest<A1, A2, A3, Map<String, Object>, R1, R2, R3, Map<String, @Nullable Object>> _rest() {
+		return new Arguments4ValidatorBuilder.Rest<>(
+				new Arguments4ValidatorBuilder<>(this.d1, this.d2, this.d3, ArgumentDefinition.rest()));
 	}
 
 	/**
@@ -1784,6 +1721,7 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
 	 * @return a new arguments validator
+	 * @throws IllegalArgumentException if two arguments have the same name
 	 * @since 0.14.0
 	 */
 	public <X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> apply(
@@ -1837,17 +1775,16 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	 * {@code ObjectInputValidator}.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values
-	 * @return a new object input validator
-	 * @throws IllegalStateException if an argument has no name, or if its input type is
-	 * unknown: an {@code _enum} or {@code _object} argument added without a type, or a
-	 * value validator that does not know its input type; also if there is a {@code _rest}
-	 * argument and an embedded validator does not describe its properties
+	 * @return a new object input validator, which ignores unknown keys unless it is told
+	 * to reject them
+	 * @throws IllegalStateException if an argument has no name, or if it is added with a
+	 * value validator that does not know its input type
 	 * @throws IllegalArgumentException if two arguments define a property of the same
-	 * name, or if two are added with {@code _rest}
+	 * name
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> ObjectInputValidator<X> fromMap(
+	public <X extends @Nullable Object> ObjectInputValidator.IgnoringUnknown<X> fromMap(
 			Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
 		return ObjectInputValidator.of(List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3)),
 				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2)));
@@ -1876,7 +1813,7 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	 * @since 0.18.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(
+	public <X extends @Nullable Object> ObjectInputValidator.IgnoringUnknown<X> flatFromMap(
 			Function3<? super R1, ? super R2, ? super R3, ? extends Validated<? extends X>> f) {
 		return ObjectInputValidator.flatOf(List.of(this.d1.part(1), this.d2.part(2), this.d3.part(3)),
 				values -> f.apply((R1) values.get(0), (R2) values.get(1), (R3) values.get(2)));
@@ -2038,8 +1975,7 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 
 	/**
 	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
-	 * not read from a key, or after {@code _rest}, which is never {@code null}: an
-	 * invalid value can still be replaced with {@code recover}.
+	 * not read from a key: an invalid value can still be replaced with {@code recover}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -2218,8 +2154,8 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 * @since 0.18.0
 		 * @see ValueValidator#optional()
 		 */
-		public KeyedRecoverable<A1, A2, A3, R1, R2, Optional<@NonNull R3>> optional() {
-			return new KeyedRecoverable<>(this.d1, this.d2, this.d3.asOptional());
+		public KeyedOptional<A1, A2, A3, R1, R2, Optional<@NonNull R3>> optional() {
+			return new KeyedOptional<>(this.d1, this.d2, this.d3.asOptional());
 		}
 
 		/**
@@ -2313,11 +2249,10 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 * the argument is not validated, so the key is not required. A key that is
 		 * present is validated as before, an explicit {@code null} included, and its
 		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
-		 * is a violation unless the argument is {@code nullable()}. After
-		 * {@code optional()} an explicit {@code null} is a present empty
-		 * {@code Optional}; {@code nullable()} gives the three states without the
-		 * {@code Optional}. A parameter with an empty value, which is read as
-		 * {@code null}, is present.
+		 * is a violation unless the argument is {@code nullable()}. An argument that is
+		 * {@code optional()} has no {@code presence()}, which would wrap its
+		 * {@code Optional}: {@code nullable()} gives the three states. A parameter with
+		 * an empty value, which is read as {@code null}, is present.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
@@ -2336,8 +2271,8 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	}
 
 	/**
-	 * The builder after {@code optional()} or {@code nullable()} of an argument that is
-	 * read from a key: an invalid value can still be replaced with {@code recover}.
+	 * The builder after {@code nullable()} of an argument that is read from a key: an
+	 * invalid value can still be replaced with {@code recover}.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -2400,6 +2335,163 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 	}
 
 	/**
+	 * The builder after {@code optional()} of an argument that is read from a key: an
+	 * invalid value can still be replaced with {@code recover}.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @since 0.18.0
+	 */
+	public static final class KeyedOptional<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object>
+			extends OptionalAccepting<A1, A2, A3, R1, R2, R3> {
+
+		KeyedOptional(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3) {
+			super(d1, d2, d3);
+		}
+
+		/**
+		 * Produces the given value when the value of the last added argument is
+		 * {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * A {@code null} value succeeds with the fallback and the constraints of the
+		 * argument are not applied to it; the fallback itself is not validated. Every
+		 * violation of any other value is replaced with the fallback, including the one
+		 * of a value read from a map that does not represent the type of the argument.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder whose last argument falls back to the given value
+		 * @throws NullPointerException if {@code fallback} is {@code null} although the
+		 * validated value is never {@code null}, as that of constraints, a list, a map or
+		 * {@code optional()} is; write {@code nullable()} before to recover with
+		 * {@code null}
+		 * @since 0.18.0
+		 * @see ValueValidator#recover(Object)
+		 */
+		public OptionalAccepting<A1, A2, A3, R1, R2, R3> recover(R3 fallback) {
+			return new OptionalAccepting<>(this.d1, this.d2, this.d3.recovering(fallback));
+		}
+
+		/**
+		 * Produces the result of the given function when the value of the last added
+		 * argument is {@code null} or invalid, so that the argument never fails.
+		 *
+		 * <p>
+		 * The function is given the violations of the invalid value, and no violation for
+		 * a {@code null} value, to which the constraints of the argument are not applied.
+		 * It must not return {@code null} for a validated value that is never
+		 * {@code null}, as that of constraints, a list, a map or {@code optional()} is:
+		 * the validation then fails with {@code NullPointerException}. Write
+		 * {@code nullable()} before to recover with {@code null}.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder whose last argument falls back to the result of the function
+		 * @since 0.18.0
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public OptionalAccepting<A1, A2, A3, R1, R2, R3> recoverWith(
+				Function<? super ConstraintViolations, ? extends R3> fallback) {
+			return new OptionalAccepting<>(this.d1, this.d2, this.d3.recoveringWith(fallback));
+		}
+
+	}
+
+	/**
+	 * The builder after an argument that is read from a key produces an {@code Optional}:
+	 * an absent key and an explicit {@code null}, which are both accepted, can be told
+	 * apart with {@link #required()} and {@link #rejectingNull()}. There is no
+	 * {@code presence()}, which would wrap the {@code Optional} in a {@code Presence}:
+	 * {@code nullable().presence()} gives the three states.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @since 0.18.0
+	 */
+	public static sealed class OptionalAccepting<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object>
+			extends Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3>permits KeyedOptional {
+
+		OptionalAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3) {
+			super(d1, d2, d3);
+		}
+
+		/**
+		 * Requires the key of the last added argument although its value may be
+		 * {@code null}, for a contract such as "{@code deletedAt} must be sent, as
+		 * {@code null} if there is none".
+		 *
+		 * <pre>{@code
+		 * ._instant("deletedAt").nullable().required()
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, an absent key is rejected with {@code object.required}
+		 * and the argument is not validated. A key that is present is validated as
+		 * before, so an explicit {@code null} is accepted by {@code optional()},
+		 * {@code nullable()}, {@code defaultValue} and {@code recover}, which are written
+		 * before this modifier. The argument is described as a
+		 * {@link am.ik.yavi.core.ValueDescription.Required}, so its JSON Schema is
+		 * {@code required} and allows the type {@code null}. An argument that does not
+		 * accept {@code null} requires its key anyway, so its builder does not have this
+		 * modifier.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none.
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #rejectingNull()
+		 */
+		public Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> required() {
+			return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
+					this.d3.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Rejects an explicit {@code null} for the last added argument although its key
+		 * may be absent, for a contract such as "{@code bio} may be omitted, and is a
+		 * text if it is sent".
+		 *
+		 * <pre>{@code
+		 * ._string("bio").optional().rejectingNull() // Optional.empty() only for an absent key
+		 * ._integer("page").defaultValue(1).rejectingNull() // 1 only for an absent key
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, an explicit {@code null} is rejected with
+		 * {@code object.notNull} and the argument is not validated. An absent key is
+		 * validated as {@code null}, as before, so it is what {@code optional()},
+		 * {@code nullable()}, {@code defaultValue} and {@code recover}, which are written
+		 * before this modifier, accept: the empty {@code Optional}, the {@code null} or
+		 * the default value of the validated argument stands for an absent key only. The
+		 * argument is described as a {@link am.ik.yavi.core.ValueDescription.Presence},
+		 * so its JSON Schema is not {@code required} and does not allow the type
+		 * {@code null}. A parameter with an empty value, which is read as {@code null},
+		 * is present and therefore rejected.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before: {@code null} is the absent value. This is the last modifier of an
+		 * argument: the returned builder has none. To be given the three states, use
+		 * {@code presence()} of an argument that is {@code nullable()}.
+		 * @return a builder whose last argument rejects an explicit {@code null}
+		 * @since 0.18.0
+		 * @see #required()
+		 */
+		public Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> rejectingNull() {
+			return new Arguments3ValidatorBuilder<>(this.d1, this.d2,
+					this.d3.withStrictness(ObjectInputValidator.Strictness.REJECTING_NULL));
+		}
+
+	}
+
+	/**
 	 * The builder after {@code recover} or {@code recoverWith} of an argument that is
 	 * read from a key: what {@code null} produces can still be changed, while an invalid
 	 * value is replaced with the fallback.
@@ -2430,8 +2522,8 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 * @since 0.18.0
 		 * @see ValueValidator#optional()
 		 */
-		public NullAccepting<A1, A2, A3, R1, R2, Optional<@NonNull R3>> optional() {
-			return new NullAccepting<>(this.d1, this.d2, this.d3.asOptional());
+		public OptionalAccepting<A1, A2, A3, R1, R2, Optional<@NonNull R3>> optional() {
+			return new OptionalAccepting<>(this.d1, this.d2, this.d3.asOptional());
 		}
 
 		/**
@@ -2476,9 +2568,9 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 
 	/**
 	 * The builder after an argument that is read from a key accepts {@code null}, with
-	 * {@code optional()}, {@code nullable()}, {@code defaultValue} or {@code recover}, or
-	 * with a {@link NullAcceptingValueValidator}: an absent key and an explicit
-	 * {@code null}, which are both accepted, can be told apart with {@link #required()},
+	 * {@code nullable()}, {@code defaultValue} or {@code recover}, or with a
+	 * {@link NullAcceptingValueValidator}: an absent key and an explicit {@code null},
+	 * which are both accepted, can be told apart with {@link #required()},
 	 * {@link #rejectingNull()} and {@link #presence()}.
 	 *
 	 * @param <A1> type of the first argument
@@ -2555,7 +2647,7 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 * With {@code apply}, the argument has no absent state and is validated as
 		 * before: {@code null} is the absent value. This is the last modifier of an
 		 * argument: the returned builder has none. To be given the three states, use
-		 * {@link #presence()}.
+		 * {@code presence()} of an argument that is {@code nullable()}.
 		 * @return a builder whose last argument rejects an explicit {@code null}
 		 * @since 0.18.0
 		 * @see #required()
@@ -2575,11 +2667,10 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 * the argument is not validated, so the key is not required. A key that is
 		 * present is validated as before, an explicit {@code null} included, and its
 		 * value is given as {@link Presence#ofNullable(Object)}: an explicit {@code null}
-		 * is a violation unless the argument is {@code nullable()}. After
-		 * {@code optional()} an explicit {@code null} is a present empty
-		 * {@code Optional}; {@code nullable()} gives the three states without the
-		 * {@code Optional}. A parameter with an empty value, which is read as
-		 * {@code null}, is present.
+		 * is a violation unless the argument is {@code nullable()}. An argument that is
+		 * {@code optional()} has no {@code presence()}, which would wrap its
+		 * {@code Optional}: {@code nullable()} gives the three states. A parameter with
+		 * an empty value, which is read as {@code null}, is present.
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a {@link Presence} that is validated in the
@@ -2593,6 +2684,158 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		 */
 		public Arguments3ValidatorBuilder<A1, A2, Presence<A3>, R1, R2, Presence<@NonNull R3>> presence() {
 			return new Arguments3ValidatorBuilder<>(this.d1, this.d2, this.d3.withPresence());
+		}
+
+	}
+
+	/**
+	 * The builder after the last argument, which {@code _rest} adds: it creates the
+	 * validator as {@link Arguments3ValidatorBuilder} does and adds no argument, so the
+	 * rest is defined once.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @since 0.18.0
+	 */
+	public static sealed class Complete<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object> permits Rest {
+
+		final Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> builder;
+
+		Complete(Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> builder) {
+			this.builder = builder;
+		}
+
+		/**
+		 * Builds an {@link Arguments3Validator} from the added arguments and the given
+		 * function, as {@link Arguments3ValidatorBuilder#apply} does. The rest is an
+		 * argument: a map whose values are validated, and an empty map if it is
+		 * {@code null}.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values
+		 * @return a new arguments validator
+		 * @throws IllegalArgumentException if two arguments have the same name
+		 */
+		public <X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> apply(
+				Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
+			return this.builder.apply(f);
+		}
+
+		/**
+		 * Builds an {@link Arguments3Validator} from the added arguments and the given
+		 * function that can fail, as {@link Arguments3ValidatorBuilder#flatApply} does.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values or reports
+		 * violations
+		 * @return a new arguments validator
+		 * @throws IllegalArgumentException if two arguments have the same name
+		 */
+		public <X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> flatApply(
+				Function3<? super R1, ? super R2, ? super R3, ? extends Validated<? extends X>> f) {
+			return this.builder.flatApply(f);
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator} that reads the added arguments from a
+		 * {@code Map<String, Object>}, as {@link Arguments3ValidatorBuilder#fromMap}
+		 * does. The rest is read from the keys that no other argument defines, so no key
+		 * is unknown: the validator has no {@code rejectingUnknownProperties()}.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values
+		 * @return a new object input validator
+		 * @throws IllegalStateException as {@link Arguments3ValidatorBuilder#fromMap}
+		 * does, and if an embedded validator does not describe its properties, so that
+		 * the rest cannot be told
+		 * @throws IllegalArgumentException as {@link Arguments3ValidatorBuilder#fromMap}
+		 * does
+		 */
+		public <X extends @Nullable Object> ObjectInputValidator<X> fromMap(
+				Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
+			return this.builder.fromMap(f);
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator} that reads the added arguments like
+		 * {@link #fromMap} and creates the result with the given function that can fail,
+		 * as {@link Arguments3ValidatorBuilder#flatFromMap} does.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values or reports
+		 * violations
+		 * @return a new object input validator
+		 * @throws IllegalStateException as {@link #fromMap} does
+		 * @throws IllegalArgumentException as {@link #fromMap} does
+		 */
+		public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(
+				Function3<? super R1, ? super R2, ? super R3, ? extends Validated<? extends X>> f) {
+			return this.builder.flatFromMap(f);
+		}
+
+		/**
+		 * Builds a validator that reads the added arguments from an object of the given
+		 * reader, as {@link Arguments3ValidatorBuilder#from} does.
+		 * @param <N> the type of the nodes
+		 * @param <X> type of the result
+		 * @param reader the reader of the nodes
+		 * @param f function that creates the result from the validated values
+		 * @return a new validator of a node
+		 * @throws IllegalStateException as {@link #fromMap} does
+		 * @throws UnsupportedOperationException if a nested validator does not know its
+		 * input type
+		 */
+		public <N, X extends @Nullable Object> ValueValidator<N, X> from(InputReader<N> reader,
+				Function3<? super R1, ? super R2, ? super R3, ? extends X> f) {
+			return this.builder.from(reader, f);
+		}
+
+	}
+
+	/**
+	 * The builder after {@code _rest}, which is never {@code null}: the rest can be
+	 * replaced with {@code recover} when a value is invalid.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @since 0.18.0
+	 */
+	public static final class Rest<A1, A2, A3, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object>
+			extends Complete<A1, A2, A3, R1, R2, R3> {
+
+		Rest(Arguments3ValidatorBuilder<A1, A2, A3, R1, R2, R3> builder) {
+			super(builder);
+		}
+
+		/**
+		 * Produces the given value when a value of the rest is invalid, so that the rest
+		 * never fails. With {@code apply}, a {@code null} rest produces it too.
+		 * @param fallback the value produced instead of a failure
+		 * @return a builder that creates the validator
+		 * @throws NullPointerException if {@code fallback} is {@code null}
+		 * @see ValueValidator#recover(Object)
+		 */
+		public Complete<A1, A2, A3, R1, R2, R3> recover(R3 fallback) {
+			return new Complete<>(new Arguments3ValidatorBuilder<>(this.builder.d1, this.builder.d2,
+					this.builder.d3.recovering(fallback)));
+		}
+
+		/**
+		 * Produces the result of the given function when a value of the rest is invalid,
+		 * so that the rest never fails. The function is given the violations, and must
+		 * not return {@code null}.
+		 * @param fallback the function that produces a value from the violations
+		 * @return a builder that creates the validator
+		 * @see ValueValidator#recoverWith(Function)
+		 */
+		public Complete<A1, A2, A3, R1, R2, R3> recoverWith(
+				Function<? super ConstraintViolations, ? extends R3> fallback) {
+			return new Complete<>(new Arguments3ValidatorBuilder<>(this.builder.d1, this.builder.d2,
+					this.builder.d3.recoveringWith(fallback)));
 		}
 
 	}

@@ -25,7 +25,7 @@ import am.ik.yavi.core.Validator;
  *
  * <p>
  * Example: <pre>{@code
- * EnumValidator<Status, Status> validator = EnumValidatorBuilder.<Status>of("status",
+ * EnumValidator<Status, Status> validator = EnumValidatorBuilder.of("status", Status.class,
  *     c -> c.oneOf(Status.ACTIVE)).build();
  * }</pre>
  *
@@ -36,31 +36,18 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 
 	private final Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder;
 
-	private final @Nullable Class<E> type;
+	private final Class<E> type;
 
 	/**
-	 * Returns a builder that validates the value under the given name with the given
-	 * constraints.
+	 * Returns a builder that validates the value of the given enum type under the given
+	 * name with the given constraints. The built validator reports the enum type in its
+	 * description and can validate an untyped input with {@code untyped()}.
 	 *
 	 * <p>
 	 * The name is used as the violation name of every resulting violation. A {@code null}
 	 * value is a violation: the one of a constraint that rejects it, or else
 	 * {@code object.notNull}. It is accepted with {@code nullable()}, {@code optional()}
 	 * or {@code defaultValue(...)} of the validator.
-	 * @param <E> the enum type whose constants are validated
-	 * @param name the property name used as the violation name
-	 * @param constraints the function that configures the constraints
-	 * @return a new builder
-	 */
-	public static <E extends Enum<E>> EnumValidatorBuilder<E> of(String name,
-			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return wrap(b -> b.constraint(Arguments1::arg1, name, constraints));
-	}
-
-	/**
-	 * Creates a builder like {@link #of(String, Function)} that also knows the enum type
-	 * of the value. The built validator reports it in its description and can validate an
-	 * untyped input with {@code untyped()}.
 	 * @param name the property name used in violation names and messages
 	 * @param type the enum type of the value
 	 * @param constraints function that configures the constraints
@@ -82,20 +69,17 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 * conditional constraints or a custom message formatter, in addition to value
 	 * constraints.
 	 * @param <E> the enum type whose constants are validated
+	 * @param type the enum type
 	 * @param builder the function that configures the underlying builder
 	 * @return a new builder
 	 */
-	public static <E extends Enum<E>> EnumValidatorBuilder<E> wrap(
+	public static <E extends Enum<E>> EnumValidatorBuilder<E> wrap(Class<E> type,
 			Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder) {
-		return new EnumValidatorBuilder<>(builder);
-	}
-
-	EnumValidatorBuilder(Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder) {
-		this(builder, null);
+		return new EnumValidatorBuilder<>(builder, type);
 	}
 
 	private EnumValidatorBuilder(Function<ValidatorBuilder<Arguments1<E>>, ValidatorBuilder<Arguments1<E>>> builder,
-			@Nullable Class<E> type) {
+			Class<E> type) {
 		this.builder = builder;
 		this.type = type;
 	}
@@ -112,9 +96,7 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	@Override
 	public <T extends @Nullable Object> EnumValidator<E, T> build(Function<? super E, ? extends T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		final Class<E> type = this.type;
-		return type == null ? new EnumValidator<>(validator, mapper::apply)
-				: new EnumValidator<>(validator, mapper::apply, type);
+		return new EnumValidator<>(validator, mapper::apply, this.type);
 	}
 
 	/**

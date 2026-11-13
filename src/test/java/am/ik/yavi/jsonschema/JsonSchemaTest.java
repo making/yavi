@@ -39,7 +39,7 @@ class JsonSchemaTest {
 			.of("price", c -> c.notNull().positive().fractionDigits(2).integerDigits(6))
 			.build();
 		final ValueValidator<Color, Color> color = EnumValidatorBuilder
-			.<Color>of("color", c -> c.notNull().oneOf(List.of(Color.RED)))
+			.of("color", Color.class, c -> c.notNull().oneOf(List.of(Color.RED)))
 			.build()
 			.defaultValue(Color.BLUE);
 		// compose changes the input, so the description is unknown unless it is supplied

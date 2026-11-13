@@ -648,6 +648,55 @@ Yavi.schema()._string(nameValidator)._integer(ageValidator).apply(Member::new);
 
 Related pull request: [#538](https://github.com/making/yavi/pull/538)
 
+### An enum and an object of a schema are added with their type
+
+A property added without its type could not be read from a map: `fromMap` threw an
+`IllegalStateException` when the validator was built. The methods without a type are
+removed, so a schema serves `apply` and `fromMap` alike.
+
+| Removed | Use instead |
+| --- | --- |
+| `_enum(name)`, `_enum(name, constraints)` of the schema builders | `_enum(name, type)`, `_enum(name, type, constraints)` |
+| `_object(name)`, `_object(name, constraints)` of the schema builders | `_object(name, type)`, `_object(name, type, constraints)`; for a type without a class literal, `_object(Yavi.<List<String>>_object(name, constraints))` |
+| `EnumValidatorBuilder.of(name, constraints)`, `EnumValidatorBuilder.wrap(builder)` | `EnumValidatorBuilder.of(name, type, constraints)`, `EnumValidatorBuilder.wrap(type, builder)` |
+| `new EnumValidator<>(validator, mapper)` | `new EnumValidator<>(validator, mapper, type)` |
+
+```java
+// before
+Yavi.arguments()
+        ._string("name")
+        .<Role>_enum("role", c -> c.oneOf(Role.USER, Role.ADMIN))
+        .<Address>_object("address")
+        .apply(User::new);
+
+// after
+Yavi.schema()
+        ._string("name")
+        ._enum("role", Role.class, c -> c.oneOf(Role.USER, Role.ADMIN))
+        ._object("address", Address.class)
+        .apply(User::new);
+```
+
+The description of such an enum now holds its constants, so its JSON Schema has `enum`.
+
+Related pull request: [#565](https://github.com/making/yavi/pull/565)
+
+### Two arguments of `apply` cannot have the same name
+
+`apply` and `flatApply` throw an `IllegalArgumentException` when two arguments have the
+same name, as `fromMap` does: the validator would describe an object in which one
+property stands for two arguments. Give each argument its own name.
+
+```java
+// before: built a validator whose JSON Schema had one property "value" for both arguments
+Yavi.arguments()._integer("value")._integer("value").apply(Range::new);
+
+// after
+Yavi.schema()._integer("from")._integer("to").apply(Range::new);
+```
+
+Related pull request: [#565](https://github.com/making/yavi/pull/565)
+
 ### `Yavi.arguments()` is deprecated and `YaviArguments` is `YaviSchema`
 
 `Yavi.schema()` is the new name of `Yavi.arguments()`, which still works and is

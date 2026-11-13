@@ -17,7 +17,7 @@ public class UserValidatorTest {
 	Arguments3Validator<String, String, Role, User> validator = Yavi.schema()
 		._string("email", c -> c.notBlank().email())
 		._string("name", c -> c.notBlank())
-		.<Role>_enum("role", c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))
+		._enum("role", Role.class, c -> c.notNull().oneOf(User.Role.USER, User.Role.ADMIN))
 		.apply((email, name, role) -> new User(email, name, role));
 
 	@Test
