@@ -1205,18 +1205,21 @@ class ObjectInputValidatorTest {
 					tuple("object.required", "address.city"));
 		assertThat(violations.details().get(2).params()).containsExactly(Map.entry("type", "integer"));
 		// the first message argument is the label, as a BindingResult of Spring MVC
-		// takes it, and a formatter given later formats every violation
+		// takes it, and a formatter given later formats every violation; one that has a
+		// message for every key does not replace a text, which keeps its key
 		assertThat(violations.get(0).args()[0]).isEqualTo("Token name");
-		final MessageFormatter upperCase = (messageKey, defaultMessageFormat, args, locale) -> messageKey + ":"
+		final MessageFormatter knowsEveryKey = (messageKey, defaultMessageFormat, args, locale) -> messageKey + ":"
 				+ args[0];
-		assertThat(violations.formattedWith(upperCase).messagesByName().values())
+		assertThat(violations.formattedWith(knowsEveryKey).messagesByName().values())
 			.extracting(messages -> messages.get(0))
-			.containsExactly("container.lessThanOrEqual:Token name", "object.type:TTL", "token.ports:Ports",
-					"object.required:Roles", "token.note:Note", "object.required:address.city");
-		assertThat(model.validate(validator.formattingWith(upperCase), input("name", "abc")).errors())
+			.containsExactly("container.lessThanOrEqual:Token name", "TTL must be a number of seconds, not soon",
+					"token.ports:Ports", "Select at least one role", "token.note:Note", "object.required:address.city");
+		assertThat(violations).extracting(ConstraintViolation::localizable)
+			.containsExactly(true, false, true, false, true, true);
+		assertThat(model.validate(validator.formattingWith(knowsEveryKey), input("name", "abc")).errors())
 			.extracting(ConstraintViolation::message)
-			.containsExactly("object.required:TTL", "object.required:Ports", "object.required:Roles", "token.note:Note",
-					"object.required:Address");
+			.containsExactly("object.required:TTL", "object.required:Ports", "Select at least one role",
+					"token.note:Note", "object.required:Address");
 		// the violation of a value that is of the type and the one of null are not
 		// replaced, and a typed argument is labeled too
 		assertThat(model

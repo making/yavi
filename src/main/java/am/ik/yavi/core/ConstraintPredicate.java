@@ -35,26 +35,36 @@ public class ConstraintPredicate<V> {
 
 	private final String messageKey;
 
+	private final boolean localizable;
+
 	private final NullAs nullAs;
 
 	private final List<String> paramNames;
 
 	private final Predicate<V> predicate;
 
+	/**
+	 * Identifies the constraint that this predicate is a part of, which the other parts
+	 * share.
+	 */
+	private final Object constraint;
+
 	private ConstraintPredicate(Predicate<V> predicate, ViolationMessage violationMessage, Supplier<Object[]> args,
 			NullAs nullAs) {
 		this(predicate, violationMessage.messageKey(), violationMessage.defaultMessageFormat(),
-				violationMessage.paramNames(), args, nullAs);
+				violationMessage.paramNames(), violationMessage.localizable(), args, nullAs, new Object());
 	}
 
 	private ConstraintPredicate(Predicate<V> predicate, String messageKey, String defaultMessageFormat,
-			List<String> paramNames, Supplier<Object[]> args, NullAs nullAs) {
+			List<String> paramNames, boolean localizable, Supplier<Object[]> args, NullAs nullAs, Object constraint) {
 		this.predicate = predicate;
 		this.messageKey = messageKey;
 		this.defaultMessageFormat = defaultMessageFormat;
 		this.paramNames = paramNames;
+		this.localizable = localizable;
 		this.args = args;
 		this.nullAs = nullAs;
+		this.constraint = constraint;
 	}
 
 	/**
@@ -138,6 +148,17 @@ public class ConstraintPredicate<V> {
 	}
 
 	/**
+	 * Returns whether a message formatter may look up a message for the
+	 * {@link #messageKey()}; {@code false} for a message given as text (see
+	 * {@link ViolationMessage#localizable()}).
+	 * @return whether the message is localizable
+	 * @since 0.18.0
+	 */
+	public final boolean localizable() {
+		return this.localizable;
+	}
+
+	/**
 	 * Returns a new constraint predicate with the given violation message.
 	 *
 	 * <p>
@@ -148,24 +169,43 @@ public class ConstraintPredicate<V> {
 	 */
 	public ConstraintPredicate<V> overrideMessage(ViolationMessage message) {
 		final List<String> names = message.paramNames().isEmpty() ? this.paramNames : message.paramNames();
-		return new ConstraintPredicate<V>(this.predicate, message.messageKey(), message.defaultMessageFormat(), names,
-				this.args, this.nullAs) {
-			@Override
-			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
-				return ConstraintPredicate.this.violatedValue(target);
-			}
-		};
+		return this.copy(message.messageKey(), message.defaultMessageFormat(), names, message.localizable(),
+				this.constraint);
 	}
 
 	/**
-	 * Returns a new constraint predicate with the given default message format. The
-	 * message key is unchanged.
-	 * @param message the new default message format
-	 * @return a constraint predicate with the given default message format
+	 * Returns a new constraint predicate with the given text as its message. The message
+	 * key and the arguments are kept, and the text is the message even when a message
+	 * formatter knows the key (see {@link ViolationMessage#withText(String)}).
+	 * @param message the text of the message, which may refer to the arguments
+	 * @return a constraint predicate with the given message
 	 */
 	public ConstraintPredicate<V> overrideMessage(String message) {
-		return new ConstraintPredicate<V>(this.predicate, this.messageKey, message, this.paramNames, this.args,
-				this.nullAs) {
+		return this.copy(this.messageKey, message, this.paramNames, false, this.constraint);
+	}
+
+	/**
+	 * Returns the given predicates as the parts of one constraint, whose message
+	 * {@link Constraint#message(String)} replaces together.
+	 */
+	static <V> List<ConstraintPredicate<V>> partsOfOne(List<ConstraintPredicate<V>> predicates) {
+		final Object constraint = new Object();
+		return predicates.stream()
+			.map(p -> p.copy(p.messageKey, p.defaultMessageFormat, p.paramNames, p.localizable, constraint))
+			.toList();
+	}
+
+	/**
+	 * Returns whether this predicate and the given one are parts of the same constraint.
+	 */
+	boolean isPartOfSameConstraintAs(ConstraintPredicate<?> other) {
+		return this.constraint == other.constraint;
+	}
+
+	private ConstraintPredicate<V> copy(String messageKey, String defaultMessageFormat, List<String> paramNames,
+			boolean localizable, Object constraint) {
+		return new ConstraintPredicate<V>(this.predicate, messageKey, defaultMessageFormat, paramNames, localizable,
+				this.args, this.nullAs, constraint) {
 			@Override
 			public Optional<ViolatedValue> violatedValue(@Nullable V target) {
 				return ConstraintPredicate.this.violatedValue(target);

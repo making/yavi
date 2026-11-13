@@ -335,9 +335,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 */
 	public CharSequenceConstraint<T, E> password(
 			Function<CharSequencePasswordPoliciesBuilder<T, E>, List<ConstraintPredicate<E>>> builder) {
-		final List<ConstraintPredicate<E>> predicates = builder.apply(new CharSequencePasswordPoliciesBuilder<>());
-		this.predicates().addAll(predicates);
-		return this;
+		return this.predicates(builder.apply(new CharSequencePasswordPoliciesBuilder<>()));
 	}
 
 	private <U> CharSequenceConstraint<T, E> isValidRepresentationOf(Function<String, U> converter,
@@ -717,8 +715,7 @@ public class CharSequenceConstraint<T, E extends CharSequence>
 	 * @since 0.17.1
 	 */
 	public CharSequenceConstraint<T, E> url(Function<UrlConstraintBuilder<E>, List<ConstraintPredicate<E>>> builder) {
-		this.predicates().addAll(builder.apply(new UrlConstraintBuilder<>(this.size())));
-		return this;
+		return this.predicates(builder.apply(new UrlConstraintBuilder<>(this.size())));
 	}
 
 	/**

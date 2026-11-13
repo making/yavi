@@ -4,11 +4,14 @@
  */
 package am.ik.yavi.core;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.jspecify.annotations.Nullable;
 
@@ -130,25 +133,34 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	}
 
 	/**
-	 * Overrides the default message of the most recently added constraint with the given
-	 * message.
+	 * Reports a violation of the most recently added constraint with the given text
+	 * instead of its message.
+	 *
+	 * <pre>{@code
+	 * c.notBlank().message("Enter your name")
+	 * }</pre>
 	 *
 	 * <p>
-	 * Only the message format changes; the message key and the arguments of the
-	 * constraint are kept. Message arguments such as {@code {0}} and {@code {1}} are
-	 * still substituted.
+	 * The text is the message: a message formatter that has a message for the key of the
+	 * constraint does not replace it (see {@link ViolationMessage#withText(String)}). The
+	 * message key and the arguments of the constraint are kept, so that the violation is
+	 * still known by its key and message arguments such as {@code {0}} and {@code {1}}
+	 * are still substituted. To let a resource bundle localize the message, give a
+	 * {@link ViolationMessage} with a key of its own with
+	 * {@link #message(ViolationMessage)} instead.
 	 * </p>
-	 * @param message the message format to use
+	 *
+	 * <p>
+	 * A constraint made of several predicates, such as
+	 * {@code url(url -> url.protocol("http", "https").build())}, which reports an invalid
+	 * URL and another protocol each with its own key, is given the text for all of them.
+	 * </p>
+	 * @param message the text of the message
 	 * @return this constraint
 	 * @throws IllegalStateException if no constraint has been added yet
 	 */
 	default C message(String message) {
-		ConstraintPredicate<V> predicate = this.predicates().pollLast();
-		if (predicate == null) {
-			throw new IllegalStateException("no constraint found to override!");
-		}
-		this.predicates().addLast(predicate.overrideMessage(message));
-		return this.cast();
+		return this.overrideMessageOfLast(predicate -> predicate.overrideMessage(message));
 	}
 
 	/**
@@ -157,18 +169,30 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 *
 	 * <p>
 	 * Both the message key and the message format are replaced; the arguments of the
-	 * constraint are kept.
+	 * constraint are kept. A constraint made of several predicates is given the message
+	 * for all of them, as with {@link #message(String)}.
 	 * </p>
 	 * @param message the violation message to use
 	 * @return this constraint
 	 * @throws IllegalStateException if no constraint has been added yet
 	 */
 	default C message(ViolationMessage message) {
-		ConstraintPredicate<V> predicate = this.predicates().pollLast();
-		if (predicate == null) {
+		return this.overrideMessageOfLast(predicate -> predicate.overrideMessage(message));
+	}
+
+	private C overrideMessageOfLast(UnaryOperator<ConstraintPredicate<V>> override) {
+		final Deque<ConstraintPredicate<V>> predicates = this.predicates();
+		final ConstraintPredicate<V> last = predicates.pollLast();
+		if (last == null) {
 			throw new IllegalStateException("no constraint found to override!");
 		}
-		this.predicates().addLast(predicate.overrideMessage(message));
+		final Deque<ConstraintPredicate<V>> overridden = new ArrayDeque<>();
+		overridden.addFirst(override.apply(last));
+		for (ConstraintPredicate<V> previous = predicates.peekLast(); previous != null
+				&& previous.isPartOfSameConstraintAs(last); previous = predicates.peekLast()) {
+			overridden.addFirst(override.apply(predicates.removeLast()));
+		}
+		predicates.addAll(overridden);
 		return this.cast();
 	}
 
@@ -289,5 +313,25 @@ public interface Constraint<T, V, C extends Constraint<T, V, C>> {
 	 * @return the mutable queue of predicates
 	 */
 	Deque<ConstraintPredicate<V>> predicates();
+
+	/**
+	 * Adds the given predicates as one constraint: the value has to satisfy each of them,
+	 * a violation is reported for each one that it does not satisfy, and
+	 * {@link #message(String)} or {@link #message(ViolationMessage)} right after replaces
+	 * the message of all of them instead of that of the last one only. This is how a
+	 * constraint made of several predicates, such as
+	 * {@code url(url -> url.protocol("http", "https").build())}, is added.
+	 *
+	 * <p>
+	 * Adding them to {@link #predicates()} directly makes each a constraint of its own.
+	 * </p>
+	 * @param predicates the predicates of the constraint
+	 * @return this constraint
+	 * @since 0.18.0
+	 */
+	default C predicates(List<ConstraintPredicate<V>> predicates) {
+		this.predicates().addAll(ConstraintPredicate.partsOfOne(predicates));
+		return this.cast();
+	}
 
 }

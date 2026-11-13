@@ -806,7 +806,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 			}
 			final ConstraintViolation violation = validated.errors().get(0);
 			final ViolationMessage notNull = ViolationMessage.Default.OBJECT_NOT_NULL;
-			return notNull.messageKey().equals(violation.messageKey())
+			return violation.localizable() && notNull.messageKey().equals(violation.messageKey())
 					&& notNull.defaultMessageFormat().equals(violation.defaultMessageFormat());
 		}
 

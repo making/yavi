@@ -14,7 +14,8 @@ import java.util.List;
  * with {@link Constraint#message(ViolationMessage)}. The message id identifies the
  * message in a resource bundle so that it can be localized by a
  * {@link am.ik.yavi.message.MessageFormatter}, while the default message format is used
- * when no localized message is found.
+ * when no localized message is found. A message {@linkplain #withText(String) written as
+ * text} keeps the id only to name the violation: its format is not replaced.
  *
  * <p>
  * A message can also name its arguments with {@link #paramNames()}, so that a violation
@@ -106,6 +107,64 @@ public interface ViolationMessage {
 	 */
 	default List<String> paramNames() {
 		return List.of();
+	}
+
+	/**
+	 * Returns whether a {@link am.ik.yavi.message.MessageFormatter} may look up a message
+	 * for the key of this message, so that a resource bundle localizes or replaces the
+	 * format. A message made with {@link #withText(String)} is not: its format is the
+	 * message.
+	 * @return {@code true} by default
+	 * @since 0.18.0
+	 */
+	default boolean localizable() {
+		return true;
+	}
+
+	/**
+	 * Returns this message with the given text as its format, which no
+	 * {@link am.ik.yavi.message.MessageFormatter} replaces with a message found for the
+	 * key: the text is shown even when a resource bundle has a message for the key. The
+	 * key and the names of the arguments are kept, so that the violation is still known
+	 * by its key, and the arguments are still substituted.
+	 *
+	 * <pre>{@code
+	 * ViolationMessage.Default.OBJECT_REQUIRED.withText("Select at least one role");
+	 * }</pre>
+	 *
+	 * <p>
+	 * This is the message that a text given in code for one constraint or one property
+	 * becomes, such as {@code message("...")} of a constraint and {@code required("...")}
+	 * of a property. To let a resource bundle localize the text, give a message with a
+	 * key of its own with {@link #of(String, String, String...)} instead.
+	 * @param messageFormat the message format, which may refer to the arguments
+	 * @return a message that is not {@link #localizable()}
+	 * @since 0.18.0
+	 */
+	default ViolationMessage withText(String messageFormat) {
+		final String messageKey = this.messageKey();
+		final List<String> names = this.paramNames();
+		return new ViolationMessage() {
+			@Override
+			public String defaultMessageFormat() {
+				return messageFormat;
+			}
+
+			@Override
+			public String messageKey() {
+				return messageKey;
+			}
+
+			@Override
+			public List<String> paramNames() {
+				return names;
+			}
+
+			@Override
+			public boolean localizable() {
+				return false;
+			}
+		};
 	}
 
 	/**

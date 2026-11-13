@@ -705,11 +705,14 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 | Modifier | What it changes |
 | --- | --- |
 | `label("Token name")` | `{0}` of every message of the property and of its elements (`roles`, `roles[1]`). The name, the path and the pointer of a violation are unchanged, so `messagesByName()` and a `ViolationDetail` still have `name`. `violation.label()` returns the label. |
-| `typeMessage(format)` | The message of `object.type` of the property and of its elements. `{1}` is the name of the type and `{2}` the value. |
-| `required(format)` | The message of `object.required`: an absent key, and text without a value. After `optional()`, `nullable()` or `defaultValue(...)` it also requires the key, as `required()` does. |
+| `typeMessage(text)` | The message of `object.type` of the property and of its elements. `{1}` is the name of the type and `{2}` the value. |
+| `required(text)` | The message of `object.required`: an absent key, and text without a value. After `optional()`, `nullable()` or `defaultValue(...)` it also requires the key, as `required()` does. |
 
+* A text is the message, as that of `message("...")` of a constraint is: a formatter that
+  has a message for `object.required` does not replace it (see below).
 * `typeMessage` and `required` take a `ViolationMessage` too, which replaces the message
-  key as well: `required(ViolationMessage.of("token.roles", "Select at least one role"))`.
+  key as well, so that a resource bundle can localize it:
+  `required(ViolationMessage.of("token.roles", "Select at least one role"))`.
 * Write `label` and `typeMessage` right after the property is added, before `optional()`
   and the like. `required(...)` is the last modifier: `.required("...").optional()` does
   not compile.
@@ -738,6 +741,24 @@ violations.labeled(violation -> messageSource.getMessage("label." + violation.na
 ```
 
 `labeled` leaves a violation as it is when the function returns `null`.
+
+A formatter looks up a message for the key of a violation, but not for a text written in
+code for one constraint or one property: `message("...")`, `required("...")` and
+`typeMessage("...")`. The more specific text wins over a message that the bundle has for
+every violation of the key, and the violation keeps the key:
+
+```java
+// messages.properties: object.required={0} is required.
+tokenValidator.formattingWith(formatter).validate(Map.of()).errors().messagesByName();
+// {name=[Token name is required.], ttl=[ttl is required.], roles=[Select at least one role]}
+```
+
+| API | What it does |
+| --- | --- |
+| `ViolationMessage#withText(text)` | The message with the key and the argument names of this one and the text as its format, which no formatter replaces. `OBJECT_REQUIRED.withText("...")` is what `required("...")` gives. |
+| `ViolationMessage#localizable()`, `ConstraintViolation#localizable()` | `false` for a text. |
+| `MessageFormatter#format(String, Object[], Locale)` | Formats a text. The default formats it with `MessageFormat`; override it to format a text as the formatter formats the other messages. |
+| `Constraint#predicates(List)` | Adds several predicates as one constraint, as `url(url -> ...)` and `password(...)` do, so that `message(...)` right after replaces the message of each. |
 
 ### Showing the form again in Spring MVC
 
@@ -1052,6 +1073,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `coercingStrings()`, `readingParameters()` | [#542](https://github.com/making/yavi/pull/542), [#543](https://github.com/making/yavi/pull/543) |
 | `BindingResult` of request parameters in Spring MVC (documentation) | [#569](https://github.com/making/yavi/pull/569) |
 | `label`, `required(message)`, `typeMessage`, `formattingWith`, `labeled`, `formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
+| A text written in code is not looked up, `ViolationMessage#withText`, `localizable()`, `Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |

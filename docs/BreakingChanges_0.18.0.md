@@ -9,6 +9,7 @@ most users first:
 * [A validated value is required by default](#a-validated-value-is-required-by-default)
 * [`ViolationDetail` is a record](#violationdetail-is-a-record)
 * [The violations of a lifted collection are located under the index](#the-violations-of-a-lifted-collection-are-located-under-the-index)
+* [A message written in code is not replaced by the formatter](#a-message-written-in-code-is-not-replaced-by-the-formatter)
 * [The message of a value without a name](#the-message-of-a-value-without-a-name)
 * [The nullness annotations are those of JSpecify](#the-nullness-annotations-are-those-of-jspecify)
 * [Other changes](#other-changes)
@@ -472,6 +473,114 @@ address was `street[1]`, which reads as the second element of `street`.
 
 * [#544](https://github.com/making/yavi/pull/544) locates the violations of lifted
   elements under the index and removes `indexed(int)`.
+
+## A message written in code is not replaced by the formatter
+
+A text given in code with `message(String)` of a constraint, or with `required(String)`
+and `typeMessage(String)` of a property, is the message of the violation. A
+`MessageFormatter` such as `MessageSourceMessageFormatter` no longer replaces it with a
+message it has for the message key of the constraint; it only substitutes the arguments.
+The message key is kept.
+
+```java
+// messages.properties: charSequence.notBlank={0} must not be blank.
+Validator<User> validator = ValidatorBuilder.<User>of()
+        .messageFormatter(new MessageSourceMessageFormatter(messageSource::getMessage))
+        ._string(User::name, "name", c -> c.notBlank().message("Enter your name"))
+        .build();
+
+validator.validate(new User("")).get(0).message();
+// before: name must not be blank.
+// after:  Enter your name
+```
+
+`message(...)` right after a constraint made of several predicates, `url(url -> ...)` and
+`password(policies -> ...)`, replaces the message of each of them, not that of the last
+one only.
+
+```java
+._string(Site::url, "url", c -> c.url(url -> url.protocol("http", "https").build()).message("Enter an http URL"))
+// "javascript:alert(1)" (charSequence.url)
+// before: "url" must be a valid URL
+// after:  Enter an http URL
+```
+
+### Who is affected
+
+Affected:
+
+* A `message(String)`, `required(String)` or `typeMessage(String)` whose message key the
+  formatter of the validator has a message for, typically a
+  `MessageSourceMessageFormatter` with a resource bundle that localizes the default
+  messages. The text is now shown in every locale.
+* `message(...)` right after `url(url -> ...)` with `protocol`, `host` or `port`, or after
+  `password(...)` with more than one policy.
+* A `MessageFormatter` of your own that does more than look up a message: a text is
+  given to the new `format(String messageFormat, Object[] args, Locale locale)`, which
+  formats it with `MessageFormat` unless it is overridden.
+* `ConstraintViolation.builder().name(...).message(String)`, whose message key `_` is not
+  looked up any more.
+
+Not affected:
+
+* `message(ViolationMessage)`, `required(ViolationMessage)` and
+  `typeMessage(ViolationMessage)`, which are looked up by their own key as before.
+* The message key and the arguments of a violation, and so a `ViolationDetail`.
+* A validator with the default `SimpleMessageFormatter`, which looks up nothing.
+* `violations.apply(bindingResult::rejectValue)` of Spring MVC: Spring looks the message
+  key up again, so a message of the bundle still wins there. `violation.localizable()`
+  tells a text from a message to look up.
+
+### Migration
+
+#### 1. Remove a text that the formatter replaced
+
+The text was not shown in 0.17. Without it, the violation reads as it did.
+
+```java
+// before
+c -> c.notBlank().message("Enter your name")
+
+// after: the message of the bundle, as in 0.17
+c -> c.notBlank()
+```
+
+#### 2. Give a text to localize a key of its own
+
+```java
+// after
+c -> c.notBlank().message(ViolationMessage.of("user.name.notBlank", "Enter your name"))
+// messages_ja.properties: user.name.notBlank=名前を入力してください
+```
+
+#### 3. Give one predicate of `url(...)` or `password(...)` a message of its own
+
+```java
+// before: the text is that of the protocol only
+c -> c.url(url -> url.protocol("http", "https").build()).message("Enter an http URL")
+
+// after: the same messages as 0.17
+c -> c.url(url -> {
+    List<ConstraintPredicate<String>> predicates = new ArrayList<>(url.protocol("http", "https").build());
+    predicates.set(1, predicates.get(1).overrideMessage("Enter an http URL"));
+    return predicates;
+})
+```
+
+### Why
+
+A text written for one property is more specific than a message that a bundle has for
+every violation of the key. In 0.17 the more specific one silently lost as soon as the
+application localized the default messages. The key is kept so that a client that tells
+violations apart by the key still does.
+
+`message(...)` replaced the message of the last predicate that a constraint added, which
+for `url(...)` depends on how it is built: the text was shown for `ftp://example.com`
+(`charSequence.url.protocol`) and not for `javascript:alert(1)` (`charSequence.url`).
+
+### Related pull requests
+
+* [#575](https://github.com/making/yavi/pull/575)
 
 ## The message of a value without a name
 

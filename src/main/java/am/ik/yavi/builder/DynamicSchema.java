@@ -231,15 +231,16 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 		}
 
 		/**
-		 * Reports a missing value of the last added property with the given message
-		 * format instead of the one of {@code object.required}. The message key and the
+		 * Reports a missing value of the last added property with the given text instead
+		 * of the message of {@code object.required}. The text is the message: a message
+		 * formatter that has a message for {@code object.required} does not replace it
+		 * (see {@link ViolationMessage#withText(String)}). The message key and the
 		 * arguments are kept: <code>{0}</code> is the name or the label of the property.
-		 * @param messageFormat the message format of a missing value
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a schema whose last property has no further modifier
 		 */
 		public DynamicSchema<V> required(String messageFormat) {
-			return this
-				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**
@@ -304,14 +305,14 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 
 		/**
 		 * Requires the key of the last added property, as {@link #required()} does, and
-		 * reports a missing value with the given message format instead of the one of
-		 * {@code object.required}.
-		 * @param messageFormat the message format of a missing value
+		 * reports a missing value with the given text instead of the message of
+		 * {@code object.required}, which a message formatter does not replace (see
+		 * {@link ViolationMessage#withText(String)}).
+		 * @param messageFormat the text of the message of a missing value
 		 * @return a schema whose last property requires its key
 		 */
 		public DynamicSchema<V> required(String messageFormat) {
-			return this
-				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+			return this.required(ViolationMessage.Default.OBJECT_REQUIRED.withText(messageFormat));
 		}
 
 		/**
