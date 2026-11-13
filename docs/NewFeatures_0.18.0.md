@@ -40,7 +40,8 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
 ```
 
 * The name can be omitted for a value that is not a property, such as the element of a
-  list: `Yavi._string(c -> c.notBlank())`.
+  list: `Yavi._string(c -> c.notBlank())`. Its message says "The value" in place of the
+  name (`The value must not be blank`).
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` and
   `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it.
 
@@ -436,6 +437,19 @@ signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[a
   space. A `String` value is left as it is; `c.trim()` trims it.
 * `booleanWords()`: `true`, `1`, `yes`, `on` and `false`, `0`, `no`, `off` in any case.
 
+`recover` suits a parameter that must not fail a request:
+
+```java
+record PageRequest(Integer page, Integer size) {}
+
+ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
+        ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
+        ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
+        .fromMap(PageRequest::new)
+        .readingParameters();
+
+pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
+```
 ## Handling the result
 
 `Validated` is a sealed interface of the records `Valid` and `Invalid`, so a result is

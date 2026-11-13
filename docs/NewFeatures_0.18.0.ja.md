@@ -35,7 +35,7 @@ StringValidator<String> emailValidator = StringValidatorBuilder.of("email", c ->
 StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank().email());
 ```
 
-* リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。
+* リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。そのメッセージは、名前の代わりに「The value」と表示します（`The value must not be blank`）。
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。
 
 ### 制約の前に値を変換する
@@ -375,6 +375,19 @@ signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[a
 * `trimming()`: 空白だけの文字列は `null` と同じように検証されます。数値、真偽値、enum の定数、日時の値として読む文字列は、前後の空白を除いて読み取られます。`String` の値はそのままです（`c.trim()` でトリムします）。
 * `booleanWords()`: `true`、`1`、`yes`、`on` と `false`、`0`、`no`、`off` を、大文字と小文字を区別せずに真偽値として読み取ります。
 
+リクエストを失敗させたくないパラメータには `recover` が使えます。
+
+```java
+record PageRequest(Integer page, Integer size) {}
+
+ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
+        ._integer("page", c -> c.greaterThanOrEqual(0)).recover(0)
+        ._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)
+        .fromMap(PageRequest::new)
+        .readingParameters();
+
+pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
+```
 ## 結果を扱う
 
 `Validated` は、record の `Valid` と `Invalid` からなる sealed インターフェースになりました。結果は網羅的な `switch` で扱えます。
