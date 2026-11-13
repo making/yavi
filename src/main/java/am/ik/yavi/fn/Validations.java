@@ -37,13 +37,9 @@ import static java.util.function.Function.identity;
  *
  * @since 0.6.0
  */
-public class Validations {
+public final class Validations {
 
-	/**
-	 * Creates an instance of this class. All methods are static, so an instance is
-	 * normally not needed.
-	 */
-	public Validations() {
+	private Validations() {
 	}
 
 	/**
@@ -526,10 +522,9 @@ public class Validations {
 	 * @param <R> the type of the result
 	 * @param <E> the type of the errors of the combined validations
 	 * @param <T1> the value type of validation 1
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object> Validation<E, R> apply(
 			Function1<T1, R> f, Validation<E, T1> v1) {
 		return combine(v1).apply(f);
 	}
@@ -545,10 +540,9 @@ public class Validations {
 	 * @param <E> the type of the errors of the combined validations
 	 * @param <T1> the value type of validation 1
 	 * @param <T2> the value type of validation 2
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object> Validation<E, R> apply(
 			Function2<T1, T2, R> f, Validation<E, T1> v1, Validation<E, T2> v2) {
 		return combine(v1, v2).apply(f);
 	}
@@ -566,10 +560,9 @@ public class Validations {
 	 * @param <T1> the value type of validation 1
 	 * @param <T2> the value type of validation 2
 	 * @param <T3> the value type of validation 3
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object> Validation<E, R> apply(
 			Function3<T1, T2, T3, R> f, Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3) {
 		return combine(v1, v2, v3).apply(f);
 	}
@@ -589,10 +582,9 @@ public class Validations {
 	 * @param <T2> the value type of validation 2
 	 * @param <T3> the value type of validation 3
 	 * @param <T4> the value type of validation 4
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object> Validation<E, R> apply(
 			Function4<T1, T2, T3, T4, R> f, Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4) {
 		return combine(v1, v2, v3, v4).apply(f);
@@ -615,10 +607,9 @@ public class Validations {
 	 * @param <T3> the value type of validation 3
 	 * @param <T4> the value type of validation 4
 	 * @param <T5> the value type of validation 5
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object> Validation<E, R> apply(
 			Function5<T1, T2, T3, T4, T5, R> f, Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5) {
 		return combine(v1, v2, v3, v4, v5).apply(f);
@@ -643,10 +634,9 @@ public class Validations {
 	 * @param <T4> the value type of validation 4
 	 * @param <T5> the value type of validation 5
 	 * @param <T6> the value type of validation 6
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object> Validation<E, R> apply(
 			Function6<T1, T2, T3, T4, T5, T6, R> f, Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3,
 			Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6) {
 		return combine(v1, v2, v3, v4, v5, v6).apply(f);
@@ -673,10 +663,9 @@ public class Validations {
 	 * @param <T5> the value type of validation 5
 	 * @param <T6> the value type of validation 6
 	 * @param <T7> the value type of validation 7
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object> Validation<E, R> apply(
 			Function7<T1, T2, T3, T4, T5, T6, T7, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7) {
@@ -706,10 +695,9 @@ public class Validations {
 	 * @param <T6> the value type of validation 6
 	 * @param <T7> the value type of validation 7
 	 * @param <T8> the value type of validation 8
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object> Validation<E, R> apply(
 			Function8<T1, T2, T3, T4, T5, T6, T7, T8, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8) {
@@ -741,10 +729,9 @@ public class Validations {
 	 * @param <T7> the value type of validation 7
 	 * @param <T8> the value type of validation 8
 	 * @param <T9> the value type of validation 9
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object> Validation<E, R> apply(
 			Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9) {
@@ -778,10 +765,9 @@ public class Validations {
 	 * @param <T8> the value type of validation 8
 	 * @param <T9> the value type of validation 9
 	 * @param <T10> the value type of validation 10
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object> Validation<E, R> apply(
 			Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9, Validation<E, T10> v10) {
@@ -817,10 +803,9 @@ public class Validations {
 	 * @param <T9> the value type of validation 9
 	 * @param <T10> the value type of validation 10
 	 * @param <T11> the value type of validation 11
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object> Validation<E, R> apply(
 			Function11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R> f, Validation<E, T1> v1, Validation<E, T2> v2,
 			Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5, Validation<E, T6> v6,
 			Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9, Validation<E, T10> v10,
@@ -859,10 +844,9 @@ public class Validations {
 	 * @param <T10> the value type of validation 10
 	 * @param <T11> the value type of validation 11
 	 * @param <T12> the value type of validation 12
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object> Validation<E, R> apply(
 			Function12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5,
 			Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -903,10 +887,9 @@ public class Validations {
 	 * @param <T11> the value type of validation 11
 	 * @param <T12> the value type of validation 12
 	 * @param <T13> the value type of validation 13
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object> Validation<E, R> apply(
 			Function13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5,
 			Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -949,10 +932,9 @@ public class Validations {
 	 * @param <T12> the value type of validation 12
 	 * @param <T13> the value type of validation 13
 	 * @param <T14> the value type of validation 14
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object> Validation<E, R> apply(
 			Function14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5,
 			Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -998,10 +980,9 @@ public class Validations {
 	 * @param <T13> the value type of validation 13
 	 * @param <T14> the value type of validation 14
 	 * @param <T15> the value type of validation 15
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object, T15 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object, T15 extends @Nullable Object> Validation<E, R> apply(
 			Function15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> f, Validation<E, T1> v1,
 			Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4, Validation<E, T5> v5,
 			Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8, Validation<E, T9> v9,
@@ -1049,10 +1030,9 @@ public class Validations {
 	 * @param <T14> the value type of validation 14
 	 * @param <T15> the value type of validation 15
 	 * @param <T16> the value type of validation 16
-	 * @param <V> the concrete validation type returned
 	 * @return the successful result of the function or the accumulated errors
 	 */
-	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object, T15 extends @Nullable Object, T16 extends @Nullable Object, V extends Validation<E, R>> V apply(
+	public static <R extends @Nullable Object, E, T1 extends @Nullable Object, T2 extends @Nullable Object, T3 extends @Nullable Object, T4 extends @Nullable Object, T5 extends @Nullable Object, T6 extends @Nullable Object, T7 extends @Nullable Object, T8 extends @Nullable Object, T9 extends @Nullable Object, T10 extends @Nullable Object, T11 extends @Nullable Object, T12 extends @Nullable Object, T13 extends @Nullable Object, T14 extends @Nullable Object, T15 extends @Nullable Object, T16 extends @Nullable Object> Validation<E, R> apply(
 			Function16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, R> f,
 			Validation<E, T1> v1, Validation<E, T2> v2, Validation<E, T3> v3, Validation<E, T4> v4,
 			Validation<E, T5> v5, Validation<E, T6> v6, Validation<E, T7> v7, Validation<E, T8> v8,

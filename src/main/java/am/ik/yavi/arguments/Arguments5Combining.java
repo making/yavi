@@ -6,9 +6,9 @@ package am.ik.yavi.arguments;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValidatedCombining5;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.fn.Function5;
-import am.ik.yavi.fn.Validations;
 import java.util.Locale;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
@@ -84,22 +84,24 @@ public class Arguments5Combining<A, R1 extends @Nullable Object, R2 extends @Nul
 		return new Arguments1Validator<A, X>() {
 			@Override
 			public Validated<X> validate(@Nullable A a, Locale locale, ConstraintContext constraintContext) {
-				return Validations.apply(f::apply, Arguments5Combining.this.v1.validate(a, locale, constraintContext),
+				return new ValidatedCombining5<>(Arguments5Combining.this.v1.validate(a, locale, constraintContext),
 						Arguments5Combining.this.v2.validate(a, locale, constraintContext),
 						Arguments5Combining.this.v3.validate(a, locale, constraintContext),
 						Arguments5Combining.this.v4.validate(a, locale, constraintContext),
-						Arguments5Combining.this.v5.validate(a, locale, constraintContext));
+						Arguments5Combining.this.v5.validate(a, locale, constraintContext))
+					.apply(f::apply);
 			}
 
 			@Override
 			public Arguments1Validator<A, Supplier<X>> lazy() {
-				return (a, locale, constraintContext) -> Validations.apply(
-						(r1, r2, r3, r4, r5) -> () -> f.apply(r1, r2, r3, r4, r5),
-						Arguments5Combining.this.v1.validate(a, locale, constraintContext),
-						Arguments5Combining.this.v2.validate(a, locale, constraintContext),
-						Arguments5Combining.this.v3.validate(a, locale, constraintContext),
-						Arguments5Combining.this.v4.validate(a, locale, constraintContext),
-						Arguments5Combining.this.v5.validate(a, locale, constraintContext));
+				return (a, locale,
+						constraintContext) -> new ValidatedCombining5<>(
+								Arguments5Combining.this.v1.validate(a, locale, constraintContext),
+								Arguments5Combining.this.v2.validate(a, locale, constraintContext),
+								Arguments5Combining.this.v3.validate(a, locale, constraintContext),
+								Arguments5Combining.this.v4.validate(a, locale, constraintContext),
+								Arguments5Combining.this.v5.validate(a, locale, constraintContext))
+							.apply((r1, r2, r3, r4, r5) -> () -> f.apply(r1, r2, r3, r4, r5));
 			}
 		};
 	}

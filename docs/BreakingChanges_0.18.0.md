@@ -556,6 +556,82 @@ Validated<Integer> number = validated.<Integer>map(Integer::valueOf);
 Related pull requests: [#537](https://github.com/making/yavi/pull/537),
 [#549](https://github.com/making/yavi/pull/549)
 
+### A combination of validation results returns a declared type
+
+`apply` of a combination returned a type that the caller chose, and the compiler did not
+check the choice. It now returns the type it is declared with:
+
+* `Validated#combine` returns the new `ValidatedCombiningN`, whose `apply` returns
+  `Validated<R>`.
+* `Validation#apply`, `CombiningN#apply` and `Validations.apply` return
+  `Validation<E, R>`.
+* `Validation#yieldSuccess` and `yieldFailure` are removed.
+
+Code that combines `Validated` results with `combine` and assigns the result to a
+`Validated` compiles as it is. The result is a `Validated` also with `var` and in a
+`switch` now.
+
+```java
+// before
+Validated<Address> address = Validations.apply(Address::new, country, street);
+Validated<Address> address = Validations.combine(country, street).apply(Address::new);
+Validated<Address> address = country.combine(street).<Address, Validated<Address>>apply(Address::new);
+
+// after
+Validated<Address> address = country.combine(street).apply(Address::new);
+```
+
+A combination that starts with a `Validation<ConstraintViolation, T>` returns a
+`Validation`, which is not assignable to a `Validated`. Convert the first one with
+`Validated.of`. Before, the last validation of the combination decided the type at run
+time, and the assignment failed with a `ClassCastException` if that one was not a
+`Validated`.
+
+```java
+Validation<ConstraintViolation, Country> country = ...;
+
+// before
+Validated<Address> address = country.combine(street).apply(Address::new);
+
+// after
+Validated<Address> address = Validated.of(country).combine(street).apply(Address::new);
+```
+
+An implementation of `Validation` that overrode `yieldSuccess` and `yieldFailure` to
+return its own type overrides `map`, `apply` and `combine` instead, as `Validated` does.
+
+Related pull request: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+
+### Deprecated and redundant members are removed
+
+| Removed | Use instead |
+| --- | --- |
+| `ValueValidator#andThen(Function)`, `ArgumentsNValidator#andThen(Function)` | `map(Function)`. `andThen(ValueValidator)` is not affected. |
+| `new ConstraintViolation(...)` | `ConstraintViolation.builder()` or `ConstraintViolation.of(...)` |
+| `new SimpleMessageFormatter()` | `SimpleMessageFormatter.getInstance()` |
+| `new Validations()`, `new Functions()` | Nothing. They have static methods only. |
+| The field `Validation.Success#value` | `value()` |
+
+```java
+// before
+new ConstraintViolation("name", "notBlank", "\"{0}\" must not be blank", new Object[] { "name", "" },
+        new SimpleMessageFormatter(), Locale.ENGLISH);
+
+// after
+ConstraintViolation.builder()
+        .name("name")
+        .messageKey("notBlank")
+        .defaultMessageFormat("\"{0}\" must not be blank")
+        .args("name", "")
+        .locale(Locale.ENGLISH)
+        .build();
+```
+
+`Validation.Success` and `Validation.Failure` are records. `toString()` returns
+`Success[value=a]` and `Failure[errors=[e]]`.
+
+Related pull request: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+
 ### The constructors of `ArgumentsNValidatorBuilder` are removed
 
 ```java

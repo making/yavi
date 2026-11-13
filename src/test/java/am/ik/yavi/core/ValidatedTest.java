@@ -135,7 +135,7 @@ class ValidatedTest {
 	}
 
 	@Test
-	void mapAndFlatMapReturnValidated() {
+	void mapFlatMapAndCombineReturnValidated() {
 		// usable as an argument and with var, without a target type
 		final Validated<String> validated = Validated.successWith("80");
 		assertThat(describe(validated.map(Integer::valueOf))).isEqualTo("valid 80");
@@ -148,6 +148,13 @@ class ValidatedTest {
 		// a validation that is not a Validated is converted
 		assertThat(validated.flatMap(s -> Validation.<ConstraintViolation, Integer>success(s.length())))
 			.isEqualTo(Validated.successWith(2));
+		// and so is one that is combined with a Validated
+		assertThat(describe(validated.combine(Validation.<ConstraintViolation, Integer>success(1))
+			.combine(failed)
+			.apply((s, i, j) -> s + i + j))).isEqualTo("invalid 1");
+		assertThat(
+				describe(validated.combine(Validation.<ConstraintViolation, Integer>success(1)).apply((s, i) -> s + i)))
+			.isEqualTo("valid 801");
 	}
 
 	@Test

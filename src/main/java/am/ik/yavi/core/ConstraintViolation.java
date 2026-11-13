@@ -88,30 +88,6 @@ public class ConstraintViolation {
 	 */
 	private final String separator;
 
-	/**
-	 * Creates a new constraint violation.
-	 *
-	 * <p>
-	 * The {@link #path()} of the violation is a single property segment holding the name.
-	 * @param name the field or property name that this constraint violation applies to
-	 * @param messageKey the id used to look up localized messages
-	 * @param defaultMessageFormat the default message format to use when no localized
-	 * message is found
-	 * @param args the arguments to be used when formatting the message
-	 * @param messageFormatter the message formatter to be used; {@code null} selects
-	 * {@link SimpleMessageFormatter#getInstance()}
-	 * @param locale the locale to be used for message localization; {@code null} selects
-	 * the default locale
-	 * @deprecated Use {@link #builder()} instead for a more fluent and type-safe API
-	 */
-	@Deprecated
-	public ConstraintViolation(String name, String messageKey, String defaultMessageFormat, Object @Nullable [] args,
-			@Nullable MessageFormatter messageFormatter, @Nullable Locale locale) {
-		this(name, null, DEFAULT_SEPARATOR, messageKey, defaultMessageFormat, args == null ? new Object[0] : args,
-				messageFormatter == null ? SimpleMessageFormatter.getInstance() : messageFormatter,
-				locale == null ? Locale.getDefault() : locale);
-	}
-
 	private ConstraintViolation(String name, @Nullable List<PathSegment> path, String separator, String messageKey,
 			String defaultMessageFormat, Object[] args, MessageFormatter messageFormatter, Locale locale) {
 		this.name = name;
@@ -212,7 +188,7 @@ public class ConstraintViolation {
 	 *
 	 * <pre>{@code
 	 * ConstraintViolation violation = ...;
-	 * String message = violation.message(new SimpleMessageFormatter());
+	 * String message = violation.message(SimpleMessageFormatter.getInstance());
 	 * }</pre>
 	 * @param messageFormatter the message formatter to use for formatting the message
 	 * @return the formatted message using the provided formatter
