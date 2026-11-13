@@ -98,7 +98,7 @@ class ValidatedTest {
 		assertThat(lifted).extracting(ConstraintViolation::path)
 			.containsExactly(
 					List.of(new Property("orders"), new Index(1), new Property("address"), new Property("street")));
-		final ValueValidator<Iterable<String>, Set<String>> emails = StringValidatorBuilder
+		final ValueValidator<Iterable<? extends String>, Set<String>> emails = StringValidatorBuilder
 			.of("email", c -> c.notBlank().email())
 			.build()
 			.liftSet()

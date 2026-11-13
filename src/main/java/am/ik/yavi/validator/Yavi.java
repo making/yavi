@@ -739,7 +739,7 @@ public final class Yavi {
 	 * {@code _list(name, elementValidator, constraints)} of {@link YaviSchema}.
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Iterable<String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.trim().notBlank()),
+	 * ValueValidator<Iterable<? extends String>, List<String>> tags = Yavi._list(Yavi._string(c -> c.trim().notBlank()),
 	 *     c -> c.notEmpty().lessThanOrEqual(10).unique());
 	 * }</pre>
 	 * @param <E> the type of the elements to validate
@@ -976,7 +976,8 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_map(ValueValidator, Function)
 	 */
-	public static <V, T> ValueValidator<Map<String, V>, Map<String, T>> _map(ValueValidator<V, T> valueValidator) {
+	public static <V, T> ValueValidator<Map<String, ? extends V>, Map<String, T>> _map(
+			ValueValidator<V, T> valueValidator) {
 		return _map(valueValidator, Function.identity());
 	}
 
@@ -993,7 +994,7 @@ public final class Yavi {
 	 * added with {@code _map(name, valueValidator, constraints)} of {@link YaviSchema}.
 	 *
 	 * <pre>{@code
-	 * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> prices = Yavi
+	 * ValueValidator<Map<String, ? extends BigDecimal>, Map<String, BigDecimal>> prices = Yavi
 	 *     ._map(Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty());
 	 * }</pre>
 	 * @param <V> the type of the values to validate
@@ -1003,7 +1004,8 @@ public final class Yavi {
 	 * @return a validator of the map
 	 * @since 0.18.0
 	 */
-	public static <V, T> ValueValidator<Map<String, V>, Map<String, T>> _map(ValueValidator<V, T> valueValidator,
+	public static <V, T> ValueValidator<Map<String, ? extends V>, Map<String, T>> _map(
+			ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return MapValidatorBuilder.of(valueValidator, constraints).build();
 	}

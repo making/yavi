@@ -1605,7 +1605,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Keyed<A1, A2, Map<String, V>, R1, R2, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Keyed<A1, A2, Map<String, ? extends V>, R1, R2, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
 		return new Arguments3ValidatorBuilder.Keyed<>(this.d1, this.d2,
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
@@ -1631,7 +1631,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Keyed<A1, A2, Map<String, V>, R1, R2, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Keyed<A1, A2, Map<String, ? extends V>, R1, R2, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new Arguments3ValidatorBuilder.Keyed<>(this.d1, this.d2,
@@ -1686,7 +1686,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Rest<A1, A2, Map<String, V>, R1, R2, Map<String, T>> _rest(
+	public <V, T extends @Nullable Object> Arguments3ValidatorBuilder.Rest<A1, A2, Map<String, ? extends V>, R1, R2, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
 		return new Arguments3ValidatorBuilder.Rest<>(
 				new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.rest(valueValidator)));
@@ -1699,7 +1699,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments3ValidatorBuilder.Rest<A1, A2, Map<String, Object>, R1, R2, Map<String, @Nullable Object>> _rest() {
+	public Arguments3ValidatorBuilder.Rest<A1, A2, Map<String, ?>, R1, R2, Map<String, @Nullable Object>> _rest() {
 		return new Arguments3ValidatorBuilder.Rest<>(
 				new Arguments3ValidatorBuilder<>(this.d1, this.d2, ArgumentDefinition.rest()));
 	}
@@ -2309,7 +2309,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public Arguments2ValidatorBuilder<A1, Presence<A2>, R1, Presence<@NonNull R2>> presence() {
+		public Arguments2ValidatorBuilder<A1, Presence<? extends A2>, R1, Presence<@NonNull R2>> presence() {
 			return new Arguments2ValidatorBuilder<>(this.d1, this.d2.withPresence());
 		}
 
@@ -2328,9 +2328,9 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 	 * @since 0.18.0
 	 */
 	public static final class KeyedList<A1, E, R1 extends @Nullable Object, T extends @Nullable Object>
-			extends Keyed<A1, List<E>, R1, List<T>> {
+			extends Keyed<A1, List<? extends E>, R1, List<T>> {
 
-		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<List<E>, List<T>> d2) {
+		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<List<? extends E>, List<T>> d2) {
 			super(d1, d2);
 		}
 
@@ -2346,7 +2346,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * @throws IllegalArgumentException if the separator is empty
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, List<E>, R1, List<T>> splitBy(String separator) {
+		public Keyed<A1, List<? extends E>, R1, List<T>> splitBy(String separator) {
 			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
 		}
 
@@ -2377,7 +2377,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * @throws IllegalArgumentException if the pattern matches the empty string
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, List<E>, R1, List<T>> splitBy(Pattern separator) {
+		public Keyed<A1, List<? extends E>, R1, List<T>> splitBy(Pattern separator) {
 			return new Keyed<>(this.d1, this.d2.separatedBy(separator));
 		}
 
@@ -2903,7 +2903,7 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public Arguments2ValidatorBuilder<A1, Presence<A2>, R1, Presence<@NonNull R2>> presence() {
+		public Arguments2ValidatorBuilder<A1, Presence<? extends A2>, R1, Presence<@NonNull R2>> presence() {
 			return new Arguments2ValidatorBuilder<>(this.d1, this.d2.withPresence());
 		}
 

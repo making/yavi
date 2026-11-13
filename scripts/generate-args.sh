@@ -1299,7 +1299,7 @@ cat <<EOD
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default <C extends Collection<X>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+	default <C extends Collection<X>> Arguments1Validator<Iterable<? extends A1>, C> liftCollection(
 			Supplier<C> factory) {
 		return Arguments1Validator.from(ValueValidator.super.liftCollection(factory));
 	}
@@ -1312,7 +1312,7 @@ cat <<EOD
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Iterable<A1>, List<X>> liftList() {
+	default Arguments1Validator<Iterable<? extends A1>, List<X>> liftList() {
 		return Arguments1Validator.from(ValueValidator.super.liftList());
 	}
 
@@ -1324,7 +1324,7 @@ cat <<EOD
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Iterable<A1>, Set<X>> liftSet() {
+	default Arguments1Validator<Iterable<? extends A1>, Set<X>> liftSet() {
 		return Arguments1Validator.from(ValueValidator.super.liftSet());
 	}
 
@@ -1336,7 +1336,7 @@ cat <<EOD
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	default Arguments1Validator<Optional<A1>, Optional<@NonNull X>> liftOptional() {
+	default Arguments1Validator<Optional<? extends A1>, Optional<@NonNull X>> liftOptional() {
 		return Arguments1Validator.from(ValueValidator.super.liftOptional());
 	}
 EOD
@@ -2051,7 +2051,7 @@ done)
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object, C extends Collection<R>> Arguments1Validator<Iterable<A1>, C> liftCollection(
+	public static <A1, R extends @Nullable Object, C extends Collection<R>> Arguments1Validator<Iterable<? extends A1>, C> liftCollection(
 			ValueValidator<? super A1, ? extends R> validator, Supplier<C> factory) {
 		return Arguments1Validator
 				.from(ValueValidator.liftCollection(validator, factory));
@@ -2067,7 +2067,7 @@ done)
 	 * @param <R> the type produced for each element
 	 * @return a validator for iterables
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, List<R>> liftList(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<? extends A1>, List<R>> liftList(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftList(validator));
 	}
@@ -2084,7 +2084,7 @@ done)
 	 * @return a validator for iterables
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<A1>, Set<R>> liftSet(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Iterable<? extends A1>, Set<R>> liftSet(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftSet(validator));
 	}
@@ -2100,7 +2100,7 @@ done)
 	 * @return a validator for optionals
 	 * @since 0.8.0
 	 */
-	public static <A1, R extends @Nullable Object> Arguments1Validator<Optional<A1>, Optional<@NonNull R>> liftOptional(
+	public static <A1, R extends @Nullable Object> Arguments1Validator<Optional<? extends A1>, Optional<@NonNull R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
 		return Arguments1Validator.from(ValueValidator.liftOptional(validator));
 	}
@@ -2254,7 +2254,7 @@ cat <<EOD
 		 * @since 0.18.0
 		 * @see ValueValidator#liftPresence()
 		 */
-		public ${class}<${init_arguments}Presence<A${i}>, ${init_results}Presence<@NonNull R${i}>> presence() {
+		public ${class}<${init_arguments}Presence<? extends A${i}>, ${init_results}Presence<@NonNull R${i}>> presence() {
 			return new ${class}<>(${init_definitions}this.d${i}.withPresence());
 		}
 EOD
@@ -2451,8 +2451,8 @@ fi
     ctor_args="$(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//')"
     # the stage of a list: the last argument is a list of E validated as a list of T
     list_type_decls="${init_arguments}E, $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "R${j} extends @Nullable Object, ";done;fi)T extends @Nullable Object"
-    list_type_uses="${init_arguments}List<E>, ${init_results}List<T>"
-    list_ctor_params="$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done;fi)ArgumentDefinition<List<E>, List<T>> d${i}"
+    list_type_uses="${init_arguments}List<? extends E>, ${init_results}List<T>"
+    list_ctor_params="$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done;fi)ArgumentDefinition<List<? extends E>, List<T>> d${i}"
   fi
   file="$(dirname $0)/../src/main/java/am/ik/yavi/builder/${class}.java"
   echo $file
@@ -4098,7 +4098,7 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator) {
+	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
@@ -4122,7 +4122,7 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator,
+	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
 		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
@@ -4174,7 +4174,7 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _rest(ValueValidator<V, T> valueValidator) {
+	public <V, T extends @Nullable Object> ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _rest(ValueValidator<V, T> valueValidator) {
 		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}ArgumentDefinition.rest(valueValidator)));
 	}
 
@@ -4185,7 +4185,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, Object>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, @Nullable Object>> _rest() {
+	public ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ?>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, @Nullable Object>> _rest() {
 		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}ArgumentDefinition.rest()));
 	}
 EOD

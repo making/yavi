@@ -90,7 +90,7 @@ contactValidator.validate(Map.of("email", "a", "backupEmail", "b", "replyTo", "c
 | --- | --- |
 | `nullable()`、`optional()`、`defaultValue(value)` | `null` を受け付け、`null`、`Optional.empty()`、デフォルト値のいずれかを返す |
 | `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
-| `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる |
+| `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる。要素は入力の型のサブタイプでもよいので、`Object` のバリデータを lift すると `List<String>` を検証できる |
 | `liftList(separator)` | `liftList()` に加えて、`1,2,3` のような 1 つのテキストからもリストを読む |
 | `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
 | `named(name)` | 値の違反を別の名前で報告する |
@@ -142,7 +142,7 @@ ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("city", c -> c.notBlank())
         .fromMap(Address::new); // 次の節を参照
 
-Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<String>, User> userValidator = Yavi.schema()
+Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<? extends String>, User> userValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
@@ -899,6 +899,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` など | [#546](https://github.com/making/yavi/pull/546) |

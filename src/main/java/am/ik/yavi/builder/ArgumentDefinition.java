@@ -220,7 +220,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the definition of a list whose elements are validated one by one and whose
 	 * constraints are checked on the validated elements, only when all of them are valid.
 	 */
-	static <E, R extends @Nullable Object> ArgumentDefinition<List<E>, List<R>> list(String name,
+	static <E, R extends @Nullable Object> ArgumentDefinition<List<? extends E>, List<R>> list(String name,
 			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints) {
 		return list(name, elementValidator, constraints, null);
 	}
@@ -231,13 +231,13 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * {@link ValueValidator#liftList(Pattern)} states. A typed list is validated as
 	 * before: it holds the elements already.
 	 */
-	private static <E, R extends @Nullable Object> ArgumentDefinition<List<E>, List<R>> list(String name,
+	private static <E, R extends @Nullable Object> ArgumentDefinition<List<? extends E>, List<R>> list(String name,
 			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints,
 			@Nullable Pattern separator) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
 				constraints.descriptions(), separator == null ? null : separator.pattern());
-		final ValueValidator<List<E>, List<R>> elements = elements(elementValidator)::validate;
-		final ValueValidator<Iterable<E>, List<R>> separated = separator == null ? null
+		final ValueValidator<List<? extends E>, List<R>> elements = elements(elementValidator)::validate;
+		final ValueValidator<Iterable<? extends E>, List<R>> separated = separator == null ? null
 				: elementValidator.liftList(separator);
 		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(elements), description),
 				reader -> nested(name,
@@ -262,9 +262,9 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the definition of a map whose values are validated one by one and whose
 	 * constraints are checked on the validated values, only when all of them are valid.
 	 */
-	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, V>, Map<String, R>> map(String name,
+	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, ? extends V>, Map<String, R>> map(String name,
 			ValueValidator<V, R> valueValidator, ContainerConstraints<Map<String, R>> constraints) {
-		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
+		final ValueValidator<Map<String, ? extends V>, Map<String, R>> lifted = valueValidator.liftMap();
 		final ValueDescription description = new ValueDescription.Entries(valueValidator.description(),
 				constraints.descriptions());
 		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(lifted), description),
@@ -297,9 +297,9 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the definition of an argument that reads the keys of the map that no other
 	 * argument reads. The violations of a value are located under its key.
 	 */
-	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, V>, Map<String, R>> rest(
+	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, ? extends V>, Map<String, R>> rest(
 			ValueValidator<V, R> valueValidator) {
-		final ValueValidator<Map<String, V>, Map<String, R>> lifted = valueValidator.liftMap();
+		final ValueValidator<Map<String, ? extends V>, Map<String, R>> lifted = valueValidator.liftMap();
 		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST, true);
 	}
 
@@ -307,7 +307,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * Returns the definition of an argument that reads the keys of the map that no other
 	 * argument reads and takes their values as they are.
 	 */
-	static ArgumentDefinition<Map<String, Object>, Map<String, @Nullable Object>> rest() {
+	static ArgumentDefinition<Map<String, ?>, Map<String, @Nullable Object>> rest() {
 		return rest(ValueValidator.passThrough().untyped(Object.class));
 	}
 
@@ -374,7 +374,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * The builders offer this only for an argument that is read from a key, and no
 	 * modifier after it.
 	 */
-	ArgumentDefinition<Presence<A>, Presence<@NonNull R>> withPresence() {
+	ArgumentDefinition<Presence<? extends A>, Presence<@NonNull R>> withPresence() {
 		return this.derive(this.validator.liftPresence(), reader -> {
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
 			return present.<Presence<@NonNull R>>map(value -> Presence.<@NonNull R>ofNullable(value))
@@ -459,7 +459,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * locates its violations under the index of the element: {@code street} is reported
 	 * as {@code [0].street} and an empty name as {@code [0]}.
 	 */
-	private static <E, R extends @Nullable Object> ValueValidator<Iterable<E>, List<R>> elements(
+	private static <E, R extends @Nullable Object> ValueValidator<Iterable<? extends E>, List<R>> elements(
 			ValueValidator<E, R> elementValidator) {
 		return (values, locale, constraintContext) -> Validated.traverseIndexed(values,
 				(value, index) -> elementValidator.validate(value, locale, constraintContext).prefixed(index));

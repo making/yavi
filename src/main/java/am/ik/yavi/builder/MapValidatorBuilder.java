@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * Example: <pre>{@code
- * ValueValidator<Map<String, BigDecimal>, Map<String, BigDecimal>> validator = MapValidatorBuilder
+ * ValueValidator<Map<String, ? extends BigDecimal>, Map<String, BigDecimal>> validator = MapValidatorBuilder
  *     .of(Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
  *     .build();
  * }</pre>
@@ -36,7 +36,8 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the type of the validated values
  * @since 0.18.0
  */
-public final class MapValidatorBuilder<V, T> implements ValueValidatorBuilder<Map<String, V>, Map<String, T>> {
+public final class MapValidatorBuilder<V, T>
+		implements ValueValidatorBuilder<Map<String, ? extends V>, Map<String, T>> {
 
 	private final ValueValidator<V, T> valueValidator;
 
@@ -71,7 +72,7 @@ public final class MapValidatorBuilder<V, T> implements ValueValidatorBuilder<Ma
 	 * @return a new validator
 	 */
 	@Override
-	public <T2 extends @Nullable Object> ValueValidator<Map<String, V>, T2> build(
+	public <T2 extends @Nullable Object> ValueValidator<Map<String, ? extends V>, T2> build(
 			Function<? super Map<String, T>, ? extends T2> mapper) {
 		return this.build().map(mapper);
 	}
@@ -81,7 +82,7 @@ public final class MapValidatorBuilder<V, T> implements ValueValidatorBuilder<Ma
 	 * @return a new validator
 	 */
 	@Override
-	public ValueValidator<Map<String, V>, Map<String, T>> build() {
+	public ValueValidator<Map<String, ? extends V>, Map<String, T>> build() {
 		return this.constraints.constrain(this.valueValidator.liftMap())
 			.describedAs(
 					new ValueDescription.Entries(this.valueValidator.description(), this.constraints.descriptions()));

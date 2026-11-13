@@ -767,6 +767,22 @@ public <X2> ValueValidator<String, X2> andThen(ValueValidator<? super Name, ? ex
 
 関連するプルリクエスト: [#572](https://github.com/making/yavi/pull/572)
 
+### lift したバリデータはサブタイプのコンテナを受け取る
+
+`ValueValidator` と `Arguments1Validator` の `liftList()`、`liftSet()`、`liftCollection(factory)`、`liftOptional()`、および `ValueValidator` と `ArgumentsValidators` の同名の static メソッドは、`Iterable<? extends T>` または `Optional<? extends T>` のバリデータを返します。これまでは `Iterable<T>` または `Optional<T>` のバリデータで、`T` が `Object` のときに `List<String>` を渡せませんでした。その場で検証する呼び出しはこれまでどおりコンパイルできます。lift したバリデータを宣言している変数、引数、戻り値の型は、新しい型か `var` に変えます。
+
+```java
+// before
+ValueValidator<Iterable<String>, List<String>> tags = tagValidator.liftList();
+Arguments1Validator<Optional<String>, Optional<PhoneNumber>> phone = phoneNumberValidator.liftOptional();
+
+// after
+ValueValidator<Iterable<? extends String>, List<String>> tags = tagValidator.liftList();
+Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phone = phoneNumberValidator.liftOptional();
+```
+
+関連するプルリクエスト: [#576](https://github.com/making/yavi/pull/576)
+
 ### `emoji()` は拡張書記素クラスタを数える
 
 絵文字ではない一部の並びが、2 ではなく 1 と数えられるようになりました。`"\r\n"` や、濁点付きの半角カタカナ（`ｶﾞ`）が該当します。`Emoji` クラスは削除されました。
