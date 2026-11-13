@@ -50,7 +50,7 @@ class ValueValidatorTest {
 
 		Arguments3Validator<String, String, String, Address> addressValidator = Arguments1Validator
 			.from(countryValidator)
-			.<String, @Nullable String>split(streetValidator)
+			.split(streetValidator)
 			.split(phoneValidator)
 			.apply(Address::new);
 

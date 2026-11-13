@@ -732,6 +732,8 @@ validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30,
 
 See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
 
+See [Breaking changes in 0.18.0](docs/BreakingChanges_0.18.0.md) to migrate from an earlier version, and [Limitations of NullAway](docs/NullAwayLimitations.md) if NullAway reports correct code.
+
 #### Returning the violations
 
 `ConstraintViolations` has the forms that a form and an API response need, so that they are not written as a stream pipeline at every call site:
