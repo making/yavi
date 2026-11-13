@@ -80,7 +80,9 @@ import am.ik.yavi.core.ValueValidator;
  *
  * @since 0.14.0
  */
-public final class YaviArguments {
+public final class YaviArguments
+
+{
 
 	/**
 	 * Creates a new builder.
@@ -104,8 +106,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<BigDecimal, T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(BigDecimal.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<BigDecimal, T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -121,9 +123,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<BigDecimal, BigDecimal> _bigDecimal(String name,
+	public Arguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, BigDecimal.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, BigDecimal.class,
 				BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -138,7 +140,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<BigDecimal, BigDecimal> _bigDecimal(String name) {
+	public Arguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
@@ -154,8 +156,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<BigInteger, T> _bigInteger(ValueValidator<BigInteger, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(BigInteger.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(ValueValidator<BigInteger, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -171,9 +173,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<BigInteger, BigInteger> _bigInteger(String name,
+	public Arguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, BigInteger.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, BigInteger.class,
 				BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -188,7 +190,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<BigInteger, BigInteger> _bigInteger(String name) {
+	public Arguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
@@ -204,8 +206,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Boolean, T> _boolean(ValueValidator<Boolean, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Boolean.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Boolean, T> _boolean(ValueValidator<Boolean, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Boolean.class, validator));
 	}
 
 	/**
@@ -221,9 +223,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Boolean, Boolean> _boolean(String name,
+	public Arguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -237,7 +239,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Boolean, Boolean> _boolean(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name) {
 		return this._boolean(name, Function.identity());
 	}
 
@@ -252,8 +254,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Double, T> _double(ValueValidator<Double, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Double.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Double, T> _double(ValueValidator<Double, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -269,9 +271,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Double, Double> _double(String name,
+	public Arguments1ValidatorBuilder.Keyed<Double, Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -285,7 +287,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Double, Double> _double(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Double, Double> _double(String name) {
 		return this._double(name, Function.identity());
 	}
 
@@ -301,8 +303,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T> Arguments1ValidatorBuilder<E, T> _enum(ValueValidator<E, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Enum.class, validator));
+	public <E extends Enum<E>, T> Arguments1ValidatorBuilder.Keyed<E, T> _enum(ValueValidator<E, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -319,9 +321,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder<E, E> _enum(String name,
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, EnumValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -336,7 +338,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder<E, E> _enum(String name) {
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name) {
 		return this._enum(name, Function.identity());
 	}
 
@@ -355,9 +357,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder<E, E> _enum(String name, Class<E> type,
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -374,7 +376,7 @@ public final class YaviArguments {
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder<E, E> _enum(String name, Class<E> type) {
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type) {
 		return this._enum(name, type, Function.identity());
 	}
 
@@ -389,8 +391,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Float, T> _float(ValueValidator<Float, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Float.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Float, T> _float(ValueValidator<Float, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Float.class, validator));
 	}
 
 	/**
@@ -406,9 +408,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Float, Float> _float(String name,
+	public Arguments1ValidatorBuilder.Keyed<Float, Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -422,7 +424,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Float, Float> _float(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Float, Float> _float(String name) {
 		return this._float(name, Function.identity());
 	}
 
@@ -438,8 +440,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Instant, T> _instant(ValueValidator<Instant, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Instant.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Instant, T> _instant(ValueValidator<Instant, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -455,9 +457,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Instant, Instant> _instant(String name,
+	public Arguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -472,7 +474,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Instant, Instant> _instant(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name) {
 		return this._instant(name, Function.identity());
 	}
 
@@ -488,8 +490,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Integer, T> _integer(ValueValidator<Integer, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Integer.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Integer, T> _integer(ValueValidator<Integer, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Integer.class, validator));
 	}
 
 	/**
@@ -505,9 +507,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Integer, Integer> _integer(String name,
+	public Arguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -522,7 +524,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Integer, Integer> _integer(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name) {
 		return this._integer(name, Function.identity());
 	}
 
@@ -538,8 +540,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<LocalDateTime, T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(LocalDateTime.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
+			ValueValidator<LocalDateTime, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -555,9 +558,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(String name,
+	public Arguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, LocalDateTime.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalDateTime.class,
 				LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -572,7 +575,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalDateTime, LocalDateTime> _localDateTime(String name) {
+	public Arguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
@@ -588,8 +591,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<LocalTime, T> _localTime(ValueValidator<LocalTime, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(LocalTime.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<LocalTime, T> _localTime(ValueValidator<LocalTime, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -605,9 +608,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalTime, LocalTime> _localTime(String name,
+	public Arguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, LocalTime.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalTime.class,
 				LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -622,7 +625,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalTime, LocalTime> _localTime(String name) {
+	public Arguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
@@ -638,8 +641,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<LocalDate, T> _localDate(ValueValidator<LocalDate, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(LocalDate.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(ValueValidator<LocalDate, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -655,9 +658,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalDate, LocalDate> _localDate(String name,
+	public Arguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, LocalDate.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalDate.class,
 				LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -672,7 +675,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<LocalDate, LocalDate> _localDate(String name) {
+	public Arguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name) {
 		return this._localDate(name, Function.identity());
 	}
 
@@ -687,8 +690,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Long, T> _long(ValueValidator<Long, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Long.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Long, T> _long(ValueValidator<Long, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Long.class, validator));
 	}
 
 	/**
@@ -704,9 +707,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Long, Long> _long(String name,
+	public Arguments1ValidatorBuilder.Keyed<Long, Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -720,7 +723,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Long, Long> _long(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Long, Long> _long(String name) {
 		return this._long(name, Function.identity());
 	}
 
@@ -736,8 +739,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2> Arguments1ValidatorBuilder<T1, T2> _object(ValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Object.class, validator));
+	public <T1, T2> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(ValueValidator<T1, T2> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -753,9 +756,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<T, T> _object(String name,
+	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, ObjectValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -770,7 +773,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<T, T> _object(String name) {
+	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name) {
 		return this._object(name, Function.identity());
 	}
 
@@ -789,9 +792,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments1ValidatorBuilder<T, T> _object(String name, Class<T> type,
+	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -808,7 +811,7 @@ public final class YaviArguments {
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public <T> Arguments1ValidatorBuilder<T, T> _object(String name, Class<T> type) {
+	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type) {
 		return this._object(name, type, Function.identity());
 	}
 
@@ -824,9 +827,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<OffsetDateTime, T> _offsetDateTime(
+	public <T> Arguments1ValidatorBuilder.Keyed<OffsetDateTime, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(OffsetDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
 	/**
@@ -842,9 +845,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
+	public Arguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, OffsetDateTime.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, OffsetDateTime.class,
 				OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -859,7 +862,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
+	public Arguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
@@ -874,8 +877,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Short, T> _short(ValueValidator<Short, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Short.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Short, T> _short(ValueValidator<Short, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Short.class, validator));
 	}
 
 	/**
@@ -891,9 +894,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Short, Short> _short(String name,
+	public Arguments1ValidatorBuilder.Keyed<Short, Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -907,7 +910,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Short, Short> _short(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Short, Short> _short(String name) {
 		return this._short(name, Function.identity());
 	}
 
@@ -922,8 +925,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<String, T> _string(ValueValidator<String, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(String.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<String, T> _string(ValueValidator<String, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -945,9 +948,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<String, String> _string(String name,
+	public Arguments1ValidatorBuilder.Keyed<String, String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -961,7 +964,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<String, String> _string(String name) {
+	public Arguments1ValidatorBuilder.Keyed<String, String> _string(String name) {
 		return this._string(name, Function.identity());
 	}
 
@@ -977,8 +980,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<YearMonth, T> _yearMonth(ValueValidator<YearMonth, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(YearMonth.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<YearMonth, T> _yearMonth(ValueValidator<YearMonth, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -994,9 +997,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<YearMonth, YearMonth> _yearMonth(String name,
+	public Arguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, YearMonth.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, YearMonth.class,
 				YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1011,7 +1014,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<YearMonth, YearMonth> _yearMonth(String name) {
+	public Arguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
@@ -1026,8 +1029,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Year, T> _year(ValueValidator<Year, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(Year.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<Year, T> _year(ValueValidator<Year, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Year.class, validator));
 	}
 
 	/**
@@ -1043,9 +1046,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Year, Year> _year(String name,
+	public Arguments1ValidatorBuilder.Keyed<Year, Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1059,7 +1062,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<Year, Year> _year(String name) {
+	public Arguments1ValidatorBuilder.Keyed<Year, Year> _year(String name) {
 		return this._year(name, Function.identity());
 	}
 
@@ -1075,8 +1078,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T> Arguments1ValidatorBuilder<ZonedDateTime, T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
+	public <T> Arguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
+			ValueValidator<ZonedDateTime, T> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -1092,9 +1096,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
+	public Arguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.value(name, ZonedDateTime.class,
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, ZonedDateTime.class,
 				ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1109,7 +1113,7 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
+	public Arguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 
@@ -1130,8 +1134,8 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2> Arguments1ValidatorBuilder<T1, T2> _object(String name, ValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.object(name, validator));
+	public <T1, T2> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(String name, ValueValidator<T1, T2> validator) {
+		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1152,9 +1156,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments1ValidatorBuilder<List<E>, List<T>> _list(String name,
+	public <E, T> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
 			ValueValidator<E, T> elementValidator) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
 	}
 
@@ -1178,9 +1182,10 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E, T> Arguments1ValidatorBuilder<List<E>, List<T>> _list(String name, ValueValidator<E, T> elementValidator,
+	public <E, T> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
+			ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 
@@ -1202,9 +1207,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder<Map<String, V>, Map<String, T>> _map(String name,
+	public <V, T> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(String name,
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
@@ -1228,10 +1233,10 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder<Map<String, V>, Map<String, T>> _map(String name,
+	public <V, T> Arguments1ValidatorBuilder.Keyed<Map<String, V>, Map<String, T>> _map(String name,
 			ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new Arguments1ValidatorBuilder<>(
+		return new Arguments1ValidatorBuilder.Keyed<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
 
@@ -1251,9 +1256,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments1ValidatorBuilder<Map<String, Object>, T> _embedded(
+	public <T> Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, T> _embedded(
 			ValueValidator<? super Map<String, Object>, T> validator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.embedded(validator));
+		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.embedded(validator));
 	}
 
 	/**
@@ -1272,9 +1277,9 @@ public final class YaviArguments {
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T> Arguments1ValidatorBuilder<Map<String, V>, Map<String, T>> _rest(
+	public <V, T> Arguments1ValidatorBuilder.Modifiable<Map<String, V>, Map<String, T>> _rest(
 			ValueValidator<V, T> valueValidator) {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest(valueValidator));
+		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest(valueValidator));
 	}
 
 	/**
@@ -1284,8 +1289,8 @@ public final class YaviArguments {
 	 * @since 0.18.0
 	 * @see #_rest(ValueValidator)
 	 */
-	public Arguments1ValidatorBuilder<Map<String, Object>, Map<String, Object>> _rest() {
-		return new Arguments1ValidatorBuilder<>(ArgumentDefinition.rest());
+	public Arguments1ValidatorBuilder.Modifiable<Map<String, Object>, Map<String, Object>> _rest() {
+		return new Arguments1ValidatorBuilder.Modifiable<>(ArgumentDefinition.rest());
 	}
 
 }

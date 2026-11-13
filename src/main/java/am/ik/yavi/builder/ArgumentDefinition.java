@@ -176,31 +176,26 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	}
 
 	ArgumentDefinition<A, Optional<R>> asOptional() {
-		this.checkModifiable("optional");
 		return new ArgumentDefinition<>(this.name, this.validator.optional(),
 				reader -> this.untyped.apply(reader).optional(), this.source);
 	}
 
 	ArgumentDefinition<A, R> asNullable() {
-		this.checkModifiable("nullable");
 		return new ArgumentDefinition<>(this.name, this.validator.nullable(),
 				reader -> this.untyped.apply(reader).nullable(), this.source);
 	}
 
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
-		this.checkModifiable("defaultValue");
 		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(defaultValue),
 				reader -> this.untyped.apply(reader).defaultValue(defaultValue), this.source);
 	}
 
 	ArgumentDefinition<A, R> recovering(R fallback) {
-		this.checkModifiable("recover");
 		return new ArgumentDefinition<>(this.name, this.validator.recover(fallback),
 				reader -> this.untyped.apply(reader).recover(fallback), this.source);
 	}
 
 	ArgumentDefinition<A, R> recoveringWith(Function<? super ConstraintViolations, ? extends R> fallback) {
-		this.checkModifiable("recoverWith");
 		return new ArgumentDefinition<>(this.name, this.validator.recoverWith(fallback),
 				reader -> this.untyped.apply(reader).recoverWith(fallback), this.source);
 	}
@@ -208,30 +203,15 @@ record ArgumentDefinition<A, R> (@Nullable String name, ValueValidator<A, R> val
 	/**
 	 * Returns the definition of this argument as a value that may be absent. The untyped
 	 * validator reads the value of a key that is present; the part tells an absent key.
-	 * @throws IllegalStateException if the argument is not read from a key
+	 * The builders offer this only for an argument that is read from a key, and no
+	 * modifier after it.
 	 */
 	ArgumentDefinition<Presence<A>, Presence<R>> withPresence() {
-		this.checkModifiable("presence");
-		if (this.source != Source.PROPERTY) {
-			throw new IllegalStateException(
-					"presence() applies to an argument that is read from a key, not to one added with _embedded or _rest.");
-		}
 		return new ArgumentDefinition<>(this.name, this.validator.liftPresence(), reader -> {
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
 			return present.<Presence<R>>map(Presence::ofNullable)
 				.describedAs(new ValueDescription.Presence(present.description()));
 		}, Source.PRESENCE);
-	}
-
-	/**
-	 * Checks that the argument is not already a {@link Presence}, which another modifier
-	 * would be applied to instead of the value.
-	 */
-	private void checkModifiable(String modifier) {
-		if (this.source == Source.PRESENCE) {
-			throw new IllegalStateException("presence() is the last modifier of an argument. Write " + modifier
-					+ "() before it to apply it to the value of a key that is present.");
-		}
 	}
 
 	/**

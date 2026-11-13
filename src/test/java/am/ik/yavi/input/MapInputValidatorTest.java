@@ -1030,12 +1030,6 @@ class MapInputValidatorTest {
 		assertThat(model.validate(bio, input()).value()).isEqualTo(Presence.absent());
 		assertThat(model.validate(bio, input("bio", null)).errors()).extracting(ConstraintViolation::name)
 			.containsExactly("bio");
-		// another modifier would apply to the Presence, and only a key can be absent
-		assertThatThrownBy(() -> Yavi.arguments()._string("bio").presence().nullable())
-			.isInstanceOf(IllegalStateException.class)
-			.hasMessageContaining("presence() is the last modifier");
-		assertThatThrownBy(() -> Yavi.arguments()._embedded(addressValidator).presence())
-			.isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test

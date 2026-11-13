@@ -553,7 +553,7 @@ switch (patch.bio()) {
 
 * An absent key is `Absent` and is not validated, so it is never required.
 * A key that is present is validated as without `presence()`, an explicit `null` included: `notNull()` rejects it, and an argument that accepts `null` gives `PresentNull`. A nested object rejects `null` unless it is `nullable()`.
-* `presence()` is the last modifier of an argument: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present.
+* `presence()` is the last modifier of an argument: `nullable()`, `defaultValue(...)` and `recover(...)` are written before it and apply to the value of a key that is present. Writing one after it does not compile, and neither does `presence()` on an `_embedded` or `_rest` argument, which is not read from a key.
 * It works with every input. In request parameters, a parameter with an empty value (`bio=`) is present and `null`.
 * With `apply(f)`, the argument itself is a `Presence`. `ValueValidator#liftPresence()` is the combinator, and `MapInputValidator.PresenceProperty` the part for `MapInputValidator.of(parts, mapper)`.
 * In the JSON Schema the property is not `required`, and it allows `null` only if the argument accepts it.
