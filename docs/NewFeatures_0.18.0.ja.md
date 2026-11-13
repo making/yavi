@@ -287,6 +287,8 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 }
 ```
 
+JDK のツリーモデル（[JEP 540](https://openjdk.org/jeps/540)。JDK 28 のインキュベータモジュール）も同じ方法で読み取れます。そのリーダーは README にあります。
+
 スカラーがすべて文字列であるツリーは、`coercingStrings()` で読み取ります。これは任意のリーダーに付けられるデコレータです（`JsonNodeReader.INSTANCE.coercingStrings()`。JDK の型のツリーには `InputReader.ofJdkTypes().coercingStrings()`）。文字列は、次の節のルールで読み取られます。
 
 ## リクエストパラメータを検証する

@@ -49,6 +49,7 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class MapInputValidatorTest {
 
@@ -88,6 +89,30 @@ class MapInputValidatorTest {
 			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
 					@Nullable Map<String, Object> input) {
 				return validator.readingWith(JsonNodeReader.INSTANCE).validate(jsonMapper.valueToTree(input));
+			}
+		},
+		// the same input as the tree model of the JDK (JEP 540), parsed from its JSON
+		// text;
+		// the reader is compiled only by a JDK that has the model
+		JDK_JSON {
+			@Override
+			@SuppressWarnings("unchecked")
+			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+					@Nullable Map<String, Object> input) {
+				assumeTrue(Runtime.version().feature() >= 28, "jdk.incubator.json is a module of JDK 28 or later");
+				try {
+					final InputReader<Object> reader = (InputReader<Object>) Class
+						.forName("am.ik.yavi.input.JdkJsonReader")
+						.getDeclaredField("INSTANCE")
+						.get(null);
+					final Object tree = Class.forName("jdk.incubator.json.Json")
+						.getMethod("parse", String.class)
+						.invoke(null, jsonMapper.writeValueAsString(input));
+					return validator.readingWith(reader).validate(tree);
+				}
+				catch (ReflectiveOperationException e) {
+					throw new IllegalStateException(e);
+				}
 			}
 		},
 		// a tree whose scalars are all strings, such as request parameters; a string is
@@ -222,6 +247,13 @@ class MapInputValidatorTest {
 						map("math", new BigDecimal("90.0")), "nickname", " yavi", "rate", 2));
 		assertThat(validated.value()).isEqualTo(new User("a@example.com", 30, Role.ADMIN, LocalDate.of(2000, 2, 29),
 				new Address("1-2-3", "Tokyo"), List.of("a", "b"), Map.of("math", 90), Optional.of("yavi"), 2.0));
+		// a number that no primitive type holds is read without a loss
+		final BigInteger integer = new BigInteger("123456789012345678901234567890");
+		final BigDecimal decimal = new BigDecimal("1e400");
+		assertThat(model
+			.validate(Yavi.arguments()._bigInteger("integer")._bigDecimal("decimal").fromMap(List::of),
+					input("integer", integer, "decimal", decimal))
+			.value()).isEqualTo(List.of(integer, decimal));
 		// an absent key is validated like null
 		final Validated<User> defaulted = model.validate(userValidator,
 				input("email", "a@example.com", "age", 0, "role", "USER", "address",

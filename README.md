@@ -667,6 +667,60 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 }
 ```
 
+The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), the incubator module `jdk.incubator.json` of JDK 28) is read in the same way. A number is read from its text, so no digit is lost:
+
+```java
+public final class JdkJsonReader implements InputReader<JsonValue> {
+
+    public static final JdkJsonReader INSTANCE = new JdkJsonReader();
+
+    @Override
+    public boolean isNull(JsonValue node) {
+        return node instanceof JsonNull;
+    }
+
+    @Override
+    public Object value(JsonValue node) {
+        return switch (node) {
+            case JsonString string -> string.asString();
+            case JsonNumber number -> new BigDecimal(number.toString());
+            case JsonBoolean bool -> bool.asBoolean();
+            default -> node;
+        };
+    }
+
+    @Override
+    public boolean isObject(JsonValue node) {
+        return node instanceof JsonObject;
+    }
+
+    @Override
+    public @Nullable JsonValue property(JsonValue object, String name) {
+        return object.asMap().get(name); // null if absent
+    }
+
+    @Override
+    public Iterable<Map.Entry<String, JsonValue>> properties(JsonValue object) {
+        return object.asMap().entrySet();
+    }
+
+    @Override
+    public boolean isArray(JsonValue node) {
+        return node instanceof JsonArray;
+    }
+
+    @Override
+    public Iterable<JsonValue> elements(JsonValue array) {
+        return array.asList();
+    }
+
+}
+```
+
+```java
+Validated<User> validated = userValidator.readingWith(JdkJsonReader.INSTANCE).validate(Json.parse(json));
+```
+
 A validator that does not know its input type (a lambda) is read only from JDK types; `readingWith(reader)` throws `UnsupportedOperationException` for it. Give the type with `untyped(type)`: the lambda then receives the value of the node (`InputReader#value`).
 
 ##### Validating request parameters

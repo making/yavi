@@ -328,6 +328,9 @@ public final class JsonNodeReader implements InputReader<JsonNode> {
 }
 ```
 
+The tree model of the JDK ([JEP 540](https://openjdk.org/jeps/540), an incubator module of
+JDK 28) is read in the same way; the README shows its reader.
+
 A tree whose scalars are all strings is read with `coercingStrings()`, a decorator of any
 reader: `JsonNodeReader.INSTANCE.coercingStrings()`, or
 `InputReader.ofJdkTypes().coercingStrings()` for a tree of JDK types. The strings are read

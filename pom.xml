@@ -16,6 +16,8 @@
         <!-- Set by jacoco:prepare-agent when coverage is measured; referenced late in the
              surefire argLine so that the agent and the JVM options below are combined. -->
         <argLine></argLine>
+        <!-- JVM options of the tests that a profile adds. -->
+        <test.argLine></test.argLine>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kotlin.version>2.4.21</kotlin.version>
@@ -24,6 +26,7 @@
         <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
+        <build-helper-maven-plugin.version>3.8.0</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
         <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
@@ -266,7 +269,7 @@
                 <configuration>
                     <!-- compile-testing instantiates javac in-process and needs access to
                          com.sun.tools.javac.api, which is encapsulated since JDK 16. -->
-                    <argLine>@{argLine} --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</argLine>
+                    <argLine>@{argLine} --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED ${test.argLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -318,6 +321,57 @@
     </build>
 
     <profiles>
+        <profile>
+            <!-- Tests the reader of the JSON tree model of the JDK (JEP 540), which is the
+                 incubator module jdk.incubator.json since JDK 28. Only the tests are compiled
+                 for that release; the artifact is still built for ${java.version}. -->
+            <id>jdk-json</id>
+            <activation>
+                <jdk>[28,)</jdk>
+            </activation>
+            <properties>
+                <test.argLine>--add-modules jdk.incubator.json</test.argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>${build-helper-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>add-jdk-json-test-source</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/test/java28</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-testCompile</id>
+                                <configuration>
+                                    <release>28</release>
+                                    <compilerArgs combine.children="append">
+                                        <arg>--add-modules</arg>
+                                        <arg>jdk.incubator.json</arg>
+                                    </compilerArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <!-- Packages, signs and deploys the artifacts within a single lifecycle run so that
                  the signatures always match the artifacts that are actually published. -->

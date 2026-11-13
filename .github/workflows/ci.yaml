@@ -43,6 +43,19 @@ jobs:
     - name: Build Javadoc
       if: matrix.java == '21.x'
       run: ./mvnw -V --no-transfer-progress javadoc:jar
+  # The reader of the JSON tree model of the JDK (JEP 540) is tested only by a JDK that has
+  # the model. An early-access build may break, so the deployment does not wait for this job.
+  test-jdk-ea:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up JDK 28 (early access)
+      uses: oracle-actions/setup-java@v1
+      with:
+        website: jdk.java.net
+        release: 28
+    - name: Unit Tests
+      run: ./mvnw -V --no-transfer-progress clean test
   deploy:
     needs: test
     if: github.event_name != 'pull_request'
