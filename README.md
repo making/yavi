@@ -52,17 +52,33 @@ YAVI into your application.
 
 #### Project set up
 
-In order to use YAVI within a Maven project, simply add the following dependency to
+This guide uses the API of YAVI 0.18.0, which is not released yet. In order to use its snapshot within a Maven project, add the following dependency and repository to
 your `pom.xml`:
 
 ```xml
-
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.17.3</version>
+    <version>0.18.0-SNAPSHOT</version>
 </dependency>
 ```
+
+```xml
+<repositories>
+    <repository>
+        <id>central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
+The latest release is 0.17.3; see [the reference documentation](https://yavi.ik.am) for its API.
 
 This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed:
 
@@ -81,11 +97,124 @@ This tutorial uses JUnit 5 and AssertJ. Add the following dependencies as needed
 </dependency>
 ```
 
-#### Applying constraints
+#### Choosing a style
 
-Let’s dive into an example to see how to apply constraints:
+YAVI validates in two styles. Choose by what you have in hand when validation starts:
+
+| You have | You want | Use |
+| --- | --- | --- |
+| Input that is not an object yet: a `Map`, a parsed JSON document, request parameters | To validate it and then create the object, so that an invalid object never exists | [`Yavi.schema()` ... `fromMap(...)`](#validating-an-input-and-creating-an-object) |
+| An object that is already created, as with [Bean Validation](https://beanvalidation.org/) | The "classic" style: to check the object and get its violations | [`ValidatorBuilder`](#validating-an-object-that-exists) |
+
+#### Validating an input and creating an object
+
+`Yavi.schema()` describes the properties of an input, and `fromMap` ends it with a validator that reads them from a `Map<String, Object>` by their names, checks their types and gives them to a constructor. The object is created only when every property is valid.
 
 Create `src/main/java/com/example/Car.java` and write the following code.
+
+```java
+package com.example;
+
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+    public static final ObjectInputValidator<Car> validator = Yavi.schema()
+            ._string("manufacturer")
+            ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
+            ._integer("seatCount", c -> c.greaterThanOrEqual(2))
+            .fromMap(Car::new);
+}
+```
+
+Each method of the schema declares a property with its type, its name and its constraints:
+
+* `manufacturer` must be a string
+* `licensePlate` must be a string that is between 2 and 14 characters long
+* `seatCount` must be an integer that is at least 2
+
+A property is required: an absent key is reported with `object.required` (`"manufacturer" is required`) and `null` with `object.notNull` (`"manufacturer" must not be null`), so `notNull()` need not be written and the constructor is never given `null`. A property that may be `null` says so with `nullable()` or `optional()`, as described [below](#nested-objects-collections-and-optional-properties).
+
+To perform a validation, give a map to the validator. To demonstrate this, let’s have a look at a simple unit test:
+
+Create `src/test/java/com/example/CarTest.java` and write the following code.
+
+```java
+package com.example;
+
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validated;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CarTest {
+
+    @Test
+    void manufacturerIsMissing() {
+        final Validated<Car> validated = Car.validator.validate(Map.of("licensePlate", "DD-AB-123", "seatCount", 4));
+
+        assertThat(validated.isValid()).isFalse();
+        final ConstraintViolations violations = validated.errors();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" is required");
+    }
+
+    @Test
+    void licensePlateTooShort() {
+        final Validated<Car> validated = Car.validator
+            .validate(Map.of("manufacturer", "Morris", "licensePlate", "D", "seatCount", 4));
+
+        assertThat(validated.isValid()).isFalse();
+        final ConstraintViolations violations = validated.errors();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message())
+            .isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+    }
+
+    @Test
+    void seatCountIsNotAnInteger() {
+        final Validated<Car> validated = Car.validator
+            .validate(Map.of("manufacturer", "Morris", "licensePlate", "DD-AB-123", "seatCount", "four"));
+
+        assertThat(validated.isValid()).isFalse();
+        final ConstraintViolations violations = validated.errors();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be of type integer");
+    }
+
+    @Test
+    void carIsValid() {
+        final Validated<Car> validated = Car.validator
+            .validate(Map.of("manufacturer", "Morris", "licensePlate", "DD-AB-123", "seatCount", 2));
+
+        assertThat(validated.isValid()).isTrue();
+        assertThat(validated.value()).isEqualTo(new Car("Morris", "DD-AB-123", 2));
+    }
+}
+```
+
+`validate()` returns a `Validated<Car>`, which holds either the `Car` (`value()`) or the `ConstraintViolations` (`errors()`). All violations are accumulated, so an invalid input reports every failed constraint at once. `Validated` is a sealed interface, so a result is also handled with an exhaustive `switch`:
+
+```java
+switch (Car.validator.validate(map)) {
+    case Validated.Valid<Car>(Car car) -> save(car);
+    case Validated.Invalid<Car>(ConstraintViolations violations) ->
+        violations.forEach(violation -> report(violation.name(), violation.message()));
+}
+```
+
+`validated(map)` returns the `Car` itself and throws a `ConstraintViolationsException` if the input is invalid.
+
+The same schema also reads [a JSON tree](#validating-the-tree-model-of-a-json-library) and [request parameters](#validating-request-parameters).
+
+#### Validating an object that exists
+
+> YAVI recommends trying [the `Yavi.schema()` style](#validating-an-input-and-creating-an-object) first: an invalid object never exists, and the same schema reads a map, a JSON tree and request parameters. Use `ValidatorBuilder` when the object is already created by something else, or when you migrate from Bean Validation.
+
+If you prefer the classic style of Bean Validation, in which an object is created first and validated afterwards, declare the constraints on the properties of the object with `ValidatorBuilder`:
 
 ```java
 package com.example;
@@ -102,21 +231,11 @@ public record Car(String manufacturer, String licensePlate, Integer seatCount) {
 }
 ```
 
-The `ValidatorBuilder.constraint` is used to declare the constraints which should be
-applied to the return values of getter for the `Car` instance:
-
-* `manufacturer` must never be null
-* `licensePlate` must never be null and must be between 2 and 14 characters long
-* `seatCount` must be at least 2
+`ValidatorBuilder.constraint` declares the constraints that are applied to the return value of a getter of the `Car` instance. Unlike a property of `Yavi.schema()`, a property that is `null` is valid unless a constraint such as `notNull()` rejects it.
 
 > You can find [the complete source code](https://github.com/making/gs-yavi) on GitHub.
 
-#### Validating constraints
-
-To perform a validation of these constraints, you use a `Validator` instance. To
-demonstrate this, let’s have a look at a simple unit test:
-
-Create `src/test/java/com/example/CarTest.java` and write the following code.
+The test code changes to:
 
 ```java
 package com.example;
@@ -129,33 +248,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CarTest {
 
     @Test
-    void manufacturerIsNull() {
-        final Car car = new Car(null, "DD-AB-123", 4);
+    void carIsInvalid() {
+        final Car car = new Car(null, "D", 1);
         final ConstraintViolations violations = Car.validator.validate(car);
 
         assertThat(violations.isValid()).isFalse();
-        assertThat(violations).hasSize(1);
+        assertThat(violations).hasSize(3);
         assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
-    }
-
-    @Test
-    void licensePlateTooShort() {
-        final Car car = new Car("Morris", "D", 4);
-        final ConstraintViolations violations = Car.validator.validate(car);
-
-        assertThat(violations.isValid()).isFalse();
-        assertThat(violations).hasSize(1);
-        assertThat(violations.get(0).message()).isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
-    }
-
-    @Test
-    void seatCountTooLow() {
-        final Car car = new Car("Morris", "DD-AB-123", 1);
-        final ConstraintViolations violations = Car.validator.validate(car);
-
-        assertThat(violations.isValid()).isFalse();
-        assertThat(violations).hasSize(1);
-        assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
+        assertThat(violations.get(1).message())
+            .isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
+        assertThat(violations.get(2).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
     }
 
     @Test
@@ -169,288 +271,52 @@ class CarTest {
 }
 ```
 
-`Validator` instances are thread-safe and may be reused multiple times.
+`validate()` returns a `ConstraintViolations` instance, which you can iterate in order to see which validation errors occurred. It is empty if the object is valid.
 
-The `validate()` method returns a `ConstraintViolations` instance, which you can iterate
-in order to see which validation errors occurred. The first three test methods show some
-expected constraint violations:
+`Validator` instances are thread-safe and may be reused multiple times, and so are the validators of `Yavi.schema()`.
 
-* The `notNull()` constraint on `manufacturer` is violated in `manufacturerIsNull()`
-* The `greaterThanOrEqual(int)` constraint on `licensePlate` is violated
-  in `licensePlateTooShort()`
-* The `greaterThanOrEqual(int)` constraint on `seatCount` is violated
-  in `seatCountTooLow()`
+The rest of this guide describes `Yavi.schema()`. See [the reference documentation](https://yavi.ik.am) for the details of `ValidatorBuilder`.
 
-If the object validates successfully, `validate()` returns an empty `ConstraintViolations`
-as you can see in
-`carIsValid()`. You can also check if the validation was successful with
-the `ConstraintViolations.isValid` method.
+#### Reusable validators of a single value
 
-### Always Valid model?
-
-Are you dissatisfied with the classic validation approach of creating an object (that might be invalid) first and then validating it? If you want to create a model that can only be generated and exist in a valid state, YAVI can help you achieve this as well.
-
-In this case, create your `Car` class as follows:
+The constraints of a property are domain rules that can potentially be used not only for the `Car` class. `Yavi._string`, `Yavi._integer`, `Yavi._localDate` and so on, which have the names of the properties of `Yavi.schema()`, define the validator of one value. A schema takes it as a property:
 
 ```java
 package com.example;
 
-import am.ik.yavi.arguments.Arguments3Validator;
-import am.ik.yavi.core.Validated;
-import am.ik.yavi.validator.Yavi;
-
-public final class Car {
-
-	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
-		._string("manufacturer")
-		._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
-		._integer("seatCount", c -> c.greaterThanOrEqual(2))
-		.apply(Car::new);
-
-	private final String manufacturer;
-
-	private final String licensePlate;
-
-	private final Integer seatCount;
-
-	public static Validated<Car> of(String manufacturer, String licensePlate, Integer seatCount) {
-		return validator.validate(manufacturer, licensePlate, seatCount);
-	}
-
-	private Car(String manufacturer, String licensePlate, Integer seatCount) {
-		this.manufacturer = manufacturer;
-		this.licensePlate = licensePlate;
-		this.seatCount = seatCount;
-	}
-
-	public String manufacturer() {
-		return manufacturer;
-	}
-
-	public String licensePlate() {
-		return licensePlate;
-	}
-
-	public Integer seatCount() {
-		return seatCount;
-	}
-
-}
-```
-
-`Arguments3Validator<String, String, Integer, Car>` is a validator that validates three arguments (`String`, `String`, `Integer`) and creates a `Car` instance only when validation succeeds.
-
-A property is required: `null` is reported with `object.notNull` (`"manufacturer" must not be null`), or with the violation of a constraint that rejects it such as `notBlank()`, so `notNull()` need not be written. The constructor is therefore never given `null`. A property that may be `null` says so with `nullable()` or `optional()`, as described [below](#nested-objects-collections-and-optional-properties). This differs from `ValidatorBuilder`, which validates an object that exists and takes a property that is `null` as valid unless a constraint rejects it.
-
-With this approach, since the `Car` class's constructor is private, you need to create a `Car` instance through the `of` factory method. The `of` method validates the arguments before creating a `Car` instance. It returns the validation result wrapped in a `Validated` type. If validation fails, you cannot obtain a `Car` instance.
-
-The test code changes to:
-
-```java
-package com.example;
-
-import am.ik.yavi.core.ConstraintViolations;
-import am.ik.yavi.core.Validated;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-class CarTest {
-
-	@Test
-	void manufacturerIsNull() {
-		Validated<Car> validated = Car.of(null, "DD-AB-123", 4);
-		assertThat(validated.isValid()).isFalse();
-		ConstraintViolations violations = validated.errors();
-		assertThat(violations.isValid()).isFalse();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
-	}
-
-	@Test
-	void licensePlateTooShort() {
-		Validated<Car> validated = Car.of("Morris", "D", 4);
-		assertThat(validated.isValid()).isFalse();
-		ConstraintViolations violations = validated.errors();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message())
-			.isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
-	}
-
-	@Test
-	void seatCountTooLow() {
-		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 1);
-		assertThat(validated.isValid()).isFalse();
-		ConstraintViolations violations = validated.errors();
-		assertThat(violations).hasSize(1);
-		assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
-	}
-
-	@Test
-	void carIsValid() {
-		Validated<Car> validated = Car.of("Morris", "DD-AB-123", 2);
-		assertThat(validated.isValid()).isTrue();
-		Car car = validated.value();
-		assertThat(car.manufacturer()).isEqualTo("Morris");
-		assertThat(car.licensePlate()).isEqualTo("DD-AB-123");
-		assertThat(car.seatCount()).isEqualTo(2);
-	}
-
-}
-```
-
-Would you prefer to perform validation within the constructor rather than through a factory method? (And would you like to keep using records?) This can also be achieved with YAVI.
-This time, let's modify the `Car` class as follows:
-
-```java
-package com.example;
-
-import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
+import am.ik.yavi.input.ObjectInputValidator;
 import am.ik.yavi.validator.Yavi;
 
 public record Car(String manufacturer, String licensePlate, Integer seatCount) {
 
-	private static Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
-		._string("manufacturer")
-		._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
-		._integer("seatCount", c -> c.greaterThanOrEqual(2))
-		.apply(Car::new);
+    public static final StringValidator<String> manufacturerValidator = Yavi._string("manufacturer",
+            c -> c.notBlank());
 
-	public Car {
-		validator.lazy().validated(manufacturer, licensePlate, seatCount);
-	}
+    public static final StringValidator<String> licensePlateValidator = Yavi._string("licensePlate",
+            c -> c.greaterThanOrEqual(2).lessThanOrEqual(14));
+
+    public static final IntegerValidator<Integer> seatCountValidator = Yavi._integer("seatCount",
+            c -> c.greaterThanOrEqual(2));
+
+    public static final ObjectInputValidator<Car> validator = Yavi.schema()
+            ._string(manufacturerValidator)
+            ._string(licensePlateValidator)
+            ._integer(seatCountValidator)
+            .fromMap(Car::new);
 }
 ```
 
-With this approach, validation is performed at the constructor stage, and invalid objects will not be created - instead, a `ConstraintViolationsException` will be thrown.
+These small validators validate a value by themselves (`Car.licensePlateValidator.validate("D")`) and can be used in the schemas of other objects, which prevents domain rules from being scattered throughout the code.
 
-(Using the `lazy` method prevents recursive creation of `Car` instances in the constructor even when validation succeeds. This is necessary to avoid a StackOverflow error.)
-
-The test code changes to:
-
-```java
-package com.example;
-
-import am.ik.yavi.core.ConstraintViolations;
-import am.ik.yavi.core.ConstraintViolationsException;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class CarTest {
-
-	@Test
-	void manufacturerIsNull() {
-		assertThatThrownBy(() -> {
-			new Car(null, "DD-AB-123", 4);
-		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
-			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations).hasSize(1);
-			assertThat(violations.get(0).message()).isEqualTo("\"manufacturer\" must not be null");
-		});
-	}
-
-	@Test
-	void licensePlateTooShort() {
-		assertThatThrownBy(() -> {
-			new Car("Morris", "D", 4);
-		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
-			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations).hasSize(1);
-			assertThat(violations.get(0).message())
-				.isEqualTo("The size of \"licensePlate\" must be greater than or equal to 2. The given size is 1");
-		});
-	}
-
-	@Test
-	void seatCountTooLow() {
-		assertThatThrownBy(() -> {
-			new Car("Morris", "DD-AB-123", 1);
-		}).isInstanceOf(ConstraintViolationsException.class).satisfies(e -> {
-			ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
-			assertThat(violations.isValid()).isFalse();
-			assertThat(violations).hasSize(1);
-			assertThat(violations.get(0).message()).isEqualTo("\"seatCount\" must be greater than or equal to 2");
-		});
-	}
-
-	@Test
-	void carIsValid() {
-		assertThatCode(() -> {
-			new Car("Morris", "DD-AB-123", 2);
-		}).doesNotThrowAnyException();
-	}
-
-}
-```
-
-#### Reusable and composable validators
-
-Let's take a look at a more advanced usage.
-
-The following constraints are domain rules that can potentially be used not only for the `Car` class:
-
-> * `manufacturer` must never be null
-> * `licensePlate` must never be null and must be between 2 and 14 characters long
-> * `seatCount` must be at least 2
-
-In YAVI, you can define small validators for each value and then combine them to compose validators for objects.
-
-Please take a look at the following definition:
-
-```java
-package com.example;
-
-import am.ik.yavi.arguments.Arguments3Validator;
-import am.ik.yavi.arguments.IntegerValidator;
-import am.ik.yavi.arguments.StringValidator;
-import am.ik.yavi.core.Validated;
-import am.ik.yavi.validator.Yavi;
-
-public final class Car {
-
-  public static StringValidator<String> manufacturerValidator = Yavi._string("manufacturer", c -> c.notNull());
-
-  public static StringValidator<String> licensePlateValidator = Yavi._string("licensePlate",
-          c -> c.greaterThanOrEqual(2).lessThanOrEqual(14));
-
-  public static IntegerValidator<Integer> seatCountValidator = Yavi._integer("seatCount", c -> c.greaterThanOrEqual(2));
-
-  private static Arguments3Validator<String, String, Integer, Car> validator = manufacturerValidator
-          .split(licensePlateValidator)
-          .split(seatCountValidator)
-          .apply(Car::new);
-
-  private final String manufacturer;
-
-  private final String licensePlate;
-
-  private final Integer seatCount;
-
-  public static Validated<Car> of(String manufacturer, String licensePlate, Integer seatCount) {
-    return validator.validate(manufacturer, licensePlate, seatCount);
-  }
-
-  // omitted
-
-}
-```
-
-After defining validators for `manufacturer`, `licensePlate`, and `seatCount`, it combines these three validators (`StringValidator<T>` is a validator that validates a `String` and returns an object of type `T`, and `IntegerValidator<T>` is a validator that validates an `Integer` and returns an object of type `T`) to create an `Arguments3Validator<String, String, Integer, Car>`.
-
-These small validators can also be used for generating other objects, which prevents domain rules from being scattered throughout the code.
-
-`Yavi._string`, `Yavi._integer`, `Yavi._localDate` and so on have the names of the properties of `Yavi.schema()`. The name can be omitted for a value that is not a property, such as the element of a list: `Yavi._string(c -> c.notBlank())`. Its violations are named by the place where the validator is used (`roles[0]`); validated by itself, they have the empty name and a message that says "The value" in place of the name (`The value must not be blank`).
+The name can be omitted for a value that is not a property, such as the element of a list: `Yavi._string(c -> c.notBlank())`. Its violations are named by the place where the validator is used (`roles[0]`); validated by itself, they have the empty name and a message that says "The value" in place of the name (`The value must not be blank`).
 
 A value can be transformed before it is constrained. The transforms of a `String` are written before its constraints and applied in that order; any other value is transformed with `preprocess`. The constraints and the produced value see the transformed value, and `null` is not transformed.
 
 ```java
 StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
-emailValidator.validate("  USER@Example.COM "); // Valid[user@example.com]
+emailValidator.validate("  USER@Example.COM "); // Valid[value=user@example.com]
 
 BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.positive())
         .preprocess(BigDecimal::stripTrailingZeros);
@@ -463,19 +329,18 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 A property can also be a nested object, a list or a map. Their violations are located under the property name (`address.street`, `roles[0]`, `scores.math`), both in `name()` and in the structured `path()`.
 
 ```java
-ValueValidator<AddressForm, Address> addressValidator = Yavi.schema()
+ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("street", c -> c.notBlank())
         ._string("city", c -> c.notBlank())
-        .apply(Address::new)
-        .compose(form -> Arguments.of(form.street(), form.city()));
+        .fromMap(Address::new);
 
-Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> validator = Yavi.schema()
+ObjectInputValidator<User> validator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional() // Optional<String>
         ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
         ._object("address", addressValidator) // address.street
         ._list("roles", Yavi._string(c -> c.notBlank())) // roles[0]
-        .apply(User::new)
+        .fromMap(User::new)
         .constraintOnTarget(user -> user.age() >= 18 || !user.roles().contains("admin"), "roles",
                 ViolationMessage.of("user.adultAdmin", "\"{0}\" must not contain \"admin\" for a minor"));
 ```
@@ -484,7 +349,7 @@ Arguments5Validator<String, String, Integer, AddressForm, List<String>, User> va
 * `optional()`, `nullable()`, `defaultValue(...)` and `recover(...)` each decide what `null` produces, so a chain in which one of them has no effect does not compile: `.nullable().optional()`, `.defaultValue(1).nullable()`, `.defaultValue(1).recover(2)`. `recover(...)` after `optional()` or `nullable()` recovers an invalid value, and `optional()`, `nullable()` or `defaultValue(...)` after `recover(...)` changes what `null` produces. A property added with a validator that accepts `null`, such as `_integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))` or `_object("address", addressValidator.nullable())`, takes no modifier that accepts `null` again.
 * `nullable()` is the only modifier that produces `null`: `defaultValue(null)` and `recover(null)` of a value that is never `null` (the value of constraints, a list, a map, an `Optional`) are rejected with a `NullPointerException` when the schema is built. Write `.nullable()`, `.nullable().recover(null)` or `.optional().recover(Optional.empty())`.
 * `notNull()` is still the way to give the violation of `null` another message. `isNull()` needs `nullable()`: `._string("id", c -> c.isNull()).nullable()` accepts only `null`, whereas without `nullable()` no value is valid, because `null` is rejected as a missing value.
-* The type of a validated value tells whether it can be `null`: `nullable()` changes it from `String` to `@Nullable String` and `optional()` to `Optional<String>`. With a nullness checker that reads JSpecify (NullAway, Kotlin), the function given to `apply` may therefore take parameters that are not `@Nullable`, and `apply(User::new)` does not compile if a `nullable()` argument is given to a parameter that is not `@Nullable` (in Kotlin, to a `String` instead of a `String?`).
+* The type of a validated value tells whether it can be `null`: `nullable()` changes it from `String` to `@Nullable String` and `optional()` to `Optional<String>`. With a nullness checker that reads JSpecify (NullAway, Kotlin), the function given to `fromMap` may therefore take parameters that are not `@Nullable`, and `fromMap(User::new)` does not compile if a `nullable()` argument is given to a parameter that is not `@Nullable` (in Kotlin, to a `String` instead of a `String?`).
 * `recover(fallback)` also applies to the last added property and makes it never fail: the fallback is produced for `null` and for a value that is invalid, for example `._integer("size", c -> c.greaterThanOrEqual(1).lessThanOrEqual(100)).recover(20)` for the size of a page. When the property is read from a map, request parameters or a JSON tree, a value that does not represent its type gives the fallback too. `recoverWith(violations -> ...)` computes the fallback from the violations, for example to log them; it is given no violation for `null`.
 * The elements of `_list(name, elementValidator)` and the values of `_map(name, valueValidator)` are required like any value; give `elementValidator.nullable()` for a `List<@Nullable String>`. The violations of a list element are located under its index (`roles[0]`, `addresses[0].street`); give an element validator an empty name to report a violation on the element itself.
 * `_list(name, elementValidator, c -> c.notEmpty().lessThanOrEqual(10).unique())` and `_map(name, valueValidator, c -> c.notEmpty())` constrain the list or map itself. The constraints are checked on the validated elements, only when every element is valid, and reported on the argument (`roles`). `Yavi._list(elementValidator, c -> ...)` and `Yavi._map(valueValidator, c -> ...)` are the validators of a list or map that is not an argument.
@@ -496,7 +361,7 @@ The same combinators (`optional()`, `nullable()`, `defaultValue(...)`, `recover(
 
 #### Validating a map such as a parsed JSON object
 
-`fromMap` builds a validator from the same properties that reads them from a `Map<String, Object>` by their names, checks their types and creates the object. No cast is needed and nothing is read by reflection.
+A validator built with `fromMap` reads the properties from a `Map<String, Object>` by their names, checks their types and creates the object. No cast is needed and nothing is read by reflection.
 
 ```java
 ObjectInputValidator<Address> addressValidator = Yavi.schema()
@@ -530,6 +395,7 @@ Validated<User> validated = userValidator.validate(map);
 * A key that no property is defined for is ignored. `rejectingUnknownProperties()` reports it with `object.unknownProperty`; it applies to that map only, not to the nested ones.
 * An `_enum` or `_object` property needs its type to be read from a map: `_enum(name, type)`, `_object(name, type)`.
 * The name of an enum constant is matched exactly. `ignoringCase()` of its validator reads it in any case, whatever the input is read with: `._enum(Yavi._enum("role", Role.class, c -> c).ignoringCase())` takes `"admin"`. It returns an `Arguments1Validator`, so it is written once, before or after `map`. The description and the JSON Schema keep the names of the constants.
+* `apply(f)` in place of `fromMap(f)` ends the schema with a validator of arguments that already have their types, such as an `Arguments3Validator<String, String, Integer, Car>` that is called with `validate(manufacturer, licensePlate, seatCount)`.
 * `flatFromMap(f)` takes a function that creates the object itself and can fail: it returns a `Validated`, for example `Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, locale)`, and is applied only when all arguments are valid. `flatApply(f)` is its counterpart for arguments.
 * `untyped()` turns any validator that knows its input type into a `ValueValidator<Object, X>`, for example to validate the root of a JSON document or to combine alternatives of different types with `anyOf`. Give the type of a lambda with `untyped(type)`; a lambda that takes an `Object` is the place for a custom coercion.
 * A map with a key that is not a string is reported with `object.type`.
