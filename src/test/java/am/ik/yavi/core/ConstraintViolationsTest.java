@@ -73,6 +73,33 @@ public class ConstraintViolationsTest {
 		assertThat(details.get(1)).isEqualTo(new ViolationDetail.Simple("items[1].name", "/items/1/name",
 				"charSequence.notBlank", "\"items[1].name\" must not be blank", Map.of()));
 		assertThat(new ConstraintViolations().messagesByName()).isEmpty();
+
+		// a label replaces the name in the message and stays with the violation when
+		// it is located elsewhere; the name, the pointer and the key are those of the
+		// value
+		ConstraintViolations labeled = violations
+			.labeled(violation -> violation.pointer().equals("/items/1/name") ? "Item name" : null);
+		assertThat(labeled.messagesByName()).containsEntry("items[1].name", List.of("\"Item name\" must not be blank"))
+			.containsEntry("email", byName.get("email"));
+		assertThat(labeled.get(1).prefixed("order").rename(name -> name + "!"))
+			.extracting(ConstraintViolation::name, ConstraintViolation::label, ConstraintViolation::message)
+			.containsExactly("order.items[1].name!", "Item name", "\"Item name\" must not be blank");
+		assertThat(violations.get(3).labeled("Order").message()).isEqualTo("\"Order\" must not be null");
+		assertThat(violations.get(3)).extracting(ConstraintViolation::label, ConstraintViolation::hasLabel)
+			.containsExactly("", false);
+		// a formatter given to the violations formats every output form, the
+		// alternatives of a choice included
+		ConstraintViolation.NoAlternativeMatched unmatched = ConstraintViolation
+			.of(ViolationMessage.Default.OBJECT_ANY_OF, "x", Locale.ENGLISH, 1)
+			.withAlternatives(List.of(List.of(violations.get(0))));
+		ConstraintViolations formatted = new ConstraintViolations(List.of(labeled.get(1), unmatched))
+			.formattedWith((messageKey, defaultMessageFormat, args, locale) -> messageKey + " of " + args[0]);
+		assertThat(formatted.messagesByPointer()).containsExactly(
+				Map.entry("/items/1/name", List.of("charSequence.notBlank of Item name")),
+				Map.entry("", List.of("object.anyOf of ")));
+		assertThat(formatted.details().get(1)).isInstanceOfSatisfying(ViolationDetail.NoAlternativeMatched.class,
+				detail -> assertThat(detail.alternatives().get(0)).extracting(ViolationDetail::message)
+					.containsExactly("charSequence.notBlank of email"));
 	}
 
 	@Test

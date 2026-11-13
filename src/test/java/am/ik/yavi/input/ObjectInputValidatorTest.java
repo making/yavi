@@ -38,6 +38,7 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.jsonschema.JsonSchema;
 import am.ik.yavi.validator.Yavi;
 import org.jspecify.annotations.Nullable;
@@ -1063,6 +1064,84 @@ class ObjectInputValidatorTest {
 
 	// the arguments of a function are nullable, and a Presence never is
 	@SuppressWarnings("NullAway")
+	record Token(String name, Integer ttl, List<Integer> ports, List<String> roles, @Nullable String note,
+			Address address) {
+	}
+
+	@ParameterizedTest
+	@EnumSource(Model.class)
+	void propertySaysHowItsViolationsRead(Model model) {
+		final ViolationMessage ports = ViolationMessage.of("token.ports", "{0} must be port numbers");
+		final var arguments = Yavi.schema()
+			._string("name", c -> c.notBlank().lessThanOrEqual(3))
+			.label("Token name")
+			._integer("ttl", c -> c.positive())
+			.label("TTL")
+			.typeMessage("{0} must be a number of seconds, not {2}")
+			._list("ports", Yavi._integer(c -> c.positive()))
+			.typeMessage(ports)
+			.label("Ports")
+			._list("roles", Yavi._string(c -> c.notBlank()))
+			.label("Roles")
+			.required("Select at least one role")
+			._string("note")
+			.label("Note")
+			.nullable()
+			.required(ViolationMessage.of("token.note", "Send {0}, which may be empty"))
+			._object("address", addressValidator)
+			.label("Address");
+		final ObjectInputValidator<Token> validator = arguments.fromMap(Token::new);
+		final ConstraintViolations violations = model
+			.validate(validator,
+					input("name", "abcd", "ttl", "soon", "ports", List.of(80, "http"), "address",
+							map("street", "1-2-3")))
+			.errors();
+		// the label is what a message calls the property and its elements; the name
+		// still locates the value, and a nested property is left to its own messages
+		assertThat(violations.messagesByName()).containsExactly(
+				Map.entry("name",
+						List.of("The size of \"Token name\" must be less than or equal to 3. The given size is 4")),
+				Map.entry("ttl", List.of("TTL must be a number of seconds, not soon")),
+				Map.entry("ports[1]", List.of("Ports must be port numbers")),
+				Map.entry("roles", List.of("Select at least one role")),
+				Map.entry("note", List.of("Send Note, which may be empty")),
+				Map.entry("address.city", List.of("\"address.city\" is required")));
+		// a message format keeps the key and a message replaces it; the arguments and
+		// their names are kept
+		assertThat(violations).extracting(ConstraintViolation::messageKey, ConstraintViolation::label)
+			.containsExactly(tuple("container.lessThanOrEqual", "Token name"), tuple("object.type", "TTL"),
+					tuple("token.ports", "Ports"), tuple("object.required", "Roles"), tuple("token.note", "Note"),
+					tuple("object.required", "address.city"));
+		assertThat(violations.details().get(2).params()).containsExactly(Map.entry("type", "integer"));
+		// the first message argument is the label, as a BindingResult of Spring MVC
+		// takes it, and a formatter given later formats every violation
+		assertThat(violations.get(0).args()[0]).isEqualTo("Token name");
+		final MessageFormatter upperCase = (messageKey, defaultMessageFormat, args, locale) -> messageKey + ":"
+				+ args[0];
+		assertThat(violations.formattedWith(upperCase).messagesByName().values())
+			.extracting(messages -> messages.get(0))
+			.containsExactly("container.lessThanOrEqual:Token name", "object.type:TTL", "token.ports:Ports",
+					"object.required:Roles", "token.note:Note", "object.required:address.city");
+		assertThat(model.validate(validator.formattingWith(upperCase), input("name", "abc")).errors())
+			.extracting(ConstraintViolation::message)
+			.containsExactly("object.required:TTL", "object.required:Ports", "object.required:Roles", "token.note:Note",
+					"object.required:Address");
+		// the violation of a value that is of the type and the one of null are not
+		// replaced, and a typed argument is labeled too
+		assertThat(model
+			.validate(validator,
+					input("name", "abc", "ttl", 0, "ports", List.of(80), "roles", List.of("a"), "note", null, "address",
+							null))
+			.errors()).extracting(ConstraintViolation::message)
+			.containsExactly("\"TTL\" must be positive", "\"Address\" must not be null");
+		assertThat(arguments.apply(Token::new)
+			.validate("", 1, List.of(0), List.of(), null, input("street", "", "city", "Tokyo"))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("name", "\"Token name\" must not be blank"),
+					tuple("ports[0]", "\"Ports\" must be positive"),
+					tuple("address.street", "\"address.street\" must not be blank"));
+	}
+
 	@ParameterizedTest
 	@EnumSource(Model.class)
 	void absentKeyIsToldFromNull(Model model) {

@@ -63,6 +63,9 @@ import org.jspecify.annotations.Nullable;
  * <li>A value that does not represent the type of the property is reported with
  * {@code object.type}. Nothing is coerced unless the map is read with
  * {@link am.ik.yavi.core.CoercibleInputReader#coercingStrings()}.</li>
+ * <li>The violations that report a missing value or a value of another type come from no
+ * constraint. {@code label}, {@code required} and {@code typeMessage} of the builders say
+ * how they read for one property, as {@link PropertyMessages} states.</li>
  * <li>A key that no property is defined for is ignored. With
  * {@link IgnoringUnknown#rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}, and with {@code _rest} of the builders it is validated
@@ -185,10 +188,12 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	 * must know its input type (see {@link ValueValidator#readingWith(InputReader)})
 	 * @param strictness whether an absent key and an explicit {@code null} are validated
 	 * as {@code null} or rejected
+	 * @param messages what the property is called in a message, and what is said when it
+	 * has no value or a value of another type
 	 * @param <R> the type of the validated value
 	 */
 	public record Property<R extends @Nullable Object> (String name, ValueValidator<Object, R> validator,
-			Strictness strictness) implements Part<R> {
+			Strictness strictness, PropertyMessages messages) implements Part<R> {
 
 		/**
 		 * Creates a property whose absent key is validated as {@code null}.
@@ -197,6 +202,17 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 		 */
 		public Property(String name, ValueValidator<Object, R> validator) {
 			this(name, validator, Strictness.ABSENT_AS_NULL);
+		}
+
+		/**
+		 * Creates a property that is called by its name and reports the default messages.
+		 * @param name the key of the property in the map
+		 * @param validator the validator of the value
+		 * @param strictness whether an absent key and an explicit {@code null} are
+		 * validated as {@code null} or rejected
+		 */
+		public Property(String name, ValueValidator<Object, R> validator, Strictness strictness) {
+			this(name, validator, strictness, PropertyMessages.none());
 		}
 	}
 
@@ -268,10 +284,21 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	 * {@code null}. It is {@link ValueValidator#liftPresence()} of a validator that is
 	 * read with a reader, or a validator of an untyped value mapped with
 	 * {@link Presence#ofNullable(Object)}
+	 * @param messages what the property is called in a message, and what is said when it
+	 * has no value or a value of another type
 	 * @param <R> the type of the validated value
 	 */
-	public record PresenceProperty<R> (String name,
-			ValueValidator<Object, Presence<R>> validator) implements Part<Presence<R>> {
+	public record PresenceProperty<R> (String name, ValueValidator<Object, Presence<R>> validator,
+			PropertyMessages messages) implements Part<Presence<R>> {
+
+		/**
+		 * Creates a property that is called by its name and reports the default messages.
+		 * @param name the key of the property in the map
+		 * @param validator the validator of the value of a key that is present
+		 */
+		public PresenceProperty(String name, ValueValidator<Object, Presence<R>> validator) {
+			this(name, validator, PropertyMessages.none());
+		}
 	}
 
 	/**
@@ -712,9 +739,10 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 						};
 						// an absent key is required rather than null, and so is text without
 						// a value unless a constraint has a message of its own for it
-						validated = read != null && (read.isValid() || !(absent || (empty && rejectsNull(read)))) ? read
-								: Validated.failureWith(
-										violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale));
+						validated = property.messages()
+							.applyTo(name, read != null && (read.isValid() || !(absent || (empty && rejectsNull(read)))) ? read
+									: Validated.failureWith(
+											violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale)));
 					}
 					case PresenceProperty<?> property -> {
 						final String name = property.name();
@@ -723,10 +751,11 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 						final Validated<?> read = value == null && !this.reader.hasProperty(input, name)
 								? Validated.successWith(Presence.absent())
 								: validator.validate(isNull ? null : value, locale, constraintContext);
-						validated = value != null && isNull && this.reader.isEmptyText(value) && rejectsNull(read)
-								? Validated.failureWith(
-										violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale))
-								: read;
+						validated = property.messages()
+							.applyTo(name, value != null && isNull && this.reader.isEmptyText(value) && rejectsNull(read)
+									? Validated.failureWith(
+											violation(name, ViolationMessage.Default.OBJECT_REQUIRED, null, locale))
+									: read);
 					}
 					case Embedded<?> embedded -> {
 						final Group group = ObjectInputValidator.this.groups.get(i);

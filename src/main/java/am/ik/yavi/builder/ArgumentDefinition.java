@@ -25,6 +25,7 @@ import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.input.PropertyMessages;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -51,12 +52,15 @@ import org.jspecify.annotations.Nullable;
  * @param neverNull whether the validated value is known never to be {@code null}: the
  * value of constraints, a list, a map or an {@code Optional}. It is unknown for a value
  * validator, whose type may be nullable
+ * @param messages what an argument read from a key is called in a message, and what is
+ * said when it has no value or a value of another type. The validator applies the label
+ * itself; the part that reads the argument from a map applies the rest
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
-		ObjectInputValidator.Strictness strictness, boolean neverNull) {
+		ObjectInputValidator.Strictness strictness, boolean neverNull, PropertyMessages messages) {
 
 	private static final String RECOVER_WITH_NULL = "Write nullable() before it, or recover with Optional.empty() after optional().";
 
@@ -84,7 +88,65 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull) {
-		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull);
+		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull,
+				PropertyMessages.none());
+	}
+
+	/**
+	 * Returns the definition of this argument with the given validators, which stand for
+	 * those of this definition: the key, its strictness and its messages are kept.
+	 */
+	private <A2, R2 extends @Nullable Object> ArgumentDefinition<A2, R2> derive(ValueValidator<A2, R2> validator,
+			Function<InputReader<Object>, ValueValidator<Object, R2>> untyped, Source source, boolean neverNull) {
+		return new ArgumentDefinition<>(this.name, validator, untyped, source, this.strictness, neverNull,
+				this.messages);
+	}
+
+	/**
+	 * Returns the definition of this argument with the given messages. The violations
+	 * that the validator of a typed argument reports are labeled.
+	 */
+	ArgumentDefinition<A, R> withMessages(PropertyMessages messages) {
+		return new ArgumentDefinition<>(this.name,
+				messages.label() == null ? this.validator
+						: new Labeled<>(this.keyName(), new PropertyMessages(messages.label(), null, null),
+								unlabeled(this.validator)),
+				this.untyped, this.source, this.strictness, this.neverNull, messages);
+	}
+
+	private static <A, R extends @Nullable Object> ValueValidator<A, R> unlabeled(ValueValidator<A, R> validator) {
+		return validator instanceof Labeled<A, R>labeled ? labeled.validator() : validator;
+	}
+
+	/**
+	 * The validator of a typed argument whose violations are labeled.
+	 */
+	private record Labeled<A, R extends @Nullable Object> (String name, PropertyMessages messages,
+			ValueValidator<A, R> validator) implements ValueValidator<A, R> {
+
+		@Override
+		public Validated<R> validate(@Nullable A value, Locale locale, ConstraintContext constraintContext) {
+			return this.messages.applyTo(this.name, this.validator.validate(value, locale, constraintContext));
+		}
+
+		@Override
+		public ValueDescription description() {
+			return this.validator.description();
+		}
+
+		@Override
+		public <N> ValueValidator<N, R> readingWith(InputReader<N> reader) {
+			return new Labeled<>(this.name, this.messages, this.validator.readingWith(reader));
+		}
+
+	}
+
+	/**
+	 * Returns the key of a property: the name of the argument, or else the name under
+	 * which its validator reports violations.
+	 */
+	private String keyName() {
+		return this.name != null ? this.name : describedName(this.validator.description());
 	}
 
 	/**
@@ -203,13 +265,13 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	ArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
-		return new ArgumentDefinition<>(this.name, this.validator.optional(),
-				reader -> this.untyped.apply(reader).optional(), this.source, true);
+		return this.derive(this.validator.optional(), reader -> this.untyped.apply(reader).optional(), this.source,
+				true);
 	}
 
 	ArgumentDefinition<A, @Nullable R> asNullable() {
-		return new ArgumentDefinition<>(this.name, this.validator.nullable(),
-				reader -> this.untyped.apply(reader).nullable(), this.source, false);
+		return this.derive(this.validator.nullable(), reader -> this.untyped.apply(reader).nullable(), this.source,
+				false);
 	}
 
 	/**
@@ -218,7 +280,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
 		final R checked = this.nonNull(defaultValue, "default value", "Write nullable() instead.");
-		return new ArgumentDefinition<>(this.name, this.validator.defaultValue(checked),
+		return this.derive(this.validator.defaultValue(checked),
 				reader -> this.untyped.apply(reader).defaultValue(checked), this.source, this.neverNull);
 	}
 
@@ -228,8 +290,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	ArgumentDefinition<A, R> recovering(R fallback) {
 		final R checked = this.nonNull(fallback, "fallback", RECOVER_WITH_NULL);
-		return new ArgumentDefinition<>(this.name, this.validator.recover(checked),
-				reader -> this.untyped.apply(reader).recover(checked), this.source, this.neverNull);
+		return this.derive(this.validator.recover(checked), reader -> this.untyped.apply(reader).recover(checked),
+				this.source, this.neverNull);
 	}
 
 	/**
@@ -240,7 +302,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> recoveringWith(Function<? super ConstraintViolations, ? extends R> fallback) {
 		final Function<? super ConstraintViolations, ? extends R> checked = this.neverNull ? violations -> this
 			.nonNull(fallback.apply(violations), "result of the fallback function", RECOVER_WITH_NULL) : fallback;
-		return new ArgumentDefinition<>(this.name, this.validator.recoverWith(checked),
+		return this.derive(this.validator.recoverWith(checked),
 				reader -> this.untyped.apply(reader).recoverWith(checked), this.source, this.neverNull);
 	}
 
@@ -266,7 +328,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * modifier after it.
 	 */
 	ArgumentDefinition<Presence<A>, Presence<@NonNull R>> withPresence() {
-		return new ArgumentDefinition<>(this.name, this.validator.liftPresence(), reader -> {
+		return this.derive(this.validator.liftPresence(), reader -> {
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
 			return present.<Presence<@NonNull R>>map(value -> Presence.<@NonNull R>ofNullable(value))
 				.describedAs(new ValueDescription.Presence(present.description()));
@@ -282,7 +344,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
 		return new ArgumentDefinition<>(this.name,
 				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
-				this.source, strictness, this.neverNull);
+				this.source, strictness, this.neverNull, this.messages);
 	}
 
 	/**
@@ -295,7 +357,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	@SuppressWarnings("unchecked")
 	ObjectInputValidator.Part<R> part(int position) {
-		final String name = this.name != null ? this.name : describedName(this.validator.description());
+		final String name = this.keyName();
 		if ((this.source == Source.PROPERTY || this.source == Source.PRESENCE) && name.isEmpty()) {
 			throw new IllegalStateException("The argument at position " + position
 					+ " has no name. Add it with a name to read it from a map, or with _embedded to read the map itself.");
@@ -311,9 +373,9 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 					e);
 		}
 		return switch (this.source) {
-			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading, this.strictness);
+			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading, this.strictness, this.messages);
 			case PRESENCE -> (ObjectInputValidator.Part<R>) new ObjectInputValidator.PresenceProperty<>(name,
-					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading);
+					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading, this.messages);
 			case OBJECT -> new ObjectInputValidator.Embedded<>(reading);
 			case REST -> new ObjectInputValidator.Rest<>(reading);
 		};

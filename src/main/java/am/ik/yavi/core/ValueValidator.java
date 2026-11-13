@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import am.ik.yavi.message.MessageFormatter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
@@ -884,6 +885,36 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 					.prefixed(name),
 				this::description, reader -> this.readingWith(reader).prefixed(name),
 				transform -> this.preprocess(transform).prefixed(name));
+	}
+
+	/**
+	 * Returns a validator that formats the messages of every violation it reports with
+	 * the given formatter, whichever validator created the violation: the validators of
+	 * the nested values too, and the checks of a reader that report a missing value or a
+	 * value of another type.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, String>, Signup> signupValidator = Yavi.schema()
+	 *     ._string("email", c -> c.notBlank().email())
+	 *     .fromMap(Signup::new)
+	 *     .readingParameters()
+	 *     .formattingWith(new MessageSourceMessageFormatter(messageSource::getMessage));
+	 * }</pre>
+	 *
+	 * The outermost formatter decides: a validator nested in the returned one loses its
+	 * own.
+	 * @param messageFormatter the message formatter of the reported violations
+	 * @return a validator whose violations are formatted with the given formatter
+	 * @since 0.18.0
+	 * @see ConstraintViolations#formattedWith(MessageFormatter)
+	 */
+	default ValueValidator<T, X> formattingWith(MessageFormatter messageFormatter) {
+		return described(
+				(t, locale,
+						constraintContext) -> Validated.of(ValueValidator.this.validate(t, locale, constraintContext)
+							.mapError(violation -> violation.formattedWith(messageFormatter))),
+				this::description, reader -> this.readingWith(reader).formattingWith(messageFormatter),
+				transform -> this.preprocess(transform).formattingWith(messageFormatter));
 	}
 
 	/**

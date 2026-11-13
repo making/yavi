@@ -490,6 +490,62 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
 
+### Labels and messages of a property
+
+A form calls a field by its label, and some messages come from no constraint: a missing
+value (`object.required`) and a value of another type (`object.type`) are reported
+before any constraint is checked. A property says how they read:
+
+```java
+record Token(String name, Integer ttl, List<String> roles) {}
+
+ValueValidator<Map<String, List<String>>, Token> tokenValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank()).label("Token name")
+        ._integer("ttl", c -> c.positive()).typeMessage("\"{0}\" must be a number of seconds")
+        ._list("roles", Yavi._string(c -> c.notBlank())).label("Roles").required("Select at least one role")
+        .fromMap(Token::new)
+        .readingParameters();
+
+tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).errors().messagesByName();
+// {name=["Token name" must not be blank], ttl=["ttl" must be a number of seconds], roles=[Select at least one role]}
+```
+
+| Modifier | What it changes |
+| --- | --- |
+| `label("Token name")` | `{0}` of every message of the property and of its elements (`roles`, `roles[1]`). The name, the path and the pointer of a violation are unchanged, so `messagesByName()` and a `ViolationDetail` still have `name`. `violation.label()` returns the label. |
+| `typeMessage(format)` | The message of `object.type` of the property and of its elements. `{1}` is the name of the type and `{2}` the value. |
+| `required(format)` | The message of `object.required`: an absent key, and text without a value. After `optional()`, `nullable()` or `defaultValue(...)` it also requires the key, as `required()` does. |
+
+* `typeMessage` and `required` take a `ViolationMessage` too, which replaces the message
+  key as well: `required(ViolationMessage.of("token.roles", "Select at least one role"))`.
+* Write `label` and `typeMessage` right after the property is added, before `optional()`
+  and the like. `required(...)` is the last modifier: `.required("...").optional()` does
+  not compile.
+* A violation of a nested property (`address.street`) is left to that property. An
+  explicit `null` and an enum constant that does not exist are reported as before
+  (`object.notNull`, `object.oneOf`).
+* A property of `ObjectInputValidator.of(parts, mapper)` takes the same as a
+  `PropertyMessages`.
+
+The messages of the constraints come from a `MessageFormatter`, as those of
+`ValidatorBuilder` do. A validator formats every violation it reports with
+`formattingWith`, and violations are given another formatter or labels of a resource
+bundle afterwards:
+
+```java
+MessageFormatter formatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+
+// every violation of the validator, those of nested validators and of the reader included
+ValueValidator<Map<String, List<String>>, Token> localized = tokenValidator.formattingWith(formatter);
+
+// or when the violations are shown
+violations.labeled(violation -> messageSource.getMessage("label." + violation.name(), null, null, locale))
+        .formattedWith(formatter)
+        .messagesByName();
+```
+
+`labeled` leaves a violation as it is when the function returns `null`.
+
 ### Showing the form again in Spring MVC
 
 Spring MVC creates a `BindingResult` only for a form object that it binds, not for a map
@@ -552,7 +608,8 @@ class SignupController {
 * A field shows the text that was sent again, even if it is not of the type of its
   property (`abc` for `age`).
 * The code of a field error is the message key (`object.type`), so a `MessageSource`
-  replaces the message as before.
+  replaces the message as before. `{0}` of that message is the label of the property if
+  it has one.
 * Thymeleaf adds a hidden field `_subscribed` to a checkbox. No property is defined for
   that key, so such a form cannot be read with `rejectingUnknownProperties()`.
 * Name a field as `th:field` does: `address.city`, `items[0].name`. These are the names
@@ -801,6 +858,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `InputReader`, `readingWith` | [#541](https://github.com/making/yavi/pull/541) |
 | `coercingStrings()`, `readingParameters()` | [#542](https://github.com/making/yavi/pull/542), [#543](https://github.com/making/yavi/pull/543) |
 | `BindingResult` of request parameters in Spring MVC (documentation) | [#569](https://github.com/making/yavi/pull/569) |
+| `label`, `required(message)`, `typeMessage`, `formattingWith`, `labeled`, `formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |

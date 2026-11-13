@@ -51,6 +51,7 @@ import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.fn.Function9;
 import am.ik.yavi.input.ObjectInputValidator;
 import org.jspecify.annotations.NonNull;
@@ -2300,12 +2301,74 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 */
 	public static final class Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object>
-			extends Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> {
+			extends Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>
+			implements MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>> {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
 				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9) {
 			super(d1, d2, d3, d4, d5, d6, d7, d8, d9);
+		}
+
+		@Override
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> label(String label) {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withLabel(label)));
+		}
+
+		@Override
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> typeMessage(
+				ViolationMessage message) {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withType(message)));
+		}
+
+		/**
+		 * Requires the last added argument, which it is unless a modifier accepts
+		 * {@code null} and reports a missing value with the given message format instead
+		 * of the one of {@code object.required}, for a value that only a person can tell
+		 * how to give, such as a group of checkboxes that sends no key when no box is
+		 * checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the last added argument, which it is unless a modifier accepts
+		 * {@code null} and reports a missing value with the given message instead of the
+		 * one of {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				ViolationMessage message) {
+			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9.withMessages(this.d9.messages().withRequired(message)));
 		}
 
 		/**
@@ -2633,13 +2696,28 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 */
 	public static sealed class OptionalAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object>
-			extends
-			Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>permits KeyedOptional {
+			extends Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>
+			implements
+			MessageModifiers<OptionalAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>>permits KeyedOptional {
 
 		OptionalAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
 				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9) {
 			super(d1, d2, d3, d4, d5, d6, d7, d8, d9);
+		}
+
+		@Override
+		public OptionalAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> label(
+				String label) {
+			return new OptionalAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withLabel(label)));
+		}
+
+		@Override
+		public OptionalAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> typeMessage(
+				ViolationMessage message) {
+			return new OptionalAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withType(message)));
 		}
 
 		/**
@@ -2673,6 +2751,54 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required() {
 			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message format instead of the one of
+		 * {@code object.required}, for a value that only a person can tell how to give,
+		 * such as a group of checkboxes that sends no key when no box is checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message instead of the one of
+		 * {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				ViolationMessage message) {
+			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9.withStrictness(ObjectInputValidator.Strictness.REQUIRED)
+						.withMessages(this.d9.messages().withRequired(message)));
 		}
 
 		/**
@@ -2834,13 +2960,28 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 	 * @since 0.18.0
 	 */
 	public static sealed class NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object>
-			extends
-			Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>permits KeyedRecoverable,KeyedRecovered {
+			extends Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>
+			implements
+			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9>>permits KeyedRecoverable,KeyedRecovered {
 
 		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
 				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9) {
 			super(d1, d2, d3, d4, d5, d6, d7, d8, d9);
+		}
+
+		@Override
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> label(
+				String label) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withLabel(label)));
+		}
+
+		@Override
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> typeMessage(
+				ViolationMessage message) {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8,
+					this.d9.withMessages(this.d9.messages().withType(message)));
 		}
 
 		/**
@@ -2874,6 +3015,54 @@ public sealed class Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A
 		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required() {
 			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9.withStrictness(ObjectInputValidator.Strictness.REQUIRED));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message format instead of the one of
+		 * {@code object.required}, for a value that only a person can tell how to give,
+		 * such as a group of checkboxes that sends no key when no box is checked.
+		 *
+		 * <pre>{@code
+		 * ._list("roles", Yavi._string()).required("Select at least one role")
+		 * }</pre>
+		 *
+		 * <p>
+		 * The message key {@code object.required} and the arguments are kept:
+		 * <code>{0}</code> is the name or the label of the argument. With
+		 * {@code fromMap}, the message is reported for an absent key and for text without
+		 * a value. An explicit {@code null} is not missing: it is reported by a
+		 * constraint that rejects it, or else with {@code object.notNull}.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument has no absent state and is validated as
+		 * before. This is the last modifier of an argument: the returned builder has
+		 * none, so one that would accept a missing value cannot follow.
+		 * @param messageFormat the message format of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				String messageFormat) {
+			return this
+				.required(ViolationMessage.of(ViolationMessage.Default.OBJECT_REQUIRED.messageKey(), messageFormat));
+		}
+
+		/**
+		 * Requires the key of the last added argument, as {@link #required()} does and
+		 * reports a missing value with the given message instead of the one of
+		 * {@code object.required}. Both the message key and the message format are
+		 * replaced, so that a resource bundle can hold the message of this argument.
+		 * @param message the message of a missing value
+		 * @return a builder whose last argument requires its key
+		 * @since 0.18.0
+		 * @see #required(String)
+		 */
+		public Arguments9ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, R1, R2, R3, R4, R5, R6, R7, R8, R9> required(
+				ViolationMessage message) {
+			return new Arguments9ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+					this.d8, this.d9.withStrictness(ObjectInputValidator.Strictness.REQUIRED)
+						.withMessages(this.d9.messages().withRequired(message)));
 		}
 
 		/**
