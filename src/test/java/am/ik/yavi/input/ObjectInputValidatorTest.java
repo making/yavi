@@ -900,6 +900,17 @@ class ObjectInputValidatorTest {
 			.extracting(violations -> violations.get(0).name(), violations -> violations.get(0).messageKey())
 			.containsExactly(tuple("tags", "collection.unique"), tuple("tags", "object.required"),
 					tuple("tags", "object.type"));
+		// a value that is neither text nor a list is not one element, and an element of
+		// a list that is not text is validated as it is
+		assertThat(Stream
+			.of(input("tags", 1), input("tags", true), input("tags", Map.of("a", "b")),
+					input("tags", "a", "ids", List.of(1, true)))
+			.map(input -> article.validate(input).errors().get(0)))
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("ids[1]", "\"ids[1]\" must be of type integer"));
 		assertThat(JsonSchema.toJson(article.description())).contains(
 				"\"tags\":{\"type\":[\"array\",\"string\"],\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":5},\"uniqueItems\":true}",
 				"\"ids\":{\"type\":[\"array\",\"string\",\"null\"],\"items\":{\"type\":\"integer\",\"exclusiveMinimum\":0},\"default\":[]}");

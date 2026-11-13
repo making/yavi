@@ -339,7 +339,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 			}
 			final boolean array = reader.isArray(present);
 			if (!array && !(reader.value(present, String.class) instanceof String)) {
-				return Validated.failureWith(UntypedInput.mismatch("array", reader, present, locale));
+				// a text is taken too, so the type that was expected is not an array only
+				return Validated.failureWith(UntypedInput.mismatch("array or string", reader, present, locale));
 			}
 			final List<ConstraintViolation> violations = new ArrayList<>();
 			int index = 0;
@@ -1146,6 +1147,10 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * ({@code \\s*,\\s*}), by the coercion or by the validator of the element.</li>
 	 * <li>The violations of an element are located under its index in the list of all
 	 * elements.</li>
+	 * <li>A node that is neither text nor an array, such as a number or an object, is
+	 * reported with {@code object.type} as one that is not of type
+	 * {@code array or string}. A single value is not taken for a list of one
+	 * element.</li>
 	 * </ul>
 	 * @param separator the pattern that separates the elements in a text
 	 * @return a value validator for iterables and for text

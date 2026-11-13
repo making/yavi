@@ -525,6 +525,7 @@ articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "
 * 空のパラメータ（`tags=`）は、ほかのプロパティと同じく、値がないものとして扱われます。
 * `splitBy` は `_list` の直後、ほかの修飾メソッドの前に書きます。
 * ほかの入力も同じように読まれます。`{"tags": "java,yavi"}` と `{"tags": ["java", "yavi"]}` は同じリストです。このプロパティの JSON Schema は `"type": ["array", "string"]` になります。
+* `{"tags": 1}` のようにテキストでもリストでもない値は、`object.type` で報告されます（`"tags" must be of type array or string`）。1 要素のリストとしては扱われません。リストの要素のうちテキストでないものは、そのまま検証されます。
 * スキーマのプロパティではないリストは、`Yavi._list(elementValidator, constraints).splitBy(",")` または `elementValidator.liftList(pattern)` で分割します。
 * 型付きの引数（`apply`）はすでに要素を持っているので、これまでと同じように検証されます。
 

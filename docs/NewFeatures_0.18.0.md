@@ -625,6 +625,9 @@ articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "
 * Another input is read the same way: `{"tags": "java,yavi"}` and
   `{"tags": ["java", "yavi"]}` are the same list. The JSON Schema of the property has
   `"type": ["array", "string"]`.
+* A value that is neither text nor a list, such as `{"tags": 1}`, is reported with
+  `object.type` (`"tags" must be of type array or string`); it is not taken for a list of
+  one element. An element of a list that is not text is validated as it is.
 * A list that is not a property of a schema is split with
   `Yavi._list(elementValidator, constraints).splitBy(",")` or
   `elementValidator.liftList(pattern)`.
