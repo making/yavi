@@ -271,6 +271,14 @@ class YaviArgumentsTest {
 		assertThat(age.defaultValue(20).validated(null)).isEqualTo(20);
 		assertThat(nullableAge.validate(-1).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("numeric.greaterThanOrEqual");
+		// isNull() alone is never satisfied by a required value; with nullable() the
+		// value must be null
+		final IntegerValidator<Integer> mustBeNull = Yavi._integer("id", c -> c.isNull());
+		assertThat(List.of(mustBeNull.validate(null).errors(), mustBeNull.validate(1).errors(),
+				mustBeNull.nullable().validate(1).errors()))
+			.extracting(violations -> violations.get(0).messageKey())
+			.containsExactly("object.notNull", "object.isNull", "object.isNull");
+		assertThat(mustBeNull.nullable().validate(null).isValid()).isTrue();
 	}
 
 }
