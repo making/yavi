@@ -324,6 +324,18 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 
 `c.trim()`, `c.toLowerCase()`, `c.toUpperCase()`, `c.toNormalForm(form)` and `c.transform(f)` are available wherever the constraints of a `String` value are written, such as `Yavi.schema()._string("email", c -> ...)`.
 
+`named(name)` uses a validator under another name, so the rule of a value is defined once. The name replaces the one the validator was built with in the violations, in their messages and in `description()`, and it is the key of a property added with the validator alone. The combinators carry it, so it is given before or after `map`, `nullable()` or `untyped()`. A value that has no name of its own, such as an object or a list, is located under the name (`home.street`).
+
+```java
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().notBlank().email());
+
+ObjectInputValidator<Contact> contactValidator = Yavi.schema()
+        ._string(emailValidator)                                 // "email"
+        ._string(emailValidator.named("backupEmail")).nullable() // "backupEmail"
+        ._object("replyTo", emailValidator)                      // the same as named("replyTo")
+        .fromMap(Contact::new);
+```
+
 #### Nested objects, collections and optional properties
 
 A property can also be a nested object, a list or a map. Their violations are located under the property name (`address.street`, `roles[0]`, `scores.math`), both in `name()` and in the structured `path()`.
@@ -467,6 +479,25 @@ ObjectInputValidator<Employee> employeeValidator = Yavi.schema()
 * The rest is an empty map if there is no other key, never `null`, so it takes `recover(...)` only: `_rest().nullable()` does not compile.
 * A lambda may be embedded too. The properties it reads are unknown, so the validator can then neither reject unknown properties nor read the rest.
 * Embedding is also the way to read more than 16 keys.
+
+Properties that are known only at run time, such as the questions of a survey or custom fields, are described with `Yavi.dynamicSchema()`. Its validator produces a map of the validated values by their names:
+
+```java
+DynamicSchema<String> schema = Yavi.dynamicSchema();
+for (Question question : survey.questions()) {
+    StringValidator<String> answer = Yavi._string(c -> c.notBlank().lessThanOrEqual(question.maxLength()));
+    schema = question.required() ? schema.property(question.id(), answer).label(question.title())
+            : schema.property(question.id(), answer.defaultValue("")).label(question.title());
+}
+ObjectInputValidator<Map<String, String>> answersValidator = schema.build();
+
+answersValidator.validate(Map.of("q1", "yavi")); // {q1=yavi, q2=}
+```
+
+* A schema is immutable: `property(name, validator)` returns a new one. The validator is used under the name of the property, and its value is required unless the validator accepts `null` (`nullable()`, `defaultValue(...)`, `recover(...)`).
+* The modifiers of a property are `label`, `required(message)`, `typeMessage` and `presence()`, and `required()` and `rejectingNull()` for a validator that accepts `null`, with the staged types of `Yavi.schema()`. A property with `presence()` has no entry in the map if its key is absent.
+* `rest(valueValidator)` validates the keys that no property is defined for and adds them to the map.
+* The validator is the one of `fromMap`: it has `rejectingUnknownProperties()`, `readingParameters()` and `description()`, and it is a property of another schema (`_object("answers", answersValidator)`).
 
 ##### Validating the tree model of a JSON library
 
@@ -660,6 +691,7 @@ The keys are paths, and a key is whatever its property expects:
 * Keys with indexes are a list in the order of the indexes: `items[0].name=pen&items[1].name=ink`. An index that is skipped is an element that is `null`, so a violation keeps the index it was sent with (`items[2].name`). An index is at most 255 (`ParameterTree.DEFAULT_MAX_INDEX`): a greater number is a name, so `tags[999999999]` is reported with `object.type` and allocates nothing.
 * A key that has both values and nested keys (`a=1&a.b=2`) is reported with `object.type`, and a key that is not written as a path (`a..b`, `a[0`) matches no property.
 * An empty list or object cannot be sent: its key is absent, which is validated like `null`. Give `defaultValue(List.of())` to a list that may be empty, such as checkboxes.
+* `splitBy` after `_list` reads a list also from one value: `._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",")` reads `tags=java,yavi`, and `.splitBy(Pattern.compile("\\R"))` one element per line of a `textarea`. The elements are text that stands for a value, so `._list("ids", Yavi._integer()).splitBy(",")` reads `ids=1,2,3`, and their violations are located under their index (`tags[1]`), like those of a repeated key. Every text is split (`tags=a,b&tags=c` is `[a, b, c]`), and no element is dropped or trimmed: `a,,b` has three elements, except that a separator at the end starts no element. `Yavi._list(elementValidator, constraints).splitBy(",")` is the validator of such a list that is not a property.
 * The rules of absent and unknown keys do not change: with `rejectingUnknownProperties()`, `address.zip` is reported by the validator of `address`.
 
 `readingParameters()` validates the `ParameterTree` of the map, which any validator reads with `readingWith(ParameterTree.reader())`; `ParameterTree.of(map, maxIndex)` gives another limit to the indexes.

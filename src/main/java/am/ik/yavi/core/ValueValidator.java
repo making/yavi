@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Validates an input of type {@code T} and produces a value of type {@code X} when
@@ -32,18 +33,18 @@ import java.util.function.Supplier;
  * be chained with {@link #andThen(ValueValidator)}, mapped with {@link #map(Function)},
  * adapted to another input type with {@link #compose(Function)}, given an input
  * transformed within its type with {@link #preprocess(Function)}, and lifted to
- * collections, maps, optionals or {@link Presence} with {@code lift*} methods. A
- * {@code null} input can be accepted with {@link #optional()}, {@link #nullable()} or
- * {@link #defaultValue(Object)}, any failure is replaced with a fallback with
- * {@link #recover(Object)}, alternatives are combined with
- * {@link #anyOf(ValueValidator[])}, a validator that is not built yet is referred to with
- * {@link #lazy(Supplier)}, and a rule that spans several properties of the produced value
- * is added with {@link #constraintOnTarget}. What a validator expects as input is
- * available from {@link #description()}; the combinators carry it. An input of unknown
- * type, such as a node of a parsed JSON document, is validated with {@link #untyped()},
- * or with {@link #readingWith(InputReader)} if it is not a tree of JDK types. The
- * generated {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend this interface
- * to validate constructor arguments and create only valid objects.
+ * collections, maps, optionals or {@link Presence} with {@code lift*} methods, and used
+ * under another name with {@link #named(String)}. A {@code null} input can be accepted
+ * with {@link #optional()}, {@link #nullable()} or {@link #defaultValue(Object)}, any
+ * failure is replaced with a fallback with {@link #recover(Object)}, alternatives are
+ * combined with {@link #anyOf(ValueValidator[])}, a validator that is not built yet is
+ * referred to with {@link #lazy(Supplier)}, and a rule that spans several properties of
+ * the produced value is added with {@link #constraintOnTarget}. What a validator expects
+ * as input is available from {@link #description()}; the combinators carry it. An input
+ * of unknown type, such as a node of a parsed JSON document, is validated with
+ * {@link #untyped()}, or with {@link #readingWith(InputReader)} if it is not a tree of
+ * JDK types. The generated {@code am.ik.yavi.arguments.ArgumentsNValidator} types extend
+ * this interface to validate constructor arguments and create only valid objects.
  *
  * <p>
  * The type of the produced value tells whether it can be {@code null}: a validator
@@ -87,10 +88,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * {@link #map(Function)}, {@link #andThen(ValueValidator)},
 	 * {@link #constraintOnTarget}, {@link #prefixed(String)} and
 	 * {@link #preprocess(Function)} keep it because they do not change the type of the
-	 * input, the {@code lift*} methods, {@link #optional()}, {@link #nullable()},
-	 * {@link #defaultValue(Object)}, {@link #recover(Object)} and
-	 * {@link #anyOf(ValueValidator[])} wrap it, {@link #lazy(Supplier)} refers to it, and
-	 * {@link #compose(Function)} resets it to unknown because it changes the input.
+	 * input, {@link #named(String)} changes the name in it, the {@code lift*} methods,
+	 * {@link #optional()}, {@link #nullable()}, {@link #defaultValue(Object)},
+	 * {@link #recover(Object)} and {@link #anyOf(ValueValidator[])} wrap it,
+	 * {@link #lazy(Supplier)} refers to it, and {@link #compose(Function)} resets it to
+	 * unknown because it changes the input.
 	 * @return the description of the input
 	 * @since 0.18.0
 	 * @see #describedAs(ValueDescription)
@@ -110,7 +112,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	default ValueValidator<T, X> describedAs(ValueDescription description) {
 		return described(this, () -> description, reader -> this.readingWith(reader).describedAs(description),
-				transform -> this.preprocess(transform).describedAs(description));
+				transform -> this.preprocess(transform).describedAs(description),
+				name -> this.named(name).describedAs(description.named(name)));
 	}
 
 	/**
@@ -216,7 +219,18 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 
 	private static <T, X extends @Nullable Object> ValueValidator<T, X> described(ValueValidator<T, X> validator,
 			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
-		return new DescribedValueValidator<>(validator, description, untyped, null);
+		return new DescribedValueValidator<>(validator, description, untyped, null, null);
+	}
+
+	/**
+	 * Returns a described validator whose input is not the one of another validator, and
+	 * which reports the violations of the validated value under another name as the given
+	 * function states.
+	 */
+	private static <T, X extends @Nullable Object> ValueValidator<T, X> describedNamed(ValueValidator<T, X> validator,
+			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			Function<String, ValueValidator<T, X>> named) {
+		return new DescribedValueValidator<>(validator, description, untyped, null, named);
 	}
 
 	/**
@@ -226,7 +240,18 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	private static <T, X extends @Nullable Object> ValueValidator<T, X> described(ValueValidator<T, X> validator,
 			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
 			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
-		return new DescribedValueValidator<>(validator, description, untyped, preprocessed);
+		return new DescribedValueValidator<>(validator, description, untyped, preprocessed, null);
+	}
+
+	/**
+	 * Returns a described validator that validates the value of another validator, so
+	 * that another name of the value is another name of the value of that validator.
+	 */
+	private static <T, X extends @Nullable Object> ValueValidator<T, X> described(ValueValidator<T, X> validator,
+			Supplier<ValueDescription> description, Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
+			Function<String, ValueValidator<T, X>> named) {
+		return new DescribedValueValidator<>(validator, description, untyped, preprocessed, named);
 	}
 
 	/**
@@ -236,8 +261,10 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	private static <T, X extends @Nullable Object> NullAcceptingValueValidator<T, X> nullAccepting(
 			ValueValidator<T, X> validator, Supplier<ValueDescription> description,
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
-			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
-		return new DescribedNullAcceptingValueValidator<>(validator, description, nullAware(untyped), preprocessed);
+			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
+			Function<String, NullAcceptingValueValidator<T, X>> named) {
+		return new DescribedNullAcceptingValueValidator<>(validator, description, nullAware(untyped), preprocessed,
+				named);
 	}
 
 	/**
@@ -258,11 +285,16 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	private static <X extends @Nullable Object> Function<InputReader<Object>, ValueValidator<Object, X>> nullAware(
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
-		return reader -> {
-			final ValueValidator<Object, X> validator = untyped.apply(reader);
-			return described((node, locale, constraintContext) -> validator.validate(UntypedInput.orNull(reader, node),
-					locale, constraintContext), validator::description, nullAware(untyped));
-		};
+		return reader -> nullAware(reader, untyped.apply(reader), untyped);
+	}
+
+	private static <X extends @Nullable Object> ValueValidator<Object, X> nullAware(InputReader<Object> reader,
+			ValueValidator<Object, X> validator, Function<InputReader<Object>, ValueValidator<Object, X>> untyped) {
+		return describedNamed(
+				(node, locale, constraintContext) -> validator.validate(UntypedInput.orNull(reader, node), locale,
+						constraintContext),
+				validator::description, nullAware(untyped),
+				name -> nullAware(reader, validator.named(name), other -> untyped.apply(other).named(name)));
 	}
 
 	/**
@@ -284,6 +316,64 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 					factory);
 		}, () -> new ValueDescription.Elements(validator.description()),
 				other -> untypedCollection(other, validator, factory));
+	}
+
+	/**
+	 * Returns the untyped counterpart of a validator of a list that may be given as text:
+	 * a text is split with the given pattern, and so is every text of an array. An
+	 * element that was split off is text that stands for a value, whatever the reader
+	 * takes a string for.
+	 */
+	private static <N, T, X extends @Nullable Object> ValueValidator<N, List<X>> untypedSeparated(InputReader<N> reader,
+			ValueValidator<T, X> validator, Pattern separator) {
+		final ValueValidator<N, X> element = validator.readingWith(reader);
+		final InputReader<Object> textReader = InputReader.ofJdkTypes()
+			.coercingStrings(reader instanceof StringCoercingInputReader<N>coercing ? coercing.coercion()
+					: StringCoercion.strict());
+		final ValueValidator<Object, X> text = validator.readingWith(textReader);
+		return described((node, locale, constraintContext) -> {
+			final N present = UntypedInput.orNull(reader, node);
+			final List<X> results = new ArrayList<>();
+			if (present == null) {
+				return Validated.successWith(results);
+			}
+			final boolean array = reader.isArray(present);
+			if (!array && !(reader.value(present, String.class) instanceof String)) {
+				// a text is taken too, so the type that was expected is not an array only
+				return Validated.failureWith(UntypedInput.mismatch("array or string", reader, present, locale));
+			}
+			final List<ConstraintViolation> violations = new ArrayList<>();
+			int index = 0;
+			for (N value : array ? reader.elements(present) : List.of(present)) {
+				final N item = UntypedInput.orNull(reader, value);
+				if (item != null && reader.value(item, String.class) instanceof String string) {
+					for (String part : UntypedInput.split(string, separator)) {
+						index = collect(text.validate(UntypedInput.orNull(textReader, part), locale, constraintContext),
+								index, results, violations);
+					}
+				}
+				else {
+					index = collect(element.validate(item, locale, constraintContext), index, results, violations);
+				}
+			}
+			return violations.isEmpty() ? Validated.successWith(results) : Validated.failureWith(violations);
+		}, () -> new ValueDescription.Elements(validator.description(), List.of(), separator.pattern()),
+				other -> untypedSeparated(other, validator, separator));
+	}
+
+	/**
+	 * Adds the validated element at the given index to the results, or its violations
+	 * under the index to the violations, and returns the next index.
+	 */
+	private static <X extends @Nullable Object> int collect(Validated<X> validated, int index, List<X> results,
+			List<ConstraintViolation> violations) {
+		if (validated.isValid()) {
+			results.add(validated.value());
+		}
+		else {
+			validated.errors().forEach(violation -> violations.add(violation.prefixed(index)));
+		}
+		return index + 1;
 	}
 
 	/**
@@ -325,11 +415,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	@SuppressWarnings("unchecked")
 	private static <N, A1, R extends @Nullable Object> ValueValidator<N, Optional<@NonNull R>> untypedOptional(
 			InputReader<N> reader, ValueValidator<? super A1, ? extends R> validator) {
-		return described(
+		return describedNamed(
 				UntypedInput.checked(reader, (Class<Optional<N>>) (Class<?>) Optional.class,
 						ValueValidator.liftOptional(validator.readingWith(reader))),
 				() -> new ValueDescription.Optional(validator.description(), null),
-				other -> untypedOptional(other, validator));
+				other -> untypedOptional(other, validator), name -> untypedOptional(reader, validator.named(name)));
 	}
 
 	/**
@@ -339,12 +429,12 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	private static <N, T, X extends @Nullable Object> ValueValidator<N, Presence<@NonNull X>> untypedPresence(
 			InputReader<N> reader, ValueValidator<T, X> validator) {
 		final ValueValidator<N, X> present = validator.readingWith(reader);
-		return described(
+		return describedNamed(
 				(node, locale, constraintContext) -> present
 					.validate(UntypedInput.orNull(reader, node), locale, constraintContext)
 					.map(x -> Presence.<@NonNull X>ofNullable(x)),
 				() -> new ValueDescription.Presence(validator.description()),
-				other -> untypedPresence(other, validator));
+				other -> untypedPresence(other, validator), name -> untypedPresence(reader, validator.named(name)));
 	}
 
 	/**
@@ -500,7 +590,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
 					.map(mapper),
 				this::description, reader -> this.readingWith(reader).map(mapper),
-				transform -> this.preprocess(transform).map(mapper));
+				transform -> this.preprocess(transform).map(mapper), name -> this.named(name).map(mapper));
 	}
 
 	/**
@@ -513,12 +603,13 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.11.0
 	 */
 	default <X2 extends @Nullable Object> ValueValidator<T, X2> andThen(
-			ValueValidator<? super @NonNull X, X2> validator) {
+			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return described(
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
 					.flatMap(v -> validator.validate(v, locale, constraintContext)),
 				this::description, reader -> this.readingWith(reader).andThen(validator),
-				transform -> this.preprocess(transform).andThen(validator));
+				transform -> this.preprocess(transform).andThen(validator),
+				name -> this.named(name).andThen(validator.named(name)));
 	}
 
 	/**
@@ -532,8 +623,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	default <A extends @Nullable Object> ValueValidator<A, X> compose(
 			Function<@Nullable A, ? extends @Nullable T> mapper) {
-		return (a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
-				constraintContext);
+		return describedNamed((a, locale, constraintContext) -> ValueValidator.this.validate(mapper.apply(a), locale,
+				constraintContext), ValueDescription.Unknown::new, reader -> {
+					throw new UnsupportedOperationException(
+							"The input type of this validator is unknown. Use untyped(Class) to give it.");
+				}, name -> this.named(name).compose(mapper));
 	}
 
 	/**
@@ -569,11 +663,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 */
 	default ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
-		return described((t, locale, constraintContext) -> ValueValidator.this
+		return describedNamed((t, locale, constraintContext) -> ValueValidator.this
 			.validate(t == null ? null : transform.apply(t), locale, constraintContext), this::description, reader -> {
 				throw new UnsupportedOperationException(
 						"The input type of this validator is unknown. Use untyped(Class) to give it.");
-			});
+			}, name -> this.named(name).preprocess(transform));
 	}
 
 	/**
@@ -595,7 +689,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						: ValueValidator.this.validate(t, locale, constraintContext)
 							.map(x -> Optional.<@NonNull X>ofNullable(x)),
 				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).optional(),
-				transform -> this.preprocess(transform).optional());
+				transform -> this.preprocess(transform).optional(), name -> this.named(name).optional());
 	}
 
 	/**
@@ -621,7 +715,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				return ValueValidator.this.validate(t, locale, constraintContext).map(x -> x);
 			}
 		}, () -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).nullable(),
-				transform -> this.preprocess(transform).nullable());
+				transform -> this.preprocess(transform).nullable(), name -> this.named(name).nullable());
 	}
 
 	/**
@@ -642,7 +736,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						: ValueValidator.this.validate(t, locale, constraintContext),
 				() -> acceptingNull(this.description(), defaultValue),
 				reader -> this.readingWith(reader).defaultValue(defaultValue),
-				transform -> this.preprocess(transform).defaultValue(defaultValue));
+				transform -> this.preprocess(transform).defaultValue(defaultValue),
+				name -> this.named(name).defaultValue(defaultValue));
 	}
 
 	/**
@@ -676,7 +771,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(fallback)
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), violations -> fallback),
 				() -> acceptingNull(this.description(), fallback), reader -> this.readingWith(reader).recover(fallback),
-				transform -> this.preprocess(transform).recover(fallback));
+				transform -> this.preprocess(transform).recover(fallback), name -> this.named(name).recover(fallback));
 	}
 
 	/**
@@ -709,7 +804,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						? Validated.successWith(fallback.apply(new ConstraintViolations()))
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), fallback),
 				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).recoverWith(fallback),
-				transform -> this.preprocess(transform).recoverWith(fallback));
+				transform -> this.preprocess(transform).recoverWith(fallback),
+				name -> this.named(name).recoverWith(fallback));
 	}
 
 	private static <X extends @Nullable Object> Validated<X> recovered(Validated<X> validated,
@@ -746,11 +842,24 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 			throw new IllegalArgumentException("'validators' must not be empty.");
 		}
 		final List<ValueValidator<? super T, ? extends X>> alternatives = List.of(validators);
-		final Function<InputReader<Object>, ValueValidator<Object, X>> untyped = reader -> ValueValidator
-			.anyOf(alternatives.stream()
-				.map(alternative -> alternative.readingWith(reader))
-				.toArray(ValueValidator[]::new));
-		return ValueValidator.<T, X>described((t, locale, constraintContext) -> {
+		return ValueValidator.<T, X>alternatives(alternatives, violation -> violation);
+	}
+
+	/**
+	 * Returns a validator of the given alternatives that locates the violation that no
+	 * alternative matched with the given function. Under another name of the validated
+	 * value, every alternative validates the value under that name.
+	 */
+	@SuppressWarnings("unchecked")
+	private static <T, X extends @Nullable Object> ValueValidator<T, X> alternatives(
+			List<ValueValidator<? super T, ? extends X>> alternatives,
+			Function<ConstraintViolation, ConstraintViolation> located) {
+		final Function<InputReader<Object>, ValueValidator<Object, X>> untyped = reader -> alternatives(
+				alternatives.stream()
+					.<ValueValidator<? super Object, ? extends X>>map(alternative -> alternative.readingWith(reader))
+					.toList(),
+				located);
+		return ValueValidator.<T, X>describedNamed((t, locale, constraintContext) -> {
 			final List<ConstraintViolations> violations = new ArrayList<>();
 			for (ValueValidator<? super T, ? extends X> alternative : alternatives) {
 				final Validated<? extends X> validated = alternative.validate(t, locale, constraintContext);
@@ -759,10 +868,14 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				}
 				violations.add(validated.errors());
 			}
-			return Validated.failureWith(
-					ConstraintViolation.of(ViolationMessage.Default.OBJECT_ANY_OF, t, locale, alternatives.size())
-						.withAlternatives(violations));
-		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()), untyped);
+			return Validated.failureWith(located
+				.apply(ConstraintViolation.of(ViolationMessage.Default.OBJECT_ANY_OF, t, locale, alternatives.size()))
+				.withAlternatives(violations));
+		}, () -> new ValueDescription.AnyOf(alternatives.stream().map(ValueValidator::description).toList()), untyped,
+				name -> alternatives(alternatives.stream()
+					.<ValueValidator<? super T, ? extends X>>map(
+							alternative -> ((ValueValidator<T, X>) alternative).named(name))
+					.toList(), violation -> located.apply(violation).prefixed(name)));
 	}
 
 	/**
@@ -783,14 +896,28 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	default ValueValidator<T, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
+		return onTarget(this, predicate, violationMessage, violation -> violation.prefixed(name));
+	}
+
+	/**
+	 * Returns a validator that additionally checks the value produced by the given
+	 * validator with the given predicate and locates the violation of the predicate with
+	 * the given function. Under another name of the validated value, the violation is a
+	 * violation of a property of that value.
+	 */
+	private static <T, X extends @Nullable Object> ValueValidator<T, X> onTarget(ValueValidator<T, X> validator,
+			Predicate<? super X> predicate, ViolationMessage violationMessage,
+			Function<ConstraintViolation, ConstraintViolation> located) {
 		return described(
-				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
+				(t, locale, constraintContext) -> validator.validate(t, locale, constraintContext)
 					.flatMap(x -> predicate.test(x) ? Validated.successWith(x)
 							: Validated
-								.failureWith(ConstraintViolation.of(violationMessage, x, locale).prefixed(name))),
-				this::description,
-				reader -> this.readingWith(reader).constraintOnTarget(predicate, name, violationMessage),
-				transform -> this.preprocess(transform).constraintOnTarget(predicate, name, violationMessage));
+								.failureWith(located.apply(ConstraintViolation.of(violationMessage, x, locale)))),
+				validator::description,
+				reader -> onTarget(validator.readingWith(reader), predicate, violationMessage, located),
+				transform -> onTarget(validator.preprocess(transform), predicate, violationMessage, located),
+				name -> onTarget(validator.named(name), predicate, violationMessage,
+						violation -> located.apply(violation).prefixed(name)));
 	}
 
 	/**
@@ -888,6 +1015,50 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	}
 
 	/**
+	 * Returns a validator that reports the violations of the validated value under the
+	 * given name instead of the name it was built with. This is how the rule of a value
+	 * is defined once and used for several properties:
+	 *
+	 * <pre>{@code
+	 * StringValidator<String> email = Yavi._string(c -> c.trim().notBlank().email());
+	 *
+	 * Yavi.schema()
+	 *     ._string(email.named("email"))
+	 *     ._string(email.named("backupEmail")).nullable()
+	 *     .fromMap(Contact::new);
+	 * }</pre>
+	 *
+	 * <p>
+	 * The name is the one that a violation on the value itself has. It replaces the name
+	 * of a validator of a single value, with or without a name, in the violations, in
+	 * their messages and in the {@linkplain #description() description}, so the key of a
+	 * property added to a schema with the validator alone is the given name. The
+	 * violations of a value that has none, such as an object, a list, a map or the value
+	 * of a lambda, are located under the name, as {@link #prefixed(String)} does:
+	 * {@code street} becomes {@code address.street} and {@code [0]} becomes
+	 * {@code tags[0]}.
+	 *
+	 * <p>
+	 * The combinators carry the name to the validators that validate the same value:
+	 * {@link #map(Function)}, {@link #preprocess(Function)}, {@link #compose(Function)},
+	 * {@link #optional()}, {@link #nullable()}, {@link #defaultValue(Object)},
+	 * {@link #recover(Object)}, {@link #constraintOnTarget}, {@link #lazy(Supplier)},
+	 * {@link #liftOptional()} and {@link #liftPresence()} to the validator they are
+	 * applied to, {@link #andThen(ValueValidator)} to both validators and
+	 * {@link #anyOf(ValueValidator[])} to every alternative. It makes no difference
+	 * whether the name is given before or after them, or before or after
+	 * {@link #readingWith(InputReader)}. A name given later replaces the earlier one.
+	 * @param name the name under which the violations of the value are reported; an empty
+	 * name takes the name away
+	 * @return a validator of the value under the given name
+	 * @since 0.18.0
+	 * @see #prefixed(String)
+	 */
+	default ValueValidator<T, X> named(String name) {
+		return this.prefixed(name);
+	}
+
+	/**
 	 * Returns a validator that formats the messages of every violation it reports with
 	 * the given formatter, whichever validator created the violation: the validators of
 	 * the nested values too, and the checks of a reader that report a missing value or a
@@ -914,7 +1085,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						constraintContext) -> Validated.of(ValueValidator.this.validate(t, locale, constraintContext)
 							.mapError(violation -> violation.formattedWith(messageFormatter))),
 				this::description, reader -> this.readingWith(reader).formattingWith(messageFormatter),
-				transform -> this.preprocess(transform).formattingWith(messageFormatter));
+				transform -> this.preprocess(transform).formattingWith(messageFormatter),
+				name -> this.named(name).formattingWith(messageFormatter));
 	}
 
 	/**
@@ -941,6 +1113,59 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	default ValueValidator<Iterable<T>, List<X>> liftList() {
 		return ValueValidator.liftList(this);
+	}
+
+	/**
+	 * Returns a validator like {@link #liftList()} that also reads the list from text
+	 * whose elements are separated by the given pattern, such as {@code java,yavi} or one
+	 * element per line. It matters to an untyped input ({@link #untyped()},
+	 * {@link #readingWith(InputReader)}); a typed iterable holds the elements already and
+	 * is validated as {@link #liftList()} does.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Object, List<Integer>> ids = Yavi._integer(c -> c.positive())
+	 *     .liftList(Pattern.compile(","))
+	 *     .untyped();
+	 * ids.validate("1,2,3"); // [1, 2, 3]
+	 * ids.validate("1,x,-3"); // violations at [1] and [2]
+	 * }</pre>
+	 *
+	 * <ul>
+	 * <li>A node that is text is split, and so is every element of an array that is text,
+	 * so a repeated request parameter gives the same list as one parameter:
+	 * {@code tags=a,b&tags=c} is {@code [a, b, c]}. Any other element of an array is
+	 * validated as it is.</li>
+	 * <li>An element that was split off is text that stands for a value, as
+	 * {@link CoercibleInputReader#coercingStrings()} states, whatever the reader takes a
+	 * string for: {@code "1"} is an {@code Integer} where the element is one. The
+	 * {@link StringCoercion} is the one of the reader if it coerces strings.</li>
+	 * <li>Nothing is dropped and nothing is trimmed, so that a violation tells what was
+	 * sent: {@code a,,b} has three elements and the second has no value, which the
+	 * validator of the element decides about. Only a separator at the end of the text
+	 * ends the last element and starts no other: {@code a,b,} is {@code [a, b]}, like the
+	 * line break at the end of the last line. White space is trimmed by the separator
+	 * ({@code \\s*,\\s*}), by the coercion or by the validator of the element.</li>
+	 * <li>The violations of an element are located under its index in the list of all
+	 * elements.</li>
+	 * <li>A node that is neither text nor an array, such as a number or an object, is
+	 * reported with {@code object.type} as one that is not of type
+	 * {@code array or string}. A single value is not taken for a list of one
+	 * element.</li>
+	 * </ul>
+	 * @param separator the pattern that separates the elements in a text
+	 * @return a value validator for iterables and for text
+	 * @throws IllegalArgumentException if the pattern matches the empty string
+	 * @since 0.18.0
+	 */
+	default ValueValidator<Iterable<T>, List<X>> liftList(Pattern separator) {
+		if (separator.matcher("").matches()) {
+			throw new IllegalArgumentException("The separator '" + separator.pattern() + "' matches the empty string.");
+		}
+		return described(
+				(values, locale, constraintContext) -> Validated.traverseIndexed(values,
+						(v, index) -> this.validate(v, locale, constraintContext).prefixed(index), ArrayList::new),
+				() -> new ValueDescription.Elements(this.description(), List.of(), separator.pattern()),
+				reader -> untypedSeparated(reader, this, separator));
 	}
 
 	/**
@@ -1062,11 +1287,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 */
 	static <A1, R extends @Nullable Object> ValueValidator<Optional<A1>, Optional<@NonNull R>> liftOptional(
 			ValueValidator<? super A1, ? extends R> validator) {
-		return described(
+		return describedNamed(
 				(value, locale, constraintContext) -> Validated.traverseOptional(value,
 						v -> validator.validate(v, locale, constraintContext)),
 				() -> new ValueDescription.Optional(validator.description(), null),
-				reader -> untypedOptional(reader, validator));
+				reader -> untypedOptional(reader, validator), name -> liftOptional(validator.named(name)));
 	}
 
 	/**
@@ -1095,12 +1320,13 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 */
 	default ValueValidator<Presence<T>, Presence<@NonNull X>> liftPresence() {
-		return described(
+		return describedNamed(
 				(presence, locale, constraintContext) -> presence == null || presence.isAbsent()
 						? Validated.successWith(Presence.absent())
 						: this.validate(presence.orElse(null), locale, constraintContext)
 							.map(x -> Presence.<@NonNull X>ofNullable(x)),
-				() -> new ValueDescription.Presence(this.description()), reader -> untypedPresence(reader, this));
+				() -> new ValueDescription.Presence(this.description()), reader -> untypedPresence(reader, this),
+				name -> this.named(name).liftPresence());
 	}
 
 	/**

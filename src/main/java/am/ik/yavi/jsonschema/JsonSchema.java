@@ -306,7 +306,11 @@ public final class JsonSchema {
 					}
 				}
 				case ValueDescription.Elements elements -> {
-					schema.put("type", type("array", nullable));
+					// a list that may be given as text: the elements of the text are not
+					// described, the keywords of an array do not apply to a string
+					schema.put("type",
+							elements.separator() == null ? type("array", nullable)
+									: nullable ? List.of("array", "string", "null") : List.of("array", "string"));
 					schema.put("items", this.schema(elements.element(), elements.element().acceptsNull()));
 					elements.constraints().forEach(constraint -> constraint(schema, "array", constraint));
 				}

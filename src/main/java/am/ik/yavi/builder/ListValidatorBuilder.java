@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import am.ik.yavi.arguments.Arguments1;
+import am.ik.yavi.arguments.ListValidator;
 import am.ik.yavi.constraint.CollectionConstraint;
-import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import org.jspecify.annotations.Nullable;
 
@@ -82,10 +82,9 @@ public final class ListValidatorBuilder<E, T> implements ValueValidatorBuilder<I
 	 * @return a new validator
 	 */
 	@Override
-	public ValueValidator<Iterable<E>, List<T>> build() {
-		return this.constraints.constrain(this.elementValidator.liftList())
-			.describedAs(new ValueDescription.Elements(this.elementValidator.description(),
-					this.constraints.descriptions()));
+	public ListValidator<E, T> build() {
+		return new ListValidator<>(this.elementValidator, this.constraints.validator(),
+				this.constraints.descriptions());
 	}
 
 }

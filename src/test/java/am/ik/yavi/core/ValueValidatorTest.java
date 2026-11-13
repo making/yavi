@@ -6,6 +6,8 @@ package am.ik.yavi.core;
 
 import java.math.BigDecimal;
 import java.text.Normalizer;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,6 +78,11 @@ class ValueValidatorTest {
 		assertThat(addressValidator.validate("J", "tokyo", "0123456789").isValid()).isFalse();
 		assertThat(addressValidator.andThen(foreignAddressValidator).validate("J", "tokyo", "+0123456789").isValid())
 			.isFalse();
+		// the next validator may produce a subtype of the value that the chain produces
+		final ValueValidator<String, Collection<String>> unique = Yavi._string(c -> c.notBlank())
+			.map(text -> List.of(text.split(",")))
+			.andThen(Yavi._string(c -> c.notBlank()).liftCollection(LinkedHashSet::new));
+		assertThat(unique.validated("a,b,a")).containsExactly("a", "b");
 	}
 
 	@Test

@@ -327,7 +327,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	/**
 	 * Returns a validator that reads the given parts from a map and creates an object
 	 * from their validated values. This is the way to define more properties than the
-	 * builders support, or to define them at runtime.
+	 * builders support. Properties that are known only at run time are defined with
+	 * {@code Yavi.dynamicSchema()}, which creates such a validator of a map of the
+	 * validated values.
 	 * @param parts the parts to read
 	 * @param mapper the function that creates the object from the validated values, which
 	 * are given in the order of the parts

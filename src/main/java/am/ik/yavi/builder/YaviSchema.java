@@ -71,7 +71,8 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Besides single values, an argument can be a nested object ({@code _object} with a name
  * and a value validator), a list ({@code _list}) or a map ({@code _map}); their
- * violations are located under the argument name.
+ * violations are located under the argument name. {@code splitBy} after {@code _list}
+ * reads the list also from one text, such as the request parameter {@code tags=a,b}.
  *
  * <p>
  * An argument is required: {@code null} is a violation, and the validated value is given
@@ -1447,7 +1448,10 @@ public final class YaviSchema
 	 * <p>
 	 * The violations of {@code validator} are located under {@code name}: a violation
 	 * named {@code street} is reported as {@code name.street} with the corresponding
-	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. A {@code null} value is
+	 * {@link am.ik.yavi.core.ConstraintViolation#path() path}. The validator of a single
+	 * value is used under {@code name} instead of the name it was built with, as
+	 * {@link ValueValidator#named(String)} states, so that the rule of a value is defined
+	 * once: {@code _object("backupEmail", emailValidator)}. A {@code null} value is
 	 * rejected with {@code object.notNull} unless {@code optional()}, {@code nullable()}
 	 * or {@code defaultValue} is applied to the argument, or to {@code validator} itself.
 	 * @param <T1> type of the value validated by {@code validator}
@@ -1503,12 +1507,13 @@ public final class YaviSchema
 	 * @param <T> type of the values produced by {@code elementValidator}
 	 * @param name the property name that prefixes the violations of the elements
 	 * @param elementValidator value validator for each element
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
+	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.KeyedList<E, T> _list(String name,
 			ValueValidator<E, T> elementValidator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.KeyedList<>(
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
 	}
 
@@ -1529,13 +1534,14 @@ public final class YaviSchema
 	 * @param name the property name of the list
 	 * @param elementValidator value validator for each element
 	 * @param constraints function that configures the constraints of the list
-	 * @return a builder for the next argument
+	 * @return a builder for the next argument, which can be told to read the list from
+	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<List<E>, List<T>> _list(String name,
+	public <E, T extends @Nullable Object> Arguments1ValidatorBuilder.KeyedList<E, T> _list(String name,
 			ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.KeyedList<>(
 				ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 

@@ -10,8 +10,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import am.ik.yavi.constraint.ObjectConstraint;
 import am.ik.yavi.core.ConstraintContext;
@@ -55,12 +57,16 @@ import org.jspecify.annotations.Nullable;
  * @param messages what an argument read from a key is called in a message, and what is
  * said when it has no value or a value of another type. The validator applies the label
  * itself; the part that reads the argument from a map applies the rest
+ * @param separated returns the definition of this argument as a list that an untyped
+ * input may give as text whose elements the given pattern separates; {@code null} unless
+ * the argument is a list to which no modifier is applied yet
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
-		ObjectInputValidator.Strictness strictness, boolean neverNull, PropertyMessages messages) {
+		ObjectInputValidator.Strictness strictness, boolean neverNull, PropertyMessages messages,
+		@Nullable Function<Pattern, ArgumentDefinition<A, R>> separated) {
 
 	private static final String RECOVER_WITH_NULL = "Write nullable() before it, or recover with Optional.empty() after optional().";
 
@@ -89,7 +95,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull) {
 		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull,
-				PropertyMessages.none());
+				PropertyMessages.none(), null);
 	}
 
 	/**
@@ -99,7 +105,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	private <A2, R2 extends @Nullable Object> ArgumentDefinition<A2, R2> derive(ValueValidator<A2, R2> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R2>> untyped, Source source, boolean neverNull) {
 		return new ArgumentDefinition<>(this.name, validator, untyped, source, this.strictness, neverNull,
-				this.messages);
+				this.messages, null);
 	}
 
 	/**
@@ -111,7 +117,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 				messages.label() == null ? this.validator
 						: new Labeled<>(this.keyName(), new PropertyMessages(messages.label(), null, null),
 								unlabeled(this.validator)),
-				this.untyped, this.source, this.strictness, this.neverNull, messages);
+				this.untyped, this.source, this.strictness, this.neverNull, messages, null);
 	}
 
 	private static <A, R extends @Nullable Object> ValueValidator<A, R> unlabeled(ValueValidator<A, R> validator) {
@@ -178,22 +184,24 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	/**
 	 * Returns the definition of a nested object that rejects {@code null} under the given
-	 * name and otherwise locates the violations of the given validator under that name.
+	 * name and otherwise reports the violations of the given validator under that name,
+	 * as {@link ValueValidator#named(String)} states.
 	 */
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
 			ValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, nested(name, validator, validator.description()),
-				reader -> nested(name, validator.readingWith(reader), validator.description()), Source.PROPERTY, false);
+		final ValueDescription description = validator.description().named(name);
+		return new ArgumentDefinition<>(name, nested(name, validator, description),
+				reader -> nested(name, validator.readingWith(reader), description), Source.PROPERTY, false);
 	}
 
 	/**
 	 * Returns the definition of a nested object whose validator decides what {@code null}
-	 * produces. The violations of any other value are located under the given name.
+	 * produces. The violations of any other value are reported under the given name.
 	 */
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
 			NullAcceptingValueValidator<A, R> validator) {
-		return new ArgumentDefinition<>(name, validator.prefixed(name),
-				reader -> validator.readingWith(reader).prefixed(name), Source.PROPERTY, false);
+		return new ArgumentDefinition<>(name, validator.named(name),
+				reader -> validator.readingWith(reader).named(name), Source.PROPERTY, false);
 	}
 
 	/**
@@ -202,13 +210,40 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	static <E, R extends @Nullable Object> ArgumentDefinition<List<E>, List<R>> list(String name,
 			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints) {
+		return list(name, elementValidator, constraints, null);
+	}
+
+	/**
+	 * Returns the definition of a list that an untyped input may give as text whose
+	 * elements the given pattern separates, if any, as
+	 * {@link ValueValidator#liftList(Pattern)} states. A typed list is validated as
+	 * before: it holds the elements already.
+	 */
+	private static <E, R extends @Nullable Object> ArgumentDefinition<List<E>, List<R>> list(String name,
+			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints,
+			@Nullable Pattern separator) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
-				constraints.descriptions());
+				constraints.descriptions(), separator == null ? null : separator.pattern());
 		final ValueValidator<List<E>, List<R>> elements = elements(elementValidator)::validate;
-		return new ArgumentDefinition<>(
-				name, nested(name, constraints.constrain(elements), description), reader -> nested(name,
-						constraints.constrain(elements(reader, elementValidator.readingWith(reader))), description),
-				Source.PROPERTY, true);
+		final ValueValidator<Iterable<E>, List<R>> separated = separator == null ? null
+				: elementValidator.liftList(separator);
+		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(elements), description),
+				reader -> nested(name,
+						constraints.constrain(separated == null ? elements(reader, elementValidator.readingWith(reader))
+								: separated.readingWith(reader)),
+						description),
+				Source.PROPERTY, ObjectInputValidator.Strictness.ABSENT_AS_NULL, true, PropertyMessages.none(),
+				separator == null ? pattern -> list(name, elementValidator, constraints, pattern) : null);
+	}
+
+	/**
+	 * Returns the definition of this list as one that an untyped input may give as text
+	 * whose elements the given pattern separates. The builders offer this only for a list
+	 * to which no modifier is applied yet.
+	 * @throws IllegalArgumentException if the pattern matches the empty string
+	 */
+	ArgumentDefinition<A, R> separatedBy(Pattern separator) {
+		return Objects.requireNonNull(this.separated, "The argument is not a list.").apply(separator);
 	}
 
 	/**
@@ -344,7 +379,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
 		return new ArgumentDefinition<>(this.name,
 				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
-				this.source, strictness, this.neverNull, this.messages);
+				this.source, strictness, this.neverNull, this.messages, null);
 	}
 
 	/**
@@ -494,14 +529,15 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	/**
 	 * Returns a validator that rejects {@code null} with {@code object.notNull} under the
-	 * given name and otherwise locates the violations of the given validator under that
-	 * name. The given description is the one of a value other than {@code null}.
+	 * given name and otherwise reports the violations of the given validator under that
+	 * name: those of a value that has no name of its own are located under it. The given
+	 * description is the one of a value other than {@code null}.
 	 */
 	private static <A, R extends @Nullable Object> ValueValidator<A, R> nested(String name,
 			ValueValidator<A, R> validator, ValueDescription description) {
 		return ObjectValidatorBuilder.<A>of(name, ObjectConstraint::notNull)
 			.build()
-			.andThen(validator.prefixed(name))
+			.andThen(validator.named(name))
 			.describedAs(new ValueDescription.NotNull(description));
 	}
 

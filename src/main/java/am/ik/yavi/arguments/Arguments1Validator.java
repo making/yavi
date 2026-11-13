@@ -95,6 +95,11 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.from(valueValidator.preprocess(transform));
 			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.from(valueValidator.named(name));
+			}
 		};
 	}
 
@@ -209,6 +214,11 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).map(mapper);
 			}
+
+			@Override
+			public Arguments1Validator<A1, X2> named(String name) {
+				return Arguments1Validator.this.named(name).map(mapper);
+			}
 		};
 	}
 
@@ -226,7 +236,7 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 */
 	@Override
 	default <X2 extends @Nullable Object> Arguments1Validator<A1, X2> andThen(
-			ValueValidator<? super @NonNull X, X2> validator) {
+			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return new Arguments1Validator<A1, X2>() {
 			@Override
 			public Validated<X2> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
@@ -255,6 +265,11 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			@Override
 			public Arguments1Validator<A1, X2> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).andThen(validator);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X2> named(String name) {
+				return Arguments1Validator.this.named(name).andThen(validator.named(name));
 			}
 		};
 	}
@@ -376,6 +391,11 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).describedAs(description);
 			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.this.named(name).describedAs(description.named(name));
+			}
 		};
 	}
 
@@ -405,7 +425,24 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			public ValueDescription description() {
 				return Arguments1Validator.this.description();
 			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return Arguments1Validator.this.named(name).preprocess(transform);
+			}
 		};
+	}
+
+	/**
+	 * Returns a validator that reports the violations of the validated argument under the
+	 * given name, as {@link ValueValidator#named(String)} states.
+	 * @param name the name under which the violations of the argument are reported
+	 * @return a validator of the argument under the given name
+	 * @since 0.18.0
+	 */
+	@Override
+	default Arguments1Validator<A1, X> named(String name) {
+		return Arguments1Validator.from(ValueValidator.super.named(name));
 	}
 
 	/**

@@ -44,6 +44,8 @@ StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank()
   name (`The value must not be blank`).
 * `Yavi._list(elementValidator, c -> c.notEmpty().unique())` and
   `Yavi._map(valueValidator, c -> c.notEmpty())` validate a list or map and constrain it.
+* `named(name)` uses a validator under another name; see
+  [below](#using-a-rule-under-another-name).
 
 ### Transforming a value before its constraints
 
@@ -61,6 +63,42 @@ BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> 
 The transforms of a `String` are `trim()`, `toLowerCase()`, `toUpperCase()`,
 `toNormalForm(form)` and `transform(f)`.
 
+### Using a rule under another name
+
+A validator holds the name it was built with. `named(name)` returns the same validator
+under another name, so the rule of a value is defined once.
+
+```java
+public final class Email {
+    public static final StringValidator<String> VALIDATOR = Yavi._string("email", c -> c.trim().notBlank().email());
+}
+
+record Contact(String email, @Nullable String backupEmail, String replyTo) {}
+
+ObjectInputValidator<Contact> contactValidator = Yavi.schema()
+        ._string(Email.VALIDATOR)                                 // the key and the name are "email"
+        ._string(Email.VALIDATOR.named("backupEmail")).nullable() // the key and the name are "backupEmail"
+        ._object("replyTo", Email.VALIDATOR)                      // the same as named("replyTo")
+        .fromMap(Contact::new);
+
+contactValidator.validate(Map.of("email", "a", "backupEmail", "b", "replyTo", "c"));
+// email:       "email" must be a valid email address
+// backupEmail: "backupEmail" must be a valid email address
+// replyTo:     "replyTo" must be a valid email address
+```
+
+* The name replaces the one of a validator of a single value in the violations, in
+  their messages and in `description()`, so it is the key of a property added with the
+  validator alone.
+* A value that has no name of its own (an object, a list, a map, the value of a lambda)
+  is located under the name, as with `prefixed(name)`: `addressValidator.named("home")`
+  reports `home.street`.
+* The combinators carry the name. `Email.VALIDATOR.map(Email::new).nullable().named("x")`
+  and `Email.VALIDATOR.named("x").map(Email::new).nullable()` are the same, and so are
+  `untyped().named("x")` and `named("x").untyped()`. `andThen` gives the name to both
+  validators and `anyOf` to every alternative.
+* `_object(name, validator)` of a schema uses the validator under `name`.
+
 ### Combinators
 
 Every `ValueValidator` has:
@@ -70,7 +108,9 @@ Every `ValueValidator` has:
 | `nullable()`, `optional()`, `defaultValue(value)` | accepts `null` and produces `null`, `Optional.empty()` or the default value |
 | `recover(fallback)`, `recoverWith(violations -> ...)` | never fails: produces the fallback for `null` and for an invalid value |
 | `liftList()`, `liftSet()`, `liftMap()` | validates every element or value, located under its index or key |
+| `liftList(separator)` | `liftList()` that also reads the list from one text, such as `1,2,3` |
 | `prefixed(name)` | puts a name before the names of the violations (`orders[1].id`) |
+| `named(name)` | reports the violations of the value under another name |
 | `ValueValidator.anyOf(a, b)` | the first alternative that is valid; otherwise one violation, `object.anyOf`, a `ConstraintViolation.NoAlternativeMatched` with the violations of each alternative in its `alternatives()` |
 | `ValueValidator.lazy(supplier)`, `recursive(self -> ...)` | a reference to a validator that is not built yet |
 
@@ -289,6 +329,60 @@ accountValidator.validate(Collections.singletonMap("deletedAt", null)); // Accou
 `defaultValue(...)` or `recover(...)`. Typed arguments (`apply`) have no absent state, so
 `null` is validated there as without them.
 
+### A schema whose properties are known at run time
+
+The properties of `Yavi.schema()` are fixed when the code is compiled, because their
+values are given to a constructor. `Yavi.dynamicSchema()` describes an input whose
+properties come from configuration or a database, such as the questions of a survey or
+custom fields. Its validator produces a map of the validated values by their names.
+
+```java
+record Question(String id, String title, boolean required, int maxLength) {}
+
+DynamicSchema<String> schema = Yavi.dynamicSchema();
+for (Question question : survey.questions()) {
+    StringValidator<String> answer = Yavi._string(c -> c.notBlank().lessThanOrEqual(question.maxLength()));
+    schema = question.required() ? schema.property(question.id(), answer).label(question.title())
+            : schema.property(question.id(), answer.defaultValue("")).label(question.title());
+}
+ObjectInputValidator<Map<String, String>> answersValidator = schema.build();
+
+answersValidator.validate(Map.of("q1", "yavi")); // {q1=yavi, q2=}
+answersValidator.validate(Map.of());             // q1: "Your name" is required
+```
+
+A schema is immutable: `property` returns a new one. The validator of a property is used
+under the name of the property, as `named(name)` states.
+
+| Property | In the map |
+| --- | --- |
+| `property(name, validator)` | the validated value; the value is required |
+| `property(name, validator.nullable())`, `.defaultValue(...)`, `.recover(...)` | what the validator produces for an absent key and for `null` |
+| followed by `.required()` or `.rejectingNull()` | as in `Yavi.schema()` |
+| followed by `.presence()` | no entry if the key is absent |
+| `rest(valueValidator)` | the validated values of the keys that no property is defined for |
+
+* `label`, `required(message)` and `typeMessage` are those of
+  [a property of a schema](#labels-and-messages-of-a-property).
+* The modifiers have the staged types of `Yavi.schema()`: `required()` and
+  `rejectingNull()` exist only for a validator that accepts `null`, and no modifier
+  follows `presence()`.
+* The type of the values is the one the schema is assigned to.
+  `Yavi.<Object>dynamicSchema()` takes properties of several types.
+* The validator is the one of `fromMap`: it has `rejectingUnknownProperties()`,
+  `readingWith(reader)`, `readingParameters()` and `description()`, and it is a property
+  of another schema.
+
+```java
+record Response(String email, Map<String, String> answers) {}
+
+ValueValidator<Map<String, String>, Response> responseValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email())
+        ._object("answers", answersValidator) // answers.q1=...&answers.q2=...
+        .fromMap(Response::new)
+        .readingParameters();
+```
+
 ### A structure that contains itself
 
 `ValueValidator.recursive(self -> ...)` builds a validator from a reference to itself,
@@ -453,6 +547,8 @@ The keys:
   `items[0].name=pen&items[1].name=ink`.
 * An empty list cannot be sent: its key is absent. Give `defaultValue(List.of())` to a
   list that may be empty, such as checkboxes.
+* `splitBy` reads a list from one value (`tags=a,b`); see
+  [below](#a-list-in-one-parameter).
 
 `StringCoercion` relaxes these rules for text written by a person, such as the fields
 of a form or the cells of a CSV file:
@@ -490,6 +586,53 @@ ValueValidator<Map<String, String>, PageRequest> pageValidator = Yavi.schema()
 pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[page=0, size=20]
 ```
 
+### A list in one parameter
+
+One parameter often holds several values: `?tags=java,yavi`, `?ids=1,2,3`, one URI per
+line of a `textarea`. `splitBy` after `_list` reads such a text as the list.
+
+```java
+record Article(String title, List<String> tags, List<Integer> related, List<URI> links) {}
+
+ValueValidator<Map<String, String>, Article> articleValidator = Yavi.schema()
+        ._string("title", c -> c.notBlank())
+        ._list("tags", Yavi._string(c -> c.notBlank().lessThanOrEqual(10)), c -> c.unique()).splitBy(",")
+        ._list("related", Yavi._integer(c -> c.positive())).splitBy(",").defaultValue(List.of())
+        ._list("links", Yavi._object(URI.class)).splitBy(Pattern.compile("\\R")).defaultValue(List.of())
+        .fromMap(Article::new)
+        .readingParameters();
+
+articleValidator.validate(Map.of("title", "t", "tags", "java,yavi", "related", "1,2,3"));
+// Article[title=t, tags=[java, yavi], related=[1, 2, 3], links=[]]
+
+articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "related", "1,x"));
+// tags[1]:    "tags[1]" must not be blank
+// tags[2]:    The size of "tags[2]" must be less than or equal to 10. The given size is 14
+// related[1]: "related[1]" must be of type integer
+```
+
+* The separator is a text taken literally, or a `Pattern`.
+* The elements are text that stands for a value, like any parameter, and their
+  violations are located under their index, like those of a repeated key.
+* Every text is split, also the values of a repeated key: `tags=a,b&tags=c` is
+  `[a, b, c]`.
+* No element is dropped or trimmed. `a,,b` has three elements, and the second one has no
+  value. Only a separator at the end starts no element: `a,b,` is `[a, b]`, like the line
+  break after the last line. White space is removed by the pattern (`\\s*,\\s*`), by
+  `StringCoercion.strict().trimming()` or by `c.trim()`.
+* An empty parameter (`tags=`) has no value, like that of any property.
+* `splitBy` is written directly after `_list`, before the other modifiers.
+* Another input is read the same way: `{"tags": "java,yavi"}` and
+  `{"tags": ["java", "yavi"]}` are the same list. The JSON Schema of the property has
+  `"type": ["array", "string"]`.
+* A value that is neither text nor a list, such as `{"tags": 1}`, is reported with
+  `object.type` (`"tags" must be of type array or string`); it is not taken for a list of
+  one element. An element of a list that is not text is validated as it is.
+* A list that is not a property of a schema is split with
+  `Yavi._list(elementValidator, constraints).splitBy(",")` or
+  `elementValidator.liftList(pattern)`.
+* Typed arguments (`apply`) hold the elements already and are validated as before.
+
 ### Labels and messages of a property
 
 A form calls a field by its label, and some messages come from no constraint: a missing
@@ -524,6 +667,7 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 * A violation of a nested property (`address.street`) is left to that property. An
   explicit `null` and an enum constant that does not exist are reported as before
   (`object.notNull`, `object.oneOf`).
+* A property of `Yavi.dynamicSchema()` has the same modifiers.
 * A property of `ObjectInputValidator.of(parts, mapper)` takes the same as a
   `PropertyMessages`.
 
@@ -860,6 +1004,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `BindingResult` of request parameters in Spring MVC (documentation) | [#569](https://github.com/making/yavi/pull/569) |
 | `label`, `required(message)`, `typeMessage`, `formattingWith`, `labeled`, `formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
+| `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
 | `Yavi._string` and so on | [#546](https://github.com/making/yavi/pull/546) |
 | Transforms, `preprocess` | [#547](https://github.com/making/yavi/pull/547) |

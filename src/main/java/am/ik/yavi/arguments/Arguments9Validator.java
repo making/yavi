@@ -172,7 +172,7 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X exten
 	 * @since 0.11.0
 	 */
 	default <X2 extends @Nullable Object> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X2> andThen(
-			ValueValidator<? super @NonNull X, X2> validator) {
+			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext) -> this
 					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext)

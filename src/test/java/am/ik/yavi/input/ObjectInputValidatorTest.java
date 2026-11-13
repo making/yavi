@@ -21,10 +21,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import am.ik.yavi.arguments.Arguments2;
 import am.ik.yavi.arguments.Arguments1Validator;
+import am.ik.yavi.builder.DynamicSchema;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintDescription;
@@ -870,6 +872,50 @@ class ObjectInputValidatorTest {
 		assertThat(validator.validate(null).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
 		assertThatThrownBy(() -> ParameterTree.of(Map.of(), -1)).isInstanceOf(IllegalArgumentException.class);
+		// a list is also read from one text whose elements are separated: they are text
+		// that stands for a value and are located as the values of a repeated key
+		final ObjectInputValidator<List<Object>> article = Yavi.schema()
+			._list("tags", Yavi._string(c -> c.notBlank().lessThanOrEqual(5)), c -> c.unique())
+			.splitBy(",")
+			._list("ids", Yavi._integer(c -> c.positive()))
+			.splitBy(Pattern.compile("\\s*;\\s*|\\R"))
+			.defaultValue(List.of())
+			.fromMap((tags, ids) -> List.of(tags, ids));
+		final ValueValidator<Map<String, ?>, List<Object>> split = article.readingParameters();
+		assertThat(split.validated(Map.of("tags", "java,yavi", "ids", "1; 2\n3\n")))
+			.containsExactly(List.of("java", "yavi"), List.of(1, 2, 3));
+		// every text is split, a separator at the end starts no element, and a tree
+		// that is not text is split too
+		assertThat(split.validated(Map.of("tags", List.of("a,b,", "c"), "ids[0]", "1;2", "ids[1]", "3")))
+			.containsExactly(List.of("a", "b", "c"), List.of(1, 2, 3));
+		assertThat(article.validated(input("tags", "a", "ids", List.of(1, "2;3")))).containsExactly(List.of("a"),
+				List.of(1, 2, 3));
+		// nothing is dropped or trimmed: an element without a value is reported
+		assertThat(split.validate(Map.of("tags", "java,,toolong, x", "ids", "1;x;-3;")).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("tags[1]", "charSequence.notBlank"), tuple("tags[2]", "container.lessThanOrEqual"),
+					tuple("ids[1]", "object.type"), tuple("ids[2]", "numeric.positive"));
+		assertThat(List.of(split.validate(Map.of("tags", "a,a")).errors(), split.validate(Map.of("tags", "")).errors(),
+				article.validate(input("tags", 1)).errors()))
+			.extracting(violations -> violations.get(0).name(), violations -> violations.get(0).messageKey())
+			.containsExactly(tuple("tags", "collection.unique"), tuple("tags", "object.required"),
+					tuple("tags", "object.type"));
+		// a value that is neither text nor a list is not one element, and an element of
+		// a list that is not text is validated as it is
+		assertThat(Stream
+			.of(input("tags", 1), input("tags", true), input("tags", Map.of("a", "b")),
+					input("tags", "a", "ids", List.of(1, true)))
+			.map(input -> article.validate(input).errors().get(0)))
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("tags", "\"tags\" must be of type array or string"),
+					tuple("ids[1]", "\"ids[1]\" must be of type integer"));
+		assertThat(JsonSchema.toJson(article.description())).contains(
+				"\"tags\":{\"type\":[\"array\",\"string\"],\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":5},\"uniqueItems\":true}",
+				"\"ids\":{\"type\":[\"array\",\"string\",\"null\"],\"items\":{\"type\":\"integer\",\"exclusiveMinimum\":0},\"default\":[]}");
+		assertThatThrownBy(() -> Yavi.schema()._list("tags", Yavi._string()).splitBy(""))
+			.isInstanceOf(IllegalArgumentException.class);
 	}
 
 	static Stream<Arguments> untypedInputs() {
@@ -1209,6 +1255,54 @@ class ObjectInputValidatorTest {
 		assertThat(model.validate(bio, input()).value()).isEqualTo(Presence.absent());
 		assertThat(model.validate(bio, input("bio", null)).errors()).extracting(ConstraintViolation::name)
 			.containsExactly("bio");
+		// properties that are known at run time are read into a map of their values: a
+		// validator is used under the name of its property, and an absent property with
+		// a presence has no entry
+		DynamicSchema<@Nullable Object> questions = Yavi.dynamicSchema();
+		for (String name : List.of("q1", "q2")) {
+			questions = questions.property(name, Yavi._string("answer", c -> c.notBlank())).label(name.toUpperCase());
+		}
+		final DynamicSchema<@Nullable Object> survey = questions
+			.property("q3", Yavi._integer(c -> c.positive()).defaultValue(0))
+			.rejectingNull()
+			.property("q4", Yavi._string(c -> c.notBlank()).nullable())
+			.presence()
+			.property("q5", Yavi._list(Yavi._integer(), c -> c.notEmpty()).splitBy(","))
+			.required("Select {0}");
+		final ObjectInputValidator<Map<String, @Nullable Object>> answers = survey.build().rejectingUnknownProperties();
+		assertThat(model.validate(answers, input("q1", "a", "q2", "b", "q4", null, "q5", "1,2")).value())
+			.containsExactly(Map.entry("q1", "a"), Map.entry("q2", "b"), Map.entry("q3", 0),
+					new java.util.AbstractMap.SimpleEntry<>("q4", null), Map.entry("q5", List.of(1, 2)));
+		assertThat(model.validate(answers, input("q1", "a", "q2", "b", "q3", 3, "q5", List.of(3))).value())
+			.containsOnlyKeys("q1", "q2", "q3", "q5");
+		assertThat(model.validate(answers, input("q1", " ", "q3", null, "q4", " ", "x", 1)).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::message)
+			.containsExactly(tuple("q1", "\"Q1\" must not be blank"), tuple("q2", "\"Q2\" is required"),
+					tuple("q3", "\"q3\" must not be null"), tuple("q4", "\"q4\" must not be blank"),
+					tuple("q5", "Select q5"), tuple("x", "\"x\" is not a known property"));
+		// the rest of the properties is validated and added to the map
+		final ObjectInputValidator<Map<String, @Nullable Object>> open = survey.rest(Yavi._integer(c -> c.positive()))
+			.build();
+		assertThat(model.validate(open, input("q1", "a", "q2", "b", "q5", "1", "x", 1)).value()).containsEntry("x", 1)
+			.containsEntry("q3", 0);
+		assertThat(model.validate(open, input("q1", "a", "q2", "b", "q5", "1", "x", 0)).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("x");
+		// the validator is one of a schema: a property of another, read from parameters
+		assertThat(Yavi.schema()
+			._object("answers", answers)
+			.fromMap(values -> values)
+			.readingParameters()
+			.validate(Map.of("answers.q1", "a", "answers[q5]", "x,2"))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("answers.q2", "object.required"), tuple("answers.q5[0]", "object.type"));
+		assertThat(JsonSchema.toJson(answers.description())).endsWith("""
+				"q3":{"type":"integer","exclusiveMinimum":0,"default":0},\
+				"q4":{"type":["string","null"],"minLength":1},\
+				"q5":{"type":["array","string"],"items":{"type":"integer"},"minItems":1}},\
+				"required":["q1","q2","q5"],"additionalProperties":false}""");
+		assertThatThrownBy(() -> survey.property("q1", Yavi._string())).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'q1' is defined twice.");
 		// without a Presence: the key is required although null is accepted, or null is
 		// rejected although the key may be absent
 		final var strict = Yavi.schema()

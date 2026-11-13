@@ -13,6 +13,7 @@ import am.ik.yavi.arguments.EnumValidator;
 import am.ik.yavi.arguments.FloatValidator;
 import am.ik.yavi.arguments.InstantValidator;
 import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.ListValidator;
 import am.ik.yavi.arguments.LocalDateTimeValidator;
 import am.ik.yavi.arguments.LocalDateValidator;
 import am.ik.yavi.arguments.LocalTimeValidator;
@@ -28,6 +29,7 @@ import am.ik.yavi.builder.BigDecimalValidatorBuilder;
 import am.ik.yavi.builder.BigIntegerValidatorBuilder;
 import am.ik.yavi.builder.BooleanValidatorBuilder;
 import am.ik.yavi.builder.DoubleValidatorBuilder;
+import am.ik.yavi.builder.DynamicSchema;
 import am.ik.yavi.builder.EnumValidatorBuilder;
 import am.ik.yavi.builder.FloatValidatorBuilder;
 import am.ik.yavi.builder.InstantValidatorBuilder;
@@ -82,6 +84,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Entry point for describing an input as a schema and for building validators of single
@@ -184,6 +188,16 @@ import java.util.function.Function;
  * }</pre>
  *
  * <p>
+ * The rule of a value is defined once and used under several names with {@code named},
+ * and {@link #dynamicSchema()} describes an input whose properties are known only at run
+ * time, such as the custom fields of a record, and produces a map of the validated
+ * values.
+ *
+ * <pre>{@code
+ * StringValidator<String> backupEmail = email.named("backupEmail");
+ * }</pre>
+ *
+ * <p>
  * This class only provides the entry points; {@link YaviSchema}, the returned builders
  * and the builders of {@code am.ik.yavi.builder} do the work.
  *
@@ -215,6 +229,36 @@ public final class Yavi {
 	 */
 	public static YaviSchema schema() {
 		return new YaviSchema();
+	}
+
+	/**
+	 * Returns a new, empty schema whose properties are known only at run time, such as
+	 * the questions of a survey or the custom fields of a record.
+	 *
+	 * <p>
+	 * A property is added with its name and the validator of its value, in a loop if need
+	 * be, and {@code build()} creates a validator that reads the properties from a map
+	 * and produces the map of the validated values by their names. The type of the values
+	 * is the one the schema is assigned to, or given explicitly:
+	 *
+	 * <pre>{@code
+	 * ObjectInputValidator<Map<String, String>> answersValidator = Yavi.<String>dynamicSchema()
+	 *     .property("q1", Yavi._string(c -> c.notBlank()))
+	 *     .property("q2", Yavi._string(c -> c.lessThanOrEqual(200)).defaultValue(""))
+	 *     .property("q3", Yavi._string(c -> c.notBlank())).presence() // no entry if absent
+	 *     .build();
+	 * }</pre>
+	 *
+	 * <p>
+	 * Every call returns a new, empty schema, and every schema is immutable.
+	 * @param <V> the type of the values of the produced map; {@code Object} for
+	 * properties of several types
+	 * @return a new schema
+	 * @since 0.18.0
+	 * @see DynamicSchema
+	 */
+	public static <V extends @Nullable Object> DynamicSchema<V> dynamicSchema() {
+		return new DynamicSchema<>();
 	}
 
 	/**
@@ -589,7 +633,7 @@ public final class Yavi {
 	 * @return a validator of the list
 	 * @since 0.18.0
 	 */
-	public static <E, T> ValueValidator<Iterable<E>, List<T>> _list(ValueValidator<E, T> elementValidator,
+	public static <E, T> ListValidator<E, T> _list(ValueValidator<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
 		return ListValidatorBuilder.of(elementValidator, constraints).build();
 	}

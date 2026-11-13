@@ -79,6 +79,21 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	}
 
 	/**
+	 * Returns a validator with the same constraints that reports the violations of the
+	 * value under the given name instead of the name it was built with, so that the rule
+	 * of a value is defined once and used under several names.
+	 * @param name the name under which the violations of the value are reported
+	 * @return a validator of the value under the given name
+	 * @since 0.18.0
+	 * @see am.ik.yavi.core.ValueValidator#named(String)
+	 */
+	@Override
+	public EnumValidator<E, T> named(String name) {
+		return new EnumValidator<>(super.renamed(name), super.mapper, this.enumType, super.transform,
+				this.ignoringCase);
+	}
+
+	/**
 	 * Returns a validator that produces a {@link Supplier} of the mapped value.
 	 * @return a validator that produces a supplier of the validated value
 	 */
@@ -153,6 +168,11 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 			@Override
 			public <M> ValueValidator<M, T> readingWith(InputReader<M> other) {
 				return EnumValidator.this.readingWith(other);
+			}
+
+			@Override
+			public ValueValidator<N, T> named(String name) {
+				return EnumValidator.this.named(name).readingWith(reader);
 			}
 		};
 	}

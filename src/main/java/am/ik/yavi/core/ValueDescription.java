@@ -174,14 +174,29 @@ public sealed interface ValueDescription {
 	 * in the order they are checked; unmodifiable. A constraint
 	 * {@linkplain ConstraintDescription#rejectsNull() rejects null} if it rejects an
 	 * empty list, as which {@code null} is validated unless it is rejected before
+	 * @param separator the regular expression that separates the elements in a text, if
+	 * an untyped input may give the list as one text
+	 * ({@link ValueValidator#liftList(java.util.regex.Pattern)}); {@code null} if it
+	 * gives a list only
 	 */
-	record Elements(ValueDescription element, List<ConstraintDescription> constraints) implements ValueDescription {
+	record Elements(ValueDescription element, List<ConstraintDescription> constraints,
+			@Nullable String separator) implements ValueDescription {
 
 		/**
 		 * Creates the description of a list.
 		 */
 		public Elements {
 			constraints = List.copyOf(constraints);
+		}
+
+		/**
+		 * Creates the description of a list that is not given as a text.
+		 * @param element the description of every element
+		 * @param constraints the constraints applied to the list of the validated
+		 * elements
+		 */
+		public Elements(ValueDescription element, List<ConstraintDescription> constraints) {
+			this(element, constraints, null);
 		}
 
 		/**
@@ -407,6 +422,27 @@ public sealed interface ValueDescription {
 			case Unknown unknown -> true;
 			case Never never -> false;
 			case Reference reference -> reference.target().acceptsNull();
+		};
+	}
+
+	/**
+	 * Returns this description with the given name for the described value: the name of
+	 * a {@link Value}, also where the value is wrapped as one that accepts or rejects
+	 * {@code null} or that may be absent. Any other description has no name and is
+	 * returned as it is.
+	 * @param name the name under which the violations of the value are reported
+	 * @return the description of the value under the given name
+	 * @since 0.18.0
+	 * @see ValueValidator#named(String)
+	 */
+	default ValueDescription named(String name) {
+		return switch (this) {
+			case Value value -> new Value(name, value.type(), value.constraints());
+			case NotNull notNull -> new NotNull(notNull.value().named(name));
+			case Optional optional -> new Optional(optional.value().named(name), optional.defaultValue());
+			case Presence presence -> new Presence(presence.value().named(name), presence.defaultValue());
+			case Required required -> new Required(required.value().named(name));
+			default -> this;
 		};
 	}
 

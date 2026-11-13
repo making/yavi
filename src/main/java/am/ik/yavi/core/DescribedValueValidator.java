@@ -29,17 +29,23 @@ sealed class DescribedValueValidator<T, X extends @Nullable Object>
 
 	private final @Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed;
 
+	private final @Nullable Function<String, ? extends ValueValidator<T, X>> named;
+
 	/**
 	 * @param preprocessed returns this validator with the given transform applied to its
 	 * input, by a way that keeps the input type; {@code null} if there is none
+	 * @param named returns this validator with the given name for the validated value;
+	 * {@code null} if the violations are located under the name
 	 */
 	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
-			@Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed) {
+			@Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
+			@Nullable Function<String, ? extends ValueValidator<T, X>> named) {
 		this.delegate = delegate;
 		this.description = description;
 		this.untyped = untyped;
 		this.preprocessed = preprocessed;
+		this.named = named;
 	}
 
 	@Override
@@ -56,6 +62,11 @@ sealed class DescribedValueValidator<T, X extends @Nullable Object>
 	public ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
 		return this.preprocessed != null ? this.preprocessed.apply(transform)
 				: ValueValidator.super.preprocess(transform);
+	}
+
+	@Override
+	public ValueValidator<T, X> named(String name) {
+		return this.named != null ? this.named.apply(name) : ValueValidator.super.named(name);
 	}
 
 	// the node type is erased: the function is written for any reader
