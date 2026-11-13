@@ -57,6 +57,51 @@ to code that declared it as not `null`, in Java with NullAway and in Kotlin alik
 Now an argument is required unless it says otherwise, and saying otherwise changes its
 type, as in Zod and Raoh. A value is `null` only where its type says so.
 
+#### With NullAway
+
+A project that uses [NullAway](https://github.com/uber/NullAway) expects that code
+without a report does not throw `NullPointerException`. YAVI could not keep that promise
+for the values it hands over, because NullAway checks nullness through types: the
+annotations of parameters, of return types and of type arguments. A fact that exists only
+as a call inside a lambda (`c.notNull()`) is not part of any type, so NullAway cannot
+carry it to the function given to `apply` a few calls later. That left two ways to
+declare the parameters of that function, and both were wrong for some code:
+
+* **`@Nullable`, as before #556.** Every function had to accept `null`, even for a value
+  validated with `notNull()`. `apply(Member::new)` was reported for a constructor whose
+  parameters are not `@Nullable`, so the user wrapped every argument in
+  `Objects.requireNonNull` or declared every property of the domain class `@Nullable`.
+* **Not `@Nullable`, as after #556.** `apply(Member::new)` compiled, also where
+  `notNull()` was forgotten or `nullable()` was applied. NullAway reported nothing for
+  the two validators below, and both threw `NullPointerException` for a `null` age. YAVI
+  itself needed `@SuppressWarnings("NullAway")` in five places that passed such a value
+  on.
+
+```java
+Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._integer("age", c -> c.greaterThanOrEqual(0)) // notNull() is missing
+        .apply(Member::new);
+
+Yavi.arguments()
+        ._string("name", c -> c.notBlank())
+        ._integer("age", c -> c.greaterThanOrEqual(0)).nullable()
+        .apply(Member::new);
+```
+
+Now the fact is a type argument, which NullAway does follow. The first validator rejects
+`null`, so its type `Integer` is true and `Member::new` is safe. The second one has the
+type `@Nullable Integer` for its age and is reported:
+
+```
+[NullAway] parameter age of referenced method is @NonNull, but parameter in functional interface method am.ik.yavi.fn.Function2.apply(String,@Nullable Integer) is @Nullable
+```
+
+The same holds for a single value: `validator.nullable().validated(input).length()` is
+reported as a dereference of a `@Nullable` expression, and without `nullable()` no check
+of the result is needed. The five suppressions are removed, so NullAway checks YAVI
+itself in the same way.
+
 ### Related pull requests
 
 * [#557](https://github.com/making/yavi/pull/557) makes a validated value required and
