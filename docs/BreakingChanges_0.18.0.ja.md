@@ -536,7 +536,7 @@ Validated<Address> address = Validated.of(country).combine(street).apply(Address
 
 `yieldSuccess` と `yieldFailure` をオーバーライドして独自の型を返していた `Validation` の実装は、`Validated` と同じように、代わりに `map`、`apply`、`combine` をオーバーライドします。
 
-関連するプルリクエスト: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+関連するプルリクエスト: [#558](https://github.com/making/yavi/pull/558)
 
 ### 非推奨のメンバーと冗長なメンバーは削除された
 
@@ -565,7 +565,7 @@ ConstraintViolation.builder()
 
 `Validation.Success` と `Validation.Failure` は record になりました。`toString()` は `Success[value=a]` や `Failure[errors=[e]]` を返します。
 
-関連するプルリクエスト: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+関連するプルリクエスト: [#558](https://github.com/making/yavi/pull/558)
 
 ### `ArgumentsNValidatorBuilder` のコンストラクタは削除された
 

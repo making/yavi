@@ -600,7 +600,7 @@ Validated<Address> address = Validated.of(country).combine(street).apply(Address
 An implementation of `Validation` that overrode `yieldSuccess` and `yieldFailure` to
 return its own type overrides `map`, `apply` and `combine` instead, as `Validated` does.
 
-Related pull request: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+Related pull request: [#558](https://github.com/making/yavi/pull/558)
 
 ### Deprecated and redundant members are removed
 
@@ -630,7 +630,7 @@ ConstraintViolation.builder()
 `Validation.Success` and `Validation.Failure` are records. `toString()` returns
 `Success[value=a]` and `Failure[errors=[e]]`.
 
-Related pull request: [#PRNUM](https://github.com/making/yavi/pull/PRNUM)
+Related pull request: [#558](https://github.com/making/yavi/pull/558)
 
 ### The constructors of `ArgumentsNValidatorBuilder` are removed
 
