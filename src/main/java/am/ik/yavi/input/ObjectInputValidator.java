@@ -148,6 +148,8 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 
 	private final boolean rejectUnknownProperties;
 
+	private final List<TargetRule<X>> rules;
+
 	private final ValueDescription description;
 
 	private final Reading<Object> reading;
@@ -239,7 +241,7 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	public static <X extends @Nullable Object> ObjectInputValidator<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
 		return new ObjectInputValidator<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
-				false);
+				false, List.of());
 	}
 
 	/**
@@ -261,12 +263,12 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 */
 	public static <X extends @Nullable Object> ObjectInputValidator<X> flatOf(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
-		return new ObjectInputValidator<>(List.copyOf(parts), mapper, false);
+		return new ObjectInputValidator<>(List.copyOf(parts), mapper, false, List.of());
 	}
 
 	private ObjectInputValidator(List<Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-			boolean rejectUnknownProperties) {
+			boolean rejectUnknownProperties, List<TargetRule<X>> rules) {
 		// the described object: the properties of every way to read it, which are several
 		// if an embedded validator has alternatives
 		List<List<ValueDescription.Property>> alternatives = List.of(List.of());
@@ -333,6 +335,7 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 		this.names = names;
 		this.mapper = mapper;
 		this.rejectUnknownProperties = rejectUnknownProperties;
+		this.rules = rules;
 		this.description = objects.size() == 1 ? objects.get(0) : new ValueDescription.AnyOf(objects);
 		this.reading = this.reading(InputReader.ofJdkTypes());
 	}
@@ -430,7 +433,25 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 	 * if an embedded validator does not describe its properties
 	 */
 	public ObjectInputValidator<X> rejectingUnknownProperties() {
-		return new ObjectInputValidator<>(this.parts, this.mapper, true);
+		return new ObjectInputValidator<>(this.parts, this.mapper, true, this.rules);
+	}
+
+	/**
+	 * Returns a validator that additionally checks the created object with the given
+	 * predicate, as {@link ValueValidator#constraintOnTarget} states. The returned
+	 * validator still reads the properties, so it can be embedded, reject unknown
+	 * properties and read parameters.
+	 * @param predicate the rule that the created object must satisfy
+	 * @param name the name of the reported violation
+	 * @param violationMessage the message key and the default message format of the
+	 * reported violation
+	 * @return a validator with the additional rule
+	 */
+	@Override
+	public ObjectInputValidator<X> constraintOnTarget(Predicate<? super X> predicate, String name,
+			ViolationMessage violationMessage) {
+		return new ObjectInputValidator<>(this.parts, this.mapper, this.rejectUnknownProperties,
+				TargetRule.append(this.rules, new TargetRule<>(predicate, name, violationMessage)));
 	}
 
 	/**
@@ -608,8 +629,8 @@ public final class ObjectInputValidator<X extends @Nullable Object> implements V
 					}
 				}
 			}
-			return violations.isEmpty()
-					? Validated.of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+			return violations.isEmpty() ? TargetRule.check(ObjectInputValidator.this.rules,
+					Validated.of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values))), locale)
 					: Validated.failureWith(violations);
 		}
 

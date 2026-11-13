@@ -100,7 +100,7 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<Str
 * `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。`nullable()` は値の型を `@Nullable` に変えます。
 * `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
 * `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
-* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。
+* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。`fromMap` の後では `ObjectInputValidator` を返すので、続けて `rejectingUnknownProperties()` や `readingParameters()` を書けます。
 * `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
 
 ## パース済みの JSON オブジェクトなどのマップを検証する

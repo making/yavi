@@ -158,7 +158,7 @@ class ObjectInputValidatorTest {
 		.fromMap(Address::new)
 		.rejectingUnknownProperties();
 
-	static final ValueValidator<Map<String, Object>, User> userValidator = Yavi.schema()
+	static final ObjectInputValidator<User> userValidator = Yavi.schema()
 		._string("email", c -> c.trim().toLowerCase().notBlank().email())
 		._integer("age", c -> c.notNull().greaterThanOrEqual(0))
 		._enum("role", Role.class, c -> c.notNull())
@@ -172,9 +172,10 @@ class ObjectInputValidatorTest {
 		._double("rate")
 		.defaultValue(1.5)
 		.fromMap(User::new)
-		.rejectingUnknownProperties()
+		// a rule on the created object keeps the validator of the properties
 		.constraintOnTarget(User::hasTagIfAdmin, "tags",
-				ViolationMessage.of("user.adminTags", "An admin must have a tag"));
+				ViolationMessage.of("user.adminTags", "An admin must have a tag"))
+		.rejectingUnknownProperties();
 
 	static final DiscriminatedUnionValidator<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
 		// the discriminator is not an unknown property of an alternative that rejects
@@ -444,6 +445,14 @@ class ObjectInputValidatorTest {
 		// a map of parameters is read with the type it has
 		final ValueValidator<Map<String, String>, Shape> ofStrings = shapeValidator.readingParameters();
 		assertThat(ofStrings.validated(Map.of("type", "circle", "radius", "2"))).isEqualTo(new Circle(2));
+		// a rule on the created object keeps the union, whatever alternative is selected
+		assertThat(shapeValidator
+			.constraintOnTarget(shape -> shape instanceof Circle, "type",
+					ViolationMessage.of("shape.round", "\"{0}\" must be round"))
+			.readingParameters()
+			.validate(Map.of("type", "square", "side", "3"))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("type", "shape.round"));
 		final ValueValidator<Map<String, ?>, Address> address = addressValidator.readingParameters();
 		assertThat(address.validate(Map.of("street", "1-2-3", "city", "")).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
