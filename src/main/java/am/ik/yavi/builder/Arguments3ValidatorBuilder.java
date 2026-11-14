@@ -85,7 +85,9 @@ import org.jspecify.annotations.Nullable;
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  * {@code withheld()}, before the modifiers of an argument that is read from a key other
  * than {@code label} and {@code typeMessage}, holds its value back from what shows the
- * values of an object again.
+ * values of an object again. {@code map}, before the modifiers that decide what
+ * {@code null} produces, maps the validated value of such an argument, for example to a
+ * value object.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2170,6 +2172,33 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		}
 
 		/**
+		 * Maps the validated value of the last added argument with the given function,
+		 * for example to a value object:
+		 *
+		 * <pre>{@code
+		 * ._string("email", c -> c.notBlank().email()).map(Email::new)
+		 * }</pre>
+		 *
+		 * <p>
+		 * The function is applied to a value that satisfies what the argument is added
+		 * with, and not to an invalid one. The argument is read, reported and described
+		 * as before: only the type of its validated value changes. The modifiers that
+		 * decide what {@code null} produces are written after it and apply to the mapped
+		 * value, so the function is not given the {@code null} that they accept:
+		 * {@code map(Nickname::new).optional()} produces an {@code Optional<Nickname>},
+		 * and a default value is a mapped value. Their builders do not have this
+		 * modifier.
+		 * @param <X> type of the mapped value
+		 * @param mapper function that transforms the validated value
+		 * @return a builder whose last argument produces the mapped value
+		 * @since 0.18.0
+		 * @see ValueValidator#map(Function)
+		 */
+		public <X extends @Nullable Object> Keyed<A1, A2, A3, R1, R2, X> map(Function<? super R3, ? extends X> mapper) {
+			return new Keyed<>(this.d1, this.d2, this.d3.mapped(mapper));
+		}
+
+		/**
 		 * Requires the last added argument, which it is unless a modifier accepts
 		 * {@code null} and reports a missing value with the given text instead of the
 		 * message of {@code object.required}, for a value that only a person can tell how
@@ -2380,6 +2409,11 @@ public sealed class Arguments3ValidatorBuilder<A1, A2, A3, R1 extends @Nullable 
 		@Override
 		public Added<A1, A2, A3, R1, R2, R3> typeMessage(ViolationMessage message) {
 			return new Added<>(this.d1, this.d2, this.d3.withMessages(this.d3.messages().withType(message)));
+		}
+
+		@Override
+		public <X extends @Nullable Object> Added<A1, A2, A3, R1, R2, X> map(Function<? super R3, ? extends X> mapper) {
+			return new Added<>(this.d1, this.d2, this.d3.mapped(mapper));
 		}
 
 	}

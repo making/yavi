@@ -2385,6 +2385,57 @@ cat <<EOD
 EOD
 }
 
+# Prints the modifier that maps the validated value of an argument read from a key: $1 is
+# the stage class that has it, which it returns with the type of the mapped value, and $2
+# "override" if the stage inherits the modifier and only stays itself. A builder of
+# Yavi.reversibleSchema() is given the reverse of the function too, so that an argument
+# that cannot be written back still does not compile.
+modifier_map() {
+local reverse_param=""
+local reverse_arg=""
+if [ "${track}" == "reversible" ];then
+  reverse_param=", Function<? super X, ? extends R${i}> reverse"
+  reverse_arg=", reverse"
+fi
+if [ "$2" == "override" ];then
+cat <<EOD
+		@Override
+		public <X extends @Nullable Object> $1<${init_arguments}A${i}, ${init_results}X> map(Function<? super R${i}, ? extends X> mapper${reverse_param}) {
+			return new $1<>(${init_definitions}this.d${i}.mapped(mapper${reverse_arg}));
+		}
+EOD
+return
+fi
+cat <<EOD
+		/**
+		 * Maps the validated value of the last added argument with the given function,
+		 * for example to a value object$(if [ "${track}" == "reversible" ];then printf ', and goes back from the mapped value with the\n\t\t * other function when the argument is written';fi):
+		 *
+		 * <pre>{@code
+		 * ._string("email", c -> c.notBlank().email()).map(Email::new$(if [ "${track}" == "reversible" ];then echo -n ", Email::value";fi))
+		 * }</pre>
+		 *
+		 * <p>
+		 * The function is applied to a value that satisfies what the argument is added
+		 * with, and not to an invalid one. The argument is read, reported and described
+		 * as before: only the type of its validated value changes. The modifiers that
+		 * decide what {@code null} produces are written after it and apply to the mapped
+		 * value, so the function is not given the {@code null} that they accept:
+		 * {@code map(Nickname::new$(if [ "${track}" == "reversible" ];then echo -n ", Nickname::value";fi)).optional()} produces an
+		 * {@code Optional<Nickname>}, and a default value is a mapped value. Their
+		 * builders do not have this modifier.$(if [ "${track}" == "reversible" ];then printf '\n\t\t *\n\t\t * <p>\n\t\t * The reverse returns the value that the function is given, from which the\n\t\t * argument is written as it was before. For every mapped value {@code x},\n\t\t * {@code mapper.apply(reverse.apply(x))} must be equal to {@code x}. A function\n\t\t * without a reverse is not a modifier of this builder: the argument could not be\n\t\t * written back.';fi)
+		 * @param <X> type of the mapped value
+		 * @param mapper function that transforms the validated value$(if [ "${track}" == "reversible" ];then printf '\n\t\t * @param reverse function that returns the validated value that the mapped value\n\t\t * is created from';fi)
+		 * @return a builder whose last argument produces the mapped value
+		 * @since 0.18.0
+		 * @see ValueValidator#map(Function$(if [ "${track}" == "reversible" ];then echo -n ", Function";fi))
+		 */
+		public <X extends @Nullable Object> $1<${init_arguments}A${i}, ${init_results}X> map(Function<? super R${i}, ? extends X> mapper${reverse_param}) {
+			return new $1<>(${init_definitions}this.d${i}.mapped(mapper${reverse_arg}));
+		}
+EOD
+}
+
 # Prints the modifiers that give the message of a missing value: $1 is what is written
 # before ".withMessages" to require the key, and $2 what the javadoc says about the key.
 modifier_required_message() {
@@ -2907,7 +2958,9 @@ cat <<EOD
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  * {@code withheld()}, before the modifiers of an argument that is read from a key
  * other than {@code label} and {@code typeMessage}, holds its value back from what
- * shows the values of an object again.
+ * shows the values of an object again. {@code map}, before the modifiers that decide
+ * what {@code null} produces, maps the validated value of such an argument, for example
+ * to a value object.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2960,7 +3013,9 @@ cat <<EOD
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  * {@code withheld()}, before the modifiers of an argument that is read from a key
  * other than {@code label} and {@code typeMessage}, holds its value back from what
- * shows the values of an object again.
+ * shows the values of an object again. {@code map}, before the modifiers that decide
+ * what {@code null} produces, maps the validated value of such an argument, for example
+ * to a value object.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -4797,6 +4852,8 @@ $(stage_class Keyed sealed "${class}" " permits Added" messages)
 
 $(modifier_messages Keyed)
 
+$(modifier_map Keyed)
+
 $(modifier_required_message "" "the last added argument, which it is unless a modifier accepts {@code null}")
 
 $(modifier_optional KeyedOptional)
@@ -4822,6 +4879,8 @@ $(stage_class Added sealed Keyed " permits KeyedList" withholdable)
 $(modifier_withheld Keyed)
 
 $(modifier_messages Added)
+
+$(modifier_map Added override)
 
 	}
 

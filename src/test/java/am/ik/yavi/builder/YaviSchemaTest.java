@@ -527,6 +527,13 @@ class YaviSchemaTest {
 						+ ".property(\"y\", Yavi._string().nullable()).typeMessage(ViolationMessage.of(\"a\", \"b\"))"
 						+ ".withheld().required()",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld().build()",
+				// a property is mapped before what decides its null, in any order with
+				// its label and withheld(), and with its reverse where it is written back
+				"s._string(\"x\").label(\"X\").map(String::length).withheld().map(x -> x + 1).optional()"
+						+ ".recover(Optional.empty())",
+				"s._list(\"x\", Yavi._integer()).splitBy(\",\").map(java.util.Set::copyOf).withheld().nullable()",
+				"s._object(\"o\", s._string(\"x\").fromMap()).withheld().map(String::length).presence()",
+				"r._string(\"x\").map(String::length, String::valueOf).withheld().label(\"X\").optional()",
 				// one property is its own result
 				"s._string(\"x\").withheld().fromMap().rejectingUnknownProperties()",
 				"s._embedded(r._string(\"x\").optional().fromMapReversible()).optional()",
@@ -621,6 +628,13 @@ class YaviSchemaTest {
 				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld().withheld()",
 				"Yavi.<String>dynamicSchema().rest(Yavi._string()).withheld()",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().nullable()).withheld().withheld()",
+				// a property is not mapped after what decides its null, a list is not
+				// split after it, and a schema that is written back needs the reverse
+				"s._string(\"x\").optional().map(x -> x)", "s._string(\"x\").defaultValue(\"\").map(String::length)",
+				"s._string(\"x\").recover(\"\").map(String::length)",
+				"s._integer(Yavi._integer(\"x\").nullable()).map(x -> x)",
+				"s._list(\"x\", Yavi._integer()).map(java.util.Set::copyOf).splitBy(\",\")", "s._rest().map(x -> x)",
+				"s._embedded(s._string(\"x\").fromMap()).map(x -> x)", "r._string(\"x\").map(String::length)",
 				// several properties are not one result
 				"s._string(\"x\")._string(\"y\").fromMap()", "r._string(\"x\")._string(\"y\").fromMapReversible()",
 				"s._string(\"x\").fromMapReversible()", "s._string(\"x\")._rest().fromMap()",
@@ -654,7 +668,8 @@ class YaviSchemaTest {
 				return source;
 			}
 		};
-		compiler.getTask(null, null, diagnostics, List.of("-proc:none", "-d",
+		// the compiler reports every error, not only the first 100
+		compiler.getTask(null, null, diagnostics, List.of("-proc:none", "-Xmaxerrs", "0", "-d",
 				Files.createTempDirectory("chains").toString(), "-classpath", System.getProperty("java.class.path")),
 				null, List.of(file))
 			.call();

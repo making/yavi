@@ -84,7 +84,9 @@ import org.jspecify.annotations.Nullable;
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
  * {@code withheld()}, before the modifiers of an argument that is read from a key other
  * than {@code label} and {@code typeMessage}, holds its value back from what shows the
- * values of an object again.
+ * values of an object again. {@code map}, before the modifiers that decide what
+ * {@code null} produces, maps the validated value of such an argument, for example to a
+ * value object.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same

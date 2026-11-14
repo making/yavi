@@ -225,6 +225,18 @@ record ReversibleArgumentDefinition<A, R extends @Nullable Object> (ArgumentDefi
 		return new ReversibleArgumentDefinition<>(this.definition.asWithheld(), this.reverse);
 	}
 
+	/**
+	 * Returns the definition of this argument with its validated value mapped, as
+	 * {@link ArgumentDefinition#mapped} does. The mapped value goes back through the
+	 * given reverse to the value that this argument is written from.
+	 */
+	<R2 extends @Nullable Object> ReversibleArgumentDefinition<A, R2> mapped(Function<? super R, ? extends R2> mapper,
+			Function<? super R2, ? extends R> back) {
+		final Function<? super R, ? extends @Nullable Object> reverse = this.reverse;
+		final Function<? super R2, ? extends @Nullable Object> mapped = value -> reverse.apply(back.apply(value));
+		return new ReversibleArgumentDefinition<>(this.definition.mapped(mapper), mapped);
+	}
+
 	ReversibleArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
 		final Function<? super R, ? extends @Nullable Object> reverse = this.reverse;
 		final Function<? super Optional<@NonNull R>, ? extends @Nullable Object> optional = value -> value.isPresent()
