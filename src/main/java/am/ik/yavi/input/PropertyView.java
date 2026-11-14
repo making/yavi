@@ -6,6 +6,7 @@ package am.ik.yavi.input;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -42,11 +43,10 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * A view is built from a validator with
- * {@link ObjectInputValidator.Reversible#including(String, String...) including},
- * {@link ObjectInputValidator.Reversible#excluding(String, String...) excluding} or
- * {@link ObjectInputValidator.Reversible#view() view}, and is made narrower with
- * {@link #including(String, String...)} and {@link #excluding(String, String...)}. The
- * names are checked against what the validator
+ * {@link ObjectInputValidator.Reversible#including(String, String...) including} or
+ * {@link ObjectInputValidator.Reversible#excluding(String, String...) excluding}, and is
+ * made narrower with {@link #including(String, String...)} and
+ * {@link #excluding(String, String...)}. The names are checked against what the validator
  * {@linkplain am.ik.yavi.core.ValueValidator#description() describes} when the view is
  * built, not when an object is written: a name that the validator does not define, that
  * the view does not write or that has no effect is an {@link IllegalArgumentException}.
@@ -94,7 +94,7 @@ import org.jspecify.annotations.Nullable;
  *     ._string("password_hash").withheld()
  *     .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
  *
- * userValidator.view().toMap(user); // {id=1, name=Taro}
+ * userValidator.toMap(user); // {id=1, name=Taro}
  * userValidator.excluding("name").toMap(user); // {id=1}
  * userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
  * orderValidator.excluding("memo").toMap(order); // {id=7, user={id=1, name=Taro}}
@@ -102,8 +102,8 @@ import org.jspecify.annotations.Nullable;
  * }</pre>
  *
  * <ul>
- * <li>{@link ObjectInputValidator.Reversible#view() view()} of the validator and a view
- * that excludes do not write a withheld property, at any depth: not that of a nested
+ * <li>{@link ObjectInputValidator.Reversible#toMap(Object) toMap} of the validator and a
+ * view that excludes do not write a withheld property, at any depth: not that of a nested
  * object, of the elements of a list or of an embedded validator. Excluding it is an
  * {@link IllegalArgumentException}, because it has no effect.</li>
  * <li>A view that includes writes it if it is named. The name of a nested object stands
@@ -111,8 +111,8 @@ import org.jspecify.annotations.Nullable;
  * it to write that one too.</li>
  * <li>A property of a union is withheld if an alternative that defines it withholds
  * it.</li>
- * <li>{@code toMap} of the validator itself is the reverse and writes every property,
- * which is what an {@code INSERT} binds. What leaves the application is a view.</li>
+ * <li>{@link ObjectInputValidator.Reversible#reverse(Object) reverse} of the validator
+ * writes every property: it is what is read back.</li>
  * </ul>
  *
  * <p>
@@ -225,9 +225,11 @@ public final class PropertyView<X> {
 		 * @param discriminators the names of the properties that select an alternative
 		 * @param elements the descriptions of the elements of the value as a list
 		 * @param values the descriptions of the values of the value as a map
+		 * @param withheld the names of the properties that a way to read the value as an
+		 * object withholds
 		 */
 		private record Content(List<ValueDescription.Properties> objects, Set<String> discriminators,
-				List<ValueDescription> elements, List<ValueDescription> values) {
+				List<ValueDescription> elements, List<ValueDescription> values, Set<String> withheld) {
 
 			private void add(ValueDescription description) {
 				switch (description) {
@@ -260,8 +262,15 @@ public final class PropertyView<X> {
 		private Content content() {
 			Content content = this.content;
 			if (content == null) {
-				content = new Content(new ArrayList<>(), new LinkedHashSet<>(), new ArrayList<>(), new ArrayList<>());
+				final Set<String> withheld = new HashSet<>();
+				content = new Content(new ArrayList<>(), new LinkedHashSet<>(), new ArrayList<>(), new ArrayList<>(),
+						withheld);
 				this.descriptions.forEach(content::add);
+				content.objects().forEach(object -> object.properties().forEach(property -> {
+					if (property.withheld()) {
+						withheld.add(property.name());
+					}
+				}));
 				this.content = content;
 			}
 			return content;
@@ -285,14 +294,7 @@ public final class PropertyView<X> {
 		 * the given name.
 		 */
 		private boolean withholds(String name) {
-			for (ValueDescription.Properties object : this.content().objects()) {
-				for (ValueDescription.Property property : object.properties()) {
-					if (property.withheld() && property.name().equals(name)) {
-						return true;
-					}
-				}
-			}
-			return false;
+			return this.content().withheld().contains(name);
 		}
 
 		/**
@@ -460,6 +462,9 @@ public final class PropertyView<X> {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> toMap(X object) {
+		if ((this.shape instanceof All) || (this.shape instanceof Whole && this.described.isPlain())) {
+			return this.writer.write(object, name -> true);
+		}
 		final Predicate<String> names = name -> !(shapeOf(this.shape, name, this.described) instanceof Nothing);
 		final Object written = prune(this.writer.write(object, names), this.shape, this.described);
 		return (Map<String, Object>) Objects.requireNonNull(written);

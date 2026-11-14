@@ -710,10 +710,10 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * {@link #toMap(Object)} is defined by the round trip: for every object {@code x}
 	 * that the validator creates, {@code validate(toMap(x))} succeeds with an object
 	 * equal to {@code x}, as long as the function that creates the object and the
-	 * accessors agree. The one exception is an empty list of a property that is read from
-	 * text ({@code splitBy(",")}) and does not accept {@code null}: it is written as
-	 * {@code null}. The map holds the values of the JDK types that the properties are
-	 * read from, as they are: nothing is converted to text.
+	 * accessors agree and no property is withheld. The one exception is an empty list of
+	 * a property that is read from text ({@code splitBy(",")}) and does not accept
+	 * {@code null}: it is written as {@code null}. The map holds the values of the JDK
+	 * types that the properties are read from, as they are: nothing is converted to text.
 	 * {@link ParameterTree#ofValues} holds them as the text of parameters.
 	 *
 	 * <ul>
@@ -739,13 +739,17 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * {@link ValueValidator#map(Function, Function)}.
 	 *
 	 * <p>
+	 * A property that is {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}
+	 * where it is defined, such as a password, is not written by {@link #toMap(Object)},
+	 * at any depth, so that the map can be shown as it is. {@link #reverse(Object)}
+	 * writes every property, and the round trip holds for it.
+	 *
+	 * <p>
 	 * Some of the properties are written by a {@link PropertyView}, which
-	 * {@link #view()}, {@link #including(String, String...)} and
-	 * {@link #excluding(String, String...)} build: a list that shows a few of them, a
-	 * response without a secret. A view only writes, since what it writes is not read
-	 * back. A property that is {@linkplain am.ik.yavi.builder.Withholdable#withheld()
-	 * withheld} where it is defined is written by {@link #toMap(Object)}, which is the
-	 * reverse, and by a view only if the view names it.
+	 * {@link #including(String, String...)} and {@link #excluding(String, String...)}
+	 * build: a list that shows a few of them, an {@code UPDATE} of the columns that may
+	 * change. A view only writes, since what it writes is not read back. It writes a
+	 * withheld property only if it names it.
 	 *
 	 * <p>
 	 * The validator that reads another input ({@link #readingWith(InputReader)},
@@ -760,15 +764,23 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 
 		private final List<ReversiblePart<? super X, ?>> written;
 
+		/** The properties that are not withheld, which is what {@link #toMap} writes. */
+		private final PropertyView<X> shown;
+
 		private Reversible(List<ReversiblePart<? super X, ?>> written,
 				Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
 				boolean rejectUnknownProperties, List<TargetRule<X>> rules) {
 			super(written.stream().<Part<?>>map(ReversiblePart::part).toList(), mapper, rejectUnknownProperties, rules);
 			this.written = written;
+			this.shown = PropertyView.of(this::write, this.description()).withoutWithheld();
 		}
 
 		/**
-		 * Returns the map that this validator reads the given object from.
+		 * Returns the map that this validator reads the given object from, without the
+		 * properties that are {@linkplain am.ik.yavi.builder.Withholdable#withheld()
+		 * withheld}, at any depth. This is {@link #reverse(Object)} for a validator that
+		 * withholds nothing. The accessor of a withheld property of this validator is not
+		 * called.
 		 * @param object an object that this validator creates
 		 * @return a new map of the properties in their order, which the caller may
 		 * change, for example to add a parameter of a statement. A value is {@code null}
@@ -777,28 +789,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 * rest that has a property of the validator does
 		 */
 		public Map<String, Object> toMap(X object) {
-			return this.write(object, name -> true);
-		}
-
-		/**
-		 * Returns the view of the properties that are not
-		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}, at any depth:
-		 * what {@link #toMap(Object)} writes without what the schema holds back, for what
-		 * leaves the application.
-		 *
-		 * <pre>{@code
-		 * // ._string("password_hash").withheld()
-		 * static final PropertyView<User> PUBLIC = userValidator.view();
-		 *
-		 * PUBLIC.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
-		 * }</pre>
-		 *
-		 * The rest of the properties is written.
-		 * @return a view of the properties that are not withheld, which only writes and
-		 * can be made narrower
-		 */
-		public PropertyView<X> view() {
-			return PropertyView.of(this::write, this.description()).withoutWithheld();
+			return this.shown.toMap(object);
 		}
 
 		/**
@@ -925,14 +916,17 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		}
 
 		/**
-		 * Returns the map that this validator reads the given object from. This is
-		 * {@link #toMap(Object)}.
+		 * Returns the map that this validator reads the given object from, with every
+		 * property: this is {@link #toMap(Object)} with the properties that are withheld,
+		 * so that the round trip holds whatever is withheld. It is what a validator that
+		 * nests this one writes its own {@code reverse} with.
 		 * @param object an object that this validator creates
 		 * @return a new map of the properties
+		 * @throws IllegalArgumentException as {@link #toMap(Object)} does
 		 */
 		@Override
 		public Map<String, Object> reverse(X object) {
-			return this.toMap(object);
+			return this.write(object, name -> true);
 		}
 
 		/**

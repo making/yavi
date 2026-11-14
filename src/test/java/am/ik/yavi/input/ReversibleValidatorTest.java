@@ -503,19 +503,19 @@ class ReversibleValidatorTest {
 			.label("Password hash")
 			.fromMapReversible(Account::new, Account::id, Account::name, Account::passwordHash);
 		final Account account = new Account(1, "Taro", "{bcrypt}x");
-		// the validator itself is the reverse: it writes every property and reads it back
-		assertThat(accountValidator.toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"),
+		// the reverse writes every property and is read back; the map that is shown is
+		// without it, and so is a view that excludes. A view that includes writes it if
+		// it is named
+		assertThat(accountValidator.reverse(account)).containsExactly(entry("id", 1), entry("name", "Taro"),
 				entry("password_hash", "{bcrypt}x"));
-		assertThat(accountValidator.validate(accountValidator.toMap(account)))
+		assertThat(accountValidator.validate(accountValidator.reverse(account)))
 			.isEqualTo(Validated.successWith(account));
-		// the view of the validator and a view that excludes do not write it, and one
-		// that includes writes it if it is named
-		assertThat(accountValidator.view().toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"));
+		assertThat(accountValidator.toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"));
 		assertThat(accountValidator.excluding("name").toMap(account)).containsExactly(entry("id", 1));
 		final PropertyView<Account> credentials = accountValidator.including("id", "password_hash");
 		assertThat(credentials.toMap(account)).containsExactly(entry("id", 1), entry("password_hash", "{bcrypt}x"));
 		assertThat(credentials.excluding("password_hash").toMap(account)).containsExactly(entry("id", 1));
-		// its accessor is not called by a view that does not write it
+		// its accessor is not called where it is not written
 		assertThat(Yavi.reversibleSchema()
 			._integer("id")
 			._string("name")
@@ -524,8 +524,7 @@ class ReversibleValidatorTest {
 			.fromMapReversible(Account::new, Account::id, Account::name, a -> {
 				throw new IllegalStateException("not loaded");
 			})
-			.excluding("name")
-			.toMap(account)).containsExactly(entry("id", 1));
+			.toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"));
 		assertThatThrownBy(() -> accountValidator.excluding("password_hash"))
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("The property 'password_hash' is withheld: a view writes it only if it includes it by its "
@@ -549,8 +548,10 @@ class ReversibleValidatorTest {
 				entry("watchers", List.of(mapOf("id", 2, "name", "Hanako"))));
 		assertThat(orderValidator.including("id", "user").toMap(order)).containsExactly(entry("id", 7),
 				entry("user", mapOf("id", 1, "name", "Taro")));
-		assertThat(orderValidator.view().excluding("watchers", "memo").toMap(order)).containsExactly(entry("id", 7),
-				entry("user", mapOf("id", 1, "name", "Taro")));
+		assertThat(orderValidator.toMap(order)).containsExactly(entry("id", 7), entry("memo", "gift"),
+				entry("user", mapOf("id", 1, "name", "Taro")),
+				entry("watchers", List.of(mapOf("id", 2, "name", "Hanako"))));
+		assertThat(orderValidator.validate(orderValidator.reverse(order))).isEqualTo(Validated.successWith(order));
 		// the path to it is given next to the object that has it, or alone
 		assertThat(orderValidator.including("user", "user.password_hash", "watchers.password_hash").toMap(order))
 			.containsExactly(entry("user", mapOf("id", 1, "name", "Taro", "password_hash", "{bcrypt}x")),
@@ -603,7 +604,9 @@ class ReversibleValidatorTest {
 						.fromMapReversible(ApiKey::new, ApiKey::value, ApiKey::label));
 		assertThat(credentialValidator.excluding("label").toMap(new ApiKey("k", "ci")))
 			.containsExactly(entry("kind", "api_key"));
-		assertThat(credentialValidator.view().toMap(new Password("p"))).containsExactly(entry("kind", "password"));
+		assertThat(credentialValidator.toMap(new Password("p"))).containsExactly(entry("kind", "password"));
+		assertThat(credentialValidator.reverse(new ApiKey("k", "ci"))).containsExactly(entry("kind", "api_key"),
+				entry("value", "k"), entry("label", "ci"));
 		assertThat(credentialValidator.including("value").toMap(new Password("p")))
 			.containsExactly(entry("kind", "password"), entry("value", "p"));
 		assertThatThrownBy(
@@ -638,7 +641,7 @@ class ReversibleValidatorTest {
 		assertThat(ParameterTree.of(parameters).toParameters(signupValidator.description())).containsExactly(
 				entry("name", "Taro"), entry("password", ""), entry("account.id", "1"), entry("account.name", "Taro"),
 				entry("account.password_hash", ""));
-		assertThat(ParameterTree.ofValues(accountValidator.toMap(account)).toMap(accountValidator.description()))
+		assertThat(ParameterTree.ofValues(accountValidator.reverse(account)).toMap(accountValidator.description()))
 			.containsExactly(entry("id", "1"), entry("name", "Taro"), entry("password_hash", ""));
 		// its JSON Schema is writeOnly, and the arguments of a typed validator say it too
 		assertThat(JsonSchema.of(accountValidator.description())).extractingByKey("properties")

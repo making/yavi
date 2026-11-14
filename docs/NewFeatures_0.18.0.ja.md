@@ -13,6 +13,7 @@ YAVI 0.18.0 では、`Yavi.schema()` で入力を一度記述すれば、型付�
 * [結果を扱う](#結果を扱う)
 * [バリデータの記述と JSON Schema の生成](#バリデータの記述と-json-schema-の生成)
 * [JSpecify による null 性](#jspecify-による-null-性)
+* [付録: 登録フォームとその行と編集フォーム](#付録-登録フォームとその行と編集フォーム)
 
 0.17 からの移行については [0.18.0 の破壊的変更](BreakingChanges_0.18.0.ja.md) を参照してください。
 
@@ -776,7 +777,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 
 * `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。
 * `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
-* `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。
+* `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。`withheld()` を付けて定義したプロパティは `toMap` が書きません。`reverse(x)` はそれも書くので、往復が成り立ちます（[一部のプロパティだけを書く](#一部のプロパティだけを書く)）。
 * 返るバリデータは `ObjectInputValidator` です。これまでどおりネストでき、埋め込めて、`readingWith` や `readingParameters` で読めます。`rejectingUnknownProperties()` や `constraintOnTarget` のあとも `Reversible` のままです。
 * マップは新しく作られます。SQL 文に必要な値は `map.put("updated_by", user)` のように足せます。
 
@@ -861,7 +862,7 @@ shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 
 ### 一部のプロパティだけを書く
 
-`toMap` はすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、レスポンスに秘密の値を含めてはいけません。`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `view`、`including`、`excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
+`toMap` は、`withheld()` でないすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `including` と `excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
 
 ```java
 ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
@@ -872,13 +873,12 @@ ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
         .fromMapReversible(User::new, User::id, User::name, User::passwordHash, User::address);
 
 // バリデータの隣で一度だけ作る
-static final PropertyView<User> PUBLIC = userValidator.view();
 static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
 static final PropertyView<User> LISTED = userValidator.excluding("address");
 
-PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
-SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
-LISTED.toMap(user);  // {id=1, name=Taro}
+userValidator.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+SUMMARY.toMap(user);       // {id=1, name=Taro, address={city=Tokyo}}
+LISTED.toMap(user);        // {id=1, name=Taro}
 
 userValidator.excluding("adress");
 // IllegalArgumentException: The property 'adress' is not defined by the validator.
@@ -909,7 +909,7 @@ userValidator.excluding("adress");
 * パスは、その深さのプロパティだけを指します。自分自身を含むバリデータの `children.memo` は子の `memo` で、孫の `memo` ではありません。
 * `Yavi.reversibleDynamicSchema()` と `DiscriminatedUnionValidator.Reversible` でも同じ方法でビューを作れます。`ParameterTree.ofValues(view.toMap(x))` とすれば、保存済みのオブジェクトを秘密の値なしでフォームに表示できます。
 
-**書き出しを保留するプロパティ。** `excluding` は「書かないもの」の一覧です。そのため、あとからスキーマに追加したプロパティは、`excluding` で作ったすべてのビューが書きます。そのスキーマをネストしたバリデータのビューも同じです。外に出してはいけないプロパティは、定義する場所で一度だけ `withheld()` を付けます。
+**書き出しを保留するプロパティ。** 書いたマップは、レスポンス、フォーム、ログなどで人の目に触れます。パスワードのように見せてはいけないプロパティを呼び出し側が毎回外すことにすると、そのスキーマをネストしたバリデータの呼び出し側まで、全員が外し忘れないようにしなければなりません。そこで、定義する場所で一度だけ `withheld()` を付けます。
 
 ```java
 Yavi.reversibleSchema()
@@ -918,36 +918,34 @@ Yavi.reversibleSchema()
         ._string("password_hash").withheld()
         .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
 
-userValidator.toMap(user);                                  // {id=1, name=Taro, password_hash=...}
-userValidator.view().toMap(user);                           // {id=1, name=Taro}
+userValidator.toMap(user);                                  // {id=1, name=Taro}
 userValidator.excluding("name").toMap(user);                // {id=1}
 userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
-orderValidator.excluding("memo").toMap(order);              // {id=7, user={id=1, name=Taro}}
+userValidator.reverse(user);                                // {id=1, name=Taro, password_hash=...}
+orderValidator.toMap(order);                                // {id=7, memo=gift, user={id=1, name=Taro}}
 orderValidator.including("user", "user.password_hash");     // user 全体と、そのハッシュも書く
 userValidator.excluding("password_hash");                   // IllegalArgumentException: 効果がない
 ```
 
-* バリデータの `toMap` は逆変換なので、すべてのプロパティを書きます。`INSERT` 文にバインドするのはこのマップで、往復も成り立ちます。
-* `view()` と `excluding` のビューは、`withheld()` のプロパティをどの深さでも書きません。ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティも同じです。
+* `toMap` と `excluding` のビューは、`withheld()` のプロパティをどの深さでも書きません。ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティも同じです。
+* `reverse` はすべてのプロパティを書くので、何を `withheld()` にしても `validate(reverse(x))` は `Valid(x)` です。そのスキーマをネストしたバリデータは `reverse` で書き戻されます。秘密の値を保存した行を `INSERT` するときにバインドするのも `reverse` のマップです。
 * `including` のビューは、名前を指定したときだけ書きます。ネストしたオブジェクトの名前は、`withheld()` でないプロパティだけを表します。`withheld()` のプロパティも書くには、そのパスを並べて指定します。
 * ユニオンのプロパティは、それを定義する選択肢のどれかが `withheld()` にしていれば書きません。判別子は `withheld()` にできません。
 * `withheld()` は、プロパティを追加した直後（リストでは `splitBy` の後）に一度だけ書きます。`.label("X").withheld()`、`.withheld().withheld()`、`_rest` や `_embedded` への `withheld()` はコンパイルエラーになります。`Yavi.schema()` と動的スキーマにもあります。
 * 同じ印によって、再表示するフォームには送信された値が入らず（[パラメータを書き戻す](#パラメータを書き戻す)）、JSON Schema では `writeOnly` になります。読み取る内容は変わりません。違反は拒否した値を持ったままです（`ConstraintViolation#violatedValue()`。`ViolationDetail` は値を持ちません）。
 * 名前は理由ではなく動作を表しています。秘密の値に限らず、大きな値や内部用の値にも同じように使えます。
 
-**別の形で保存する値。** パスワードは送信されたまま読み取り、ハッシュにして保存します。ハッシュはアプリケーションが計算する値で、元の入力に戻る値ではないので、バリデータが書く内容には含まれません。フォームのスキーマでパスワードを `withheld()` にしておけば、ビューはパスワードを書きません。ハッシュは SQL 文のパラメータとして別に渡します。
+**別の形で保存する値。** パスワードは送信されたまま読み取り、ハッシュにして保存します。ハッシュはアプリケーションが計算する値で、元の入力に戻る値ではないので、バリデータが書く内容には含まれません。フォームのスキーマでパスワードを `withheld()` にしておけば、`toMap` はパスワードを書きません。ハッシュは SQL 文のパラメータとして別に渡します。
 
 ```java
-// ._string("password").withheld()
-static final PropertyView<User> ROW = userValidator.view();
-
+// ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
 jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
-        .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: password は含まれない
-        .param("password_hash", passwordEncoder.encode(user.password()))
+        .params(signupValidator.toMap(signup)) // {id=1, name=Taro, address={...}}: password は含まれない
+        .param("password_hash", passwordEncoder.encode(signup.password()))
         .update();
 ```
 
-`userValidator.toMap(user)` は、送信されたままのパスワードを含みます。書く側のコードには、バリデータではなくビューを公開してください。
+フォームと行に共通するプロパティは、1 つのバリデータとして一度だけ定義し、両方のスキーマに埋め込みます（`_embedded(profileValidator)`）。保存済みのユーザーをフォームに表示するには `ParameterTree.ofValues(userValidator.toMap(user)).toMap(editValidator.description())` とします。パスワードのフィールドは空になります。全体の流れは[付録](#付録-登録フォームとその行と編集フォーム)にあります。
 
 名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._object(ADDRESS, addressValidator)` と `excluding(ADDRESS)`）。
 
@@ -1193,7 +1191,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`、リバーシブルなバリデータの `including` と `excluding`、`ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
-| プロパティの `withheld()`、リバーシブルなバリデータの `view()`、`ValueDescription.Property#withheld` | [#581](https://github.com/making/yavi/pull/581) |
+| プロパティの `withheld()`、`ValueDescription.Property#withheld` | [#581](https://github.com/making/yavi/pull/581) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
@@ -1213,3 +1211,108 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
 | 効果のない修飾メソッドの連鎖はコンパイルできない、`NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563)、[#564](https://github.com/making/yavi/pull/564)、[#565](https://github.com/making/yavi/pull/565) |
 | JSpecify、`@Nullable` のない値 | [#534](https://github.com/making/yavi/pull/534)、[#556](https://github.com/making/yavi/pull/556)、[#557](https://github.com/making/yavi/pull/557) |
+
+## 付録: 登録フォームとその行と編集フォーム
+
+フォームが送ってくるパスワードは、検査はしますが、再表示はしません。テーブルが持つのはそのハッシュで、ハッシュはバリデータの外で計算します。保存済みのアカウントを編集フォームに表示するときは、パスワードのフィールドを空にします。プロパティは一度だけ定義して、各スキーマに埋め込みます。
+
+```java
+record Profile(String name, String email) {}
+record Signup(Profile profile, String password) {}
+record Account(Integer id, Profile profile, String passwordHash) {}
+record AccountEdit(Profile profile, Optional<String> password) {}
+
+// フォームと行に共通するプロパティ。定義はここだけ
+static final ObjectInputValidator.Reversible<Profile> profileSchema = Yavi.reversibleSchema()
+        ._string("name", c -> c.notBlank().lessThanOrEqual(50))
+        ._string("email", c -> c.notBlank().email())
+        .fromMapReversible(Profile::new, Profile::name, Profile::email);
+
+// 送信されたままのパスワード。制約と withheld() の定義はここだけ
+static final ObjectInputValidator.Reversible<String> passwordSchema = Yavi.reversibleSchema()
+        ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
+        .fromMapReversible(password -> password, password -> password);
+
+// 登録フォーム
+static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
+        ._embedded(profileSchema)
+        ._embedded(passwordSchema)
+        .fromMapReversible(Signup::new, Signup::profile, Signup::password);
+
+// 行
+static final ObjectInputValidator.Reversible<Account> accountSchema = Yavi.reversibleSchema()
+        ._integer("id")
+        ._embedded(profileSchema)
+        ._string("password_hash").withheld()
+        .fromMapReversible(Account::new, Account::id, Account::profile, Account::passwordHash);
+
+// 編集フォーム。パスワードが空なら変更しない
+static final ObjectInputValidator<AccountEdit> editSchema = Yavi.schema()
+        ._embedded(profileSchema)
+        ._embedded(passwordSchema).optional()
+        .fromMap(AccountEdit::new);
+
+static final ValueValidator<Map<String, ?>, Signup> signupForm = signupSchema.readingParameters();
+static final ValueValidator<Map<String, ?>, AccountEdit> editForm = editSchema.readingParameters();
+```
+
+**登録する。** 短すぎるパスワードは違反になり、再表示するフォームにはその値が入りません。正しいフォームは `toMap` で書きます。`toMap` はパスワードを書かないので、ハッシュは SQL 文のパラメータとして別に渡します。
+
+```java
+// name=Taro&email=taro@example.com&password=short
+signupForm.validate(parameters).errors();
+// The size of "password" must be greater than or equal to 8. The given size is 5
+ParameterTree.of(parameters).toParameters(signupForm.description());
+// {name=Taro, email=taro@example.com, password=}
+
+Signup signup = signupForm.validated(parameters); // password=long-enough
+signupSchema.toMap(signup); // {name=Taro, email=taro@example.com}
+jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id, :name, :email, :password_hash)")
+        .params(signupSchema.toMap(signup))
+        .param("id", id)
+        .param("password_hash", passwordEncoder.encode(signup.password()))
+        .update();
+```
+
+**行を読んで表示する。** 行は `Account` として読みます。レスポンス、ログ、フォームに渡すのは `toMap` のマップで、ハッシュを含みません。
+
+```java
+Account account = accountSchema.validated(row);
+// Account[id=1, profile=Profile[name=Taro, email=taro@example.com], passwordHash={bcrypt}...]
+accountSchema.toMap(account); // {id=1, name=Taro, email=taro@example.com}
+
+// 保存済みのアカウントの編集フォーム
+ParameterTree.ofValues(accountSchema.toMap(account)).toParameters(editForm.description());
+// {name=Taro, email=taro@example.com, password=}
+```
+
+**編集する。** 空のままのパスワードは `Optional.empty()` になるので、プロフィールだけを更新します。パスワードが送信された場合は、登録フォームと同じ制約で検査し、そのハッシュを保存します。
+
+```java
+// name=Jiro&email=jiro@example.com&password=
+AccountEdit edit = editForm.validated(parameters);
+// AccountEdit[profile=Profile[name=Jiro, email=jiro@example.com], password=Optional.empty]
+jdbcClient.sql("UPDATE account SET name = :name, email = :email WHERE id = :id")
+        .params(profileSchema.toMap(edit.profile()))
+        .param("id", account.id())
+        .update();
+edit.password().ifPresent(password ->
+        jdbcClient.sql("UPDATE account SET password_hash = :password_hash WHERE id = :id")
+                .param("password_hash", passwordEncoder.encode(password))
+                .param("id", account.id())
+                .update());
+```
+
+**行の全体。** ハッシュが必要な場面では、それを明示します。`reverse` はすべてのプロパティを書き、そのマップは読み戻せます。ビューは、名前を指定した `withheld()` のプロパティを書きます。
+
+```java
+accountSchema.reverse(account);
+// {id=1, name=Taro, email=taro@example.com, password_hash={bcrypt}...}
+accountSchema.validate(accountSchema.reverse(account)); // Valid(account)
+accountSchema.including("id", "password_hash").toMap(account);
+// {id=1, password_hash={bcrypt}...}
+```
+
+* `name` と `email` の定義は `profileSchema` だけに、パスワードの制約と `withheld()` は `passwordSchema` だけにあります。埋め込んだプロパティの印は、`optional()` を付けても引き継がれます。
+* ハッシュはパスワードに戻る値ではないので、アプリケーションが渡します（`.param("password_hash", ...)`）。
+* 埋め込むオブジェクトをそのまま持つレコード（`Signup(Profile profile, String password)`）には、コンストラクタとアクセサを渡せます。フラットなレコード（`Signup(String name, String email, String password)`）でも書けますが、プロフィールを分解する関数と、組み立て直すアクセサが必要です。

@@ -751,7 +751,7 @@ static final PropertyView<Employee> SUMMARY = employeeValidator.including("id", 
 SUMMARY.toMap(employee); // {id=1, first_name=Taro}
 ```
 
-A property that must not leave is marked where it is defined, `._string("password_hash").withheld()`, instead of being excluded by every view: `toMap` of the validator still writes it for an `INSERT`, while `view()` and a view that excludes do not, at any depth, and a view that includes writes it only if it is named. The same mark keeps what was sent for a password out of a form that is shown again (`ParameterTree#toMap`) and is `writeOnly` in a JSON Schema.
+A property that must not be shown is marked where it is defined, `._string("password_hash").withheld()`, instead of being left out by every caller: `toMap` and a view that excludes do not write it, at any depth, a view that includes writes it only if it is named, and `reverse` writes every property, so the round trip holds. The same mark keeps what was sent for a password out of a form that is shown again (`ParameterTree#toMap`) and is `writeOnly` in a JSON Schema.
 
 `validate(toMap(x))` is `Valid(x)`. A value object goes back with `map(f, g)`. A property that cannot be written back, such as one with `map(f)`, does not compile: the schema takes a `ReversibleValueValidator` where `Yavi.schema()` takes a `ValueValidator`. `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form, to show a stored object. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
 

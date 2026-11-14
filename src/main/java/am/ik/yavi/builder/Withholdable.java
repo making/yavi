@@ -16,9 +16,9 @@ package am.ik.yavi.builder;
  *     ._string("password_hash").withheld()
  *     .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
  *
- * userValidator.toMap(user); // {id=1, name=Taro, password_hash=...}: the reverse, as an INSERT binds it
- * userValidator.excluding("name").toMap(user); // {id=1}
+ * userValidator.toMap(user); // {id=1, name=Taro}
  * userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}: it is named
+ * userValidator.reverse(user); // {id=1, name=Taro, password_hash=...}: what is read back
  * }</pre>
  *
  * <p>
@@ -38,11 +38,12 @@ public interface Withholdable<B> {
 	 * describes it as {@linkplain am.ik.yavi.core.ValueDescription.Property#withheld()
 	 * withheld}:
 	 * <ul>
-	 * <li>A {@link am.ik.yavi.input.PropertyView view} writes it only if it is named in
-	 * {@code including(...)}: a view that excludes does not write it, at any depth, and
-	 * neither does the name of the nested object that has it.
-	 * {@link am.ik.yavi.input.ObjectInputValidator.Reversible#toMap(Object) toMap} of the
-	 * validator itself is the reverse and writes every property.</li>
+	 * <li>{@link am.ik.yavi.input.ObjectInputValidator.Reversible#toMap(Object) toMap} of
+	 * a validator does not write it, at any depth, and neither does a
+	 * {@link am.ik.yavi.input.PropertyView view} unless it is named in
+	 * {@code including(...)}.
+	 * {@link am.ik.yavi.input.ObjectInputValidator.Reversible#reverse(Object) reverse}
+	 * writes every property, so the round trip holds.</li>
 	 * <li>{@link am.ik.yavi.input.ParameterTree#toMap(am.ik.yavi.core.ValueDescription)
 	 * ParameterTree#toMap} and {@code toParameters} write it as a property that was not
 	 * sent, so a form that is shown again does not hold what was sent for it.</li>

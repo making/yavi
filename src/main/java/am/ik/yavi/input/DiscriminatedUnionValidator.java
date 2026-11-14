@@ -237,11 +237,15 @@ public sealed class DiscriminatedUnionValidator<X>
 
 		private final List<Alternative<? extends X>> written;
 
+		/** The properties that are not withheld, which is what {@link #toMap} writes. */
+		private final PropertyView<X> shown;
+
 		private Reversible(String discriminator,
 				Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
 				List<TargetRule<X>> rules, List<Alternative<? extends X>> written) {
 			super(discriminator, alternatives, rules);
 			this.written = written;
+			this.shown = this.all().withoutWithheld();
 		}
 
 		/**
@@ -266,40 +270,17 @@ public sealed class DiscriminatedUnionValidator<X>
 
 		/**
 		 * Returns the map that this validator reads the given object from: the map that
-		 * the alternative of the type of the object writes, with the discriminator.
+		 * the alternative of the type of the object writes, with the discriminator and
+		 * without the properties that are
+		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}, at any depth.
+		 * A property is withheld if an alternative that defines it withholds it.
 		 * @param object an object that an alternative creates
 		 * @return a new map, which the caller may change
 		 * @throws IllegalArgumentException if the object is not an instance of the type
 		 * of an alternative
 		 */
 		public Map<String, Object> toMap(X object) {
-			final String discriminator = this.discriminator();
-			for (Alternative<? extends X> alternative : this.written) {
-				if (alternative.type().isInstance(object)) {
-					final Map<String, Object> map = alternative.write(object);
-					if (map.containsKey(discriminator)) {
-						return map;
-					}
-					final Map<String, Object> discriminated = new LinkedHashMap<>();
-					discriminated.put(discriminator, alternative.value());
-					discriminated.putAll(map);
-					return discriminated;
-				}
-			}
-			throw new IllegalArgumentException(
-					"No alternative is defined for an object of type " + object.getClass().getName() + ".");
-		}
-
-		/**
-		 * Returns the view of the properties that are not
-		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}, as
-		 * {@link ObjectInputValidator.Reversible#view()} states. A property is withheld
-		 * if an alternative that defines it withholds it.
-		 * @return a view of the properties that are not withheld, which only writes and
-		 * can be made narrower
-		 */
-		public PropertyView<X> view() {
-			return this.all().withoutWithheld();
+			return this.shown.toMap(object);
 		}
 
 		/**
@@ -333,18 +314,34 @@ public sealed class DiscriminatedUnionValidator<X>
 		}
 
 		private PropertyView<X> all() {
-			return PropertyView.of((object, names) -> this.toMap(object), this.description());
+			return PropertyView.of((object, names) -> this.reverse(object), this.description());
 		}
 
 		/**
-		 * Returns the map that this validator reads the given object from. This is
-		 * {@link #toMap(Object)}.
+		 * Returns the map that this validator reads the given object from, with every
+		 * property: this is {@link #toMap(Object)} with the properties that are withheld.
 		 * @param object an object that an alternative creates
 		 * @return a new map
+		 * @throws IllegalArgumentException if the object is not an instance of the type
+		 * of an alternative
 		 */
 		@Override
 		public Map<String, Object> reverse(X object) {
-			return this.toMap(object);
+			final String discriminator = this.discriminator();
+			for (Alternative<? extends X> alternative : this.written) {
+				if (alternative.type().isInstance(object)) {
+					final Map<String, Object> map = alternative.write(object);
+					if (map.containsKey(discriminator)) {
+						return map;
+					}
+					final Map<String, Object> discriminated = new LinkedHashMap<>();
+					discriminated.put(discriminator, alternative.value());
+					discriminated.putAll(map);
+					return discriminated;
+				}
+			}
+			throw new IllegalArgumentException(
+					"No alternative is defined for an object of type " + object.getClass().getName() + ".");
 		}
 
 		/**
