@@ -1192,7 +1192,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`、リバーシブルなバリデータの `including` と `excluding`、`ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
-| プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581) |
+| プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581)、[#582](https://github.com/making/yavi/pull/582) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
