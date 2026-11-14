@@ -1244,6 +1244,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581)、[#582](https://github.com/making/yavi/pull/582) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| 書き戻すスキーマの `splitBy(pattern, delimiter)`、`withheld()` や `splitBy` の前の `label` と `typeMessage` | [#583](https://github.com/making/yavi/pull/583) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
