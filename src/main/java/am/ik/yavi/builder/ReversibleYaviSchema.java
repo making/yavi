@@ -83,6 +83,8 @@ import org.jspecify.annotations.Nullable;
  * to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
+ * {@code withheld()}, directly after an argument that is read from a key is added, holds
+ * its value back from what shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -130,9 +132,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<BigDecimal, T> _bigDecimal(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<BigDecimal, T> _bigDecimal(
 			ReversibleValueValidator<BigDecimal, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
@@ -150,9 +152,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<BigDecimal, T> _bigDecimal(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<BigDecimal, T> _bigDecimal(
 			ReversibleValueValidator.NullAccepting<BigDecimal, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
@@ -170,9 +172,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<BigDecimal, BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -187,7 +189,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<BigDecimal, BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
@@ -203,9 +205,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<BigInteger, T> _bigInteger(
 			ReversibleValueValidator<BigInteger, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(BigInteger.class, validator));
 	}
 
@@ -223,9 +225,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<BigInteger, T> _bigInteger(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<BigInteger, T> _bigInteger(
 			ReversibleValueValidator.NullAccepting<BigInteger, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(BigInteger.class, validator));
 	}
 
@@ -243,9 +245,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<BigInteger, BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -260,7 +262,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<BigInteger, BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
@@ -276,9 +278,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Boolean, T> _boolean(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Boolean, T> _boolean(
 			ReversibleValueValidator<Boolean, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Boolean.class, validator));
 	}
 
@@ -295,9 +297,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Boolean, T> _boolean(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Boolean, T> _boolean(
 			ReversibleValueValidator.NullAccepting<Boolean, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Boolean.class, validator));
 	}
 
@@ -315,9 +317,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Boolean, Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Boolean.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Boolean.class,
 				BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -331,7 +333,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Boolean, Boolean> _boolean(String name) {
 		return this._boolean(name, Function.identity());
 	}
 
@@ -346,9 +348,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Double, T> _double(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Double, T> _double(
 			ReversibleValueValidator<Double, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Double.class, validator));
 	}
 
@@ -365,9 +367,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Double, T> _double(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Double, T> _double(
 			ReversibleValueValidator.NullAccepting<Double, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Double.class, validator));
 	}
 
@@ -385,9 +387,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Double, Double> _double(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Double, Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Double.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Double.class,
 				DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -401,7 +403,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Double, Double> _double(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Double, Double> _double(String name) {
 		return this._double(name, Function.identity());
 	}
 
@@ -417,9 +419,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<E, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<E, T> _enum(
 			ReversibleValueValidator<E, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Enum.class, validator));
 	}
 
@@ -437,9 +439,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<E, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<E, T> _enum(
 			ReversibleValueValidator.NullAccepting<E, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Enum.class, validator));
 	}
 
@@ -457,9 +459,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>> ReversibleArguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type,
+	public <E extends Enum<E>> ReversibleArguments1ValidatorBuilder.Added<E, E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, type,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, type,
 				EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -476,7 +478,7 @@ public final class ReversibleYaviSchema
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public <E extends Enum<E>> ReversibleArguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type) {
+	public <E extends Enum<E>> ReversibleArguments1ValidatorBuilder.Added<E, E> _enum(String name, Class<E> type) {
 		return this._enum(name, type, Function.identity());
 	}
 
@@ -491,9 +493,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Float, T> _float(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Float, T> _float(
 			ReversibleValueValidator<Float, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Float.class, validator));
 	}
 
@@ -510,9 +512,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Float, T> _float(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Float, T> _float(
 			ReversibleValueValidator.NullAccepting<Float, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Float.class, validator));
 	}
 
@@ -530,9 +532,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Float, Float> _float(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Float, Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Float.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Float.class,
 				FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -546,7 +548,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Float, Float> _float(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Float, Float> _float(String name) {
 		return this._float(name, Function.identity());
 	}
 
@@ -562,9 +564,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Instant, T> _instant(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Instant, T> _instant(
 			ReversibleValueValidator<Instant, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Instant.class, validator));
 	}
 
@@ -581,9 +583,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Instant, T> _instant(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Instant, T> _instant(
 			ReversibleValueValidator.NullAccepting<Instant, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Instant.class, validator));
 	}
 
@@ -601,9 +603,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Instant, Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Instant.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Instant.class,
 				InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -618,7 +620,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Instant, Instant> _instant(String name) {
 		return this._instant(name, Function.identity());
 	}
 
@@ -634,9 +636,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Integer, T> _integer(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Integer, T> _integer(
 			ReversibleValueValidator<Integer, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Integer.class, validator));
 	}
 
@@ -653,9 +655,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Integer, T> _integer(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Integer, T> _integer(
 			ReversibleValueValidator.NullAccepting<Integer, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Integer.class, validator));
 	}
 
@@ -673,9 +675,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Integer, Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Integer.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Integer.class,
 				IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -690,7 +692,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Integer, Integer> _integer(String name) {
 		return this._integer(name, Function.identity());
 	}
 
@@ -706,9 +708,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<LocalDateTime, T> _localDateTime(
 			ReversibleValueValidator<LocalDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
@@ -726,9 +728,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<LocalDateTime, T> _localDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<LocalDateTime, T> _localDateTime(
 			ReversibleValueValidator.NullAccepting<LocalDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
@@ -746,9 +748,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<LocalDateTime, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -763,7 +765,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<LocalDateTime, LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
@@ -779,9 +781,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<LocalTime, T> _localTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<LocalTime, T> _localTime(
 			ReversibleValueValidator<LocalTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(LocalTime.class, validator));
 	}
 
@@ -798,9 +800,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<LocalTime, T> _localTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<LocalTime, T> _localTime(
 			ReversibleValueValidator.NullAccepting<LocalTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(LocalTime.class, validator));
 	}
 
@@ -818,9 +820,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<LocalTime, LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -835,7 +837,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<LocalTime, LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
@@ -851,9 +853,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<LocalDate, T> _localDate(
 			ReversibleValueValidator<LocalDate, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(LocalDate.class, validator));
 	}
 
@@ -870,9 +872,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<LocalDate, T> _localDate(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<LocalDate, T> _localDate(
 			ReversibleValueValidator.NullAccepting<LocalDate, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(LocalDate.class, validator));
 	}
 
@@ -890,9 +892,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<LocalDate, LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -907,7 +909,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<LocalDate, LocalDate> _localDate(String name) {
 		return this._localDate(name, Function.identity());
 	}
 
@@ -922,9 +924,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Long, T> _long(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Long, T> _long(
 			ReversibleValueValidator<Long, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Long.class, validator));
 	}
 
@@ -941,9 +943,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Long, T> _long(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Long, T> _long(
 			ReversibleValueValidator.NullAccepting<Long, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Long.class, validator));
 	}
 
@@ -961,9 +963,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Long, Long> _long(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Long, Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Long.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Long.class,
 				LongValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -977,7 +979,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Long, Long> _long(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Long, Long> _long(String name) {
 		return this._long(name, Function.identity());
 	}
 
@@ -993,9 +995,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<T1, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<T1, T2> _object(
 			ReversibleValueValidator<T1, T2> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Object.class, validator));
 	}
 
@@ -1013,9 +1015,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<T1, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<T1, T2> _object(
 			ReversibleValueValidator.NullAccepting<T1, T2> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Object.class, validator));
 	}
 
@@ -1036,9 +1038,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> ReversibleArguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type,
+	public <T> ReversibleArguments1ValidatorBuilder.Added<T, T> _object(String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, type,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, type,
 				ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -1055,7 +1057,7 @@ public final class ReversibleYaviSchema
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public <T> ReversibleArguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type) {
+	public <T> ReversibleArguments1ValidatorBuilder.Added<T, T> _object(String name, Class<T> type) {
 		return this._object(name, type, Function.identity());
 	}
 
@@ -1071,9 +1073,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<OffsetDateTime, T> _offsetDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<OffsetDateTime, T> _offsetDateTime(
 			ReversibleValueValidator<OffsetDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
@@ -1091,9 +1093,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<OffsetDateTime, T> _offsetDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<OffsetDateTime, T> _offsetDateTime(
 			ReversibleValueValidator.NullAccepting<OffsetDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
@@ -1111,9 +1113,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1128,7 +1130,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
@@ -1143,9 +1145,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Short, T> _short(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Short, T> _short(
 			ReversibleValueValidator<Short, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Short.class, validator));
 	}
 
@@ -1162,9 +1164,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Short, T> _short(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Short, T> _short(
 			ReversibleValueValidator.NullAccepting<Short, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Short.class, validator));
 	}
 
@@ -1182,9 +1184,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Short, Short> _short(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Short, Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Short.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Short.class,
 				ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1198,7 +1200,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Short, Short> _short(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Short, Short> _short(String name) {
 		return this._short(name, Function.identity());
 	}
 
@@ -1213,9 +1215,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<String, T> _string(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<String, T> _string(
 			ReversibleValueValidator<String, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(String.class, validator));
 	}
 
@@ -1232,9 +1234,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<String, T> _string(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<String, T> _string(
 			ReversibleValueValidator.NullAccepting<String, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(String.class, validator));
 	}
 
@@ -1258,9 +1260,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<String, String> _string(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<String, String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, String.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, String.class,
 				StringValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1274,7 +1276,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<String, String> _string(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<String, String> _string(String name) {
 		return this._string(name, Function.identity());
 	}
 
@@ -1290,9 +1292,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<YearMonth, T> _yearMonth(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<YearMonth, T> _yearMonth(
 			ReversibleValueValidator<YearMonth, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(YearMonth.class, validator));
 	}
 
@@ -1309,9 +1311,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<YearMonth, T> _yearMonth(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<YearMonth, T> _yearMonth(
 			ReversibleValueValidator.NullAccepting<YearMonth, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(YearMonth.class, validator));
 	}
 
@@ -1329,9 +1331,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<YearMonth, YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1346,7 +1348,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<YearMonth, YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
@@ -1361,9 +1363,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Year, T> _year(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Year, T> _year(
 			ReversibleValueValidator<Year, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(Year.class, validator));
 	}
 
@@ -1380,9 +1382,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<Year, T> _year(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<Year, T> _year(
 			ReversibleValueValidator.NullAccepting<Year, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(Year.class, validator));
 	}
 
@@ -1400,9 +1402,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Year, Year> _year(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<Year, Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name, Year.class,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name, Year.class,
 				YearValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1416,7 +1418,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<Year, Year> _year(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<Year, Year> _year(String name) {
 		return this._year(name, Function.identity());
 	}
 
@@ -1432,9 +1434,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<ZonedDateTime, T> _zonedDateTime(
 			ReversibleValueValidator<ZonedDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
@@ -1452,9 +1454,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<ZonedDateTime, T> _zonedDateTime(
+	public <T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<ZonedDateTime, T> _zonedDateTime(
 			ReversibleValueValidator.NullAccepting<ZonedDateTime, T> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
@@ -1472,9 +1474,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
+	public ReversibleArguments1ValidatorBuilder.Added<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.value(name,
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.value(name,
 				ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1489,7 +1491,7 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
+	public ReversibleArguments1ValidatorBuilder.Added<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 
@@ -1513,9 +1515,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<T1, T2> _object(String name,
+	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<T1, T2> _object(String name,
 			ReversibleValueValidator<T1, T2> validator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(ReversibleArgumentDefinition.object(name, validator));
+		return new ReversibleArguments1ValidatorBuilder.Added<>(ReversibleArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1540,9 +1542,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.NullAccepting<T1, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments1ValidatorBuilder.AddedNullAccepting<T1, T2> _object(
 			String name, ReversibleValueValidator.NullAccepting<T1, T2> validator) {
-		return new ReversibleArguments1ValidatorBuilder.NullAccepting<>(
+		return new ReversibleArguments1ValidatorBuilder.AddedNullAccepting<>(
 				ReversibleArgumentDefinition.object(name, validator));
 	}
 
@@ -1617,9 +1619,9 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ReversibleValueValidator<V, T> valueValidator) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
@@ -1643,10 +1645,10 @@ public final class ReversibleYaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> ReversibleArguments1ValidatorBuilder.Added<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ReversibleValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new ReversibleArguments1ValidatorBuilder.Keyed<>(
+		return new ReversibleArguments1ValidatorBuilder.Added<>(
 				ReversibleArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
 

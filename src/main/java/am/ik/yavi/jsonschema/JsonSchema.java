@@ -53,7 +53,8 @@ import org.jspecify.annotations.Nullable;
  * {@code null} (see {@link ValueDescription#acceptsNull()}) also allows the type
  * {@code null}, so a {@link ValueDescription.Presence} that rejects {@code null} is
  * neither required nor nullable, and a {@link ValueDescription.Required} that accepts
- * {@code null} is both.</li>
+ * {@code null} is both. A property that is
+ * {@linkplain ValueDescription.Property#withheld() withheld} is {@code writeOnly}.</li>
  * <li>A type that is read from its string form is a {@code string} with a {@code format}:
  * {@code date} for {@code LocalDate}, {@code date-time} for {@code Instant} and
  * {@code OffsetDateTime}, {@code uuid} for {@code UUID}, {@code uri-reference} for
@@ -285,7 +286,11 @@ public final class JsonSchema {
 					final Map<String, Object> schemas = new LinkedHashMap<>();
 					final List<Object> required = new ArrayList<>();
 					for (ValueDescription.Property property : properties.properties()) {
-						schemas.put(property.name(), this.schema(property.value(), property.value().acceptsNull()));
+						final Map<String, Object> value = this.schema(property.value(), property.value().acceptsNull());
+						if (property.withheld()) {
+							value.put("writeOnly", true);
+						}
+						schemas.put(property.name(), value);
 						if (!property.value().acceptsAbsent()) {
 							required.add(property.name());
 						}

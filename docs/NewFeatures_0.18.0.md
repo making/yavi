@@ -820,7 +820,10 @@ ParameterTree.of(Map.of()).toMap(signupValidator.description());
 * The description is the one of the validator that validates the parameters. Give
   `ParameterTree.of(params, maxIndex)` the same largest index if the validator reads a
   tree with another one.
-* The map holds every property, a password included. The template decides what it shows.
+* A property that is defined with `withheld()`, such as a password
+  (`._string("password", c -> c.greaterThanOrEqual(8)).withheld()`), is written as one
+  that was not sent: an empty string. A template that writes every field of the map does
+  not send the password back. Any other property is written with what was sent.
 
 `ParameterTree.parametersOf(map)` is the reverse of `ParameterTree.of(parameters)` for any
 tree of `Map` and `List`:
@@ -1061,27 +1064,29 @@ list of `ObjectInputValidator.ReversiblePart`: a part with its reverse and its a
 ### Writing some of the properties
 
 `toMap` writes every property. A list shows a few of them, a response must not contain a
-secret, an `UPDATE` binds the columns that may change. `including` and `excluding` of the
-validator build a `PropertyView` that writes the chosen properties:
+secret, an `UPDATE` binds the columns that may change. `view`, `including` and `excluding`
+of the validator build a `PropertyView` that writes the chosen properties:
 
 ```java
 ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._string("name")
-        ._string("password")
+        ._string("password_hash").withheld()
         ._object("address", addressValidator) // city, street
-        .fromMapReversible(User::new, User::id, User::name, User::password, User::address);
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash, User::address);
 
 // built once, next to the validator
-static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+static final PropertyView<User> PUBLIC = userValidator.view();
 static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+static final PropertyView<User> LISTED = userValidator.excluding("address");
 
 PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
 SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+LISTED.toMap(user);  // {id=1, name=Taro}
 
-userValidator.excluding("pasword");
-// IllegalArgumentException: The property 'pasword' is not defined by the validator.
-// The properties are [id, name, password, address].
+userValidator.excluding("adress");
+// IllegalArgumentException: The property 'adress' is not defined by the validator.
+// The properties are [id, name, password_hash, address].
 ```
 
 * **The names are checked when the view is built**, against what the validator describes,
@@ -1089,7 +1094,7 @@ userValidator.excluding("pasword");
   does not write, or that is given twice is an `IllegalArgumentException`. A view that is
   a constant next to its validator therefore fails when the class is loaded, on every
   path and in every test that uses the validator. Removing a key from the map that
-  `toMap` returns (`map.remove("pasword")`) is checked by nobody.
+  `toMap` returns (`map.remove("adress")`) is checked by nobody.
 * **The view is chosen where the object is written.** The use case holds the view it
   needs and calls its `toMap`; the schema does not know the views.
 * **A view only writes.** It is not a validator and not a `ReversibleValueValidator`: a
@@ -1126,13 +1131,55 @@ What is written:
   views in the same way, and `ParameterTree.ofValues(view.toMap(x))` shows a stored
   object in a form without its secret.
 
-**A value that is stored in another form.** A password is read as it is sent and stored
-as a hash, which the application computes: it is not a value that goes back, so it is not
-part of what the validator writes. A view leaves the password out and the statement is
-given the hash as one more parameter:
+**A property that is withheld.** `excluding` is a list of what is left out, so a property
+that is added to the schema later is written by every view that excludes, and by the view
+of every validator that nests the schema. A property that must not leave is therefore
+marked once, where it is defined, with `withheld()`:
 
 ```java
-static final PropertyView<User> ROW = userValidator.excluding("password");
+Yavi.reversibleSchema()
+        ._integer("id")
+        ._string("name")
+        ._string("password_hash").withheld()
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
+
+userValidator.toMap(user);                                  // {id=1, name=Taro, password_hash=...}
+userValidator.view().toMap(user);                           // {id=1, name=Taro}
+userValidator.excluding("name").toMap(user);                // {id=1}
+userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
+orderValidator.excluding("memo").toMap(order);              // {id=7, user={id=1, name=Taro}}
+orderValidator.including("user", "user.password_hash");     // the user, and its hash too
+userValidator.excluding("password_hash");                   // IllegalArgumentException: no effect
+```
+
+* `toMap` of the validator is the reverse and writes every property, which is what an
+  `INSERT` binds: the round trip holds.
+* `view()` and a view that excludes do not write a withheld property, at any depth: not
+  that of a nested object, of the elements of a list or of an `_embedded` validator.
+* A view that includes writes it only if it is named. The name of a nested object stands
+  for its properties that are not withheld; the path to a withheld one is given next to
+  it.
+* A property of a union is withheld if an alternative that defines it withholds it. The
+  discriminator cannot be withheld.
+* `withheld()` is written directly after the property is added (after `splitBy` of a
+  list) and once: `.label("X").withheld()`, `.withheld().withheld()`, and `withheld()` of
+  `_rest` or `_embedded` do not compile. `Yavi.schema()` and the dynamic schemas have it
+  too.
+* The same mark keeps what was sent out of a form that is shown again
+  ([Writing the parameters back](#writing-the-parameters-back)) and is `writeOnly` in a
+  JSON Schema. It does not change what is read, and a violation still holds the rejected
+  value (`ConstraintViolation#violatedValue()`; a `ViolationDetail` does not).
+* The name says what happens, not why: a value that is large or internal is withheld in
+  the same way as a secret.
+
+**A value that is stored in another form.** A password is read as it is sent and stored
+as a hash, which the application computes: it is not a value that goes back, so it is not
+part of what the validator writes. The schema of the form withholds the password, its
+view leaves it out and the statement is given the hash as one more parameter:
+
+```java
+// ._string("password").withheld()
+static final PropertyView<User> ROW = userValidator.view();
 
 jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
         .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: no password
@@ -1144,7 +1191,7 @@ jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, 
 the validator, to the code that writes.
 
 To keep the names in one place, share a constant between the schema and the view
-(`._string(PASSWORD)` and `excluding(PASSWORD)`).
+(`._object(ADDRESS, addressValidator)` and `excluding(ADDRESS)`).
 
 ### Showing a stored object in a form
 
@@ -1377,6 +1424,8 @@ String json = JsonSchema.toJson(description);
 ```
 
 * A property is `required` unless it accepts an absent key.
+* A property that is defined with `withheld()` is `writeOnly`
+  (`ValueDescription.Property#withheld()`).
 * The constraints of a list or map are written as `minItems`, `uniqueItems` and so on,
   `rejectingUnknownProperties()` as `additionalProperties: false`, and a recursive
   structure as `$ref`.

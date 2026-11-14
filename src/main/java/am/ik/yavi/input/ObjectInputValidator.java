@@ -69,6 +69,9 @@ import org.jspecify.annotations.Nullable;
  * <li>The violations that report a missing value or a value of another type come from no
  * constraint. {@code label}, {@code required} and {@code typeMessage} of the builders say
  * how they read for one property, as {@link PropertyMessages} states.</li>
+ * <li>A property added with {@code withheld()} of the builders is read as any other and
+ * is held back from what shows the values of the object again, as
+ * {@link am.ik.yavi.builder.Withholdable#withheld()} states: a password, a token.</li>
  * <li>A key that no property is defined for is ignored. With
  * {@link IgnoringUnknown#rejectingUnknownProperties()} it is reported with
  * {@code object.unknownProperty}, and with {@code _rest} of the builders it is validated
@@ -207,10 +210,13 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * as {@code null} or rejected
 	 * @param messages what the property is called in a message, and what is said when it
 	 * has no value or a value of another type
+	 * @param withheld whether the property is described as
+	 * {@linkplain ValueDescription.Property#withheld() withheld}: it is read as any
+	 * other, and is held back from what shows the values of the object again
 	 * @param <R> the type of the validated value
 	 */
 	public record Property<R extends @Nullable Object> (String name, ValueValidator<Object, R> validator,
-			Strictness strictness, PropertyMessages messages) implements Part<R> {
+			Strictness strictness, PropertyMessages messages, boolean withheld) implements Part<R> {
 
 		/**
 		 * Creates a property whose absent key is validated as {@code null}.
@@ -230,6 +236,20 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 */
 		public Property(String name, ValueValidator<Object, R> validator, Strictness strictness) {
 			this(name, validator, strictness, PropertyMessages.none());
+		}
+
+		/**
+		 * Creates a property that is not withheld.
+		 * @param name the key of the property in the map
+		 * @param validator the validator of the value
+		 * @param strictness whether an absent key and an explicit {@code null} are
+		 * validated as {@code null} or rejected
+		 * @param messages what the property is called in a message, and what is said when
+		 * it has no value or a value of another type
+		 */
+		public Property(String name, ValueValidator<Object, R> validator, Strictness strictness,
+				PropertyMessages messages) {
+			this(name, validator, strictness, messages, false);
 		}
 	}
 
@@ -303,10 +323,12 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * {@link Presence#ofNullable(Object)}
 	 * @param messages what the property is called in a message, and what is said when it
 	 * has no value or a value of another type
+	 * @param withheld whether the property is described as
+	 * {@linkplain ValueDescription.Property#withheld() withheld}
 	 * @param <R> the type of the validated value
 	 */
 	public record PresenceProperty<R> (String name, ValueValidator<Object, Presence<R>> validator,
-			PropertyMessages messages) implements Part<Presence<R>> {
+			PropertyMessages messages, boolean withheld) implements Part<Presence<R>> {
 
 		/**
 		 * Creates a property that is called by its name and reports the default messages.
@@ -315,6 +337,17 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 */
 		public PresenceProperty(String name, ValueValidator<Object, Presence<R>> validator) {
 			this(name, validator, PropertyMessages.none());
+		}
+
+		/**
+		 * Creates a property that is not withheld.
+		 * @param name the key of the property in the map
+		 * @param validator the validator of the value of a key that is present
+		 * @param messages what the property is called in a message, and what is said when
+		 * it has no value or a value of another type
+		 */
+		public PresenceProperty(String name, ValueValidator<Object, Presence<R>> validator, PropertyMessages messages) {
+			this(name, validator, messages, false);
 		}
 	}
 
@@ -466,12 +499,13 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			List<List<ValueDescription.Property>> added = null;
 			Group group = null;
 			switch (part) {
-				case Property<?> property -> added = List
-					.of(List.of(new ValueDescription.Property(property.name(), property.strictness().describe(described))));
+				case Property<?> property -> added = List.of(List.of(new ValueDescription.Property(property.name(),
+						property.strictness().describe(described), property.withheld())));
 				case PresenceProperty<?> property ->
 					added = List.of(List.of(new ValueDescription.Property(property.name(),
 							described instanceof ValueDescription.Presence ? described
-									: new ValueDescription.Presence(described))));
+									: new ValueDescription.Presence(described),
+							property.withheld())));
 				case Embedded<?> embedded -> {
 					added = alternativesOf(described, false);
 					if (added != null) {
@@ -549,8 +583,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 					? properties.properties()
 						.stream()
 						.map(property -> property.value().acceptsAbsent() ? property
-								: new ValueDescription.Property(property.name(),
-										new ValueDescription.Optional(property.value(), null)))
+								: property.withValue(new ValueDescription.Optional(property.value(), null)))
 						.toList()
 					: properties.properties());
 			case ValueDescription.NotNull notNull -> alternativesOf(notNull.value(), optional);
@@ -707,9 +740,12 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 *
 	 * <p>
 	 * Some of the properties are written by a {@link PropertyView}, which
-	 * {@link #including(String, String...)} and {@link #excluding(String, String...)}
-	 * build: a list that shows a few of them, a response without a secret. A view only
-	 * writes, since what it writes is not read back.
+	 * {@link #view()}, {@link #including(String, String...)} and
+	 * {@link #excluding(String, String...)} build: a list that shows a few of them, a
+	 * response without a secret. A view only writes, since what it writes is not read
+	 * back. A property that is {@linkplain am.ik.yavi.builder.Withholdable#withheld()
+	 * withheld} where it is defined is written by {@link #toMap(Object)}, which is the
+	 * reverse, and by a view only if the view names it.
 	 *
 	 * <p>
 	 * The validator that reads another input ({@link #readingWith(InputReader)},
@@ -745,6 +781,27 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		}
 
 		/**
+		 * Returns the view of the properties that are not
+		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}, at any depth:
+		 * what {@link #toMap(Object)} writes without what the schema holds back, for what
+		 * leaves the application.
+		 *
+		 * <pre>{@code
+		 * // ._string("password_hash").withheld()
+		 * static final PropertyView<User> PUBLIC = userValidator.view();
+		 *
+		 * PUBLIC.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+		 * }</pre>
+		 *
+		 * The rest of the properties is written.
+		 * @return a view of the properties that are not withheld, which only writes and
+		 * can be made narrower
+		 */
+		public PropertyView<X> view() {
+			return PropertyView.of(this::write, this.description()).withoutWithheld();
+		}
+
+		/**
 		 * Returns a view that writes only the given properties of an object.
 		 *
 		 * <pre>{@code
@@ -754,7 +811,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 * }</pre>
 		 *
 		 * The names are checked here, so build the view once, as a constant next to the
-		 * validator. The rest of the properties is not written.
+		 * validator. The rest of the properties is not written, and a property that is
+		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld} is written
+		 * only if it is named.
 		 * @param name the name of a property, or the path to a property of a nested
 		 * object as {@link PropertyView} states
 		 * @param names the names of the other properties
@@ -767,23 +826,27 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		}
 
 		/**
-		 * Returns a view that writes the properties of an object except the given ones,
-		 * such as a secret that is read but must not leave.
+		 * Returns a view that writes the properties of an object except the given ones
+		 * and those that are {@linkplain am.ik.yavi.builder.Withholdable#withheld()
+		 * withheld}.
 		 *
 		 * <pre>{@code
-		 * static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+		 * static final PropertyView<User> LISTED = userValidator.excluding("address");
 		 *
-		 * PUBLIC.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+		 * LISTED.toMap(user); // {id=1, name=Taro}
 		 * }</pre>
 		 *
 		 * The names are checked here, so build the view once, as a constant next to the
-		 * validator. The rest of the properties is written.
+		 * validator. The rest of the properties is written. A property that must never
+		 * leave is withheld where it is defined instead of being excluded here: a view
+		 * that excludes writes a property that is added to the schema later.
 		 * @param name the name of a property, or the path to a property of a nested
 		 * object as {@link PropertyView} states
 		 * @param names the names of the other properties
 		 * @return a view without the given properties, which only writes
 		 * @throws IllegalArgumentException if this validator does not define a property
-		 * of a given name, or as {@link PropertyView#excluding(String, String...)} states
+		 * of a given name, if the property is withheld, or as
+		 * {@link PropertyView#excluding(String, String...)} states
 		 */
 		public PropertyView<X> excluding(String name, String... names) {
 			return PropertyView.of(this::write, this.description()).excluding(name, names);

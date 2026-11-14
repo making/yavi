@@ -6,12 +6,14 @@ package am.ik.yavi.input;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import am.ik.yavi.core.ValueDescription;
@@ -40,10 +42,11 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>
  * A view is built from a validator with
- * {@link ObjectInputValidator.Reversible#including(String, String...) including} or
- * {@link ObjectInputValidator.Reversible#excluding(String, String...) excluding}, and is
- * made narrower with {@link #including(String, String...)} and
- * {@link #excluding(String, String...)}. The names are checked against what the validator
+ * {@link ObjectInputValidator.Reversible#including(String, String...) including},
+ * {@link ObjectInputValidator.Reversible#excluding(String, String...) excluding} or
+ * {@link ObjectInputValidator.Reversible#view() view}, and is made narrower with
+ * {@link #including(String, String...)} and {@link #excluding(String, String...)}. The
+ * names are checked against what the validator
  * {@linkplain am.ik.yavi.core.ValueValidator#description() describes} when the view is
  * built, not when an object is written: a name that the validator does not define, that
  * the view does not write or that has no effect is an {@link IllegalArgumentException}.
@@ -80,6 +83,39 @@ import org.jspecify.annotations.Nullable;
  * </ul>
  *
  * <p>
+ * A property that its schema {@linkplain am.ik.yavi.builder.Withholdable#withheld()
+ * withholds} is written only by a view that names it, so that a view that excludes is not
+ * a list of what must not leave that somebody has to keep complete:
+ *
+ * <pre>{@code
+ * ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
+ *     ._integer("id")
+ *     ._string("name")
+ *     ._string("password_hash").withheld()
+ *     .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
+ *
+ * userValidator.view().toMap(user); // {id=1, name=Taro}
+ * userValidator.excluding("name").toMap(user); // {id=1}
+ * userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
+ * orderValidator.excluding("memo").toMap(order); // {id=7, user={id=1, name=Taro}}
+ * orderValidator.including("user", "user.password_hash"); // the user, and its hash too
+ * }</pre>
+ *
+ * <ul>
+ * <li>{@link ObjectInputValidator.Reversible#view() view()} of the validator and a view
+ * that excludes do not write a withheld property, at any depth: not that of a nested
+ * object, of the elements of a list or of an embedded validator. Excluding it is an
+ * {@link IllegalArgumentException}, because it has no effect.</li>
+ * <li>A view that includes writes it if it is named. The name of a nested object stands
+ * for its properties that are not withheld; the path to a withheld one is given next to
+ * it to write that one too.</li>
+ * <li>A property of a union is withheld if an alternative that defines it withholds
+ * it.</li>
+ * <li>{@code toMap} of the validator itself is the reverse and writes every property,
+ * which is what an {@code INSERT} binds. What leaves the application is a view.</li>
+ * </ul>
+ *
+ * <p>
  * A view only writes. It is not a validator and not a
  * {@link am.ik.yavi.core.ReversibleValueValidator}: a map without a required property is
  * not read back, so the round trip that defines
@@ -93,13 +129,15 @@ import org.jspecify.annotations.Nullable;
  */
 public final class PropertyView<X> {
 
+	private static final Shape ALL = new All();
+
 	private static final Shape WHOLE = new Whole();
 
 	private static final Shape NOTHING = new Nothing();
 
 	private final Writer<X> writer;
 
-	private final ValueDescription description;
+	private final Described described;
 
 	private final Shape shape;
 
@@ -128,7 +166,14 @@ public final class PropertyView<X> {
 
 	}
 
-	/** The value as it is written. */
+	/**
+	 * The value as the validator writes it, with the properties that are withheld. This
+	 * is what a view that is not made narrower writes.
+	 */
+	private record All() implements Shape {
+	}
+
+	/** The value without the properties that are withheld, at any depth. */
 	private record Whole() implements Shape {
 	}
 
@@ -141,48 +186,220 @@ public final class PropertyView<X> {
 	}
 
 	/**
-	 * An object: the named properties with their shapes, and the others as a whole or not
-	 * at all.
+	 * An object: the named properties with their shapes, and the others that are not
+	 * withheld as a whole or not at all.
 	 */
 	private record Obj(Map<String, Shape> named, boolean others) implements Shape {
+	}
 
-		private Shape of(String name) {
-			final Shape shape = this.named.get(name);
-			return shape != null ? shape : this.others ? WHOLE : NOTHING;
+	/**
+	 * What the descriptions of a value tell about it, one for every way to read it. It is
+	 * found when it is asked for and kept: a structure that contains itself is described
+	 * as far as a written value goes.
+	 */
+	private static final class Described {
+
+		private static final Described UNKNOWN = new Described(List.of());
+
+		private final List<ValueDescription> descriptions;
+
+		private volatile @Nullable Content content;
+
+		private volatile @Nullable Boolean plain;
+
+		private volatile @Nullable Described each;
+
+		private volatile @Nullable Described others;
+
+		/** The values of the properties that an object defines, by their name. */
+		private final Map<String, Described> properties = new ConcurrentHashMap<>();
+
+		private Described(List<ValueDescription> descriptions) {
+			this.descriptions = descriptions;
+		}
+
+		/**
+		 * What a value is read as.
+		 *
+		 * @param objects the descriptions of the value as an object
+		 * @param discriminators the names of the properties that select an alternative
+		 * @param elements the descriptions of the elements of the value as a list
+		 * @param values the descriptions of the values of the value as a map
+		 */
+		private record Content(List<ValueDescription.Properties> objects, Set<String> discriminators,
+				List<ValueDescription> elements, List<ValueDescription> values) {
+
+			private void add(ValueDescription description) {
+				switch (description) {
+					case ValueDescription.Properties properties -> this.objects.add(properties);
+					case ValueDescription.AnyOf anyOf -> {
+						final int before = this.objects.size();
+						anyOf.alternatives().forEach(this::add);
+						if (anyOf.discriminator() != null && this.objects.size() > before) {
+							this.discriminators.add(anyOf.discriminator());
+						}
+					}
+					case ValueDescription.NotNull notNull -> this.add(notNull.value());
+					case ValueDescription.Optional optional -> this.add(optional.value());
+					case ValueDescription.Presence presence -> this.add(presence.value());
+					case ValueDescription.Required required -> this.add(required.value());
+					case ValueDescription.Reference reference -> this.add(reference.target());
+					case ValueDescription.Elements elements -> this.elements.add(elements.element());
+					case ValueDescription.Entries entries -> this.values.add(entries.value());
+					case ValueDescription.Value value -> {
+					}
+					case ValueDescription.Unknown unknown -> {
+					}
+					case ValueDescription.Never never -> {
+					}
+				}
+			}
+
+		}
+
+		private Content content() {
+			Content content = this.content;
+			if (content == null) {
+				content = new Content(new ArrayList<>(), new LinkedHashSet<>(), new ArrayList<>(), new ArrayList<>());
+				this.descriptions.forEach(content::add);
+				this.content = content;
+			}
+			return content;
+		}
+
+		/** Returns the names of the properties that the value defines as an object. */
+		private Set<String> names() {
+			final Set<String> names = new LinkedHashSet<>();
+			this.content()
+				.objects()
+				.forEach(object -> object.properties().forEach(property -> names.add(property.name())));
+			return names;
+		}
+
+		private Set<String> discriminators() {
+			return this.content().discriminators();
+		}
+
+		/**
+		 * Returns whether a way to read the value as an object withholds the property of
+		 * the given name.
+		 */
+		private boolean withholds(String name) {
+			for (ValueDescription.Properties object : this.content().objects()) {
+				for (ValueDescription.Property property : object.properties()) {
+					if (property.withheld() && property.name().equals(name)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Returns what is known about the value of the given key of the value as an
+		 * object or a map.
+		 */
+		private Described property(String name) {
+			final Described defined = this.properties.get(name);
+			if (defined != null) {
+				return defined;
+			}
+			final Content content = this.content();
+			final List<ValueDescription> values = new ArrayList<>();
+			for (ValueDescription.Properties object : content.objects()) {
+				for (ValueDescription.Property property : object.properties()) {
+					if (property.name().equals(name)) {
+						values.add(property.value());
+					}
+				}
+			}
+			if (values.isEmpty()) {
+				// a key of the rest or of a map, of which there are as many as the values
+				// say
+				Described others = this.others;
+				if (others == null) {
+					final List<ValueDescription> rest = new ArrayList<>(content.values());
+					content.objects().forEach(object -> {
+						if (object.rest() != null) {
+							rest.add(object.rest());
+						}
+					});
+					others = rest.isEmpty() ? UNKNOWN : new Described(rest);
+					this.others = others;
+				}
+				return others;
+			}
+			values.addAll(content.values());
+			return this.properties.computeIfAbsent(name, key -> new Described(values));
+		}
+
+		/**
+		 * Returns what is known about the elements of the value as a list and about its
+		 * values as a map.
+		 */
+		private Described each() {
+			Described each = this.each;
+			if (each == null) {
+				final Content content = this.content();
+				final List<ValueDescription> elements = new ArrayList<>(content.elements());
+				elements.addAll(content.values());
+				each = elements.isEmpty() ? UNKNOWN : new Described(elements);
+				this.each = each;
+			}
+			return each;
+		}
+
+		/**
+		 * Returns whether no property of the value is withheld, at any depth, so that it
+		 * is written as it is.
+		 */
+		private boolean isPlain() {
+			Boolean plain = this.plain;
+			if (plain == null) {
+				final Set<ValueDescription.Reference> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+				plain = this.descriptions.stream().noneMatch(description -> withholds(description, seen));
+				this.plain = plain;
+			}
+			return plain;
+		}
+
+		private static boolean withholds(@Nullable ValueDescription description, Set<ValueDescription.Reference> seen) {
+			return switch (description) {
+				case null -> false;
+				case ValueDescription.Properties properties -> withholds(properties.rest(), seen) || properties
+					.properties()
+					.stream()
+					.anyMatch(property -> property.withheld() || withholds(property.value(), seen));
+				case ValueDescription.AnyOf anyOf ->
+					anyOf.alternatives().stream().anyMatch(alternative -> withholds(alternative, seen));
+				case ValueDescription.NotNull notNull -> withholds(notNull.value(), seen);
+				case ValueDescription.Optional optional -> withholds(optional.value(), seen);
+				case ValueDescription.Presence presence -> withholds(presence.value(), seen);
+				case ValueDescription.Required required -> withholds(required.value(), seen);
+				// a target that is seen again adds nothing to what it told before
+				case ValueDescription.Reference reference -> seen.add(reference) && withholds(reference.target(), seen);
+				case ValueDescription.Elements elements -> withholds(elements.element(), seen);
+				case ValueDescription.Entries entries -> withholds(entries.value(), seen);
+				case ValueDescription.Value value -> false;
+				case ValueDescription.Unknown unknown -> false;
+				case ValueDescription.Never never -> false;
+			};
 		}
 
 	}
 
 	/**
-	 * The objects that a value is read as.
+	 * The objects that a value is, or that it is a list or a map of.
 	 *
-	 * @param objects the descriptions of the object, one for every way to read it
-	 * @param discriminators the names of the properties that select an alternative
+	 * @param object what is known about the objects
 	 * @param depth the number of lists and maps that the objects are the elements of
 	 */
-	private record Level(List<ValueDescription.Properties> objects, Set<String> discriminators, int depth) {
-
-		private Set<String> names() {
-			final Set<String> names = new LinkedHashSet<>();
-			this.objects.forEach(object -> object.properties().forEach(property -> names.add(property.name())));
-			return names;
-		}
-
-		private List<ValueDescription> valuesOf(String name) {
-			final List<ValueDescription> values = new ArrayList<>();
-			this.objects.forEach(object -> object.properties().forEach(property -> {
-				if (property.name().equals(name)) {
-					values.add(property.value());
-				}
-			}));
-			return values;
-		}
-
+	private record Level(Described object, int depth) {
 	}
 
-	private PropertyView(Writer<X> writer, ValueDescription description, Shape shape) {
+	private PropertyView(Writer<X> writer, Described described, Shape shape) {
 		this.writer = writer;
-		this.description = description;
+		this.described = described;
 		this.shape = shape;
 	}
 
@@ -192,7 +409,15 @@ public final class PropertyView<X> {
 	 * @param description the description of the validator that reads the map
 	 */
 	static <X> PropertyView<X> of(Writer<X> writer, ValueDescription description) {
-		return new PropertyView<>(writer, description, WHOLE);
+		return new PropertyView<>(writer, new Described(List.of(description)), ALL);
+	}
+
+	/**
+	 * Returns the view of the properties that the writer of this view writes and that are
+	 * not withheld.
+	 */
+	PropertyView<X> withoutWithheld() {
+		return new PropertyView<>(this.writer, this.described, written(this.shape));
 	}
 
 	/**
@@ -203,7 +428,8 @@ public final class PropertyView<X> {
 	 * @return a narrower view
 	 * @throws IllegalArgumentException if the validator does not define a property of a
 	 * given name, if this view does not write it, if a name is given twice or with a
-	 * property of the same object, or if a name is the discriminator of a union
+	 * property of the same object that is not withheld, or if a name is the discriminator
+	 * of a union
 	 */
 	public PropertyView<X> including(String name, String... names) {
 		return this.narrowed(true, name, names);
@@ -216,8 +442,9 @@ public final class PropertyView<X> {
 	 * @param names the names of the other properties
 	 * @return a narrower view
 	 * @throws IllegalArgumentException if the validator does not define a property of a
-	 * given name, if this view does not write it, if a name is given twice or with a
-	 * property of the same object, or if a name is the discriminator of a union
+	 * given name, if this view does not write it, as it does not write a property that is
+	 * withheld unless it includes it, if a name is given twice or with a property of the
+	 * same object, or if a name is the discriminator of a union
 	 */
 	public PropertyView<X> excluding(String name, String... names) {
 		return this.narrowed(false, name, names);
@@ -233,9 +460,8 @@ public final class PropertyView<X> {
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> toMap(X object) {
-		final Predicate<String> names = this.shape instanceof Obj properties
-				? name -> !(properties.of(name) instanceof Nothing) : name -> true;
-		final Object written = prune(this.writer.write(object, names), this.shape);
+		final Predicate<String> names = name -> !(shapeOf(this.shape, name, this.described) instanceof Nothing);
+		final Object written = prune(this.writer.write(object, names), this.shape, this.described);
 		return (Map<String, Object>) Objects.requireNonNull(written);
 	}
 
@@ -245,25 +471,44 @@ public final class PropertyView<X> {
 		for (String other : names) {
 			paths.add(Objects.requireNonNull(other, "'names' must not contain null."));
 		}
-		return new PropertyView<>(this.writer, this.description,
-				narrow(this.shape, List.of(this.description), paths, including, ""));
+		return new PropertyView<>(this.writer, this.described,
+				narrow(this.shape, this.described, paths, including, false, ""));
 	}
 
 	/**
-	 * Returns the given shape of a value with the given descriptions, without the
-	 * properties of the given paths or with them only.
+	 * Returns the shape of the property with the given name of an object with the given
+	 * shape.
+	 */
+	private static Shape shapeOf(Shape shape, String name, Described object) {
+		return switch (shape) {
+			case All all -> ALL;
+			case Obj properties -> {
+				final Shape named = properties.named().get(name);
+				yield named != null ? named : properties.others() && !object.withholds(name) ? WHOLE : NOTHING;
+			}
+			default -> object.withholds(name) ? NOTHING : WHOLE;
+		};
+	}
+
+	/**
+	 * Returns the given shape of a value, without the properties of the given paths or
+	 * with them only.
+	 * @param whole whether the value is included as a whole, so that the paths add the
+	 * properties of it that are withheld
 	 * @param prefix the path to the value, which ends with a period unless it is empty
 	 */
-	private static Shape narrow(Shape shape, List<ValueDescription> descriptions, List<String> paths, boolean including,
+	private static Shape narrow(Shape shape, Described value, List<String> paths, boolean including, boolean whole,
 			String prefix) {
-		final Level level = level(descriptions, prefix);
+		final Level level = level(value, prefix);
+		final Described object = level.object();
 		Shape inner = shape;
 		for (int i = 0; i < level.depth() && inner instanceof Each each; i++) {
 			inner = each.element();
 		}
-		final Obj current = inner instanceof Obj properties ? properties : new Obj(Map.of(), true);
-		final Set<String> defined = level.names();
-		final Set<String> whole = new LinkedHashSet<>();
+		final Shape current = inner;
+		final Set<String> defined = object.names();
+		final Set<String> discriminators = object.discriminators();
+		final Set<String> named = new LinkedHashSet<>();
 		final Map<String, List<String>> nested = new LinkedHashMap<>();
 		for (String path : paths) {
 			final String name = nameOf(path, defined);
@@ -273,42 +518,76 @@ public final class PropertyView<X> {
 								+ (prefix.isEmpty() ? "" : "of '" + prefix.substring(0, prefix.length() - 1) + "' ")
 								+ "are " + defined + ".");
 			}
-			if (level.discriminators().contains(name)) {
+			if (discriminators.contains(name)) {
 				throw new IllegalArgumentException("The discriminator '" + prefix + name
 						+ "' is always written: it is neither included nor excluded.");
 			}
-			if (current.of(name) instanceof Nothing) {
-				throw new IllegalArgumentException(
-						"The property '" + prefix + name + "' is not written by the view that is made narrower.");
+			final boolean withheld = object.withholds(name);
+			if (withheld && !including && current instanceof All) {
+				throw new IllegalArgumentException("The property '" + prefix + name
+						+ "' is withheld: a view writes it only if it includes it by its name, so excluding it has no effect.");
+			}
+			if (shapeOf(current, name, object) instanceof Nothing) {
+				throw new IllegalArgumentException("The property '" + prefix + name
+						+ "' is not written by the view that is made narrower" + (withheld
+								? ": it is withheld, and written only by a view that includes it by its name." : "."));
 			}
 			if (path.length() > name.length()) {
 				nested.computeIfAbsent(name, key -> new ArrayList<>()).add(path.substring(name.length() + 1));
 			}
-			else if (!whole.add(name)) {
+			else if (whole && !withheld) {
+				throw new IllegalArgumentException("The property '" + prefix + name + "' is written as a part of '"
+						+ prefix.substring(0, prefix.length() - 1) + "', which is given as a whole.");
+			}
+			else if (!named.add(name)) {
 				throw new IllegalArgumentException("The property '" + prefix + name + "' is given twice.");
 			}
 		}
-		final Map<String, Shape> named = new LinkedHashMap<>();
+		final Map<String, Shape> shapes = new LinkedHashMap<>();
+		final boolean others;
 		if (including) {
-			level.discriminators().forEach(name -> named.put(name, current.of(name)));
+			discriminators.forEach(name -> shapes.put(name, written(shapeOf(current, name, object))));
+			others = whole;
 		}
 		else {
-			named.putAll(current.named());
+			others = !(current instanceof Obj properties) || properties.others();
+			if (current instanceof Obj properties) {
+				shapes.putAll(properties.named());
+			}
 		}
-		whole.forEach(name -> {
-			if (nested.containsKey(name)) {
+		final Set<String> wholes = new LinkedHashSet<>();
+		named.forEach(name -> {
+			if (!nested.containsKey(name)) {
+				shapes.put(name, including ? written(shapeOf(current, name, object)) : NOTHING);
+			}
+			// a whole object with the paths to what it withholds
+			else if (including && shapeOf(current, name, object) instanceof All) {
+				wholes.add(name);
+			}
+			else {
+				// a path to what the view does not write is what is wrong, rather than
+				// the path being given
+				narrow(shapeOf(current, name, object), object.property(name), nested.get(name), including, false,
+						prefix + name + ".");
 				throw new IllegalArgumentException("The property '" + prefix + name
 						+ "' is given as a whole and with the paths to its properties " + nested.get(name) + ".");
 			}
-			named.put(name, including ? current.of(name) : NOTHING);
 		});
-		nested.forEach((name, rest) -> named.put(name,
-				narrow(current.of(name), level.valuesOf(name), rest, including, prefix + name + ".")));
-		Shape narrowed = new Obj(Collections.unmodifiableMap(named), !including && current.others());
+		nested.forEach((name, rest) -> shapes.put(name, narrow(shapeOf(current, name, object), object.property(name),
+				rest, including, wholes.contains(name) || (whole && !object.withholds(name)), prefix + name + ".")));
+		Shape narrowed = new Obj(Collections.unmodifiableMap(shapes), others);
 		for (int i = 0; i < level.depth(); i++) {
 			narrowed = new Each(narrowed);
 		}
 		return narrowed;
+	}
+
+	/**
+	 * Returns the given shape of a property as a view that is made narrower writes it:
+	 * without what is withheld, unless it is named.
+	 */
+	private static Shape written(Shape shape) {
+		return shape instanceof All ? WHOLE : shape;
 	}
 
 	/**
@@ -326,52 +605,43 @@ public final class PropertyView<X> {
 		return found;
 	}
 
-	private static Level level(List<ValueDescription> descriptions, String prefix) {
-		final List<ValueDescription.Properties> objects = new ArrayList<>();
-		final Set<String> discriminators = new LinkedHashSet<>();
+	private static Level level(Described value, String prefix) {
 		final Set<Integer> depths = new LinkedHashSet<>();
-		descriptions.forEach(description -> collect(description, 0, objects, discriminators, depths));
-		final String value = prefix.isEmpty() ? "The validator"
+		value.descriptions.forEach(description -> collect(description, 0, depths));
+		final String name = prefix.isEmpty() ? "The validator"
 				: "The property '" + prefix.substring(0, prefix.length() - 1) + "'";
-		if (objects.isEmpty()) {
+		if (depths.isEmpty()) {
 			throw new IllegalArgumentException(
-					value + " does not describe an object, so no property of it can be chosen. Name it as a whole.");
+					name + " does not describe an object, so no property of it can be chosen. Name it as a whole.");
 		}
 		if (depths.size() > 1) {
-			throw new IllegalArgumentException(value
+			throw new IllegalArgumentException(name
 					+ " is an object in one alternative and a list or a map of objects in another, so no property of it can be chosen. Name it as a whole.");
 		}
-		return new Level(objects, discriminators, depths.iterator().next());
+		final int depth = depths.iterator().next();
+		Described object = value;
+		for (int i = 0; i < depth; i++) {
+			object = object.each();
+		}
+		return new Level(object, depth);
 	}
 
-	private static void collect(ValueDescription description, int depth, List<ValueDescription.Properties> objects,
-			Set<String> discriminators, Set<Integer> depths) {
+	/**
+	 * Adds the numbers of lists and maps that the objects of the given description are
+	 * the elements of.
+	 */
+	private static void collect(ValueDescription description, int depth, Set<Integer> depths) {
 		switch (description) {
-			case ValueDescription.Properties properties -> {
-				objects.add(properties);
-				depths.add(depth);
-			}
-			case ValueDescription.AnyOf anyOf -> {
-				final int before = objects.size();
-				anyOf.alternatives()
-					.forEach(alternative -> collect(alternative, depth, objects, discriminators, depths));
-				if (anyOf.discriminator() != null && objects.size() > before) {
-					discriminators.add(anyOf.discriminator());
-				}
-			}
-			case ValueDescription.NotNull notNull -> collect(notNull.value(), depth, objects, discriminators, depths);
-			case ValueDescription.Optional optional ->
-				collect(optional.value(), depth, objects, discriminators, depths);
-			case ValueDescription.Presence presence ->
-				collect(presence.value(), depth, objects, discriminators, depths);
-			case ValueDescription.Required required ->
-				collect(required.value(), depth, objects, discriminators, depths);
-			case ValueDescription.Reference reference ->
-				collect(reference.target(), depth, objects, discriminators, depths);
-			case ValueDescription.Elements elements ->
-				collect(elements.element(), depth + 1, objects, discriminators, depths);
-			case ValueDescription.Entries entries ->
-				collect(entries.value(), depth + 1, objects, discriminators, depths);
+			case ValueDescription.Properties properties -> depths.add(depth);
+			case ValueDescription.AnyOf anyOf ->
+				anyOf.alternatives().forEach(alternative -> collect(alternative, depth, depths));
+			case ValueDescription.NotNull notNull -> collect(notNull.value(), depth, depths);
+			case ValueDescription.Optional optional -> collect(optional.value(), depth, depths);
+			case ValueDescription.Presence presence -> collect(presence.value(), depth, depths);
+			case ValueDescription.Required required -> collect(required.value(), depth, depths);
+			case ValueDescription.Reference reference -> collect(reference.target(), depth, depths);
+			case ValueDescription.Elements elements -> collect(elements.element(), depth + 1, depths);
+			case ValueDescription.Entries entries -> collect(entries.value(), depth + 1, depths);
 			case ValueDescription.Value value -> {
 			}
 			case ValueDescription.Unknown unknown -> {
@@ -381,37 +651,53 @@ public final class PropertyView<X> {
 		}
 	}
 
-	private static @Nullable Object prune(@Nullable Object value, Shape shape) {
+	private static @Nullable Object prune(@Nullable Object value, Shape shape, Described described) {
 		return switch (shape) {
-			case Whole whole -> value;
+			case All all -> value;
 			case Nothing nothing -> throw new IllegalStateException("A value that is not written has no shape.");
+			case Whole whole -> {
+				if (described.isPlain()) {
+					yield value;
+				}
+				if (value instanceof List<?> elements) {
+					yield each(elements, WHOLE, described);
+				}
+				yield value instanceof Map<?, ?> properties ? properties(properties, WHOLE, described) : value;
+			}
 			case Each each -> {
 				if (value instanceof List<?> elements) {
-					final List<@Nullable Object> pruned = new ArrayList<>(elements.size());
-					elements.forEach(element -> pruned.add(prune(element, each.element())));
-					yield pruned;
+					yield each(elements, each.element(), described);
 				}
 				if (value instanceof Map<?, ?> entries) {
+					final Described entry = described.each();
 					final Map<Object, @Nullable Object> pruned = new LinkedHashMap<>();
-					entries.forEach((key, entry) -> pruned.put(key, prune(entry, each.element())));
+					entries.forEach((key, element) -> pruned.put(key, prune(element, each.element(), entry)));
 					yield pruned;
 				}
 				yield value;
 			}
-			case Obj object -> {
-				if (!(value instanceof Map<?, ?> properties)) {
-					yield value;
-				}
-				final Map<Object, @Nullable Object> pruned = new LinkedHashMap<>();
-				properties.forEach((name, property) -> {
-					final Shape kept = object.of(String.valueOf(name));
-					if (!(kept instanceof Nothing)) {
-						pruned.put(name, prune(property, kept));
-					}
-				});
-				yield pruned;
-			}
+			case Obj object -> value instanceof Map<?, ?> properties ? properties(properties, object, described)
+					: value;
 		};
+	}
+
+	private static List<@Nullable Object> each(List<?> elements, Shape shape, Described described) {
+		final Described element = described.each();
+		final List<@Nullable Object> pruned = new ArrayList<>(elements.size());
+		elements.forEach(value -> pruned.add(prune(value, shape, element)));
+		return pruned;
+	}
+
+	private static Map<Object, @Nullable Object> properties(Map<?, ?> properties, Shape shape, Described described) {
+		final Map<Object, @Nullable Object> pruned = new LinkedHashMap<>();
+		properties.forEach((key, property) -> {
+			final String name = String.valueOf(key);
+			final Shape kept = shapeOf(shape, name, described);
+			if (!(kept instanceof Nothing)) {
+				pruned.put(key, prune(property, kept, described.property(name)));
+			}
+		});
+		return pruned;
 	}
 
 }

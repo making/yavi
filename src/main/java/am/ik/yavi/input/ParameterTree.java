@@ -347,6 +347,9 @@ public final class ParameterTree {
 	 * <li>A key that no property is described for is left out, so that a page does not
 	 * show a parameter that the application did not ask for. A validator that reads the
 	 * rest of the properties ({@code _rest}) asks for them.</li>
+	 * <li>A property that is withheld ({@code withheld()} of the builders) is written as
+	 * one that was not sent, whatever was sent for it: a password is an empty string.
+	 * With alternatives, it is withheld if one of them withholds it.</li>
 	 * <li>The properties of alternatives ({@link ValueDescription.AnyOf}), such as those
 	 * of a {@link DiscriminatedUnionValidator}, are the properties of all of them,
 	 * because a form holds the fields of all and the parameters that are not valid do not
@@ -359,8 +362,11 @@ public final class ParameterTree {
 	 * </ul>
 	 *
 	 * The description must be the one of the validator that validates these parameters;
-	 * nothing tells if it is another one. The returned tree holds every described value,
-	 * a password included, so a template decides what it writes into a page.
+	 * nothing tells if it is another one. The returned tree holds what was sent for every
+	 * described property except one that is
+	 * {@linkplain ValueDescription.Property#withheld() withheld}, such as a password
+	 * ({@code ._string("password").withheld()}): that one is written as a property that
+	 * was not sent, so a template that writes every field does not send it back.
 	 * @param description the description of the validator that reads the parameters
 	 * ({@link ValueValidator#description()})
 	 * @return a new tree of {@code Map<String, Object>}, {@code List} and the values that
@@ -534,12 +540,21 @@ public final class ParameterTree {
 	private static Object object(@Nullable ParameterTree node, List<ValueDescription.Properties> objects) {
 		final Map<String, Object> map = new LinkedHashMap<>();
 		final Set<String> names = new HashSet<>();
+		// what was sent for a property that an alternative withholds is not written
+		final Set<String> withheld = new HashSet<>();
+		for (ValueDescription.Properties object : objects) {
+			for (ValueDescription.Property property : object.properties()) {
+				if (property.withheld()) {
+					withheld.add(property.name());
+				}
+			}
+		}
 		for (ValueDescription.Properties object : objects) {
 			for (ValueDescription.Property property : object.properties()) {
 				names.add(property.name());
 				if (!map.containsKey(property.name())) {
-					put(map, property.name(),
-							shape(node == null ? null : node.children.get(property.name()), property.value()));
+					put(map, property.name(), shape(node == null || withheld.contains(property.name()) ? null
+							: node.children.get(property.name()), property.value()));
 				}
 			}
 		}

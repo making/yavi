@@ -19,8 +19,10 @@ import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.jsonschema.JsonSchema;
 import am.ik.yavi.validator.Yavi;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -467,6 +469,190 @@ class ReversibleValidatorTest {
 			.listOfRows();
 		assertThat(rows.stream().map(eventValidator::validate))
 			.containsExactlyElementsOf(events.stream().map(Validated::successWith).toList());
+	}
+
+	record Account(Integer id, String name, String passwordHash) {
+	}
+
+	record Order(Integer id, String memo, Account user, List<Account> watchers) {
+	}
+
+	record Member(@Nullable Account account, String team) {
+	}
+
+	record Node(String name, String secret, List<Node> children) {
+	}
+
+	sealed interface Credential {
+
+	}
+
+	record Password(String value) implements Credential {
+	}
+
+	record ApiKey(String value, String label) implements Credential {
+	}
+
+	@Test
+	void aWithheldPropertyIsWrittenOnlyWhereItIsNamed() {
+		final ObjectInputValidator.Reversible<Account> accountValidator = Yavi.reversibleSchema()
+			._integer("id")
+			._string("name")
+			._string("password_hash")
+			.withheld()
+			.label("Password hash")
+			.fromMapReversible(Account::new, Account::id, Account::name, Account::passwordHash);
+		final Account account = new Account(1, "Taro", "{bcrypt}x");
+		// the validator itself is the reverse: it writes every property and reads it back
+		assertThat(accountValidator.toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"),
+				entry("password_hash", "{bcrypt}x"));
+		assertThat(accountValidator.validate(accountValidator.toMap(account)))
+			.isEqualTo(Validated.successWith(account));
+		// the view of the validator and a view that excludes do not write it, and one
+		// that includes writes it if it is named
+		assertThat(accountValidator.view().toMap(account)).containsExactly(entry("id", 1), entry("name", "Taro"));
+		assertThat(accountValidator.excluding("name").toMap(account)).containsExactly(entry("id", 1));
+		final PropertyView<Account> credentials = accountValidator.including("id", "password_hash");
+		assertThat(credentials.toMap(account)).containsExactly(entry("id", 1), entry("password_hash", "{bcrypt}x"));
+		assertThat(credentials.excluding("password_hash").toMap(account)).containsExactly(entry("id", 1));
+		// its accessor is not called by a view that does not write it
+		assertThat(Yavi.reversibleSchema()
+			._integer("id")
+			._string("name")
+			._string("password_hash")
+			.withheld()
+			.fromMapReversible(Account::new, Account::id, Account::name, a -> {
+				throw new IllegalStateException("not loaded");
+			})
+			.excluding("name")
+			.toMap(account)).containsExactly(entry("id", 1));
+		assertThatThrownBy(() -> accountValidator.excluding("password_hash"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'password_hash' is withheld: a view writes it only if it includes it by its "
+					+ "name, so excluding it has no effect.");
+		assertThatThrownBy(() -> accountValidator.excluding("name").including("password_hash"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'password_hash' is not written by the view that is made narrower: it is "
+					+ "withheld, and written only by a view that includes it by its name.");
+
+		// at any depth: of a nested object and of the elements of a list, whose name
+		// stands for the properties that are not withheld
+		final ObjectInputValidator.Reversible<Order> orderValidator = Yavi.reversibleSchema()
+			._integer("id")
+			._string("memo")
+			._object("user", accountValidator)
+			._list("watchers", accountValidator)
+			.fromMapReversible(Order::new, Order::id, Order::memo, Order::user, Order::watchers);
+		final Order order = new Order(7, "gift", account, List.of(new Account(2, "Hanako", "{bcrypt}y")));
+		assertThat(orderValidator.excluding("memo").toMap(order)).containsExactly(entry("id", 7),
+				entry("user", mapOf("id", 1, "name", "Taro")),
+				entry("watchers", List.of(mapOf("id", 2, "name", "Hanako"))));
+		assertThat(orderValidator.including("id", "user").toMap(order)).containsExactly(entry("id", 7),
+				entry("user", mapOf("id", 1, "name", "Taro")));
+		assertThat(orderValidator.view().excluding("watchers", "memo").toMap(order)).containsExactly(entry("id", 7),
+				entry("user", mapOf("id", 1, "name", "Taro")));
+		// the path to it is given next to the object that has it, or alone
+		assertThat(orderValidator.including("user", "user.password_hash", "watchers.password_hash").toMap(order))
+			.containsExactly(entry("user", mapOf("id", 1, "name", "Taro", "password_hash", "{bcrypt}x")),
+					entry("watchers", List.of(mapOf("password_hash", "{bcrypt}y"))));
+		assertThatThrownBy(() -> orderValidator.including("user", "user.name"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'user.name' is written as a part of 'user', which is given as a whole.");
+		assertThatThrownBy(() -> orderValidator.excluding("watchers.password_hash"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith("The property 'watchers.password_hash' is withheld");
+		assertThatThrownBy(() -> orderValidator.excluding("memo").including("user", "user.password_hash"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith("The property 'user.password_hash' is not written by the view");
+		// of an embedded validator, also of one that may have no value
+		final ObjectInputValidator.Reversible<Member> memberValidator = Yavi.reversibleSchema()
+			._embedded(accountValidator)
+			.nullable()
+			._string("team")
+			.fromMapReversible(Member::new, Member::account, Member::team);
+		assertThat(memberValidator.excluding("id").toMap(new Member(account, "a")))
+			.containsExactly(entry("name", "Taro"), entry("team", "a"));
+		assertThat(memberValidator.including("team", "password_hash").toMap(new Member(null, "a")))
+			.containsExactly(entry("password_hash", null), entry("team", "a"));
+		// of a structure that contains itself, as deep as the written object goes
+		final ObjectInputValidator.Reversible<Node> nodeValidator = ReversibleValueValidator
+			.recursive(self -> Yavi.reversibleSchema()
+				._string("name")
+				._string("secret")
+				.withheld()
+				._list("children", self)
+				.fromMapReversible(Node::new, Node::name, Node::secret, Node::children));
+		final Node node = new Node("root", "r", List.of(new Node("leaf", "l", List.of())));
+		assertThat(nodeValidator.excluding("name").toMap(node))
+			.isEqualTo(mapOf("children", List.of(mapOf("name", "leaf", "children", List.of()))));
+		assertThat(nodeValidator.including("name", "children.secret").toMap(node))
+			.isEqualTo(mapOf("name", "root", "children", List.of(mapOf("secret", "l"))));
+		// of a union, if an alternative that defines it withholds it; the discriminator
+		// is always written, so it is not withheld
+		final ObjectInputValidator.Reversible<Password> passwordValidator = Yavi.reversibleSchema()
+			._string("value")
+			.withheld()
+			.fromMapReversible(Password::new, Password::value);
+		final DiscriminatedUnionValidator.Reversible<Credential> credentialValidator = DiscriminatedUnionValidator
+			.<Credential>of("kind")
+			.when("password", Password.class, passwordValidator)
+			.when("api_key", ApiKey.class,
+					Yavi.reversibleSchema()
+						._string("value")
+						._string("label")
+						.fromMapReversible(ApiKey::new, ApiKey::value, ApiKey::label));
+		assertThat(credentialValidator.excluding("label").toMap(new ApiKey("k", "ci")))
+			.containsExactly(entry("kind", "api_key"));
+		assertThat(credentialValidator.view().toMap(new Password("p"))).containsExactly(entry("kind", "password"));
+		assertThat(credentialValidator.including("value").toMap(new Password("p")))
+			.containsExactly(entry("kind", "password"), entry("value", "p"));
+		assertThatThrownBy(
+				() -> DiscriminatedUnionValidator.<Credential>of("value").when("password", passwordValidator))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The alternative 'password' withholds the discriminator 'value', which tells the "
+					+ "alternative of a written object and is always written.");
+		// and of a schema whose properties are known at run time
+		final ObjectInputValidator.Reversible<Map<String, Object>> dynamicValidator = Yavi
+			.<Object>reversibleDynamicSchema()
+			.property("token", Yavi._string())
+			.withheld()
+			.property("credential", credentialValidator)
+			.build();
+		assertThat(dynamicValidator.excluding("credential.label")
+			.toMap(mapOf("token", "t", "credential", new Password("p"))))
+			.containsExactly(entry("credential", mapOf("kind", "password")));
+
+		// a form that is shown again does not hold what was sent for it, although the
+		// validator, which does not have to be reversible, reads it
+		final ValueValidator<Map<String, ?>, List<Object>> signupValidator = Yavi.schema()
+			._string("name")
+			._string("password", c -> c.greaterThanOrEqual(8))
+			.withheld()
+			._object("account", accountValidator)
+			.fromMap((name, password, owner) -> List.<Object>of(name, password, owner))
+			.readingParameters();
+		final Map<String, String> parameters = Map.of("name", "Taro", "password", "short", "account.id", "1",
+				"account.name", "Taro", "account.password_hash", "x");
+		assertThat(signupValidator.validate(parameters).errors()).extracting(violation -> violation.name())
+			.containsExactly("password");
+		assertThat(ParameterTree.of(parameters).toParameters(signupValidator.description())).containsExactly(
+				entry("name", "Taro"), entry("password", ""), entry("account.id", "1"), entry("account.name", "Taro"),
+				entry("account.password_hash", ""));
+		assertThat(ParameterTree.ofValues(accountValidator.toMap(account)).toMap(accountValidator.description()))
+			.containsExactly(entry("id", "1"), entry("name", "Taro"), entry("password_hash", ""));
+		// its JSON Schema is writeOnly, and the arguments of a typed validator say it too
+		assertThat(JsonSchema.of(accountValidator.description())).extractingByKey("properties")
+			.isEqualTo(mapOf("id", mapOf("type", "integer"), "name", mapOf("type", "string"), "password_hash",
+					mapOf("type", "string", "writeOnly", true)));
+		assertThat(Yavi.schema()
+			._string("name")
+			._string("password")
+			.withheld()
+			.apply((name, password) -> name)
+			.description())
+			.isEqualTo(new ValueDescription.Properties(
+					List.of(new ValueDescription.Property("name", Yavi._string("name").description()),
+							new ValueDescription.Property("password", Yavi._string("password").description(), true))));
 	}
 
 }

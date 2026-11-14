@@ -669,7 +669,7 @@ ParameterTree.of(Map.of()).toMap(signupValidator.description());
 * 返されるマップとリストは新しく作られたものです。ページに必要な値は `form.put("id", id)` のように足せます。
 * 判別共用体では、すべての選択肢のプロパティを返します。
 * 記述は、そのパラメータを検証するバリデータのものを渡します。バリデータが既定と異なる最大インデックスのツリーを読む場合は、`ParameterTree.of(params, maxIndex)` に同じ値を渡します。
-* マップはすべてのプロパティを持ちます。パスワードも含みます。何を表示するかはテンプレートが決めます。
+* `withheld()` を付けて定義したプロパティ（パスワードなら `._string("password", c -> c.greaterThanOrEqual(8)).withheld()`）は、送信されなかったプロパティとして書かれ、空文字列になります。マップのすべてのフィールドを書くテンプレートでも、パスワードを送り返しません。それ以外のプロパティは、送信された値を持ちます。
 
 `ParameterTree.parametersOf(map)` は `ParameterTree.of(parameters)` の逆です。`Map` と `List` からなる任意のツリーに使えます。
 
@@ -861,29 +861,31 @@ shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 
 ### 一部のプロパティだけを書く
 
-`toMap` はすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、レスポンスに秘密の値を含めてはいけません。`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `including` と `excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
+`toMap` はすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、レスポンスに秘密の値を含めてはいけません。`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `view`、`including`、`excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
 
 ```java
 ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._string("name")
-        ._string("password")
+        ._string("password_hash").withheld()
         ._object("address", addressValidator) // city, street
-        .fromMapReversible(User::new, User::id, User::name, User::password, User::address);
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash, User::address);
 
 // バリデータの隣で一度だけ作る
-static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+static final PropertyView<User> PUBLIC = userValidator.view();
 static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+static final PropertyView<User> LISTED = userValidator.excluding("address");
 
 PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
 SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+LISTED.toMap(user);  // {id=1, name=Taro}
 
-userValidator.excluding("pasword");
-// IllegalArgumentException: The property 'pasword' is not defined by the validator.
-// The properties are [id, name, password, address].
+userValidator.excluding("adress");
+// IllegalArgumentException: The property 'adress' is not defined by the validator.
+// The properties are [id, name, password_hash, address].
 ```
 
-* **名前はビューを作るときに検査します。** 検査の基準はバリデータの記述（`description()`）で、オブジェクトを書くときには検査しません。バリデータが定義していない名前、ビューが書かない名前、重複した名前は `IllegalArgumentException` になります。ビューをバリデータの隣の定数にしておけば、名前の誤りはクラスのロード時に失敗するので、そのバリデータを使うすべての経路とテストで見つかります。`toMap` が返したマップからキーを削除する方法（`map.remove("pasword")`）では、誰も名前を検査しません。
+* **名前はビューを作るときに検査します。** 検査の基準はバリデータの記述（`description()`）で、オブジェクトを書くときには検査しません。バリデータが定義していない名前、ビューが書かない名前、重複した名前は `IllegalArgumentException` になります。ビューをバリデータの隣の定数にしておけば、名前の誤りはクラスのロード時に失敗するので、そのバリデータを使うすべての経路とテストで見つかります。`toMap` が返したマップからキーを削除する方法（`map.remove("adress")`）では、誰も名前を検査しません。
 * **ビューはオブジェクトを書く場所で選びます。** ユースケースが必要なビューを持ち、その `toMap` を呼びます。スキーマはビューを知りません。
 * **ビューは書くだけです。** バリデータでも `ReversibleValueValidator` でもありません。必須のプロパティを欠いたマップは読み戻せないからです。`Yavi.reversibleSchema()` のプロパティのように往復が必要な箇所にビューを渡すと、コンパイルエラーになります。バリデータが読む内容は変わりません。
 * ビューは、ビュー自身の `including` と `excluding` でさらに絞り込めます。例: `userValidator.including("id", "address").excluding("address.street")`
@@ -907,10 +909,37 @@ userValidator.excluding("pasword");
 * パスは、その深さのプロパティだけを指します。自分自身を含むバリデータの `children.memo` は子の `memo` で、孫の `memo` ではありません。
 * `Yavi.reversibleDynamicSchema()` と `DiscriminatedUnionValidator.Reversible` でも同じ方法でビューを作れます。`ParameterTree.ofValues(view.toMap(x))` とすれば、保存済みのオブジェクトを秘密の値なしでフォームに表示できます。
 
-**別の形で保存する値。** パスワードは送信されたまま読み取り、ハッシュにして保存します。ハッシュはアプリケーションが計算する値で、元の入力に戻る値ではないので、バリデータが書く内容には含まれません。ビューでパスワードを外し、ハッシュは SQL 文のパラメータとして別に渡します。
+**書き出しを保留するプロパティ。** `excluding` は「書かないもの」の一覧です。そのため、あとからスキーマに追加したプロパティは、`excluding` で作ったすべてのビューが書きます。そのスキーマをネストしたバリデータのビューも同じです。外に出してはいけないプロパティは、定義する場所で一度だけ `withheld()` を付けます。
 
 ```java
-static final PropertyView<User> ROW = userValidator.excluding("password");
+Yavi.reversibleSchema()
+        ._integer("id")
+        ._string("name")
+        ._string("password_hash").withheld()
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
+
+userValidator.toMap(user);                                  // {id=1, name=Taro, password_hash=...}
+userValidator.view().toMap(user);                           // {id=1, name=Taro}
+userValidator.excluding("name").toMap(user);                // {id=1}
+userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
+orderValidator.excluding("memo").toMap(order);              // {id=7, user={id=1, name=Taro}}
+orderValidator.including("user", "user.password_hash");     // user 全体と、そのハッシュも書く
+userValidator.excluding("password_hash");                   // IllegalArgumentException: 効果がない
+```
+
+* バリデータの `toMap` は逆変換なので、すべてのプロパティを書きます。`INSERT` 文にバインドするのはこのマップで、往復も成り立ちます。
+* `view()` と `excluding` のビューは、`withheld()` のプロパティをどの深さでも書きません。ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティも同じです。
+* `including` のビューは、名前を指定したときだけ書きます。ネストしたオブジェクトの名前は、`withheld()` でないプロパティだけを表します。`withheld()` のプロパティも書くには、そのパスを並べて指定します。
+* ユニオンのプロパティは、それを定義する選択肢のどれかが `withheld()` にしていれば書きません。判別子は `withheld()` にできません。
+* `withheld()` は、プロパティを追加した直後（リストでは `splitBy` の後）に一度だけ書きます。`.label("X").withheld()`、`.withheld().withheld()`、`_rest` や `_embedded` への `withheld()` はコンパイルエラーになります。`Yavi.schema()` と動的スキーマにもあります。
+* 同じ印によって、再表示するフォームには送信された値が入らず（[パラメータを書き戻す](#パラメータを書き戻す)）、JSON Schema では `writeOnly` になります。読み取る内容は変わりません。違反は拒否した値を持ったままです（`ConstraintViolation#violatedValue()`。`ViolationDetail` は値を持ちません）。
+* 名前は理由ではなく動作を表しています。秘密の値に限らず、大きな値や内部用の値にも同じように使えます。
+
+**別の形で保存する値。** パスワードは送信されたまま読み取り、ハッシュにして保存します。ハッシュはアプリケーションが計算する値で、元の入力に戻る値ではないので、バリデータが書く内容には含まれません。フォームのスキーマでパスワードを `withheld()` にしておけば、ビューはパスワードを書きません。ハッシュは SQL 文のパラメータとして別に渡します。
+
+```java
+// ._string("password").withheld()
+static final PropertyView<User> ROW = userValidator.view();
 
 jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
         .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: password は含まれない
@@ -920,7 +949,7 @@ jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, 
 
 `userValidator.toMap(user)` は、送信されたままのパスワードを含みます。書く側のコードには、バリデータではなくビューを公開してください。
 
-名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._string(PASSWORD)` と `excluding(PASSWORD)`）。
+名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._object(ADDRESS, addressValidator)` と `excluding(ADDRESS)`）。
 
 ### 保存済みのオブジェクトをフォームに表示する
 
@@ -1127,6 +1156,7 @@ String json = JsonSchema.toJson(description);
 ```
 
 * プロパティは、存在しないキーを受け付ける場合を除いて `required` になります。
+* `withheld()` を付けて定義したプロパティは `writeOnly` になります（`ValueDescription.Property#withheld()`）。
 * リストやマップの制約は `minItems` や `uniqueItems` などとして、`rejectingUnknownProperties()` は `additionalProperties: false` として、再帰的な構造は `$ref` として出力されます。
 * `DiscriminatedUnionValidator` の選択肢は `AnyOf` として記述され、その `discriminator()` は選択肢を決めるプロパティの名前を返します。
 * ラムダ、条件付きの制約、`constraintOnTarget`、`ValidatorBuilder` で作った Bean の `Validator` は記述に含まれません。ラムダには `describedAs(...)` で記述を与えられます。
