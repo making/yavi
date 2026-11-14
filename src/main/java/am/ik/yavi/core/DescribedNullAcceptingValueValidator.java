@@ -4,7 +4,6 @@
  */
 package am.ik.yavi.core;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,9 +23,8 @@ final class DescribedNullAcceptingValueValidator<T, X extends @Nullable Object> 
 	DescribedNullAcceptingValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
 			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
-			Function<String, NullAcceptingValueValidator<T, X>> named,
-			Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse) {
-		super(delegate, description, untyped, preprocessed, named, reverse);
+			Function<String, NullAcceptingValueValidator<T, X>> named) {
+		super(delegate, description, untyped, preprocessed, named);
 		this.named = named;
 	}
 

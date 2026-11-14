@@ -112,4 +112,57 @@ public class ObjectValidator<X, T extends @Nullable Object> extends DefaultArgum
 		this.type = type;
 	}
 
+	/**
+	 * An {@link ObjectValidator} whose value is the validated argument itself, which is
+	 * what the builder builds without a mapper. It knows its reverse by its type: the
+	 * argument that a value is read from is that value. {@link #named(String)} and
+	 * {@link #preprocess(Function)} keep the type; {@link #map(Function)} returns a
+	 * validator that does not know its reverse, unlike {@link #map(Function, Function)}.
+	 *
+	 * @param <X> the type of the validated value
+	 * @since 0.18.0
+	 */
+	public static final class Reversible<X> extends ObjectValidator<X, X>
+			implements ReversibleArguments1Validator<X, X> {
+
+		/**
+		 * Creates a validator that produces the validated value itself.
+		 * @param validator the validator applied to the wrapped argument
+		 */
+		public Reversible(Validator<Arguments1<X>> validator) {
+			this(validator, null, null);
+		}
+
+		/**
+		 * Creates a validator that produces the validated value itself and knows its
+		 * type.
+		 * @param validator the validator applied to the wrapped argument
+		 * @param type the type of the validated value
+		 */
+		public Reversible(Validator<Arguments1<X>> validator, Class<X> type) {
+			this(validator, type, null);
+		}
+
+		private Reversible(Validator<Arguments1<X>> validator, @Nullable Class<X> type,
+				@Nullable Function<? super X, ? extends @Nullable X> transform) {
+			super(validator, value -> value, type, transform);
+		}
+
+		@Override
+		public X reverse(X value) {
+			return value;
+		}
+
+		@Override
+		public Reversible<X> preprocess(Function<? super X, ? extends @Nullable X> transform) {
+			return new Reversible<>(super.validator, super.type, composed(transform, super.transform));
+		}
+
+		@Override
+		public Reversible<X> named(String name) {
+			return new Reversible<>(super.renamed(name), super.type, super.transform);
+		}
+
+	}
+
 }

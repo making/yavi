@@ -7,10 +7,8 @@ package am.ik.yavi.builder;
 import java.time.YearMonth;
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.YearMonthValidator;
 import am.ik.yavi.constraint.YearMonthConstraint;
@@ -91,22 +89,18 @@ public class YearMonthValidatorBuilder implements ValueValidatorBuilder<YearMont
 	 */
 	@Override
 	public <T extends @Nullable Object> YearMonthValidator<T> build(Function<? super YearMonth, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> YearMonthValidator<T> create(
-			Function1<? super YearMonth, ? extends T> mapper) {
 		final Validator<Arguments1<YearMonth>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new YearMonthValidator<>(validator, mapper);
+		return new YearMonthValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public YearMonthValidator<YearMonth> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public YearMonthValidator.Reversible build() {
+		return new YearMonthValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

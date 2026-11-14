@@ -7,10 +7,8 @@ package am.ik.yavi.builder;
 import java.math.BigInteger;
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.BigIntegerValidator;
 import am.ik.yavi.constraint.BigIntegerConstraint;
@@ -90,22 +88,18 @@ public class BigIntegerValidatorBuilder implements ValueValidatorBuilder<BigInte
 	 */
 	@Override
 	public <T extends @Nullable Object> BigIntegerValidator<T> build(Function<? super BigInteger, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> BigIntegerValidator<T> create(
-			Function1<? super BigInteger, ? extends T> mapper) {
 		final Validator<Arguments1<BigInteger>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BigIntegerValidator<>(validator, mapper);
+		return new BigIntegerValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public BigIntegerValidator<BigInteger> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public BigIntegerValidator.Reversible build() {
+		return new BigIntegerValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

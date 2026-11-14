@@ -111,9 +111,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @see #description()
 	 */
 	default ValueValidator<T, X> describedAs(ValueDescription description) {
-		return reversing(described(this, () -> description, reader -> this.readingWith(reader).describedAs(description),
+		return described(this, () -> description, reader -> this.readingWith(reader).describedAs(description),
 				transform -> this.preprocess(transform).describedAs(description),
-				name -> this.named(name).describedAs(description.named(name))), () -> reverseOf(this));
+				name -> this.named(name).describedAs(description.named(name)));
 	}
 
 	/**
@@ -186,10 +186,6 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * {@code LocalDateTime}, {@code OffsetDateTime}, {@code ZonedDateTime},
 	 * {@code Instant}, {@code Year} and {@code YearMonth}, or an integral number for
 	 * {@code Year},</li>
-	 * <li>a {@code java.sql.Date} for {@code LocalDate}, a {@code java.sql.Time} for
-	 * {@code LocalTime} and a {@code java.sql.Timestamp} for {@code LocalDateTime} and
-	 * {@code Instant}, which the row of a JDBC driver holds for a column of a date or a
-	 * time,</li>
 	 * <li>an ISO-8601 string for {@code Duration} ({@code PT1H30M}) and {@code Period}
 	 * ({@code P1Y2M}),</li>
 	 * <li>the canonical string (8-4-4-4-12 hexadecimal digits) for {@code UUID}, and a
@@ -266,65 +262,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 			ValueValidator<T, X> validator, Supplier<ValueDescription> description,
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
 			Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
-			Function<String, NullAcceptingValueValidator<T, X>> named,
-			Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse) {
+			Function<String, NullAcceptingValueValidator<T, X>> named) {
 		return new DescribedNullAcceptingValueValidator<>(validator, description, nullAware(untyped), preprocessed,
-				named, reverse);
-	}
-
-	/**
-	 * Returns the function that goes back from the value of the given validator to its
-	 * input, if the validator knows its reverse.
-	 */
-	private static <T, X extends @Nullable Object> Optional<Function<? super X, ? extends @Nullable T>> reverseOf(
-			ValueValidator<T, X> validator) {
-		final ReversibleValueValidator<T, X> reversible = validator.reversible().orElse(null);
-		if (reversible == null) {
-			return Optional.empty();
-		}
-		final Function<? super X, ? extends @Nullable T> reverse = value -> reversible.reverse(value);
-		return Optional.of(reverse);
-	}
-
-	/**
-	 * Returns the function that goes back from a value that the given validator or a
-	 * validator that accepts {@code null} for it produces: a value that is {@code null}
-	 * is read from {@code null}.
-	 */
-	@SuppressWarnings({ "unchecked", "NullAway" })
-	private static <T, X extends @Nullable Object, Y extends @Nullable Object> Optional<Function<? super Y, ? extends @Nullable T>> nullSafeReverseOf(
-			ValueValidator<T, X> validator) {
-		final ReversibleValueValidator<T, X> reversible = validator.reversible().orElse(null);
-		if (reversible == null) {
-			return Optional.empty();
-		}
-		final Function<? super Y, ? extends @Nullable T> reverse = value -> value == null ? null
-				: reversible.reverse((X) value);
-		return Optional.of(reverse);
-	}
-
-	/**
-	 * Returns the function that goes back from the optional value of the given validator:
-	 * an empty one is read from {@code null}.
-	 */
-	private static <T, X extends @Nullable Object> Optional<Function<? super Optional<@NonNull X>, ? extends @Nullable T>> optionalReverseOf(
-			ValueValidator<T, X> validator) {
-		final ReversibleValueValidator<T, X> reversible = validator.reversible().orElse(null);
-		if (reversible == null) {
-			return Optional.empty();
-		}
-		final Function<? super Optional<@NonNull X>, ? extends @Nullable T> reverse = optional -> optional.isPresent()
-				? reversible.reverse(optional.get()) : null;
-		return Optional.of(reverse);
-	}
-
-	/**
-	 * Returns the given described validator with the given way to go back from its value
-	 * to its input.
-	 */
-	private static <T, X extends @Nullable Object> ValueValidator<T, X> reversing(ValueValidator<T, X> described,
-			Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse) {
-		return ((DescribedValueValidator<T, X>) described).reversing(reverse);
+				named);
 	}
 
 	/**
@@ -683,32 +623,6 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	}
 
 	/**
-	 * Returns this validator as one that goes back from a value it produces to the input
-	 * that the value is read from, if it knows how.
-	 *
-	 * <p>
-	 * The default implementation returns an empty {@code Optional}, which is what a
-	 * lambda does. A {@link ReversibleValueValidator} returns itself, and so do the
-	 * validators of single values created by the builders unless their value is mapped.
-	 * {@link #named(String)}, {@link #describedAs(ValueDescription)},
-	 * {@link #preprocess(Function)}, {@link #prefixed(String)},
-	 * {@link #formattingWith(MessageFormatter)}, {@link #constraintOnTarget},
-	 * {@link #optional()}, {@link #nullable()}, {@link #defaultValue(Object)},
-	 * {@link #recover(Object)} and {@link #recoverWith(Function)} keep the reverse of the
-	 * validator they are applied to; a value that stands for {@code null} goes back to
-	 * {@code null}. A {@linkplain #lazy(Supplier) lazy validator} is taken for one that
-	 * knows its reverse, and fails when it goes back if the validator it refers to does
-	 * not. Any other combinator returns a validator that does not know its reverse; state
-	 * it with {@link #map(Function, Function)} or
-	 * {@link ReversibleValueValidator#of(ValueValidator, Function)}.
-	 * @return this validator with its reverse, or an empty {@code Optional}
-	 * @since 0.18.0
-	 */
-	default Optional<ReversibleValueValidator<T, X>> reversible() {
-		return Optional.empty();
-	}
-
-	/**
 	 * Returns a validator that applies this validator and, if it succeeds, passes the
 	 * produced value to the given validator. Violations of this validator are returned
 	 * without invoking the next validator.
@@ -778,15 +692,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @since 0.18.0
 	 */
 	default ValueValidator<T, X> preprocess(Function<? super T, ? extends @Nullable T> transform) {
-		return reversing(
-				describedNamed(
-						(t, locale, constraintContext) -> ValueValidator.this
-							.validate(t == null ? null : transform.apply(t), locale, constraintContext),
-						this::description, reader -> {
-							throw new UnsupportedOperationException(
-									"The input type of this validator is unknown. Use untyped(Class) to give it.");
-						}, name -> this.named(name).preprocess(transform)),
-				() -> reverseOf(this));
+		return describedNamed((t, locale, constraintContext) -> ValueValidator.this
+			.validate(t == null ? null : transform.apply(t), locale, constraintContext), this::description, reader -> {
+				throw new UnsupportedOperationException(
+						"The input type of this validator is unknown. Use untyped(Class) to give it.");
+			}, name -> this.named(name).preprocess(transform));
 	}
 
 	/**
@@ -808,8 +718,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						: ValueValidator.this.validate(t, locale, constraintContext)
 							.map(x -> Optional.<@NonNull X>ofNullable(x)),
 				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).optional(),
-				transform -> this.preprocess(transform).optional(), name -> this.named(name).optional(),
-				() -> optionalReverseOf(this));
+				transform -> this.preprocess(transform).optional(), name -> this.named(name).optional());
 	}
 
 	/**
@@ -835,8 +744,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				return ValueValidator.this.validate(t, locale, constraintContext).map(x -> x);
 			}
 		}, () -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).nullable(),
-				transform -> this.preprocess(transform).nullable(), name -> this.named(name).nullable(),
-				() -> nullSafeReverseOf(this));
+				transform -> this.preprocess(transform).nullable(), name -> this.named(name).nullable());
 	}
 
 	/**
@@ -858,7 +766,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				() -> acceptingNull(this.description(), defaultValue),
 				reader -> this.readingWith(reader).defaultValue(defaultValue),
 				transform -> this.preprocess(transform).defaultValue(defaultValue),
-				name -> this.named(name).defaultValue(defaultValue), () -> nullSafeReverseOf(this));
+				name -> this.named(name).defaultValue(defaultValue));
 	}
 
 	/**
@@ -892,8 +800,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 				(t, locale, constraintContext) -> t == null ? Validated.successWith(fallback)
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), violations -> fallback),
 				() -> acceptingNull(this.description(), fallback), reader -> this.readingWith(reader).recover(fallback),
-				transform -> this.preprocess(transform).recover(fallback), name -> this.named(name).recover(fallback),
-				() -> nullSafeReverseOf(this));
+				transform -> this.preprocess(transform).recover(fallback), name -> this.named(name).recover(fallback));
 	}
 
 	/**
@@ -927,7 +834,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 						: recovered(ValueValidator.this.validate(t, locale, constraintContext), fallback),
 				() -> acceptingNull(this.description(), null), reader -> this.readingWith(reader).recoverWith(fallback),
 				transform -> this.preprocess(transform).recoverWith(fallback),
-				name -> this.named(name).recoverWith(fallback), () -> nullSafeReverseOf(this));
+				name -> this.named(name).recoverWith(fallback));
 	}
 
 	private static <X extends @Nullable Object> Validated<X> recovered(Validated<X> validated,
@@ -1030,18 +937,16 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	private static <T, X extends @Nullable Object> ValueValidator<T, X> onTarget(ValueValidator<T, X> validator,
 			Predicate<? super X> predicate, ViolationMessage violationMessage,
 			Function<ConstraintViolation, ConstraintViolation> located) {
-		return reversing(
-				described(
-						(t, locale, constraintContext) -> validator.validate(t, locale, constraintContext)
-							.flatMap(x -> predicate.test(x) ? Validated.successWith(x)
-									: Validated.failureWith(
-											located.apply(ConstraintViolation.of(violationMessage, x, locale)))),
-						validator::description,
-						reader -> onTarget(validator.readingWith(reader), predicate, violationMessage, located),
-						transform -> onTarget(validator.preprocess(transform), predicate, violationMessage, located),
-						name -> onTarget(validator.named(name), predicate, violationMessage,
-								violation -> located.apply(violation).prefixed(name))),
-				() -> reverseOf(validator));
+		return described(
+				(t, locale, constraintContext) -> validator.validate(t, locale, constraintContext)
+					.flatMap(x -> predicate.test(x) ? Validated.successWith(x)
+							: Validated
+								.failureWith(located.apply(ConstraintViolation.of(violationMessage, x, locale)))),
+				validator::description,
+				reader -> onTarget(validator.readingWith(reader), predicate, violationMessage, located),
+				transform -> onTarget(validator.preprocess(transform), predicate, violationMessage, located),
+				name -> onTarget(validator.named(name), predicate, violationMessage,
+						violation -> located.apply(violation).prefixed(name)));
 	}
 
 	/**
@@ -1131,11 +1036,11 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @see ConstraintViolation#prefixed(String)
 	 */
 	default ValueValidator<T, X> prefixed(String name) {
-		return reversing(described(
+		return described(
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
 					.prefixed(name),
 				this::description, reader -> this.readingWith(reader).prefixed(name),
-				transform -> this.preprocess(transform).prefixed(name)), () -> reverseOf(this));
+				transform -> this.preprocess(transform).prefixed(name));
 	}
 
 	/**
@@ -1204,13 +1109,13 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @see ConstraintViolations#formattedWith(MessageFormatter)
 	 */
 	default ValueValidator<T, X> formattingWith(MessageFormatter messageFormatter) {
-		return reversing(described(
+		return described(
 				(t, locale,
 						constraintContext) -> Validated.of(ValueValidator.this.validate(t, locale, constraintContext)
 							.mapError(violation -> violation.formattedWith(messageFormatter))),
 				this::description, reader -> this.readingWith(reader).formattingWith(messageFormatter),
 				transform -> this.preprocess(transform).formattingWith(messageFormatter),
-				name -> this.named(name).formattingWith(messageFormatter)), () -> reverseOf(this));
+				name -> this.named(name).formattingWith(messageFormatter));
 	}
 
 	/**

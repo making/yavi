@@ -141,7 +141,7 @@ import org.jspecify.annotations.Nullable;
  * from, for example as the named parameters of a statement.
  *
  * <pre>{@code
- * ObjectInputValidator.Reversible<User> validator = Yavi.schema()
+ * ObjectInputValidator.Reversible<User> validator = Yavi.reversibleSchema()
  *     ._string("email", c -> c.notBlank().email())
  *     ._integer("age", c -> c.greaterThanOrEqual(0))
  *     ._string("nickname").optional()
@@ -386,45 +386,68 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	}
 
 	/**
+	 * A part with what writes it back: the function that returns the input that the
+	 * validator of the part reads a value from, and the accessor that returns the value
+	 * of the part from the created object. A list of these is what {@link #ofReversible}
+	 * takes, so that a part that cannot be written back does not compile.
+	 *
+	 * @param part the part to read
+	 * @param reverse returns the value that the validator of the part reads the given
+	 * validated value from: a value of a JDK type, a map for a nested or an embedded
+	 * object and for the rest, a list for a list, or {@code null} for no value
+	 * @param accessor returns the validated value of the part from the created object
+	 * @param <X> the type of the created object
+	 * @param <R> the type of the validated value of the part
+	 * @since 0.18.0
+	 */
+	public record ReversiblePart<X, R extends @Nullable Object> (Part<R> part,
+			Function<? super R, ? extends @Nullable Object> reverse, Function<? super X, ? extends R> accessor) {
+
+		private @Nullable Object value(X object) {
+			return this.accessor.apply(object);
+		}
+
+		// the value is the one that the accessor returns, which is null only if R is
+		@SuppressWarnings({ "unchecked", "NullAway" })
+		private @Nullable Object write(@Nullable Object value) {
+			return this.reverse.apply((R) value);
+		}
+
+	}
+
+	/**
 	 * Returns a validator like {@link #of} that also writes the created object back as
 	 * the map that it is read from, as {@link Reversible} states. This is the way to
 	 * define more properties than the builders support.
-	 * @param parts the parts to read
+	 * @param parts the parts to read, each with its reverse and its accessor
 	 * @param mapper the function that creates the object from the validated values, which
 	 * are given in the order of the parts
-	 * @param accessors the functions that return the validated value of a part from the
-	 * created object, in the order of the parts
 	 * @param <X> the type of the created object
 	 * @return a validator that ignores unknown properties unless a part is the rest
-	 * @throws IllegalArgumentException as {@link #of} does, and if there is not one
-	 * accessor for every part
-	 * @throws IllegalStateException as {@link #of} does, and if the validator of a part
-	 * does not {@linkplain ValueValidator#reversible() know its reverse}
+	 * @throws IllegalArgumentException as {@link #of} does
+	 * @throws IllegalStateException as {@link #of} does
 	 */
-	public static <X> Reversible.IgnoringUnknown<X> ofReversible(List<? extends Part<?>> parts,
-			Function<? super List<@Nullable Object>, ? extends X> mapper,
-			List<? extends Function<? super X, ? extends @Nullable Object>> accessors) {
+	public static <X> Reversible.IgnoringUnknown<X> ofReversible(List<? extends ReversiblePart<? super X, ?>> parts,
+			Function<? super List<@Nullable Object>, ? extends X> mapper) {
 		return new Reversible.IgnoringUnknown<>(List.copyOf(parts),
-				values -> Validated.successWith(mapper.apply(values)), List.of(), List.copyOf(accessors));
+				values -> Validated.successWith(mapper.apply(values)), List.of());
 	}
 
 	/**
 	 * Returns a validator like {@link #flatOf} that also writes the created object back
 	 * as the map that it is read from, as {@link Reversible} states.
-	 * @param parts the parts in the order of the values
+	 * @param parts the parts in the order of the values, each with its reverse and its
+	 * accessor
 	 * @param mapper function that creates the result from the validated values, in the
 	 * order of the parts, or reports violations
-	 * @param accessors the functions that return the validated value of a part from the
-	 * created object, in the order of the parts
 	 * @param <X> the type of the result
 	 * @return a new validator
 	 * @throws IllegalArgumentException as {@link #ofReversible} does
 	 * @throws IllegalStateException as {@link #ofReversible} does
 	 */
-	public static <X> Reversible.IgnoringUnknown<X> flatOfReversible(List<? extends Part<?>> parts,
-			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-			List<? extends Function<? super X, ? extends @Nullable Object>> accessors) {
-		return new Reversible.IgnoringUnknown<>(List.copyOf(parts), mapper, List.of(), List.copyOf(accessors));
+	public static <X> Reversible.IgnoringUnknown<X> flatOfReversible(List<? extends ReversiblePart<? super X, ?>> parts,
+			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
+		return new Reversible.IgnoringUnknown<>(List.copyOf(parts), mapper, List.of());
 	}
 
 	private ObjectInputValidator(List<Part<?>> parts,
@@ -638,7 +661,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * from. This is what {@code fromMapReversible} of the builders returns:
 	 *
 	 * <pre>{@code
-	 * ObjectInputValidator.Reversible<Employee> validator = Yavi.schema()
+	 * ObjectInputValidator.Reversible<Employee> validator = Yavi.reversibleSchema()
 	 *     ._integer("id")
 	 *     ._embedded(userNameValidator) // first_name, last_name
 	 *     ._string(emailValidator) // Yavi._string("email", ...).map(Email::new, Email::value)
@@ -676,9 +699,11 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * </ul>
 	 *
 	 * <p>
-	 * A property can be written only if its validator
-	 * {@linkplain ValueValidator#reversible() knows its reverse}. A validator that maps
-	 * its value states it with {@link ValueValidator#map(Function, Function)}.
+	 * A property can be written only if its validator knows its reverse, which its type
+	 * tells: a schema of {@link am.ik.yavi.validator.Yavi#reversibleSchema()} takes a
+	 * {@link ReversibleValueValidator} only, so a property that cannot be written back
+	 * does not compile. A validator that maps its value states its reverse with
+	 * {@link ValueValidator#map(Function, Function)}.
 	 *
 	 * <p>
 	 * The validator that reads another input ({@link #readingWith(InputReader)},
@@ -690,35 +715,13 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	public static sealed class Reversible<X> extends ObjectInputValidator<X>
 			implements ReversibleValueValidator<Map<String, Object>, X> {
 
-		private final List<Function<? super X, ? extends @Nullable Object>> accessors;
+		private final List<ReversiblePart<? super X, ?>> written;
 
-		/** The reverse of the validator of the part at the same position. */
-		private final List<ReversibleValueValidator<Object, ?>> reverses;
-
-		private Reversible(List<Part<?>> parts,
+		private Reversible(List<ReversiblePart<? super X, ?>> written,
 				Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-				boolean rejectUnknownProperties, List<TargetRule<X>> rules,
-				List<Function<? super X, ? extends @Nullable Object>> accessors) {
-			super(parts, mapper, rejectUnknownProperties, rules);
-			if (accessors.size() != parts.size()) {
-				throw new IllegalArgumentException("There are " + accessors.size() + " accessors for " + parts.size()
-						+ " parts. Give the accessor of every part, in the order of the parts.");
-			}
-			final List<ReversibleValueValidator<Object, ?>> reverses = new ArrayList<>(parts.size());
-			for (int i = 0; i < parts.size(); i++) {
-				final Part<?> part = parts.get(i);
-				final int position = i + 1;
-				reverses.add(part.validator()
-					.reversible()
-					.orElseThrow(() -> new IllegalStateException((switch (part) {
-						case Property<?> property -> "The property '" + property.name() + "'";
-						case PresenceProperty<?> property -> "The property '" + property.name() + "'";
-						case Embedded<?> embedded -> "The embedded validator at position " + position;
-						case Rest<?> rest -> "The rest of the properties";
-					}) + " cannot be written back, because its validator does not know its reverse. Add it with constraints or with a validator that knows its reverse, such as one built with fromMapReversible or with ValueValidator#map(Function, Function).")));
-			}
-			this.accessors = accessors;
-			this.reverses = reverses;
+				boolean rejectUnknownProperties, List<TargetRule<X>> rules) {
+			super(written.stream().<Part<?>>map(ReversiblePart::part).toList(), mapper, rejectUnknownProperties, rules);
+			this.written = written;
 		}
 
 		/**
@@ -734,35 +737,36 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			final List<Part<?>> parts = this.parts();
 			final Map<String, @Nullable Object> map = new LinkedHashMap<>();
 			for (int i = 0; i < parts.size(); i++) {
-				final Object value = this.accessors.get(i).apply(object);
+				final ReversiblePart<? super X, ?> written = this.written.get(i);
+				final Object value = written.value(object);
 				switch (parts.get(i)) {
 					case Property<?> property -> {
-						final Object written = this.reverse(i, value);
-						if (written != null || property.strictness() != Strictness.REJECTING_NULL) {
-							put(map, property.name(), written);
+						final Object input = written.write(value);
+						if (input != null || property.strictness() != Strictness.REJECTING_NULL) {
+							put(map, property.name(), input);
 						}
 					}
 					case PresenceProperty<?> property -> {
 						if (!(value instanceof Presence.Absent)) {
-							put(map, property.name(), this.reverse(i, value));
+							put(map, property.name(), written.write(value));
 						}
 					}
 					case Embedded<?> embedded -> {
-						final Object written = this.reverse(i, value);
+						final Object input = written.write(value);
 						final Set<String> names = this.embeddedNames(i);
-						if (written instanceof Map<?, ?> properties) {
+						if (input instanceof Map<?, ?> properties) {
 							properties.forEach((name, property) -> put(map, String.valueOf(name), property));
 						}
-						else if (written == null && names != null) {
+						else if (input == null && names != null) {
 							names.forEach(name -> put(map, name, null));
 						}
-						else if (written != null) {
+						else if (input != null) {
 							throw new IllegalArgumentException("The embedded validator at position " + (i + 1)
-									+ " is not read from a map: " + written.getClass().getName());
+									+ " is not read from a map: " + input.getClass().getName());
 						}
 					}
 					case Rest<?> rest -> {
-						if (this.reverse(i, value) instanceof Map<?, ?> properties) {
+						if (written.write(value) instanceof Map<?, ?> properties) {
 							properties.forEach((name, property) -> put(map, String.valueOf(name), property));
 						}
 					}
@@ -771,13 +775,8 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			return nonNullValues(map);
 		}
 
-		final List<Function<? super X, ? extends @Nullable Object>> accessors() {
-			return this.accessors;
-		}
-
-		@SuppressWarnings("unchecked")
-		private @Nullable Object reverse(int position, @Nullable Object value) {
-			return ((ReversibleValueValidator<Object, @Nullable Object>) this.reverses.get(position)).reverse(value);
+		final List<ReversiblePart<? super X, ?>> written() {
+			return this.written;
 		}
 
 		private static void put(Map<String, @Nullable Object> map, String name, @Nullable Object value) {
@@ -817,9 +816,8 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		@Override
 		public Reversible<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 				ViolationMessage violationMessage) {
-			return new Reversible<>(this.parts(), this.mapper(), this.rejectsUnknownProperties(),
-					TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)),
-					this.accessors);
+			return new Reversible<>(this.written, this.mapper(), this.rejectsUnknownProperties(),
+					TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)));
 		}
 
 		/**
@@ -835,10 +833,10 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 */
 		public static final class IgnoringUnknown<X> extends Reversible<X> {
 
-			private IgnoringUnknown(List<Part<?>> parts,
+			private IgnoringUnknown(List<ReversiblePart<? super X, ?>> written,
 					Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-					List<TargetRule<X>> rules, List<Function<? super X, ? extends @Nullable Object>> accessors) {
-				super(parts, mapper, false, rules, accessors);
+					List<TargetRule<X>> rules) {
+				super(written, mapper, false, rules);
 			}
 
 			/**
@@ -853,7 +851,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			 * {@link Rest}
 			 */
 			public Reversible<X> rejectingUnknownProperties() {
-				return new Reversible<>(this.parts(), this.mapper(), true, this.rules(), this.accessors());
+				return new Reversible<>(this.written(), this.mapper(), true, this.rules());
 			}
 
 			/**
@@ -869,9 +867,8 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			@Override
 			public IgnoringUnknown<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 					ViolationMessage violationMessage) {
-				return new IgnoringUnknown<>(this.parts(), this.mapper(),
-						TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)),
-						this.accessors());
+				return new IgnoringUnknown<>(this.written(), this.mapper(),
+						TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)));
 			}
 
 		}

@@ -1787,65 +1787,6 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	}
 
 	/**
-	 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
-	 * like {@link #fromMap} and also writes the result back as the map that it is read
-	 * from, with {@link ObjectInputValidator.Reversible#toMap(Object) toMap}. Each
-	 * accessor returns the validated value of the argument at its position from the
-	 * result, so a record is given its constructor and its accessors:
-	 *
-	 * <pre>{@code
-	 * ObjectInputValidator.Reversible<User> validator = Yavi.schema()
-	 *     ._string("name", c -> c.notBlank())
-	 *     ._integer("age").optional()
-	 *     .fromMapReversible(User::new, User::name, User::age);
-	 * validator.toMap(new User("Taro", Optional.empty())); // {name=Taro, age=null}
-	 * }</pre>
-	 *
-	 * <p>
-	 * Every argument must be one that can be written back: an argument of constraints, or
-	 * one whose validator {@linkplain ValueValidator#reversible() knows its reverse},
-	 * such as a validator built with {@code fromMapReversible} or with
-	 * {@link ValueValidator#map(Function, Function)}. What is written for an argument is
-	 * stated in {@link ObjectInputValidator.Reversible}.
-	 * @param <X> type of the result
-	 * @param f function that creates the result from the validated values
-	 * @param accessor1 returns the validated value of the argument at position 1 from the
-	 * result
-	 * @return a new object input validator that also writes the result back
-	 * @throws IllegalStateException as {@link #fromMap} does, and if an argument cannot
-	 * be written back
-	 * @throws IllegalArgumentException as {@link #fromMap} does
-	 * @since 0.18.0
-	 */
-	@SuppressWarnings("unchecked")
-	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> fromMapReversible(
-			Function1<? super R1, ? extends X> f, Function<? super X, ? extends R1> accessor1) {
-		return ObjectInputValidator.ofReversible(List.of(this.d1.part(1)), values -> f.apply((R1) values.get(0)),
-				List.of(accessor1));
-	}
-
-	/**
-	 * Builds a {@link ObjectInputValidator.Reversible} like {@link #fromMapReversible}
-	 * that creates the result with the given function that can fail, as
-	 * {@link #flatFromMap} does.
-	 * @param <X> type of the result
-	 * @param f function that creates the result from the validated values or reports
-	 * violations
-	 * @param accessor1 returns the validated value of the argument at position 1 from the
-	 * result
-	 * @return a new object input validator that also writes the result back
-	 * @throws IllegalStateException as {@link #fromMapReversible} does
-	 * @throws IllegalArgumentException as {@link #fromMap} does
-	 * @since 0.18.0
-	 */
-	@SuppressWarnings("unchecked")
-	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> flatFromMapReversible(
-			Function1<? super R1, ? extends Validated<? extends X>> f, Function<? super X, ? extends R1> accessor1) {
-		return ObjectInputValidator.flatOfReversible(List.of(this.d1.part(1)), values -> f.apply((R1) values.get(0)),
-				List.of(accessor1));
-	}
-
-	/**
 	 * Builds a validator that reads the added arguments from an object of the given
 	 * reader, such as a node of the tree model of a JSON library, by their names and
 	 * creates the result with the given function. The tree is read as it is, without
@@ -2350,12 +2291,7 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given separator, as {@link #splitBy(Pattern)} states. A validator built with
-		 * {@code fromMapReversible} writes the list back as that text, which a pattern
-		 * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list
-		 * is written as {@code null}, because text without an element is not sent, so it
-		 * is read back only if the list accepts {@code null}
-		 * ({@code defaultValue(List.of())}, {@code nullable()}).
+		 * given separator, as {@link #splitBy(Pattern)} states.
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
@@ -2366,7 +2302,7 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 		 * @since 0.18.0
 		 */
 		public Keyed<List<? extends E>, List<T>> splitBy(String separator) {
-			return new Keyed<>(this.d1.separatedBy(separator));
+			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
 		}
 
 		/**
@@ -2985,44 +2921,6 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 		public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(
 				Function1<? super R1, ? extends Validated<? extends X>> f) {
 			return this.builder.flatFromMap(f);
-		}
-
-		/**
-		 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
-		 * and also writes the result back, as
-		 * {@link Arguments1ValidatorBuilder#fromMapReversible} does. The rest is written
-		 * into the same map as the other arguments.
-		 * @param <X> type of the result
-		 * @param f function that creates the result from the validated values
-		 * @param accessor1 returns the validated value of the argument at position 1 from
-		 * the result
-		 * @return a new object input validator that also writes the result back
-		 * @throws IllegalStateException as {@link #fromMap} does, and if an argument
-		 * cannot be written back
-		 * @throws IllegalArgumentException as {@link #fromMap} does
-		 */
-		public <X> ObjectInputValidator.Reversible<X> fromMapReversible(Function1<? super R1, ? extends X> f,
-				Function<? super X, ? extends R1> accessor1) {
-			return this.builder.fromMapReversible(f, accessor1);
-		}
-
-		/**
-		 * Builds a {@link ObjectInputValidator.Reversible} like
-		 * {@link #fromMapReversible} that creates the result with the given function that
-		 * can fail, as {@link Arguments1ValidatorBuilder#flatFromMapReversible} does.
-		 * @param <X> type of the result
-		 * @param f function that creates the result from the validated values or reports
-		 * violations
-		 * @param accessor1 returns the validated value of the argument at position 1 from
-		 * the result
-		 * @return a new object input validator that also writes the result back
-		 * @throws IllegalStateException as {@link #fromMapReversible} does
-		 * @throws IllegalArgumentException as {@link #fromMap} does
-		 */
-		public <X> ObjectInputValidator.Reversible<X> flatFromMapReversible(
-				Function1<? super R1, ? extends Validated<? extends X>> f,
-				Function<? super X, ? extends R1> accessor1) {
-			return this.builder.flatFromMapReversible(f, accessor1);
 		}
 
 		/**

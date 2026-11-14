@@ -7,10 +7,8 @@ package am.ik.yavi.builder;
 import java.time.LocalDate;
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LocalDateValidator;
 import am.ik.yavi.constraint.LocalDateConstraint;
@@ -91,22 +89,18 @@ public class LocalDateValidatorBuilder implements ValueValidatorBuilder<LocalDat
 	 */
 	@Override
 	public <T extends @Nullable Object> LocalDateValidator<T> build(Function<? super LocalDate, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> LocalDateValidator<T> create(
-			Function1<? super LocalDate, ? extends T> mapper) {
 		final Validator<Arguments1<LocalDate>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LocalDateValidator<>(validator, mapper);
+		return new LocalDateValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public LocalDateValidator<LocalDate> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public LocalDateValidator.Reversible build() {
+		return new LocalDateValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

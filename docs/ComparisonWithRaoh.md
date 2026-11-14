@@ -944,11 +944,12 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 
 An encoder of Raoh (sections 29-32 of the tutorial) is written next to the decoder:
 `object(property("id", Item::id, long_().contramap(ItemId::value)), ...)`. In YAVI the
-schema that reads the map also writes it: `fromMapReversible` is `fromMap` with the
-accessors, and `toMap` is what Raoh calls encoding.
+schema that reads the map also writes it: `fromMapReversible` of
+`Yavi.reversibleSchema()` is `fromMap` with the accessors, and `toMap` is what Raoh calls
+encoding.
 
 ```java
-ObjectInputValidator.Reversible<Item> itemValidator = Yavi.schema()
+ObjectInputValidator.Reversible<Item> itemValidator = Yavi.reversibleSchema()
         ._long(Yavi._long("id").map(ItemId::new, ItemId::value)) // contramap
         ._string("name", c -> c.notBlank())
         ._string("note").optional()
@@ -962,7 +963,8 @@ itemValidator.toMap(item);     // encodes: {id=1, name=pen, note=null}
   `validate(toMap(x))` is `Valid(x)`.
 * A value object goes back with `map(f, g)`, a nested validator writes a nested map, an
   `_embedded` one the same map, and an `Optional` without a value `null`.
-* A property that cannot be written back is reported when the validator is built.
+* A property that cannot be written back does not compile: the schema takes a
+  `ReversibleValueValidator` where `Yavi.schema()` takes a `ValueValidator`.
 * `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form.
 
 See [New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).

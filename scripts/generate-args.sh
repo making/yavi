@@ -540,12 +540,6 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).describedAs(description.named(name));
-			}
-
-			@Override
-			public Optional<ReversibleValueValidator<A1, X>> reversible() {
-				return Arguments1Validator.this.reversible()
-					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}"
   fi
   class="Arguments${i}Validator"
@@ -600,7 +594,6 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
-import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -690,12 +683,6 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.from(valueValidator.named(name));
-			}
-
-			@Override
-			public Optional<ReversibleValueValidator<A1, X>> reversible() {
-				return valueValidator.reversible()
-					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
@@ -964,12 +951,6 @@ cat <<EOD
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).constraintOnTarget(predicate, name, violationMessage);
 			}
-
-			@Override
-			public Optional<ReversibleValueValidator<A1, X>> reversible() {
-				return Arguments1Validator.this.reversible()
-					.map(reversible -> ReversibleValueValidator.of(this, reversible));
-			}
 		};
 EOD
 else
@@ -1142,12 +1123,6 @@ cat <<EOD
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).preprocess(transform);
-			}
-
-			@Override
-			public Optional<ReversibleValueValidator<A1, X>> reversible() {
-				return Arguments1Validator.this.reversible()
-					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
@@ -1387,10 +1362,10 @@ package am.ik.yavi.arguments;
 
 $(if [ "${i}" == "1" ];then echo "import java.util.ArrayList;"; echo "import java.util.List;"; fi)
 import java.util.Locale;
-$(if [ "${i}" == "1" ];then echo "import java.util.Optional;"; echo "import java.util.function.Function;"; fi)
+$(if [ "${i}" == "1" ];then echo "import java.util.function.Function;"; fi)
 import java.util.function.Supplier;
 
-import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.ConstraintDescription;\nimport am.ik.yavi.core.ConstraintViolation;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.ReversibleValueValidator;'; fi)
+import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.ConstraintDescription;\nimport am.ik.yavi.core.ConstraintViolation;\nimport am.ik.yavi.core.InputReader;'; fi)
 import am.ik.yavi.core.Validated;
 $(if [ "${i}" == "1" ];then echo "import am.ik.yavi.core.ValueDescription;"; fi)
 import am.ik.yavi.core.Validator;
@@ -1441,9 +1416,6 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-	/** The mapper of a validator that produces the validated argument itself. */
-	private static final Function1<Object, Object> UNMAPPED = a1 -> a1;
-
 	private final Class<?> valueType;
 
 	private final boolean required;
@@ -1621,38 +1593,6 @@ cat <<EOD
 	@Override
 	public ValueDescription description() {
 		return this.describe();
-	}
-
-	/**
-	 * Returns the mapper of a validator that produces the validated argument itself.
-	 * A validator created with it knows its reverse: the argument that a value is read
-	 * from is that value. This is the mapper of the validators that the builders of
-	 * single values build without a function.
-	 *
-	 * @param <A1> the type of the argument
-	 * @return the mapper that returns its argument
-	 * @since 0.18.0
-	 * @see #reversible()
-	 */
-	@SuppressWarnings("unchecked")
-	public static <A1> Function1<A1, A1> unmapped() {
-		return (Function1<A1, A1>) (Function1<?, ?>) UNMAPPED;
-	}
-
-	/**
-	 * Returns this validator as one that goes back from its value to its argument, which
-	 * is the value itself, if the mapper is {@link #unmapped()}. A validator whose value
-	 * is mapped does not know its reverse; state it with
-	 * {@link ValueValidator#map(Function, Function)}.
-	 *
-	 * @return this validator with its reverse, or an empty {@code Optional}
-	 * @since 0.18.0
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public Optional<ReversibleValueValidator<A1, X>> reversible() {
-		return this.mapper == UNMAPPED ? Optional.of(ReversibleValueValidator.of(this, value -> (A1) value))
-				: Optional.empty();
 	}
 
 	/**
@@ -2480,13 +2420,134 @@ cat <<EOD
 EOD
 }
 
+
+# The terminals of the builders of Yavi.reversibleSchema(), whose arguments all know
+# their reverse.
+reversible_terminals() {
+cat <<EOD
+
+	/**
+	 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
+	 * like {@link #fromMap} and also writes the result back as the map that it is read
+	 * from, with {@link ObjectInputValidator.Reversible#toMap(Object) toMap}. Each
+	 * accessor returns the validated value of the argument at its position from the
+	 * result, so a record is given its constructor and its accessors:
+	 *
+	 * <pre>{@code
+	 * ObjectInputValidator.Reversible<User> validator = Yavi.reversibleSchema()
+	 *     ._string("name", c -> c.notBlank())
+	 *     ._integer("age").optional()
+	 *     .fromMapReversible(User::new, User::name, User::age);
+	 * validator.toMap(new User("Taro", Optional.empty())); // {name=Taro, age=null}
+	 * }</pre>
+	 *
+	 * <p>
+	 * Every argument of this builder can be written back, because only an argument of
+	 * constraints or of a {@link ReversibleValueValidator} can be added to it. What is
+	 * written for an argument is stated in {@link ObjectInputValidator.Reversible}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
+	 * @return a new object input validator that also writes the result back
+	 * @throws IllegalStateException as {@link #fromMap} does
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+		return ObjectInputValidator.ofReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}, accessor${j}), ";done) | sed 's/,$//')),
+				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')));
+	}
+
+	/**
+	 * Builds a {@link ObjectInputValidator.Reversible} like {@link #fromMapReversible}
+	 * that creates the result with the given function that can fail, as
+	 * {@link #flatFromMap} does.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
+	 * @return a new object input validator that also writes the result back
+	 * @throws IllegalStateException as {@link #fromMap} does
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+		return ObjectInputValidator.flatOfReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}, accessor${j}), ";done) | sed 's/,$//')),
+				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')));
+	}
+EOD
+}
+
+reversible_complete_terminals() {
+cat <<EOD
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
+		 * and also writes the result back, as {@link ${class}#fromMapReversible} does.
+		 * The rest is written into the same map as the other arguments.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
+		 * @return a new object input validator that also writes the result back
+		 * @throws IllegalStateException as {@link #fromMap} does
+		 * @throws IllegalArgumentException as {@link #fromMap} does
+		 */
+		public <X> ObjectInputValidator.Reversible<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+			return this.builder.fromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} like
+		 * {@link #fromMapReversible} that creates the result with the given function
+		 * that can fail, as {@link ${class}#flatFromMapReversible} does.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values or reports
+		 * violations$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
+		 * @return a new object input validator that also writes the result back
+		 * @throws IllegalStateException as {@link #fromMap} does
+		 * @throws IllegalArgumentException as {@link #fromMap} does
+		 */
+		public <X> ObjectInputValidator.Reversible<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+			return this.builder.flatFromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
+		}
+EOD
+}
+
+# The builders are generated twice from the same template: those of Yavi.schema(), which
+# take any validator, and those of Yavi.reversibleSchema(), which take only a validator
+# that knows its reverse and therefore have the terminals that write the result back.
+for track in plain reversible;do
+if [ "${track}" == "reversible" ];then
+  prefix="Reversible"
+  definition="ReversibleArgumentDefinition"
+  value_validator="ReversibleValueValidator"
+  null_accepting="ReversibleValueValidator.NullAccepting"
+  embedded_validator="ReversibleValueValidator<Map<String, Object>, T>"
+  root="reversibleSchema"
+  track_doc=' * <p>
+ * This is a builder of {@link am.ik.yavi.validator.Yavi#reversibleSchema()}: every
+ * argument is one that can be written back, so where a builder of
+ * {@link am.ik.yavi.validator.Yavi#schema()} takes a {@link ValueValidator}, this one
+ * takes a {@link ReversibleValueValidator}, and a validator that does not know its
+ * reverse does not compile. In return, {@code fromMapReversible} builds a validator
+ * that also writes the result back as the map it is read from.
+ *
+'
+else
+  prefix=""
+  definition="ArgumentDefinition"
+  value_validator="ValueValidator"
+  null_accepting="NullAcceptingValueValidator"
+  embedded_validator="ValueValidator<? super Map<String, Object>, T>"
+  root="schema"
+  track_doc=""
+fi
 for i in `seq 0 ${n}`;do
 if [ "${i}" -gt 0 ];then
-  class="Arguments${i}ValidatorBuilder"
+  class="${prefix}Arguments${i}ValidatorBuilder"
 else
-  class="YaviSchema";
+  class="${prefix}YaviSchema";
 fi
-  next_class="Arguments$((i + 1))ValidatorBuilder"
+  next_class="${prefix}Arguments$((i + 1))ValidatorBuilder"
   # "seq 1 0" counts down on macOS, so the ranges that may be empty are guarded
   prev_definitions=""
   init_definitions=""
@@ -2507,12 +2568,12 @@ fi
   if [ "${i}" -gt 0 ];then
     type_decls="$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)$(for j in `seq 1 ${i}`;do echo -n "R${j} extends @Nullable Object, ";done) | sed 's/,$//')"
     type_uses="$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done)$(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done) | sed 's/,$//')"
-    ctor_params="$(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')"
+    ctor_params="$(echo $(for j in `seq 1 ${i}`;do echo -n "${definition}<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')"
     ctor_args="$(echo $(for j in `seq 1 ${i}`;do echo -n "d${j}, ";done) | sed 's/,$//')"
     # the stage of a list: the last argument is a list of E validated as a list of T
     list_type_decls="${init_arguments}E, $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "R${j} extends @Nullable Object, ";done;fi)T extends @Nullable Object"
     list_type_uses="${init_arguments}List<? extends E>, ${init_results}List<T>"
-    list_ctor_params="$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done;fi)ArgumentDefinition<List<? extends E>, List<T>> d${i}"
+    list_ctor_params="$(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do echo -n "${definition}<A${j}, R${j}> d${j}, ";done;fi)${definition}<List<? extends E>, List<T>> d${i}"
   fi
   file="$(dirname $0)/../src/main/java/am/ik/yavi/builder/${class}.java"
   echo $file
@@ -2592,7 +2653,7 @@ import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;'; fi)
 import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
-import am.ik.yavi.core.ValueValidator;
+$(if [ "${track}" == "reversible" ];then printf 'import am.ik.yavi.core.ReversibleValueValidator;\n';fi)import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 import am.ik.yavi.core.ViolationMessage;
@@ -2614,7 +2675,7 @@ cat <<EOD
  * reported and the result is created only when all arguments are valid. The validator is
  * created with {@code apply} after all arguments have been added, or with
  * {@code fromMap} to read the arguments from a {@code Map<String, Object>} by their
- * names. Instances are obtained from {@link YaviSchema} or from the builder of the
+ * names. Instances are obtained from {@link ${prefix}YaviSchema} or from the builder of the
  * previous argument count.
  *
  * <p>
@@ -2637,7 +2698,7 @@ cat <<EOD
  * map as the other arguments and one added with {@code _rest} from the keys that no
  * other argument defines.
  *
- * <p>
+${track_doc} * <p>
  * The source of this class is generated by
  * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
@@ -2659,8 +2720,8 @@ cat <<EOD
  * validator is created after all arguments have been added: with {@code apply} to take
  * them as typed arguments, or with {@code fromMap} to read them from a
  * {@code Map<String, Object>} by their names. Instances are obtained from
- * {@link am.ik.yavi.validator.Yavi#schema()}. For example: <pre>{@code
- * Arguments3Validator<String, String, Integer, Car> validator = Yavi.schema()
+ * {@link am.ik.yavi.validator.Yavi#${root}()}. For example: <pre>{@code
+ * Arguments3Validator<String, String, Integer, Car> validator = Yavi.${root}()
  *     ._string("manufacturer")
  *     ._string("licensePlate", c -> c.greaterThanOrEqual(2).lessThanOrEqual(14))
  *     ._integer("seatCount", c -> c.greaterThanOrEqual(2))
@@ -2687,7 +2748,7 @@ cat <<EOD
  * map as the other arguments and one added with {@code _rest} from the keys that no
  * other argument defines.
  *
- * <p>
+${track_doc} * <p>
  * The source of this class is generated by
  * https://github.com/making/yavi/blob/develop/scripts/generate-args.sh
  *
@@ -2705,9 +2766,9 @@ $(if [ "${i}" -gt 0 ];then echo " permits ${class}.Modifiable, ${class}.Recovera
 
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
-$(for j in `seq 1 ${i}`;do echo "	final ArgumentDefinition<A${j}, R${j}> d${j};";echo;done)
+$(for j in `seq 1 ${i}`;do echo "	final ${definition}<A${j}, R${j}> d${j};";echo;done)
 
-	${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "ArgumentDefinition<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
+	${class}($(echo $(for j in `seq 1 ${i}`;do echo -n "${definition}<A${j}, R${j}> d${j}, ";done) | sed 's/,$//')) {
 $(for j in `seq 1 ${i}`;do echo "		this.d${j} = d${j};";done)
 	}
 
@@ -2719,7 +2780,7 @@ cat <<EOD
 	 *
 	 * <p>
 	 * Instances are normally obtained from
-	 * {@link am.ik.yavi.validator.Yavi#schema()}.
+	 * {@link am.ik.yavi.validator.Yavi#${root}()}.
 	 * @since 0.14.0
 	 */
 	public ${class}() {
@@ -2742,8 +2803,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(ValueValidator<BigDecimal, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(BigDecimal.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(${value_validator}<BigDecimal, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -2751,7 +2812,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_bigDecimal(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2760,8 +2821,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(NullAcceptingValueValidator<BigDecimal, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(BigDecimal.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(${null_accepting}<BigDecimal, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -2779,7 +2840,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2810,8 +2871,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(ValueValidator<BigInteger, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(BigInteger.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(${value_validator}<BigInteger, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -2819,7 +2880,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_bigInteger(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2828,8 +2889,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(NullAcceptingValueValidator<BigInteger, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(BigInteger.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(${null_accepting}<BigInteger, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -2847,7 +2908,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2878,8 +2939,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(ValueValidator<Boolean, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Boolean.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(${value_validator}<Boolean, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Boolean.class, validator));
 	}
 
 	/**
@@ -2887,7 +2948,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_boolean(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2896,8 +2957,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(NullAcceptingValueValidator<Boolean, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Boolean.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(${null_accepting}<Boolean, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Boolean.class, validator));
 	}
 
 	/**
@@ -2915,7 +2976,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -2946,8 +3007,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(ValueValidator<Double, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Double.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(${value_validator}<Double, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Double.class, validator));
 	}
 
 	/**
@@ -2955,7 +3016,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_double(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_double(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2964,8 +3025,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(NullAcceptingValueValidator<Double, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Double.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(${null_accepting}<Double, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Double.class, validator));
 	}
 
 	/**
@@ -2983,7 +3044,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3015,8 +3076,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(ValueValidator<E, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Enum.class, validator));
+	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(${value_validator}<E, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Enum.class, validator));
 	}
 
 	/**
@@ -3024,7 +3085,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_enum(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3034,8 +3095,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(NullAcceptingValueValidator<E, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Enum.class, validator));
+	public <E extends Enum<E>, T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _enum(${null_accepting}<E, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Enum.class, validator));
 	}
 
 	/**
@@ -3054,7 +3115,7 @@ cat <<EOD
 	 */
 	public <E extends Enum<E>> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
 	/**
@@ -3087,8 +3148,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(ValueValidator<Float, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Float.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(${value_validator}<Float, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Float.class, validator));
 	}
 
 	/**
@@ -3096,7 +3157,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_float(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_float(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3105,8 +3166,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(NullAcceptingValueValidator<Float, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Float.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(${null_accepting}<Float, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Float.class, validator));
 	}
 
 	/**
@@ -3124,7 +3185,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3155,8 +3216,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(ValueValidator<Instant, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Instant.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(${value_validator}<Instant, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Instant.class, validator));
 	}
 
 	/**
@@ -3164,7 +3225,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_instant(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3173,8 +3234,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(NullAcceptingValueValidator<Instant, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Instant.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(${null_accepting}<Instant, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Instant.class, validator));
 	}
 
 	/**
@@ -3192,7 +3253,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3223,8 +3284,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(ValueValidator<Integer, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Integer.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(${value_validator}<Integer, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Integer.class, validator));
 	}
 
 	/**
@@ -3232,7 +3293,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_integer(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3241,8 +3302,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(NullAcceptingValueValidator<Integer, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Integer.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(${null_accepting}<Integer, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Integer.class, validator));
 	}
 
 	/**
@@ -3260,7 +3321,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3291,8 +3352,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(ValueValidator<LocalDateTime, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(LocalDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(${value_validator}<LocalDateTime, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -3300,7 +3361,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3309,8 +3370,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(NullAcceptingValueValidator<LocalDateTime, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(${null_accepting}<LocalDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -3328,7 +3389,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3359,8 +3420,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(ValueValidator<LocalTime, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(LocalTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(${value_validator}<LocalTime, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -3368,7 +3429,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3377,8 +3438,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(NullAcceptingValueValidator<LocalTime, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(${null_accepting}<LocalTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -3396,7 +3457,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3427,8 +3488,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(ValueValidator<LocalDate, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(LocalDate.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(${value_validator}<LocalDate, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -3436,7 +3497,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localDate(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3445,8 +3506,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(NullAcceptingValueValidator<LocalDate, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(LocalDate.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(${null_accepting}<LocalDate, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -3464,7 +3525,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3495,8 +3556,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(ValueValidator<Long, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Long.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(${value_validator}<Long, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Long.class, validator));
 	}
 
 	/**
@@ -3504,7 +3565,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_long(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_long(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3513,8 +3574,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(NullAcceptingValueValidator<Long, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Long.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(${null_accepting}<Long, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Long.class, validator));
 	}
 
 	/**
@@ -3532,7 +3593,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3564,8 +3625,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2 extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(ValueValidator<T1, T2> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Object.class, validator));
+	public <T1, T2 extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(${value_validator}<T1, T2> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Object.class, validator));
 	}
 
 	/**
@@ -3573,7 +3634,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_object(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3583,8 +3644,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(NullAcceptingValueValidator<T1, T2> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Object.class, validator));
+	public <T1, T2 extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(${null_accepting}<T1, T2> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Object.class, validator));
 	}
 
 	/**
@@ -3606,7 +3667,7 @@ cat <<EOD
 	 */
 	public <T> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _object(String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
 
 	/**
@@ -3639,8 +3700,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(ValueValidator<OffsetDateTime, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(OffsetDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(${value_validator}<OffsetDateTime, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(OffsetDateTime.class, validator));
 	}
 
 	/**
@@ -3648,7 +3709,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_offsetDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3657,8 +3718,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(NullAcceptingValueValidator<OffsetDateTime, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(OffsetDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(${null_accepting}<OffsetDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(OffsetDateTime.class, validator));
 	}
 
 	/**
@@ -3676,7 +3737,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3707,8 +3768,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(ValueValidator<Short, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Short.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(${value_validator}<Short, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Short.class, validator));
 	}
 
 	/**
@@ -3716,7 +3777,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_short(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_short(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3725,8 +3786,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(NullAcceptingValueValidator<Short, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Short.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(${null_accepting}<Short, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Short.class, validator));
 	}
 
 	/**
@@ -3744,7 +3805,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3775,8 +3836,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(ValueValidator<String, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(String.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(${value_validator}<String, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(String.class, validator));
 	}
 
 	/**
@@ -3784,7 +3845,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_string(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_string(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3793,8 +3854,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(NullAcceptingValueValidator<String, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(String.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(${null_accepting}<String, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(String.class, validator));
 	}
 
 	/**
@@ -3818,7 +3879,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3849,8 +3910,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(ValueValidator<YearMonth, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(YearMonth.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(${value_validator}<YearMonth, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -3858,7 +3919,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_yearMonth(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3867,8 +3928,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(NullAcceptingValueValidator<YearMonth, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(YearMonth.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(${null_accepting}<YearMonth, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -3886,7 +3947,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3917,8 +3978,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(ValueValidator<Year, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(Year.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(${value_validator}<Year, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(Year.class, validator));
 	}
 
 	/**
@@ -3926,7 +3987,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_year(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_year(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3935,8 +3996,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(NullAcceptingValueValidator<Year, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(Year.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(${null_accepting}<Year, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(Year.class, validator));
 	}
 
 	/**
@@ -3954,7 +4015,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3985,8 +4046,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(ValueValidator<ZonedDateTime, T> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(ZonedDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(${value_validator}<ZonedDateTime, T> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -3994,7 +4055,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_zonedDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -4003,8 +4064,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(NullAcceptingValueValidator<ZonedDateTime, T> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.value(ZonedDateTime.class, validator));
+	public <T extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(${null_accepting}<ZonedDateTime, T> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -4022,7 +4083,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.value(name, ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.value(name, ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4061,8 +4122,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(String name, ValueValidator<T1, T2> validator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.object(name, validator));
+	public <T1, T2 extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(String name, ${value_validator}<T1, T2> validator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.object(name, validator));
 	}
 
 	/**
@@ -4070,7 +4131,7 @@ cat <<EOD
 	 * given value validator that accepts {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(String, ValueValidator)} for a validator that is known by
+	 * This is {@link #_object(String, ${value_validator})} for a validator that is known by
 	 * its type to accept {@code null}: {@code null} is given to {@code validator}, which
 	 * decides what it produces, and the violations of any other value are located under
 	 * {@code name}. The returned builder offers {@code required()} and
@@ -4086,8 +4147,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(String name, NullAcceptingValueValidator<T1, T2> validator) {
-		return new ${next_class}.NullAccepting<>(${prev_definitions}ArgumentDefinition.object(name, validator));
+	public <T1, T2 extends @Nullable Object> ${next_class}.NullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) T1, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T2> _object(String name, ${null_accepting}<T1, T2> validator) {
+		return new ${next_class}.NullAccepting<>(${prev_definitions}${definition}.object(name, validator));
 	}
 
 	/**
@@ -4110,8 +4171,8 @@ cat <<EOD
 	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ValueValidator<E, T> elementValidator) {
-		return new ${next_class}.KeyedList<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.none()));
+	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ${value_validator}<E, T> elementValidator) {
+		return new ${next_class}.KeyedList<>(${prev_definitions}${definition}.list(name, elementValidator, ContainerConstraints.none()));
 	}
 
 	/**
@@ -4119,7 +4180,7 @@ cat <<EOD
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The elements are validated like {@link #_list(String, ValueValidator)} does. The
+	 * The elements are validated like {@link #_list(String, ${value_validator})} does. The
 	 * constraints are checked on the list of the validated elements, only when every
 	 * element is valid, and their violations are reported on {@code name}.
 	 *
@@ -4135,9 +4196,9 @@ cat <<EOD
 	 * text with {@code splitBy}
 	 * @since 0.18.0
 	 */
-	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ValueValidator<E, T> elementValidator,
+	public <E, T extends @Nullable Object> ${next_class}.KeyedList<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _list(String name, ${value_validator}<E, T> elementValidator,
 			Function<CollectionConstraint<Arguments1<List<T>>, List<T>, T>, CollectionConstraint<Arguments1<List<T>>, List<T>, T>> constraints) {
-		return new ${next_class}.KeyedList<>(${prev_definitions}ArgumentDefinition.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
+		return new ${next_class}.KeyedList<>(${prev_definitions}${definition}.list(name, elementValidator, ContainerConstraints.ofList(constraints)));
 	}
 
 	/**
@@ -4158,8 +4219,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
+	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ${value_validator}<V, T> valueValidator) {
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
 	/**
@@ -4167,7 +4228,7 @@ cat <<EOD
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The values are validated like {@link #_map(String, ValueValidator)} does. The
+	 * The values are validated like {@link #_map(String, ${value_validator})} does. The
 	 * constraints are checked on the map of the validated values, only when every value
 	 * is valid, and their violations are reported on {@code name}.
 	 *
@@ -4182,9 +4243,9 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ValueValidator<V, T> valueValidator,
+	public <V, T extends @Nullable Object> ${next_class}.Keyed<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _map(String name, ${value_validator}<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new ${next_class}.Keyed<>(${prev_definitions}ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
+		return new ${next_class}.Keyed<>(${prev_definitions}${definition}.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
 
 	/**
@@ -4203,8 +4264,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ${next_class}.Modifiable<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, Object>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _embedded(ValueValidator<? super Map<String, Object>, T> validator) {
-		return new ${next_class}.Modifiable<>(${prev_definitions}ArgumentDefinition.embedded(validator));
+	public <T extends @Nullable Object> ${next_class}.Modifiable<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, Object>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _embedded(${embedded_validator} validator) {
+		return new ${next_class}.Modifiable<>(${prev_definitions}${definition}.embedded(validator));
 	}
 
 	/**
@@ -4234,8 +4295,8 @@ cat <<EOD
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _rest(ValueValidator<V, T> valueValidator) {
-		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}ArgumentDefinition.rest(valueValidator)));
+	public <V, T extends @Nullable Object> ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ? extends V>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, T>> _rest(${value_validator}<V, T> valueValidator) {
+		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}${definition}.rest(valueValidator)));
 	}
 
 	/**
@@ -4243,10 +4304,10 @@ cat <<EOD
 	 * is defined for, whose values are taken as they are.
 	 * @return a builder that creates the validator
 	 * @since 0.18.0
-	 * @see #_rest(ValueValidator)
+	 * @see #_rest(${value_validator})
 	 */
 	public ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ?>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, @Nullable Object>> _rest() {
-		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}ArgumentDefinition.rest()));
+		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}${definition}.rest()));
 	}
 EOD
 fi)
@@ -4270,7 +4331,7 @@ cat <<EOD
 	 */
 	public <X extends @Nullable Object> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> apply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.validator(), ";done) | sed 's/,$//')).<X>apply(f)
-			.describedAs(ArgumentDefinition.describe($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done) | sed 's/,$//')));
+			.describedAs(${definition}.describe($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done) | sed 's/,$//')));
 	}
 
 	/**
@@ -4293,7 +4354,7 @@ cat <<EOD
 	public <X extends @Nullable Object> Arguments${i}Validator<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> flatApply(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f) {
 		return ArgumentsValidators.split($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.validator(), ";done) | sed 's/,$//')).<Validated<? extends X>>apply(f)
 			.<X>andThen((validated, locale, constraintContext) -> Validated.of(Objects.requireNonNull(validated)))
-			.describedAs(ArgumentDefinition.describe($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done) | sed 's/,$//')));
+			.describedAs(${definition}.describe($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}, ";done) | sed 's/,$//')));
 	}
 EOD
 fi)
@@ -4413,59 +4474,6 @@ cat <<EOD
 	}
 
 	/**
-	 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
-	 * like {@link #fromMap} and also writes the result back as the map that it is read
-	 * from, with {@link ObjectInputValidator.Reversible#toMap(Object) toMap}. Each
-	 * accessor returns the validated value of the argument at its position from the
-	 * result, so a record is given its constructor and its accessors:
-	 *
-	 * <pre>{@code
-	 * ObjectInputValidator.Reversible<User> validator = Yavi.schema()
-	 *     ._string("name", c -> c.notBlank())
-	 *     ._integer("age").optional()
-	 *     .fromMapReversible(User::new, User::name, User::age);
-	 * validator.toMap(new User("Taro", Optional.empty())); // {name=Taro, age=null}
-	 * }</pre>
-	 *
-	 * <p>
-	 * Every argument must be one that can be written back: an argument of constraints,
-	 * or one whose validator {@linkplain ValueValidator#reversible() knows its reverse},
-	 * such as a validator built with {@code fromMapReversible} or with
-	 * {@link ValueValidator#map(Function, Function)}. What is written for an argument
-	 * is stated in {@link ObjectInputValidator.Reversible}.
-	 * @param <X> type of the result
-	 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
-	 * @return a new object input validator that also writes the result back
-	 * @throws IllegalStateException as {@link #fromMap} does, and if an argument cannot
-	 * be written back
-	 * @throws IllegalArgumentException as {@link #fromMap} does
-	 * @since 0.18.0
-	 */
-	@SuppressWarnings("unchecked")
-	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
-		return ObjectInputValidator.ofReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
-				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')), List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//')));
-	}
-
-	/**
-	 * Builds a {@link ObjectInputValidator.Reversible} like {@link #fromMapReversible}
-	 * that creates the result with the given function that can fail, as
-	 * {@link #flatFromMap} does.
-	 * @param <X> type of the result
-	 * @param f function that creates the result from the validated values or reports
-	 * violations$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
-	 * @return a new object input validator that also writes the result back
-	 * @throws IllegalStateException as {@link #fromMapReversible} does
-	 * @throws IllegalArgumentException as {@link #fromMap} does
-	 * @since 0.18.0
-	 */
-	@SuppressWarnings("unchecked")
-	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
-		return ObjectInputValidator.flatOfReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
-				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')), List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//')));
-	}
-
-	/**
 	 * Builds a validator that reads the added arguments from an object of the given
 	 * reader, such as a node of the tree model of a JSON library, by their names and
 	 * creates the result with the given function. The tree is read as it is, without
@@ -4490,6 +4498,7 @@ cat <<EOD
 	public <N, X extends @Nullable Object> ValueValidator<N, X> from(InputReader<N> reader, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 		return this.<X>fromMap(f).readingWith(reader);
 	}
+$(if [ "${track}" == "reversible" ];then reversible_terminals;fi)
 EOD
 fi)
 $(if [ "${i}" -gt 0 ];then
@@ -4595,12 +4604,7 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given separator, as {@link #splitBy(Pattern)} states. A validator built with
-		 * {@code fromMapReversible} writes the list back as that text, which a pattern
-		 * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list
-		 * is written as {@code null}, because text without an element is not sent, so it
-		 * is read back only if the list accepts {@code null}
-		 * ({@code defaultValue(List.of())}, {@code nullable()}).
+		 * given separator, as {@link #splitBy(Pattern)} states.$(if [ "${track}" == "reversible" ];then printf ' A validator built with\n\t\t * {@code fromMapReversible} writes the list back as that text, which a pattern\n\t\t * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list\n\t\t * is written as {@code null}, because text without an element is not sent, so it\n\t\t * is read back only if the list accepts {@code null}\n\t\t * ({@code defaultValue(List.of())}, {@code nullable()}).';fi)
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
@@ -4611,7 +4615,7 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 		 * @since 0.18.0
 		 */
 		public Keyed<${list_type_uses}> splitBy(String separator) {
-			return new Keyed<>(${init_definitions}this.d${i}.separatedBy(separator));
+			return $(if [ "${track}" == "reversible" ];then echo -n "new Keyed<>(${init_definitions}this.d${i}.separatedBy(separator))";else echo -n "this.splitBy(Pattern.compile(Pattern.quote(separator)))";fi);
 		}
 
 		/**
@@ -4793,36 +4797,6 @@ $(modifier_presence)
 		}
 
 		/**
-		 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
-		 * and also writes the result back, as {@link ${class}#fromMapReversible} does.
-		 * The rest is written into the same map as the other arguments.
-		 * @param <X> type of the result
-		 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
-		 * @return a new object input validator that also writes the result back
-		 * @throws IllegalStateException as {@link #fromMap} does, and if an argument
-		 * cannot be written back
-		 * @throws IllegalArgumentException as {@link #fromMap} does
-		 */
-		public <X> ObjectInputValidator.Reversible<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
-			return this.builder.fromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
-		}
-
-		/**
-		 * Builds a {@link ObjectInputValidator.Reversible} like
-		 * {@link #fromMapReversible} that creates the result with the given function
-		 * that can fail, as {@link ${class}#flatFromMapReversible} does.
-		 * @param <X> type of the result
-		 * @param f function that creates the result from the validated values or reports
-		 * violations$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
-		 * @return a new object input validator that also writes the result back
-		 * @throws IllegalStateException as {@link #fromMapReversible} does
-		 * @throws IllegalArgumentException as {@link #fromMap} does
-		 */
-		public <X> ObjectInputValidator.Reversible<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
-			return this.builder.flatFromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
-		}
-
-		/**
 		 * Builds a validator that reads the added arguments from an object of the given
 		 * reader, as {@link ${class}#from} does.
 		 * @param <N> the type of the nodes
@@ -4837,6 +4811,7 @@ $(modifier_presence)
 		public <N, X extends @Nullable Object> ValueValidator<N, X> from(InputReader<N> reader, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f) {
 			return this.builder.from(reader, f);
 		}
+$(if [ "${track}" == "reversible" ];then reversible_complete_terminals;fi)
 
 	}
 
@@ -4883,4 +4858,8 @@ EOD
 fi)
 }
 EOF
+if [ "${track}" == "reversible" ];then
+  perl -pi -e 's/\@since 0\.1[0-7]\.\d+/\@since 0.18.0/' ${file}
+fi
+done
 done

@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.FloatValidator;
 import am.ik.yavi.constraint.FloatConstraint;
@@ -88,21 +86,18 @@ public class FloatValidatorBuilder implements ValueValidatorBuilder<Float, Float
 	 */
 	@Override
 	public <T extends @Nullable Object> FloatValidator<T> build(Function<? super Float, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> FloatValidator<T> create(Function1<? super Float, ? extends T> mapper) {
 		final Validator<Arguments1<Float>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new FloatValidator<>(validator, mapper);
+		return new FloatValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public FloatValidator<Float> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public FloatValidator.Reversible build() {
+		return new FloatValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

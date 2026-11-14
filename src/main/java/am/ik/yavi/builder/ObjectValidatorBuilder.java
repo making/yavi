@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.ObjectValidator;
 import am.ik.yavi.constraint.ObjectConstraint;
@@ -114,23 +112,24 @@ public class ObjectValidatorBuilder<X> implements ValueValidatorBuilder<X, X> {
 	 */
 	@Override
 	public <T extends @Nullable Object> ObjectValidator<X, T> build(Function<? super X, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> ObjectValidator<X, T> create(Function1<? super X, ? extends T> mapper) {
 		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
 		final Class<X> type = this.type;
-		return type == null ? new ObjectValidator<>(validator, mapper) : new ObjectValidator<>(validator, mapper, type);
+		return type == null ? new ObjectValidator<>(validator, mapper::apply)
+				: new ObjectValidator<>(validator, mapper::apply, type);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
 
-	public ObjectValidator<X, X> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public ObjectValidator.Reversible<X> build() {
+		final Validator<Arguments1<X>> validator = this.builder.apply(ValidatorBuilder.of()).build();
+		final Class<X> type = this.type;
+		return type == null ? new ObjectValidator.Reversible<>(validator)
+				: new ObjectValidator.Reversible<>(validator, type);
 	}
 
 }

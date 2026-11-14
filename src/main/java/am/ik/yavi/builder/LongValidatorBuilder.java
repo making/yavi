@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LongValidator;
 import am.ik.yavi.constraint.LongConstraint;
@@ -88,21 +86,18 @@ public class LongValidatorBuilder implements ValueValidatorBuilder<Long, Long> {
 	 */
 	@Override
 	public <T extends @Nullable Object> LongValidator<T> build(Function<? super Long, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> LongValidator<T> create(Function1<? super Long, ? extends T> mapper) {
 		final Validator<Arguments1<Long>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LongValidator<>(validator, mapper);
+		return new LongValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public LongValidator<Long> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public LongValidator.Reversible build() {
+		return new LongValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

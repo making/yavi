@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.EnumValidator;
 import am.ik.yavi.constraint.EnumConstraint;
@@ -97,22 +95,20 @@ public class EnumValidatorBuilder<E extends Enum<E>> implements ValueValidatorBu
 	 */
 	@Override
 	public <T extends @Nullable Object> EnumValidator<E, T> build(Function<? super E, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> EnumValidator<E, T> create(Function1<? super E, ? extends T> mapper) {
 		final Validator<Arguments1<E>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new EnumValidator<>(validator, mapper, this.type);
+		return new EnumValidator<>(validator, mapper::apply, this.type);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated enum type.
+	 * Builds a validator whose result type is the validated enum type. The validator
+	 * knows its reverse by its type: the argument that a value is read from is that
+	 * value.
 	 * @return a new validator
 	 */
 	@Override
 
-	public EnumValidator<E, E> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public EnumValidator.Reversible<E> build() {
+		return new EnumValidator.Reversible<>(this.builder.apply(ValidatorBuilder.of()).build(), this.type);
 	}
 
 }

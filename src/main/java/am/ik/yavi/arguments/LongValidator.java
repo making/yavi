@@ -89,4 +89,46 @@ public class LongValidator<T extends @Nullable Object> extends DefaultArguments1
 		return new LongValidator<>(super.renamed(name), super.mapper, super.transform);
 	}
 
+	/**
+	 * A {@link LongValidator} whose value is the validated argument itself, which is what
+	 * the builder builds without a mapper. It knows its reverse by its type: the argument
+	 * that a value is read from is that value. {@link #named(String)} and
+	 * {@link #preprocess(Function)} keep the type; {@link #map(Function)} returns a
+	 * validator that does not know its reverse, unlike {@link #map(Function, Function)}.
+	 *
+	 * @since 0.18.0
+	 */
+	public static final class Reversible extends LongValidator<Long>
+			implements ReversibleArguments1Validator<Long, Long> {
+
+		/**
+		 * Creates a validator that produces the validated value itself.
+		 * @param validator the validator applied to the wrapped argument
+		 */
+		public Reversible(Validator<Arguments1<Long>> validator) {
+			this(validator, null);
+		}
+
+		private Reversible(Validator<Arguments1<Long>> validator,
+				@Nullable Function<? super Long, ? extends @Nullable Long> transform) {
+			super(validator, value -> value, transform);
+		}
+
+		@Override
+		public Long reverse(Long value) {
+			return value;
+		}
+
+		@Override
+		public Reversible preprocess(Function<? super Long, ? extends @Nullable Long> transform) {
+			return new Reversible(super.validator, composed(transform, super.transform));
+		}
+
+		@Override
+		public Reversible named(String name) {
+			return new Reversible(super.renamed(name), super.transform);
+		}
+
+	}
+
 }

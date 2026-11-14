@@ -896,6 +896,32 @@ Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phone = p
 
 Related pull request: [#576](https://github.com/making/yavi/pull/576)
 
+### `build()` of a builder of a single value returns a validator that knows its reverse
+
+`build()` of `StringValidatorBuilder`, `IntegerValidatorBuilder` and the other builders of
+single values returns `StringValidator.Reversible`, `IntegerValidator.Reversible` and the
+like. It returned `StringValidator<String>`, `IntegerValidator<Integer>` and the like,
+which the new types extend, so code that declares the old type compiles as it is. Code
+compiled with 0.17 is recompiled, as for the other changes.
+
+A variable declared with `var` has the new type, which a mapped validator is not assigned
+to. Declare the type, or use another variable:
+
+```java
+// before
+var name = StringValidatorBuilder.of("name", c -> c.notBlank()).build();
+name = name.map(String::strip);
+
+// after
+StringValidator<String> name = StringValidatorBuilder.of("name", c -> c.notBlank()).build();
+name = name.map(String::strip);
+```
+
+The new type tells that the validator can be written back; see
+[Writing an object back as the map it is read from](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
+
+Related pull request: [#579](https://github.com/making/yavi/pull/579)
+
 ### `emoji()` counts extended grapheme clusters
 
 A few sequences that are not emoji count as one where they counted as two: `"\r\n"`, or

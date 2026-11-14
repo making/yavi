@@ -909,10 +909,10 @@ class SignupController {
 
 ## Writing an object back as the map it is read from
 
-A schema names the properties of an input once. `fromMapReversible` builds a validator
-that also writes the created object back as the map it is read from, so that the names
-are not written again for the parameters of a statement or for a form that shows a stored
-object.
+A schema names the properties of an input once. `fromMapReversible` of
+`Yavi.reversibleSchema()` builds a validator that also writes the created object back as
+the map it is read from, so that the names are not written again for the parameters of a
+statement or for a form that shows a stored object.
 
 ```java
 record Email(String value) {}
@@ -922,12 +922,12 @@ record Employee(Integer id, UserName name, Email email, Optional<String> nicknam
 ReversibleValueValidator<String, Email> emailValidator = Yavi._string("email", c -> c.notBlank().email())
         .map(Email::new, Email::value);
 
-ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
+ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.reversibleSchema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
         .fromMapReversible(UserName::new, UserName::first, UserName::last);
 
-ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._embedded(userNameValidator)
         ._string(emailValidator)
@@ -946,6 +946,9 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 ```
 
+* `Yavi.reversibleSchema()` is `Yavi.schema()` for an object that is written back. It has
+  the same methods, but where `Yavi.schema()` takes a `ValueValidator`, it takes a
+  `ReversibleValueValidator`: a validator that knows its reverse by its type.
 * `fromMapReversible(f, accessor1, ..., accessorN)` is `fromMap(f)` with one accessor per
   argument, which returns the validated value of that argument from the object. The
   compiler checks its type, so a record is given its constructor and its accessors.
@@ -977,22 +980,48 @@ convert what a driver does not take.
 
 **A value object.** `map(f, g)` is `map(f)` with the function that goes back from the
 mapped value to the input. It returns a `ReversibleValueValidator`, whose `reverse(x)` is
-the input that `x` is read from. Any validator tells whether it knows its reverse with
-`reversible()`: the validators of single values do unless their value is mapped, and
-`named`, `optional()`, `nullable()`, `defaultValue`, `recover` and `constraintOnTarget`
-keep it. `ReversibleValueValidator.of(validator, g)` states the reverse of any other
-validator.
+the input that `x` is read from. The type tells whether a validator knows its reverse:
 
-**What cannot be written.** `map(f)` without the reverse, a lambda, `andThen`, `anyOf`,
-and `_object`, `_embedded`, `_list`, `_map` or `_rest` with a validator that does not
-know its reverse. `fromMapReversible` then fails with an `IllegalStateException` that
-names the property, when the validator is built:
+| Validator | Type |
+| --- | --- |
+| `Yavi._string("name")` and the other validators of single values, `XxxValidatorBuilder#build()` | `StringValidator.Reversible` and the like, which are `ReversibleValueValidator`s |
+| `map(f, g)`, `ReversibleValueValidator.of(validator, g)` | `ReversibleValueValidator` |
+| `named`, `describedAs`, `preprocess`, `prefixed`, `formattingWith`, `constraintOnTarget`, `untrimmed()`, `ignoringCase()` of one | `ReversibleValueValidator` |
+| `optional()`, `nullable()`, `defaultValue`, `recover`, `recoverWith` of one | `ReversibleValueValidator.NullAccepting`, which is also a `NullAcceptingValueValidator` |
+| `liftList()`, `liftSet()`, `liftCollection(factory)`, `liftMap()`, `liftOptional()`, `liftPresence()` of one | `ReversibleValueValidator` of the container |
+| `ReversibleValueValidator.lazy(supplier)`, `recursive(self -> ...)` | `ReversibleValueValidator` |
+| `fromMapReversible`, a `DiscriminatedUnionValidator.Reversible` | `ReversibleValueValidator` of a map |
+| `map(f)`, `andThen`, `anyOf`, a lambda, `Yavi._list`, `Yavi._map`, `fromMap` | `ValueValidator` |
+
+**What cannot be written.** A validator that is not a `ReversibleValueValidator`: `map(f)`
+without the reverse, a lambda, `andThen`, `anyOf`. A schema of `Yavi.reversibleSchema()`
+does not take one, neither as a property nor in `_object`, `_embedded`, `_list`, `_map` or
+`_rest`, so the property that cannot be written back does not compile:
 
 ```java
-Yavi.schema()
-        ._string(Yavi._string("email").map(Email::new)) // no reverse
-        .fromMapReversible(Contact::new, Contact::email);
-// IllegalStateException: The property 'email' cannot be written back, because its validator does not know its reverse. ...
+Yavi.reversibleSchema()
+        ._string("name")
+        ._string(Yavi._string("email").map(Email::new)) // does not compile: no reverse
+        .fromMapReversible(Contact::new, Contact::name, Contact::email);
+// error: no suitable method found for _string(StringValidator<Email>)
+
+Yavi.reversibleSchema()
+        ._string("name")
+        ._string(Yavi._string("email").map(Email::new, Email::value)) // compiles
+        .fromMapReversible(Contact::new, Contact::name, Contact::email);
+```
+
+`Yavi.schema()` has no `fromMapReversible`. A schema that is not written back is not
+affected: it takes any validator, as before.
+
+**A structure that contains itself.** `ReversibleValueValidator.recursive(self -> ...)`
+is `ValueValidator.recursive` with a reference that knows its reverse:
+
+```java
+ObjectInputValidator.Reversible<Tree> treeValidator = ReversibleValueValidator.recursive(self -> Yavi.reversibleSchema()
+        ._string("name")
+        ._list("children", self).defaultValue(List.of())
+        .fromMapReversible(Tree::new, Tree::name, Tree::children));
 ```
 
 **A nested object.** A nested map cannot be bound to a statement. Read the columns of a
@@ -1022,8 +1051,12 @@ DiscriminatedUnionValidator.Reversible<Shape> shapeValidator = DiscriminatedUnio
 shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 ```
 
-**A schema whose properties are known at run time.** `buildReversible()` of
-`Yavi.dynamicSchema()` returns a validator that writes the map of validated values back.
+**A schema whose properties are known at run time.** `Yavi.reversibleDynamicSchema()` is
+`Yavi.dynamicSchema()` whose `property` and `rest` take a `ReversibleValueValidator`. Its
+`build()` returns a validator that writes the map of validated values back.
+
+**More properties than a schema supports.** `ObjectInputValidator.ofReversible` takes a
+list of `ObjectInputValidator.ReversiblePart`: a part with its reverse and its accessor.
 
 ### Showing a stored object in a form
 
@@ -1032,7 +1065,7 @@ the text of parameters. The first display of a stored object and the form that i
 again are then one code path:
 
 ```java
-ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
         ._string("name", c -> c.notBlank())
         ._integer("age")
         ._boolean("agreed").defaultValue(false)
@@ -1296,6 +1329,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | A text written in code is not looked up, `ViolationMessage#withText`, `localizable()`, `Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `ParameterTree#toMap`, `toParameters`, `parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
+| `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
