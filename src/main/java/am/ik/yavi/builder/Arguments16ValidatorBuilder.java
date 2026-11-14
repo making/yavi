@@ -80,6 +80,8 @@ import org.jspecify.annotations.Nullable;
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
+ * {@code withheld()}, directly after an argument that is read from a key is added, holds
+ * its value back from what shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -779,7 +781,7 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			extends
 			Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>
 			implements
-			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>>permits KeyedList {
+			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>>permits Added {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -994,8 +996,71 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * The builder directly after an argument that is read from a key is added: before the
+	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
+	 * back from what shows the values of an object again. It is said once, so the builder
+	 * that it returns does not have it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <A13> type of argument at position 13
+	 * @param <A14> type of argument at position 14
+	 * @param <A15> type of argument at position 15
+	 * @param <A16> type of argument at position 16
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @param <R13> type of the validated value of argument at position 13
+	 * @param <R14> type of the validated value of argument at position 14
+	 * @param <R15> type of the validated value of argument at position 15
+	 * @param <R16> type of the validated value of argument at position 16
+	 * @since 0.18.0
+	 */
+	public static sealed class Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, R16 extends @Nullable Object>
+			extends
+			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>
+			implements
+			Withholdable<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>>permits KeyedList {
+
+		Added(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12,
+				ArgumentDefinition<A13, R13> d13, ArgumentDefinition<A14, R14> d14, ArgumentDefinition<A15, R15> d15,
+				ArgumentDefinition<A16, R16> d16) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16);
+		}
+
+		@Override
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> withheld() {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12, this.d13, this.d14, this.d15, this.d16.asWithheld());
+		}
+
+	}
+
+	/**
 	 * The builder after a list that is read from a key is added: the modifiers of
-	 * {@link Keyed} apply to the list, and before them {@code splitBy} tells that the
+	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
 	 *
@@ -1035,7 +1100,7 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 */
 	public static final class KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, E, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, T extends @Nullable Object>
 			extends
-			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> {
+			Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> {
 
 		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1058,7 +1123,7 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @throws IllegalArgumentException if the separator is empty
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> splitBy(
 				String separator) {
 			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
 		}
@@ -1090,9 +1155,9 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @throws IllegalArgumentException if the pattern matches the empty string
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, List<T>> splitBy(
 				Pattern separator) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13, this.d14, this.d15, this.d16.separatedBy(separator));
 		}
 
@@ -1649,7 +1714,7 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			extends
 			Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>
 			implements
-			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>>permits KeyedRecoverable,KeyedRecovered {
+			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>>permits KeyedRecoverable,KeyedRecovered,AddedNullAccepting {
 
 		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -1827,6 +1892,70 @@ public sealed class Arguments16ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			return new Arguments16ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, this.d14, this.d15,
 					this.d16.withPresence());
+		}
+
+	}
+
+	/**
+	 * The builder directly after an argument that is read from a key is added with a
+	 * validator that accepts {@code null}: before the modifiers of {@link NullAccepting},
+	 * {@link #withheld()} holds the value of the argument back from what shows the values
+	 * of an object again. It is said once, so the builder that it returns does not have
+	 * it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <A13> type of argument at position 13
+	 * @param <A14> type of argument at position 14
+	 * @param <A15> type of argument at position 15
+	 * @param <A16> type of argument at position 16
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @param <R13> type of the validated value of argument at position 13
+	 * @param <R14> type of the validated value of argument at position 14
+	 * @param <R15> type of the validated value of argument at position 15
+	 * @param <R16> type of the validated value of argument at position 16
+	 * @since 0.18.0
+	 */
+	public static final class AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object, R14 extends @Nullable Object, R15 extends @Nullable Object, R16 extends @Nullable Object>
+			extends
+			NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>
+			implements
+			Withholdable<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16>> {
+
+		AddedNullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12,
+				ArgumentDefinition<A13, R13> d13, ArgumentDefinition<A14, R14> d14, ArgumentDefinition<A15, R15> d15,
+				ArgumentDefinition<A16, R16> d16) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16);
+		}
+
+		@Override
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16> withheld() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12, this.d13, this.d14, this.d15, this.d16.asWithheld());
 		}
 
 	}

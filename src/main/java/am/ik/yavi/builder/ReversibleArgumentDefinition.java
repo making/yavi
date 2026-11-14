@@ -222,6 +222,10 @@ record ReversibleArgumentDefinition<A, R extends @Nullable Object> (ArgumentDefi
 		return new ReversibleArgumentDefinition<>(this.definition.withMessages(messages), this.reverse);
 	}
 
+	ReversibleArgumentDefinition<A, R> asWithheld() {
+		return new ReversibleArgumentDefinition<>(this.definition.asWithheld(), this.reverse);
+	}
+
 	ReversibleArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
 		final Function<? super R, ? extends @Nullable Object> reverse = this.reverse;
 		final Function<? super Optional<@NonNull R>, ? extends @Nullable Object> optional = value -> value.isPresent()

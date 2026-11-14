@@ -82,6 +82,8 @@ import org.jspecify.annotations.Nullable;
  * to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
+ * {@code withheld()}, directly after an argument that is read from a key is added, holds
+ * its value back from what shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -120,9 +122,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<BigDecimal, T> _bigDecimal(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<BigDecimal, T> _bigDecimal(
 			ValueValidator<BigDecimal, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigDecimal.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -138,9 +140,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<BigDecimal, T> _bigDecimal(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<BigDecimal, T> _bigDecimal(
 			NullAcceptingValueValidator<BigDecimal, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(BigDecimal.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -157,9 +160,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name,
+	public Arguments1ValidatorBuilder.Added<BigDecimal, BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, BigDecimal.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, BigDecimal.class,
 				BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -174,7 +177,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<BigDecimal, BigDecimal> _bigDecimal(String name) {
+	public Arguments1ValidatorBuilder.Added<BigDecimal, BigDecimal> _bigDecimal(String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
 
@@ -190,9 +193,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<BigInteger, T> _bigInteger(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<BigInteger, T> _bigInteger(
 			ValueValidator<BigInteger, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(BigInteger.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -208,9 +211,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<BigInteger, T> _bigInteger(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<BigInteger, T> _bigInteger(
 			NullAcceptingValueValidator<BigInteger, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(BigInteger.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -227,9 +231,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name,
+	public Arguments1ValidatorBuilder.Added<BigInteger, BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, BigInteger.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, BigInteger.class,
 				BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -244,7 +248,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<BigInteger, BigInteger> _bigInteger(String name) {
+	public Arguments1ValidatorBuilder.Added<BigInteger, BigInteger> _bigInteger(String name) {
 		return this._bigInteger(name, Function.identity());
 	}
 
@@ -260,9 +264,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Boolean, T> _boolean(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Boolean, T> _boolean(
 			ValueValidator<Boolean, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Boolean.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Boolean.class, validator));
 	}
 
 	/**
@@ -278,9 +282,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Boolean, T> _boolean(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Boolean, T> _boolean(
 			NullAcceptingValueValidator<Boolean, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Boolean.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Boolean.class, validator));
 	}
 
 	/**
@@ -297,9 +301,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name,
+	public Arguments1ValidatorBuilder.Added<Boolean, Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -313,7 +317,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Boolean, Boolean> _boolean(String name) {
+	public Arguments1ValidatorBuilder.Added<Boolean, Boolean> _boolean(String name) {
 		return this._boolean(name, Function.identity());
 	}
 
@@ -328,9 +332,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Double, T> _double(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Double, T> _double(
 			ValueValidator<Double, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Double.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -346,9 +350,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Double, T> _double(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Double, T> _double(
 			NullAcceptingValueValidator<Double, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Double.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -365,9 +369,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Double, Double> _double(String name,
+	public Arguments1ValidatorBuilder.Added<Double, Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -381,7 +385,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Double, Double> _double(String name) {
+	public Arguments1ValidatorBuilder.Added<Double, Double> _double(String name) {
 		return this._double(name, Function.identity());
 	}
 
@@ -397,9 +401,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<E, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.Added<E, T> _enum(
 			ValueValidator<E, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Enum.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -416,9 +420,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<E, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<E, T> _enum(
 			NullAcceptingValueValidator<E, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Enum.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -435,9 +439,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type,
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Added<E, E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -454,7 +458,7 @@ public final class YaviSchema
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public <E extends Enum<E>> Arguments1ValidatorBuilder.Keyed<E, E> _enum(String name, Class<E> type) {
+	public <E extends Enum<E>> Arguments1ValidatorBuilder.Added<E, E> _enum(String name, Class<E> type) {
 		return this._enum(name, type, Function.identity());
 	}
 
@@ -469,9 +473,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Float, T> _float(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Float, T> _float(
 			ValueValidator<Float, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Float.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Float.class, validator));
 	}
 
 	/**
@@ -487,9 +491,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Float, T> _float(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Float, T> _float(
 			NullAcceptingValueValidator<Float, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Float.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Float.class, validator));
 	}
 
 	/**
@@ -506,9 +510,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Float, Float> _float(String name,
+	public Arguments1ValidatorBuilder.Added<Float, Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -522,7 +526,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Float, Float> _float(String name) {
+	public Arguments1ValidatorBuilder.Added<Float, Float> _float(String name) {
 		return this._float(name, Function.identity());
 	}
 
@@ -538,9 +542,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Instant, T> _instant(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Instant, T> _instant(
 			ValueValidator<Instant, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Instant.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -556,9 +560,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Instant, T> _instant(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Instant, T> _instant(
 			NullAcceptingValueValidator<Instant, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Instant.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -575,9 +579,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name,
+	public Arguments1ValidatorBuilder.Added<Instant, Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -592,7 +596,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Instant, Instant> _instant(String name) {
+	public Arguments1ValidatorBuilder.Added<Instant, Instant> _instant(String name) {
 		return this._instant(name, Function.identity());
 	}
 
@@ -608,9 +612,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Integer, T> _integer(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Integer, T> _integer(
 			ValueValidator<Integer, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Integer.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Integer.class, validator));
 	}
 
 	/**
@@ -626,9 +630,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Integer, T> _integer(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Integer, T> _integer(
 			NullAcceptingValueValidator<Integer, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Integer.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Integer.class, validator));
 	}
 
 	/**
@@ -645,9 +649,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name,
+	public Arguments1ValidatorBuilder.Added<Integer, Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -662,7 +666,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Integer, Integer> _integer(String name) {
+	public Arguments1ValidatorBuilder.Added<Integer, Integer> _integer(String name) {
 		return this._integer(name, Function.identity());
 	}
 
@@ -678,9 +682,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDateTime, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<LocalDateTime, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -696,9 +700,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalDateTime, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<LocalDateTime, T> _localDateTime(
 			NullAcceptingValueValidator<LocalDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -715,9 +720,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name,
+	public Arguments1ValidatorBuilder.Added<LocalDateTime, LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalDateTime.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, LocalDateTime.class,
 				LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -732,7 +737,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalDateTime, LocalDateTime> _localDateTime(String name) {
+	public Arguments1ValidatorBuilder.Added<LocalDateTime, LocalDateTime> _localDateTime(String name) {
 		return this._localDateTime(name, Function.identity());
 	}
 
@@ -748,9 +753,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalTime, T> _localTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<LocalTime, T> _localTime(
 			ValueValidator<LocalTime, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalTime.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -766,9 +771,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalTime, T> _localTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<LocalTime, T> _localTime(
 			NullAcceptingValueValidator<LocalTime, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalTime.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -785,9 +791,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name,
+	public Arguments1ValidatorBuilder.Added<LocalTime, LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalTime.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, LocalTime.class,
 				LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -802,7 +808,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalTime, LocalTime> _localTime(String name) {
+	public Arguments1ValidatorBuilder.Added<LocalTime, LocalTime> _localTime(String name) {
 		return this._localTime(name, Function.identity());
 	}
 
@@ -818,9 +824,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<LocalDate, T> _localDate(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<LocalDate, T> _localDate(
 			ValueValidator<LocalDate, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(LocalDate.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -836,9 +842,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<LocalDate, T> _localDate(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<LocalDate, T> _localDate(
 			NullAcceptingValueValidator<LocalDate, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(LocalDate.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -855,9 +862,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name,
+	public Arguments1ValidatorBuilder.Added<LocalDate, LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, LocalDate.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, LocalDate.class,
 				LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -872,7 +879,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<LocalDate, LocalDate> _localDate(String name) {
+	public Arguments1ValidatorBuilder.Added<LocalDate, LocalDate> _localDate(String name) {
 		return this._localDate(name, Function.identity());
 	}
 
@@ -887,9 +894,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Long, T> _long(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Long, T> _long(
 			ValueValidator<Long, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Long.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Long.class, validator));
 	}
 
 	/**
@@ -905,9 +912,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Long, T> _long(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Long, T> _long(
 			NullAcceptingValueValidator<Long, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Long.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Long.class, validator));
 	}
 
 	/**
@@ -924,9 +931,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Long, Long> _long(String name,
+	public Arguments1ValidatorBuilder.Added<Long, Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -940,7 +947,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Long, Long> _long(String name) {
+	public Arguments1ValidatorBuilder.Added<Long, Long> _long(String name) {
 		return this._long(name, Function.identity());
 	}
 
@@ -956,9 +963,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Added<T1, T2> _object(
 			ValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Object.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -975,9 +982,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<T1, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<T1, T2> _object(
 			NullAcceptingValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Object.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -997,9 +1004,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type,
+	public <T> Arguments1ValidatorBuilder.Added<T, T> _object(String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
 
@@ -1016,7 +1023,7 @@ public final class YaviSchema
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public <T> Arguments1ValidatorBuilder.Keyed<T, T> _object(String name, Class<T> type) {
+	public <T> Arguments1ValidatorBuilder.Added<T, T> _object(String name, Class<T> type) {
 		return this._object(name, type, Function.identity());
 	}
 
@@ -1032,9 +1039,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<OffsetDateTime, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<OffsetDateTime, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(OffsetDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
 	/**
@@ -1050,9 +1057,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<OffsetDateTime, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<OffsetDateTime, T> _offsetDateTime(
 			NullAcceptingValueValidator<OffsetDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
 				ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
@@ -1070,9 +1077,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
+	public Arguments1ValidatorBuilder.Added<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, OffsetDateTime.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, OffsetDateTime.class,
 				OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1087,7 +1094,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
+	public Arguments1ValidatorBuilder.Added<OffsetDateTime, OffsetDateTime> _offsetDateTime(String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
 
@@ -1102,9 +1109,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Short, T> _short(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Short, T> _short(
 			ValueValidator<Short, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Short.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Short.class, validator));
 	}
 
 	/**
@@ -1120,9 +1127,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Short, T> _short(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Short, T> _short(
 			NullAcceptingValueValidator<Short, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Short.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Short.class, validator));
 	}
 
 	/**
@@ -1139,9 +1146,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Short, Short> _short(String name,
+	public Arguments1ValidatorBuilder.Added<Short, Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1155,7 +1162,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Short, Short> _short(String name) {
+	public Arguments1ValidatorBuilder.Added<Short, Short> _short(String name) {
 		return this._short(name, Function.identity());
 	}
 
@@ -1170,9 +1177,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<String, T> _string(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<String, T> _string(
 			ValueValidator<String, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(String.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -1188,9 +1195,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<String, T> _string(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<String, T> _string(
 			NullAcceptingValueValidator<String, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(String.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -1213,9 +1220,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<String, String> _string(String name,
+	public Arguments1ValidatorBuilder.Added<String, String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1229,7 +1236,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<String, String> _string(String name) {
+	public Arguments1ValidatorBuilder.Added<String, String> _string(String name) {
 		return this._string(name, Function.identity());
 	}
 
@@ -1245,9 +1252,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<YearMonth, T> _yearMonth(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<YearMonth, T> _yearMonth(
 			ValueValidator<YearMonth, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(YearMonth.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -1263,9 +1270,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<YearMonth, T> _yearMonth(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<YearMonth, T> _yearMonth(
 			NullAcceptingValueValidator<YearMonth, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(YearMonth.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -1282,9 +1290,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name,
+	public Arguments1ValidatorBuilder.Added<YearMonth, YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, YearMonth.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, YearMonth.class,
 				YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1299,7 +1307,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<YearMonth, YearMonth> _yearMonth(String name) {
+	public Arguments1ValidatorBuilder.Added<YearMonth, YearMonth> _yearMonth(String name) {
 		return this._yearMonth(name, Function.identity());
 	}
 
@@ -1314,9 +1322,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Year, T> _year(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Year, T> _year(
 			ValueValidator<Year, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(Year.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(Year.class, validator));
 	}
 
 	/**
@@ -1332,9 +1340,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<Year, T> _year(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<Year, T> _year(
 			NullAcceptingValueValidator<Year, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(Year.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.value(Year.class, validator));
 	}
 
 	/**
@@ -1351,9 +1359,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Year, Year> _year(String name,
+	public Arguments1ValidatorBuilder.Added<Year, Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1367,7 +1375,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<Year, Year> _year(String name) {
+	public Arguments1ValidatorBuilder.Added<Year, Year> _year(String name) {
 		return this._year(name, Function.identity());
 	}
 
@@ -1383,9 +1391,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<ZonedDateTime, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.Added<ZonedDateTime, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -1401,9 +1409,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<ZonedDateTime, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<ZonedDateTime, T> _zonedDateTime(
 			NullAcceptingValueValidator<ZonedDateTime, T> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.value(ZonedDateTime.class, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(
+				ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -1420,9 +1429,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
+	public Arguments1ValidatorBuilder.Added<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.value(name, ZonedDateTime.class,
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.value(name, ZonedDateTime.class,
 				ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1437,7 +1446,7 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments1ValidatorBuilder.Keyed<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
+	public Arguments1ValidatorBuilder.Added<ZonedDateTime, ZonedDateTime> _zonedDateTime(String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
 
@@ -1461,9 +1470,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<T1, T2> _object(String name,
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.Added<T1, T2> _object(String name,
 			ValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(ArgumentDefinition.object(name, validator));
+		return new Arguments1ValidatorBuilder.Added<>(ArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1487,9 +1496,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.NullAccepting<T1, T2> _object(String name,
+	public <T1, T2 extends @Nullable Object> Arguments1ValidatorBuilder.AddedNullAccepting<T1, T2> _object(String name,
 			NullAcceptingValueValidator<T1, T2> validator) {
-		return new Arguments1ValidatorBuilder.NullAccepting<>(ArgumentDefinition.object(name, validator));
+		return new Arguments1ValidatorBuilder.AddedNullAccepting<>(ArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1563,9 +1572,9 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
@@ -1589,10 +1598,10 @@ public final class YaviSchema
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Keyed<Map<String, ? extends V>, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments1ValidatorBuilder.Added<Map<String, ? extends V>, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new Arguments1ValidatorBuilder.Keyed<>(
+		return new Arguments1ValidatorBuilder.Added<>(
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
 

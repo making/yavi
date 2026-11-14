@@ -85,6 +85,8 @@ import org.jspecify.annotations.Nullable;
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
+ * {@code withheld()}, directly after an argument that is read from a key is added, holds
+ * its value back from what shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -160,9 +162,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, T> _bigDecimal(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, T> _bigDecimal(
 			ReversibleValueValidator<BigDecimal, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
@@ -180,10 +182,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, T> _bigDecimal(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, T> _bigDecimal(
 			ReversibleValueValidator.NullAccepting<BigDecimal, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(BigDecimal.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
 	/**
@@ -200,10 +202,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, BigDecimal> _bigDecimal(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, BigDecimal> _bigDecimal(
 			String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, BigDecimal.class,
 						BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
@@ -219,7 +221,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, BigDecimal> _bigDecimal(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigDecimal, R1, R2, R3, R4, R5, R6, R7, BigDecimal> _bigDecimal(
 			String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
@@ -236,9 +238,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, T> _bigInteger(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, T> _bigInteger(
 			ReversibleValueValidator<BigInteger, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(BigInteger.class, validator));
 	}
 
@@ -256,10 +258,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, T> _bigInteger(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, T> _bigInteger(
 			ReversibleValueValidator.NullAccepting<BigInteger, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(BigInteger.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(BigInteger.class, validator));
 	}
 
 	/**
@@ -276,10 +278,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, BigInteger> _bigInteger(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, BigInteger> _bigInteger(
 			String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, BigInteger.class,
 						BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
@@ -295,7 +297,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, BigInteger> _bigInteger(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, BigInteger, R1, R2, R3, R4, R5, R6, R7, BigInteger> _bigInteger(
 			String name) {
 		return this._bigInteger(name, Function.identity());
 	}
@@ -312,9 +314,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, T> _boolean(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, T> _boolean(
 			ReversibleValueValidator<Boolean, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Boolean.class, validator));
 	}
 
@@ -331,10 +333,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, T> _boolean(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, T> _boolean(
 			ReversibleValueValidator.NullAccepting<Boolean, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Boolean.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Boolean.class, validator));
 	}
 
 	/**
@@ -351,10 +353,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, Boolean> _boolean(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, Boolean> _boolean(
 			String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Boolean.class,
 						BooleanValidatorBuilder.of(name, constraints).build()));
 	}
@@ -369,7 +371,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, Boolean> _boolean(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Boolean, R1, R2, R3, R4, R5, R6, R7, Boolean> _boolean(
 			String name) {
 		return this._boolean(name, Function.identity());
 	}
@@ -385,9 +387,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, T> _double(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, T> _double(
 			ReversibleValueValidator<Double, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Double.class, validator));
 	}
 
@@ -404,10 +406,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, T> _double(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, T> _double(
 			ReversibleValueValidator.NullAccepting<Double, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Double.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Double.class, validator));
 	}
 
 	/**
@@ -424,10 +426,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, Double> _double(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, Double> _double(
 			String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Double.class,
 						DoubleValidatorBuilder.of(name, constraints).build()));
 	}
@@ -442,7 +444,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, Double> _double(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Double, R1, R2, R3, R4, R5, R6, R7, Double> _double(
 			String name) {
 		return this._double(name, Function.identity());
 	}
@@ -459,9 +461,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, T> _enum(
 			ReversibleValueValidator<E, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Enum.class, validator));
 	}
 
@@ -479,10 +481,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, T> _enum(
 			ReversibleValueValidator.NullAccepting<E, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Enum.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Enum.class, validator));
 	}
 
 	/**
@@ -499,10 +501,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, E> _enum(
+	public <E extends Enum<E>> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, E> _enum(
 			String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, type,
 						EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
@@ -520,7 +522,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public <E extends Enum<E>> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, E> _enum(
+	public <E extends Enum<E>> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, E, R1, R2, R3, R4, R5, R6, R7, E> _enum(
 			String name, Class<E> type) {
 		return this._enum(name, type, Function.identity());
 	}
@@ -536,9 +538,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, T> _float(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, T> _float(
 			ReversibleValueValidator<Float, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Float.class, validator));
 	}
 
@@ -555,10 +557,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, T> _float(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, T> _float(
 			ReversibleValueValidator.NullAccepting<Float, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Float.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Float.class, validator));
 	}
 
 	/**
@@ -575,9 +577,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, Float> _float(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, Float> _float(
 			String name, Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Float.class,
 						FloatValidatorBuilder.of(name, constraints).build()));
 	}
@@ -592,7 +594,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, Float> _float(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Float, R1, R2, R3, R4, R5, R6, R7, Float> _float(
 			String name) {
 		return this._float(name, Function.identity());
 	}
@@ -609,9 +611,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, T> _instant(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, T> _instant(
 			ReversibleValueValidator<Instant, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Instant.class, validator));
 	}
 
@@ -628,10 +630,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, T> _instant(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, T> _instant(
 			ReversibleValueValidator.NullAccepting<Instant, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Instant.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Instant.class, validator));
 	}
 
 	/**
@@ -648,10 +650,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, Instant> _instant(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, Instant> _instant(
 			String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Instant.class,
 						InstantValidatorBuilder.of(name, constraints).build()));
 	}
@@ -667,7 +669,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, Instant> _instant(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Instant, R1, R2, R3, R4, R5, R6, R7, Instant> _instant(
 			String name) {
 		return this._instant(name, Function.identity());
 	}
@@ -684,9 +686,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, T> _integer(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, T> _integer(
 			ReversibleValueValidator<Integer, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Integer.class, validator));
 	}
 
@@ -703,10 +705,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, T> _integer(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, T> _integer(
 			ReversibleValueValidator.NullAccepting<Integer, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Integer.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Integer.class, validator));
 	}
 
 	/**
@@ -723,10 +725,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, Integer> _integer(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, Integer> _integer(
 			String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Integer.class,
 						IntegerValidatorBuilder.of(name, constraints).build()));
 	}
@@ -742,7 +744,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, Integer> _integer(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Integer, R1, R2, R3, R4, R5, R6, R7, Integer> _integer(
 			String name) {
 		return this._integer(name, Function.identity());
 	}
@@ -759,9 +761,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, T> _localDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, T> _localDateTime(
 			ReversibleValueValidator<LocalDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
@@ -779,10 +781,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, T> _localDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, T> _localDateTime(
 			ReversibleValueValidator.NullAccepting<LocalDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(LocalDateTime.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
 	/**
@@ -799,10 +801,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, LocalDateTime> _localDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, LocalDateTime> _localDateTime(
 			String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, LocalDateTime.class,
 						LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -818,7 +820,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, LocalDateTime> _localDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, LocalDateTime> _localDateTime(
 			String name) {
 		return this._localDateTime(name, Function.identity());
 	}
@@ -835,9 +837,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, T> _localTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, T> _localTime(
 			ReversibleValueValidator<LocalTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(LocalTime.class, validator));
 	}
 
@@ -854,10 +856,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, T> _localTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, T> _localTime(
 			ReversibleValueValidator.NullAccepting<LocalTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(LocalTime.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(LocalTime.class, validator));
 	}
 
 	/**
@@ -874,10 +876,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, LocalTime> _localTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, LocalTime> _localTime(
 			String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, LocalTime.class,
 						LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -893,7 +895,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, LocalTime> _localTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalTime, R1, R2, R3, R4, R5, R6, R7, LocalTime> _localTime(
 			String name) {
 		return this._localTime(name, Function.identity());
 	}
@@ -910,9 +912,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, T> _localDate(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, T> _localDate(
 			ReversibleValueValidator<LocalDate, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(LocalDate.class, validator));
 	}
 
@@ -929,10 +931,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, T> _localDate(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, T> _localDate(
 			ReversibleValueValidator.NullAccepting<LocalDate, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(LocalDate.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(LocalDate.class, validator));
 	}
 
 	/**
@@ -949,10 +951,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
 			String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, LocalDate.class,
 						LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
@@ -968,7 +970,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, LocalDate, R1, R2, R3, R4, R5, R6, R7, LocalDate> _localDate(
 			String name) {
 		return this._localDate(name, Function.identity());
 	}
@@ -984,9 +986,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, T> _long(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, T> _long(
 			ReversibleValueValidator<Long, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Long.class, validator));
 	}
 
@@ -1003,10 +1005,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, T> _long(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, T> _long(
 			ReversibleValueValidator.NullAccepting<Long, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Long.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Long.class, validator));
 	}
 
 	/**
@@ -1023,9 +1025,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, Long> _long(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, Long> _long(
 			String name, Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Long.class,
 						LongValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1040,7 +1042,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, Long> _long(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Long, R1, R2, R3, R4, R5, R6, R7, Long> _long(
 			String name) {
 		return this._long(name, Function.identity());
 	}
@@ -1057,9 +1059,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
 			ReversibleValueValidator<T1, T2> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Object.class, validator));
 	}
 
@@ -1077,10 +1079,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
 			ReversibleValueValidator.NullAccepting<T1, T2> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Object.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Object.class, validator));
 	}
 
 	/**
@@ -1100,10 +1102,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, T, R1, R2, R3, R4, R5, R6, R7, T> _object(
+	public <T> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, T, R1, R2, R3, R4, R5, R6, R7, T> _object(
 			String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, type,
 						ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
@@ -1121,7 +1123,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public <T> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, T, R1, R2, R3, R4, R5, R6, R7, T> _object(
+	public <T> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, T, R1, R2, R3, R4, R5, R6, R7, T> _object(
 			String name, Class<T> type) {
 		return this._object(name, type, Function.identity());
 	}
@@ -1138,9 +1140,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, T> _offsetDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, T> _offsetDateTime(
 			ReversibleValueValidator<OffsetDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
@@ -1158,10 +1160,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, T> _offsetDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, T> _offsetDateTime(
 			ReversibleValueValidator.NullAccepting<OffsetDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(OffsetDateTime.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
 	/**
@@ -1178,10 +1180,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, OffsetDateTime> _offsetDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, OffsetDateTime> _offsetDateTime(
 			String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, OffsetDateTime.class,
 						OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1197,7 +1199,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, OffsetDateTime> _offsetDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, OffsetDateTime> _offsetDateTime(
 			String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
@@ -1213,9 +1215,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, T> _short(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, T> _short(
 			ReversibleValueValidator<Short, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Short.class, validator));
 	}
 
@@ -1232,10 +1234,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, T> _short(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, T> _short(
 			ReversibleValueValidator.NullAccepting<Short, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Short.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Short.class, validator));
 	}
 
 	/**
@@ -1252,9 +1254,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, Short> _short(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, Short> _short(
 			String name, Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Short.class,
 						ShortValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1269,7 +1271,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, Short> _short(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Short, R1, R2, R3, R4, R5, R6, R7, Short> _short(
 			String name) {
 		return this._short(name, Function.identity());
 	}
@@ -1285,9 +1287,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, T> _string(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, T> _string(
 			ReversibleValueValidator<String, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(String.class, validator));
 	}
 
@@ -1304,10 +1306,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, T> _string(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, T> _string(
 			ReversibleValueValidator.NullAccepting<String, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(String.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(String.class, validator));
 	}
 
 	/**
@@ -1330,10 +1332,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, String> _string(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, String> _string(
 			String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, String.class,
 						StringValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1348,7 +1350,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, String> _string(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, String, R1, R2, R3, R4, R5, R6, R7, String> _string(
 			String name) {
 		return this._string(name, Function.identity());
 	}
@@ -1365,9 +1367,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, T> _yearMonth(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, T> _yearMonth(
 			ReversibleValueValidator<YearMonth, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(YearMonth.class, validator));
 	}
 
@@ -1384,10 +1386,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, T> _yearMonth(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, T> _yearMonth(
 			ReversibleValueValidator.NullAccepting<YearMonth, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(YearMonth.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(YearMonth.class, validator));
 	}
 
 	/**
@@ -1404,10 +1406,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, YearMonth> _yearMonth(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, YearMonth> _yearMonth(
 			String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, YearMonth.class,
 						YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1423,7 +1425,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, YearMonth> _yearMonth(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, YearMonth, R1, R2, R3, R4, R5, R6, R7, YearMonth> _yearMonth(
 			String name) {
 		return this._yearMonth(name, Function.identity());
 	}
@@ -1439,9 +1441,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, T> _year(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, T> _year(
 			ReversibleValueValidator<Year, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(Year.class, validator));
 	}
 
@@ -1458,10 +1460,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, T> _year(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, T> _year(
 			ReversibleValueValidator.NullAccepting<Year, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(Year.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(Year.class, validator));
 	}
 
 	/**
@@ -1478,9 +1480,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, Year> _year(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, Year> _year(
 			String name, Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, Year.class,
 						YearValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1495,7 +1497,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, Year> _year(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Year, R1, R2, R3, R4, R5, R6, R7, Year> _year(
 			String name) {
 		return this._year(name, Function.identity());
 	}
@@ -1512,9 +1514,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, T> _zonedDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, T> _zonedDateTime(
 			ReversibleValueValidator<ZonedDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
@@ -1532,10 +1534,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, T> _zonedDateTime(
+	public <T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, T> _zonedDateTime(
 			ReversibleValueValidator.NullAccepting<ZonedDateTime, T> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.value(ZonedDateTime.class, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
 	/**
@@ -1552,10 +1554,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, ZonedDateTime> _zonedDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, ZonedDateTime> _zonedDateTime(
 			String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.value(name, ZonedDateTime.class,
 						ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1571,7 +1573,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, ZonedDateTime> _zonedDateTime(
+	public ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, ZonedDateTime> _zonedDateTime(
 			String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
@@ -1596,9 +1598,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
 			String name, ReversibleValueValidator<T1, T2> validator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.object(name, validator));
 	}
 
@@ -1624,10 +1626,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
+	public <T1, T2 extends @Nullable Object> ReversibleArguments8ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, T1, R1, R2, R3, R4, R5, R6, R7, T2> _object(
 			String name, ReversibleValueValidator.NullAccepting<T1, T2> validator) {
-		return new ReversibleArguments8ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, ReversibleArgumentDefinition.object(name, validator));
+		return new ReversibleArguments8ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4,
+				this.d5, this.d6, this.d7, ReversibleArgumentDefinition.object(name, validator));
 	}
 
 	/**
@@ -1703,9 +1705,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, Map<String, T>> _map(
 			String name, ReversibleValueValidator<V, T> valueValidator) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7, ReversibleArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
 
@@ -1729,10 +1731,10 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> ReversibleArguments8ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, Map<String, T>> _map(
 			String name, ReversibleValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new ReversibleArguments8ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
+		return new ReversibleArguments8ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 				this.d7,
 				ReversibleArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
@@ -2393,8 +2395,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 */
 	public static sealed class Keyed<A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object>
 			extends ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>
-			implements
-			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>>permits KeyedList {
+			implements MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>>permits Added {
 
 		Keyed(ReversibleArgumentDefinition<A1, R1> d1, ReversibleArgumentDefinition<A2, R2> d2,
 				ReversibleArgumentDefinition<A3, R3> d3, ReversibleArgumentDefinition<A4, R4> d4,
@@ -2597,8 +2598,48 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	}
 
 	/**
+	 * The builder directly after an argument that is read from a key is added: before the
+	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
+	 * back from what shows the values of an object again. It is said once, so the builder
+	 * that it returns does not have it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @since 0.18.0
+	 */
+	public static sealed class Added<A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object>
+			extends Keyed<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>
+			implements Withholdable<Keyed<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>>permits KeyedList {
+
+		Added(ReversibleArgumentDefinition<A1, R1> d1, ReversibleArgumentDefinition<A2, R2> d2,
+				ReversibleArgumentDefinition<A3, R3> d3, ReversibleArgumentDefinition<A4, R4> d4,
+				ReversibleArgumentDefinition<A5, R5> d5, ReversibleArgumentDefinition<A6, R6> d6,
+				ReversibleArgumentDefinition<A7, R7> d7) {
+			super(d1, d2, d3, d4, d5, d6, d7);
+		}
+
+		@Override
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> withheld() {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.asWithheld());
+		}
+
+	}
+
+	/**
 	 * The builder after a list that is read from a key is added: the modifiers of
-	 * {@link Keyed} apply to the list, and before them {@code splitBy} tells that the
+	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
 	 *
@@ -2619,7 +2660,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	 * @since 0.18.0
 	 */
 	public static final class KeyedList<A1, A2, A3, A4, A5, A6, E, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, T extends @Nullable Object>
-			extends Keyed<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> {
+			extends Added<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> {
 
 		KeyedList(ReversibleArgumentDefinition<A1, R1> d1, ReversibleArgumentDefinition<A2, R2> d2,
 				ReversibleArgumentDefinition<A3, R3> d3, ReversibleArgumentDefinition<A4, R4> d4,
@@ -2645,9 +2686,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 		 * @throws IllegalArgumentException if the separator is empty
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> splitBy(
 				String separator) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.separatedBy(separator));
+			return new Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.separatedBy(separator));
 		}
 
 		/**
@@ -2677,9 +2718,9 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 		 * @throws IllegalArgumentException if the pattern matches the empty string
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, List<? extends E>, R1, R2, R3, R4, R5, R6, List<T>> splitBy(
 				Pattern separator) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.separatedBy(separator));
+			return new Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.separatedBy(separator));
 		}
 
 	}
@@ -3120,7 +3161,7 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 	public static sealed class NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object>
 			extends ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>
 			implements
-			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>>permits KeyedRecoverable,KeyedRecovered {
+			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>>permits KeyedRecoverable,KeyedRecovered,AddedNullAccepting {
 
 		NullAccepting(ReversibleArgumentDefinition<A1, R1> d1, ReversibleArgumentDefinition<A2, R2> d2,
 				ReversibleArgumentDefinition<A3, R3> d3, ReversibleArgumentDefinition<A4, R4> d4,
@@ -3289,6 +3330,47 @@ public sealed class ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6,
 		public ReversibleArguments7ValidatorBuilder<A1, A2, A3, A4, A5, A6, Presence<? extends A7>, R1, R2, R3, R4, R5, R6, Presence<@NonNull R7>> presence() {
 			return new ReversibleArguments7ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
 					this.d7.withPresence());
+		}
+
+	}
+
+	/**
+	 * The builder directly after an argument that is read from a key is added with a
+	 * validator that accepts {@code null}: before the modifiers of {@link NullAccepting},
+	 * {@link #withheld()} holds the value of the argument back from what shows the values
+	 * of an object again. It is said once, so the builder that it returns does not have
+	 * it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @since 0.18.0
+	 */
+	public static final class AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object>
+			extends NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>
+			implements Withholdable<NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7>> {
+
+		AddedNullAccepting(ReversibleArgumentDefinition<A1, R1> d1, ReversibleArgumentDefinition<A2, R2> d2,
+				ReversibleArgumentDefinition<A3, R3> d3, ReversibleArgumentDefinition<A4, R4> d4,
+				ReversibleArgumentDefinition<A5, R5> d5, ReversibleArgumentDefinition<A6, R6> d6,
+				ReversibleArgumentDefinition<A7, R7> d7) {
+			super(d1, d2, d3, d4, d5, d6, d7);
+		}
+
+		@Override
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, R1, R2, R3, R4, R5, R6, R7> withheld() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7.asWithheld());
 		}
 
 	}

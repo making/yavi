@@ -479,6 +479,18 @@ class YaviSchemaTest {
 						+ "x -> java.util.List.of(), x -> null, x -> Map.of())",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().recover(\"\")).required()"
 						+ ".rest(Yavi._integer()).build()",
+				// a property is withheld directly after it is added, a list after it is
+				// told to be read from text
+				"s._string(\"x\").withheld().label(\"X\").nullable().presence()",
+				"s._list(\"x\", Yavi._integer()).splitBy(\",\").withheld().defaultValue(java.util.List.of())",
+				"s._integer(Yavi._integer(\"x\").nullable()).withheld().label(\"X\").rejectingNull()",
+				"r._map(\"x\", Yavi._integer()).withheld().optional()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).withheld().label(\"X\").presence()"
+						+ ".property(\"y\", Yavi._string().nullable()).withheld().required()",
+				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string()).withheld().build()",
+				// one property is its own result
+				"s._string(\"x\").withheld().fromMap().rejectingUnknownProperties()",
+				"s._embedded(r._string(\"x\").optional().fromMapReversible()).optional()",
 				// a view of the properties that are written is made narrower
 				"r._string(\"x\")._string(\"y\").fromMapReversible((x, y) -> x, x -> x, x -> x).including(\"x\")"
 						+ ".excluding(\"x\").toMap(\"a\")");
@@ -552,6 +564,22 @@ class YaviSchemaTest {
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().map(String::length))",
 				"Yavi.<Object>reversibleDynamicSchema().rest(Yavi._string().map(String::length))",
 				"Yavi.<Object>dynamicSchema().property(\"x\", Yavi._string()).presence().buildReversible()",
+				// a property is withheld once, where it is defined, and only one that has
+				// a key
+				"s._string(\"x\").withheld().withheld()", "s._string(\"x\").label(\"X\").withheld()",
+				"s._string(\"x\").optional().withheld()", "s._string(\"x\").withheld().optional().withheld()",
+				"s._list(\"x\", Yavi._integer()).withheld().splitBy(\",\")",
+				"s._list(\"x\", Yavi._integer()).splitBy(\",\").withheld().withheld()",
+				"s._integer(Yavi._integer(\"x\").nullable()).withheld().withheld()",
+				"r._string(\"x\").withheld().withheld()", "s._rest().withheld()",
+				"s._embedded(s._string(\"x\").fromMap(x -> x)).withheld()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).withheld().withheld()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld()",
+				"Yavi.<String>dynamicSchema().rest(Yavi._string()).withheld()",
+				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().nullable()).withheld().withheld()",
+				// several properties are not one result
+				"s._string(\"x\")._string(\"y\").fromMap()", "r._string(\"x\")._string(\"y\").fromMapReversible()",
+				"s._string(\"x\").fromMapReversible()",
 				// a view names a property, and only writes: it is not read and not nested
 				"r._string(\"x\").fromMapReversible(x -> x, x -> x).including()",
 				"r._string(\"x\").fromMapReversible(x -> x, x -> x).excluding()",

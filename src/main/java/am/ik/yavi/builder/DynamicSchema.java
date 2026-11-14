@@ -105,8 +105,8 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 	 * @return a schema with the property, to which its modifiers apply
 	 * @throws IllegalArgumentException if a property with the same name is defined
 	 */
-	public <A> Keyed<V> property(String name, ValueValidator<A, ? extends V> validator) {
-		return new Keyed<>(this.with(name, ArgumentDefinition.object(name, validator)));
+	public <A> Added<V> property(String name, ValueValidator<A, ? extends V> validator) {
+		return new Added<>(this.with(name, ArgumentDefinition.object(name, validator)));
 	}
 
 	/**
@@ -124,8 +124,8 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 	 * @return a schema with the property, to which its modifiers apply
 	 * @throws IllegalArgumentException if a property with the same name is defined
 	 */
-	public <A> NullAccepting<V> property(String name, NullAcceptingValueValidator<A, ? extends V> validator) {
-		return new NullAccepting<>(this.with(name, ArgumentDefinition.object(name, validator)));
+	public <A> AddedNullAccepting<V> property(String name, NullAcceptingValueValidator<A, ? extends V> validator) {
+		return new AddedNullAccepting<>(this.with(name, ArgumentDefinition.object(name, validator)));
 	}
 
 	/**
@@ -222,8 +222,8 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 	 * @param <V> the type of the values of the produced map
 	 * @since 0.18.0
 	 */
-	public static final class Keyed<V extends @Nullable Object> extends DynamicSchema<V>
-			implements MessageModifiers<Keyed<V>> {
+	public static sealed class Keyed<V extends @Nullable Object> extends DynamicSchema<V>
+			implements MessageModifiers<Keyed<V>>permits Added {
 
 		Keyed(List<ArgumentDefinition<?, ?>> definitions) {
 			super(definitions);
@@ -283,8 +283,8 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 	 * @param <V> the type of the values of the produced map
 	 * @since 0.18.0
 	 */
-	public static final class NullAccepting<V extends @Nullable Object> extends DynamicSchema<V>
-			implements MessageModifiers<NullAccepting<V>> {
+	public static sealed class NullAccepting<V extends @Nullable Object> extends DynamicSchema<V>
+			implements MessageModifiers<NullAccepting<V>>permits AddedNullAccepting {
 
 		NullAccepting(List<ArgumentDefinition<?, ?>> definitions) {
 			super(definitions);
@@ -357,6 +357,51 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 		 */
 		public DynamicSchema<V> presence() {
 			return new DynamicSchema<>(this.withLast(this.last().withPresence()));
+		}
+
+	}
+
+	/**
+	 * The schema directly after a property that requires its value is added: before the
+	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the property
+	 * back from what shows the values of an object again. It is said once, so the schema
+	 * that it returns does not have it.
+	 *
+	 * @param <V> the type of the values of the produced map
+	 * @since 0.18.0
+	 */
+	public static final class Added<V extends @Nullable Object> extends Keyed<V> implements Withholdable<Keyed<V>> {
+
+		Added(List<ArgumentDefinition<?, ?>> definitions) {
+			super(definitions);
+		}
+
+		@Override
+		public Keyed<V> withheld() {
+			return new Keyed<>(this.withLast(this.last().asWithheld()));
+		}
+
+	}
+
+	/**
+	 * The schema directly after a property that accepts {@code null} is added: before the
+	 * modifiers of {@link NullAccepting}, {@link #withheld()} holds the value of the
+	 * property back from what shows the values of an object again. It is said once, so
+	 * the schema that it returns does not have it.
+	 *
+	 * @param <V> the type of the values of the produced map
+	 * @since 0.18.0
+	 */
+	public static final class AddedNullAccepting<V extends @Nullable Object> extends NullAccepting<V>
+			implements Withholdable<NullAccepting<V>> {
+
+		AddedNullAccepting(List<ArgumentDefinition<?, ?>> definitions) {
+			super(definitions);
+		}
+
+		@Override
+		public NullAccepting<V> withheld() {
+			return new NullAccepting<>(this.withLast(this.last().asWithheld()));
 		}
 
 	}

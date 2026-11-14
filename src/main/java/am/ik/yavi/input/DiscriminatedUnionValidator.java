@@ -46,10 +46,12 @@ import org.jspecify.annotations.Nullable;
  * {@code object.oneOf} and the values of the alternatives.
  *
  * <p>
- * An alternative does not have to define the discriminator: the key is hidden from an
- * alternative that describes its properties without it, so that it is not an unknown
- * property there even if the alternative rejects unknown properties. An alternative that
- * defines it receives it.
+ * An alternative does not have to define the discriminator, and must not
+ * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withhold} it, which is an
+ * {@link IllegalArgumentException} when the alternative is added or, for a lazy one, when
+ * it is first described: the key is hidden from an alternative that describes its
+ * properties without it, so that it is not an unknown property there even if the
+ * alternative rejects unknown properties. An alternative that defines it receives it.
  *
  * <p>
  * A {@code null} map is rejected with {@code object.notNull} and a map with a key that is
@@ -172,6 +174,9 @@ public sealed class DiscriminatedUnionValidator<X>
 				references.put(value, new ValueDescription.Reference(reference.name(),
 						() -> this.describe(value, target(reference))));
 			}
+			else {
+				this.describe(value, alternative.description());
+			}
 			ofMaps.put(value, this.ofMap(alternative));
 		});
 		this.references = references;
@@ -232,11 +237,15 @@ public sealed class DiscriminatedUnionValidator<X>
 
 		private final List<Alternative<? extends X>> written;
 
+		/** The properties that are not withheld, which is what {@link #toMap} writes. */
+		private final PropertyView<X> shown;
+
 		private Reversible(String discriminator,
 				Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
 				List<TargetRule<X>> rules, List<Alternative<? extends X>> written) {
 			super(discriminator, alternatives, rules);
 			this.written = written;
+			this.shown = this.all().withoutWithheld();
 		}
 
 		/**
@@ -261,13 +270,63 @@ public sealed class DiscriminatedUnionValidator<X>
 
 		/**
 		 * Returns the map that this validator reads the given object from: the map that
-		 * the alternative of the type of the object writes, with the discriminator.
+		 * the alternative of the type of the object writes, with the discriminator and
+		 * without the properties that are
+		 * {@linkplain am.ik.yavi.builder.Withholdable#withheld() withheld}, at any depth.
+		 * A property is withheld if an alternative that defines it withholds it.
 		 * @param object an object that an alternative creates
 		 * @return a new map, which the caller may change
 		 * @throws IllegalArgumentException if the object is not an instance of the type
 		 * of an alternative
 		 */
 		public Map<String, Object> toMap(X object) {
+			return this.shown.toMap(object);
+		}
+
+		/**
+		 * Returns a view that writes only the given properties of an object, and the
+		 * discriminator. A property is one that an alternative defines; an object of an
+		 * alternative that does not define it is written without it.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view of the given properties, which only writes
+		 * @throws IllegalArgumentException if no alternative defines a property of a
+		 * given name, or as {@link PropertyView#including(String, String...)} states
+		 */
+		public PropertyView<X> including(String name, String... names) {
+			return this.all().including(name, names);
+		}
+
+		/**
+		 * Returns a view that writes the properties of an object except the given ones. A
+		 * property is one that an alternative defines. The discriminator cannot be
+		 * excluded.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view without the given properties, which only writes
+		 * @throws IllegalArgumentException if no alternative defines a property of a
+		 * given name, or as {@link PropertyView#excluding(String, String...)} states
+		 */
+		public PropertyView<X> excluding(String name, String... names) {
+			return this.all().excluding(name, names);
+		}
+
+		private PropertyView<X> all() {
+			return PropertyView.of((object, names) -> this.reverse(object), this.description());
+		}
+
+		/**
+		 * Returns the map that this validator reads the given object from, with every
+		 * property: this is {@link #toMap(Object)} with the properties that are withheld.
+		 * @param object an object that an alternative creates
+		 * @return a new map
+		 * @throws IllegalArgumentException if the object is not an instance of the type
+		 * of an alternative
+		 */
+		@Override
+		public Map<String, Object> reverse(X object) {
 			final String discriminator = this.discriminator();
 			for (Alternative<? extends X> alternative : this.written) {
 				if (alternative.type().isInstance(object)) {
@@ -283,51 +342,6 @@ public sealed class DiscriminatedUnionValidator<X>
 			}
 			throw new IllegalArgumentException(
 					"No alternative is defined for an object of type " + object.getClass().getName() + ".");
-		}
-
-		/**
-		 * Returns a view that writes only the given properties of an object, and the
-		 * discriminator. A property is one that an alternative defines; an object of an
-		 * alternative that does not define it is written without it.
-		 * @param name the name of a property, or the path to a property of a nested
-		 * object as {@link PropertyView} states
-		 * @param names the names of the other properties
-		 * @return a view of the given properties, which only writes
-		 * @throws IllegalArgumentException if no alternative defines a property of a
-		 * given name, or as {@link PropertyView#including(String, String...)} states
-		 */
-		public PropertyView<X> including(String name, String... names) {
-			return this.view().including(name, names);
-		}
-
-		/**
-		 * Returns a view that writes the properties of an object except the given ones. A
-		 * property is one that an alternative defines. The discriminator cannot be
-		 * excluded.
-		 * @param name the name of a property, or the path to a property of a nested
-		 * object as {@link PropertyView} states
-		 * @param names the names of the other properties
-		 * @return a view without the given properties, which only writes
-		 * @throws IllegalArgumentException if no alternative defines a property of a
-		 * given name, or as {@link PropertyView#excluding(String, String...)} states
-		 */
-		public PropertyView<X> excluding(String name, String... names) {
-			return this.view().excluding(name, names);
-		}
-
-		private PropertyView<X> view() {
-			return PropertyView.of((object, names) -> this.toMap(object), this.description());
-		}
-
-		/**
-		 * Returns the map that this validator reads the given object from. This is
-		 * {@link #toMap(Object)}.
-		 * @param object an object that an alternative creates
-		 * @return a new map
-		 */
-		@Override
-		public Map<String, Object> reverse(X object) {
-			return this.toMap(object);
 		}
 
 		/**
@@ -438,10 +452,21 @@ public sealed class DiscriminatedUnionValidator<X>
 	/**
 	 * Returns the description of the alternative of the given value: the given one, with
 	 * the discriminator as a property equal to the value unless it is defined.
+	 * @throws IllegalArgumentException if the alternative withholds the discriminator
 	 */
 	private ValueDescription describe(String value, ValueDescription description) {
-		if (!(description instanceof ValueDescription.Properties described) || defines(described, this.discriminator)) {
+		if (!(description instanceof ValueDescription.Properties described)) {
 			return description;
+		}
+		for (ValueDescription.Property property : described.properties()) {
+			if (property.name().equals(this.discriminator)) {
+				if (property.withheld()) {
+					throw new IllegalArgumentException(
+							"The alternative '" + value + "' withholds the discriminator '" + this.discriminator
+									+ "', which tells the alternative of a written object and is always written.");
+				}
+				return description;
+			}
 		}
 		final List<ValueDescription.Property> properties = new ArrayList<>();
 		properties.add(new ValueDescription.Property(this.discriminator,

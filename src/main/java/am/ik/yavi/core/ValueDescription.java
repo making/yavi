@@ -402,10 +402,46 @@ public sealed interface ValueDescription {
 	/**
 	 * A named property of an object.
 	 *
+	 * <p>
+	 * A property that is withheld is read as any other, and is held back from what shows
+	 * the values of the object again: a tool that walks the description leaves its value
+	 * out unless it is asked for by name. A view of the written properties
+	 * ({@code am.ik.yavi.input.PropertyView}) writes it only if it is named, a form that
+	 * is shown again ({@code am.ik.yavi.input.ParameterTree#toMap}) does not hold what
+	 * was sent for it, and its JSON Schema is {@code writeOnly}.
+	 *
 	 * @param name the property name
 	 * @param value the description of the property value
+	 * @param withheld whether the value of the property is held back from what shows the
+	 * values of the object again
 	 */
-	record Property(String name, ValueDescription value) {
+	record Property(String name, ValueDescription value, boolean withheld) {
+
+		/**
+		 * Creates the description of a property that is not withheld.
+		 * @param name the property name
+		 * @param value the description of the property value
+		 */
+		public Property(String name, ValueDescription value) {
+			this(name, value, false);
+		}
+
+		/**
+		 * Returns this property with the given description of its value.
+		 * @param value the description of the property value
+		 * @return a property of the same name that is withheld if this one is
+		 */
+		public Property withValue(ValueDescription value) {
+			return new Property(this.name, value, this.withheld);
+		}
+
+		/**
+		 * Returns this property as one that is withheld.
+		 * @return a withheld property of the same name and value
+		 */
+		public Property asWithheld() {
+			return this.withheld ? this : new Property(this.name, this.value, true);
+		}
 	}
 
 	/**

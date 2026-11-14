@@ -969,5 +969,9 @@ itemValidator.toMap(item);     // encodes: {id=1, name=pen, note=null}
 * Some of the properties are written by a view of the same schema,
   `validator.excluding("note").toMap(item)`, where Raoh writes a second encoder. The names
   are checked when the view is built.
+* A second encoder of Raoh lists what it writes, so a property that is added later is not
+  written by it. A view that excludes would write it; a property that must not leave is
+  therefore defined with `withheld()`, and is written by a view only if the view names
+  it.
 
 See [New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).

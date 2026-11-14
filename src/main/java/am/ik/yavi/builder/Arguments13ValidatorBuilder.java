@@ -83,6 +83,8 @@ import org.jspecify.annotations.Nullable;
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
+ * {@code withheld()}, directly after an argument that is read from a key is added, holds
+ * its value back from what shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -181,9 +183,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigDecimal(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigDecimal(
 			ValueValidator<BigDecimal, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(BigDecimal.class, validator));
 	}
@@ -201,10 +203,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigDecimal(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigDecimal(
 			NullAcceptingValueValidator<BigDecimal, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(BigDecimal.class, validator));
 	}
 
@@ -222,10 +224,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigDecimal> _bigDecimal(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigDecimal> _bigDecimal(
 			String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
@@ -241,7 +243,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigDecimal> _bigDecimal(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigDecimal> _bigDecimal(
 			String name) {
 		return this._bigDecimal(name, Function.identity());
 	}
@@ -258,9 +260,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigInteger(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigInteger(
 			ValueValidator<BigInteger, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(BigInteger.class, validator));
 	}
@@ -278,10 +280,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigInteger(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _bigInteger(
 			NullAcceptingValueValidator<BigInteger, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(BigInteger.class, validator));
 	}
 
@@ -299,10 +301,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigInteger> _bigInteger(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigInteger> _bigInteger(
 			String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
@@ -318,7 +320,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigInteger> _bigInteger(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, BigInteger> _bigInteger(
 			String name) {
 		return this._bigInteger(name, Function.identity());
 	}
@@ -335,9 +337,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _boolean(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _boolean(
 			ValueValidator<Boolean, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Boolean.class, validator));
 	}
@@ -355,10 +357,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _boolean(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _boolean(
 			NullAcceptingValueValidator<Boolean, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Boolean.class, validator));
 	}
 
@@ -376,10 +378,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Boolean> _boolean(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Boolean> _boolean(
 			String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
 	}
@@ -394,7 +396,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Boolean> _boolean(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Boolean> _boolean(
 			String name) {
 		return this._boolean(name, Function.identity());
 	}
@@ -410,9 +412,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _double(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _double(
 			ValueValidator<Double, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Double.class, validator));
 	}
@@ -430,10 +432,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _double(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _double(
 			NullAcceptingValueValidator<Double, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Double.class, validator));
 	}
 
@@ -451,10 +453,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Double> _double(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Double> _double(
 			String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
 	}
@@ -469,7 +471,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Double> _double(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Double> _double(
 			String name) {
 		return this._double(name, Function.identity());
 	}
@@ -486,9 +488,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _enum(
 			ValueValidator<E, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Enum.class, validator));
 	}
@@ -507,10 +509,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>, T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _enum(
+	public <E extends Enum<E>, T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _enum(
 			NullAcceptingValueValidator<E, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Enum.class, validator));
 	}
 
@@ -528,10 +530,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <E extends Enum<E>> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, E> _enum(
+	public <E extends Enum<E>> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, E> _enum(
 			String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
@@ -549,7 +551,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public <E extends Enum<E>> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, E> _enum(
+	public <E extends Enum<E>> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, E, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, E> _enum(
 			String name, Class<E> type) {
 		return this._enum(name, type, Function.identity());
 	}
@@ -565,9 +567,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _float(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _float(
 			ValueValidator<Float, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Float.class, validator));
 	}
@@ -585,10 +587,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _float(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _float(
 			NullAcceptingValueValidator<Float, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Float.class, validator));
 	}
 
@@ -606,9 +608,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Float> _float(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Float> _float(
 			String name, Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
 	}
@@ -623,7 +625,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Float> _float(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Float> _float(
 			String name) {
 		return this._float(name, Function.identity());
 	}
@@ -640,9 +642,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _instant(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _instant(
 			ValueValidator<Instant, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Instant.class, validator));
 	}
@@ -660,10 +662,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _instant(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _instant(
 			NullAcceptingValueValidator<Instant, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Instant.class, validator));
 	}
 
@@ -681,10 +683,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Instant> _instant(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Instant> _instant(
 			String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
 	}
@@ -700,7 +702,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Instant> _instant(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Instant> _instant(
 			String name) {
 		return this._instant(name, Function.identity());
 	}
@@ -717,9 +719,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _integer(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _integer(
 			ValueValidator<Integer, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Integer.class, validator));
 	}
@@ -737,10 +739,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _integer(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _integer(
 			NullAcceptingValueValidator<Integer, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Integer.class, validator));
 	}
 
@@ -758,10 +760,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Integer> _integer(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Integer> _integer(
 			String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
 	}
@@ -777,7 +779,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Integer> _integer(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Integer> _integer(
 			String name) {
 		return this._integer(name, Function.identity());
 	}
@@ -794,9 +796,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
@@ -814,10 +816,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDateTime(
 			NullAcceptingValueValidator<LocalDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalDateTime.class, validator));
 	}
 
@@ -835,10 +837,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDateTime> _localDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDateTime> _localDateTime(
 			String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -854,7 +856,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDateTime> _localDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDateTime> _localDateTime(
 			String name) {
 		return this._localDateTime(name, Function.identity());
 	}
@@ -871,9 +873,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localTime(
 			ValueValidator<LocalTime, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalTime.class, validator));
 	}
@@ -891,10 +893,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localTime(
 			NullAcceptingValueValidator<LocalTime, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalTime.class, validator));
 	}
 
@@ -912,10 +914,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalTime> _localTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalTime> _localTime(
 			String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -931,7 +933,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalTime> _localTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalTime> _localTime(
 			String name) {
 		return this._localTime(name, Function.identity());
 	}
@@ -948,9 +950,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDate(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDate(
 			ValueValidator<LocalDate, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalDate.class, validator));
 	}
@@ -968,10 +970,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDate(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _localDate(
 			NullAcceptingValueValidator<LocalDate, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(LocalDate.class, validator));
 	}
 
@@ -989,10 +991,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDate> _localDate(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDate> _localDate(
 			String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1008,7 +1010,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDate> _localDate(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, LocalDate> _localDate(
 			String name) {
 		return this._localDate(name, Function.identity());
 	}
@@ -1024,9 +1026,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _long(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _long(
 			ValueValidator<Long, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Long.class, validator));
 	}
@@ -1044,10 +1046,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _long(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _long(
 			NullAcceptingValueValidator<Long, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Long.class, validator));
 	}
 
@@ -1065,9 +1067,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Long> _long(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Long> _long(
 			String name, Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1082,7 +1084,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Long> _long(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Long> _long(
 			String name) {
 		return this._long(name, Function.identity());
 	}
@@ -1099,9 +1101,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
 			ValueValidator<T1, T2> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Object.class, validator));
 	}
@@ -1120,10 +1122,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
 			NullAcceptingValueValidator<T1, T2> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Object.class, validator));
 	}
 
@@ -1144,10 +1146,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _object(
+	public <T> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _object(
 			String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, type, ObjectValidatorBuilder.of(name, type, constraints).build()));
 	}
@@ -1165,7 +1167,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public <T> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _object(
+	public <T> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _object(
 			String name, Class<T> type) {
 		return this._object(name, type, Function.identity());
 	}
@@ -1182,9 +1184,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
@@ -1202,10 +1204,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _offsetDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _offsetDateTime(
 			NullAcceptingValueValidator<OffsetDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(OffsetDateTime.class, validator));
 	}
 
@@ -1223,10 +1225,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, OffsetDateTime> _offsetDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, OffsetDateTime> _offsetDateTime(
 			String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1242,7 +1244,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, OffsetDateTime> _offsetDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, OffsetDateTime> _offsetDateTime(
 			String name) {
 		return this._offsetDateTime(name, Function.identity());
 	}
@@ -1258,9 +1260,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _short(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _short(
 			ValueValidator<Short, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Short.class, validator));
 	}
@@ -1278,10 +1280,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _short(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _short(
 			NullAcceptingValueValidator<Short, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Short.class, validator));
 	}
 
@@ -1299,9 +1301,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Short> _short(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Short> _short(
 			String name, Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1316,7 +1318,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Short> _short(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Short> _short(
 			String name) {
 		return this._short(name, Function.identity());
 	}
@@ -1332,9 +1334,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _string(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _string(
 			ValueValidator<String, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(String.class, validator));
 	}
@@ -1352,10 +1354,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _string(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _string(
 			NullAcceptingValueValidator<String, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(String.class, validator));
 	}
 
@@ -1379,10 +1381,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, String> _string(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, String> _string(
 			String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1397,7 +1399,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, String> _string(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, String> _string(
 			String name) {
 		return this._string(name, Function.identity());
 	}
@@ -1414,9 +1416,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _yearMonth(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _yearMonth(
 			ValueValidator<YearMonth, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(YearMonth.class, validator));
 	}
@@ -1434,10 +1436,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _yearMonth(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _yearMonth(
 			NullAcceptingValueValidator<YearMonth, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(YearMonth.class, validator));
 	}
 
@@ -1455,10 +1457,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, YearMonth> _yearMonth(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, YearMonth> _yearMonth(
 			String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1474,7 +1476,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, YearMonth> _yearMonth(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, YearMonth> _yearMonth(
 			String name) {
 		return this._yearMonth(name, Function.identity());
 	}
@@ -1490,9 +1492,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _year(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _year(
 			ValueValidator<Year, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Year.class, validator));
 	}
@@ -1510,10 +1512,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _year(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _year(
 			NullAcceptingValueValidator<Year, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(Year.class, validator));
 	}
 
@@ -1531,9 +1533,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Year> _year(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Year> _year(
 			String name, Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1548,7 +1550,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Year> _year(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Year> _year(
 			String name) {
 		return this._year(name, Function.identity());
 	}
@@ -1565,9 +1567,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
@@ -1585,10 +1587,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _zonedDateTime(
+	public <T extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T> _zonedDateTime(
 			NullAcceptingValueValidator<ZonedDateTime, T> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.value(ZonedDateTime.class, validator));
 	}
 
@@ -1606,10 +1608,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, ZonedDateTime> _zonedDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, ZonedDateTime> _zonedDateTime(
 			String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.value(name,
 						ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
@@ -1625,7 +1627,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.14.0
 	 */
-	public Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, ZonedDateTime> _zonedDateTime(
+	public Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, ZonedDateTime> _zonedDateTime(
 			String name) {
 		return this._zonedDateTime(name, Function.identity());
 	}
@@ -1650,9 +1652,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
 			String name, ValueValidator<T1, T2> validator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13, ArgumentDefinition.object(name, validator));
 	}
 
@@ -1677,10 +1679,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
+	public <T1, T2 extends @Nullable Object> Arguments14ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, T1, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, T2> _object(
 			String name, NullAcceptingValueValidator<T1, T2> validator) {
-		return new Arguments14ValidatorBuilder.NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6,
-				this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
+		return new Arguments14ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
+				this.d6, this.d7, this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.object(name, validator));
 	}
 
@@ -1757,9 +1759,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.none()));
 	}
@@ -1784,10 +1786,10 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 * @return a builder for the next argument
 	 * @since 0.18.0
 	 */
-	public <V, T extends @Nullable Object> Arguments14ValidatorBuilder.Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Map<String, T>> _map(
+	public <V, T extends @Nullable Object> Arguments14ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Map<String, ? extends V>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, Map<String, T>> _map(
 			String name, ValueValidator<V, T> valueValidator,
 			Function<MapConstraint<Arguments1<Map<String, T>>, String, T>, MapConstraint<Arguments1<Map<String, T>>, String, T>> constraints) {
-		return new Arguments14ValidatorBuilder.Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
+		return new Arguments14ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, this.d11, this.d12, this.d13,
 				ArgumentDefinition.map(name, valueValidator, ContainerConstraints.ofMap(constraints)));
 	}
@@ -2424,7 +2426,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			extends
 			Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>
 			implements
-			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>>permits KeyedList {
+			MessageModifiers<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>>permits Added {
 
 		Keyed(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -2635,8 +2637,64 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	}
 
 	/**
+	 * The builder directly after an argument that is read from a key is added: before the
+	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
+	 * back from what shows the values of an object again. It is said once, so the builder
+	 * that it returns does not have it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <A13> type of argument at position 13
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @param <R13> type of the validated value of argument at position 13
+	 * @since 0.18.0
+	 */
+	public static sealed class Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object>
+			extends
+			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>
+			implements
+			Withholdable<Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>>permits KeyedList {
+
+		Added(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12,
+				ArgumentDefinition<A13, R13> d13) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13);
+		}
+
+		@Override
+		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> withheld() {
+			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12, this.d13.asWithheld());
+		}
+
+	}
+
+	/**
 	 * The builder after a list that is read from a key is added: the modifiers of
-	 * {@link Keyed} apply to the list, and before them {@code splitBy} tells that the
+	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
 	 *
@@ -2670,7 +2728,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	 */
 	public static final class KeyedList<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, E, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, T extends @Nullable Object>
 			extends
-			Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> {
+			Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> {
 
 		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -2692,7 +2750,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @throws IllegalArgumentException if the separator is empty
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> splitBy(
 				String separator) {
 			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
 		}
@@ -2724,9 +2782,9 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		 * @throws IllegalArgumentException if the pattern matches the empty string
 		 * @since 0.18.0
 		 */
-		public Keyed<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> splitBy(
+		public Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, List<? extends E>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, List<T>> splitBy(
 				Pattern separator) {
-			return new Keyed<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+			return new Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
 					this.d10, this.d11, this.d12, this.d13.separatedBy(separator));
 		}
 
@@ -3247,7 +3305,7 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			extends
 			Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>
 			implements
-			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>>permits KeyedRecoverable,KeyedRecovered {
+			MessageModifiers<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>>permits KeyedRecoverable,KeyedRecovered,AddedNullAccepting {
 
 		NullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
@@ -3421,6 +3479,63 @@ public sealed class Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 		public Arguments13ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Presence<? extends A13>, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, Presence<@NonNull R13>> presence() {
 			return new Arguments13ValidatorBuilder<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 					this.d8, this.d9, this.d10, this.d11, this.d12, this.d13.withPresence());
+		}
+
+	}
+
+	/**
+	 * The builder directly after an argument that is read from a key is added with a
+	 * validator that accepts {@code null}: before the modifiers of {@link NullAccepting},
+	 * {@link #withheld()} holds the value of the argument back from what shows the values
+	 * of an object again. It is said once, so the builder that it returns does not have
+	 * it.
+	 *
+	 * @param <A1> type of the first argument
+	 * @param <A2> type of argument at position 2
+	 * @param <A3> type of argument at position 3
+	 * @param <A4> type of argument at position 4
+	 * @param <A5> type of argument at position 5
+	 * @param <A6> type of argument at position 6
+	 * @param <A7> type of argument at position 7
+	 * @param <A8> type of argument at position 8
+	 * @param <A9> type of argument at position 9
+	 * @param <A10> type of argument at position 10
+	 * @param <A11> type of argument at position 11
+	 * @param <A12> type of argument at position 12
+	 * @param <A13> type of argument at position 13
+	 * @param <R1> type of the validated value of the first argument
+	 * @param <R2> type of the validated value of argument at position 2
+	 * @param <R3> type of the validated value of argument at position 3
+	 * @param <R4> type of the validated value of argument at position 4
+	 * @param <R5> type of the validated value of argument at position 5
+	 * @param <R6> type of the validated value of argument at position 6
+	 * @param <R7> type of the validated value of argument at position 7
+	 * @param <R8> type of the validated value of argument at position 8
+	 * @param <R9> type of the validated value of argument at position 9
+	 * @param <R10> type of the validated value of argument at position 10
+	 * @param <R11> type of the validated value of argument at position 11
+	 * @param <R12> type of the validated value of argument at position 12
+	 * @param <R13> type of the validated value of argument at position 13
+	 * @since 0.18.0
+	 */
+	public static final class AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1 extends @Nullable Object, R2 extends @Nullable Object, R3 extends @Nullable Object, R4 extends @Nullable Object, R5 extends @Nullable Object, R6 extends @Nullable Object, R7 extends @Nullable Object, R8 extends @Nullable Object, R9 extends @Nullable Object, R10 extends @Nullable Object, R11 extends @Nullable Object, R12 extends @Nullable Object, R13 extends @Nullable Object>
+			extends
+			NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>
+			implements
+			Withholdable<NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13>> {
+
+		AddedNullAccepting(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
+				ArgumentDefinition<A4, R4> d4, ArgumentDefinition<A5, R5> d5, ArgumentDefinition<A6, R6> d6,
+				ArgumentDefinition<A7, R7> d7, ArgumentDefinition<A8, R8> d8, ArgumentDefinition<A9, R9> d9,
+				ArgumentDefinition<A10, R10> d10, ArgumentDefinition<A11, R11> d11, ArgumentDefinition<A12, R12> d12,
+				ArgumentDefinition<A13, R13> d13) {
+			super(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13);
+		}
+
+		@Override
+		public NullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13> withheld() {
+			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7, this.d8, this.d9,
+					this.d10, this.d11, this.d12, this.d13.asWithheld());
 		}
 
 	}

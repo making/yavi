@@ -60,13 +60,15 @@ import org.jspecify.annotations.Nullable;
  * @param separated returns the definition of this argument as a list that an untyped
  * input may give as text whose elements the given pattern separates; {@code null} unless
  * the argument is a list to which no modifier is applied yet
+ * @param withheld whether an argument read from a key is described as
+ * {@linkplain ValueDescription.Property#withheld() withheld}
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
 		ObjectInputValidator.Strictness strictness, boolean neverNull, PropertyMessages messages,
-		@Nullable Function<Pattern, ArgumentDefinition<A, R>> separated) {
+		@Nullable Function<Pattern, ArgumentDefinition<A, R>> separated, boolean withheld) {
 
 	private static final String RECOVER_WITH_NULL = "Write nullable() before it, or recover with Optional.empty() after optional().";
 
@@ -95,7 +97,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull) {
 		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull,
-				PropertyMessages.none(), null);
+				PropertyMessages.none(), null, false);
 	}
 
 	/**
@@ -105,7 +107,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	private <A2, R2 extends @Nullable Object> ArgumentDefinition<A2, R2> derive(ValueValidator<A2, R2> validator,
 			Function<InputReader<Object>, ValueValidator<Object, R2>> untyped, Source source, boolean neverNull) {
 		return new ArgumentDefinition<>(this.name, validator, untyped, source, this.strictness, neverNull,
-				this.messages, null);
+				this.messages, null, this.withheld);
 	}
 
 	/**
@@ -117,7 +119,16 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 				messages.label() == null ? this.validator
 						: new Labeled<>(this.keyName(), new PropertyMessages(messages.label(), null, null),
 								unlabeled(this.validator)),
-				this.untyped, this.source, this.strictness, this.neverNull, messages, null);
+				this.untyped, this.source, this.strictness, this.neverNull, messages, null, this.withheld);
+	}
+
+	/**
+	 * Returns the definition of this argument as one that is withheld. The builders offer
+	 * this only for an argument that is read from a key, directly after it is added.
+	 */
+	ArgumentDefinition<A, R> asWithheld() {
+		return new ArgumentDefinition<>(this.name, this.validator, this.untyped, this.source, this.strictness,
+				this.neverNull, this.messages, null, true);
 	}
 
 	private static <A, R extends @Nullable Object> ValueValidator<A, R> unlabeled(ValueValidator<A, R> validator) {
@@ -245,7 +256,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 								: separated.readingWith(reader)),
 						description),
 				Source.PROPERTY, ObjectInputValidator.Strictness.ABSENT_AS_NULL, true, PropertyMessages.none(),
-				separator == null ? pattern -> list(name, elementValidator, constraints, pattern) : null);
+				separator == null ? pattern -> list(name, elementValidator, constraints, pattern) : null, false);
 	}
 
 	/**
@@ -391,7 +402,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
 		return new ArgumentDefinition<>(this.name,
 				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
-				this.source, strictness, this.neverNull, this.messages, null);
+				this.source, strictness, this.neverNull, this.messages, null, this.withheld);
 	}
 
 	/**
@@ -420,9 +431,11 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 					e);
 		}
 		return switch (this.source) {
-			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading, this.strictness, this.messages);
+			case PROPERTY -> new ObjectInputValidator.Property<>(name, reading, this.strictness, this.messages,
+					this.withheld);
 			case PRESENCE -> (ObjectInputValidator.Part<R>) new ObjectInputValidator.PresenceProperty<>(name,
-					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading, this.messages);
+					(ValueValidator<Object, Presence<Object>>) (ValueValidator<Object, ?>) reading, this.messages,
+					this.withheld);
 			case OBJECT -> new ObjectInputValidator.Embedded<>(reading);
 			case REST -> new ObjectInputValidator.Rest<>(reading);
 		};
@@ -529,8 +542,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final List<ValueDescription.Property> properties = new ArrayList<>(definitions.length);
 		for (int i = 0; i < definitions.length; i++) {
 			final String name = definitions[i].name();
-			final ValueDescription.Property property = name != null
-					? new ValueDescription.Property(name, inferred.get(i).value()) : inferred.get(i);
+			final ValueDescription.Property property = new ValueDescription.Property(
+					name != null ? name : inferred.get(i).name(), inferred.get(i).value(), definitions[i].withheld());
 			if (properties.stream().anyMatch(defined -> defined.name().equals(property.name()))) {
 				throw new IllegalArgumentException("The property '" + property.name() + "' is defined twice.");
 			}

@@ -15,6 +15,7 @@ which is deprecated.
 * [Handling the result](#handling-the-result)
 * [Describing a validator and generating a JSON Schema](#describing-a-validator-and-generating-a-json-schema)
 * [Nullness with JSpecify](#nullness-with-jspecify)
+* [Appendix: a signup form, its row and its edit form](#appendix-a-signup-form-its-row-and-its-edit-form)
 
 See [Breaking changes in 0.18.0](BreakingChanges_0.18.0.md) to migrate from 0.17.
 
@@ -820,7 +821,10 @@ ParameterTree.of(Map.of()).toMap(signupValidator.description());
 * The description is the one of the validator that validates the parameters. Give
   `ParameterTree.of(params, maxIndex)` the same largest index if the validator reads a
   tree with another one.
-* The map holds every property, a password included. The template decides what it shows.
+* A property that is defined with `withheld()`, such as a password
+  (`._string("password", c -> c.greaterThanOrEqual(8)).withheld()`), is written as one
+  that was not sent: an empty string. A template that writes every field of the map does
+  not send the password back. Any other property is written with what was sent.
 
 `ParameterTree.parametersOf(map)` is the reverse of `ParameterTree.of(parameters)` for any
 tree of `Map` and `List`:
@@ -953,8 +957,14 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
   argument, which returns the validated value of that argument from the object. The
   compiler checks its type, so a record is given its constructor and its accessors.
   `flatFromMapReversible` is the same for `flatFromMap`.
+* A schema of one property has `fromMap()` and `fromMapReversible()` without arguments:
+  the validated value is the result, as with `get()`. One property is defined once in
+  this way, with its constraints and modifiers, and embedded in several schemas
+  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`).
 * `toMap(x)` is defined by the round trip: `validator.validate(validator.toMap(x))` is
-  `Valid(x)` for every `x` that the validator creates.
+  `Valid(x)` for every `x` that the validator creates. A property that is defined with
+  `withheld()` is not written by `toMap`; `reverse(x)` writes it and keeps the round trip
+  (see [Writing some of the properties](#writing-some-of-the-properties)).
 * The returned validator is an `ObjectInputValidator`: it is nested, embedded and read
   with `readingWith` and `readingParameters` as before, and stays `Reversible` after
   `rejectingUnknownProperties()` and `constraintOnTarget`.
@@ -1060,28 +1070,29 @@ list of `ObjectInputValidator.ReversiblePart`: a part with its reverse and its a
 
 ### Writing some of the properties
 
-`toMap` writes every property. A list shows a few of them, a response must not contain a
-secret, an `UPDATE` binds the columns that may change. `including` and `excluding` of the
-validator build a `PropertyView` that writes the chosen properties:
+`toMap` writes every property that is not withheld. A list shows a few of them, an
+`UPDATE` binds the columns that may change. `including` and `excluding` of the validator
+build a `PropertyView` that writes the chosen properties:
 
 ```java
 ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._string("name")
-        ._string("password")
+        ._string("password_hash").withheld()
         ._object("address", addressValidator) // city, street
-        .fromMapReversible(User::new, User::id, User::name, User::password, User::address);
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash, User::address);
 
 // built once, next to the validator
-static final PropertyView<User> PUBLIC = userValidator.excluding("password");
 static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+static final PropertyView<User> LISTED = userValidator.excluding("address");
 
-PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
-SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+userValidator.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+SUMMARY.toMap(user);       // {id=1, name=Taro, address={city=Tokyo}}
+LISTED.toMap(user);        // {id=1, name=Taro}
 
-userValidator.excluding("pasword");
-// IllegalArgumentException: The property 'pasword' is not defined by the validator.
-// The properties are [id, name, password, address].
+userValidator.excluding("adress");
+// IllegalArgumentException: The property 'adress' is not defined by the validator.
+// The properties are [id, name, password_hash, address].
 ```
 
 * **The names are checked when the view is built**, against what the validator describes,
@@ -1089,7 +1100,7 @@ userValidator.excluding("pasword");
   does not write, or that is given twice is an `IllegalArgumentException`. A view that is
   a constant next to its validator therefore fails when the class is loaded, on every
   path and in every test that uses the validator. Removing a key from the map that
-  `toMap` returns (`map.remove("pasword")`) is checked by nobody.
+  `toMap` returns (`map.remove("adress")`) is checked by nobody.
 * **The view is chosen where the object is written.** The use case holds the view it
   needs and calls its `toMap`; the schema does not know the views.
 * **A view only writes.** It is not a validator and not a `ReversibleValueValidator`: a
@@ -1126,25 +1137,69 @@ What is written:
   views in the same way, and `ParameterTree.ofValues(view.toMap(x))` shows a stored
   object in a form without its secret.
 
-**A value that is stored in another form.** A password is read as it is sent and stored
-as a hash, which the application computes: it is not a value that goes back, so it is not
-part of what the validator writes. A view leaves the password out and the statement is
-given the hash as one more parameter:
+**A property that is withheld.** A map that is written is shown: in a response, in a
+form, in a log. A property that must not be shown, such as a password, would have to be
+left out by every caller, also by the callers of every validator that nests the schema.
+It is therefore marked once, where it is defined, with `withheld()`:
 
 ```java
-static final PropertyView<User> ROW = userValidator.excluding("password");
+Yavi.reversibleSchema()
+        ._integer("id")
+        ._string("name")
+        ._string("password_hash").withheld()
+        .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
 
+userValidator.toMap(user);                                  // {id=1, name=Taro}
+userValidator.excluding("name").toMap(user);                // {id=1}
+userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
+userValidator.reverse(user);                                // {id=1, name=Taro, password_hash=...}
+orderValidator.toMap(order);                                // {id=7, memo=gift, user={id=1, name=Taro}}
+orderValidator.including("user", "user.password_hash");     // the user, and its hash too
+userValidator.excluding("password_hash");                   // IllegalArgumentException: no effect
+```
+
+* `toMap` and a view that excludes do not write a withheld property, at any depth: not
+  that of a nested object, of the elements of a list or of an `_embedded` validator.
+* `reverse` writes every property, so `validate(reverse(x))` is `Valid(x)` whatever is
+  withheld. It is what a validator that nests the schema is written back with, and what
+  an `INSERT` of a row with a stored secret binds.
+* A view that includes writes it only if it is named. The name of a nested object stands
+  for its properties that are not withheld; the path to a withheld one is given next to
+  it.
+* A property of a union is withheld if an alternative that defines it withholds it. The
+  discriminator cannot be withheld.
+* `withheld()` is written directly after the property is added (after `splitBy` of a
+  list) and once: `.label("X").withheld()`, `.withheld().withheld()`, and `withheld()` of
+  `_rest` or `_embedded` do not compile. `Yavi.schema()` and the dynamic schemas have it
+  too.
+* The same mark keeps what was sent out of a form that is shown again
+  ([Writing the parameters back](#writing-the-parameters-back)) and is `writeOnly` in a
+  JSON Schema. It does not change what is read, and a violation still holds the rejected
+  value (`ConstraintViolation#violatedValue()`; a `ViolationDetail` does not).
+* The name says what happens, not why: a value that is large or internal is withheld in
+  the same way as a secret.
+
+**A value that is stored in another form.** A password is read as it is sent and stored
+as a hash, which the application computes: it is not a value that goes back, so it is not
+part of what the validator writes. The schema of the form withholds the password, so
+`toMap` leaves it out, and the statement is given the hash as one more parameter:
+
+```java
+// ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
 jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
-        .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: no password
-        .param("password_hash", passwordEncoder.encode(user.password()))
+        .params(signupValidator.toMap(signup)) // {id=1, name=Taro, address={...}}: no password
+        .param("password_hash", passwordEncoder.encode(signup.password()))
         .update();
 ```
 
-`userValidator.toMap(user)` would hold the password as it was sent. Publish the view, not
-the validator, to the code that writes.
+The properties that the form and the row share are defined once, as a validator that
+both embed (`_embedded(profileValidator)`), and the stored user is shown in the form with
+`ParameterTree.ofValues(userValidator.toMap(user)).toMap(editValidator.description())`:
+the password field is empty. The whole flow is in the
+[appendix](#appendix-a-signup-form-its-row-and-its-edit-form).
 
 To keep the names in one place, share a constant between the schema and the view
-(`._string(PASSWORD)` and `excluding(PASSWORD)`).
+(`._object(ADDRESS, addressValidator)` and `excluding(ADDRESS)`).
 
 ### Showing a stored object in a form
 
@@ -1377,6 +1432,8 @@ String json = JsonSchema.toJson(description);
 ```
 
 * A property is `required` unless it accepts an absent key.
+* A property that is defined with `withheld()` is `writeOnly`
+  (`ValueDescription.Property#withheld()`).
 * The constraints of a list or map are written as `minItems`, `uniqueItems` and so on,
   `rejectingUnknownProperties()` as `additionalProperties: false`, and a recursive
   structure as `$ref`.
@@ -1421,6 +1478,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`, `including` and `excluding` of a reversible validator, `ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
+| `withheld()` of a property, `ValueDescription.Property#withheld`, `fromMap()` and `fromMapReversible()` of one property | [#581](https://github.com/making/yavi/pull/581) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
@@ -1440,3 +1498,124 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()`, `UUID`, `URI`, `Duration` and `Period` from a string | [#566](https://github.com/making/yavi/pull/566) |
 | Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |
+
+## Appendix: a signup form, its row and its edit form
+
+A form sends a password, which is checked and never shown again; the table holds its
+hash, which is computed outside the validator; and the stored account is shown in an edit
+form with an empty password field. The properties are defined once and embedded.
+
+```java
+record Profile(String name, String email) {}
+record Signup(Profile profile, String password) {}
+record Account(Integer id, Profile profile, String passwordHash) {}
+record AccountEdit(Profile profile, Optional<String> password) {}
+
+// what the forms and the row share, defined once
+static final ObjectInputValidator.Reversible<Profile> profileSchema = Yavi.reversibleSchema()
+        ._string("name", c -> c.notBlank().lessThanOrEqual(50))
+        ._string("email", c -> c.notBlank().email())
+        .fromMapReversible(Profile::new, Profile::name, Profile::email);
+
+// the password as it is sent: its constraints and withheld(), defined once
+static final ObjectInputValidator.Reversible<String> passwordSchema = Yavi.reversibleSchema()
+        ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
+        .fromMapReversible();
+
+// the signup form
+static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
+        ._embedded(profileSchema)
+        ._embedded(passwordSchema)
+        .fromMapReversible(Signup::new, Signup::profile, Signup::password);
+
+// the row
+static final ObjectInputValidator.Reversible<Account> accountSchema = Yavi.reversibleSchema()
+        ._integer("id")
+        ._embedded(profileSchema)
+        ._string("password_hash").withheld()
+        .fromMapReversible(Account::new, Account::id, Account::profile, Account::passwordHash);
+
+// the edit form: an empty password leaves it unchanged
+static final ObjectInputValidator<AccountEdit> editSchema = Yavi.schema()
+        ._embedded(profileSchema)
+        ._embedded(passwordSchema).optional()
+        .fromMap(AccountEdit::new);
+
+static final ValueValidator<Map<String, ?>, Signup> signupForm = signupSchema.readingParameters();
+static final ValueValidator<Map<String, ?>, AccountEdit> editForm = editSchema.readingParameters();
+```
+
+**Signing up.** A password that is too short is a violation, and the form that is shown
+again does not hold it. A valid form is written with `toMap`, which leaves the password
+out, and the statement is given the hash as one more parameter.
+
+```java
+Map<String, String> parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "short");
+signupForm.validate(parameters).errors();
+// The size of "password" must be greater than or equal to 8. The given size is 5
+ParameterTree.of(parameters).toParameters(signupForm.description());
+// {name=Taro, email=taro@example.com, password=}
+
+parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "long-enough");
+Signup signup = signupForm.validated(parameters);
+signupSchema.toMap(signup); // {name=Taro, email=taro@example.com}
+jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id, :name, :email, :password_hash)")
+        .params(signupSchema.toMap(signup))
+        .param("id", id)
+        .param("password_hash", passwordEncoder.encode(signup.password()))
+        .update();
+```
+
+**Reading the row and showing it.** The row is read as an `Account`. `toMap` is what a
+response, a log or a form is given: it does not hold the hash.
+
+```java
+Map<String, Object> row = jdbcClient.sql("SELECT * FROM account WHERE id = :id").param("id", id).query().singleRow();
+Account account = accountSchema.validated(row);
+// Account[id=1, profile=Profile[name=Taro, email=taro@example.com], passwordHash={bcrypt}...]
+accountSchema.toMap(account); // {id=1, name=Taro, email=taro@example.com}
+
+// the edit form of the stored account
+ParameterTree.ofValues(accountSchema.toMap(account)).toParameters(editForm.description());
+// {name=Taro, email=taro@example.com, password=}
+```
+
+**Editing.** A password that is left empty is `Optional.empty()`, so only the profile is
+updated; one that is sent is checked like that of the signup form and its hash is stored.
+
+```java
+Map<String, String> parameters = Map.of("name", "Jiro", "email", "jiro@example.com", "password", "");
+AccountEdit edit = editForm.validated(parameters);
+// AccountEdit[profile=Profile[name=Jiro, email=jiro@example.com], password=Optional.empty]
+jdbcClient.sql("UPDATE account SET name = :name, email = :email WHERE id = :id")
+        .params(profileSchema.toMap(edit.profile()))
+        .param("id", account.id())
+        .update();
+edit.password().ifPresent(password ->
+        jdbcClient.sql("UPDATE account SET password_hash = :password_hash WHERE id = :id")
+                .param("password_hash", passwordEncoder.encode(password))
+                .param("id", account.id())
+                .update());
+```
+
+**The whole row.** Where the hash is needed, it is asked for: `reverse` writes every
+property and is read back, and a view writes the withheld property that it names.
+
+```java
+accountSchema.reverse(account);
+// {id=1, name=Taro, email=taro@example.com, password_hash={bcrypt}...}
+accountSchema.validate(accountSchema.reverse(account)); // Valid(account)
+accountSchema.including("id", "password_hash").toMap(account);
+// {id=1, password_hash={bcrypt}...}
+```
+
+* `name` and `email` are defined in `profileSchema` only, and the constraints of the
+  password and its `withheld()` in `passwordSchema` only, a schema of one property whose
+  value is the result (`fromMapReversible()` without arguments). The mark of an embedded
+  property is kept, also by `optional()`.
+* The hash is not a value that goes back to the password, so it is passed by the
+  application (`.param("password_hash", ...)`).
+* A record that holds the embedded object (`Signup(Profile profile, String password)`) is
+  given its constructor and its accessors. A flat record (`Signup(String name, String
+  email, String password)`) works too, with a function that takes the profile apart and
+  an accessor that puts it together again.
