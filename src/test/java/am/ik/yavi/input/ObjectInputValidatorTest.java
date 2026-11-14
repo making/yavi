@@ -1234,7 +1234,7 @@ class ObjectInputValidatorTest {
 
 	// the arguments of a function are nullable, and a Presence never is
 	@SuppressWarnings("NullAway")
-	record Token(String name, Integer ttl, List<Integer> ports, List<String> roles, @Nullable String note,
+	record Token(String name, Duration ttl, List<Integer> ports, List<String> roles, @Nullable String note,
 			Address address) {
 	}
 
@@ -1247,6 +1247,7 @@ class ObjectInputValidatorTest {
 			.label("Token name")
 			._integer("ttl", c -> c.positive())
 			.label("TTL")
+			.map(seconds -> Duration.ofSeconds(seconds))
 			.typeMessage("{0} must be a number of seconds, not {2}")
 			._list("ports", Yavi._integer(c -> c.positive()))
 			.typeMessage(ports)
@@ -1255,6 +1256,7 @@ class ObjectInputValidatorTest {
 			.label("Roles")
 			.required("Select at least one role")
 			._string("note")
+			.map(String::strip)
 			.label("Note")
 			.nullable()
 			.required(ViolationMessage.of("token.note", "Send {0}, which may be empty"))
@@ -1299,6 +1301,15 @@ class ObjectInputValidatorTest {
 			.extracting(ConstraintViolation::message)
 			.containsExactly("object.required:TTL", "object.required:Ports", "Select at least one role",
 					"token.note:Note", "object.required:Address");
+		// a property that is mapped where it is defined is read and reported as before,
+		// and null is not mapped
+		assertThat(model
+			.validate(validator,
+					input("name", "abc", "ttl", 60, "ports", List.of(80), "roles", List.of("a"), "note", null,
+							"address", map("street", "1-2-3", "city", "Tokyo")))
+			.value())
+			.isEqualTo(new Token("abc", Duration.ofSeconds(60), List.of(80), List.of("a"), null,
+					new Address("1-2-3", "Tokyo")));
 		// the violation of a value that is of the type and the one of null are not
 		// replaced, and a typed argument is labeled too
 		assertThat(model
@@ -1308,10 +1319,10 @@ class ObjectInputValidatorTest {
 			.errors()).extracting(ConstraintViolation::message)
 			.containsExactly("\"TTL\" must be positive", "\"Address\" must not be null");
 		assertThat(arguments.apply(Token::new)
-			.validate("", 1, List.of(0), List.of(), null, input("street", "", "city", "Tokyo"))
+			.validate("", 0, List.of(0), List.of(), null, input("street", "", "city", "Tokyo"))
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::message)
 			.containsExactly(tuple("name", "\"Token name\" must not be blank"),
-					tuple("ports[0]", "\"Ports\" must be positive"),
+					tuple("ttl", "\"TTL\" must be positive"), tuple("ports[0]", "\"Ports\" must be positive"),
 					tuple("address.street", "\"address.street\" must not be blank"));
 	}
 

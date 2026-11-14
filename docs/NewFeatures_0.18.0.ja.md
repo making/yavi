@@ -188,6 +188,24 @@ passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassw
 * `constraintOnTarget` をオーバーライドして自身の型を返す独自の `ValueValidator` は、ルールを `TargetConstraints` に保持します。`and` でルールを追加し、`check` で値が違反したルールをすべて報告します。
 * `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
 
+### プロパティを値オブジェクトに変換する
+
+プロパティの直後の `map(f)` は、検証済みの値を値オブジェクトなどに変換します。ほかの修飾メソッドと同じ位置に書けるので、プロパティをその場で定義したまま変換できます。
+
+```java
+ObjectInputValidator<User> userValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email()).map(Email::new)
+        ._string("nickname").map(Nickname::new).optional()   // Optional<Nickname>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).map(Age::new).defaultValue(new Age(20))
+        .fromMap(User::new);
+```
+
+* 関数には制約を満たした値が渡されます。プロパティの読み取り、違反の報告、記述は変わりません。キー、`object.type` の型、ラベル、JSON Schema は `map` の前の値のものです。
+* `map` は、`null` の扱いを決める修飾メソッドより前に書きます。それらは変換後の値に適用されます。関数に `null` は渡されず、`optional()` の結果は `Optional<Nickname>` になり、デフォルト値は変換後の値で指定します。`.optional().map(f)` や `.defaultValue(v).map(f)` はコンパイルできません。
+* `label`、`typeMessage`、`withheld()` は `map` の前後どちらにも書けます。リストをテキストから読む指定は `map` より前に書きます（`.splitBy(",").map(Set::copyOf)`）。
+* `Yavi.reversibleSchema()` では、書き戻すための逆変換を取る `map(f, g)` になります（`._string("email").map(Email::new, Email::value)`）。`map(f)` だけではコンパイルできません。
+* 別の場所で定義したバリデータは、これまでどおりそのまま渡します（`._string(Email.VALIDATOR)`、`._object("email", emailValidator)`）。
+
 ## パース済みの JSON オブジェクトなどのマップを検証する
 
 `fromMap` は、同じプロパティの定義から、`Map<String, Object>` を読むバリデータを作ります。このバリデータは、プロパティを名前で読み取り、型を検査し、オブジェクトを生成します。キャストもリフレクションも使いません。
@@ -889,6 +907,8 @@ Yavi.reversibleSchema()
         .fromMapReversible(Contact::new, Contact::name, Contact::email);
 ```
 
+その場で変換するプロパティにも、同じように逆変換を渡します。`._string("email").map(Email::new, Email::value)` はコンパイルでき、`._string("email").map(Email::new)` はコンパイルできません。
+
 `Yavi.schema()` に `fromMapReversible` はありません。書き戻さないスキーマは影響を受けず、これまでどおりどのバリデータも受け取ります。
 
 **自分自身を含む構造。** `ReversibleValueValidator.recursive(self -> ...)` は、逆変換を知っている参照を渡す `ValueValidator.recursive` です。
@@ -1338,6 +1358,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `lazy`、`recursive` | [#553](https://github.com/making/yavi/pull/553) |
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`、`rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
+| スキーマのプロパティの `map` | [#587](https://github.com/making/yavi/pull/587) |
 | 効果のない修飾メソッドの連鎖はコンパイルできない、`NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563)、[#564](https://github.com/making/yavi/pull/564)、[#565](https://github.com/making/yavi/pull/565) |
 | JSpecify、`@Nullable` のない値 | [#534](https://github.com/making/yavi/pull/534)、[#556](https://github.com/making/yavi/pull/556)、[#557](https://github.com/making/yavi/pull/557) |
 

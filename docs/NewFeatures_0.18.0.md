@@ -231,6 +231,34 @@ passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassw
 * `flatApply(f)` takes a function that returns a `Validated`, such as a factory method
   that validates.
 
+### Mapping a property to a value object
+
+`map(f)` after a property maps its validated value, for example to a value object. It is
+a modifier like the others, so the property is still written in place:
+
+```java
+ObjectInputValidator<User> userValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email()).map(Email::new)
+        ._string("nickname").map(Nickname::new).optional()   // Optional<Nickname>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).map(Age::new).defaultValue(new Age(20))
+        .fromMap(User::new);
+```
+
+* The function is given a value that satisfies the constraints. The property is read,
+  reported and described as before: its key, its type in `object.type`, its label and its
+  JSON Schema are those of the value before `map`.
+* `map` is written before the modifiers that decide what `null` produces, which apply to
+  the mapped value: the function is not given `null`, `optional()` produces an
+  `Optional<Nickname>` and a default value is a mapped value. `.optional().map(f)` and
+  `.defaultValue(v).map(f)` do not compile.
+* `label`, `typeMessage` and `withheld()` are written before or after it. A list is told
+  to be read from text first (`.splitBy(",").map(Set::copyOf)`).
+* In `Yavi.reversibleSchema()` the modifier is `map(f, g)`, with the reverse that the
+  property is written back with (`._string("email").map(Email::new, Email::value)`).
+  `map(f)` alone does not compile there.
+* A validator that is defined elsewhere is still given as it is:
+  `._string(Email.VALIDATOR)`, `._object("email", emailValidator)`.
+
 ## Validating a map such as a parsed JSON object
 
 `fromMap` ends the same properties with a validator that reads them from a
@@ -1113,6 +1141,10 @@ Yavi.reversibleSchema()
         .fromMapReversible(Contact::new, Contact::name, Contact::email);
 ```
 
+A property that is mapped in place is given the reverse in the same way:
+`._string("email").map(Email::new, Email::value)` compiles and
+`._string("email").map(Email::new)` does not.
+
 `Yavi.schema()` has no `fromMapReversible`. A schema that is not written back is not
 affected: it takes any validator, as before.
 
@@ -1678,6 +1710,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
 | `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()`, `UUID`, `URI`, `Duration` and `Period` from a string | [#566](https://github.com/making/yavi/pull/566) |
+| `map` of a property of a schema | [#587](https://github.com/making/yavi/pull/587) |
 | Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |
 

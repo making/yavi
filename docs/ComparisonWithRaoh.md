@@ -229,9 +229,10 @@ userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300))
 // age: "age" must be less than or equal to 150
 ```
 
-A property is also written in place
-(`._string("email", c -> c.trim().toLowerCase().notBlank().email())`), and a validator
-without a name is given one with `_object(name, validator)`:
+A property is also written in place and mapped there, as
+`field("email", string().email().map(Email::new))` is
+(`._string("email", c -> c.trim().toLowerCase().notBlank().email()).map(Email::new)`),
+and a validator without a name is given one with `_object(name, validator)`:
 `._object("email", normalizedEmail.map(Email::new))`.
 
 ### Nested objects
@@ -385,6 +386,7 @@ validator.validate(Map.of("params", "{\"kind\":\"like\"}")); // params.count: "p
 | Raoh | YAVI |
 | --- | --- |
 | `field("email", string().email())` | `_string("email", c -> c.email())` |
+| `field("email", string().email().map(Email::new))` | `_string("email", c -> c.email()).map(Email::new)` |
 | `field("nickname", nullable(string()))` (`@Nullable String`) | `_string("nickname").nullable().required()` (`@Nullable String`) |
 | `optionalField("middleName", string())` (`Optional<String>`) | `_string("middleName").optional().rejectingNull()` (`Optional<String>`) |
 | `field("role", withDefault(decoder, value))` | `_enum("role", Role.class).defaultValue(value)` |
@@ -776,7 +778,7 @@ record UserRegistration(Email email, Password password, Role role, List<Contact>
 
 ObjectInputValidator<UserRegistration> userRegistrationValidator = Yavi.schema()
         ._object("email", normalizedEmail.map(Email::new))
-        ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
+        ._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new)
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
         ._list("contacts", contactValidator)
         .fromMap(UserRegistration::new);
@@ -955,7 +957,7 @@ encoding.
 
 ```java
 ObjectInputValidator.Reversible<Item> itemValidator = Yavi.reversibleSchema()
-        ._long(Yavi._long("id").map(ItemId::new, ItemId::value)) // contramap
+        ._long("id").map(ItemId::new, ItemId::value) // contramap
         ._string("name", c -> c.notBlank())
         ._string("note").optional()
         .fromMapReversible(Item::new, Item::id, Item::name, Item::note);

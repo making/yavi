@@ -373,16 +373,20 @@ userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300))
 ```
 
 `_object(name, validator)` uses a validator under a name. A property is also written in
-place (`._string("email", c -> c.notBlank().email())`). One that is mapped in place is a
-validator with a name of its own:
+place (`._string("email", c -> c.notBlank().email())`), and `map` after it creates the
+domain type, as `field("email", string().email().map(Email::new))` of Raoh does:
 
 ```java
 Yavi.schema()
-        ._object(Yavi._object("id", UUID.class).map(UserId::new))
-        ._string(Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email()).map(Email::new))
-        ._integer(Yavi._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).map(Age::new))
+        ._object("id", UUID.class).map(UserId::new)
+        ._string("email", c -> c.trim().toLowerCase().notBlank().email()).map(Email::new)
+        ._integer("age", c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).map(Age::new)
         .fromMap(User::new);
 ```
+
+`map` is one of the modifiers of a property, written before those that decide what
+`null` produces: `._string("nickname").map(Nickname::new).optional()` is an
+`Optional<Nickname>`.
 
 The schema is not bound to a map. The same properties end with `apply(User::new)` for
 typed arguments, and the validator of `fromMap` reads a JSON tree with `readingWith` and
@@ -1132,7 +1136,7 @@ ValueValidator<Map<String, Object>, ContactMethod> contactMethodValidator = Valu
 
 var userRegistrationValidator = Yavi.schema()
         ._object("email", emailValidator)
-        ._string(Yavi._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new))
+        ._string("password", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128)).map(Password::new)
         ._enum("role", Role.class).defaultValue(Role.MEMBER)
         ._list("contacts", contactMethodValidator, c -> c.notEmpty())
         .fromMap(UserRegistration::new);
@@ -1500,7 +1504,7 @@ record ItemId(long value) {}
 record Item(ItemId id, String name, BigDecimal price) {}
 
 var itemSchema = Yavi.reversibleSchema()
-        ._long(Yavi._long("id").map(ItemId::new, ItemId::value))
+        ._long("id").map(ItemId::new, ItemId::value)
         ._string("name")
         ._bigDecimal("price")
         .fromMapReversible(Item::new, Item::id, Item::name, Item::price);
@@ -1516,14 +1520,15 @@ itemSchema.validate(itemSchema.toMap(new Item(new ItemId(42L), "Widget", new Big
 | --- | --- |
 | `property("name", T::name, string())` | `_string("name")` and the accessor `T::name` |
 | `object(property(...), ...)` | `fromMapReversible(T::new, accessors...)` |
-| `long_().contramap(ItemId::value)` | `Yavi._long("id").map(ItemId::new, ItemId::value)` |
+| `long_().contramap(ItemId::value)` | `._long("id").map(ItemId::new, ItemId::value)` |
 | `nested(subEncoder)` | `_object(name, subSchema)` |
 | `list(elementEncoder)` | `_list(name, elementSchema)` |
 | `nullableProperty("x", T::x, enc)` | `.nullable()`, `.optional()` |
 | `propertyWithDefault("x", T::x, enc, v)` | `.defaultValue(v)` |
 
-`map(f, g)` is `map(f)` with its reverse. A validator without a reverse, such as
-`map(f)` alone, is not a property of a reversible schema: it does not compile.
+`map(f, g)` is `map(f)` with its reverse. A property of a reversible schema has no
+`map(f)` alone, and a validator without a reverse is not taken as a property: neither
+compiles.
 
 ## 30. Writing null and default values
 

@@ -134,6 +134,20 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 				this.neverNull, this.messages, null, true);
 	}
 
+	/**
+	 * Returns the definition of this argument with its validated value mapped by the
+	 * given function. The key, its messages and whether it is withheld are kept, and the
+	 * label is applied to the violations as before. Whether the mapped value is never
+	 * {@code null} is unknown, as it is for a value validator. The builders offer this
+	 * only for an argument that is read from a key, before the modifiers that decide what
+	 * {@code null} produces; a list is not told to be read from text after it.
+	 */
+	<R2 extends @Nullable Object> ArgumentDefinition<A, R2> mapped(Function<? super R, ? extends R2> mapper) {
+		final ValueValidator<A, R2> mapped = unlabeled(this.validator).map(mapper);
+		return this.derive(mapped, reader -> this.untyped.apply(reader).<R2>map(mapper), this.source, false)
+			.withMessages(this.messages);
+	}
+
 	private static <A, R extends @Nullable Object> ValueValidator<A, R> unlabeled(ValueValidator<A, R> validator) {
 		return validator instanceof Labeled<A, R>labeled ? labeled.validator() : validator;
 	}
