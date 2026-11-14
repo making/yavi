@@ -5,6 +5,7 @@
 package am.ik.yavi.input;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import am.ik.yavi.core.Presence;
@@ -97,7 +99,9 @@ class ReversibleValidatorTest {
 		.splitBy(",")
 		.defaultValue(List.of())
 		._list("scores", Yavi._integer())
-		.splitBy(Pattern.compile("\\s+"))
+		.label("Scores")
+		.splitBy(Pattern.compile("\\s+"), " ")
+		.defaultValue(List.of())
 		._list("addresses", addressValidator)
 		._map("rates", Yavi._bigDecimal())
 		._string("memo")
@@ -139,7 +143,7 @@ class ReversibleValidatorTest {
 		assertThat(map).containsExactly(entry("id", 1), entry("first_name", "Taro"), entry("last_name", "Yamada"),
 				entry("dept_name", "Sales"), entry("dept_code", "S1"), entry("email", "taro@example.com"),
 				entry("nickname", "taro"), entry("role", "ADMIN"), entry("joined", LocalDate.of(2024, 4, 1)),
-				entry("tags", "java,yavi"), entry("scores", List.of(1, 2)),
+				entry("tags", "java,yavi"), entry("scores", "1 2"),
 				entry("addresses",
 						List.of(mapOf("city", "Tokyo", "street", "1-1"), mapOf("city", "Osaka", "street", null))),
 				entry("rates", Map.of("jpy", new BigDecimal("1.5"))), entry("memo", "hello"), entry("level", 3),
@@ -156,8 +160,8 @@ class ReversibleValidatorTest {
 		assertThat(written).containsExactly(entry("id", 2), entry("first_name", "Hanako"), entry("last_name", "Sato"),
 				entry("dept_name", null), entry("dept_code", null), entry("email", "hanako@example.com"),
 				entry("nickname", null), entry("role", "USER"), entry("joined", LocalDate.of(2025, 1, 1)),
-				entry("tags", null), entry("scores", List.of()), entry("addresses", List.of()),
-				entry("rates", Map.of()), entry("active", false));
+				entry("tags", null), entry("scores", null), entry("addresses", List.of()), entry("rates", Map.of()),
+				entry("active", false));
 		assertThat(employeeValidator.validate(written)).isEqualTo(Validated.successWith(empty));
 		final Employee cleared = new Employee(2, empty.name(), null, empty.email(), Optional.empty(), Role.USER,
 				empty.joined(), List.of(), List.of(), List.of(), Map.of(), Presence.presentNull(), null, false,
@@ -167,8 +171,11 @@ class ReversibleValidatorTest {
 			.isEqualTo(Validated.successWith(cleared));
 
 		// the map is the caller's, and an object that the validator does not create is
-		// rejected
+		// rejected. A label that is written before splitBy is kept
 		written.put("updated_by", "admin");
+		written.put("scores", "1 x");
+		assertThat(employeeValidator.validate(written).errors()).extracting(violation -> violation.message())
+			.containsExactly("\"Scores\" must be of type integer");
 		assertThatThrownBy(() -> employeeValidator.toMap(
 				new Employee(1, employee.name(), null, employee.email(), Optional.empty(), Role.USER, employee.joined(),
 						List.of(), List.of(), List.of(), Map.of(), Presence.absent(), null, true, Map.of("id", 9))))
@@ -190,8 +197,7 @@ class ReversibleValidatorTest {
 		assertThat(withoutContact.toMap(employee)).containsExactly(entry("id", 1), entry("first_name", "Taro"),
 				entry("last_name", "Yamada"), entry("dept_name", "Sales"), entry("nickname", "taro"),
 				entry("role", "ADMIN"), entry("joined", LocalDate.of(2024, 4, 1)), entry("tags", "java,yavi"),
-				entry("scores", List.of(1, 2)),
-				entry("addresses", List.of(mapOf("city", "Tokyo"), mapOf("city", "Osaka"))),
+				entry("scores", "1 2"), entry("addresses", List.of(mapOf("city", "Tokyo"), mapOf("city", "Osaka"))),
 				entry("rates", Map.of("jpy", new BigDecimal("1.5"))), entry("memo", "hello"), entry("active", true),
 				entry("extra", "x"));
 		// a view is made narrower, and keeps what it left out of a nested object
@@ -344,7 +350,7 @@ class ReversibleValidatorTest {
 	}
 
 	record Signup(String name, Integer age, Role role, Boolean agreed, LocalDate birthday, List<String> tags,
-			Address address, List<Address> others) {
+			List<String> links, Address address, List<Address> others) {
 	}
 
 	@Test
@@ -359,15 +365,20 @@ class ReversibleValidatorTest {
 			._list("tags", Yavi._string())
 			.splitBy(",")
 			.defaultValue(List.of())
+			// one value per line of a textarea
+			._list("links", Yavi._string(c -> c.url()))
+			.splitBy(Pattern.compile("\\s*\\R\\s*"), "\n")
+			.defaultValue(List.of())
 			._object("address", addressValidator)
 			._list("others", addressValidator)
 			.defaultValue(List.of())
 			.fromMapReversible(Signup::new, Signup::name, Signup::age, Signup::role, Signup::agreed, Signup::birthday,
-					Signup::tags, Signup::address, Signup::others);
+					Signup::tags, Signup::links, Signup::address, Signup::others);
 		final ValueValidator<Map<String, ?>, Signup> signupValidator = signupSchema
 			.readingParameters(StringCoercion.strict().trimming());
 		final Signup stored = new Signup("Taro", 30, Role.ADMIN, false, LocalDate.of(2000, 1, 2), List.of("a", "b"),
-				new Address("Tokyo", Optional.empty()), List.of(new Address("Osaka", Optional.of("2-2"))));
+				List.of("https://a.example", "https://b.example"), new Address("Tokyo", Optional.empty()),
+				List.of(new Address("Osaka", Optional.of("2-2"))));
 
 		final ParameterTree tree = ParameterTree.ofValues(signupSchema.toMap(stored));
 		// the values as text in the shape of the description, like the parameters that
@@ -375,25 +386,44 @@ class ReversibleValidatorTest {
 		// field without a value
 		assertThat(tree.toMap(signupSchema.description())).containsExactly(entry("name", "Taro"), entry("age", "30"),
 				entry("role", "ADMIN"), entry("birthday", "2000-01-02"), entry("tags", "a,b"),
+				entry("links", "https://a.example\nhttps://b.example"),
 				entry("address", mapOf("city", "Tokyo", "street", "")),
 				entry("others", List.of(mapOf("city", "Osaka", "street", "2-2"))));
+		// which is what the parameters that were sent are shown as
+		assertThat(ParameterTree.of(Map.of("links", "https://a.example\nhttps://b.example"))
+			.toMap(signupSchema.description()))
+			.containsEntry("links", tree.toMap(signupSchema.description()).get("links"));
 		final Map<String, Object> parameters = tree.toParameters(signupSchema.description());
 		assertThat(parameters).containsExactly(entry("name", "Taro"), entry("age", "30"), entry("role", "ADMIN"),
-				entry("birthday", "2000-01-02"), entry("tags", "a,b"), entry("address.city", "Tokyo"),
+				entry("birthday", "2000-01-02"), entry("tags", "a,b"),
+				entry("links", "https://a.example\nhttps://b.example"), entry("address.city", "Tokyo"),
 				entry("address.street", ""), entry("others[0].city", "Osaka"), entry("others[0].street", "2-2"));
 		assertThat(signupValidator.validate(parameters)).isEqualTo(Validated.successWith(stored));
-		final Signup agreed = new Signup("Taro", 30, Role.ADMIN, true, stored.birthday(), List.of(), stored.address(),
-				List.of());
+		final Signup agreed = new Signup("Taro", 30, Role.ADMIN, true, stored.birthday(), List.of(), List.of(),
+				stored.address(), List.of());
 		assertThat(ParameterTree.ofValues(signupSchema.toMap(agreed)).toMap(signupSchema.description()))
 			.containsEntry("agreed", "true")
 			.containsEntry("tags", "")
+			.containsEntry("links", "")
 			.containsEntry("others", List.of());
+		// a new form is given its initial values as a map of some of the properties
+		assertThat(ParameterTree.ofValues(Map.of("age", 20, "agreed", true)).toParameters(signupSchema.description()))
+			.containsExactly(entry("name", ""), entry("age", "20"), entry("role", ""), entry("agreed", "true"),
+					entry("birthday", ""), entry("tags", ""), entry("links", ""), entry("address.city", ""),
+					entry("address.street", ""));
+		// the delimiter is what the pattern separates: the text is split where it is
+		// joined
+		assertThatThrownBy(
+				() -> Yavi.reversibleSchema()._list("links", Yavi._string()).splitBy(Pattern.compile("\\R"), ", "))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The separator '\\R' does not match the delimiter ', ' that joins the elements.");
 		// a view feeds the tree as the whole map does: a field that is not written is
 		// shown without a value
 		assertThat(ParameterTree.ofValues(signupSchema.excluding("age", "address.street", "others").toMap(stored))
 			.toParameters(signupSchema.description())).containsExactly(entry("name", "Taro"), entry("age", ""),
 					entry("role", "ADMIN"), entry("birthday", "2000-01-02"), entry("tags", "a,b"),
-					entry("address.city", "Tokyo"), entry("address.street", ""));
+					entry("links", "https://a.example\nhttps://b.example"), entry("address.city", "Tokyo"),
+					entry("address.street", ""));
 		assertThat(StringCoercion.textOf(new BigDecimal("1E+3"))).isEqualTo("1000");
 	}
 
@@ -445,30 +475,46 @@ class ReversibleValidatorTest {
 		assertThat(eventValidator.validate(row)).isEqualTo(Validated.successWith(events.get(0)));
 
 		// a nested object is bound under the names of its violations
-		record Venue(Integer id, Address address) {
+		record Venue(Integer id, Address address, Instant openedAt) {
 		}
 		final ObjectInputValidator.Reversible<Venue> venueValidator = Yavi.reversibleSchema()
 			._integer("id")
 			._object("address", addressValidator)
-			.fromMapReversible(Venue::new, Venue::id, Venue::address);
-		jdbcClient.sql("CREATE TABLE venue (id INT PRIMARY KEY, city VARCHAR(32) NOT NULL, street VARCHAR(32))")
+			// a driver that holds a timestamp as the milliseconds of the epoch
+			._long(Yavi._long("opened_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
+			.fromMapReversible(Venue::new, Venue::id, Venue::address, Venue::openedAt);
+		jdbcClient
+			.sql("CREATE TABLE venue (id INT PRIMARY KEY, city VARCHAR(32) NOT NULL, street VARCHAR(32), "
+					+ "opened_at TIMESTAMP NOT NULL)")
 			.update();
-		jdbcClient.sql("INSERT INTO venue (id, city, street) VALUES (:id, :address.city, :address.street)")
-			.params(ParameterTree
-				.parametersOf(venueValidator.toMap(new Venue(1, new Address("Tokyo", Optional.empty())))))
+		final Venue venue = new Venue(1, new Address("Tokyo", Optional.empty()),
+				Instant.ofEpochMilli(1_700_000_000_000L));
+		jdbcClient.sql(
+				"INSERT INTO venue (id, city, street, opened_at) VALUES (:id, :address.city, :address.street, :opened_at)")
+			.params(ParameterTree.parametersOf(venueValidator.toMap(venue)))
 			.update();
-		assertThat(jdbcClient.sql("SELECT city FROM venue WHERE street IS NULL").query(String.class).single())
-			.isEqualTo("Tokyo");
+		// a row that was stored as a java.sql.Timestamp before is read with the others
+		jdbcClient.sql("INSERT INTO venue (id, city, opened_at) VALUES (2, 'Osaka', ?)")
+			.param(java.sql.Timestamp.from(venue.openedAt()))
+			.update();
+		assertThat(jdbcClient.sql("SELECT city FROM venue WHERE street IS NULL ORDER BY id").query(String.class).list())
+			.containsExactly("Tokyo", "Osaka");
 
 		// a row holds null for a column without a value, although the type of the map
 		// that a validator reads does not say so
 		@SuppressWarnings({ "unchecked", "NullAway" })
-		final List<Map<String, Object>> rows = (List<Map<String, Object>>) (List<?>) jdbcClient
-			.sql("SELECT * FROM event ORDER BY id")
+		final Function<String, List<Map<String, Object>>> rows = sql -> (List<Map<String, Object>>) (List<?>) jdbcClient
+			.sql(sql)
 			.query()
 			.listOfRows();
-		assertThat(rows.stream().map(eventValidator::validate))
+		assertThat(rows.apply("SELECT * FROM event ORDER BY id").stream().map(eventValidator::validate))
 			.containsExactlyElementsOf(events.stream().map(Validated::successWith).toList());
+		assertThat(rows.apply("SELECT id, opened_at FROM venue ORDER BY id")
+			.stream()
+			.map(Yavi.reversibleSchema()
+				._long(Yavi._long("opened_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
+				.fromMapReversible()::validated))
+			.containsExactly(venue.openedAt(), venue.openedAt());
 	}
 
 	record Account(Integer id, String name, String passwordHash) {

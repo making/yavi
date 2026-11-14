@@ -535,7 +535,7 @@ pageValidator.validate(Map.of("page", "-1", "size", "9999")); // PageRequest[pag
 
 ### 1 つのパラメータに入ったリスト
 
-1 つのパラメータが複数の値を持つことはよくあります。`?tags=java,yavi`、`?ids=1,2,3`、`textarea` に 1 行ずつ書いた URI などです。`_list` の直後に `splitBy` を書くと、このようなテキストをリストとして読みます。
+1 つのパラメータが複数の値を持つことはよくあります。`?tags=java,yavi`、`?ids=1,2,3`、`textarea` に 1 行ずつ書いた URI などです。`_list` の後に `splitBy` を書くと、このようなテキストをリストとして読みます。
 
 ```java
 record Article(String title, List<String> tags, List<Integer> related, List<URI> links) {}
@@ -562,7 +562,8 @@ articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "
 * すべてのテキストが分割されます。同じキーを繰り返した場合の各値も分割されるので、`tags=a,b&tags=c` は `[a, b, c]` です。
 * 要素は捨てられず、前後の空白も除かれません。`a,,b` は 3 要素で、2 番目の要素には値がありません。例外は末尾の区切りで、その後ろは要素になりません。最後の行の後の改行と同じく、`a,b,` は `[a, b]` です。空白は、パターン（`\\s*,\\s*`）、`StringCoercion.strict().trimming()`、`c.trim()` のいずれかで除きます。
 * 空のパラメータ（`tags=`）は、ほかのプロパティと同じく、値がないものとして扱われます。
-* `splitBy` は `_list` の直後、ほかの修飾メソッドの前に書きます。
+* `splitBy` は `_list` の後、ほかの修飾メソッドの前に書きます。`splitBy` より前に書けるのは `label` と `typeMessage` だけです。
+* 書き戻すスキーマ（`Yavi.reversibleSchema()`）では、パターンと一緒に要素を連結するテキストを渡します（`splitBy(pattern, "\n")`）。リストを 1 つのテキストとして書くためです（[1 つのテキストフィールドに入ったリスト](#オブジェクトを読み取り元のマップに書き戻す)）。
 * ほかの入力も同じように読まれます。`{"tags": "java,yavi"}` と `{"tags": ["java", "yavi"]}` は同じリストです。このプロパティの JSON Schema は `"type": ["array", "string"]` になります。
 * `{"tags": 1}` のようにテキストでもリストでもない値は、`object.type` で報告されます（`"tags" must be of type array or string`）。1 要素のリストとしては扱われません。リストの要素のうちテキストでないものは、そのまま検証されます。
 * スキーマのプロパティではないリストは、`Yavi._list(elementValidator, constraints).splitBy(",")` または `elementValidator.liftList(pattern)` で分割します。
@@ -594,7 +595,7 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 
 * テキストは、制約の `message("...")` のテキストと同じく、そのままメッセージになります。`object.required` のメッセージを持つフォーマッタも、これを置き換えません（後述）。
 * `typeMessage` と `required` は `ViolationMessage` も受け取ります。この場合はメッセージキーも置き換わるため、リソースバンドルで地域化できます: `required(ViolationMessage.of("token.roles", "Select at least one role"))`。
-* `label` と `typeMessage` はプロパティを追加した直後、`optional()` などの前に書きます。`required(...)` は最後の修飾子で、`.required("...").optional()` はコンパイルできません。
+* `label` と `typeMessage` はプロパティを追加した後、`optional()` などの前に書きます。`required(...)` は最後の修飾子で、`.required("...").optional()` はコンパイルできません。
 * ネストしたプロパティ（`address.street`）の違反は、そのプロパティの指定に従います。明示的な `null` と、存在しない enum 定数は従来どおり報告されます（`object.notNull`、`object.oneOf`）。
 * `Yavi.dynamicSchema()` のプロパティにも同じ修飾メソッドがあります。
 * `ObjectInputValidator.of(parts, mapper)` のプロパティには、同じ内容を `PropertyMessages` で渡します。
@@ -775,7 +776,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 ```
 
-* `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。
+* `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。もう 1 つの違いはパターンの `splitBy` で、要素を連結するテキストも渡します。
 * `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
 * プロパティが 1 つのスキーマには、引数なしの `fromMap()` と `fromMapReversible()` があります。`get()` と同じく、検証済みの値がそのまま結果になります。1 つのプロパティを制約や修飾子ごと一度だけ定義して、複数のスキーマに埋め込めます（`_embedded(passwordSchema)`、`_embedded(passwordSchema).optional()`）。`_rest` だけのスキーマにも同じ終端があります。`Yavi.schema()._rest(Yavi._integer()).fromMap()` は `Map<String, Integer>` のバリデータです。
 * `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。`withheld()` を付けて定義したプロパティは `toMap` が書きません。`reverse(x)` はそれも書くので、往復が成り立ちます（[一部のプロパティだけを書く](#一部のプロパティだけを書く)）。
@@ -793,10 +794,27 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 | `_object` | ネストしたマップ |
 | `_list`、`_map`、`_rest` | 各要素 |
 | `splitBy(",")` | 連結したテキスト。空のリストは `null`(要素のないテキストは送信されないため)。読み戻すにはプロパティに `defaultValue(List.of())` か `nullable()` が必要 |
-| `splitBy(Pattern)` | リスト |
+| `splitBy(pattern, "\n")` | 第 2 引数で連結したテキスト。空のリストの扱いは同じ |
 | `map(f, g)` のバリデータ | `g` の結果 |
 
 値は、プロパティの読み取り元である JDK の型の値で、JDBC ドライバや JSON ライブラリにそのまま渡せます。`URI` や `Year` などもそのまま書くので、ドライバが受け取れない型は変換してください。
+
+**1 つのテキストフィールドに入ったリスト。** `splitBy` を付けたリストは、1 行に 1 つずつ値を書く `textarea` のように、フォームの 1 つのフィールドです。そのため、そのフィールドのテキストとして書きます。パターンからは区切りのテキストが分からないので、要素を連結するテキストを一緒に渡します。
+
+```java
+ObjectInputValidator.Reversible<Feed> feedSchema = Yavi.reversibleSchema()
+        ._string("title")
+        ._list("urls", Yavi._string(c -> c.url())).splitBy(Pattern.compile("\\s*\\R\\s*"), "\n")
+        .defaultValue(List.of())
+        .fromMapReversible(Feed::new, Feed::title, Feed::urls);
+
+feedSchema.toMap(new Feed("News", List.of("https://a.example", "https://b.example")));
+// {title=News, urls="https://a.example\nhttps://b.example"}
+```
+
+* `Yavi.reversibleSchema()` では、テキストを渡さない `splitBy(pattern)` はコンパイルエラーになります。1 つのテキストから読んだリストを `List` として書くことになり、`textarea` に `[https://a.example, https://b.example]` と表示されるためです。`Yavi.schema()` には、これまでどおりあります。
+* パターンは、連結するテキストにマッチしなければなりません。`splitBy(Pattern.compile("\\R"), ", ")` は、スキーマを作る時点で `IllegalArgumentException` になります。書いたテキストが、連結した位置で分割されないためです。`splitBy(",")` は `splitBy(Pattern.compile(","), ",")` と同じです。
+* パターンにマッチする部分を含む要素は、1 つの要素としては読み戻せません。
 
 **値オブジェクト。** `map(f, g)` は、`map(f)` に、変換後の値から入力へ戻す関数を加えたものです。返り値は `ReversibleValueValidator` で、`reverse(x)` は `x` の読み取り元の入力を返します。バリデータが逆変換を知っているかどうかは、型で分かります。
 
@@ -810,6 +828,15 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 | `ReversibleValueValidator.lazy(supplier)`、`recursive(self -> ...)` | `ReversibleValueValidator` |
 | `fromMapReversible`、`DiscriminatedUnionValidator.Reversible` | マップの `ReversibleValueValidator` |
 | `map(f)`、`andThen`、`anyOf`、ラムダ、`Yavi._list`、`Yavi._map`、`fromMap` | `ValueValidator` |
+
+定数はこれらの型で宣言します。`StringValidator.Reversible` などの単一の値のバリデータには型引数がありません。検証済みの値が入力そのものだからです（これまでの `StringValidator<String>` に当たります）。`EnumValidator.Reversible<E>`、`ObjectValidator.Reversible<T>`、`ObjectInputValidator.Reversible<T>` は値の型を型引数に取ります。
+
+```java
+static final StringValidator.Reversible NAME = Yavi._string("name", c -> c.notBlank());
+static final IntegerValidator.Reversible AGE = Yavi._integer("age", c -> c.positive());
+static final EnumValidator.Reversible<Role> ROLE = Yavi._enum("role", Role.class);
+static final ReversibleValueValidator<String, Email> EMAIL = Yavi._string("email").map(Email::new, Email::value);
+```
 
 **書き戻せないもの。** `ReversibleValueValidator` ではないバリデータ、つまり逆変換のない `map(f)`、ラムダ、`andThen`、`anyOf` は書き戻せません。`Yavi.reversibleSchema()` のスキーマは、プロパティとしても、`_object`、`_embedded`、`_list`、`_map`、`_rest` の引数としても、これらを受け取りません。書き戻せないプロパティは、追加した箇所でコンパイルエラーになります。
 
@@ -847,6 +874,12 @@ jdbcClient.sql("INSERT INTO venue (id, city, street) VALUES (:id, :address.city,
 ```
 
 **行。** `listOfRows()` が返す行は、同じバリデータで読めます。ドライバが日付や時刻のカラムに返す `java.sql.Date` は `LocalDate` として、`java.sql.Time` は `LocalTime` として、`java.sql.Timestamp` は `LocalDateTime` または `Instant` として読みます。
+
+ドライバが別の型で保持するカラムには、`map(f, g)` で両方向の変換を与えます。SQLite のドライバは `java.sql.Timestamp` をエポックミリ秒で保存し、`Long` として返します。`_instant("created_at")` はこの行を `object.type` で拒否します。また、書いた `Instant` をこのドライバはテキストで保存するので、テーブルに 2 つの形式が混ざります。同じバリデータで行を登録するテストでは、この問題に気づけません。`Long` として読み書きします。
+
+```java
+._long(Yavi._long("created_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
+```
 
 **判別可能なユニオン。** オブジェクトの型を付けて追加した選択肢は、判別子とともに書き戻せます。すべての選択肢をこの方法で追加したユニオンが `Reversible` です。
 
@@ -932,7 +965,7 @@ userValidator.excluding("password_hash");                   // IllegalArgumentEx
 * `reverse` はすべてのプロパティを書くので、何を `withheld()` にしても `validate(reverse(x))` は `Valid(x)` です。そのスキーマをネストしたバリデータは `reverse` で書き戻されます。秘密の値を保存した行を `INSERT` するときにバインドするのも `reverse` のマップです。
 * `including` のビューは、名前を指定したときだけ書きます。ネストしたオブジェクトの名前は、`withheld()` でないプロパティだけを表します。`withheld()` のプロパティも書くには、そのパスを並べて指定します。
 * ユニオンのプロパティは、それを定義する選択肢のどれかが `withheld()` にしていれば書きません。判別子は `withheld()` にできません。
-* `withheld()` は、プロパティを追加した直後（リストでは `splitBy` の後）に一度だけ書きます。`.label("X").withheld()`、`.withheld().withheld()`、`_rest` や `_embedded` への `withheld()` はコンパイルエラーになります。`Yavi.schema()` と動的スキーマにもあります。
+* `withheld()` は、`null` の扱いを決める修飾メソッドの前（リストでは `splitBy` の後）に一度だけ書きます。`label` と `typeMessage` は、その前にも後にも書けます（`.label("Password").withheld()`）。`.withheld().withheld()`、`.optional().withheld()`、`_rest` や `_embedded` への `withheld()` はコンパイルエラーになります。`Yavi.schema()` と動的スキーマにもあります。
 * 同じ印によって、再表示するフォームには送信された値が入らず（[パラメータを書き戻す](#パラメータを書き戻す)）、JSON Schema では `writeOnly` になります。読み取る内容は変わりません。違反は拒否した値を持ったままです（`ConstraintViolation#violatedValue()`。`ViolationDetail` は値を持ちません）。
 * 名前は理由ではなく動作を表しています。秘密の値に限らず、大きな値や内部用の値にも同じように使えます。
 
@@ -975,6 +1008,22 @@ Map<String, Object> form = tree.toMap(signupSchema.description());
 * 値は、その値として読まれるテキスト(`StringCoercion.textOf`)になります。`30` は `"30"`、`LocalDate` は ISO-8601 のテキストです。`signupValidator` は `tree.toParameters(...)` を保存済みのオブジェクトとして読みます。
 * `null` または `false` のプロパティは、空のフィールドやチェックされていないチェックボックスと同じく、送信されなかったものとして扱います。`toMap(description)` は、送信されなかったプロパティと同じように、空文字列を書くか、`Boolean` ならエントリを書きません。
 * パラメータを読むバリデータは `Reversible` ではありません。書き戻す先がマップだからです。フォームは、上の例のようにスキーマとパラメータのバリデータの両方を持ちます。
+* `splitBy` を付けたリストはテキストとして書かれるので、`textarea` は保存済みのリストを、送信された値と同じ形で表示します。
+* 新規のフォームの初期値は、一部のプロパティだけを持つマップで渡します。それ以外は、送信されなかったプロパティとして書かれます。
+
+  ```java
+  ParameterTree.ofValues(Map.of("age", 20, "agreed", true)).toMap(signupSchema.description());
+  // {name="", age="20", agreed="true", birthday="", address={city="", street=""}}
+  ```
+
+**フォームの型が保存する型と違う場合。** フォームは `ArticleInput(title, body)` として読み、保存するオブジェクトは `Article(id, title, body, createdAt)` やライブラリのクラスである、という場合です。フォームのスキーマが書くのは `ArticleInput` なので、アプリケーションが保存済みのオブジェクトから `ArticleInput` を作ります。
+
+```java
+ParameterTree.ofValues(articleInputSchema.toMap(new ArticleInput(article.title(), article.body())))
+        .toMap(articleInputSchema.description());
+```
+
+スキーマが肩代わりするのは、それぞれの値のテキスト化、`null`、チェックボックスの扱いです。2 つの型の間の対応づけは含みません。保存する型がフォームと共通の部分をオブジェクトとして持てるなら、両方のスキーマに埋め込むプロパティとして定義することで、この対応づけも書かずに済みます（[付録](#付録-登録フォームとその行と編集フォーム)の `_embedded(profileSchema)`）。
 
 ## 結果を扱う
 
@@ -1195,6 +1244,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581)、[#582](https://github.com/making/yavi/pull/582) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
+| 書き戻すスキーマの `splitBy(pattern, delimiter)`、`withheld()` や `splitBy` の前の `label` と `typeMessage` | [#583](https://github.com/making/yavi/pull/583) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |

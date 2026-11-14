@@ -2335,16 +2335,19 @@ EOD
 }
 
 # Prints the modifiers of the messages of an argument read from a key: $1 is the stage
-# class that has them, which they return.
+# class that has them, which they return, and $2 its type arguments if they are not those
+# of the builder. A stage that is left by a modifier that is written once, such as
+# withheld(), overrides them to stay itself: a label does not decide the order.
 modifier_messages() {
+local uses="${2:-${type_uses}}"
 cat <<EOD
 		@Override
-		public $1<${type_uses}> label(String label) {
+		public $1<${uses}> label(String label) {
 			return new $1<>(${init_definitions}this.d${i}.withMessages(this.d${i}.messages().withLabel(label)));
 		}
 
 		@Override
-		public $1<${type_uses}> typeMessage(ViolationMessage message) {
+		public $1<${uses}> typeMessage(ViolationMessage message) {
 			return new $1<>(${init_definitions}this.d${i}.withMessages(this.d${i}.messages().withType(message)));
 		}
 EOD
@@ -2409,6 +2412,96 @@ cat <<EOD
 		 */
 		public ${class}<${init_arguments}A${i}, ${init_results}R${i}> required(ViolationMessage message) {
 			return new ${class}<>(${init_definitions}this.d${i}$1.withMessages(this.d${i}.messages().withRequired(message)));
+		}
+EOD
+}
+
+# The modifier that reads a list also from text that a pattern separates. A builder of
+# Yavi.reversibleSchema() is given the text that joins the elements too, because the
+# list is written back as the text of one field.
+split_by_pattern_plain() {
+cat <<EOD
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given pattern, such as one element per line of a {@code textarea}.
+		 *
+		 * <pre>{@code
+		 * ._list("ids", Yavi._integer(c -> c.positive())).splitBy(Pattern.compile("\\\\R"))
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, the value of the key is read as
+		 * {@link ValueValidator#liftList(Pattern)} states: a text is split and so is
+		 * every text of a list, so {@code tags=a,b&tags=c} is {@code [a, b, c]}; an
+		 * element that was split off is text that stands for a value, so that
+		 * {@code 1,2,3} is a list of {@code Integer}; and no element is dropped or
+		 * trimmed, except that a separator at the end of the text starts no element.
+		 * The violations of an element are located under its index, as those of a
+		 * list that is not split are ({@code tags[1]}).
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a list that holds the elements already
+		 * and is validated as before. This is written directly after {@code _list}, or
+		 * after its {@code label} and {@code typeMessage}: the returned builder has the
+		 * other modifiers of the argument.
+		 * @param separator the pattern that separates the elements in a text
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the pattern matches the empty string
+		 * @since 0.18.0
+		 */
+		public Added<${list_type_uses}> splitBy(Pattern separator) {
+			return new Added<>(${init_definitions}this.d${i}.separatedBy(separator));
+		}
+EOD
+}
+
+split_by_pattern_reversible() {
+cat <<EOD
+		/**
+		 * Reads the last added list also from text whose elements are separated by the
+		 * given pattern, such as one element per line of a {@code textarea}, and writes
+		 * it back as text whose elements are joined by the given delimiter.
+		 *
+		 * <pre>{@code
+		 * ._list("urls", Yavi._string(c -> c.url())).splitBy(Pattern.compile("\\\\s*\\\\R\\\\s*"), "\\n")
+		 * }</pre>
+		 *
+		 * <p>
+		 * With {@code fromMap}, the value of the key is read as
+		 * {@link ValueValidator#liftList(Pattern)} states: a text is split and so is
+		 * every text of a list, so {@code tags=a,b&tags=c} is {@code [a, b, c]}; an
+		 * element that was split off is text that stands for a value, so that
+		 * {@code 1,2,3} is a list of {@code Integer}; and no element is dropped or
+		 * trimmed, except that a separator at the end of the text starts no element.
+		 * The violations of an element are located under its index, as those of a
+		 * list that is not split are ({@code tags[1]}).
+		 *
+		 * <p>
+		 * A validator built with {@code fromMapReversible} writes the list back as the
+		 * text of one field, as it does after {@link #splitBy(String)}: the texts of
+		 * the elements joined by the delimiter, and {@code null} for an empty list. A
+		 * pattern does not tell the text that it separates, so the delimiter is given
+		 * with it. A list that is read from one text and written as a list is not what
+		 * a field shows, so this builder has no {@code splitBy} of a pattern alone. An
+		 * element whose text contains what the pattern matches is not read back as one
+		 * element.
+		 *
+		 * <p>
+		 * With {@code apply}, the argument is a list that holds the elements already
+		 * and is validated as before. This is written directly after {@code _list}, or
+		 * after its {@code label} and {@code typeMessage}: the returned builder has the
+		 * other modifiers of the argument.
+		 * @param separator the pattern that separates the elements in a text
+		 * @param delimiter the text that joins the elements when the list is written,
+		 * which the pattern matches as a whole
+		 * @return a builder whose last argument may be given as text
+		 * @throws IllegalArgumentException if the pattern matches the empty string, or
+		 * if it does not match the delimiter, so that the written text would not be
+		 * split where it was joined
+		 * @since 0.18.0
+		 */
+		public Added<${list_type_uses}> splitBy(Pattern separator, String delimiter) {
+			return new Added<>(${init_definitions}this.d${i}.separatedBy(separator, delimiter));
 		}
 EOD
 }
@@ -2791,8 +2884,9 @@ cat <<EOD
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
- * {@code withheld()}, directly after an argument that is read from a key is added,
- * holds its value back from what shows the values of an object again.
+ * {@code withheld()}, before the modifiers of an argument that is read from a key
+ * other than {@code label} and {@code typeMessage}, holds its value back from what
+ * shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2843,8 +2937,9 @@ cat <<EOD
  * value to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
- * {@code withheld()}, directly after an argument that is read from a key is added,
- * holds its value back from what shows the values of an object again.
+ * {@code withheld()}, before the modifiers of an argument that is read from a key
+ * other than {@code label} and {@code typeMessage}, holds its value back from what
+ * shows the values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -4690,18 +4785,22 @@ $(modifier_presence)
 	}
 
 	/**
-	 * The builder directly after an argument that is read from a key is added: before
-	 * the modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
+	 * The builder after an argument that is read from a key is added, until a modifier
+	 * other than {@code label} and {@code typeMessage} is written: before the other
+	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
 	 * back from what shows the values of an object again. It is said once, so the
 	 * builder that it returns does not have it.
 $(stage_class Added sealed Keyed " permits KeyedList" withholdable)
 
 $(modifier_withheld Keyed)
 
+$(modifier_messages Added)
+
 	}
 
 	/**
-	 * The builder after a list that is read from a key is added: the modifiers of
+	 * The builder after a list that is read from a key is added, until a modifier other
+	 * than {@code label} and {@code typeMessage} is written: the modifiers of
 	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
@@ -4717,9 +4816,11 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 			super(${ctor_args});
 		}
 
+$(modifier_messages KeyedList "${init_arguments}E, ${init_results}T")
+
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given separator, as {@link #splitBy(Pattern)} states.$(if [ "${track}" == "reversible" ];then printf ' A validator built with\n\t\t * {@code fromMapReversible} writes the list back as that text, which a pattern\n\t\t * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list\n\t\t * is written as {@code null}, because text without an element is not sent, so it\n\t\t * is read back only if the list accepts {@code null}\n\t\t * ({@code defaultValue(List.of())}, {@code nullable()}).';fi)
+		 * given separator, as {@link #splitBy($(if [ "${track}" == "reversible" ];then echo -n "Pattern, String";else echo -n "Pattern";fi))} states.$(if [ "${track}" == "reversible" ];then printf ' A validator built with\n\t\t * {@code fromMapReversible} writes the list back as that text: the texts of the\n\t\t * elements, joined by the separator. An empty list is written as {@code null},\n\t\t * because text without an element is not sent, so it is read back only if the\n\t\t * list accepts {@code null} ({@code defaultValue(List.of())},\n\t\t * {@code nullable()}). An element whose text contains the separator is not read\n\t\t * back as one element.';fi)
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
@@ -4730,39 +4831,10 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 		 * @since 0.18.0
 		 */
 		public Added<${list_type_uses}> splitBy(String separator) {
-			return $(if [ "${track}" == "reversible" ];then echo -n "new Added<>(${init_definitions}this.d${i}.separatedBy(separator))";else echo -n "this.splitBy(Pattern.compile(Pattern.quote(separator)))";fi);
+			return $(if [ "${track}" == "reversible" ];then echo -n "this.splitBy(Pattern.compile(Pattern.quote(separator)), separator)";else echo -n "this.splitBy(Pattern.compile(Pattern.quote(separator)))";fi);
 		}
 
-		/**
-		 * Reads the last added list also from text whose elements are separated by the
-		 * given pattern, such as one element per line of a {@code textarea}.
-		 *
-		 * <pre>{@code
-		 * ._list("ids", Yavi._integer(c -> c.positive())).splitBy(Pattern.compile("\\\\R"))
-		 * }</pre>
-		 *
-		 * <p>
-		 * With {@code fromMap}, the value of the key is read as
-		 * {@link ValueValidator#liftList(Pattern)} states: a text is split and so is
-		 * every text of a list, so {@code tags=a,b&tags=c} is {@code [a, b, c]}; an
-		 * element that was split off is text that stands for a value, so that
-		 * {@code 1,2,3} is a list of {@code Integer}; and no element is dropped or
-		 * trimmed, except that a separator at the end of the text starts no element.
-		 * The violations of an element are located under its index, as those of a
-		 * list that is not split are ({@code tags[1]}).
-		 *
-		 * <p>
-		 * With {@code apply}, the argument is a list that holds the elements already
-		 * and is validated as before. This is written directly after {@code _list}:
-		 * the returned builder has the other modifiers of the argument.
-		 * @param separator the pattern that separates the elements in a text
-		 * @return a builder whose last argument may be given as text
-		 * @throws IllegalArgumentException if the pattern matches the empty string
-		 * @since 0.18.0
-		 */
-		public Added<${list_type_uses}> splitBy(Pattern separator) {
-			return new Added<>(${init_definitions}this.d${i}.separatedBy(separator));
-		}
+$(if [ "${track}" == "reversible" ];then split_by_pattern_reversible;else split_by_pattern_plain;fi)
 
 	}
 
@@ -4841,10 +4913,13 @@ $(modifier_presence)
 	 * validator that accepts {@code null}: before the modifiers of
 	 * {@link NullAccepting}, {@link #withheld()} holds the value of the argument back
 	 * from what shows the values of an object again. It is said once, so the builder
-	 * that it returns does not have it.
+	 * that it returns does not have it; {@code label} and {@code typeMessage} return
+	 * this builder.
 $(stage_class AddedNullAccepting final NullAccepting "" withholdable)
 
 $(modifier_withheld NullAccepting)
+
+$(modifier_messages AddedNullAccepting)
 
 	}
 

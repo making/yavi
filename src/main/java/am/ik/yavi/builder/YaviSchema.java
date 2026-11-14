@@ -82,8 +82,9 @@ import org.jspecify.annotations.Nullable;
  * to {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
- * {@code withheld()}, directly after an argument that is read from a key is added, holds
- * its value back from what shows the values of an object again.
+ * {@code withheld()}, before the modifiers of an argument that is read from a key other
+ * than {@code label} and {@code typeMessage}, holds its value back from what shows the
+ * values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same

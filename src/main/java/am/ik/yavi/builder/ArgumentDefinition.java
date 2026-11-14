@@ -59,7 +59,7 @@ import org.jspecify.annotations.Nullable;
  * itself; the part that reads the argument from a map applies the rest
  * @param separated returns the definition of this argument as a list that an untyped
  * input may give as text whose elements the given pattern separates; {@code null} unless
- * the argument is a list to which no modifier is applied yet
+ * the argument is a list to which no modifier other than its messages is applied yet
  * @param withheld whether an argument read from a key is described as
  * {@linkplain ValueDescription.Property#withheld() withheld}
  * @param <A> the type of the argument
@@ -112,14 +112,17 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	/**
 	 * Returns the definition of this argument with the given messages. The violations
-	 * that the validator of a typed argument reports are labeled.
+	 * that the validator of a typed argument reports are labeled. A list can still be
+	 * told to be read from text, and keeps the messages then.
 	 */
 	ArgumentDefinition<A, R> withMessages(PropertyMessages messages) {
+		final Function<Pattern, ArgumentDefinition<A, R>> separated = this.separated;
 		return new ArgumentDefinition<>(this.name,
 				messages.label() == null ? this.validator
 						: new Labeled<>(this.keyName(), new PropertyMessages(messages.label(), null, null),
 								unlabeled(this.validator)),
-				this.untyped, this.source, this.strictness, this.neverNull, messages, null, this.withheld);
+				this.untyped, this.source, this.strictness, this.neverNull, messages,
+				separated == null ? null : pattern -> separated.apply(pattern).withMessages(messages), this.withheld);
 	}
 
 	/**

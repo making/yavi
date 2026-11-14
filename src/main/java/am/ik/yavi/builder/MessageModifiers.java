@@ -20,10 +20,11 @@ import am.ik.yavi.core.ViolationMessage;
  * }</pre>
  *
  * <p>
- * They are part of the definition of the argument: write them right after it is added,
- * before the modifiers that decide what {@code null} produces. They apply to the
- * violations on the argument itself and on its elements ({@code roles} and
- * {@code roles[1]}), not to those of a nested property ({@code address.street}).
+ * They are part of the definition of the argument: write them after it is added, before
+ * the modifiers that decide what {@code null} produces. {@code splitBy} of a list and
+ * {@code withheld()} are written before them or after them. They apply to the violations
+ * on the argument itself and on its elements ({@code roles} and {@code roles[1]}), not to
+ * those of a nested property ({@code address.street}).
  *
  * @param <B> the type of the builder, which the modifiers return
  * @since 0.18.0

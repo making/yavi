@@ -85,8 +85,9 @@ import org.jspecify.annotations.Nullable;
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
- * {@code withheld()}, directly after an argument that is read from a key is added, holds
- * its value back from what shows the values of an object again.
+ * {@code withheld()}, before the modifiers of an argument that is read from a key other
+ * than {@code label} and {@code typeMessage}, holds its value back from what shows the
+ * values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2415,7 +2416,8 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 	}
 
 	/**
-	 * The builder directly after an argument that is read from a key is added: before the
+	 * The builder after an argument that is read from a key is added, until a modifier
+	 * other than {@code label} and {@code typeMessage} is written: before the other
 	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
 	 * back from what shows the values of an object again. It is said once, so the builder
 	 * that it returns does not have it.
@@ -2436,10 +2438,21 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 			return new Keyed<>(this.d1.asWithheld());
 		}
 
+		@Override
+		public Added<A1, R1> label(String label) {
+			return new Added<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public Added<A1, R1> typeMessage(ViolationMessage message) {
+			return new Added<>(this.d1.withMessages(this.d1.messages().withType(message)));
+		}
+
 	}
 
 	/**
-	 * The builder after a list that is read from a key is added: the modifiers of
+	 * The builder after a list that is read from a key is added, until a modifier other
+	 * than {@code label} and {@code typeMessage} is written: the modifiers of
 	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
@@ -2454,14 +2467,25 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 			super(d1);
 		}
 
+		@Override
+		public KeyedList<E, T> label(String label) {
+			return new KeyedList<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public KeyedList<E, T> typeMessage(ViolationMessage message) {
+			return new KeyedList<>(this.d1.withMessages(this.d1.messages().withType(message)));
+		}
+
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given separator, as {@link #splitBy(Pattern)} states. A validator built with
-		 * {@code fromMapReversible} writes the list back as that text, which a pattern
-		 * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list
-		 * is written as {@code null}, because text without an element is not sent, so it
-		 * is read back only if the list accepts {@code null}
-		 * ({@code defaultValue(List.of())}, {@code nullable()}).
+		 * given separator, as {@link #splitBy(Pattern, String)} states. A validator built
+		 * with {@code fromMapReversible} writes the list back as that text: the texts of
+		 * the elements, joined by the separator. An empty list is written as
+		 * {@code null}, because text without an element is not sent, so it is read back
+		 * only if the list accepts {@code null} ({@code defaultValue(List.of())},
+		 * {@code nullable()}). An element whose text contains the separator is not read
+		 * back as one element.
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
@@ -2472,15 +2496,16 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 		 * @since 0.18.0
 		 */
 		public Added<List<? extends E>, List<T>> splitBy(String separator) {
-			return new Added<>(this.d1.separatedBy(separator));
+			return this.splitBy(Pattern.compile(Pattern.quote(separator)), separator);
 		}
 
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given pattern, such as one element per line of a {@code textarea}.
+		 * given pattern, such as one element per line of a {@code textarea}, and writes
+		 * it back as text whose elements are joined by the given delimiter.
 		 *
 		 * <pre>{@code
-		 * ._list("ids", Yavi._integer(c -> c.positive())).splitBy(Pattern.compile("\\R"))
+		 * ._list("urls", Yavi._string(c -> c.url())).splitBy(Pattern.compile("\\s*\\R\\s*"), "\n")
 		 * }</pre>
 		 *
 		 * <p>
@@ -2494,16 +2519,30 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 		 * is not split are ({@code tags[1]}).
 		 *
 		 * <p>
+		 * A validator built with {@code fromMapReversible} writes the list back as the
+		 * text of one field, as it does after {@link #splitBy(String)}: the texts of the
+		 * elements joined by the delimiter, and {@code null} for an empty list. A pattern
+		 * does not tell the text that it separates, so the delimiter is given with it. A
+		 * list that is read from one text and written as a list is not what a field
+		 * shows, so this builder has no {@code splitBy} of a pattern alone. An element
+		 * whose text contains what the pattern matches is not read back as one element.
+		 *
+		 * <p>
 		 * With {@code apply}, the argument is a list that holds the elements already and
-		 * is validated as before. This is written directly after {@code _list}: the
-		 * returned builder has the other modifiers of the argument.
+		 * is validated as before. This is written directly after {@code _list}, or after
+		 * its {@code label} and {@code typeMessage}: the returned builder has the other
+		 * modifiers of the argument.
 		 * @param separator the pattern that separates the elements in a text
+		 * @param delimiter the text that joins the elements when the list is written,
+		 * which the pattern matches as a whole
 		 * @return a builder whose last argument may be given as text
-		 * @throws IllegalArgumentException if the pattern matches the empty string
+		 * @throws IllegalArgumentException if the pattern matches the empty string, or if
+		 * it does not match the delimiter, so that the written text would not be split
+		 * where it was joined
 		 * @since 0.18.0
 		 */
-		public Added<List<? extends E>, List<T>> splitBy(Pattern separator) {
-			return new Added<>(this.d1.separatedBy(separator));
+		public Added<List<? extends E>, List<T>> splitBy(Pattern separator, String delimiter) {
+			return new Added<>(this.d1.separatedBy(separator, delimiter));
 		}
 
 	}
@@ -3024,7 +3063,7 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 	 * validator that accepts {@code null}: before the modifiers of {@link NullAccepting},
 	 * {@link #withheld()} holds the value of the argument back from what shows the values
 	 * of an object again. It is said once, so the builder that it returns does not have
-	 * it.
+	 * it; {@code label} and {@code typeMessage} return this builder.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <R1> type of the validated value of the first argument
@@ -3040,6 +3079,16 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 		@Override
 		public NullAccepting<A1, R1> withheld() {
 			return new NullAccepting<>(this.d1.asWithheld());
+		}
+
+		@Override
+		public AddedNullAccepting<A1, R1> label(String label) {
+			return new AddedNullAccepting<>(this.d1.withMessages(this.d1.messages().withLabel(label)));
+		}
+
+		@Override
+		public AddedNullAccepting<A1, R1> typeMessage(ViolationMessage message) {
+			return new AddedNullAccepting<>(this.d1.withMessages(this.d1.messages().withType(message)));
 		}
 
 	}
