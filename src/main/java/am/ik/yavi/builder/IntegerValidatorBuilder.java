@@ -6,8 +6,10 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
+import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.IntegerValidator;
 import am.ik.yavi.constraint.IntegerConstraint;
@@ -87,8 +89,12 @@ public class IntegerValidatorBuilder implements ValueValidatorBuilder<Integer, I
 	 */
 	@Override
 	public <T extends @Nullable Object> IntegerValidator<T> build(Function<? super Integer, ? extends T> mapper) {
+		return this.create(mapper::apply);
+	}
+
+	private <T extends @Nullable Object> IntegerValidator<T> create(Function1<? super Integer, ? extends T> mapper) {
 		final Validator<Arguments1<Integer>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new IntegerValidator<>(validator, mapper::apply);
+		return new IntegerValidator<>(validator, mapper);
 	}
 
 	/**
@@ -97,7 +103,7 @@ public class IntegerValidatorBuilder implements ValueValidatorBuilder<Integer, I
 	 */
 	@Override
 	public IntegerValidator<Integer> build() {
-		return build(x -> x);
+		return this.create(DefaultArguments1Validator.unmapped());
 	}
 
 }

@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -63,11 +64,25 @@ import org.jspecify.annotations.Nullable;
  * The tree model of a JSON library is read with {@link #readingWith(InputReader)}, like a
  * {@link ObjectInputValidator}.
  *
+ * <p>
+ * A union whose alternatives are all added with the type of their objects is a
+ * {@link Reversible}: it also writes an object back as the map that it is read from, with
+ * the discriminator of the alternative of its type.
+ *
+ * <pre>{@code
+ * DiscriminatedUnionValidator.Reversible<Shape> shapeValidator = DiscriminatedUnionValidator
+ *     .<Shape>of("type")
+ *     .when("circle", Circle.class, circleValidator)
+ *     .when("square", Square.class, squareValidator);
+ * shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
+ * }</pre>
+ *
  * @param <X> the common type of the objects created by the alternatives
  * @since 0.18.0
  * @see ObjectInputValidator
  */
-public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<String, Object>, X> {
+public sealed class DiscriminatedUnionValidator<X>
+		implements ValueValidator<Map<String, Object>, X>permits DiscriminatedUnionValidator.Reversible {
 
 	private final String discriminator;
 
@@ -125,6 +140,23 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 			return new DiscriminatedUnionValidator<>(this.key, Map.of(value, validator), List.of());
 		}
 
+		/**
+		 * Returns a validator that validates a map whose discriminator is the given value
+		 * with the given validator, and that writes an object of the given type back with
+		 * it. Add the other alternatives with
+		 * {@link Reversible#when(String, Class, ReversibleValueValidator)}.
+		 * @param value the value of the discriminator that selects the alternative
+		 * @param type the type of the objects that the alternative creates
+		 * @param validator the validator of the alternative, which knows its reverse
+		 * @param <Y> the type of the objects that the alternative creates
+		 * @return a validator with the alternative, which also writes an object back
+		 */
+		public <Y extends X> Reversible<X> when(String value, Class<Y> type,
+				ReversibleValueValidator<Map<String, Object>, Y> validator) {
+			return new Reversible<>(this.key, Map.of(value, validator), List.of(),
+					List.of(new Alternative<>(value, type, validator)));
+		}
+
 	}
 
 	private DiscriminatedUnionValidator(String discriminator,
@@ -156,13 +188,158 @@ public final class DiscriminatedUnionValidator<X> implements ValueValidator<Map<
 	 */
 	public DiscriminatedUnionValidator<X> when(String value,
 			ValueValidator<? super Map<String, Object>, ? extends X> validator) {
+		return new DiscriminatedUnionValidator<>(this.discriminator, this.with(value, validator), this.rules);
+	}
+
+	/**
+	 * An alternative that is written back: the objects of its type are read from a map
+	 * whose discriminator is its value.
+	 */
+	private record Alternative<Y> (String value, Class<Y> type,
+			ReversibleValueValidator<Map<String, Object>, Y> validator) {
+
+		private Map<String, Object> write(Object object) {
+			final Map<String, Object> map = this.validator.reverse(this.type.cast(object));
+			if (map == null) {
+				throw new IllegalArgumentException(
+						"The alternative '" + this.value + "' is not read from a map: it writes null.");
+			}
+			return map;
+		}
+
+	}
+
+	/**
+	 * A union that also writes an object back as the map that it reads the object from:
+	 * every alternative is added with the type of the objects it creates.
+	 *
+	 * <p>
+	 * {@link #toMap(Object)} writes an object with the first alternative, in the order
+	 * they were added, whose type the object is an instance of, and adds the
+	 * discriminator with the value of that alternative unless the alternative writes it
+	 * itself. The discriminator is the first key then.
+	 *
+	 * <p>
+	 * An alternative added without its type
+	 * ({@link DiscriminatedUnionValidator#when(String, ValueValidator)}) returns a union
+	 * that does not write.
+	 *
+	 * @param <X> the common type of the objects created by the alternatives
+	 * @since 0.18.0
+	 */
+	public static final class Reversible<X> extends DiscriminatedUnionValidator<X>
+			implements ReversibleValueValidator<Map<String, Object>, X> {
+
+		private final List<Alternative<? extends X>> written;
+
+		private Reversible(String discriminator,
+				Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
+				List<TargetRule<X>> rules, List<Alternative<? extends X>> written) {
+			super(discriminator, alternatives, rules);
+			this.written = written;
+		}
+
+		/**
+		 * Returns a validator that additionally validates a map whose discriminator is
+		 * the given value with the given validator, and that writes an object of the
+		 * given type back with it.
+		 * @param value the value of the discriminator that selects the alternative
+		 * @param type the type of the objects that the alternative creates
+		 * @param validator the validator of the alternative, which knows its reverse
+		 * @param <Y> the type of the objects that the alternative creates
+		 * @return a validator with the additional alternative
+		 * @throws IllegalArgumentException if an alternative is already defined for the
+		 * value
+		 */
+		public <Y extends X> Reversible<X> when(String value, Class<Y> type,
+				ReversibleValueValidator<Map<String, Object>, Y> validator) {
+			final List<Alternative<? extends X>> written = new ArrayList<>(this.written);
+			written.add(new Alternative<>(value, type, validator));
+			return new Reversible<>(this.discriminator(), this.with(value, validator), this.rules(),
+					Collections.unmodifiableList(written));
+		}
+
+		/**
+		 * Returns the map that this validator reads the given object from: the map that
+		 * the alternative of the type of the object writes, with the discriminator.
+		 * @param object an object that an alternative creates
+		 * @return a new map, which the caller may change
+		 * @throws IllegalArgumentException if the object is not an instance of the type
+		 * of an alternative
+		 */
+		public Map<String, Object> toMap(X object) {
+			final String discriminator = this.discriminator();
+			for (Alternative<? extends X> alternative : this.written) {
+				if (alternative.type().isInstance(object)) {
+					final Map<String, Object> map = alternative.write(object);
+					if (map.containsKey(discriminator)) {
+						return map;
+					}
+					final Map<String, Object> discriminated = new LinkedHashMap<>();
+					discriminated.put(discriminator, alternative.value());
+					discriminated.putAll(map);
+					return discriminated;
+				}
+			}
+			throw new IllegalArgumentException(
+					"No alternative is defined for an object of type " + object.getClass().getName() + ".");
+		}
+
+		/**
+		 * Returns the map that this validator reads the given object from. This is
+		 * {@link #toMap(Object)}.
+		 * @param object an object that an alternative creates
+		 * @return a new map
+		 */
+		@Override
+		public Map<String, Object> reverse(X object) {
+			return this.toMap(object);
+		}
+
+		/**
+		 * Returns a validator that additionally checks the object created by the selected
+		 * alternative with the given predicate, as
+		 * {@link DiscriminatedUnionValidator#constraintOnTarget} states. The returned
+		 * validator still writes an object back.
+		 * @param predicate the rule that the created object must satisfy
+		 * @param name the name of the reported violation
+		 * @param violationMessage the message key and the default message format of the
+		 * reported violation
+		 * @return a validator with the additional rule
+		 */
+		@Override
+		public Reversible<X> constraintOnTarget(Predicate<? super X> predicate, String name,
+				ViolationMessage violationMessage) {
+			return new Reversible<>(this.discriminator(), this.alternatives(),
+					TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)), this.written);
+		}
+
+	}
+
+	final String discriminator() {
+		return this.discriminator;
+	}
+
+	final Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives() {
+		return this.alternatives;
+	}
+
+	final List<TargetRule<X>> rules() {
+		return this.rules;
+	}
+
+	/**
+	 * Returns the alternatives with the given one.
+	 * @throws IllegalArgumentException if an alternative is already defined for the value
+	 */
+	final Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> with(String value,
+			ValueValidator<? super Map<String, Object>, ? extends X> validator) {
 		final Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives = new LinkedHashMap<>(
 				this.alternatives);
 		if (alternatives.put(value, validator) != null) {
 			throw new IllegalArgumentException("The alternative '" + value + "' is defined twice.");
 		}
-		return new DiscriminatedUnionValidator<>(this.discriminator, Collections.unmodifiableMap(alternatives),
-				this.rules);
+		return Collections.unmodifiableMap(alternatives);
 	}
 
 	/**

@@ -5,6 +5,7 @@
 package am.ik.yavi.core;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,6 +33,12 @@ sealed class DescribedValueValidator<T, X extends @Nullable Object>
 	private final @Nullable Function<String, ? extends ValueValidator<T, X>> named;
 
 	/**
+	 * Returns the function that goes back from the value to the input, if the delegate
+	 * tells one; {@code null} if this validator does not know its reverse.
+	 */
+	private final @Nullable Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse;
+
+	/**
 	 * @param preprocessed returns this validator with the given transform applied to its
 	 * input, by a way that keeps the input type; {@code null} if there is none
 	 * @param named returns this validator with the given name for the validated value;
@@ -41,6 +48,15 @@ sealed class DescribedValueValidator<T, X extends @Nullable Object>
 			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
 			@Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
 			@Nullable Function<String, ? extends ValueValidator<T, X>> named) {
+		this(delegate, description, untyped, preprocessed, named, null);
+	}
+
+	DescribedValueValidator(ValueValidator<T, X> delegate, Supplier<ValueDescription> description,
+			Function<InputReader<Object>, ValueValidator<Object, X>> untyped,
+			@Nullable Function<Function<? super T, ? extends @Nullable T>, ValueValidator<T, X>> preprocessed,
+			@Nullable Function<String, ? extends ValueValidator<T, X>> named,
+			@Nullable Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse) {
+		this.reverse = reverse;
 		this.delegate = delegate;
 		this.description = description;
 		this.untyped = untyped;
@@ -56,6 +72,21 @@ sealed class DescribedValueValidator<T, X extends @Nullable Object>
 	@Override
 	public ValueDescription description() {
 		return this.description.get();
+	}
+
+	/**
+	 * Returns this validator with the given way to go back from its value to its input.
+	 * @param reverse returns the function that goes back, if there is one
+	 */
+	DescribedValueValidator<T, X> reversing(Supplier<Optional<Function<? super X, ? extends @Nullable T>>> reverse) {
+		return new DescribedValueValidator<>(this.delegate, this.description, this.untyped, this.preprocessed,
+				this.named, reverse);
+	}
+
+	@Override
+	public Optional<ReversibleValueValidator<T, X>> reversible() {
+		return this.reverse == null ? Optional.empty()
+				: this.reverse.get().map(reverse -> new ReversedValueValidator<>(this, reverse));
 	}
 
 	@Override

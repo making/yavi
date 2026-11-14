@@ -7,8 +7,10 @@ package am.ik.yavi.builder;
 import java.time.Instant;
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
+import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.InstantValidator;
 import am.ik.yavi.constraint.InstantConstraint;
@@ -88,8 +90,12 @@ public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, I
 	 */
 	@Override
 	public <T extends @Nullable Object> InstantValidator<T> build(Function<? super Instant, ? extends T> mapper) {
+		return this.create(mapper::apply);
+	}
+
+	private <T extends @Nullable Object> InstantValidator<T> create(Function1<? super Instant, ? extends T> mapper) {
 		final Validator<Arguments1<Instant>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new InstantValidator<>(validator, mapper::apply);
+		return new InstantValidator<>(validator, mapper);
 	}
 
 	/**
@@ -98,7 +104,7 @@ public class InstantValidatorBuilder implements ValueValidatorBuilder<Instant, I
 	 */
 	@Override
 	public InstantValidator<Instant> build() {
-		return build(x -> x);
+		return this.create(DefaultArguments1Validator.unmapped());
 	}
 
 }

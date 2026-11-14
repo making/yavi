@@ -6,8 +6,10 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
+import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.LongValidator;
 import am.ik.yavi.constraint.LongConstraint;
@@ -86,8 +88,12 @@ public class LongValidatorBuilder implements ValueValidatorBuilder<Long, Long> {
 	 */
 	@Override
 	public <T extends @Nullable Object> LongValidator<T> build(Function<? super Long, ? extends T> mapper) {
+		return this.create(mapper::apply);
+	}
+
+	private <T extends @Nullable Object> LongValidator<T> create(Function1<? super Long, ? extends T> mapper) {
 		final Validator<Arguments1<Long>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new LongValidator<>(validator, mapper::apply);
+		return new LongValidator<>(validator, mapper);
 	}
 
 	/**
@@ -96,7 +102,7 @@ public class LongValidatorBuilder implements ValueValidatorBuilder<Long, Long> {
 	 */
 	@Override
 	public LongValidator<Long> build() {
-		return build(x -> x);
+		return this.create(DefaultArguments1Validator.unmapped());
 	}
 
 }

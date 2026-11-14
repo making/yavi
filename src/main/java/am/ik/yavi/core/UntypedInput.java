@@ -162,6 +162,9 @@ final class UntypedInput {
 		if (value instanceof Number number) {
 			return convertNumber(number, type);
 		}
+		if (value instanceof java.util.Date date) {
+			return isSqlType(date.getClass()) ? SqlTypes.convert(date, type) : MISMATCH;
+		}
 		if (value instanceof String string) {
 			final Object[] constants = type.getEnumConstants();
 			if (constants != null) {
@@ -183,6 +186,46 @@ final class UntypedInput {
 			}
 		}
 		return MISMATCH;
+	}
+
+	/**
+	 * Tells whether the type is one of {@code java.sql}, without loading a class of that
+	 * module, which a run-time image may not have.
+	 */
+	private static boolean isSqlType(Class<?> type) {
+		for (Class<?> current = type; current != null; current = current.getSuperclass()) {
+			if (current.getName().startsWith("java.sql.")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Converts the dates and times that the row of a JDBC driver holds to the type of
+	 * {@code java.time} that stands for the same column. The class is loaded only for a
+	 * value of {@code java.sql}.
+	 */
+	private static final class SqlTypes {
+
+		private static Object convert(java.util.Date value, Class<?> type) {
+			if (value instanceof java.sql.Date date && type == LocalDate.class) {
+				return date.toLocalDate();
+			}
+			if (value instanceof java.sql.Time time && type == LocalTime.class) {
+				return time.toLocalTime();
+			}
+			if (value instanceof java.sql.Timestamp timestamp) {
+				if (type == LocalDateTime.class) {
+					return timestamp.toLocalDateTime();
+				}
+				if (type == Instant.class) {
+					return timestamp.toInstant();
+				}
+			}
+			return MISMATCH;
+		}
+
 	}
 
 	/**

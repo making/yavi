@@ -7,8 +7,10 @@ package am.ik.yavi.builder;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
+import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.BigDecimalValidator;
 import am.ik.yavi.constraint.BigDecimalConstraint;
@@ -88,8 +90,13 @@ public class BigDecimalValidatorBuilder implements ValueValidatorBuilder<BigDeci
 	 */
 	@Override
 	public <T extends @Nullable Object> BigDecimalValidator<T> build(Function<? super BigDecimal, ? extends T> mapper) {
+		return this.create(mapper::apply);
+	}
+
+	private <T extends @Nullable Object> BigDecimalValidator<T> create(
+			Function1<? super BigDecimal, ? extends T> mapper) {
 		final Validator<Arguments1<BigDecimal>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BigDecimalValidator<>(validator, mapper::apply);
+		return new BigDecimalValidator<>(validator, mapper);
 	}
 
 	/**
@@ -98,7 +105,7 @@ public class BigDecimalValidatorBuilder implements ValueValidatorBuilder<BigDeci
 	 */
 	@Override
 	public BigDecimalValidator<BigDecimal> build() {
-		return build(x -> x);
+		return this.create(DefaultArguments1Validator.unmapped());
 	}
 
 }

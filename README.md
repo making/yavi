@@ -721,6 +721,29 @@ See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map 
 
 See [Breaking changes in 0.18.0](docs/BreakingChanges_0.18.0.md) to migrate from an earlier version, and [Limitations of NullAway](docs/NullAwayLimitations.md) if NullAway reports correct code.
 
+#### Writing an object back as the map it is read from
+
+`fromMapReversible` is `fromMap` with the accessors of the created object. The validator it builds also writes the object back as the map it is read from, for example as the named parameters of a statement:
+
+```java
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+        ._integer("id")
+        ._embedded(userNameValidator) // first_name, last_name
+        ._string(Yavi._string("email", c -> c.notBlank().email()).map(Email::new, Email::value))
+        ._string("nickname").optional()
+        .fromMapReversible(Employee::new, Employee::id, Employee::name, Employee::email, Employee::nickname);
+
+employeeValidator.toMap(employee);
+// {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null}
+
+jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname) "
+        + "VALUES (:id, :first_name, :last_name, :email, :nickname)")
+        .params(employeeValidator.toMap(employee))
+        .update();
+```
+
+`validate(toMap(x))` is `Valid(x)`. A value object goes back with `map(f, g)`, and `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form, to show a stored object. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
+
 #### Returning the violations
 
 `ConstraintViolations` has the forms that a form and an API response need, so that they are not written as a stream pipeline at every call site:

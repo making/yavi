@@ -9,6 +9,7 @@ YAVI 0.18.0 では、`Yavi.schema()` で入力を一度記述すれば、型付�
 * [パース済みの JSON オブジェクトなどのマップを検証する](#パース済みの-json-オブジェクトなどのマップを検証する)
 * [JSON ライブラリのツリーモデルを検証する](#json-ライブラリのツリーモデルを検証する)
 * [リクエストパラメータを検証する](#リクエストパラメータを検証する)
+* [オブジェクトを読み取り元のマップに書き戻す](#オブジェクトを読み取り元のマップに書き戻す)
 * [結果を扱う](#結果を扱う)
 * [バリデータの記述と JSON Schema の生成](#バリデータの記述と-json-schema-の生成)
 * [JSpecify による null 性](#jspecify-による-null-性)
@@ -737,6 +738,122 @@ class SignupController {
 * ハンドラは `MultiValueMap` を検証します。そのため、1 つのキーに複数の値があれば、リストとして読まれるか、スカラーのプロパティでは `object.type` で報告されます。`Map<String, String>` で受けると、最初の値以外は捨てられます。
 * `toParameters` は、単一の値にはテキストを、リストのプロパティにはリストを返します。そのため、テキストフィールドには `30` が表示され、チェックされていたチェックボックス（`tags=a&tags=b`）はすべて再びチェックされます。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
 
+## オブジェクトを読み取り元のマップに書き戻す
+
+スキーマには、入力のプロパティ名を一度だけ書きます。`fromMapReversible` で作ったバリデータは、作成したオブジェクトを読み取り元のマップに書き戻すこともできます。SQL 文のパラメータや、保存済みのオブジェクトを表示するフォームのために、プロパティ名をもう一度書く必要はありません。
+
+```java
+record Email(String value) {}
+record UserName(String first, String last) {}
+record Employee(Integer id, UserName name, Email email, Optional<String> nickname, Role role) {}
+
+ReversibleValueValidator<String, Email> emailValidator = Yavi._string("email", c -> c.notBlank().email())
+        .map(Email::new, Email::value);
+
+ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
+        ._string("first_name", c -> c.notBlank())
+        ._string("last_name", c -> c.notBlank())
+        .fromMapReversible(UserName::new, UserName::first, UserName::last);
+
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+        ._integer("id")
+        ._embedded(userNameValidator)
+        ._string(emailValidator)
+        ._string("nickname").optional()
+        ._enum("role", Role.class)
+        .fromMapReversible(Employee::new, Employee::id, Employee::name, Employee::email,
+                Employee::nickname, Employee::role);
+
+employeeValidator.validate(row); // fromMap と同じように読む
+employeeValidator.toMap(employee);
+// {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
+
+jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname, role) "
+        + "VALUES (:id, :first_name, :last_name, :email, :nickname, :role)")
+        .params(employeeValidator.toMap(employee))
+        .update();
+```
+
+* `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
+* `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。
+* 返るバリデータは `ObjectInputValidator` です。これまでどおりネストでき、埋め込めて、`readingWith` や `readingParameters` で読めます。`rejectingUnknownProperties()` や `constraintOnTarget` のあとも `Reversible` のままです。
+* マップは新しく作られます。SQL 文に必要な値は `map.put("updated_by", user)` のように足せます。
+
+| プロパティ | `toMap` |
+| --- | --- |
+| 制約の値、`defaultValue`、`recover` | その値 |
+| enum の定数 | 定数の名前 |
+| `nullable()`、`optional()` で値がない | `null` のエントリ(名前付きパラメータにはキーが必要なため) |
+| `rejectingNull()` で値がない | エントリなし |
+| `presence()` | `Absent` はエントリなし、`PresentNull` は `null` |
+| `_embedded` | 同じマップに書く。値がなければ全プロパティが `null` |
+| `_object` | ネストしたマップ |
+| `_list`、`_map`、`_rest` | 各要素 |
+| `splitBy(",")` | 連結したテキスト。空のリストは `null`(要素のないテキストは送信されないため)。読み戻すにはプロパティに `defaultValue(List.of())` か `nullable()` が必要 |
+| `splitBy(Pattern)` | リスト |
+| `map(f, g)` のバリデータ | `g` の結果 |
+
+値は、プロパティの読み取り元である JDK の型の値で、JDBC ドライバや JSON ライブラリにそのまま渡せます。`URI` や `Year` などもそのまま書くので、ドライバが受け取れない型は変換してください。
+
+**値オブジェクト。** `map(f, g)` は、`map(f)` に、変換後の値から入力へ戻す関数を加えたものです。返り値は `ReversibleValueValidator` で、`reverse(x)` は `x` の読み取り元の入力を返します。逆変換を知っているかどうかは、どのバリデータにも `reversible()` で尋ねられます。単一の値のバリデータは、値を変換していなければ逆変換を知っています。`named`、`optional()`、`nullable()`、`defaultValue`、`recover`、`constraintOnTarget` は逆変換を引き継ぎます。それ以外のバリデータの逆変換は `ReversibleValueValidator.of(validator, g)` で与えます。
+
+**書き戻せないもの。** 逆変換のない `map(f)`、ラムダ、`andThen`、`anyOf` と、逆変換を知らないバリデータを渡した `_object`、`_embedded`、`_list`、`_map`、`_rest` は書き戻せません。この場合、`fromMapReversible` はバリデータの作成時に、プロパティ名を示す `IllegalStateException` を投げます。
+
+```java
+Yavi.schema()
+        ._string(Yavi._string("email").map(Email::new)) // 逆変換がない
+        .fromMapReversible(Contact::new, Contact::email);
+// IllegalStateException: The property 'email' cannot be written back, because its validator does not know its reverse. ...
+```
+
+**ネストしたオブジェクト。** ネストしたマップは SQL 文にバインドできません。行のカラムは `_embedded` で読むか、`ParameterTree.parametersOf` でマップを違反の名前のキーに展開してバインドします。
+
+```java
+// {id=1, address={city=Tokyo, street=null}} -> {id=1, address.city=Tokyo, address.street=null}
+jdbcClient.sql("INSERT INTO venue (id, city, street) VALUES (:id, :address.city, :address.street)")
+        .params(ParameterTree.parametersOf(venueValidator.toMap(venue)))
+        .update();
+```
+
+**行。** `listOfRows()` が返す行は、同じバリデータで読めます。ドライバが日付や時刻のカラムに返す `java.sql.Date` は `LocalDate` として、`java.sql.Time` は `LocalTime` として、`java.sql.Timestamp` は `LocalDateTime` または `Instant` として読みます。
+
+**判別可能なユニオン。** オブジェクトの型を付けて追加した選択肢は、判別子とともに書き戻せます。すべての選択肢をこの方法で追加したユニオンが `Reversible` です。
+
+```java
+DiscriminatedUnionValidator.Reversible<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
+        .when("circle", Circle.class, circleValidator)
+        .when("square", Square.class, squareValidator);
+shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
+```
+
+**実行時にプロパティが決まるスキーマ。** `Yavi.dynamicSchema()` の `buildReversible()` は、検証済みの値のマップを書き戻すバリデータを返します。
+
+### 保存済みのオブジェクトをフォームに表示する
+
+`ParameterTree.ofValues` は、バリデータが書いたマップを受け取り、その値をパラメータのテキストとして保持します。保存済みのオブジェクトの最初の表示と、送信後の再表示を同じコードで扱えます。
+
+```java
+ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+        ._string("name", c -> c.notBlank())
+        ._integer("age")
+        ._boolean("agreed").defaultValue(false)
+        ._localDate("birthday")
+        ._object("address", addressValidator)
+        .fromMapReversible(Signup::new, Signup::name, Signup::age, Signup::agreed, Signup::birthday,
+                Signup::address);
+ValueValidator<Map<String, ?>, Signup> signupValidator = signupSchema
+        .readingParameters(StringCoercion.strict().trimming());
+
+ParameterTree tree = stored != null ? ParameterTree.ofValues(signupSchema.toMap(stored))
+        : ParameterTree.of(request.getParameterMap());
+Map<String, Object> form = tree.toMap(signupSchema.description());
+// {name="Taro", age="30", birthday="2000-01-02", address={city="Tokyo", street=""}}
+```
+
+* 値は、その値として読まれるテキスト(`StringCoercion.textOf`)になります。`30` は `"30"`、`LocalDate` は ISO-8601 のテキストです。`signupValidator` は `tree.toParameters(...)` を保存済みのオブジェクトとして読みます。
+* `null` または `false` のプロパティは、空のフィールドやチェックされていないチェックボックスと同じく、送信されなかったものとして扱います。`toMap(description)` は、送信されなかったプロパティと同じように、空文字列を書くか、`Boolean` ならエントリを書きません。
+* パラメータを読むバリデータは `Reversible` ではありません。書き戻す先がマップだからです。フォームは、上の例のようにスキーマとパラメータのバリデータの両方を持ちます。
+
 ## 結果を扱う
 
 `Validated` は、record の `Valid` と `Invalid` からなる sealed インターフェースになりました。結果は網羅的な `switch` で扱えます。
@@ -948,6 +1065,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `ParameterTree#toMap`、`toParameters`、`parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
+| `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |

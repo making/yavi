@@ -7,11 +7,13 @@ package am.ik.yavi.builder;
 import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -22,6 +24,8 @@ import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
+import am.ik.yavi.core.ReversibleValueValidator;
+import am.ik.yavi.core.StringCoercion;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -58,15 +62,20 @@ import org.jspecify.annotations.Nullable;
  * said when it has no value or a value of another type. The validator applies the label
  * itself; the part that reads the argument from a map applies the rest
  * @param separated returns the definition of this argument as a list that an untyped
- * input may give as text whose elements the given pattern separates; {@code null} unless
- * the argument is a list to which no modifier is applied yet
+ * input may give as text whose elements the given pattern separates, and that is written
+ * back as text joined with the given separator, if any; {@code null} unless the argument
+ * is a list to which no modifier is applied yet
+ * @param reverse returns the value that the validated value of the argument is read from
+ * when its validator reads a map, which is {@code null} if it has none; {@code null} if
+ * the validator of the argument does not know its reverse
  * @param <A> the type of the argument
  * @param <R> the type of the validated value of the argument
  */
 record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name, ValueValidator<A, R> validator,
 		Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source,
 		ObjectInputValidator.Strictness strictness, boolean neverNull, PropertyMessages messages,
-		@Nullable Function<Pattern, ArgumentDefinition<A, R>> separated) {
+		@Nullable BiFunction<Pattern, @Nullable String, ArgumentDefinition<A, R>> separated,
+		@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
 
 	private static final String RECOVER_WITH_NULL = "Write nullable() before it, or recover with Optional.empty() after optional().";
 
@@ -93,9 +102,10 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	ArgumentDefinition(@Nullable String name, ValueValidator<A, R> validator,
-			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull) {
+			Function<InputReader<Object>, ValueValidator<Object, R>> untyped, Source source, boolean neverNull,
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
 		this(name, validator, untyped, source, ObjectInputValidator.Strictness.ABSENT_AS_NULL, neverNull,
-				PropertyMessages.none(), null);
+				PropertyMessages.none(), null, reverse);
 	}
 
 	/**
@@ -103,9 +113,122 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * those of this definition: the key, its strictness and its messages are kept.
 	 */
 	private <A2, R2 extends @Nullable Object> ArgumentDefinition<A2, R2> derive(ValueValidator<A2, R2> validator,
-			Function<InputReader<Object>, ValueValidator<Object, R2>> untyped, Source source, boolean neverNull) {
+			Function<InputReader<Object>, ValueValidator<Object, R2>> untyped, Source source, boolean neverNull,
+			@Nullable Function<? super R2, ? extends @Nullable Object> reverse) {
 		return new ArgumentDefinition<>(this.name, validator, untyped, source, this.strictness, neverNull,
-				this.messages, null);
+				this.messages, null, reverse);
+	}
+
+	/**
+	 * Returns the function that goes back from the value of the given validator to its
+	 * input, or {@code null} if the validator does not know its reverse.
+	 */
+	private static <A, R extends @Nullable Object> @Nullable Function<? super R, ? extends @Nullable Object> reverseOf(
+			ValueValidator<A, R> validator) {
+		final ReversibleValueValidator<A, R> reversible = validator.reversible().orElse(null);
+		if (reversible == null) {
+			return null;
+		}
+		final Function<? super R, ? extends @Nullable Object> reverse = value -> written(reversible.reverse(value));
+		return reverse;
+	}
+
+	/**
+	 * Returns the given value as a map holds it: an enum constant, which is a type of the
+	 * application, is its name, which it is read from. Any other value is a JDK type or
+	 * what the validator of the argument goes back to, and is written as it is.
+	 */
+	private static @Nullable Object written(@Nullable Object value) {
+		return value instanceof Enum<?>constant ? constant.name() : value;
+	}
+
+	/**
+	 * Returns the function that goes back from a value that stands for {@code null} too,
+	 * which it is read from, or {@code null} if there is no function to go back.
+	 */
+	@SuppressWarnings({ "unchecked", "NullAway" })
+	private static <R extends @Nullable Object, R2 extends @Nullable Object> @Nullable Function<? super R2, ? extends @Nullable Object> nullSafe(
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
+		if (reverse == null) {
+			return null;
+		}
+		final Function<? super R2, ? extends @Nullable Object> nullSafe = value -> value == null ? null
+				: reverse.apply((R) value);
+		return nullSafe;
+	}
+
+	/**
+	 * Returns the function that goes back from an optional value: an empty one is read
+	 * from {@code null}.
+	 */
+	private static <R extends @Nullable Object> @Nullable Function<? super Optional<@NonNull R>, ? extends @Nullable Object> optionalOf(
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
+		if (reverse == null) {
+			return null;
+		}
+		final Function<? super Optional<@NonNull R>, ? extends @Nullable Object> optional = value -> value.isPresent()
+				? reverse.apply(value.get()) : null;
+		return optional;
+	}
+
+	/**
+	 * Returns the function that goes back from a value that may be absent: one that is
+	 * present without a value is read from {@code null}. The part that writes the
+	 * argument leaves out an absent one.
+	 */
+	private static <R extends @Nullable Object> @Nullable Function<? super Presence<@NonNull R>, ? extends @Nullable Object> presentOf(
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
+		if (reverse == null) {
+			return null;
+		}
+		final Function<? super Presence<@NonNull R>, ? extends @Nullable Object> present = value -> value instanceof Presence.Present<@NonNull R>held
+				? reverse.apply(held.value()) : null;
+		return present;
+	}
+
+	/**
+	 * Returns the function that goes back from every element of a list, or the text of
+	 * the elements joined with the given separator if there is one. An empty list is then
+	 * read from {@code null}: text without an element is not sent.
+	 */
+	private static <R extends @Nullable Object> @Nullable Function<? super List<R>, ? extends @Nullable Object> eachOf(
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse, @Nullable String separator) {
+		if (reverse == null) {
+			return null;
+		}
+		final Function<? super List<R>, ? extends @Nullable Object> each = values -> {
+			final List<@Nullable Object> elements = new ArrayList<>(values.size());
+			values.forEach(value -> elements.add(reverse.apply(value)));
+			if (separator == null) {
+				return elements;
+			}
+			if (elements.isEmpty()) {
+				return null;
+			}
+			final StringBuilder text = new StringBuilder();
+			for (int i = 0; i < elements.size(); i++) {
+				final Object element = elements.get(i);
+				text.append(i == 0 ? "" : separator).append(element == null ? "" : StringCoercion.textOf(element));
+			}
+			return text.toString();
+		};
+		return each;
+	}
+
+	/**
+	 * Returns the function that goes back from every value of a map.
+	 */
+	private static <R extends @Nullable Object> @Nullable Function<? super Map<String, R>, ? extends @Nullable Object> valuesOf(
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) {
+		if (reverse == null) {
+			return null;
+		}
+		final Function<? super Map<String, R>, ? extends @Nullable Object> each = values -> {
+			final Map<String, @Nullable Object> entries = new LinkedHashMap<>();
+			values.forEach((key, value) -> entries.put(key, reverse.apply(value)));
+			return entries;
+		};
+		return each;
 	}
 
 	/**
@@ -117,7 +240,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 				messages.label() == null ? this.validator
 						: new Labeled<>(this.keyName(), new PropertyMessages(messages.label(), null, null),
 								unlabeled(this.validator)),
-				this.untyped, this.source, this.strictness, this.neverNull, messages, null);
+				this.untyped, this.source, this.strictness, this.neverNull, messages, null, this.reverse);
 	}
 
 	private static <A, R extends @Nullable Object> ValueValidator<A, R> unlabeled(ValueValidator<A, R> validator) {
@@ -182,7 +305,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 						}
 					}
 					return untyped(reader, describedName(described.description()), (Class<A>) type, described);
-				}, Source.PROPERTY, false);
+				}, Source.PROPERTY, false, reverseOf(validator));
 	}
 
 	/**
@@ -190,8 +313,9 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * given validator, which is built from constraints and so rejects {@code null}.
 	 */
 	static <A> ArgumentDefinition<A, A> value(String name, Class<A> type, ValueValidator<A, A> validator) {
+		final Function<? super A, ? extends @Nullable Object> itself = value -> written(value);
 		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator),
-				Source.PROPERTY, true);
+				Source.PROPERTY, true, itself);
 	}
 
 	/**
@@ -203,7 +327,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			ValueValidator<A, R> validator) {
 		final ValueDescription description = validator.description().named(name);
 		return new ArgumentDefinition<>(name, nested(name, validator, description),
-				reader -> nested(name, validator.readingWith(reader), description), Source.PROPERTY, false);
+				reader -> nested(name, validator.readingWith(reader), description), Source.PROPERTY, false,
+				reverseOf(validator));
 	}
 
 	/**
@@ -213,7 +338,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> object(String name,
 			NullAcceptingValueValidator<A, R> validator) {
 		return new ArgumentDefinition<>(name, validator.named(name),
-				reader -> validator.readingWith(reader).named(name), Source.PROPERTY, false);
+				reader -> validator.readingWith(reader).named(name), Source.PROPERTY, false, reverseOf(validator));
 	}
 
 	/**
@@ -222,18 +347,19 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	static <E, R extends @Nullable Object> ArgumentDefinition<List<? extends E>, List<R>> list(String name,
 			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints) {
-		return list(name, elementValidator, constraints, null);
+		return list(name, elementValidator, constraints, null, null);
 	}
 
 	/**
 	 * Returns the definition of a list that an untyped input may give as text whose
 	 * elements the given pattern separates, if any, as
 	 * {@link ValueValidator#liftList(Pattern)} states. A typed list is validated as
-	 * before: it holds the elements already.
+	 * before: it holds the elements already. The list is written back as text joined with
+	 * the given literal separator, if any, and else as a list.
 	 */
 	private static <E, R extends @Nullable Object> ArgumentDefinition<List<? extends E>, List<R>> list(String name,
 			ValueValidator<E, R> elementValidator, ContainerConstraints<List<R>> constraints,
-			@Nullable Pattern separator) {
+			@Nullable Pattern separator, @Nullable String literal) {
 		final ValueDescription description = new ValueDescription.Elements(elementValidator.description(),
 				constraints.descriptions(), separator == null ? null : separator.pattern());
 		final ValueValidator<List<? extends E>, List<R>> elements = elements(elementValidator)::validate;
@@ -245,7 +371,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 								: separated.readingWith(reader)),
 						description),
 				Source.PROPERTY, ObjectInputValidator.Strictness.ABSENT_AS_NULL, true, PropertyMessages.none(),
-				separator == null ? pattern -> list(name, elementValidator, constraints, pattern) : null);
+				separator == null ? (pattern, text) -> list(name, elementValidator, constraints, pattern, text) : null,
+				eachOf(reverseOf(elementValidator), literal));
 	}
 
 	/**
@@ -255,7 +382,18 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * @throws IllegalArgumentException if the pattern matches the empty string
 	 */
 	ArgumentDefinition<A, R> separatedBy(Pattern separator) {
-		return Objects.requireNonNull(this.separated, "The argument is not a list.").apply(separator);
+		return Objects.requireNonNull(this.separated, "The argument is not a list.").apply(separator, null);
+	}
+
+	/**
+	 * Returns the definition of this list as one that an untyped input may give as text
+	 * whose elements the given separator, taken literally, separates. It is written back
+	 * as that text.
+	 * @throws IllegalArgumentException if the separator is empty
+	 */
+	ArgumentDefinition<A, R> separatedBy(String separator) {
+		return Objects.requireNonNull(this.separated, "The argument is not a list.")
+			.apply(Pattern.compile(Pattern.quote(separator)), separator);
 	}
 
 	/**
@@ -269,7 +407,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 				constraints.descriptions());
 		return new ArgumentDefinition<>(name, nested(name, constraints.constrain(lifted), description),
 				reader -> nested(name, constraints.constrain(lifted.readingWith(reader)), description), Source.PROPERTY,
-				true);
+				true, valuesOf(reverseOf(valueValidator)));
 	}
 
 	/**
@@ -290,7 +428,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			final ValueValidator<Object, R> checked = ofMap.untyped((Class<Map<String, Object>>) (Class<?>) Map.class);
 			untyped = reader -> checked.readingWith(reader);
 		}
-		return new ArgumentDefinition<>(null, ofMap, untyped, Source.OBJECT, false);
+		return new ArgumentDefinition<>(null, ofMap, untyped, Source.OBJECT, false, reverseOf(ofMap));
 	}
 
 	/**
@@ -299,8 +437,14 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 */
 	static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, ? extends V>, Map<String, R>> rest(
 			ValueValidator<V, R> valueValidator) {
+		return rest(valueValidator, reverseOf(valueValidator));
+	}
+
+	private static <V, R extends @Nullable Object> ArgumentDefinition<Map<String, ? extends V>, Map<String, R>> rest(
+			ValueValidator<V, R> valueValidator, @Nullable Function<? super R, ? extends @Nullable Object> reverse) {
 		final ValueValidator<Map<String, ? extends V>, Map<String, R>> lifted = valueValidator.liftMap();
-		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST, true);
+		return new ArgumentDefinition<>(null, lifted, reader -> lifted.readingWith(reader), Source.REST, true,
+				valuesOf(reverse));
 	}
 
 	/**
@@ -308,17 +452,18 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * argument reads and takes their values as they are.
 	 */
 	static ArgumentDefinition<Map<String, ?>, Map<String, @Nullable Object>> rest() {
-		return rest(ValueValidator.passThrough().untyped(Object.class));
+		final Function<@Nullable Object, @Nullable Object> itself = value -> value;
+		return rest(ValueValidator.passThrough().untyped(Object.class), itself);
 	}
 
 	ArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
 		return this.derive(this.validator.optional(), reader -> this.untyped.apply(reader).optional(), this.source,
-				true);
+				true, optionalOf(this.reverse));
 	}
 
 	ArgumentDefinition<A, @Nullable R> asNullable() {
 		return this.derive(this.validator.nullable(), reader -> this.untyped.apply(reader).nullable(), this.source,
-				false);
+				false, nullSafe(this.reverse));
 	}
 
 	/**
@@ -328,7 +473,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withDefault(R defaultValue) {
 		final R checked = this.nonNull(defaultValue, "default value", "Write nullable() instead.");
 		return this.derive(this.validator.defaultValue(checked),
-				reader -> this.untyped.apply(reader).defaultValue(checked), this.source, this.neverNull);
+				reader -> this.untyped.apply(reader).defaultValue(checked), this.source, this.neverNull,
+				nullSafe(this.reverse));
 	}
 
 	/**
@@ -338,7 +484,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> recovering(R fallback) {
 		final R checked = this.nonNull(fallback, "fallback", RECOVER_WITH_NULL);
 		return this.derive(this.validator.recover(checked), reader -> this.untyped.apply(reader).recover(checked),
-				this.source, this.neverNull);
+				this.source, this.neverNull, nullSafe(this.reverse));
 	}
 
 	/**
@@ -350,7 +496,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		final Function<? super ConstraintViolations, ? extends R> checked = this.neverNull ? violations -> this
 			.nonNull(fallback.apply(violations), "result of the fallback function", RECOVER_WITH_NULL) : fallback;
 		return this.derive(this.validator.recoverWith(checked),
-				reader -> this.untyped.apply(reader).recoverWith(checked), this.source, this.neverNull);
+				reader -> this.untyped.apply(reader).recoverWith(checked), this.source, this.neverNull,
+				nullSafe(this.reverse));
 	}
 
 	/**
@@ -379,7 +526,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			final ValueValidator<Object, R> present = this.untyped.apply(reader);
 			return present.<Presence<@NonNull R>>map(value -> Presence.<@NonNull R>ofNullable(value))
 				.describedAs(new ValueDescription.Presence(present.description()));
-		}, Source.PRESENCE, true);
+		}, Source.PRESENCE, true, presentOf(this.reverse));
 	}
 
 	/**
@@ -391,7 +538,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	ArgumentDefinition<A, R> withStrictness(ObjectInputValidator.Strictness strictness) {
 		return new ArgumentDefinition<>(this.name,
 				this.validator.describedAs(strictness.describe(this.validator.description())), this.untyped,
-				this.source, strictness, this.neverNull, this.messages, null);
+				this.source, strictness, this.neverNull, this.messages, null, this.reverse);
 	}
 
 	/**
@@ -411,7 +558,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 		}
 		final ValueValidator<Object, R> reading;
 		try {
-			reading = new Reading<>(this.untyped.apply(InputReader.ofJdkTypes()), this.untyped);
+			reading = new Reading<>(this.untyped.apply(InputReader.ofJdkTypes()), this.untyped, this.reverse);
 		}
 		catch (UnsupportedOperationException e) {
 			throw new IllegalStateException("The input type of the argument "
@@ -433,7 +580,14 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * of another reader as the argument defines it.
 	 */
 	private record Reading<R extends @Nullable Object> (ValueValidator<Object, R> validator,
-			Function<InputReader<Object>, ValueValidator<Object, R>> reading) implements ValueValidator<Object, R> {
+			Function<InputReader<Object>, ValueValidator<Object, R>> reading,
+			@Nullable Function<? super R, ? extends @Nullable Object> reverse) implements ValueValidator<Object, R> {
+
+		@Override
+		public Optional<ReversibleValueValidator<Object, R>> reversible() {
+			final Function<? super R, ? extends @Nullable Object> reverse = this.reverse;
+			return reverse == null ? Optional.empty() : Optional.of(ReversibleValueValidator.of(this, reverse));
+		}
 
 		@Override
 		public Validated<R> validate(@Nullable Object value, Locale locale, ConstraintContext constraintContext) {

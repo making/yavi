@@ -206,6 +206,60 @@ public final class ParameterTree {
 	}
 
 	/**
+	 * Returns the tree of the parameters that stand for the given tree of values, such as
+	 * the map that a validator writes an object back as. This is how a form is shown for
+	 * a stored object in the way it is shown again for the parameters that were sent:
+	 *
+	 * <pre>{@code
+	 * ParameterTree tree = stored != null ? ParameterTree.ofValues(signupSchema.toMap(stored))
+	 *     : ParameterTree.of(request.getParameterMap());
+	 * Map<String, Object> form = tree.toMap(signupSchema.description());
+	 * }</pre>
+	 *
+	 * <ul>
+	 * <li>A {@code Map} is an object, a {@code List} is a list and any other value is a
+	 * single value, as {@link #parametersOf(Map)} states.</li>
+	 * <li>A single value is held as the text that is read as it
+	 * ({@link StringCoercion#textOf(Object)}): {@code 30} is {@code "30"}, a
+	 * {@code LocalDate} its ISO-8601 text and an enum constant its name. A validator that
+	 * reads parameters therefore reads the tree as the values it was created from.</li>
+	 * <li>A property that is {@code null} or {@code false} is not sent, like an empty
+	 * field and a checkbox that is not checked: {@link #toMap(ValueDescription)} writes
+	 * what is written for a property that was not sent, an empty string or, for a
+	 * {@code Boolean}, no entry. An element of a list is held whatever it is.</li>
+	 * </ul>
+	 * @param values the properties of the root by their name
+	 * @return the root of the tree, which is an object
+	 * @see ObjectInputValidator.Reversible#toMap(Object)
+	 */
+	public static ParameterTree ofValues(Map<String, ?> values) {
+		// the values are those of the application, so the size of a list is not bounded
+		return of(parametersOf(textOf(values)), Integer.MAX_VALUE);
+	}
+
+	private static Map<String, @Nullable Object> textOf(Map<?, ?> values) {
+		final Map<String, @Nullable Object> text = new LinkedHashMap<>();
+		values.forEach((name, value) -> {
+			if (value != null && !Boolean.FALSE.equals(value)) {
+				text.put(String.valueOf(name), textOf(value));
+			}
+		});
+		return text;
+	}
+
+	private static Object textOf(Object value) {
+		if (value instanceof Map<?, ?>map) {
+			return textOf(map);
+		}
+		if (value instanceof Iterable<?>iterable) {
+			final List<@Nullable Object> text = new ArrayList<>();
+			iterable.forEach(element -> text.add(element == null ? null : textOf(element)));
+			return text;
+		}
+		return StringCoercion.textOf(value);
+	}
+
+	/**
 	 * Returns the reader of the nodes of a tree, which reads their strings as
 	 * {@link CoercibleInputReader#coercingStrings()} states.
 	 * @return the reader of parameter trees

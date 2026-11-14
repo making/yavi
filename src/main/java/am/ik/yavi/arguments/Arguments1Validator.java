@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -99,6 +100,11 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.from(valueValidator.named(name));
+			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return valueValidator.reversible().map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
@@ -324,6 +330,12 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 				return Arguments1Validator.this.preprocess(transform)
 					.constraintOnTarget(predicate, name, violationMessage);
 			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
+			}
 		};
 	}
 
@@ -396,6 +408,12 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).describedAs(description.named(name));
 			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
+			}
 		};
 	}
 
@@ -429,6 +447,12 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).preprocess(transform);
+			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
