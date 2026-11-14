@@ -44,18 +44,19 @@ produces. This is what keeps it inside a validation library.
 No type is called an encoder or a codec, and `ValueValidator` is not renamed. A validator
 reads an input (`fromMap`, `readingWith`, `readingParameters`, `InputReader`), and the
 reverse is already called writing (`ParameterTree#toMap`, `toParameters`, "Writing the
-parameters back"). A validator that is `Writable` writes what it reads. The comparison
-with Raoh says that `toMap` is what Raoh calls an encoder.
+parameters back"). A validator that is `Reversible` writes what it reads: its validation
+is gone back, which is the round trip. The comparison with Raoh says that `toMap` is what
+Raoh calls an encoder.
 
 ## API
 
 ```java
-ObjectInputValidator.Writable<UserName> userNameValidator = Yavi.schema()
+ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
         .mapping(UserName::new, UserName::first, UserName::last);
 
-ObjectInputValidator.Writable<Employee> employeeValidator = Yavi.schema()
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
         ._integer("id")
         ._embedded(userNameValidator)
         ._string(Email.VALIDATOR.map(Email::new, Email::value))
@@ -71,7 +72,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 
 // the first display of a stored object and the form that is shown again: one code path
-ParameterTree tree = stored ? ParameterTree.ofValues(signupValidator.toMap(signup))
+ParameterTree tree = stored ? ParameterTree.ofValues(signupSchema.toMap(signup))
         : ParameterTree.of(params);
 Map<String, Object> form = tree.toParameters(signupValidator.description());
 ```
@@ -81,19 +82,37 @@ Map<String, Object> form = tree.toParameters(signupValidator.description());
 | `fromMap(f)`, `flatFromMap(f)` | `mapping(f, accessor1..N)`, `flatMapping(f, accessor1..N)` |
 | `validate(map)` | `toMap(x)`: a map of the JDK values as they are, for JDBC and Jackson |
 | `ParameterTree.of(params)` | `ParameterTree.ofValues(validator.toMap(x))`: the values as text (the name is not decided) |
-| `ObjectInputValidator<X>` | `ObjectInputValidator.Writable<X>` |
+| `ObjectInputValidator<X>` | `ObjectInputValidator.Reversible<X>` |
 | `map(f)` | `map(f, g)` |
-| `when(value, validator)` of a union | `when(value, type, writableValidator)` |
+| `when(value, validator)` of a union | `when(value, type, reversibleValidator)` |
 
 * `mapping` is one generated method per arity. Accessor `i` is a `Function<X, Ri>`, and
   `Ri` is the type of the constructor argument, so a record is written with method
   references and the types are checked by the compiler. No overload of a property is
   added.
-* `Writable` is a subtype of `ObjectInputValidator`, so it nests, is embedded and reads
-  with `readingWith` and `readingParameters` as before. It stays `Writable` after
+* `Reversible` is a subtype of `ObjectInputValidator`, so it nests, is embedded and reads
+  with `readingWith` and `readingParameters` as before. It stays `Reversible` after
   `rejectingUnknownProperties()` and `constraintOnTarget`.
 * A union selects the alternative by the type of the object and adds the discriminator.
-  It is `Writable` by its staged type only if every alternative is added with the type.
+  It is `Reversible` by its staged type only if every alternative is added with the type.
+* `readingParameters()` returns a `ValueValidator<Map<String, ?>, X>`, which is not
+  `Reversible`. A form keeps two fields, the schema and the validator of the parameters;
+  a row of JDBC or jOOQ is read as a map and needs one:
+
+  ```java
+  static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+          ._string("name", c -> c.notBlank())
+          ._integer("age")
+          .mapping(Signup::new, Signup::name, Signup::age);
+
+  static final ValueValidator<Map<String, ?>, Signup> signupValidator = signupSchema
+          .readingParameters(StringCoercion.strict().trimming());
+  ```
+
+  A type that reads parameters and is `Reversible` is one more type. Not chosen.
+* `Reversible` is the name because "a validator that is writable" reads as one that is
+  written to. A noun of its own (`ObjectMapping`) would be a wrapper that is not a
+  validator, and `rejectingUnknownProperties()` would lose its staged types.
 * `toMap(x)` is the only method that writes. A form is given the map through
   `ParameterTree`, see below.
 
@@ -139,7 +158,7 @@ An entry with `null` is kept because a named parameter needs its key.
 ## What cannot be written
 
 `map(f)` without the reverse, a lambda, `andThen`, `anyOf`, and `_object` or `_embedded`
-with a validator that is not `Writable`. `mapping(...)` fails with an
+with a validator that is not `Reversible`. `mapping(...)` fails with an
 `IllegalStateException` that names the property, at the time and in the way `fromMap`
 fails for an argument without a name or with an unknown input type.
 
@@ -153,7 +172,7 @@ returns the input type `Ai`, but then the application writes
 No new package. The dependencies stay `core <- input <- builder <- validator`, without a
 cycle.
 
-* `am.ik.yavi.input`: `ObjectInputValidator.Writable` and the writing side of the union.
+* `am.ik.yavi.input`: `ObjectInputValidator.Reversible` and the writing side of the union.
   `ObjectInputValidator` is sealed and there is no `module-info`, so a subclass is in the
   same package. `ParameterTree.ofValues` and the rules of text.
 * `am.ik.yavi.core`: the reverse of a single value (`map(f, g)`).
