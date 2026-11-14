@@ -616,6 +616,11 @@ public sealed class ObjectInputValidator<X extends @Nullable Object>
 	 *     .readingParameters()
 	 *     .formattingWith(messageFormatter);
 	 * }</pre>
+	 *
+	 * <p>
+	 * {@link ParameterTree#toMap
+	 * ParameterTree.of(parameters).toMap(validator.description())} returns the parameters
+	 * as the validator reads them, to show a form again with the text that was sent.
 	 * @return a validator of a map of parameters, whose values are strings, or iterables
 	 * or arrays of strings
 	 * @see ParameterTree

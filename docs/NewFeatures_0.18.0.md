@@ -760,6 +760,68 @@ tokenValidator.formattingWith(formatter).validate(Map.of()).errors().messagesByN
 | `MessageFormatter#format(String, Object[], Locale)` | Formats a text. The default formats it with `MessageFormat`; override it to format a text as the formatter formats the other messages. |
 | `Constraint#predicates(List)` | Adds several predicates as one constraint, as `url(url -> ...)` and `password(...)` do, so that `message(...)` right after replaces the message of each. |
 
+### Writing the parameters back
+
+A form that is not valid is shown again with the text that was sent. `ParameterTree`
+returns the parameters as a validator reads them: the properties that the validator
+describes with what was sent for them, in the shape of the schema. The application does
+not copy the fields by hand.
+
+```java
+record Signup(String name, Integer age, List<String> tags, Address address) {}
+
+ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank())
+        ._integer("age")
+        ._list("tags", Yavi._string()).defaultValue(List.of())
+        ._object("address", addressValidator)
+        .fromMap(Signup::new)
+        .readingParameters(StringCoercion.strict().trimming());
+
+// name=+Alice+&age=abc&tags=a&address[city]=Tokyo&utm_source=mail
+ParameterTree tree = ParameterTree.of(params);
+Map<String, Object> form = tree.toMap(signupValidator.description());
+// {name=" Alice ", age="abc", tags=[a], address={city="Tokyo"}}
+Map<String, Object> flat = tree.toParameters(signupValidator.description());
+// {name=" Alice ", age="abc", tags=[a], address.city="Tokyo"}
+
+// nothing was sent
+ParameterTree.of(Map.of()).toMap(signupValidator.description());
+// {name="", age="", tags=[], address={city=""}}
+```
+
+* A value is the text that was sent. It is not trimmed, coerced or validated.
+* `toMap` returns a tree of `Map`, `List` and the values, for a template engine such as
+  Mustache. `toParameters` returns the same values under the names of the violations
+  (`address.city`, `items[0].name`), for a `MapBindingResult` of Spring.
+* A list is a `List` also for one value. A list with `splitBy` that was sent as one text
+  is that text, as a text field shows it.
+* A key that no property is defined for (`utm_source`) is left out. A schema with `_rest`
+  reads the other keys, so they are returned.
+* The entries are the same for every request. A single value that was not sent is an
+  empty string, as an empty text field sends it. A list or a map is empty and an object
+  has its properties. The same is returned for a value that has not the shape of its
+  property, such as two values for `age`; the violation reports it. A template that fails
+  for an absent key, such as one of JMustache, does not fail for a request that lacks a
+  parameter, and the same call gives the empty form.
+* A `Boolean` that was not sent has no entry, because a checkbox that is not checked
+  sends nothing and an empty string is not `false` to every template engine. A property
+  with `presence()` and a structure that contains itself have no entry either.
+* The returned maps and lists are new. Add what a page needs: `form.put("id", id)`.
+* For a discriminated union the properties of all alternatives are returned.
+* The description is the one of the validator that validates the parameters. Give
+  `ParameterTree.of(params, maxIndex)` the same largest index if the validator reads a
+  tree with another one.
+* The map holds every property, a password included. The template decides what it shows.
+
+`ParameterTree.parametersOf(map)` is the reverse of `ParameterTree.of(parameters)` for any
+tree of `Map` and `List`:
+
+```java
+ParameterTree.parametersOf(Map.of("address", Map.of("city", "Tokyo"), "tags", List.of("a", "b")));
+// {address.city=Tokyo, tags=[a, b]}
+```
+
 ### Showing the form again in Spring MVC
 
 Spring MVC creates a `BindingResult` only for a form object that it binds, not for a map
@@ -779,8 +841,9 @@ class SignupController {
             .readingParameters(StringCoercion.strict().trimming().booleanWords());
 
     @ModelAttribute
-    void signupForm(@RequestParam Map<String, String> params, Model model) {
-        model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
+    void signupForm(@RequestParam MultiValueMap<String, String> params, Model model) {
+        Map<String, Object> form = ParameterTree.of(params).toParameters(signupValidator.description());
+        model.addAllAttributes(new MapBindingResult(form, "signupForm").getModel());
     }
 
     @GetMapping("/signup")
@@ -827,16 +890,14 @@ class SignupController {
 * Thymeleaf adds a hidden field `_subscribed` to a checkbox. No property is defined for
   that key, so such a form cannot be read with `rejectingUnknownProperties()`.
 * Name a field as `th:field` does: `address.city`, `items[0].name`. These are the names
-  of the violations and the keys that `MapBindingResult` looks up. A value sent as
-  `address[city]` is validated, but it is not shown again.
+  of the violations and the keys that `MapBindingResult` looks up. `toParameters`
+  returns these keys, so a value sent as `address[city]` is shown again too.
 * The handler validates a `MultiValueMap`, so several values for one key are a list, or
   `object.type` for a scalar property. A `Map<String, String>` would drop all but the
   first.
-* The `@ModelAttribute` method takes a `Map<String, String>`, because a text field shows
-  the list of a `MultiValueMap` as `[30]`. For a key with several values, such as
-  checkboxes (`tags=a&tags=b`), give `MapBindingResult` a map that has the list of the
-  values for that key, or only the first checkbox is checked again. The violation of an
-  element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
+* `toParameters` gives the text of a single value and the list of a list property, so a
+  text field shows `30` and every checked checkbox (`tags=a&tags=b`) is checked again.
+  The violation of an element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
 
 ## Handling the result
 

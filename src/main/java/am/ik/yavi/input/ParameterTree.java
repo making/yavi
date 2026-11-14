@@ -7,10 +7,12 @@ package am.ik.yavi.input;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.CoercibleInputReader;
@@ -91,6 +93,25 @@ import org.jspecify.annotations.Nullable;
  * {@code Object}, is the string of a scalar, an unmodifiable {@code List} or an
  * unmodifiable {@code Map<String, Object>}.
  *
+ * <h2>Writing the parameters back</h2>
+ *
+ * {@link #toMap(ValueDescription)} returns the properties that a validator describes with
+ * what was sent for them, in the shape that the validator reads them in, for example to
+ * show a form again with the text that was sent:
+ *
+ * <pre>{@code
+ * // name=+Alice+&tags=a&address[city]=Tokyo&utm_source=mail
+ * ParameterTree tree = ParameterTree.of(parameters);
+ * tree.toMap(validator.description());
+ * // {name=" Alice ", age="", tags=[a], address={city="Tokyo"}}
+ * tree.toParameters(validator.description());
+ * // {name=" Alice ", age="", tags=[a], address.city="Tokyo"}
+ * }</pre>
+ *
+ * The description is the one of the validator that validates the parameters, and the
+ * largest index is the one that validator reads them with. {@link #parametersOf(Map)} is
+ * the reverse of {@link #of(Map)} for any tree of JDK types.
+ *
  * <p>
  * A tree is immutable and does not see the later changes of the map it was created from.
  *
@@ -110,6 +131,9 @@ public final class ParameterTree {
 	static final int MAX_DEPTH = 64;
 
 	private static final InputReader<ParameterTree> READER = Reader.INSTANCE.coercingStrings();
+
+	/** What a node is written as if it does not have the described shape. */
+	private static final Object NONE = new Object();
 
 	/** The values given for the key of this node. */
 	private final List<@Nullable Object> values;
@@ -222,6 +246,308 @@ public final class ParameterTree {
 				return validator.readingWith(reader);
 			}
 		};
+	}
+
+	/**
+	 * Returns the parameters as the given description reads them: a tree of JDK types
+	 * that holds the described properties with what was sent for them and nothing else,
+	 * for example to show a form again with the text that was sent.
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Map<String, ?>, Signup> validator = Yavi.schema()
+	 *     ._string("name", c -> c.notBlank())
+	 *     ._integer("age")
+	 *     ._list("tags", Yavi._string()).defaultValue(List.of())
+	 *     ._object("address", addressValidator)
+	 *     .fromMap(Signup::new)
+	 *     .readingParameters(StringCoercion.strict().trimming());
+	 * // name=+Alice+&tags=a&address[city]=Tokyo&utm_source=mail
+	 * Map<String, Object> form = ParameterTree.of(parameters).toMap(validator.description());
+	 * // {name=" Alice ", age="", tags=[a], address={city="Tokyo"}}
+	 * }</pre>
+	 *
+	 * <ul>
+	 * <li>A value is the one that was sent, as it was sent: it is not trimmed, not
+	 * coerced and not validated, so {@code abc} is returned for an {@code Integer}.</li>
+	 * <li>The shape is the described one, whatever was sent: an object is a
+	 * {@code Map<String, Object>} of its described properties in their order, a list is a
+	 * {@code List} whatever the number of its values is, and a map is a {@code Map} of
+	 * its keys. A template or a caller finds the same entries for every request.</li>
+	 * <li>A single value that was not sent is an empty string, which is what an empty
+	 * text field sends and what the validator reads like an absent key. A list or a map
+	 * that was not sent is empty, and an object has its properties. This is also what is
+	 * returned for a value that does not have the described shape, such as several values
+	 * for a single value; the validator reports it with {@code object.type}.</li>
+	 * <li>The following have no entry unless they were sent: a {@code Boolean}, because a
+	 * checkbox that is not checked sends nothing and an empty string is not {@code false}
+	 * to every template engine; a property whose absence is told from {@code null}
+	 * ({@code presence()}); a value whose shape is not described; and a structure that
+	 * contains itself, where it does so.</li>
+	 * <li>An index that is skipped is an element that is {@code null}, so the other
+	 * elements keep the index that their violations are reported at.</li>
+	 * <li>A list that may be given as one text ({@code splitBy}) is that text if one was
+	 * sent, as a text field shows it, the list of the values if several were sent and an
+	 * empty string if none was. Nothing is split.</li>
+	 * <li>A key that no property is described for is left out, so that a page does not
+	 * show a parameter that the application did not ask for. A validator that reads the
+	 * rest of the properties ({@code _rest}) asks for them.</li>
+	 * <li>The properties of alternatives ({@link ValueDescription.AnyOf}), such as those
+	 * of a {@link DiscriminatedUnionValidator}, are the properties of all of them,
+	 * because a form holds the fields of all and the parameters that are not valid do not
+	 * tell which one was meant. A property that the alternatives describe differently is
+	 * written as the first of them that it has the shape of.</li>
+	 * <li>A value whose shape is not described ({@link ValueDescription.Unknown}, the
+	 * property of a validator that is a lambda, or a value of type {@code Object}) is
+	 * what the tree holds: a string for one value, a list for several and a map or a list
+	 * for nested keys.</li>
+	 * </ul>
+	 *
+	 * The description must be the one of the validator that validates these parameters;
+	 * nothing tells if it is another one. The returned tree holds every described value,
+	 * a password included, so a template decides what it writes into a page.
+	 * @param description the description of the validator that reads the parameters
+	 * ({@link ValueValidator#description()})
+	 * @return a new tree of {@code Map<String, Object>}, {@code List} and the values that
+	 * were sent, which the caller may change, for example to add what a page needs; empty
+	 * if the description is not the one of an object
+	 * @see #toParameters(ValueDescription)
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> toMap(ValueDescription description) {
+		return shape(this, description) instanceof Map<?, ?>map ? (Map<String, Object>) map : new LinkedHashMap<>();
+	}
+
+	/**
+	 * Returns the parameters as the given description reads them, as
+	 * {@link #toMap(ValueDescription)} does, under the keys they would be sent with: the
+	 * names of the violations, such as {@code address.city} and {@code items[0].name}.
+	 * This is the map that a {@code MapBindingResult} of Spring looks a field up in. It
+	 * is {@link #parametersOf(Map) parametersOf(toMap(description))}.
+	 * @param description the description of the validator that reads the parameters
+	 * @return a new map of the values by their key, which the caller may change; a value
+	 * is a {@code List} for a list of single values
+	 */
+	@SuppressWarnings({ "unchecked", "NullAway" })
+	public Map<String, Object> toParameters(ValueDescription description) {
+		// the tree of a description has no null but the skipped indexes, which have no
+		// key
+		return (Map<String, Object>) (Map<String, ?>) parametersOf(this.toMap(description));
+	}
+
+	/**
+	 * Returns the parameters that stand for the given tree of JDK types, which is the
+	 * reverse of {@link #of(Map)}: the tree of the returned parameters has the values of
+	 * the given one.
+	 *
+	 * <pre>{@code
+	 * ParameterTree.parametersOf(Map.of("address", Map.of("city", "Tokyo"), "tags", List.of("a", "b"),
+	 *     "items", List.of(Map.of("name", "pen"))));
+	 * // {address.city=Tokyo, tags=[a, b], items[0].name=pen}
+	 * }</pre>
+	 *
+	 * <ul>
+	 * <li>A {@code Map} is an object and its keys are names, which are written as
+	 * {@code .name}, or as {@code [name]} if they hold {@code .} or {@code [}.</li>
+	 * <li>A {@code List} of single values is the values of its key. A list that holds a
+	 * map, a list or {@code null} is written with indexes ({@code items[0]}); an element
+	 * that is {@code null} has no key, so the others keep their index.</li>
+	 * <li>Any other value is the value of its key as it is; nothing is converted to
+	 * text.</li>
+	 * <li>A map or a list that is empty has no key, because it cannot be sent.</li>
+	 * </ul>
+	 * @param tree the properties of the root by their name
+	 * @return a new map of the values by their key, in the order of the tree, which the
+	 * caller may change
+	 */
+	public static Map<String, @Nullable Object> parametersOf(Map<String, ?> tree) {
+		final Map<String, @Nullable Object> parameters = new LinkedHashMap<>();
+		tree.forEach((name, value) -> flatten(name, value, parameters));
+		return parameters;
+	}
+
+	private static void flatten(String key, @Nullable Object node, Map<String, @Nullable Object> parameters) {
+		if (node instanceof Map<?, ?>object) {
+			object.forEach((name, value) -> {
+				final String text = String.valueOf(name);
+				// the values of a key that has nested keys too are under an empty name
+				flatten(text.isEmpty() ? key
+						: text.indexOf('.') < 0 && text.indexOf('[') < 0 ? key + "." + text : key + "[" + text + "]",
+						value, parameters);
+			});
+		}
+		else if (node instanceof List<?>array) {
+			if (array.stream()
+				.anyMatch(element -> element == null || element instanceof Map || element instanceof List)) {
+				for (int i = 0; i < array.size(); i++) {
+					if (array.get(i) != null) {
+						flatten(key + "[" + i + "]", array.get(i), parameters);
+					}
+				}
+			}
+			else if (!array.isEmpty()) {
+				parameters.put(key, array);
+			}
+		}
+		else {
+			parameters.put(key, node);
+		}
+	}
+
+	/**
+	 * Returns the given node as the given description reads it, or what the description
+	 * reads when nothing is sent if the node is {@code null} or does not have the
+	 * described shape. It is {@link #NONE} if that is no value.
+	 */
+	private static Object shape(@Nullable ParameterTree node, ValueDescription description) {
+		final List<ValueDescription> alternatives = new ArrayList<>(1);
+		alternatives(description, node != null, alternatives);
+		final List<ValueDescription.Properties> objects = new ArrayList<>(alternatives.size());
+		for (ValueDescription alternative : alternatives) {
+			if (alternative instanceof ValueDescription.Properties properties) {
+				objects.add(properties);
+			}
+		}
+		if (node != null) {
+			if (!objects.isEmpty() && node.values.isEmpty()) {
+				return object(node, objects);
+			}
+			for (ValueDescription alternative : alternatives) {
+				final Object value = switch (alternative) {
+					case ValueDescription.Value single -> node.asValue(single.type());
+					case ValueDescription.Unknown unknown -> node.asValue(Object.class);
+					case ValueDescription.Elements elements -> node.asList(elements);
+					case ValueDescription.Entries entries -> {
+						if (!node.values.isEmpty()) {
+							yield NONE;
+						}
+						final Map<String, Object> map = new LinkedHashMap<>();
+						node.children.forEach((name, child) -> put(map, name, shape(child, entries.value())));
+						yield map;
+					}
+					default -> NONE;
+				};
+				if (value != NONE) {
+					return value;
+				}
+			}
+		}
+		if (!objects.isEmpty()) {
+			return object(null, objects);
+		}
+		for (ValueDescription alternative : alternatives) {
+			final Object value = switch (alternative) {
+				// a checkbox that is not checked sends nothing
+				case ValueDescription.Value single ->
+					single.type() == Boolean.class || single.type() == Object.class ? NONE : "";
+				case ValueDescription.Elements elements -> elements.separator() != null ? "" : new ArrayList<>();
+				case ValueDescription.Entries entries -> new LinkedHashMap<>();
+				default -> NONE;
+			};
+			if (value != NONE) {
+				return value;
+			}
+		}
+		return NONE;
+	}
+
+	/**
+	 * Adds the descriptions that the given one stands for: itself, the value it wraps,
+	 * the target it refers to or its alternatives. A property that is not sent is not
+	 * looked into where its absence is told from {@code null} and where a structure
+	 * contains itself, which would not end.
+	 */
+	private static void alternatives(ValueDescription description, boolean sent,
+			List<ValueDescription> alternatives) {
+		switch (description) {
+			case ValueDescription.AnyOf anyOf ->
+				anyOf.alternatives().forEach(alternative -> alternatives(alternative, sent, alternatives));
+			case ValueDescription.Optional optional -> alternatives(optional.value(), sent, alternatives);
+			case ValueDescription.NotNull notNull -> alternatives(notNull.value(), sent, alternatives);
+			case ValueDescription.Required required -> alternatives(required.value(), sent, alternatives);
+			case ValueDescription.Presence presence when sent -> alternatives(presence.value(), sent, alternatives);
+			case ValueDescription.Reference reference when sent ->
+				alternatives(reference.target(), sent, alternatives);
+			default -> alternatives.add(description);
+		}
+	}
+
+	/**
+	 * Returns the given object, or one that is not sent, with the properties of all the
+	 * given descriptions, and with the others if one of them reads the rest.
+	 */
+	private static Object object(@Nullable ParameterTree node, List<ValueDescription.Properties> objects) {
+		final Map<String, Object> map = new LinkedHashMap<>();
+		final Set<String> names = new HashSet<>();
+		for (ValueDescription.Properties object : objects) {
+			for (ValueDescription.Property property : object.properties()) {
+				names.add(property.name());
+				if (!map.containsKey(property.name())) {
+					put(map, property.name(),
+							shape(node == null ? null : node.children.get(property.name()), property.value()));
+				}
+			}
+		}
+		if (node != null) {
+			for (ValueDescription.Properties object : objects) {
+				final ValueDescription rest = object.rest();
+				if (rest != null) {
+					node.children.forEach((name, child) -> {
+						if (!names.contains(name) && !map.containsKey(name)) {
+							put(map, name, shape(child, rest));
+						}
+					});
+				}
+			}
+		}
+		return map;
+	}
+
+	/**
+	 * Returns the only value of this node, or the tree it holds if that is an instance of
+	 * the given type.
+	 */
+	private Object asValue(Class<?> type) {
+		final Object value = copy(this.value());
+		return value != null && ((this.isLeaf() && this.values.size() == 1) || type.isInstance(value)) ? value : NONE;
+	}
+
+	private Object asList(ValueDescription.Elements elements) {
+		if (this.isLeaf() && elements.separator() != null) {
+			// the text is the one to show again, and so are the values of a repeated key
+			return this.values.size() > 1 ? new ArrayList<>(this.values) : this.asValue(String.class);
+		}
+		if (!this.isArray()) {
+			return NONE;
+		}
+		final List<@Nullable Object> list = new ArrayList<>();
+		for (ParameterTree element : this.elements()) {
+			final Object value = element == null ? NONE : shape(element, elements.element());
+			list.add(value == NONE ? null : value);
+		}
+		return list;
+	}
+
+	/**
+	 * Returns a tree that the caller may change.
+	 */
+	private static @Nullable Object copy(@Nullable Object value) {
+		if (value instanceof Map<?, ?>map) {
+			final Map<Object, @Nullable Object> copy = new LinkedHashMap<>();
+			map.forEach((name, child) -> copy.put(name, copy(child)));
+			return copy;
+		}
+		if (value instanceof List<?>list) {
+			final List<@Nullable Object> copy = new ArrayList<>(list.size());
+			list.forEach(element -> copy.add(copy(element)));
+			return copy;
+		}
+		return value;
+	}
+
+	private static void put(Map<String, Object> map, String name, Object value) {
+		if (value != NONE) {
+			map.put(name, value);
+		}
 	}
 
 	/**
