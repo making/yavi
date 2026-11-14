@@ -967,7 +967,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 | `_embedded` | in the same map; `null` for every property if it has no value |
 | `_object` | a nested map |
 | `_list`, `_map`, `_rest` | every element |
-| `splitBy(",")` | the joined text, `null` for an empty list |
+| `splitBy(",")` | the joined text. An empty list is `null`, because text without an element is not sent: the property needs `defaultValue(List.of())` or `nullable()` to be read back |
 | `splitBy(Pattern)` | the list |
 | a validator with `map(f, g)` | the result of `g` |
 

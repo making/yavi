@@ -789,7 +789,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 | `_embedded` | 同じマップに書く。値がなければ全プロパティが `null` |
 | `_object` | ネストしたマップ |
 | `_list`、`_map`、`_rest` | 各要素 |
-| `splitBy(",")` | 連結したテキスト。空のリストは `null` |
+| `splitBy(",")` | 連結したテキスト。空のリストは `null`(要素のないテキストは送信されないため)。読み戻すにはプロパティに `defaultValue(List.of())` か `nullable()` が必要 |
 | `splitBy(Pattern)` | リスト |
 | `map(f, g)` のバリデータ | `g` の結果 |
 

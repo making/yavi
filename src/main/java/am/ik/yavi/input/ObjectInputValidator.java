@@ -654,7 +654,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * {@link #toMap(Object)} is defined by the round trip: for every object {@code x}
 	 * that the validator creates, {@code validate(toMap(x))} succeeds with an object
 	 * equal to {@code x}, as long as the function that creates the object and the
-	 * accessors agree. The map holds the values of the JDK types that the properties are
+	 * accessors agree. The one exception is an empty list of a property that is read from
+	 * text ({@code splitBy(",")}) and does not accept {@code null}: it is written as
+	 * {@code null}. The map holds the values of the JDK types that the properties are
 	 * read from, as they are: nothing is converted to text.
 	 * {@link ParameterTree#ofValues} holds them as the text of parameters.
 	 *

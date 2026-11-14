@@ -2403,7 +2403,10 @@ public sealed class Arguments2ValidatorBuilder<A1, A2, R1 extends @Nullable Obje
 		 * Reads the last added list also from text whose elements are separated by the
 		 * given separator, as {@link #splitBy(Pattern)} states. A validator built with
 		 * {@code fromMapReversible} writes the list back as that text, which a pattern
-		 * does not tell: after {@link #splitBy(Pattern)} it writes a list.
+		 * does not tell: after {@link #splitBy(Pattern)} it writes a list. An empty list
+		 * is written as {@code null}, because text without an element is not sent, so it
+		 * is read back only if the list accepts {@code null}
+		 * ({@code defaultValue(List.of())}, {@code nullable()}).
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
