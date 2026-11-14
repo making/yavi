@@ -111,10 +111,7 @@ validator of an `Object`, which checks the type first:
 
 ```java
 Yavi._integer().untyped().validate("not a number")
-// ==> Invalid[errors=[ConstraintViolation{name='', messageKey='object.type', defaultMessageFormat='"{0}" must be of type {1}', args=[, integer, not a number]}]]
-
-Yavi._integer().untyped().validate("not a number").errors().messagesByPointer()
-// ==> {=[The value must be of type integer]}
+// ==> Invalid[errors=[The value must be of type integer (object.type)]]
 
 Yavi._integer().untyped().validate(42L)
 // ==> Valid[value=42]  (a number is taken as long as its value is kept)
@@ -123,10 +120,10 @@ Yavi._bigDecimal().untyped().validate(19.99)
 // ==> Valid[value=19.99]
 ```
 
-The examples below print the violations of a failed result with
-`errors().messagesByPointer()`: the messages by the JSON Pointer of the value, which is
-empty for the validated value itself. `untyped()` is rarely written: a schema
-([section 4](#4-validating-objects)) checks the types of its properties.
+A failed result shows each violation as it reads: the JSON Pointer of the value (none
+for the validated value itself), the message and the message key. `untyped()` is rarely
+written: a schema ([section 4](#4-validating-objects)) checks the types of its
+properties.
 
 ## 2. Adding constraints
 
@@ -139,11 +136,11 @@ validation.
 Yavi._string(c -> c.trim().toLowerCase().email()).validate("  USER@Example.COM  ")
 // ==> Valid[value=user@example.com]
 
-Yavi._string(c -> c.trim().toLowerCase().email()).validate("not-email").errors().messagesByPointer()
-// ==> {=[The value must be a valid email address]}
+Yavi._string(c -> c.trim().toLowerCase().email()).validate("not-email")
+// ==> Invalid[errors=[The value must be a valid email address (charSequence.email)]]
 
-Yavi._string(c -> c.greaterThanOrEqual(3).lessThanOrEqual(20)).validate("ab").errors().messagesByPointer()
-// ==> {=[The size of the value must be greater than or equal to 3. The given size is 2]}
+Yavi._string(c -> c.greaterThanOrEqual(3).lessThanOrEqual(20)).validate("ab")
+// ==> Invalid[errors=[The size of the value must be greater than or equal to 3. The given size is 2 (container.greaterThanOrEqual)]]
 
 Yavi._string(c -> c.pattern("^\\d{3}-\\d{4}$")).validate("123-4567")
 // ==> Valid[value=123-4567]
@@ -177,8 +174,8 @@ Yavi._string(c -> c.lessThanOrEqual(1)).validate(nfd)
 Yavi._string(c -> c.toNormalForm(java.text.Normalizer.Form.NFC).lessThanOrEqual(1)).validate(nfd).value().length()
 // ==> 1
 
-Yavi._string(c -> c.normalizer(null).lessThanOrEqual(1)).validate(nfd).errors().messagesByPointer()
-// ==> {=[The size of the value must be less than or equal to 1. The given size is 2]}
+Yavi._string(c -> c.normalizer(null).lessThanOrEqual(1)).validate(nfd)
+// ==> Invalid[errors=[The size of the value must be less than or equal to 1. The given size is 2 (container.lessThanOrEqual)]]
 ```
 
 `c.normalizer(form)` selects the form for counting and `c.normalizer(null)` none.
@@ -189,8 +186,8 @@ Yavi._string(c -> c.normalizer(null).lessThanOrEqual(1)).validate(nfd).errors().
 Yavi._string(c -> c.uri()).validate("file:///tmp/data.csv")
 // ==> Valid[value=file:///tmp/data.csv]
 
-Yavi._string(c -> c.uri()).validate("foo/bar").errors().messagesByPointer()
-// ==> {=[The value must be a valid URI]}
+Yavi._string(c -> c.uri()).validate("foo/bar")
+// ==> Invalid[errors=[The value must be a valid URI (charSequence.uri)]]
 
 Yavi._string(c -> c.url()).validate("https://example.com/api")
 // ==> Valid[value=https://example.com/api]
@@ -198,8 +195,8 @@ Yavi._string(c -> c.url()).validate("https://example.com/api")
 Yavi._string(c -> c.url()).validate("ftp://example.com")
 // ==> Valid[value=ftp://example.com]
 
-Yavi._string(c -> c.url(u -> u.protocol("http", "https").build())).validate("ftp://example.com").errors().messagesByPointer()
-// ==> {=[The protocol of the value must be one of the following values: [http, https]]}
+Yavi._string(c -> c.url(u -> u.protocol("http", "https").build())).validate("ftp://example.com")
+// ==> Invalid[errors=[The protocol of the value must be one of the following values: [http, https] (charSequence.url.protocol)]]
 
 Yavi._object(URI.class).untyped().validate("https://example.com/api")
 // ==> Valid[value=https://example.com/api]  (a URI)
@@ -216,11 +213,11 @@ one.
 Yavi._integer(c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).validate(25)
 // ==> Valid[value=25]
 
-Yavi._integer(c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).validate(300).errors().messagesByPointer()
-// ==> {=[The value must be less than or equal to 150]}
+Yavi._integer(c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).validate(300)
+// ==> Invalid[errors=[The value must be less than or equal to 150 (numeric.lessThanOrEqual)]]
 
-Yavi._integer(c -> c.positive()).validate(-1).errors().messagesByPointer()
-// ==> {=[The value must be positive]}
+Yavi._integer(c -> c.positive()).validate(-1)
+// ==> Invalid[errors=[The value must be positive (numeric.positive)]]
 
 Yavi._bigDecimal(c -> c.fractionDigits(4)).validate(new BigDecimal("0.1234"))
 // ==> Valid[value=0.1234]
@@ -240,8 +237,8 @@ Yavi._instant().untyped().validate("2025-06-15T10:30:00Z")
 Yavi._localDate(c -> c.after(() -> LocalDate.of(2020, 1, 1))).validate(LocalDate.of(2025, 6, 15))
 // ==> Valid[value=2025-06-15]
 
-Yavi._localDate(c -> c.before(() -> LocalDate.of(2030, 1, 1))).validate(LocalDate.of(2035, 1, 1)).errors().messagesByPointer()
-// ==> {=[The value has to be before 2030-01-01]}
+Yavi._localDate(c -> c.before(() -> LocalDate.of(2030, 1, 1))).validate(LocalDate.of(2035, 1, 1))
+// ==> Invalid[errors=[The value has to be before 2030-01-01 (temporal.before)]]
 
 Yavi._localDate(c -> c.between(() -> LocalDate.of(2020, 1, 1), () -> LocalDate.of(2030, 12, 31))).validate(LocalDate.of(2025, 6, 15))
 // ==> Valid[value=2025-06-15]
@@ -275,8 +272,8 @@ Yavi._integer().readingWith(text).validate("42")
 Yavi._integer(c -> c.greaterThanOrEqual(0).lessThanOrEqual(150)).readingWith(text).validate("25")
 // ==> Valid[value=25]
 
-Yavi._integer().readingWith(text).validate("abc").errors().messagesByPointer()
-// ==> {=[The value must be of type integer]}
+Yavi._integer().readingWith(text).validate("abc")
+// ==> Invalid[errors=[The value must be of type integer (object.type)]]
 
 Yavi._long().readingWith(text).validate("9999999999")
 // ==> Valid[value=9999999999]
@@ -284,8 +281,8 @@ Yavi._long().readingWith(text).validate("9999999999")
 Yavi._bigDecimal(c -> c.fractionDigits(2)).readingWith(text).validate("19.99")
 // ==> Valid[value=19.99]
 
-Yavi._bigDecimal().readingWith(text).validate("abc").errors().messagesByPointer()
-// ==> {=[The value must be of type number]}
+Yavi._bigDecimal().readingWith(text).validate("abc")
+// ==> Invalid[errors=[The value must be of type number (object.type)]]
 ```
 
 The rules are strict unless the reader is given others: a boolean is `true` or `false`,
@@ -296,8 +293,8 @@ written by a person:
 Yavi._boolean().readingWith(text).validate("true")
 // ==> Valid[value=true]
 
-Yavi._boolean().readingWith(text).validate("1").errors().messagesByPointer()
-// ==> {=[The value must be of type boolean]}
+Yavi._boolean().readingWith(text).validate("1")
+// ==> Invalid[errors=[The value must be of type boolean (object.type)]]
 
 InputReader<Object> form = InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming().booleanWords());
 
@@ -307,12 +304,12 @@ Yavi._boolean().readingWith(form).validate("1")
 Yavi._boolean().readingWith(form).validate("no")
 // ==> Valid[value=false]
 
-Yavi._boolean().readingWith(form).validate("maybe").errors().messagesByPointer()
-// ==> {=[The value must be of type boolean]}
+Yavi._boolean().readingWith(form).validate("maybe")
+// ==> Invalid[errors=[The value must be of type boolean (object.type)]]
 
 // isTrue() enforces an agreement (e.g. terms of service)
-Yavi._boolean(c -> c.isTrue()).readingWith(form).validate("false").errors().messagesByPointer()
-// ==> {=[The value must be true]}
+Yavi._boolean(c -> c.isTrue()).readingWith(form).validate("false")
+// ==> Invalid[errors=[The value must be true (boolean.isTrue)]]
 
 Yavi._integer().readingWith(form).validate("  42  ")
 // ==> Valid[value=42]
@@ -371,8 +368,8 @@ userValidator.validate(Map.of(
         "age", 30))
 // ==> Valid[value=User[id=UserId[value=550e8400-e29b-41d4-a716-446655440000], email=Email[value=alice@example.com], age=Age[value=30]]]
 
-userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300)).errors().messagesByPointer()
-// ==> {/id=["id" must be of type UUID], /email=["email" must be a valid email address], /age=["age" must be less than or equal to 150]}
+userValidator.validate(Map.of("id", "not-uuid", "email", "invalid", "age", 300))
+// ==> Invalid[errors=[/id: "id" must be of type UUID (object.type), /email: "email" must be a valid email address (charSequence.email), /age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)]]
 ```
 
 `_object(name, validator)` uses a validator under a name. A property is also written in
@@ -417,12 +414,12 @@ customerValidator.validate(Map.of(
 
 customerValidator.validate(Map.of(
         "name", "",
-        "address", Map.of("city", "", "zip", "bad"))).errors().messagesByPointer()
-// ==> {/name=["name" must not be blank], /address/city=["address.city" must not be blank], /address/zip=["address.zip" must match ^\d{3}-\d{4}$]}
+        "address", Map.of("city", "", "zip", "bad")))
+// ==> Invalid[errors=[/name: "name" must not be blank (charSequence.notBlank), /address/city: "address.city" must not be blank (charSequence.notBlank), /address/zip: "address.zip" must match ^\d{3}-\d{4}$ (charSequence.pattern)]]
 ```
 
 A violation has a pointer (`/address/city`) and a name (`address.city`), which its
-message shows. `messagesByName()` has the names as the keys.
+message shows.
 
 ## 6. Structuring flat data
 
@@ -484,8 +481,8 @@ employeeWithDeptValidator.validate(row)
 // ==> Valid[value=EmployeeWithDept[name=UserName[first=Bob, last=Jones], dept=Optional.empty]]
 
 row.put("dept_name", "Engineering");
-employeeWithDeptValidator.validate(row).errors().messagesByPointer()
-// ==> {/dept_code=["dept_code" must not be blank]}
+employeeWithDeptValidator.validate(row)
+// ==> Invalid[errors=[/dept_code: "dept_code" must not be blank (charSequence.notBlank)]]
 ```
 
 ### One-to-many JOIN
@@ -554,8 +551,8 @@ var orderItemsValidator = Yavi.schema()
 
 orderItemsValidator.validate(Map.of("items", List.of(
         Map.of("productId", "A001", "quantity", 3),
-        Map.of("productId", "", "quantity", -1)))).errors().messagesByPointer()
-// ==> {/items/1/productId=["items[1].productId" must not be blank], /items/1/quantity=["items[1].quantity" must be positive]}
+        Map.of("productId", "", "quantity", -1))))
+// ==> Invalid[errors=[/items/1/productId: "items[1].productId" must not be blank (charSequence.notBlank), /items/1/quantity: "items[1].quantity" must be positive (numeric.positive)]]
 ```
 
 A schema of one property ends with `fromMap()` without a function: the value of the
@@ -567,20 +564,20 @@ Yavi.schema()._list("tags", Yavi._string(), c -> c.greaterThanOrEqual(1).lessTha
 // ==> Valid[value=[a, b]]
 
 Yavi.schema()._list("tags", Yavi._string(), c -> c.unique()).fromMap()
-        .validate(Map.of("tags", List.of("a", "b", "a"))).errors().messagesByPointer()
-// ==> {/tags=["tags" must be unique. [a] is/are duplicated.]}
+        .validate(Map.of("tags", List.of("a", "b", "a")))
+// ==> Invalid[errors=[/tags: "tags" must be unique. [a] is/are duplicated. (collection.unique)]]
 
 Yavi.schema()._list("codes", Yavi._string(), c -> c.fixedSize(3)).fromMap()
-        .validate(Map.of("codes", List.of("X", "Y"))).errors().messagesByPointer()
-// ==> {/codes=[The size of "codes" must be 3. The given size is 2]}
+        .validate(Map.of("codes", List.of("X", "Y")))
+// ==> Invalid[errors=[/codes: The size of "codes" must be 3. The given size is 2 (container.fixedSize)]]
 ```
 
 A custom message follows its constraint:
 
 ```java
 Yavi.schema()._list("tags", Yavi._string(), c -> c.greaterThanOrEqual(1).message("select at least one tag")).fromMap()
-        .validate(Map.of("tags", List.of())).errors().messagesByPointer()
-// ==> {/tags=[select at least one tag]}
+        .validate(Map.of("tags", List.of()))
+// ==> Invalid[errors=[/tags: select at least one tag (container.greaterThanOrEqual)]]
 ```
 
 The constraints of a list are checked when every element is valid. A list that is not a
@@ -598,8 +595,8 @@ var pricesValidator = Yavi.schema()
 pricesValidator.validate(Map.of("prices", Map.of("apple", 120, "banana", 80)))
 // ==> Valid[value={banana=80, apple=120}]
 
-pricesValidator.validate(Map.of("prices", Map.of("apple", -1))).errors().messagesByPointer()
-// ==> {/prices/apple=["prices.apple" must be positive]}
+pricesValidator.validate(Map.of("prices", Map.of("apple", -1)))
+// ==> Invalid[errors=[/prices/apple: "prices.apple" must be positive (numeric.positive)]]
 ```
 
 ### JSON stored in a string
@@ -636,11 +633,11 @@ var validator = Yavi.schema()
 validator.validate(Map.of("params", "{\"kind\":\"like\",\"count\":3}"))
 // ==> Valid[value=Params[kind=like, count=3]]
 
-validator.validate(Map.of("params", "not json")).errors().messagesByPointer()
-// ==> {/params=["params" cannot be parsed as JSON]}
+validator.validate(Map.of("params", "not json"))
+// ==> Invalid[errors=[/params: "params" cannot be parsed as JSON (json.invalid)]]
 
-validator.validate(Map.of("params", "{\"kind\":\"like\"}")).errors().messagesByPointer()
-// ==> {/params/count=["params.count" is required]}
+validator.validate(Map.of("params", "{\"kind\":\"like\"}"))
+// ==> Invalid[errors=[/params/count: "params.count" is required (object.required)]]
 ```
 
 A hand-written validator is a lambda of the input, the locale and a context. A violation
@@ -671,12 +668,12 @@ Raoh keeps the two apart: `field(name, nullable(dec))` requires the key and
 
 ```java
 Yavi.schema()._string("nickname").nullable().required().fromMap()
-        .validate(Map.of()).errors().messagesByPointer()
-// ==> {/nickname=["nickname" is required]}
+        .validate(Map.of())
+// ==> Invalid[errors=[/nickname: "nickname" is required (object.required)]]
 
 Yavi.schema()._string("middleName").optional().rejectingNull().fromMap()
-        .validate(Collections.singletonMap("middleName", null)).errors().messagesByPointer()
-// ==> {/middleName=["middleName" must not be null]}
+        .validate(Collections.singletonMap("middleName", null))
+// ==> Invalid[errors=[/middleName: "middleName" must not be null (object.notNull)]]
 ```
 
 `presence()` reads a property as a `Presence`, which tells the three states apart.
@@ -710,8 +707,8 @@ var profilePatchValidator = Yavi.schema()
 profilePatchValidator.validate(Map.of("nickname", "alice"))
 // ==> Valid[value=ProfilePatch[nickname=Present[value=alice], bio=Absent[]]]
 
-profilePatchValidator.validate(Collections.singletonMap("nickname", null)).errors().messagesByPointer()
-// ==> {/nickname=["nickname" must not be null]}
+profilePatchValidator.validate(Collections.singletonMap("nickname", null))
+// ==> Invalid[errors=[/nickname: "nickname" must not be null (object.notNull)]]
 ```
 
 ## 10. Enums
@@ -725,8 +722,8 @@ enum Role { ADMIN, MEMBER, GUEST }
 Yavi.schema()._enum("role", Role.class).fromMap().validate(Map.of("role", "ADMIN"))
 // ==> Valid[value=ADMIN]
 
-Yavi.schema()._enum("role", Role.class).fromMap().validate(Map.of("role", "admin")).errors().messagesByPointer()
-// ==> {/role=["role" must be one of the following values: [ADMIN, MEMBER, GUEST]]}
+Yavi.schema()._enum("role", Role.class).fromMap().validate(Map.of("role", "admin"))
+// ==> Invalid[errors=[/role: "role" must be one of the following values: [ADMIN, MEMBER, GUEST] (object.oneOf)]]
 
 Yavi.schema()._enum(Yavi._enum("role", Role.class).ignoringCase()).fromMap().validate(Map.of("role", "admin"))
 // ==> Valid[value=ADMIN]
@@ -761,8 +758,8 @@ contactValidator.validate(Map.of("kind", "email", "value", "a@b.com"))
 contactValidator.validate(Map.of("kind", "phone", "value", "09012345678"))
 // ==> Valid[value=PhoneContact[number=09012345678]]
 
-contactValidator.validate(Map.of("kind", "fax", "value", "123")).errors().messagesByPointer()
-// ==> {=[The value must satisfy at least one of the 2 alternatives]}
+contactValidator.validate(Map.of("kind", "fax", "value", "123"))
+// ==> Invalid[errors=[The value must satisfy at least one of the 2 alternatives (object.anyOf) alternatives=[[/kind: "kind" must be equal to email (object.equalTo), /value: "value" must be a valid email address (charSequence.email)], [/kind: "kind" must be equal to phone (object.equalTo), /value: "value" must match ^\d{10,15}$ (charSequence.pattern)]]]]
 ```
 
 No cast to the supertype is needed, but the type of the variable is: `var` infers
@@ -800,8 +797,8 @@ shapeValidator.validate(Map.of("type", "circle", "radius", 5.0))
 shapeValidator.validate(Map.of("type", "rect", "width", 3.0, "height", 4.0))
 // ==> Valid[value=Rect[width=3.0, height=4.0]]
 
-shapeValidator.validate(Map.of("type", "hexagon")).errors().messagesByPointer()
-// ==> {/type=["type" must be one of the following values: [circle, rect]]}
+shapeValidator.validate(Map.of("type", "hexagon"))
+// ==> Invalid[errors=[/type: "type" must be one of the following values: [circle, rect] (object.oneOf)]]
 ```
 
 A schema of one property is a validator like any other, so no `asDecoder()` is needed.
@@ -832,12 +829,12 @@ var dateRangeValidator = Yavi.schema()
 dateRangeValidator.validate(Map.of("start", "2025-01-01", "end", "2025-12-31"))
 // ==> Valid[value=DateRange[start=2025-01-01, end=2025-12-31]]
 
-dateRangeValidator.validate(Map.of("start", "2025-12-31", "end", "2025-01-01")).errors().messagesByPointer()
-// ==> {=[start must be before end]}
+dateRangeValidator.validate(Map.of("start", "2025-12-31", "end", "2025-01-01"))
+// ==> Invalid[errors=[start must be before end (dateRange.invalid)]]
 
 Yavi.schema()._object("period", dateRangeValidator).fromMap()
-        .validate(Map.of("period", Map.of("start", "2025-12-31", "end", "2025-01-01"))).errors().messagesByPointer()
-// ==> {/period=[start must be before end]}
+        .validate(Map.of("period", Map.of("start", "2025-12-31", "end", "2025-01-01")))
+// ==> Invalid[errors=[/period: start must be before end (dateRange.invalid)]]
 ```
 
 The violation is reported on the object itself, and under `period` where the validator
@@ -856,8 +853,8 @@ var dateRangeValidator2 = Yavi.schema()
         .constraintOnTarget(range -> range.start().isBefore(range.end()), "end",
                 ViolationMessage.of("dateRange.invalid", "\"{0}\" must be after \"start\""));
 
-dateRangeValidator2.validate(Map.of("start", "2025-12-31", "end", "2025-01-01")).errors().messagesByPointer()
-// ==> {/end=["end" must be after "start"]}
+dateRangeValidator2.validate(Map.of("start", "2025-12-31", "end", "2025-01-01"))
+// ==> Invalid[errors=[/end: "end" must be after "start" (dateRange.invalid)]]
 ```
 
 ## 13. Conditional validation
@@ -887,8 +884,8 @@ paymentValidator.validate(Map.of("method", "credit_card", "number", "41111111111
 paymentValidator.validate(Map.of("method", "bank_transfer", "bankCode", "0001", "accountNumber", "1234567"))
 // ==> Valid[value=BankTransfer[bankCode=0001, accountNumber=1234567]]
 
-paymentValidator.validate(Map.of("method", "cash")).errors().messagesByPointer()
-// ==> {/method=["method" must be one of the following values: [credit_card, bank_transfer]]}
+paymentValidator.validate(Map.of("method", "cash"))
+// ==> Invalid[errors=[/method: "method" must be one of the following values: [credit_card, bank_transfer] (object.oneOf)]]
 ```
 
 ## 14. Combining results of different sources
@@ -919,8 +916,8 @@ nameResult.combine(contactResult).apply(CustomerProfile::new)
 
 nameValidator.validate(Map.of("first", ""))
         .combine(contactInfoValidator.validate(Map.of("email", "x")))
-        .apply(CustomerProfile::new).errors().messagesByPointer()
-// ==> {/first=["first" must not be blank], /last=["last" is required], /email=["email" must be a valid email address], /phone=["phone" is required]}
+        .apply(CustomerProfile::new)
+// ==> Invalid[errors=[/first: "first" must not be blank (charSequence.notBlank), /last: "last" is required (object.required), /email: "email" must be a valid email address (charSequence.email), /phone: "phone" is required (object.required)]]
 ```
 
 ## 15. Validating the rows of a list
@@ -941,8 +938,8 @@ var rows = List.<Map<String, Object>>of(
         Map.of("order_id", "", "total", -500),
         Map.of("order_id", "A003", "total", 300));
 
-orderValidator.liftList().prefixed("orders").validate(rows).errors().messagesByPointer()
-// ==> {/orders/1/order_id=["orders[1].order_id" must not be blank], /orders/1/total=["orders[1].total" must be positive or zero]}
+orderValidator.liftList().prefixed("orders").validate(rows)
+// ==> Invalid[errors=[/orders/1/order_id: "orders[1].order_id" must not be blank (charSequence.notBlank), /orders/1/total: "orders[1].total" must be positive or zero (numeric.positiveOrZero)]]
 ```
 
 ## 16. Default values and recovery
@@ -963,8 +960,8 @@ roleValidator.validate(Map.of())
 roleValidator.validate(Map.of("role", "admin"))
 // ==> Valid[value=ADMIN]
 
-roleValidator.validate(Map.of("role", "invalid")).errors().messagesByPointer()
-// ==> {/role=["role" must be one of the following values: [ADMIN, MEMBER, GUEST]]}
+roleValidator.validate(Map.of("role", "invalid"))
+// ==> Invalid[errors=[/role: "role" must be one of the following values: [ADMIN, MEMBER, GUEST] (object.oneOf)]]
 ```
 
 The modifier follows the property whatever the input is: the same schema defaults a
@@ -1006,8 +1003,8 @@ var apiRequestValidator = Yavi.schema()
 apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100))
 // ==> Valid[value=ApiRequest[action=transfer, amount=100]]
 
-apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100, "extra", true)).errors().messagesByPointer()
-// ==> {/extra=["extra" is not a known property]}
+apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100, "extra", true))
+// ==> Invalid[errors=[/extra: "extra" is not a known property (object.unknownProperty)]]
 ```
 
 ## 18. Recursive structures
@@ -1035,8 +1032,8 @@ commentValidator.validate(Map.of(
         "body", "top",
         "replies", List.of(
                 Map.of("body", "reply1"),
-                Map.of("body", "reply2", "replies", List.of(Map.of("body", "")))))).errors().messagesByPointer()
-// ==> {/replies/1/replies/0/body=["replies[1].replies[0].body" must not be blank]}
+                Map.of("body", "reply2", "replies", List.of(Map.of("body", ""))))))
+// ==> Invalid[errors=[/replies/1/replies/0/body: "replies[1].replies[0].body" must not be blank (charSequence.notBlank)]]
 ```
 
 The type of the variable is declared: `var` does not give the compiler the type of
@@ -1055,7 +1052,7 @@ var result = checkValidator.validate(Map.of("email", "bad", "age", 300));
 ```
 
 `Validated` is a sealed interface of the records `Valid` and `Invalid`, so a result is
-handled with a `switch`.
+handled with a `switch`. `errors()` returns the violations of a failed result.
 
 ### For forms
 
@@ -1085,9 +1082,9 @@ result.errors().details()
 
 ### Locale-aware messages
 
-A `MessageFormatter` formats the messages. `MessageSourceMessageFormatter` looks a
-message up by its key, here in a resource bundle `messages_ja.properties` on the class
-path:
+A `MessageFormatter` formats the messages. `ResourceBundleMessageFormatter` looks a
+message up by its key in a resource bundle, here `messages_ja.properties` on the class
+path, and is the `ResourceBundleMessageResolver` of Raoh:
 
 ```properties
 charSequence.email="{0}" はメールアドレスの形式で入力してください
@@ -1095,18 +1092,16 @@ numeric.lessThanOrEqual="{0}" は {1} 以下で入力してください
 ```
 
 ```java
-MessageFormatter formatter = new MessageSourceMessageFormatter((code, args, defaultMessage, locale) -> {
-    var bundle = ResourceBundle.getBundle("messages", locale);
-    return bundle.containsKey(code) ? java.text.MessageFormat.format(bundle.getString(code), args) : defaultMessage;
-});
+var formatter = new ResourceBundleMessageFormatter("messages");
 
-checkValidator.formattingWith(formatter).validate(Map.of("email", "bad", "age", 300), Locale.JAPANESE).errors().messagesByPointer()
-// ==> {/email=["email" はメールアドレスの形式で入力してください], /age=["age" は 150 以下で入力してください]}
+checkValidator.formattingWith(formatter).validate(Map.of("email", "bad", "age", 300), Locale.JAPANESE)
+// ==> Invalid[errors=[/email: "email" はメールアドレスの形式で入力してください (charSequence.email), /age: "age" は 150 以下で入力してください (numeric.lessThanOrEqual)]]
 ```
 
 The formatter is given to the validator, or to the violations afterwards
-(`violations.formattedWith(formatter)`). The interface matches `MessageSource` of
-Spring: `new MessageSourceMessageFormatter(messageSource::getMessage)`.
+(`violations.formattedWith(formatter)`). A key that the bundle does not have keeps its
+default message. With Spring, `new MessageSourceMessageFormatter(messageSource::getMessage)`
+reads a `MessageSource`.
 
 ## 20. Scenario: a user registration API
 
@@ -1146,8 +1141,8 @@ userRegistrationValidator.validate(Map.of(
         "email", "bad",
         "password", "short",
         "contacts", List.of(
-                Map.of("kind", "email", "value", "not-email")))).errors().messagesByPointer()
-// ==> {/email=["email" must be a valid email address], /password=[The size of "password" must be greater than or equal to 8. The given size is 5], /contacts/0=["contacts[0]" must satisfy at least one of the 2 alternatives]}
+                Map.of("kind", "email", "value", "not-email"))))
+// ==> Invalid[errors=[/email: "email" must be a valid email address (charSequence.email), /password: The size of "password" must be greater than or equal to 8. The given size is 5 (container.greaterThanOrEqual), /contacts/0: "contacts[0]" must satisfy at least one of the 2 alternatives (object.anyOf) alternatives=[[/contacts/0/value: "contacts[0].value" must be a valid email address (charSequence.email)], [/contacts/0/kind: "contacts[0].kind" must be equal to phone (object.equalTo), /contacts/0/value: "contacts[0].value" must match ^\d{10,15}$ (charSequence.pattern)]]]]
 ```
 
 A controller that receives JSON reads the tree with the same validator; nothing is
@@ -1190,30 +1185,20 @@ priceMapValidator.validate(Map.of("products", List.of(
 // ==> Valid[value={APPLE=120, BANANA=80}]
 ```
 
-A duplicate id is the violation of a rule of the domain. The step that checks it and
-converts the list is a validator given to `andThen`, used under the name of the
-property:
+A duplicate id is the violation of a rule of the domain. `unique(key)` of the list
+reports the duplicated keys, where Raoh checks them by hand in `flatMap`:
 
 ```java
 var strictPriceMapValidator = Yavi.schema()
-        ._object("products", productValidator.liftList().andThen((products, locale, context) -> {
-            var ids = products.stream().map(Product::id).toList();
-            var duplicates = ids.stream().filter(id -> Collections.frequency(ids, id) > 1).distinct().toList();
-            if (!duplicates.isEmpty()) {
-                return Validated.failureWith(ViolationMessage.of("products.duplicateIds", "duplicate product ids: {1}", "duplicates"), products, locale, duplicates);
-            }
-            return Validated.successWith(products.stream().collect(Collectors.toMap(Product::id, Product::price)));
-        }))
-        .fromMap();
+        ._list("products", productValidator, c -> c.unique(Product::id))
+        .fromMap()
+        .map(products -> products.stream().collect(Collectors.toMap(Product::id, Product::price)));
 
 strictPriceMapValidator.validate(Map.of("products", List.of(
         Map.of("id", "APPLE", "price", new BigDecimal("120")),
-        Map.of("id", "APPLE", "price", new BigDecimal("99"))))).errors().messagesByPointer()
-// ==> {/products=[duplicate product ids: [APPLE]]}
+        Map.of("id", "APPLE", "price", new BigDecimal("99")))))
+// ==> Invalid[errors=[/products: "products" must be unique. [APPLE] is/are duplicated. (collection.uniqueBy)]]
 ```
-
-`unique()` of a list compares the elements, not a key of them. The name given after the
-message format (`duplicates`) is the name of `{1}` in `params` of the violation.
 
 ## 22. Known properties and the remaining keys
 
@@ -1232,8 +1217,8 @@ var goodsValidator = Yavi.schema()
 goodsValidator.validate(Map.of("name", "T-shirt", "color", "red", "size", "L"))
 // ==> Valid[value=Goods[name=T-shirt, attrs={color=red, size=L}]]
 
-goodsValidator.validate(Map.of("name", "", "color", 1)).errors().messagesByPointer()
-// ==> {/name=["name" must not be blank], /color=["color" must be of type string]}
+goodsValidator.validate(Map.of("name", "", "color", 1))
+// ==> Invalid[errors=[/name: "name" must not be blank (charSequence.notBlank), /color: "color" must be of type string (object.type)]]
 ```
 
 `_rest()` without a validator takes the values as they are.
@@ -1268,14 +1253,14 @@ passwordChangeValidator.validate(Map.of(
 passwordChangeValidator.validate(Map.of(
         "currentPassword", "oldSecret",
         "newPassword", "short",
-        "confirmPassword", "different")).errors().messagesByPointer()
-// ==> {/newPassword=[The size of "newPassword" must be greater than or equal to 8. The given size is 5]}
+        "confirmPassword", "different"))
+// ==> Invalid[errors=[/newPassword: The size of "newPassword" must be greater than or equal to 8. The given size is 5 (container.greaterThanOrEqual)]]
 
 passwordChangeValidator.validate(Map.of(
         "currentPassword", "newSecret1",
         "newPassword", "newSecret1",
-        "confirmPassword", "different")).errors().messagesByPointer()
-// ==> {/confirmPassword=["confirmPassword" must match "newPassword"]}
+        "confirmPassword", "different"))
+// ==> Invalid[errors=[/confirmPassword: "confirmPassword" must match "newPassword" (password.mismatch)]]
 ```
 
 The rules are checked only when all properties are valid, and a rule only when the rules
@@ -1309,8 +1294,8 @@ pageRequestValidator.validate(Map.of())
 pageRequestValidator.validate(Map.of("size", 9999))
 // ==> Valid[value=PageRequest[page=0, size=20, order=ASC]]
 
-pageRequestValidator.validate(Map.of("page", -1)).errors().messagesByPointer()
-// ==> {/page=["page" must be greater than or equal to 0]}
+pageRequestValidator.validate(Map.of("page", -1))
+// ==> Invalid[errors=[/page: "page" must be greater than or equal to 0 (numeric.greaterThanOrEqual)]]
 ```
 
 `recover` covers an absent key too, so it is not combined with a default. Query
@@ -1323,8 +1308,8 @@ var queryValidator = pageRequestValidator.readingParameters();
 queryValidator.validate(Map.of("page", "2", "size", "50", "sort", "desc"))
 // ==> Valid[value=PageRequest[page=2, size=50, order=DESC]]
 
-queryValidator.validate(Map.of("page", "x", "size", "many")).errors().messagesByPointer()
-// ==> {/page=["page" must be of type integer]}
+queryValidator.validate(Map.of("page", "x", "size", "many"))
+// ==> Invalid[errors=[/page: "page" must be of type integer (object.type)]]
 ```
 
 ## 25. Amount and currency
@@ -1353,8 +1338,8 @@ var moneyValidator = Yavi.schema()
 moneyValidator.validate(Map.of("amount", new BigDecimal("1000"), "currency", "jpy"))
 // ==> Valid[value=Money[amount=1000, currency=JPY]]
 
-moneyValidator.validate(Map.of("amount", new BigDecimal("10.5"), "currency", "jpy")).errors().messagesByPointer()
-// ==> {=[JPY does not allow more than 0 decimal places]}
+moneyValidator.validate(Map.of("amount", new BigDecimal("10.5"), "currency", "jpy"))
+// ==> Invalid[errors=[JPY does not allow more than 0 decimal places (money.scale)]]
 
 moneyValidator.validate(Map.of("amount", new BigDecimal("9.99"), "currency", "usd"))
 // ==> Valid[value=Money[amount=9.99, currency=USD]]
@@ -1367,7 +1352,7 @@ The rule that does not need the currency is a constraint of the amount
         .fromMap(Money::new)
         .constraintOnTarget(money -> money.amount().scale() <= (money.currency() == Currency.JPY ? 0 : 2), "amount",
                 ViolationMessage.of("money.scale", "\"{0}\" has too many decimal places for the currency"));
-// ==> {/amount=["amount" has too many decimal places for the currency]}
+// ==> Invalid[errors=[/amount: "amount" has too many decimal places for the currency (money.scale)]]
 ```
 
 ## 26. CSV import
@@ -1410,8 +1395,8 @@ var cells = List.of(
         Map.of("email", " Alice@Example.com ", "name", " Alice ", "age", "30"),
         Map.of("email", "bad-email", "name", "  ", "age", "abc"));
 
-memberValidator.readingParameters(StringCoercion.strict().trimming()).liftList().prefixed("rows").validate(cells).errors().messagesByPointer()
-// ==> {/rows/1/email=["rows[1].email" must be a valid email address], /rows/1/name=["rows[1].name" must not be blank], /rows/1/age=["rows[1].age" must be of type integer]}
+memberValidator.readingParameters(StringCoercion.strict().trimming()).liftList().prefixed("rows").validate(cells)
+// ==> Invalid[errors=[/rows/1/email: "rows[1].email" must be a valid email address (charSequence.email), /rows/1/name: "rows[1].name" must not be blank (charSequence.notBlank), /rows/1/age: "rows[1].age" must be of type integer (object.type)]]
 ```
 
 ## 27. Configuration files
@@ -1447,8 +1432,8 @@ appConfigValidator.validate(Map.of(
 // ==> Valid[value=AppConfig[db=DbConfig[host=db.example.com, port=5432, database=myapp], cache=CacheConfig[host=localhost, port=6379, ttlSeconds=300], logLevel=INFO]]
 
 appConfigValidator.validate(Map.of(
-        "db", Map.of("host", "", "database", "myapp"))).errors().messagesByPointer()
-// ==> {/db/host=["db.host" must not be blank]}
+        "db", Map.of("host", "", "database", "myapp")))
+// ==> Invalid[errors=[/db/host: "db.host" must not be blank (charSequence.notBlank)]]
 ```
 
 ## 28. Tuples

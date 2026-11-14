@@ -142,6 +142,15 @@ Yavi._integer("quantity", c -> c.multipleOf(12));
 Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
 ```
 
+`CollectionConstraint` has `unique(key)`: the elements are unique by a key of them, such
+as the id of an object. The duplicated keys are in the message and in `params`. A JSON
+Schema has no keyword for it, so `uniqueItems` is written for `unique()` only.
+
+```java
+Yavi.schema()._list("products", productValidator, c -> c.unique(Product::id));
+// "products" must be unique. [APPLE] is/are duplicated.
+```
+
 `CharSequenceConstraint` has three more formats:
 
 | Constraint | Accepts | Message key |
@@ -748,6 +757,22 @@ violations.labeled(violation -> messageSource.getMessage("label." + violation.na
 
 `labeled` leaves a violation as it is when the function returns `null`.
 
+Without Spring, `ResourceBundleMessageFormatter` looks a message up by its key in a
+resource bundle on the class path:
+
+```java
+// messages_ja.properties: numeric.lessThanOrEqual="{0}" は {1} 以下で入力してください
+MessageFormatter formatter = new ResourceBundleMessageFormatter("messages");
+validator.formattingWith(formatter).validate(input, Locale.JAPANESE);
+```
+
+* A key that the bundle does not have is formatted with the default message, so a bundle
+  holds only the messages it replaces.
+* The bundle is that of the locale of the validation, then the base bundle. The bundle of
+  the default locale of the platform is not a fallback, unlike
+  `ResourceBundle.getBundle`: a validation in English on a Japanese server is not
+  answered in Japanese.
+
 A formatter looks up a message for the key of a violation, but not for a text written in
 code for one constraint or one property: `message("...")`, `required("...")` and
 `typeMessage("...")`. The more specific text wins over a message that the bundle has for
@@ -1342,6 +1367,19 @@ switch (userValidator.validate(map)) {
 `Arguments1` to `Arguments16` are records too:
 `case Validated.Valid(Arguments2(var name, var age))`.
 
+A failed result and a violation print as they read, in a log, in jshell and in the
+message of a failed assertion: the pointer, the message and the message key.
+
+```java
+userValidator.validate(Map.of("email", "invalid", "age", 300)).toString();
+// Invalid[errors=[/email: "email" must be a valid email address (charSequence.email),
+//                 /age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)]]
+Yavi._integer(c -> c.positive()).validate(-1).toString();
+// Invalid[errors=[The value must be positive (numeric.positive)]]
+```
+
+The violated value is not printed unless the message shows it.
+
 A violation knows where it is without parsing its name:
 
 ```java
@@ -1409,7 +1447,7 @@ message key that is not listed has no parameters:
 | `charSequence.endsWith` | `suffix` |
 | `charSequence.pattern`, `charSequence.localdate` | `pattern` |
 | `collection.contains`, `array.contains` | `element` |
-| `collection.unique` | `duplicates` |
+| `collection.unique`, `collection.uniqueBy` | `duplicates` |
 | `collection.containsAll` | `values`, `missing` |
 | `map.containsKey` | `key` |
 | `codePoints.asWhiteList`, `codePoints.asBlackList` | `notAllowed` |
@@ -1564,6 +1602,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `splitBy(pattern, delimiter)` of a reversible schema, `label` and `typeMessage` before `withheld()` and `splitBy` | [#583](https://github.com/making/yavi/pull/583) |
+| `unique(key)` of a collection, `ResourceBundleMessageFormatter`, `toString()` of a violation | [#584](https://github.com/making/yavi/pull/584) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |

@@ -8,7 +8,6 @@ import org.jspecify.annotations.Nullable;
 import am.ik.yavi.message.MessageFormatter;
 import am.ik.yavi.message.SimpleMessageFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -461,14 +460,18 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 * Returns a string representation of this constraint violation.
 	 *
 	 * <p>
-	 * The string representation includes the name, message id, default message format and
-	 * arguments.
+	 * The violation as it reads: the JSON Pointer of the value, the message and the
+	 * message key, such as
+	 * {@code /age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)}. A
+	 * violation of the validated value itself has no pointer:
+	 * {@code The value must be of type integer (object.type)}. The violated value is not
+	 * shown unless the message shows it, because the text reaches logs.
 	 * @return a string representation of this constraint violation
 	 */
 	@Override
 	public String toString() {
-		return "ConstraintViolation{" + "name='" + name + '\'' + ", messageKey='" + messageKey + '\''
-				+ ", defaultMessageFormat='" + defaultMessageFormat + '\'' + ", args=" + Arrays.toString(args) + '}';
+		final String pointer = this.pointer();
+		return (pointer.isEmpty() ? "" : pointer + ": ") + this.message() + " (" + this.messageKey + ")";
 	}
 
 	/**
@@ -706,8 +709,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 
 		@Override
 		public String toString() {
-			final String violation = super.toString();
-			return violation.substring(0, violation.length() - 1) + ", alternatives=" + this.alternatives + '}';
+			return super.toString() + " alternatives=" + this.alternatives;
 		}
 
 	}

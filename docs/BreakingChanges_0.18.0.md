@@ -967,3 +967,15 @@ The constructors of `NestedValidator`, `NestedCollectionValidator` and
 `NestedConstraintPredicates` take the path as an additional argument.
 
 Related pull request: [#537](https://github.com/making/yavi/pull/537)
+
+### `toString()` of a violation is its pointer, its message and its key
+
+`ConstraintViolation#toString()` returns
+`/age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)`, and
+`ConstraintViolations#toString()` the list of them. It was
+`ConstraintViolation{name='age', messageKey='numeric.lessThanOrEqual', defaultMessageFormat='"{0}" must be less than or equal to {1}', args=[age, 150, 300]}`.
+The violated value is no longer printed unless the message shows it. Code that compares
+the text, such as an assertion of a test, compares `messageKey()`, `name()` and `args()`
+instead.
+
+Related pull request: [#584](https://github.com/making/yavi/pull/584)

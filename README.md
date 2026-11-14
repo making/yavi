@@ -796,7 +796,7 @@ violations.messagesByName();
 violations.labeled(violation -> labels.get(violation.name())).formattedWith(formatter).messagesByName();
 ```
 
-The name, the path and the pointer of a violation are unchanged by a label; `violation.label()` returns it. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#labels-and-messages-of-a-property).
+The name, the path and the pointer of a violation are unchanged by a label; `violation.label()` returns it. Without Spring, `new ResourceBundleMessageFormatter("messages")` looks the messages up in a resource bundle. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#labels-and-messages-of-a-property).
 
 `pointer` is what the `errors[].pointer` of an RFC 9457 problem detail holds; a single violation has it as `violation.pointer()`. `params` holds the arguments of the violation by name (the names of the built-in constraints are listed in [New features in 0.18.0](docs/NewFeatures_0.18.0.md#handling-the-result); a message of your own names them with `ViolationMessage.of(key, format, names...)`). The violated value is not in a detail; `violation.args()` and `violation.violatedValue()` have it.
 

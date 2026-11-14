@@ -220,6 +220,13 @@ class ValueValidatorTest {
 			.get(0);
 		assertThat(violation.messageKey()).isEqualTo("object.anyOf");
 		assertThat(violation.args()).containsExactly("[0].amount", 2, "x");
+		// a failed result reads as its violations: the pointer, the message and the key
+		assertThat(number.prefixed("amount").validate("x")).hasToString("Invalid[errors=["
+				+ "/amount: \"amount\" must satisfy at least one of the 2 alternatives (object.anyOf) alternatives=["
+				+ "[/amount: \"amount\" must be a valid representation of an integer (charSequence.integer)], "
+				+ "[/amount: \"amount\" must be a valid representation of a big decimal (charSequence.bigdecimal)]]]]");
+		assertThat(Yavi._integer(c -> c.positive()).validate(-1))
+			.hasToString("Invalid[errors=[The value must be positive (numeric.positive)]]");
 		assertThat(violation.alternatives()).hasSize(2)
 			.allSatisfy(alternative -> assertThat(alternative).extracting(ConstraintViolation::pointer)
 				.containsExactly("/0/amount"));

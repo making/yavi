@@ -573,6 +573,13 @@ public interface ViolationMessage {
 		 */
 		COLLECTION_UNIQUE("collection.unique", "\"{0}\" must be unique. {1} is/are duplicated.", "duplicates"), //
 		/**
+		 * Message id {@code collection.uniqueBy}. Default message: {@code "{0}" must be
+		 * unique. {1} is/are duplicated.}. {@code {0}} is the property name and
+		 * {@code {1}} is the collection of duplicated keys.
+		 * @since 0.18.0
+		 */
+		COLLECTION_UNIQUE_BY("collection.uniqueBy", "\"{0}\" must be unique. {1} is/are duplicated.", "duplicates"), //
+		/**
 		 * Message id {@code collection.containsAll}. Default message: {@code "{0}" must
 		 * be have of all of the following values: {1}, missing values: {2}}. {@code {0}}
 		 * is the property name, {@code {1}} is the required values and {@code {2}} is the
