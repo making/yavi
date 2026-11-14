@@ -742,6 +742,15 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 ```
 
+Some of the properties are written by a view, which is built once and checks its names then: a name that the validator does not define is an `IllegalArgumentException` when the view is built, where a key removed from the map (`map.remove("pasword")`) is checked by nobody. A view only writes, so it is not accepted where the round trip is needed.
+
+```java
+static final PropertyView<Employee> PUBLIC = employeeValidator.excluding("email");
+static final PropertyView<Employee> SUMMARY = employeeValidator.including("id", "first_name");
+
+SUMMARY.toMap(employee); // {id=1, first_name=Taro}
+```
+
 `validate(toMap(x))` is `Valid(x)`. A value object goes back with `map(f, g)`. A property that cannot be written back, such as one with `map(f)`, does not compile: the schema takes a `ReversibleValueValidator` where `Yavi.schema()` takes a `ValueValidator`. `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form, to show a stored object. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
 
 #### Returning the violations

@@ -706,11 +706,18 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * {@link ValueValidator#map(Function, Function)}.
 	 *
 	 * <p>
+	 * Some of the properties are written by a {@link PropertyView}, which
+	 * {@link #including(String, String...)} and {@link #excluding(String, String...)}
+	 * build: a list that shows a few of them, a response without a secret. A view only
+	 * writes, since what it writes is not read back.
+	 *
+	 * <p>
 	 * The validator that reads another input ({@link #readingWith(InputReader)},
 	 * {@link #readingParameters()}) is not reversible: what is written is a map.
 	 *
 	 * @param <X> the type of the created object
 	 * @since 0.18.0
+	 * @see PropertyView
 	 */
 	public static sealed class Reversible<X> extends ObjectInputValidator<X>
 			implements ReversibleValueValidator<Map<String, Object>, X> {
@@ -734,31 +741,93 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 * rest that has a property of the validator does
 		 */
 		public Map<String, Object> toMap(X object) {
+			return this.write(object, name -> true);
+		}
+
+		/**
+		 * Returns a view that writes only the given properties of an object.
+		 *
+		 * <pre>{@code
+		 * static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+		 *
+		 * SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+		 * }</pre>
+		 *
+		 * The names are checked here, so build the view once, as a constant next to the
+		 * validator. The rest of the properties is not written.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view of the given properties, which only writes
+		 * @throws IllegalArgumentException if this validator does not define a property
+		 * of a given name, or as {@link PropertyView#including(String, String...)} states
+		 */
+		public PropertyView<X> including(String name, String... names) {
+			return PropertyView.of(this::write, this.description()).including(name, names);
+		}
+
+		/**
+		 * Returns a view that writes the properties of an object except the given ones,
+		 * such as a secret that is read but must not leave.
+		 *
+		 * <pre>{@code
+		 * static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+		 *
+		 * PUBLIC.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+		 * }</pre>
+		 *
+		 * The names are checked here, so build the view once, as a constant next to the
+		 * validator. The rest of the properties is written.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view without the given properties, which only writes
+		 * @throws IllegalArgumentException if this validator does not define a property
+		 * of a given name, or as {@link PropertyView#excluding(String, String...)} states
+		 */
+		public PropertyView<X> excluding(String name, String... names) {
+			return PropertyView.of(this::write, this.description()).excluding(name, names);
+		}
+
+		/**
+		 * Returns the map of the given object. A property whose name the given predicate
+		 * rejects may be left out, and its accessor is not called then.
+		 */
+		private Map<String, Object> write(X object, Predicate<String> names) {
 			final List<Part<?>> parts = this.parts();
 			final Map<String, @Nullable Object> map = new LinkedHashMap<>();
 			for (int i = 0; i < parts.size(); i++) {
 				final ReversiblePart<? super X, ?> written = this.written.get(i);
-				final Object value = written.value(object);
 				switch (parts.get(i)) {
 					case Property<?> property -> {
-						final Object input = written.write(value);
+						if (!names.test(property.name())) {
+							continue;
+						}
+						final Object input = written.write(written.value(object));
 						if (input != null || property.strictness() != Strictness.REJECTING_NULL) {
 							put(map, property.name(), input);
 						}
 					}
 					case PresenceProperty<?> property -> {
+						if (!names.test(property.name())) {
+							continue;
+						}
+						final Object value = written.value(object);
 						if (!(value instanceof Presence.Absent)) {
 							put(map, property.name(), written.write(value));
 						}
 					}
 					case Embedded<?> embedded -> {
-						final Object input = written.write(value);
-						final Set<String> names = this.embeddedNames(i);
+						final Set<String> embeddedNames = this.embeddedNames(i);
+						if (embeddedNames != null && embeddedNames.stream().noneMatch(names)) {
+							continue;
+						}
+						final Object input = written.write(written.value(object));
 						if (input instanceof Map<?, ?> properties) {
 							properties.forEach((name, property) -> put(map, String.valueOf(name), property));
 						}
-						else if (input == null && names != null) {
-							names.forEach(name -> put(map, name, null));
+						else if (input == null && embeddedNames != null) {
+							embeddedNames.forEach(name -> put(map, name, null));
 						}
 						else if (input != null) {
 							throw new IllegalArgumentException("The embedded validator at position " + (i + 1)
@@ -766,7 +835,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 						}
 					}
 					case Rest<?> rest -> {
-						if (written.write(value) instanceof Map<?, ?> properties) {
+						if (written.write(written.value(object)) instanceof Map<?, ?> properties) {
 							properties.forEach((name, property) -> put(map, String.valueOf(name), property));
 						}
 					}

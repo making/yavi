@@ -240,15 +240,27 @@ public sealed interface ValueDescription {
 	 * A value that must satisfy at least one of the alternatives.
 	 *
 	 * @param alternatives the alternatives in the order they are tried; unmodifiable
+	 * @param discriminator the name of the property whose value selects the alternative
+	 * of an object, as a {@link am.ik.yavi.input.DiscriminatedUnionValidator
+	 * discriminated union} has one; {@code null} if the alternatives are tried in their
+	 * order
 	 * @see ValueValidator#anyOf(ValueValidator[])
 	 */
-	record AnyOf(List<ValueDescription> alternatives) implements ValueDescription {
+	record AnyOf(List<ValueDescription> alternatives, @Nullable String discriminator) implements ValueDescription {
 
 		/**
 		 * Creates the description of alternatives.
 		 */
 		public AnyOf {
 			alternatives = List.copyOf(alternatives);
+		}
+
+		/**
+		 * Creates the description of alternatives that are tried in their order.
+		 * @param alternatives the alternatives in the order they are tried
+		 */
+		public AnyOf(List<ValueDescription> alternatives) {
+			this(alternatives, null);
 		}
 	}
 

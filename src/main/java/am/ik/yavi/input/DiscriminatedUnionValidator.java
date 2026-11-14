@@ -286,6 +286,40 @@ public sealed class DiscriminatedUnionValidator<X>
 		}
 
 		/**
+		 * Returns a view that writes only the given properties of an object, and the
+		 * discriminator. A property is one that an alternative defines; an object of an
+		 * alternative that does not define it is written without it.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view of the given properties, which only writes
+		 * @throws IllegalArgumentException if no alternative defines a property of a
+		 * given name, or as {@link PropertyView#including(String, String...)} states
+		 */
+		public PropertyView<X> including(String name, String... names) {
+			return this.view().including(name, names);
+		}
+
+		/**
+		 * Returns a view that writes the properties of an object except the given ones. A
+		 * property is one that an alternative defines. The discriminator cannot be
+		 * excluded.
+		 * @param name the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param names the names of the other properties
+		 * @return a view without the given properties, which only writes
+		 * @throws IllegalArgumentException if no alternative defines a property of a
+		 * given name, or as {@link PropertyView#excluding(String, String...)} states
+		 */
+		public PropertyView<X> excluding(String name, String... names) {
+			return this.view().excluding(name, names);
+		}
+
+		private PropertyView<X> view() {
+			return PropertyView.of((object, names) -> this.toMap(object), this.description());
+		}
+
+		/**
 		 * Returns the map that this validator reads the given object from. This is
 		 * {@link #toMap(Object)}.
 		 * @param object an object that an alternative creates
@@ -398,7 +432,7 @@ public sealed class DiscriminatedUnionValidator<X>
 			final ValueDescription reference = this.references.get(value);
 			descriptions.add(reference != null ? reference : this.describe(value, alternative.description()));
 		});
-		return new ValueDescription.AnyOf(descriptions);
+		return new ValueDescription.AnyOf(descriptions, this.discriminator);
 	}
 
 	/**
