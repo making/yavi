@@ -83,8 +83,9 @@ import org.jspecify.annotations.Nullable;
  * {@code Optional<R>} or {@code @Nullable R} unless there is a default value;
  * {@code recover} makes it accept any value, and {@code required()},
  * {@code rejectingNull()} and {@code presence()} tell an absent value from {@code null}.
- * {@code withheld()}, directly after an argument that is read from a key is added, holds
- * its value back from what shows the values of an object again.
+ * {@code withheld()}, before the modifiers of an argument that is read from a key other
+ * than {@code label} and {@code typeMessage}, holds its value back from what shows the
+ * values of an object again.
  *
  * <p>
  * With {@code fromMap}, an argument added with {@code _embedded} is read from the same
@@ -2371,7 +2372,8 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 	}
 
 	/**
-	 * The builder directly after an argument that is read from a key is added: before the
+	 * The builder after an argument that is read from a key is added, until a modifier
+	 * other than {@code label} and {@code typeMessage} is written: before the other
 	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the argument
 	 * back from what shows the values of an object again. It is said once, so the builder
 	 * that it returns does not have it.
@@ -2400,10 +2402,21 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 			return new Keyed<>(this.d1, this.d2, this.d3, this.d4.asWithheld());
 		}
 
+		@Override
+		public Added<A1, A2, A3, A4, R1, R2, R3, R4> label(String label) {
+			return new Added<>(this.d1, this.d2, this.d3, this.d4.withMessages(this.d4.messages().withLabel(label)));
+		}
+
+		@Override
+		public Added<A1, A2, A3, A4, R1, R2, R3, R4> typeMessage(ViolationMessage message) {
+			return new Added<>(this.d1, this.d2, this.d3, this.d4.withMessages(this.d4.messages().withType(message)));
+		}
+
 	}
 
 	/**
-	 * The builder after a list that is read from a key is added: the modifiers of
+	 * The builder after a list that is read from a key is added, until a modifier other
+	 * than {@code label} and {@code typeMessage} is written: the modifiers of
 	 * {@link Added} apply to the list, and before them {@code splitBy} tells that the
 	 * list may be given as one text, such as the request parameter
 	 * {@code tags=java,yavi}.
@@ -2424,6 +2437,18 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 		KeyedList(ArgumentDefinition<A1, R1> d1, ArgumentDefinition<A2, R2> d2, ArgumentDefinition<A3, R3> d3,
 				ArgumentDefinition<List<? extends E>, List<T>> d4) {
 			super(d1, d2, d3, d4);
+		}
+
+		@Override
+		public KeyedList<A1, A2, A3, E, R1, R2, R3, T> label(String label) {
+			return new KeyedList<>(this.d1, this.d2, this.d3,
+					this.d4.withMessages(this.d4.messages().withLabel(label)));
+		}
+
+		@Override
+		public KeyedList<A1, A2, A3, E, R1, R2, R3, T> typeMessage(ViolationMessage message) {
+			return new KeyedList<>(this.d1, this.d2, this.d3,
+					this.d4.withMessages(this.d4.messages().withType(message)));
 		}
 
 		/**
@@ -2462,8 +2487,9 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 		 *
 		 * <p>
 		 * With {@code apply}, the argument is a list that holds the elements already and
-		 * is validated as before. This is written directly after {@code _list}: the
-		 * returned builder has the other modifiers of the argument.
+		 * is validated as before. This is written directly after {@code _list}, or after
+		 * its {@code label} and {@code typeMessage}: the returned builder has the other
+		 * modifiers of the argument.
 		 * @param separator the pattern that separates the elements in a text
 		 * @return a builder whose last argument may be given as text
 		 * @throws IllegalArgumentException if the pattern matches the empty string
@@ -3035,7 +3061,7 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 	 * validator that accepts {@code null}: before the modifiers of {@link NullAccepting},
 	 * {@link #withheld()} holds the value of the argument back from what shows the values
 	 * of an object again. It is said once, so the builder that it returns does not have
-	 * it.
+	 * it; {@code label} and {@code typeMessage} return this builder.
 	 *
 	 * @param <A1> type of the first argument
 	 * @param <A2> type of argument at position 2
@@ -3059,6 +3085,18 @@ public sealed class Arguments4ValidatorBuilder<A1, A2, A3, A4, R1 extends @Nulla
 		@Override
 		public NullAccepting<A1, A2, A3, A4, R1, R2, R3, R4> withheld() {
 			return new NullAccepting<>(this.d1, this.d2, this.d3, this.d4.asWithheld());
+		}
+
+		@Override
+		public AddedNullAccepting<A1, A2, A3, A4, R1, R2, R3, R4> label(String label) {
+			return new AddedNullAccepting<>(this.d1, this.d2, this.d3,
+					this.d4.withMessages(this.d4.messages().withLabel(label)));
+		}
+
+		@Override
+		public AddedNullAccepting<A1, A2, A3, A4, R1, R2, R3, R4> typeMessage(ViolationMessage message) {
+			return new AddedNullAccepting<>(this.d1, this.d2, this.d3,
+					this.d4.withMessages(this.d4.messages().withType(message)));
 		}
 
 	}

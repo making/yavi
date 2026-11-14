@@ -672,7 +672,11 @@ articleValidator.validate(Map.of("title", "t", "tags", "java,,toolongtagname", "
   break after the last line. White space is removed by the pattern (`\\s*,\\s*`), by
   `StringCoercion.strict().trimming()` or by `c.trim()`.
 * An empty parameter (`tags=`) has no value, like that of any property.
-* `splitBy` is written directly after `_list`, before the other modifiers.
+* `splitBy` is written after `_list`, before the other modifiers. Only `label` and
+  `typeMessage` may be written before it.
+* A schema that is written back (`Yavi.reversibleSchema()`) gives a pattern the text that
+  joins the elements, `splitBy(pattern, "\n")`, because it writes the list as one text
+  ([A list in one text field](#writing-an-object-back-as-the-map-it-is-read-from)).
 * Another input is read the same way: `{"tags": "java,yavi"}` and
   `{"tags": ["java", "yavi"]}` are the same list. The JSON Schema of the property has
   `"type": ["array", "string"]`.
@@ -715,7 +719,7 @@ tokenValidator.validate(Map.of("name", List.of(""), "ttl", List.of("abc"))).erro
 * `typeMessage` and `required` take a `ViolationMessage` too, which replaces the message
   key as well, so that a resource bundle can localize it:
   `required(ViolationMessage.of("token.roles", "Select at least one role"))`.
-* Write `label` and `typeMessage` right after the property is added, before `optional()`
+* Write `label` and `typeMessage` after the property is added, before `optional()`
   and the like. `required(...)` is the last modifier: `.required("...").optional()` does
   not compile.
 * A violation of a nested property (`address.street`) is left to that property. An
@@ -952,7 +956,8 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 
 * `Yavi.reversibleSchema()` is `Yavi.schema()` for an object that is written back. It has
   the same methods, but where `Yavi.schema()` takes a `ValueValidator`, it takes a
-  `ReversibleValueValidator`: a validator that knows its reverse by its type.
+  `ReversibleValueValidator`: a validator that knows its reverse by its type. The other
+  difference is `splitBy` of a pattern, which is given the text that joins the elements.
 * `fromMapReversible(f, accessor1, ..., accessorN)` is `fromMap(f)` with one accessor per
   argument, which returns the validated value of that argument from the object. The
   compiler checks its type, so a record is given its constructor and its accessors.
@@ -983,12 +988,37 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 | `_object` | a nested map |
 | `_list`, `_map`, `_rest` | every element |
 | `splitBy(",")` | the joined text. An empty list is `null`, because text without an element is not sent: the property needs `defaultValue(List.of())` or `nullable()` to be read back |
-| `splitBy(Pattern)` | the list |
+| `splitBy(pattern, "\n")` | the text joined by the second argument, with the same rule for an empty list |
 | a validator with `map(f, g)` | the result of `g` |
 
 The values are those of the JDK types that the properties are read from, as a JDBC driver
 and a JSON library take them. A `URI`, a `Year` and the like are written as they are;
 convert what a driver does not take.
+
+**A list in one text field.** A list with `splitBy` is one field of a form, such as a
+`textarea` with one value per line, so it is written as the text of that field. A pattern
+does not tell the text that it separates, so the text that joins the elements is given
+with it:
+
+```java
+ObjectInputValidator.Reversible<Feed> feedSchema = Yavi.reversibleSchema()
+        ._string("title")
+        ._list("urls", Yavi._string(c -> c.url())).splitBy(Pattern.compile("\\s*\\R\\s*"), "\n")
+        .defaultValue(List.of())
+        .fromMapReversible(Feed::new, Feed::title, Feed::urls);
+
+feedSchema.toMap(new Feed("News", List.of("https://a.example", "https://b.example")));
+// {title=News, urls="https://a.example\nhttps://b.example"}
+```
+
+* `splitBy(pattern)` without the text does not compile in `Yavi.reversibleSchema()`: the
+  list would be read from one text and written as a `List`, which a `textarea` shows as
+  `[https://a.example, https://b.example]`. `Yavi.schema()` has it, as before.
+* The pattern must match the text: `splitBy(Pattern.compile("\\R"), ", ")` fails with
+  `IllegalArgumentException` when the schema is built, because the written text would not
+  be split where it was joined. `splitBy(",")` is `splitBy(Pattern.compile(","), ",")`.
+* An element whose text contains what the pattern matches is not read back as one
+  element.
 
 **A value object.** `map(f, g)` is `map(f)` with the function that goes back from the
 mapped value to the input. It returns a `ReversibleValueValidator`, whose `reverse(x)` is
@@ -1004,6 +1034,19 @@ the input that `x` is read from. The type tells whether a validator knows its re
 | `ReversibleValueValidator.lazy(supplier)`, `recursive(self -> ...)` | `ReversibleValueValidator` |
 | `fromMapReversible`, a `DiscriminatedUnionValidator.Reversible` | `ReversibleValueValidator` of a map |
 | `map(f)`, `andThen`, `anyOf`, a lambda, `Yavi._list`, `Yavi._map`, `fromMap` | `ValueValidator` |
+
+A constant is declared with these types. `StringValidator.Reversible` and the other
+validators of a single value take no type argument, because the validated value is the
+input (`StringValidator<String>` before); `EnumValidator.Reversible<E>`,
+`ObjectValidator.Reversible<T>` and `ObjectInputValidator.Reversible<T>` take the type of
+the value:
+
+```java
+static final StringValidator.Reversible NAME = Yavi._string("name", c -> c.notBlank());
+static final IntegerValidator.Reversible AGE = Yavi._integer("age", c -> c.positive());
+static final EnumValidator.Reversible<Role> ROLE = Yavi._enum("role", Role.class);
+static final ReversibleValueValidator<String, Email> EMAIL = Yavi._string("email").map(Email::new, Email::value);
+```
 
 **What cannot be written.** A validator that is not a `ReversibleValueValidator`: `map(f)`
 without the reverse, a lambda, `andThen`, `anyOf`. A schema of `Yavi.reversibleSchema()`
@@ -1051,6 +1094,17 @@ jdbcClient.sql("INSERT INTO venue (id, city, street) VALUES (:id, :address.city,
 `java.sql.Date` is read as a `LocalDate`, a `java.sql.Time` as a `LocalTime` and a
 `java.sql.Timestamp` as a `LocalDateTime` or an `Instant`, which is what a driver returns
 for such a column.
+
+A column that a driver holds as another type is given both directions with `map(f, g)`.
+The driver of SQLite stores a `java.sql.Timestamp` as the milliseconds of the epoch and
+returns a `Long` for it. `_instant("created_at")` reports such a row with `object.type`
+and writes an `Instant`, which that driver stores as text, so that the table holds both.
+A test that inserts its rows with the same validator does not find it. Read and write the
+`Long`:
+
+```java
+._long(Yavi._long("created_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
+```
 
 **A discriminated union.** An alternative added with the type of its objects is written
 back, with the discriminator. The union is `Reversible` if every alternative is added in
@@ -1170,10 +1224,11 @@ userValidator.excluding("password_hash");                   // IllegalArgumentEx
   it.
 * A property of a union is withheld if an alternative that defines it withholds it. The
   discriminator cannot be withheld.
-* `withheld()` is written directly after the property is added (after `splitBy` of a
-  list) and once: `.label("X").withheld()`, `.withheld().withheld()`, and `withheld()` of
-  `_rest` or `_embedded` do not compile. `Yavi.schema()` and the dynamic schemas have it
-  too.
+* `withheld()` is written once, before the modifiers that decide what `null` produces
+  and after `splitBy` of a list. `label` and `typeMessage` are written before it or after
+  it (`.label("Password").withheld()`). `.withheld().withheld()`,
+  `.optional().withheld()`, and `withheld()` of `_rest` or `_embedded` do not compile.
+  `Yavi.schema()` and the dynamic schemas have it too.
 * The same mark keeps what was sent out of a form that is shown again
   ([Writing the parameters back](#writing-the-parameters-back)) and is `writeOnly` in a
   JSON Schema. It does not change what is read, and a violation still holds the rejected
@@ -1235,6 +1290,31 @@ Map<String, Object> form = tree.toMap(signupSchema.description());
   not sent: an empty string, or no entry for a `Boolean`.
 * The validator that reads parameters is not `Reversible`, because what is written is a
   map. A form keeps the schema and the validator of its parameters, as above.
+* A list with `splitBy` is written as its text, so a `textarea` shows the stored list as
+  it shows what was sent.
+* A new form is given its initial values as a map of some of the properties. The others
+  are written as properties that were not sent:
+
+  ```java
+  ParameterTree.ofValues(Map.of("age", 20, "agreed", true)).toMap(signupSchema.description());
+  // {name="", age="20", agreed="true", birthday="", address={city="", street=""}}
+  ```
+
+**A form whose type is not the stored type.** A form is read as
+`ArticleInput(title, body)` and the stored object is `Article(id, title, body, createdAt)`
+or a class of a library. The schema of the form writes an `ArticleInput`, so the
+application creates one from the stored object:
+
+```java
+ParameterTree.ofValues(articleInputSchema.toMap(new ArticleInput(article.title(), article.body())))
+        .toMap(articleInputSchema.description());
+```
+
+What the schema saves is the text of each value, `null` and the checkboxes, not the
+mapping between the two types. The mapping is not written where the stored type holds
+what the form shares with it, as a property that both schemas embed
+(`_embedded(profileSchema)` in the
+[appendix](#appendix-a-signup-form-its-row-and-its-edit-form)).
 
 ## Handling the result
 

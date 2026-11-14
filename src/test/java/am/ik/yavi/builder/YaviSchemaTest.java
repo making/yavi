@@ -459,6 +459,11 @@ class YaviSchemaTest {
 				"s._string(Yavi._string(c -> c).nullable().named(\"x\")).required()",
 				// a list is told to be read from text before its other modifiers
 				"s._list(\"x\", Yavi._integer()).splitBy(\",\").label(\"X\").defaultValue(java.util.List.of())",
+				// a label does not decide the order: it is written before or after
+				"s._list(\"x\", Yavi._integer()).label(\"X\").typeMessage(ViolationMessage.of(\"a\", \"b\"))"
+						+ ".splitBy(\",\").label(\"Y\").withheld().label(\"Z\").nullable()",
+				// a list of a schema that is written back is joined by a text
+				"r._list(\"x\", Yavi._integer()).label(\"X\").splitBy(Pattern.compile(\",\\\\s*\"), \", \").withheld()",
 				// the properties of a schema known at run time
 				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").presence()"
 						+ ".property(\"y\", Yavi._string().defaultValue(\"\")).rejectingNull().build()"
@@ -483,11 +488,12 @@ class YaviSchemaTest {
 				// told to be read from text
 				"s._string(\"x\").withheld().label(\"X\").nullable().presence()",
 				"s._list(\"x\", Yavi._integer()).splitBy(\",\").withheld().defaultValue(java.util.List.of())",
-				"s._integer(Yavi._integer(\"x\").nullable()).withheld().label(\"X\").rejectingNull()",
+				"s._integer(Yavi._integer(\"x\").nullable()).label(\"X\").withheld().label(\"Y\").rejectingNull()",
 				"r._map(\"x\", Yavi._integer()).withheld().optional()",
-				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).withheld().label(\"X\").presence()"
-						+ ".property(\"y\", Yavi._string().nullable()).withheld().required()",
-				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string()).withheld().build()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld().label(\"Y\").presence()"
+						+ ".property(\"y\", Yavi._string().nullable()).typeMessage(ViolationMessage.of(\"a\", \"b\"))"
+						+ ".withheld().required()",
+				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld().build()",
 				// one property is its own result
 				"s._string(\"x\").withheld().fromMap().rejectingUnknownProperties()",
 				"s._embedded(r._string(\"x\").optional().fromMapReversible()).optional()",
@@ -539,7 +545,9 @@ class YaviSchemaTest {
 				// only a list is split, once, before its other modifiers
 				"s._string(\"x\").splitBy(\",\")", "s._map(\"x\", Yavi._integer()).splitBy(\",\")",
 				"s._list(\"x\", Yavi._integer()).splitBy(\",\").splitBy(\";\")",
-				"s._list(\"x\", Yavi._integer()).label(\"X\").splitBy(\",\")",
+				"s._list(\"x\", Yavi._integer()).nullable().splitBy(\",\")",
+				// a pattern does not tell the text that a list is written back as
+				"r._list(\"x\", Yavi._integer()).splitBy(Pattern.compile(\",\"))",
 				// a property known at run time that rejects null rejects an absent key
 				// too
 				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).rejectingNull()",
@@ -568,7 +576,8 @@ class YaviSchemaTest {
 				"Yavi.<Object>dynamicSchema().property(\"x\", Yavi._string()).presence().buildReversible()",
 				// a property is withheld once, where it is defined, and only one that has
 				// a key
-				"s._string(\"x\").withheld().withheld()", "s._string(\"x\").label(\"X\").withheld()",
+				"s._string(\"x\").withheld().withheld()",
+				"s._string(\"x\").label(\"X\").withheld().label(\"Y\").withheld()",
 				"s._string(\"x\").optional().withheld()", "s._string(\"x\").withheld().optional().withheld()",
 				"s._list(\"x\", Yavi._integer()).withheld().splitBy(\",\")",
 				"s._list(\"x\", Yavi._integer()).splitBy(\",\").withheld().withheld()",
@@ -576,7 +585,7 @@ class YaviSchemaTest {
 				"r._string(\"x\").withheld().withheld()", "s._rest().withheld()",
 				"s._embedded(s._string(\"x\").fromMap(x -> x)).withheld()",
 				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).withheld().withheld()",
-				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld()",
+				"Yavi.<String>dynamicSchema().property(\"x\", Yavi._string()).label(\"X\").withheld().withheld()",
 				"Yavi.<String>dynamicSchema().rest(Yavi._string()).withheld()",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().nullable()).withheld().withheld()",
 				// several properties are not one result
@@ -593,6 +602,7 @@ class YaviSchemaTest {
 		chains.addAll(rejected);
 		final String source = """
 				import java.util.Map; import java.util.Optional; import java.util.concurrent.TimeUnit; \
+				import java.util.regex.Pattern; \
 				import am.ik.yavi.builder.ReversibleYaviSchema; import am.ik.yavi.core.ValueValidator; \
 				import am.ik.yavi.builder.YaviSchema; import am.ik.yavi.core.ViolationMessage; \
 				import am.ik.yavi.core.InputReader; import am.ik.yavi.core.StringCoercion; \

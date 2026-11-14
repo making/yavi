@@ -134,19 +134,19 @@ record ReversibleArgumentDefinition<A, R extends @Nullable Object> (ArgumentDefi
 
 	/**
 	 * Returns the definition of this list as one that is also read from text whose
-	 * elements the given pattern separates. It is still written as a list: a pattern does
-	 * not tell the text that separates the elements.
+	 * elements the given pattern separates, and that is written as the text of its
+	 * elements joined by the given delimiter. An empty list is written as {@code null}:
+	 * text without an element is not sent.
+	 * @throws IllegalArgumentException if the pattern matches the empty string, or if it
+	 * does not match the delimiter: the written text would not be split where it was
+	 * joined
 	 */
-	ReversibleArgumentDefinition<A, R> separatedBy(Pattern separator) {
-		return new ReversibleArgumentDefinition<>(this.definition.separatedBy(separator), this.reverse);
-	}
-
-	/**
-	 * Returns the definition of this list as one that is also read from text whose
-	 * elements the given text separates, and that is written as that text. An empty list
-	 * is written as {@code null}: text without an element is not sent.
-	 */
-	ReversibleArgumentDefinition<A, R> separatedBy(String separator) {
+	ReversibleArgumentDefinition<A, R> separatedBy(Pattern separator, String delimiter) {
+		final ArgumentDefinition<A, R> separated = this.definition.separatedBy(separator);
+		if (!separator.matcher(delimiter).matches()) {
+			throw new IllegalArgumentException("The separator '" + separator.pattern()
+					+ "' does not match the delimiter '" + delimiter + "' that joins the elements.");
+		}
 		final Function<? super R, ? extends @Nullable Object> list = this.reverse;
 		final Function<? super R, ? extends @Nullable Object> joined = values -> {
 			if (!(list.apply(values) instanceof List<?>elements) || elements.isEmpty()) {
@@ -155,12 +155,11 @@ record ReversibleArgumentDefinition<A, R extends @Nullable Object> (ArgumentDefi
 			final StringBuilder text = new StringBuilder();
 			for (int i = 0; i < elements.size(); i++) {
 				final Object element = elements.get(i);
-				text.append(i == 0 ? "" : separator).append(element == null ? "" : StringCoercion.textOf(element));
+				text.append(i == 0 ? "" : delimiter).append(element == null ? "" : StringCoercion.textOf(element));
 			}
 			return text.toString();
 		};
-		return new ReversibleArgumentDefinition<>(
-				this.definition.separatedBy(Pattern.compile(Pattern.quote(separator))), joined);
+		return new ReversibleArgumentDefinition<>(separated, joined);
 	}
 
 	/**

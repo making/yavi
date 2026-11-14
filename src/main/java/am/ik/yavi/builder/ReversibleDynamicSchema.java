@@ -312,7 +312,8 @@ public sealed class ReversibleDynamicSchema<V extends @Nullable Object> permits 
 	}
 
 	/**
-	 * The schema directly after a property that requires its value is added: before the
+	 * The schema after a property that requires its value is added, until a modifier
+	 * other than {@code label} and {@code typeMessage} is written: before the other
 	 * modifiers of {@link Keyed}, {@link #withheld()} holds the value of the property
 	 * back from what shows the values of an object again. It is said once, so the schema
 	 * that it returns does not have it.
@@ -331,13 +332,24 @@ public sealed class ReversibleDynamicSchema<V extends @Nullable Object> permits 
 			return new Keyed<>(this.withLast(this.last().asWithheld()));
 		}
 
+		@Override
+		public Added<V> label(String label) {
+			return new Added<>(this.withLast(this.last().withMessages(this.last().messages().withLabel(label))));
+		}
+
+		@Override
+		public Added<V> typeMessage(ViolationMessage message) {
+			return new Added<>(this.withLast(this.last().withMessages(this.last().messages().withType(message))));
+		}
+
 	}
 
 	/**
 	 * The schema directly after a property that accepts {@code null} is added: before the
 	 * modifiers of {@link NullAccepting}, {@link #withheld()} holds the value of the
 	 * property back from what shows the values of an object again. It is said once, so
-	 * the schema that it returns does not have it.
+	 * the schema that it returns does not have it; {@code label} and {@code typeMessage}
+	 * return this schema.
 	 *
 	 * @param <V> the type of the values of the produced map
 	 * @since 0.18.0
@@ -352,6 +364,18 @@ public sealed class ReversibleDynamicSchema<V extends @Nullable Object> permits 
 		@Override
 		public NullAccepting<V> withheld() {
 			return new NullAccepting<>(this.withLast(this.last().asWithheld()));
+		}
+
+		@Override
+		public AddedNullAccepting<V> label(String label) {
+			return new AddedNullAccepting<>(
+					this.withLast(this.last().withMessages(this.last().messages().withLabel(label))));
+		}
+
+		@Override
+		public AddedNullAccepting<V> typeMessage(ViolationMessage message) {
+			return new AddedNullAccepting<>(
+					this.withLast(this.last().withMessages(this.last().messages().withType(message))));
 		}
 
 	}

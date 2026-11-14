@@ -52,9 +52,10 @@ public interface Withholdable<B> {
 	 *
 	 * <p>
 	 * The violations of the argument are reported as before, with the rejected value.
-	 * This is written directly after the argument is added, and after {@code splitBy} of
-	 * a list: the returned builder has the other modifiers of the argument and not this
-	 * one.
+	 * This is written once, before the modifiers that decide what {@code null} produces
+	 * and after {@code splitBy} of a list; {@code label} and {@code typeMessage} may be
+	 * written before it or after it. The returned builder has the other modifiers of the
+	 * argument and not this one.
 	 * @return a builder whose last argument is withheld
 	 */
 	B withheld();
