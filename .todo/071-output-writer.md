@@ -21,7 +21,3 @@ defined by the round trip with `readingWith(reader)` of the same model.
 * Whether the gain over `mapper.valueToTree(validator.toMap(x))` justifies an interface
   that every tree model implements. If not, close this item as cancelled and say so in
   `docs/NewFeatures_0.18.0.md`.
-* Whether a property that is irreversible can be rejected by the compiler. It is
-  reported when the validator is built now, because the builders do not carry in their
-  types whether every argument knows its reverse; a second hierarchy of builders would
-  double the generated code.
