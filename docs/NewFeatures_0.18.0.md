@@ -1710,6 +1710,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `presence()` | [#555](https://github.com/making/yavi/pull/555) |
 | `required()`, `rejectingNull()` | [#562](https://github.com/making/yavi/pull/562) |
 | `alternatives()` of `object.anyOf`, `multipleOf`, `ip()`, `uri()`, `ulid()`, `UUID`, `URI`, `Duration` and `Period` from a string | [#566](https://github.com/making/yavi/pull/566) |
+| `map` of a property of a schema | [#587](https://github.com/making/yavi/pull/587) |
 | Modifier chains without effect do not compile, `NullAcceptingValueValidator` | [#563](https://github.com/making/yavi/pull/563), [#564](https://github.com/making/yavi/pull/564), [#565](https://github.com/making/yavi/pull/565) |
 | JSpecify, values without `@Nullable` | [#534](https://github.com/making/yavi/pull/534), [#556](https://github.com/making/yavi/pull/556), [#557](https://github.com/making/yavi/pull/557) |
 
