@@ -1639,6 +1639,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `splitBy(pattern, delimiter)` of a reversible schema, `label` and `typeMessage` before `withheld()` and `splitBy` | [#583](https://github.com/making/yavi/pull/583) |
 | `unique(key)` of a collection, `ResourceBundleMessageFormatter`, `toString()` of a violation | [#584](https://github.com/making/yavi/pull/584) |
+| `failureWith(message, args...)`, `localizedWith(locale)`, the locale of the violations of `flatFromMap`, `flatApply` and `andThen` | [#585](https://github.com/making/yavi/pull/585) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |
