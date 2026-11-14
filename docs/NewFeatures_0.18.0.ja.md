@@ -777,6 +777,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 
 * `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。
 * `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
+* プロパティが 1 つのスキーマには、引数なしの `fromMap()` と `fromMapReversible()` があります。`get()` と同じく、検証済みの値がそのまま結果になります。1 つのプロパティを制約や修飾子ごと一度だけ定義して、複数のスキーマに埋め込めます（`_embedded(passwordSchema)`、`_embedded(passwordSchema).optional()`）。
 * `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。`withheld()` を付けて定義したプロパティは `toMap` が書きません。`reverse(x)` はそれも書くので、往復が成り立ちます（[一部のプロパティだけを書く](#一部のプロパティだけを書く)）。
 * 返るバリデータは `ObjectInputValidator` です。これまでどおりネストでき、埋め込めて、`readingWith` や `readingParameters` で読めます。`rejectingUnknownProperties()` や `constraintOnTarget` のあとも `Reversible` のままです。
 * マップは新しく作られます。SQL 文に必要な値は `map.put("updated_by", user)` のように足せます。
@@ -1191,7 +1192,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`、リバーシブルなバリデータの `including` と `excluding`、`ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
-| プロパティの `withheld()`、`ValueDescription.Property#withheld` | [#581](https://github.com/making/yavi/pull/581) |
+| プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
@@ -1231,7 +1232,7 @@ static final ObjectInputValidator.Reversible<Profile> profileSchema = Yavi.rever
 // 送信されたままのパスワード。制約と withheld() の定義はここだけ
 static final ObjectInputValidator.Reversible<String> passwordSchema = Yavi.reversibleSchema()
         ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
-        .fromMapReversible(password -> password, password -> password);
+        .fromMapReversible();
 
 // 登録フォーム
 static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
@@ -1259,13 +1260,14 @@ static final ValueValidator<Map<String, ?>, AccountEdit> editForm = editSchema.r
 **登録する。** 短すぎるパスワードは違反になり、再表示するフォームにはその値が入りません。正しいフォームは `toMap` で書きます。`toMap` はパスワードを書かないので、ハッシュは SQL 文のパラメータとして別に渡します。
 
 ```java
-// name=Taro&email=taro@example.com&password=short
+Map<String, String> parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "short");
 signupForm.validate(parameters).errors();
 // The size of "password" must be greater than or equal to 8. The given size is 5
 ParameterTree.of(parameters).toParameters(signupForm.description());
 // {name=Taro, email=taro@example.com, password=}
 
-Signup signup = signupForm.validated(parameters); // password=long-enough
+parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "long-enough");
+Signup signup = signupForm.validated(parameters);
 signupSchema.toMap(signup); // {name=Taro, email=taro@example.com}
 jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id, :name, :email, :password_hash)")
         .params(signupSchema.toMap(signup))
@@ -1277,6 +1279,7 @@ jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id
 **行を読んで表示する。** 行は `Account` として読みます。レスポンス、ログ、フォームに渡すのは `toMap` のマップで、ハッシュを含みません。
 
 ```java
+Map<String, Object> row = jdbcClient.sql("SELECT * FROM account WHERE id = :id").param("id", id).query().singleRow();
 Account account = accountSchema.validated(row);
 // Account[id=1, profile=Profile[name=Taro, email=taro@example.com], passwordHash={bcrypt}...]
 accountSchema.toMap(account); // {id=1, name=Taro, email=taro@example.com}
@@ -1289,7 +1292,7 @@ ParameterTree.ofValues(accountSchema.toMap(account)).toParameters(editForm.descr
 **編集する。** 空のままのパスワードは `Optional.empty()` になるので、プロフィールだけを更新します。パスワードが送信された場合は、登録フォームと同じ制約で検査し、そのハッシュを保存します。
 
 ```java
-// name=Jiro&email=jiro@example.com&password=
+Map<String, String> parameters = Map.of("name", "Jiro", "email", "jiro@example.com", "password", "");
 AccountEdit edit = editForm.validated(parameters);
 // AccountEdit[profile=Profile[name=Jiro, email=jiro@example.com], password=Optional.empty]
 jdbcClient.sql("UPDATE account SET name = :name, email = :email WHERE id = :id")
@@ -1313,6 +1316,6 @@ accountSchema.including("id", "password_hash").toMap(account);
 // {id=1, password_hash={bcrypt}...}
 ```
 
-* `name` と `email` の定義は `profileSchema` だけに、パスワードの制約と `withheld()` は `passwordSchema` だけにあります。埋め込んだプロパティの印は、`optional()` を付けても引き継がれます。
+* `name` と `email` の定義は `profileSchema` だけに、パスワードの制約と `withheld()` は `passwordSchema` だけにあります。`passwordSchema` はプロパティが 1 つのスキーマで、その値がそのまま結果になります（引数なしの `fromMapReversible()`）。埋め込んだプロパティの印は、`optional()` を付けても引き継がれます。
 * ハッシュはパスワードに戻る値ではないので、アプリケーションが渡します（`.param("password_hash", ...)`）。
 * 埋め込むオブジェクトをそのまま持つレコード（`Signup(Profile profile, String password)`）には、コンストラクタとアクセサを渡せます。フラットなレコード（`Signup(String name, String email, String password)`）でも書けますが、プロフィールを分解する関数と、組み立て直すアクセサが必要です。

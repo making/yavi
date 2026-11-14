@@ -1819,6 +1819,28 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	}
 
 	/**
+	 * Builds a {@link ObjectInputValidator} that reads the added argument like
+	 * {@link #fromMap(Function1)} and returns its validated value as the result, as
+	 * {@link #get()} does for a typed argument. This is how one property is defined once,
+	 * with its constraints and its modifiers, and embedded in several schemas:
+	 *
+	 * <pre>{@code
+	 * ObjectInputValidator<String> passwordSchema = Yavi.schema()
+	 *     ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
+	 *     .fromMap();
+	 *
+	 * Yavi.schema()._string("name")._embedded(passwordSchema).fromMap(Signup::new);
+	 * Yavi.schema()._string("name")._embedded(passwordSchema).optional().fromMap(Edit::new);
+	 * }</pre>
+	 * @return a new object input validator of the validated value of the argument
+	 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+	 * @since 0.18.0
+	 */
+	public ObjectInputValidator.IgnoringUnknown<R1> fromMap() {
+		return this.<R1>fromMap(value -> value);
+	}
+
+	/**
 	 * The builder after an argument that reads the same map as the other arguments is
 	 * added with {@code _embedded}: the modifiers apply to that argument.
 	 *

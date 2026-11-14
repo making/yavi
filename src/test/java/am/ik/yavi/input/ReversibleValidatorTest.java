@@ -575,6 +575,22 @@ class ReversibleValidatorTest {
 			.containsExactly(entry("name", "Taro"), entry("team", "a"));
 		assertThat(memberValidator.including("team", "password_hash").toMap(new Member(null, "a")))
 			.containsExactly(entry("password_hash", null), entry("team", "a"));
+		// one property that is defined once, with its mark, is its own result
+		final ObjectInputValidator.Reversible<String> secretValidator = Yavi.reversibleSchema()
+			._string("secret", c -> c.notBlank())
+			.withheld()
+			.fromMapReversible();
+		assertThat(secretValidator.reverse("s")).containsExactly(entry("secret", "s"));
+		assertThat(secretValidator.toMap("s")).isEmpty();
+		final ObjectInputValidator<List<Object>> noteValidator = Yavi.schema()
+			._string("note")
+			._embedded(secretValidator)
+			.optional()
+			.fromMap((note, secret) -> List.<Object>of(note, secret));
+		assertThat(noteValidator.validated(mapOf("note", "n", "secret", "s"))).containsExactly("n", Optional.of("s"));
+		assertThat(noteValidator.validated(mapOf("note", "n"))).containsExactly("n", Optional.empty());
+		assertThat(ParameterTree.of(Map.of("note", "n", "secret", "s")).toMap(noteValidator.description()))
+			.containsExactly(entry("note", "n"), entry("secret", ""));
 		// of a structure that contains itself, as deep as the written object goes
 		final ObjectInputValidator.Reversible<Node> nodeValidator = ReversibleValueValidator
 			.recursive(self -> Yavi.reversibleSchema()

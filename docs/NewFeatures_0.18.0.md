@@ -957,6 +957,10 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
   argument, which returns the validated value of that argument from the object. The
   compiler checks its type, so a record is given its constructor and its accessors.
   `flatFromMapReversible` is the same for `flatFromMap`.
+* A schema of one property has `fromMap()` and `fromMapReversible()` without arguments:
+  the validated value is the result, as with `get()`. One property is defined once in
+  this way, with its constraints and modifiers, and embedded in several schemas
+  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`).
 * `toMap(x)` is defined by the round trip: `validator.validate(validator.toMap(x))` is
   `Valid(x)` for every `x` that the validator creates. A property that is defined with
   `withheld()` is not written by `toMap`; `reverse(x)` writes it and keeps the round trip
@@ -1474,7 +1478,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`, `including` and `excluding` of a reversible validator, `ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
-| `withheld()` of a property, `ValueDescription.Property#withheld` | [#581](https://github.com/making/yavi/pull/581) |
+| `withheld()` of a property, `ValueDescription.Property#withheld`, `fromMap()` and `fromMapReversible()` of one property | [#581](https://github.com/making/yavi/pull/581) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
@@ -1516,7 +1520,7 @@ static final ObjectInputValidator.Reversible<Profile> profileSchema = Yavi.rever
 // the password as it is sent: its constraints and withheld(), defined once
 static final ObjectInputValidator.Reversible<String> passwordSchema = Yavi.reversibleSchema()
         ._string("password", c -> c.greaterThanOrEqual(8)).withheld()
-        .fromMapReversible(password -> password, password -> password);
+        .fromMapReversible();
 
 // the signup form
 static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
@@ -1546,13 +1550,14 @@ again does not hold it. A valid form is written with `toMap`, which leaves the p
 out, and the statement is given the hash as one more parameter.
 
 ```java
-// name=Taro&email=taro@example.com&password=short
+Map<String, String> parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "short");
 signupForm.validate(parameters).errors();
 // The size of "password" must be greater than or equal to 8. The given size is 5
 ParameterTree.of(parameters).toParameters(signupForm.description());
 // {name=Taro, email=taro@example.com, password=}
 
-Signup signup = signupForm.validated(parameters); // password=long-enough
+parameters = Map.of("name", "Taro", "email", "taro@example.com", "password", "long-enough");
+Signup signup = signupForm.validated(parameters);
 signupSchema.toMap(signup); // {name=Taro, email=taro@example.com}
 jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id, :name, :email, :password_hash)")
         .params(signupSchema.toMap(signup))
@@ -1565,6 +1570,7 @@ jdbcClient.sql("INSERT INTO account (id, name, email, password_hash) VALUES (:id
 response, a log or a form is given: it does not hold the hash.
 
 ```java
+Map<String, Object> row = jdbcClient.sql("SELECT * FROM account WHERE id = :id").param("id", id).query().singleRow();
 Account account = accountSchema.validated(row);
 // Account[id=1, profile=Profile[name=Taro, email=taro@example.com], passwordHash={bcrypt}...]
 accountSchema.toMap(account); // {id=1, name=Taro, email=taro@example.com}
@@ -1578,7 +1584,7 @@ ParameterTree.ofValues(accountSchema.toMap(account)).toParameters(editForm.descr
 updated; one that is sent is checked like that of the signup form and its hash is stored.
 
 ```java
-// name=Jiro&email=jiro@example.com&password=
+Map<String, String> parameters = Map.of("name", "Jiro", "email", "jiro@example.com", "password", "");
 AccountEdit edit = editForm.validated(parameters);
 // AccountEdit[profile=Profile[name=Jiro, email=jiro@example.com], password=Optional.empty]
 jdbcClient.sql("UPDATE account SET name = :name, email = :email WHERE id = :id")
@@ -1604,7 +1610,8 @@ accountSchema.including("id", "password_hash").toMap(account);
 ```
 
 * `name` and `email` are defined in `profileSchema` only, and the constraints of the
-  password and its `withheld()` in `passwordSchema` only. The mark of an embedded
+  password and its `withheld()` in `passwordSchema` only, a schema of one property whose
+  value is the result (`fromMapReversible()` without arguments). The mark of an embedded
   property is kept, also by `optional()`.
 * The hash is not a value that goes back to the password, so it is passed by the
   application (`.param("password_hash", ...)`).
