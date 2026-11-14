@@ -101,6 +101,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <pre>{@code
  * // name=+Alice+&tags=a&address[city]=Tokyo&utm_source=mail
+ * Map<String, String[]> parameters = request.getParameterMap();
  * ParameterTree tree = ParameterTree.of(parameters);
  * tree.toMap(validator.description());
  * // {name=" Alice ", age="", tags=[a], address={city="Tokyo"}}
@@ -262,6 +263,7 @@ public final class ParameterTree {
 	 *     .fromMap(Signup::new)
 	 *     .readingParameters(StringCoercion.strict().trimming());
 	 * // name=+Alice+&tags=a&address[city]=Tokyo&utm_source=mail
+	 * Map<String, String[]> parameters = request.getParameterMap();
 	 * Map<String, Object> form = ParameterTree.of(parameters).toMap(validator.description());
 	 * // {name=" Alice ", age="", tags=[a], address={city="Tokyo"}}
 	 * }</pre>

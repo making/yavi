@@ -779,6 +779,9 @@ ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
         .readingParameters(StringCoercion.strict().trimming());
 
 // name=+Alice+&age=abc&tags=a&address[city]=Tokyo&utm_source=mail
+// the map that readingParameters() validates: the Servlet API here, or
+// @RequestParam MultiValueMap<String, String> params of Spring
+Map<String, String[]> params = request.getParameterMap();
 ParameterTree tree = ParameterTree.of(params);
 Map<String, Object> form = tree.toMap(signupValidator.description());
 // {name=" Alice ", age="abc", tags=[a], address={city="Tokyo"}}
@@ -790,6 +793,10 @@ ParameterTree.of(Map.of()).toMap(signupValidator.description());
 // {name="", age="", tags=[], address={city=""}}
 ```
 
+* The parameters are a `Map<String, ?>`, in every form that `readingParameters()`
+  validates: a `Map<String, String>`, a `Map<String, List<String>>` such as the
+  `MultiValueMap` of Spring and the `Map<String, String[]>` of the Servlet API. The tree
+  of a JSON library (`readingWith(reader)`) is not written back.
 * A value is the text that was sent. It is not trimmed, coerced or validated.
 * `toMap` returns a tree of `Map`, `List` and the values, for a template engine such as
   Mustache. `toParameters` returns the same values under the names of the violations

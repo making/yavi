@@ -644,6 +644,9 @@ ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
         .readingParameters(StringCoercion.strict().trimming());
 
 // name=+Alice+&age=abc&tags=a&address[city]=Tokyo&utm_source=mail
+// readingParameters() が検証するマップ。ここでは Servlet API のもの。
+// Spring では @RequestParam MultiValueMap<String, String> params
+Map<String, String[]> params = request.getParameterMap();
 ParameterTree tree = ParameterTree.of(params);
 Map<String, Object> form = tree.toMap(signupValidator.description());
 // {name=" Alice ", age="abc", tags=[a], address={city="Tokyo"}}
@@ -655,6 +658,7 @@ ParameterTree.of(Map.of()).toMap(signupValidator.description());
 // {name="", age="", tags=[], address={city=""}}
 ```
 
+* パラメータは `Map<String, ?>` です。`readingParameters()` が検証するどの形でも渡せます。`Map<String, String>`、Spring の `MultiValueMap` のような `Map<String, List<String>>`、Servlet API の `Map<String, String[]>` です。JSON ライブラリのツリー（`readingWith(reader)`）は書き戻せません。
 * 値は送信されたテキストです。トリムも、型の変換も、検証もされません。
 * `toMap` は `Map`、`List` と値からなるツリーを返します。Mustache のようなテンプレートエンジンに渡せます。`toParameters` は同じ値を違反の名前（`address.city`、`items[0].name`）をキーにして返します。Spring の `MapBindingResult` に渡せます。
 * リストは、値が 1 つでも `List` です。`splitBy` を付けたリストが 1 つのテキストで送信された場合は、そのテキストのままです。テキストフィールドにそのまま表示できます。
