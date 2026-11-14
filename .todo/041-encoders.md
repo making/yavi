@@ -64,19 +64,23 @@ ObjectInputValidator.Writable<Employee> employeeValidator = Yavi.schema()
 
 employeeValidator.validate(row);          // reads, as fromMap does
 employeeValidator.toMap(employee);        // {id=1, first_name=Taro, last_name=Yamada, email=t@example.com, nickname=null}
-employeeValidator.toParameters(employee); // {id="1", first_name="Taro", ..., nickname=""}
 
 jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname) "
         + "VALUES (:id, :first_name, :last_name, :email, :nickname)")
         .params(employeeValidator.toMap(employee))
         .update();
+
+// the first display of a stored object and the form that is shown again: one code path
+ParameterTree tree = stored ? ParameterTree.ofValues(signupValidator.toMap(signup))
+        : ParameterTree.of(params);
+Map<String, Object> form = tree.toParameters(signupValidator.description());
 ```
 
 | Reading (exists) | Writing (to add) |
 | --- | --- |
 | `fromMap(f)`, `flatFromMap(f)` | `mapping(f, accessor1..N)`, `flatMapping(f, accessor1..N)` |
 | `validate(map)` | `toMap(x)`: a map of the JDK values as they are, for JDBC and Jackson |
-| `readingParameters().validate(params)` | `toParameters(x)`: text under the names of the violations, for a `MapBindingResult` |
+| `ParameterTree.of(params)` | `ParameterTree.ofValues(validator.toMap(x))`: the values as text (the name is not decided) |
 | `ObjectInputValidator<X>` | `ObjectInputValidator.Writable<X>` |
 | `map(f)` | `map(f, g)` |
 | `when(value, validator)` of a union | `when(value, type, writableValidator)` |
@@ -90,23 +94,45 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
   `rejectingUnknownProperties()` and `constraintOnTarget`.
 * A union selects the alternative by the type of the object and adds the discriminator.
   It is `Writable` by its staged type only if every alternative is added with the type.
-* The tree of text that Mustache wants needs no method: it should be
-  `ParameterTree.of(validator.toParameters(x)).toMap(validator.description())`. Verify.
+* `toMap(x)` is the only method that writes. A form is given the map through
+  `ParameterTree`, see below.
+
+## ParameterTree
+
+`ParameterTree` stays. It reads the keys of parameters (`address.city`,
+`items[0].name`), and it writes what was sent when there is no object: `age=abc` is in no
+`Signup`. The two write different things, what was sent and what an object holds, in one
+shape.
+
+So the rules of the shape and of text are in `ParameterTree` only, and a validator has no
+`toParameters(x)`:
+
+* `ParameterTree.ofValues(tree)` takes a tree of values and holds them as text, the
+  reverse of `StringCoercion.strict()`: `30` is `"30"`, a `LocalDate` its ISO-8601 text,
+  an enum constant its name.
+* `toMap(description)` and `toParameters(description)`, which exist, give the shape: an
+  empty string for a single value that is absent, no entry for a `Boolean` that is, the
+  names of the violations as keys. The first display and the form that is shown again
+  cannot differ, and the tree that Mustache wants comes from the same call.
+* `validator.toMap(x)` is a tree of values and `ParameterTree#toMap(description)` a tree
+  of text. Both are the map that the validator reads; the same name is accepted.
+* What `ParameterTree.of` does with a value that is not text is not checked. Decide
+  whether `ofValues` is a method of its own or `of` takes values too.
 
 ## What is written
 
-| Property | `toMap` | `toParameters` |
-| --- | --- | --- |
-| a value of constraints, `defaultValue`, `recover` | the value | text, the reverse of `StringCoercion.strict()` |
-| no value of `nullable()`, `optional()` | an entry with `null` | an empty string; no entry for a `Boolean` |
-| no value after `rejectingNull()` | no entry | no entry |
-| `presence()` | no entry for `Absent`, `null` for `PresentNull` | the same |
-| `_embedded` | in the same map | the same |
-| `_object` | a nested map | `address.city` |
-| `_list`, `_map`, `_rest` | every element | the list of `tags`, `items[0].name` |
-| `splitBy(",")` | the joined text | the same |
-| `splitBy(Pattern)` | the list | the same |
-| `map(f, g)` | the result of `g` | the same |
+| Property | `toMap` |
+| --- | --- |
+| a value of constraints, `defaultValue`, `recover` | the value |
+| no value of `nullable()`, `optional()` | an entry with `null` |
+| no value after `rejectingNull()` | no entry |
+| `presence()` | no entry for `Absent`, `null` for `PresentNull` |
+| `_embedded` | in the same map |
+| `_object` | a nested map |
+| `_list`, `_map`, `_rest` | every element |
+| `splitBy(",")` | the joined text |
+| `splitBy(Pattern)` | the list |
+| `map(f, g)` | the result of `g` |
 
 An entry with `null` is kept because a named parameter needs its key.
 
@@ -129,8 +155,8 @@ cycle.
 
 * `am.ik.yavi.input`: `ObjectInputValidator.Writable` and the writing side of the union.
   `ObjectInputValidator` is sealed and there is no `module-info`, so a subclass is in the
-  same package.
-* `am.ik.yavi.core`: the reverse of a single value (`map(f, g)`) and the rules of text.
+  same package. `ParameterTree.ofValues` and the rules of text.
+* `am.ik.yavi.core`: the reverse of a single value (`map(f, g)`).
 * `am.ik.yavi.builder`: the generated `mapping` and the reverse in `ArgumentDefinition`.
 
 ## Phases
