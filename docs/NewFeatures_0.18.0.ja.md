@@ -628,6 +628,55 @@ tokenValidator.formattingWith(formatter).validate(Map.of()).errors().messagesByN
 | `MessageFormatter#format(String, Object[], Locale)` | テキストを整形します。デフォルトは `MessageFormat` で整形します。ほかのメッセージと同じ方法で整形するにはオーバーライドします。 |
 | `Constraint#predicates(List)` | `url(url -> ...)` や `password(...)` のように、複数の述語を 1 つの制約として追加します。直後の `message(...)` はそのすべてのメッセージを置き換えます。 |
 
+### パラメータを書き戻す
+
+不正なフォームは、送信されたテキストを入れて再表示します。`ParameterTree` は、パラメータをバリデータが読む形で返します。返すのは、バリデータが記述するプロパティと、それに送信された値です。形はスキーマのとおりです。アプリケーションがフィールドを 1 つずつ写す必要はありません。
+
+```java
+record Signup(String name, Integer age, List<String> tags, Address address) {}
+
+ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
+        ._string("name", c -> c.notBlank())
+        ._integer("age")
+        ._list("tags", Yavi._string()).defaultValue(List.of())
+        ._object("address", addressValidator)
+        .fromMap(Signup::new)
+        .readingParameters(StringCoercion.strict().trimming());
+
+// name=+Alice+&age=abc&tags=a&address[city]=Tokyo&utm_source=mail
+// readingParameters() が検証するマップ。ここでは Servlet API のもの。
+// Spring では @RequestParam MultiValueMap<String, String> params
+Map<String, String[]> params = request.getParameterMap();
+ParameterTree tree = ParameterTree.of(params);
+Map<String, Object> form = tree.toMap(signupValidator.description());
+// {name=" Alice ", age="abc", tags=[a], address={city="Tokyo"}}
+Map<String, Object> flat = tree.toParameters(signupValidator.description());
+// {name=" Alice ", age="abc", tags=[a], address.city="Tokyo"}
+
+// 何も送信されなかった場合
+ParameterTree.of(Map.of()).toMap(signupValidator.description());
+// {name="", age="", tags=[], address={city=""}}
+```
+
+* パラメータは `Map<String, ?>` です。`readingParameters()` が検証するどの形でも渡せます。`Map<String, String>`、Spring の `MultiValueMap` のような `Map<String, List<String>>`、Servlet API の `Map<String, String[]>` です。JSON ライブラリのツリー（`readingWith(reader)`）は書き戻せません。
+* 値は送信されたテキストです。トリムも、型の変換も、検証もされません。
+* `toMap` は `Map`、`List` と値からなるツリーを返します。Mustache のようなテンプレートエンジンに渡せます。`toParameters` は同じ値を違反の名前（`address.city`、`items[0].name`）をキーにして返します。Spring の `MapBindingResult` に渡せます。
+* リストは、値が 1 つでも `List` です。`splitBy` を付けたリストが 1 つのテキストで送信された場合は、そのテキストのままです。テキストフィールドにそのまま表示できます。
+* プロパティが定義されていないキー（`utm_source`）は返しません。`_rest` を持つスキーマは残りのキーも読むので、それらも返します。
+* エントリはどのリクエストでも同じです。送信されなかった単一の値は空文字列です。空のテキストフィールドが送信する値と同じです。リストとマップは空になり、オブジェクトはそのプロパティを持ちます。プロパティの形に合わない値も同じように返します。`age` に 2 つの値が送信された場合がその例で、違反として報告されます。JMustache のように存在しないキーで失敗するテンプレートも、パラメータの欠けたリクエストで失敗しません。同じ呼び出しで空のフォームも得られます。
+* 送信されなかった `Boolean` にはエントリがありません。チェックされていないチェックボックスは何も送信しません。また、空文字列を `false` として扱わないテンプレートエンジンがあります。`presence()` を付けたプロパティと、自身を含む構造にもエントリがありません。
+* 返されるマップとリストは新しく作られたものです。ページに必要な値は `form.put("id", id)` のように足せます。
+* 判別共用体では、すべての選択肢のプロパティを返します。
+* 記述は、そのパラメータを検証するバリデータのものを渡します。バリデータが既定と異なる最大インデックスのツリーを読む場合は、`ParameterTree.of(params, maxIndex)` に同じ値を渡します。
+* マップはすべてのプロパティを持ちます。パスワードも含みます。何を表示するかはテンプレートが決めます。
+
+`ParameterTree.parametersOf(map)` は `ParameterTree.of(parameters)` の逆です。`Map` と `List` からなる任意のツリーに使えます。
+
+```java
+ParameterTree.parametersOf(Map.of("address", Map.of("city", "Tokyo"), "tags", List.of("a", "b")));
+// {address.city=Tokyo, tags=[a, b]}
+```
+
 ### Spring MVC でフォームを再表示する
 
 Spring MVC が `BindingResult` を用意するのは、自身がバインドしたフォームオブジェクトに対してだけです。パラメータのマップには用意されません。そこで、コントローラの `@ModelAttribute` メソッドで、パラメータの `MapBindingResult` をモデルに入れます。こうすると、ハンドラは `BindingResult` を引数で受け取れます。Thymeleaf の `th:object`、`th:field`、`#fields` も、フォームオブジェクトの場合と同じように使えます。追加のライブラリは要りません。
@@ -643,8 +692,9 @@ class SignupController {
             .readingParameters(StringCoercion.strict().trimming().booleanWords());
 
     @ModelAttribute
-    void signupForm(@RequestParam Map<String, String> params, Model model) {
-        model.addAllAttributes(new MapBindingResult(params, "signupForm").getModel());
+    void signupForm(@RequestParam MultiValueMap<String, String> params, Model model) {
+        Map<String, Object> form = ParameterTree.of(params).toParameters(signupValidator.description());
+        model.addAllAttributes(new MapBindingResult(form, "signupForm").getModel());
     }
 
     @GetMapping("/signup")
@@ -683,9 +733,9 @@ class SignupController {
 * フィールドには、送信されたテキストがそのまま再表示されます。プロパティの型を表さないテキスト（`age` に対する `abc`）も再表示されます。
 * フィールドエラーのコードはメッセージキー（`object.type`）なので、これまでどおり `MessageSource` でメッセージを差し替えられます。プロパティにラベルがあれば、そのメッセージの `{0}` はラベルです。
 * Thymeleaf はチェックボックスに隠しフィールド `_subscribed` を追加します。このキーに対応するプロパティは定義されていないので、このようなフォームは `rejectingUnknownProperties()` を付けたバリデータでは読めません。
-* フィールドの名前は、`th:field` が出力する形（`address.city`、`items[0].name`）にします。この形が違反の名前であり、`MapBindingResult` が値を引くキーでもあるからです。`address[city]` の形で送信された値は、検証はされますが再表示されません。
+* フィールドの名前は、`th:field` が出力する形（`address.city`、`items[0].name`）にします。この形が違反の名前であり、`MapBindingResult` が値を引くキーでもあるからです。`toParameters` はこの形のキーを返すので、`address[city]` の形で送信された値も再表示されます。
 * ハンドラは `MultiValueMap` を検証します。そのため、1 つのキーに複数の値があれば、リストとして読まれるか、スカラーのプロパティでは `object.type` で報告されます。`Map<String, String>` で受けると、最初の値以外は捨てられます。
-* `@ModelAttribute` メソッドは `Map<String, String>` で受けます。`MultiValueMap` を渡すと、テキストフィールドに値のリストが `[30]` のように表示されるからです。チェックボックスのように複数の値を持つキー（`tags=a&tags=b`）がある場合は、そのキーの値をリストで持つマップを `MapBindingResult` に渡します。そうしないと、最初のチェックボックスしか再びチェックされません。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
+* `toParameters` は、単一の値にはテキストを、リストのプロパティにはリストを返します。そのため、テキストフィールドには `30` が表示され、チェックされていたチェックボックス（`tags=a&tags=b`）はすべて再びチェックされます。要素の違反は `tags[1]` に付くので、`#fields.hasErrors('tags*')` で調べます。
 
 ## 結果を扱う
 
@@ -897,6 +947,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
 | `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
+| `ParameterTree#toMap`、`toParameters`、`parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |

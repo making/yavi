@@ -25,8 +25,8 @@ generated code doubles.
 A form is shown in two situations, and both need the same data: the text of each field
 under the names of the schema.
 
-* Shown again after a violation: the text that was sent. That is 070, which needs no
-  encoder.
+* Shown again after a violation: the text that was sent. That is
+  `ParameterTree.of(params).toMap(validator.description())`, which needs no encoder.
 * Shown first for an object that is already stored: the text of each field of the
   object. Today the application writes it by hand, repeating the names of the schema a
   third time:
@@ -39,8 +39,13 @@ Map<String, Object> form = Map.of("name", signup.name(), "age", String.valueOf(s
         "tags", signup.tags(), "address", Map.of("city", signup.address().city()));
 ```
 
-An encoder defined with the schema would return this map, in the shape that 070 returns
-for the parameters, so a template is given one kind of data in both situations:
+An encoder defined with the schema would return this map, in the shape that
+`ParameterTree#toMap` returns for the parameters (a `Map` per object in the order of the
+properties, a `List` per list, text per value, an empty string for a single value that
+is absent and no entry for a `Boolean` that is), so a
+template is given one kind of data in both situations. `ParameterTree.parametersOf(map)`
+writes either map under the keys of the violations (`address.city`), which a
+`MapBindingResult` of Spring looks up:
 
 ```java
 // a possible shape

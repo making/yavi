@@ -13,6 +13,7 @@ import java.time.Period;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +59,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -127,9 +129,10 @@ class ObjectInputValidatorTest {
 			@Override
 			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
 					@Nullable Map<String, Object> input) {
-				final Map<String, @Nullable Object> parameters = new LinkedHashMap<>();
-				flatten("", strings(input), parameters);
-				return validator.readingWith(ParameterTree.reader()).validate(ParameterTree.of(parameters));
+				// a map that is null has no parameters to stand for it
+				return validator.readingWith(ParameterTree.reader())
+					.validate(ParameterTree.of(input == null ? Collections.singletonMap("", null)
+							: ParameterTree.parametersOf((Map<String, ?>) Objects.requireNonNull(strings(input)))));
 			}
 		};
 
@@ -233,26 +236,6 @@ class ObjectInputValidatorTest {
 			return array.stream().map(ObjectInputValidatorTest::strings).toList();
 		}
 		return node == null ? null : node.toString();
-	}
-
-	/**
-	 * Puts the scalars of a tree of strings under their path. A list of scalars is the
-	 * values of its key, and the elements of any other list are indexed. An empty object
-	 * or list has no parameter.
-	 */
-	static void flatten(String path, @Nullable Object node, Map<String, @Nullable Object> parameters) {
-		if (node instanceof Map<?, ?>object) {
-			object.forEach(
-					(name, value) -> flatten(path.isEmpty() ? (String) name : path + "." + name, value, parameters));
-		}
-		else if (node instanceof List<?>array && array.stream().anyMatch(Map.class::isInstance)) {
-			for (int i = 0; i < array.size(); i++) {
-				flatten(path + "[" + i + "]", array.get(i), parameters);
-			}
-		}
-		else if (!(node instanceof List<?>array) || !array.isEmpty()) {
-			parameters.put(path, node);
-		}
 	}
 
 	@SuppressWarnings({ "unchecked", "NullAway" })
@@ -828,7 +811,7 @@ class ObjectInputValidatorTest {
 		assertThat(validator.validated(input("customer", "a", "coupons", List.of("1", "2"), "coupons[]", "3", "items",
 				"", "stock[0]", "5", "note", "x")))
 			.isEqualTo(new Order("a", List.of(), List.of(1, 2, 3), Map.of("0", 5), "x"));
-		final Validated<Order> validated = validator.validate(input(
+		final Map<String, Object> invalid = input(
 				// several values are not a scalar
 				"customer", List.of("a", "b"),
 				// a skipped index is null, and the others keep theirs
@@ -839,7 +822,8 @@ class ObjectInputValidatorTest {
 				"items[0", "1", "[0]", "1", "a..b", "1", "a[]b", "1", "a[][b]", "1", ".", "1", "", "1",
 				"deep" + ".x".repeat(ParameterTree.MAX_DEPTH), "1",
 				// an unknown key is reported with its tree
-				"extra.b[0]", "1"));
+				"extra.b[0]", "1");
+		final Validated<Order> validated = validator.validate(invalid);
 		assertThat(validated.errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
 			.containsExactly(tuple("customer", "object.type", List.of("a", "b")),
@@ -854,16 +838,16 @@ class ObjectInputValidatorTest {
 					tuple("deep" + ".x".repeat(ParameterTree.MAX_DEPTH), "object.unknownProperty", "1"),
 					tuple("extra", "object.unknownProperty", Map.of("b", List.of("1"))));
 		// a key with values and nested keys is neither a scalar, a list nor an object
-		assertThat(Yavi.schema()
+		final ValueValidator<Map<String, ?>, String> mixedValidator = Yavi.schema()
 			._string("s")
 			._list("l", StringValidatorBuilder.of("", c -> c.notBlank()).build())
 			._object("o", addressValidator)
 			._object("note", Object.class)
 			.fromMap((s, l, o, note) -> "")
-			.readingParameters()
-			.validate(input("s", "x", "s.b", "y", "l", "x", "l[0]", "y", "o", "x", "o.street", "y", "note", "x",
-					"note.lang", "en"))
-			.errors())
+			.readingParameters();
+		final Map<String, Object> mixed = input("s", "x", "s.b", "y", "l", "x", "l[0]", "y", "o", "x", "o.street", "y",
+				"note", "x", "note.lang", "en");
+		assertThat(mixedValidator.validate(mixed).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
 			.containsExactly(tuple("s", "object.type", Map.of("", "x", "b", "y")),
 					tuple("l", "object.type", Map.of("", "x", "0", "y")),
@@ -879,6 +863,65 @@ class ObjectInputValidatorTest {
 		assertThat(validator.validate(null).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
 		assertThatThrownBy(() -> ParameterTree.of(Map.of(), -1)).isInstanceOf(IllegalArgumentException.class);
+		// the parameters are written back as the validator reads them: the described
+		// properties in their order and in the described shape, with what was sent
+		final Map<String, Object> written = ParameterTree.of(parameters).toMap(validator.description());
+		assertThat(written).containsExactly(entry("customer", "a"),
+				entry("items", List.of(Map.of("name", "ink", "quantity", "2"), Map.of("name", "pen", "quantity", ""))),
+				entry("coupons", List.of("7")), entry("stock", Map.of("1", "3", "a.b", "0")),
+				entry("note", List.of("x", "y")));
+		// under the keys of the violations, which are parameters that stand for the same
+		// tree; an empty list or map has no key
+		assertThat(ParameterTree.of(parameters).toParameters(validator.description())).containsExactly(
+				entry("customer", "a"), entry("items[0].name", "ink"), entry("items[0].quantity", "2"),
+				entry("items[1].name", "pen"), entry("items[1].quantity", ""), entry("coupons", List.of("7")),
+				entry("stock.1", "3"), entry("stock[a.b]", "0"), entry("note", List.of("x", "y")));
+		assertThat(validator.validated(ParameterTree.parametersOf(written))).isEqualTo(validator.validated(parameters));
+		assertThat(ParameterTree.parametersOf(map("a", List.of(), "b", Map.of(), "c", List.of(List.of("x")))))
+			.isEqualTo(Map.of("c[0]", List.of("x")));
+		// the tree is the caller's, for example to add what a page needs
+		written.put("id", 1);
+		((List<Object>) Objects.requireNonNull(written.get("note"))).add("z");
+		assertThat(ParameterTree.of(parameters).toMap(validator.description())).doesNotContainKey("id")
+			.containsEntry("note", List.of("x", "y"));
+		// a value that was not sent or has not the described shape is what an empty
+		// form sends, so the entries are the same for every request; an unknown key has
+		// none, nothing is coerced, and a skipped index keeps the others at theirs
+		assertThat(ParameterTree.of(invalid).toMap(validator.description()))
+			.isEqualTo(Map.of("customer", "", "items", Arrays.asList(null, null, Map.of("name", "", "quantity", "")),
+					"coupons", List.of(), "stock", Map.of("01", "x", "0", "1")));
+		assertThat(ParameterTree.of(invalid).toParameters(validator.description())).isEqualTo(
+				Map.of("customer", "", "items[2].name", "", "items[2].quantity", "", "stock.01", "x", "stock.0", "1"));
+		// a value of type Object is what the tree holds
+		assertThat(ParameterTree.of(mixed).toMap(mixedValidator.description())).isEqualTo(Map.of("s", "", "l",
+				List.of(), "o", Map.of("street", "", "city", ""), "note", Map.of("", "x", "lang", "en")));
+		assertThat(ParameterTree.of(mixed).toParameters(mixedValidator.description()))
+			.isEqualTo(Map.of("s", "", "o.street", "", "o.city", "", "note", "x", "note.lang", "en"));
+		// the properties of alternatives are those of all of them, and the rest is
+		// written if it is read
+		final ValueDescription shapes = Yavi.schema()
+			._embedded(shapeValidator)
+			._rest()
+			.fromMap((shape, rest) -> "")
+			.description();
+		assertThat(ParameterTree.of(input("radius", "x", "side", List.of("1", "2"), "color", "red", "extra.a", "1"))
+			.toMap(shapes))
+			.isEqualTo(Map.of("type", "", "radius", "x", "side", "", "color", "red", "extra", Map.of("a", "1")));
+		assertThat(ParameterTree.of(input("type", "square", "side", "1", "color", "red"))
+			.toMap(shapeValidator.description())).isEqualTo(Map.of("type", "square", "radius", "", "side", "1"));
+		// a checkbox that is not checked, a property that may be absent and a structure
+		// that contains itself have no entry unless they are sent
+		final ValueDescription unsent = Yavi.schema()
+			._boolean("flag")
+			._string("patch")
+			.presence()
+			._object("expr", exprValidator)
+			.fromMap((flag, patch, expr) -> "")
+			.description();
+		assertThat(ParameterTree.of(Map.of()).toMap(unsent)).isEqualTo(Map.of("expr", Map.of("op", "", "value", "")));
+		assertThat(ParameterTree.of(Map.of("flag", "on", "patch", "")).toMap(unsent))
+			.isEqualTo(Map.of("flag", "on", "patch", "", "expr", Map.of("op", "", "value", "")));
+		assertThat(ParameterTree.of(input("a", "1")).toMap(Yavi._string().description())).isEmpty();
 		// a list is also read from one text whose elements are separated: they are text
 		// that stands for a value and are located as the values of a repeated key
 		final ObjectInputValidator<List<Object>> article = Yavi.schema()
@@ -897,6 +940,12 @@ class ObjectInputValidatorTest {
 			.containsExactly(List.of("a", "b", "c"), List.of(1, 2, 3));
 		assertThat(article.validated(input("tags", "a", "ids", List.of(1, "2;3")))).containsExactly(List.of("a"),
 				List.of(1, 2, 3));
+		// one text is written back as it was sent, and so are several values
+		assertThat(ParameterTree.of(Map.of("tags", "java,yavi", "ids", "1; 2\n3\n")).toMap(split.description()))
+			.isEqualTo(Map.of("tags", "java,yavi", "ids", "1; 2\n3\n"));
+		assertThat(ParameterTree.of(Map.of("tags", List.of("a,b,", "c"), "ids[0]", "1;2", "ids[1]", "3"))
+			.toMap(split.description())).isEqualTo(Map.of("tags", List.of("a,b,", "c"), "ids", List.of("1;2", "3")));
+		assertThat(ParameterTree.of(Map.of()).toMap(split.description())).isEqualTo(Map.of("tags", "", "ids", ""));
 		// nothing is dropped or trimmed: an element without a value is reported
 		assertThat(split.validate(Map.of("tags", "java,,toolong, x", "ids", "1;x;-3;")).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
