@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import am.ik.yavi.core.Presence;
@@ -498,25 +499,22 @@ class ReversibleValidatorTest {
 			.update();
 		assertThat(jdbcClient.sql("SELECT city FROM venue WHERE street IS NULL ORDER BY id").query(String.class).list())
 			.containsExactly("Tokyo", "Osaka");
-		assertThat(jdbcClient.sql("SELECT id, opened_at FROM venue ORDER BY id")
-			.query()
-			.listOfRows()
-			.stream()
-			.map(stored -> Yavi.reversibleSchema()
-				._long(Yavi._long("opened_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
-				.fromMapReversible()
-				.validated(stored)))
-			.containsExactly(venue.openedAt(), venue.openedAt());
 
 		// a row holds null for a column without a value, although the type of the map
 		// that a validator reads does not say so
 		@SuppressWarnings({ "unchecked", "NullAway" })
-		final List<Map<String, Object>> rows = (List<Map<String, Object>>) (List<?>) jdbcClient
-			.sql("SELECT * FROM event ORDER BY id")
+		final Function<String, List<Map<String, Object>>> rows = sql -> (List<Map<String, Object>>) (List<?>) jdbcClient
+			.sql(sql)
 			.query()
 			.listOfRows();
-		assertThat(rows.stream().map(eventValidator::validate))
+		assertThat(rows.apply("SELECT * FROM event ORDER BY id").stream().map(eventValidator::validate))
 			.containsExactlyElementsOf(events.stream().map(Validated::successWith).toList());
+		assertThat(rows.apply("SELECT id, opened_at FROM venue ORDER BY id")
+			.stream()
+			.map(Yavi.reversibleSchema()
+				._long(Yavi._long("opened_at").map(Instant::ofEpochMilli, Instant::toEpochMilli))
+				.fromMapReversible()::validated))
+			.containsExactly(venue.openedAt(), venue.openedAt());
 	}
 
 	record Account(Integer id, String name, String passwordHash) {
