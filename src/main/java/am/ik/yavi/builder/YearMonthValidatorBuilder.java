@@ -7,8 +7,10 @@ package am.ik.yavi.builder;
 import java.time.YearMonth;
 import java.util.function.Function;
 
+import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
+import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.YearMonthValidator;
 import am.ik.yavi.constraint.YearMonthConstraint;
@@ -89,8 +91,13 @@ public class YearMonthValidatorBuilder implements ValueValidatorBuilder<YearMont
 	 */
 	@Override
 	public <T extends @Nullable Object> YearMonthValidator<T> build(Function<? super YearMonth, ? extends T> mapper) {
+		return this.create(mapper::apply);
+	}
+
+	private <T extends @Nullable Object> YearMonthValidator<T> create(
+			Function1<? super YearMonth, ? extends T> mapper) {
 		final Validator<Arguments1<YearMonth>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new YearMonthValidator<>(validator, mapper::apply);
+		return new YearMonthValidator<>(validator, mapper);
 	}
 
 	/**
@@ -99,7 +106,7 @@ public class YearMonthValidatorBuilder implements ValueValidatorBuilder<YearMont
 	 */
 	@Override
 	public YearMonthValidator<YearMonth> build() {
-		return build(x -> x);
+		return this.create(DefaultArguments1Validator.unmapped());
 	}
 
 }

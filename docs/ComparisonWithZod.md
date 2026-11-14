@@ -10,6 +10,7 @@ YAVI and lists the differences.
 * [Inputs](#inputs): a map, a JSON tree, request parameters, typed values
 * [Rules that differ](#rules-that-differ): absent keys, unknown keys, types, strings, unions,
   errors
+* [Codecs](#codecs)
 * [Not available](#not-available)
 
 ## Basic
@@ -345,6 +346,21 @@ formatted with a `MessageFormatter`, so it can be localized. `path()` is a list 
 
 `z.treeifyError` has no counterpart: the keys of `messagesByPointer()` address the
 nested values instead.
+
+## Codecs
+
+`z.codec(input, output, { decode, encode })` and `z.encode(schema, value)` are a
+validator that writes what it reads:
+
+| Zod | YAVI |
+| --- | --- |
+| `z.codec(z.string(), z.custom<Email>(), { decode, encode })` | `Yavi._string("email", c -> c.email()).map(Email::new, Email::value)` (`ReversibleValueValidator`) |
+| `z.encode(codec, value)` | `validator.reverse(value)` |
+| `z.encode(objectSchema, value)` | `Yavi.schema()...fromMapReversible(f, accessor1, ...)`, then `validator.toMap(value)` |
+
+A validator that does not know its reverse, such as `map(f)`, is the counterpart of a
+transform, which Zod refuses to encode at run time. See
+[New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
 
 ## Not available
 

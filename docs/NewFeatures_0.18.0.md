@@ -11,6 +11,7 @@ which is deprecated.
 * [Validating a map such as a parsed JSON object](#validating-a-map-such-as-a-parsed-json-object)
 * [Validating the tree model of a JSON library](#validating-the-tree-model-of-a-json-library)
 * [Validating request parameters](#validating-request-parameters)
+* [Writing an object back as the map it is read from](#writing-an-object-back-as-the-map-it-is-read-from)
 * [Handling the result](#handling-the-result)
 * [Describing a validator and generating a JSON Schema](#describing-a-validator-and-generating-a-json-schema)
 * [Nullness with JSpecify](#nullness-with-jspecify)
@@ -905,6 +906,157 @@ class SignupController {
 * `toParameters` gives the text of a single value and the list of a list property, so a
   text field shows `30` and every checked checkbox (`tags=a&tags=b`) is checked again.
   The violation of an element is at `tags[1]`, which `#fields.hasErrors('tags*')` finds.
+
+## Writing an object back as the map it is read from
+
+A schema names the properties of an input once. `fromMapReversible` builds a validator
+that also writes the created object back as the map it is read from, so that the names
+are not written again for the parameters of a statement or for a form that shows a stored
+object.
+
+```java
+record Email(String value) {}
+record UserName(String first, String last) {}
+record Employee(Integer id, UserName name, Email email, Optional<String> nickname, Role role) {}
+
+ReversibleValueValidator<String, Email> emailValidator = Yavi._string("email", c -> c.notBlank().email())
+        .map(Email::new, Email::value);
+
+ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
+        ._string("first_name", c -> c.notBlank())
+        ._string("last_name", c -> c.notBlank())
+        .fromMapReversible(UserName::new, UserName::first, UserName::last);
+
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+        ._integer("id")
+        ._embedded(userNameValidator)
+        ._string(emailValidator)
+        ._string("nickname").optional()
+        ._enum("role", Role.class)
+        .fromMapReversible(Employee::new, Employee::id, Employee::name, Employee::email,
+                Employee::nickname, Employee::role);
+
+employeeValidator.validate(row); // reads, as fromMap does
+employeeValidator.toMap(employee);
+// {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
+
+jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname, role) "
+        + "VALUES (:id, :first_name, :last_name, :email, :nickname, :role)")
+        .params(employeeValidator.toMap(employee))
+        .update();
+```
+
+* `fromMapReversible(f, accessor1, ..., accessorN)` is `fromMap(f)` with one accessor per
+  argument, which returns the validated value of that argument from the object. The
+  compiler checks its type, so a record is given its constructor and its accessors.
+  `flatFromMapReversible` is the same for `flatFromMap`.
+* `toMap(x)` is defined by the round trip: `validator.validate(validator.toMap(x))` is
+  `Valid(x)` for every `x` that the validator creates.
+* The returned validator is an `ObjectInputValidator`: it is nested, embedded and read
+  with `readingWith` and `readingParameters` as before, and stays `Reversible` after
+  `rejectingUnknownProperties()` and `constraintOnTarget`.
+* The map is new. Add what a statement needs: `map.put("updated_by", user)`.
+
+| Property | `toMap` |
+| --- | --- |
+| a value of constraints, `defaultValue`, `recover` | the value |
+| an enum constant | its name |
+| no value of `nullable()`, `optional()` | an entry with `null`, because a named parameter needs its key |
+| no value after `rejectingNull()` | no entry |
+| `presence()` | no entry for `Absent`, `null` for `PresentNull` |
+| `_embedded` | in the same map; `null` for every property if it has no value |
+| `_object` | a nested map |
+| `_list`, `_map`, `_rest` | every element |
+| `splitBy(",")` | the joined text, `null` for an empty list |
+| `splitBy(Pattern)` | the list |
+| a validator with `map(f, g)` | the result of `g` |
+
+The values are those of the JDK types that the properties are read from, as a JDBC driver
+and a JSON library take them. A `URI`, a `Year` and the like are written as they are;
+convert what a driver does not take.
+
+**A value object.** `map(f, g)` is `map(f)` with the function that goes back from the
+mapped value to the input. It returns a `ReversibleValueValidator`, whose `reverse(x)` is
+the input that `x` is read from. Any validator tells whether it knows its reverse with
+`reversible()`: the validators of single values do unless their value is mapped, and
+`named`, `optional()`, `nullable()`, `defaultValue`, `recover` and `constraintOnTarget`
+keep it. `ReversibleValueValidator.of(validator, g)` states the reverse of any other
+validator.
+
+**What cannot be written.** `map(f)` without the reverse, a lambda, `andThen`, `anyOf`,
+and `_object`, `_embedded`, `_list`, `_map` or `_rest` with a validator that does not
+know its reverse. `fromMapReversible` then fails with an `IllegalStateException` that
+names the property, when the validator is built:
+
+```java
+Yavi.schema()
+        ._string(Yavi._string("email").map(Email::new)) // no reverse
+        .fromMapReversible(Contact::new, Contact::email);
+// IllegalStateException: The property 'email' cannot be written back, because its validator does not know its reverse. ...
+```
+
+**A nested object.** A nested map cannot be bound to a statement. Read the columns of a
+row with `_embedded`, or bind the map under the names of the violations with
+`ParameterTree.parametersOf`:
+
+```java
+// {id=1, address={city=Tokyo, street=null}} -> {id=1, address.city=Tokyo, address.street=null}
+jdbcClient.sql("INSERT INTO venue (id, city, street) VALUES (:id, :address.city, :address.street)")
+        .params(ParameterTree.parametersOf(venueValidator.toMap(venue)))
+        .update();
+```
+
+**A row.** The row that `listOfRows()` returns is read with the same validator. A
+`java.sql.Date` is read as a `LocalDate`, a `java.sql.Time` as a `LocalTime` and a
+`java.sql.Timestamp` as a `LocalDateTime` or an `Instant`, which is what a driver returns
+for such a column.
+
+**A discriminated union.** An alternative added with the type of its objects is written
+back, with the discriminator. The union is `Reversible` if every alternative is added in
+this way:
+
+```java
+DiscriminatedUnionValidator.Reversible<Shape> shapeValidator = DiscriminatedUnionValidator.<Shape>of("type")
+        .when("circle", Circle.class, circleValidator)
+        .when("square", Square.class, squareValidator);
+shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
+```
+
+**A schema whose properties are known at run time.** `buildReversible()` of
+`Yavi.dynamicSchema()` returns a validator that writes the map of validated values back.
+
+### Showing a stored object in a form
+
+`ParameterTree.ofValues` takes the map that a validator writes and holds its values as
+the text of parameters. The first display of a stored object and the form that is shown
+again are then one code path:
+
+```java
+ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+        ._string("name", c -> c.notBlank())
+        ._integer("age")
+        ._boolean("agreed").defaultValue(false)
+        ._localDate("birthday")
+        ._object("address", addressValidator)
+        .fromMapReversible(Signup::new, Signup::name, Signup::age, Signup::agreed, Signup::birthday,
+                Signup::address);
+ValueValidator<Map<String, ?>, Signup> signupValidator = signupSchema
+        .readingParameters(StringCoercion.strict().trimming());
+
+ParameterTree tree = stored != null ? ParameterTree.ofValues(signupSchema.toMap(stored))
+        : ParameterTree.of(request.getParameterMap());
+Map<String, Object> form = tree.toMap(signupSchema.description());
+// {name="Taro", age="30", birthday="2000-01-02", address={city="Tokyo", street=""}}
+```
+
+* A value is the text that is read as it (`StringCoercion.textOf`): `30` is `"30"`, a
+  `LocalDate` its ISO-8601 text. `signupValidator` reads `tree.toParameters(...)` as the
+  stored object.
+* A property that is `null` or `false` is not sent, like an empty field and a checkbox
+  that is not checked. `toMap(description)` writes it as it writes a property that was
+  not sent: an empty string, or no entry for a `Boolean`.
+* The validator that reads parameters is not `Reversible`, because what is written is a
+  map. A form keeps the schema and the validator of its parameters, as above.
 
 ## Handling the result
 

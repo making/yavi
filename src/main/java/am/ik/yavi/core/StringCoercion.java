@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.core;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +61,32 @@ public sealed class StringCoercion {
 	 */
 	public static Strict strict() {
 		return STRICT;
+	}
+
+	/**
+	 * Returns the text that stands for the given value, which is the reverse of reading
+	 * text: a reader that coerces strings by any rules that keep {@code "true"} and
+	 * {@code "false"} reads the text as a value equal to the given one, of the type of
+	 * the given one.
+	 *
+	 * <p>
+	 * An enum constant is its name and a {@code BigDecimal} is written without an
+	 * exponent unless it has more than a hundred zeros. Any other value is its
+	 * {@code toString()}, which is the ISO-8601 text of a date or a time, the canonical
+	 * text of a {@code UUID} and the text of a number, a {@code Boolean} and a
+	 * {@code URI}.
+	 * @param value the value
+	 * @return the text that is read as the value
+	 */
+	public static String textOf(Object value) {
+		if (value instanceof Enum<?>constant) {
+			return constant.name();
+		}
+		if (value instanceof BigDecimal decimal) {
+			// 1E+3 is 1000, but the digits of 1E+1000000000 are not written out
+			return decimal.scale() < -100 ? decimal.toString() : decimal.toPlainString();
+		}
+		return value.toString();
 	}
 
 	/**

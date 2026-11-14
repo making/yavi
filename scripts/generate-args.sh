@@ -540,6 +540,12 @@ for i in `seq 1 ${n}`;do
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).describedAs(description.named(name));
+			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}"
   fi
   class="Arguments${i}Validator"
@@ -594,6 +600,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -683,6 +690,12 @@ public interface ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";do
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.from(valueValidator.named(name));
+			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return valueValidator.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
@@ -951,6 +964,12 @@ cat <<EOD
 			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
 				return Arguments1Validator.this.preprocess(transform).constraintOnTarget(predicate, name, violationMessage);
 			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
+			}
 		};
 EOD
 else
@@ -1123,6 +1142,12 @@ cat <<EOD
 			@Override
 			public Arguments1Validator<A1, X> named(String name) {
 				return Arguments1Validator.this.named(name).preprocess(transform);
+			}
+
+			@Override
+			public Optional<ReversibleValueValidator<A1, X>> reversible() {
+				return Arguments1Validator.this.reversible()
+					.map(reversible -> ReversibleValueValidator.of(this, reversible));
 			}
 		};
 	}
@@ -1362,10 +1387,10 @@ package am.ik.yavi.arguments;
 
 $(if [ "${i}" == "1" ];then echo "import java.util.ArrayList;"; echo "import java.util.List;"; fi)
 import java.util.Locale;
-$(if [ "${i}" == "1" ];then echo "import java.util.function.Function;"; fi)
+$(if [ "${i}" == "1" ];then echo "import java.util.Optional;"; echo "import java.util.function.Function;"; fi)
 import java.util.function.Supplier;
 
-import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.ConstraintDescription;\nimport am.ik.yavi.core.ConstraintViolation;\nimport am.ik.yavi.core.InputReader;'; fi)
+import am.ik.yavi.core.ConstraintContext;$(if [ "${i}" == "1" ];then printf '\nimport am.ik.yavi.core.ConstraintDescription;\nimport am.ik.yavi.core.ConstraintViolation;\nimport am.ik.yavi.core.InputReader;\nimport am.ik.yavi.core.ReversibleValueValidator;'; fi)
 import am.ik.yavi.core.Validated;
 $(if [ "${i}" == "1" ];then echo "import am.ik.yavi.core.ValueDescription;"; fi)
 import am.ik.yavi.core.Validator;
@@ -1416,6 +1441,9 @@ public class ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) 
 
 $(if [ "${i}" == "1" ];then
 cat <<EOD
+	/** The mapper of a validator that produces the validated argument itself. */
+	private static final Function1<Object, Object> UNMAPPED = a1 -> a1;
+
 	private final Class<?> valueType;
 
 	private final boolean required;
@@ -1593,6 +1621,38 @@ cat <<EOD
 	@Override
 	public ValueDescription description() {
 		return this.describe();
+	}
+
+	/**
+	 * Returns the mapper of a validator that produces the validated argument itself.
+	 * A validator created with it knows its reverse: the argument that a value is read
+	 * from is that value. This is the mapper of the validators that the builders of
+	 * single values build without a function.
+	 *
+	 * @param <A1> the type of the argument
+	 * @return the mapper that returns its argument
+	 * @since 0.18.0
+	 * @see #reversible()
+	 */
+	@SuppressWarnings("unchecked")
+	public static <A1> Function1<A1, A1> unmapped() {
+		return (Function1<A1, A1>) (Function1<?, ?>) UNMAPPED;
+	}
+
+	/**
+	 * Returns this validator as one that goes back from its value to its argument, which
+	 * is the value itself, if the mapper is {@link #unmapped()}. A validator whose value
+	 * is mapped does not know its reverse; state it with
+	 * {@link ValueValidator#map(Function, Function)}.
+	 *
+	 * @return this validator with its reverse, or an empty {@code Optional}
+	 * @since 0.18.0
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public Optional<ReversibleValueValidator<A1, X>> reversible() {
+		return this.mapper == UNMAPPED ? Optional.of(ReversibleValueValidator.of(this, value -> (A1) value))
+				: Optional.empty();
 	}
 
 	/**
@@ -4353,6 +4413,59 @@ cat <<EOD
 	}
 
 	/**
+	 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
+	 * like {@link #fromMap} and also writes the result back as the map that it is read
+	 * from, with {@link ObjectInputValidator.Reversible#toMap(Object) toMap}. Each
+	 * accessor returns the validated value of the argument at its position from the
+	 * result, so a record is given its constructor and its accessors:
+	 *
+	 * <pre>{@code
+	 * ObjectInputValidator.Reversible<User> validator = Yavi.schema()
+	 *     ._string("name", c -> c.notBlank())
+	 *     ._integer("age").optional()
+	 *     .fromMapReversible(User::new, User::name, User::age);
+	 * validator.toMap(new User("Taro", Optional.empty())); // {name=Taro, age=null}
+	 * }</pre>
+	 *
+	 * <p>
+	 * Every argument must be one that can be written back: an argument of constraints,
+	 * or one whose validator {@linkplain ValueValidator#reversible() knows its reverse},
+	 * such as a validator built with {@code fromMapReversible} or with
+	 * {@link ValueValidator#map(Function, Function)}. What is written for an argument
+	 * is stated in {@link ObjectInputValidator.Reversible}.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
+	 * @return a new object input validator that also writes the result back
+	 * @throws IllegalStateException as {@link #fromMap} does, and if an argument cannot
+	 * be written back
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+		return ObjectInputValidator.ofReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
+				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')), List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//')));
+	}
+
+	/**
+	 * Builds a {@link ObjectInputValidator.Reversible} like {@link #fromMapReversible}
+	 * that creates the result with the given function that can fail, as
+	 * {@link #flatFromMap} does.
+	 * @param <X> type of the result
+	 * @param f function that creates the result from the validated values or reports
+	 * violations$(for j in `seq 1 ${i}`;do printf '\n\t * @param accessor%s returns the validated value of the argument at position %s from\n\t * the result' "${j}" "${j}";done)
+	 * @return a new object input validator that also writes the result back
+	 * @throws IllegalStateException as {@link #fromMapReversible} does
+	 * @throws IllegalArgumentException as {@link #fromMap} does
+	 * @since 0.18.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <X> ObjectInputValidator.Reversible.IgnoringUnknown<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+		return ObjectInputValidator.flatOfReversible(List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "this.d${j}.part(${j}), ";done) | sed 's/,$//')),
+				values -> f.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "(R${j}) values.get($((j - 1))), ";done) | sed 's/,$//')), List.of($(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//')));
+	}
+
+	/**
 	 * Builds a validator that reads the added arguments from an object of the given
 	 * reader, such as a node of the tree model of a JSON library, by their names and
 	 * creates the result with the given function. The tree is read as it is, without
@@ -4482,7 +4595,9 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 
 		/**
 		 * Reads the last added list also from text whose elements are separated by the
-		 * given separator, as {@link #splitBy(Pattern)} states.
+		 * given separator, as {@link #splitBy(Pattern)} states. A validator built with
+		 * {@code fromMapReversible} writes the list back as that text, which a pattern
+		 * does not tell: after {@link #splitBy(Pattern)} it writes a list.
 		 *
 		 * <pre>{@code
 		 * ._list("tags", Yavi._string(c -> c.notBlank())).splitBy(",") // tags=java,yavi
@@ -4493,7 +4608,7 @@ $(if [ "${i}" -gt 1 ];then for j in `seq 1 $((i - 1))`;do printf '\t * @param <A
 		 * @since 0.18.0
 		 */
 		public Keyed<${list_type_uses}> splitBy(String separator) {
-			return this.splitBy(Pattern.compile(Pattern.quote(separator)));
+			return new Keyed<>(${init_definitions}this.d${i}.separatedBy(separator));
 		}
 
 		/**
@@ -4672,6 +4787,36 @@ $(modifier_presence)
 		 */
 		public <X extends @Nullable Object> ObjectInputValidator<X> flatFromMap(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f) {
 			return this.builder.flatFromMap(f);
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} that reads the added arguments
+		 * and also writes the result back, as {@link ${class}#fromMapReversible} does.
+		 * The rest is written into the same map as the other arguments.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
+		 * @return a new object input validator that also writes the result back
+		 * @throws IllegalStateException as {@link #fromMap} does, and if an argument
+		 * cannot be written back
+		 * @throws IllegalArgumentException as {@link #fromMap} does
+		 */
+		public <X> ObjectInputValidator.Reversible<X> fromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends X> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+			return this.builder.fromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} like
+		 * {@link #fromMapReversible} that creates the result with the given function
+		 * that can fail, as {@link ${class}#flatFromMapReversible} does.
+		 * @param <X> type of the result
+		 * @param f function that creates the result from the validated values or reports
+		 * violations$(for j in `seq 1 ${i}`;do printf '\n\t\t * @param accessor%s returns the validated value of the argument at position %s from\n\t\t * the result' "${j}" "${j}";done)
+		 * @return a new object input validator that also writes the result back
+		 * @throws IllegalStateException as {@link #fromMapReversible} does
+		 * @throws IllegalArgumentException as {@link #fromMap} does
+		 */
+		public <X> ObjectInputValidator.Reversible<X> flatFromMapReversible(Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super R${j}, ";done) | sed 's/,$//'), ? extends Validated<? extends X>> f, $(echo $(for j in `seq 1 ${i}`;do echo -n "Function<? super X, ? extends R${j}> accessor${j}, ";done) | sed 's/,$//')) {
+			return this.builder.flatFromMapReversible(f, $(echo $(for j in `seq 1 ${i}`;do echo -n "accessor${j}, ";done) | sed 's/,$//'));
 		}
 
 		/**

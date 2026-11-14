@@ -16,7 +16,7 @@ with YAVI, in the same order, and lists what YAVI cannot do yet.
 * [Errors](#errors)
 * [Scenarios](#scenarios)
 * [Differences](#differences)
-* [Not available](#not-available)
+* [Encoders](#encoders)
 
 The examples assume these imports:
 
@@ -940,6 +940,29 @@ appConfigValidator.validate(Map.of("db", Map.of("host", "db.example.com", "datab
 * **Clock.** Raoh has no `past()` and `future()` on purpose. YAVI has them, with a `Clock`
   for a reproducible result.
 
-## Not available
+## Encoders
 
-* Encoders (a domain object to a map).
+An encoder of Raoh (sections 29-32 of the tutorial) is written next to the decoder:
+`object(property("id", Item::id, long_().contramap(ItemId::value)), ...)`. In YAVI the
+schema that reads the map also writes it: `fromMapReversible` is `fromMap` with the
+accessors, and `toMap` is what Raoh calls encoding.
+
+```java
+ObjectInputValidator.Reversible<Item> itemValidator = Yavi.schema()
+        ._long(Yavi._long("id").map(ItemId::new, ItemId::value)) // contramap
+        ._string("name", c -> c.notBlank())
+        ._string("note").optional()
+        .fromMapReversible(Item::new, Item::id, Item::name, Item::note);
+
+itemValidator.validate(row);   // decodes
+itemValidator.toMap(item);     // encodes: {id=1, name=pen, note=null}
+```
+
+* The names are written once, so the map that is written is the map that is read:
+  `validate(toMap(x))` is `Valid(x)`.
+* A value object goes back with `map(f, g)`, a nested validator writes a nested map, an
+  `_embedded` one the same map, and an `Optional` without a value `null`.
+* A property that cannot be written back is reported when the validator is built.
+* `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form.
+
+See [New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
