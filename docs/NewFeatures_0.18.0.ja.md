@@ -943,6 +943,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | Spring MVC でのリクエストパラメータの `BindingResult`（ドキュメント） | [#569](https://github.com/making/yavi/pull/569) |
 | `label`、`required(message)`、`typeMessage`、`formattingWith`、`labeled`、`formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
+| `ParameterTree#toMap`、`toParameters`、`parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
