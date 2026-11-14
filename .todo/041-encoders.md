@@ -54,14 +54,15 @@ Raoh calls an encoder.
 ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
-        .mapping(UserName::new, UserName::first, UserName::last);
+        .fromMapReversible(UserName::new, UserName::first, UserName::last);
 
 ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
         ._integer("id")
         ._embedded(userNameValidator)
         ._string(Email.VALIDATOR.map(Email::new, Email::value))
         ._string("nickname").optional()
-        .mapping(Employee::new, Employee::id, Employee::name, Employee::email, Employee::nickname);
+        .fromMapReversible(Employee::new, Employee::id, Employee::name, Employee::email,
+                Employee::nickname);
 
 employeeValidator.validate(row);          // reads, as fromMap does
 employeeValidator.toMap(employee);        // {id=1, first_name=Taro, last_name=Yamada, email=t@example.com, nickname=null}
@@ -79,17 +80,17 @@ Map<String, Object> form = tree.toParameters(signupValidator.description());
 
 | Reading (exists) | Writing (to add) |
 | --- | --- |
-| `fromMap(f)`, `flatFromMap(f)` | `mapping(f, accessor1..N)`, `flatMapping(f, accessor1..N)` |
+| `fromMap(f)`, `flatFromMap(f)` | `fromMapReversible(f, accessor1..N)`, `flatFromMapReversible(f, accessor1..N)` |
 | `validate(map)` | `toMap(x)`: a map of the JDK values as they are, for JDBC and Jackson |
 | `ParameterTree.of(params)` | `ParameterTree.ofValues(validator.toMap(x))`: the values as text (the name is not decided) |
 | `ObjectInputValidator<X>` | `ObjectInputValidator.Reversible<X>` |
 | `map(f)` | `map(f, g)` |
 | `when(value, validator)` of a union | `when(value, type, reversibleValidator)` |
 
-* `mapping` is one generated method per arity. Accessor `i` is a `Function<X, Ri>`, and
-  `Ri` is the type of the constructor argument, so a record is written with method
-  references and the types are checked by the compiler. No overload of a property is
-  added.
+* `fromMapReversible` is one generated method per arity. Accessor `i` is a
+  `Function<X, Ri>`, and `Ri` is the type of the constructor argument, so a record is
+  written with method references and the types are checked by the compiler. No overload
+  of a property is added.
 * `Reversible` is a subtype of `ObjectInputValidator`, so it nests, is embedded and reads
   with `readingWith` and `readingParameters` as before. It stays `Reversible` after
   `rejectingUnknownProperties()` and `constraintOnTarget`.
@@ -103,7 +104,7 @@ Map<String, Object> form = tree.toParameters(signupValidator.description());
   static final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
           ._string("name", c -> c.notBlank())
           ._integer("age")
-          .mapping(Signup::new, Signup::name, Signup::age);
+          .fromMapReversible(Signup::new, Signup::name, Signup::age);
 
   static final ValueValidator<Map<String, ?>, Signup> signupValidator = signupSchema
           .readingParameters(StringCoercion.strict().trimming());
@@ -113,6 +114,10 @@ Map<String, Object> form = tree.toParameters(signupValidator.description());
 * `Reversible` is the name because "a validator that is writable" reads as one that is
   written to. A noun of its own (`ObjectMapping`) would be a wrapper that is not a
   validator, and `rejectingUnknownProperties()` would lose its staged types.
+* `fromMapReversible` is `fromMap` with the accessors. The name is next to `fromMap` in
+  a completion and says what is returned. An overload `fromMap(f, accessor1..N)` would
+  report a wrong accessor as "no suitable method", and `mapping` does not tell that it
+  is `fromMap`.
 * `toMap(x)` is the only method that writes. A form is given the map through
   `ParameterTree`, see below.
 
@@ -158,7 +163,7 @@ An entry with `null` is kept because a named parameter needs its key.
 ## What cannot be written
 
 `map(f)` without the reverse, a lambda, `andThen`, `anyOf`, and `_object` or `_embedded`
-with a validator that is not `Reversible`. `mapping(...)` fails with an
+with a validator that is not `Reversible`. `fromMapReversible(...)` fails with an
 `IllegalStateException` that names the property, at the time and in the way `fromMap`
 fails for an argument without a name or with an unknown input type.
 
@@ -176,7 +181,8 @@ cycle.
   `ObjectInputValidator` is sealed and there is no `module-info`, so a subclass is in the
   same package. `ParameterTree.ofValues` and the rules of text.
 * `am.ik.yavi.core`: the reverse of a single value (`map(f, g)`).
-* `am.ik.yavi.builder`: the generated `mapping` and the reverse in `ArgumentDefinition`.
+* `am.ik.yavi.builder`: the generated `fromMapReversible` and the reverse in
+  `ArgumentDefinition`.
 
 ## Phases
 
