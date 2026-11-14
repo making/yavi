@@ -205,7 +205,29 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<? e
 * The constraints of `_list` and `_map` are checked when every element is valid and are
   reported on the property: `"tags" must be unique. [a] is/are duplicated.`
 * `constraintOnTarget` is a rule that spans several properties. It is checked when all
-  properties are valid.
+  properties are valid. Rules added one after another are all checked and every violated
+  rule is reported, like the violations of the properties. A rule added after `map` or
+  `andThen` is checked only when the rules before it hold.
+
+```java
+ObjectInputValidator<PasswordForm> passwordFormValidator = Yavi.schema()
+        ._string("currentPassword", c -> c.notBlank())
+        ._string("newPassword", c -> c.greaterThanOrEqual(8))
+        ._string("confirmPassword", c -> c.notBlank())
+        .fromMap(PasswordForm::new)
+        .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
+                ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
+        .constraintOnTarget(form -> !form.current().equals(form.newPassword()), "newPassword",
+                ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
+
+passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassword", "newSecret1",
+        "confirmPassword", "different"));
+// Invalid: confirmPassword (password.mismatch), newPassword (password.same)
+```
+
+* A `ValueValidator` of your own that overrides `constraintOnTarget` to return its own
+  type keeps the rules in a `TargetConstraints`: `and` adds a rule and `check` reports
+  every rule that a value violates.
 * `flatApply(f)` takes a function that returns a `Validated`, such as a factory method
   that validates.
 
@@ -1640,6 +1662,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `splitBy(pattern, delimiter)` of a reversible schema, `label` and `typeMessage` before `withheld()` and `splitBy` | [#583](https://github.com/making/yavi/pull/583) |
 | `unique(key)` of a collection, `ResourceBundleMessageFormatter`, `toString()` of a violation | [#584](https://github.com/making/yavi/pull/584) |
 | `failureWith(message, args...)`, `localizedWith(locale)`, the locale of the violations of `flatFromMap`, `flatApply` and `andThen` | [#585](https://github.com/making/yavi/pull/585) |
+| Every violated rule of `constraintOnTarget`, `TargetConstraints` | [#586](https://github.com/making/yavi/pull/586) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |

@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -14,7 +15,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
-import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -51,14 +53,639 @@ public class ArgumentsValidators {
 	}
 
 	/**
-	 * Returns the given value if it satisfies the given predicate, or else a violation
-	 * with the given name and message. This is the rule of {@code constraintOnTarget},
-	 * applied to a value that passed validation.
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
 	 */
-	static <X extends @Nullable Object> Validated<X> constrained(X value, Predicate<? super X> predicate, String name,
-			ViolationMessage violationMessage, Locale locale) {
-		return predicate.test(value) ? Validated.successWith(value)
-				: Validated.failureWith(ConstraintViolation.of(violationMessage, value, locale).prefixed(name));
+	static <A1, X extends @Nullable Object> Arguments1Validator<A1, X> constrained(Arguments1Validator<A1, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments1Validator<A1, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, locale, constraintContext).flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments1Validator<A1, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+					ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> describedAs(ValueDescription description) {
+				return constrained(validator.describedAs(description), constraints);
+			}
+
+			@Override
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return constraints.constrain(validator.readingWith(reader));
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return constrained(validator.preprocess(transform), constraints);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return constrained(validator.named(name), constraints.prefixed(name));
+			}
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, X extends @Nullable Object> Arguments2Validator<A1, A2, X> constrained(
+			Arguments2Validator<A1, A2, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments2Validator<A1, A2, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, locale, constraintContext).flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments2Validator<A1, A2, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments2Validator<A1, A2, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+					ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, X extends @Nullable Object> Arguments3Validator<A1, A2, A3, X> constrained(
+			Arguments3Validator<A1, A2, A3, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments3Validator<A1, A2, A3, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments3Validator<A1, A2, A3, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+					ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, X extends @Nullable Object> Arguments4Validator<A1, A2, A3, A4, X> constrained(
+			Arguments4Validator<A1, A2, A3, A4, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments4Validator<A1, A2, A3, A4, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments4Validator<A1, A2, A3, A4, X> constraintOnTarget(Predicate<? super X> predicate,
+					String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, X extends @Nullable Object> Arguments5Validator<A1, A2, A3, A4, A5, X> constrained(
+			Arguments5Validator<A1, A2, A3, A4, A5, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments5Validator<A1, A2, A3, A4, A5, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments5Validator<A1, A2, A3, A4, A5, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments5Validator<A1, A2, A3, A4, A5, X> constraintOnTarget(Predicate<? super X> predicate,
+					String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, X extends @Nullable Object> Arguments6Validator<A1, A2, A3, A4, A5, A6, X> constrained(
+			Arguments6Validator<A1, A2, A3, A4, A5, A6, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments6Validator<A1, A2, A3, A4, A5, A6, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments6Validator<A1, A2, A3, A4, A5, A6, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments6Validator<A1, A2, A3, A4, A5, A6, X> constraintOnTarget(Predicate<? super X> predicate,
+					String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, X extends @Nullable Object> Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> constrained(
+			Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments7Validator<A1, A2, A3, A4, A5, A6, A7, X> constraintOnTarget(Predicate<? super X> predicate,
+					String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, X extends @Nullable Object> Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> constrained(
+			Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments8Validator<A1, A2, A3, A4, A5, A6, A7, A8, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, X extends @Nullable Object> Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> constrained(
+			Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> validator, TargetConstraints<X> constraints) {
+		return new Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X extends @Nullable Object> Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> constrained(
+			Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments10Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X extends @Nullable Object> Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> constrained(
+			Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, Locale locale, ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments11Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X extends @Nullable Object> Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> constrained(
+			Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments12Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X extends @Nullable Object> Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> constrained(
+			Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, Locale locale,
+					ConstraintContext constraintContext) {
+				return validator
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments13Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X extends @Nullable Object> Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> constrained(
+			Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					Locale locale, ConstraintContext constraintContext) {
+				return validator
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments14Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X extends @Nullable Object> Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> constrained(
+			Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					@Nullable A15 a15, Locale locale, ConstraintContext constraintContext) {
+				return validator
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, locale,
+							constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments15Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
+	}
+
+	/**
+	 * Returns a validator that checks the value produced by the given validator with the
+	 * given rules, and that checks a rule added with {@code constraintOnTarget} together
+	 * with them.
+	 */
+	static <A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X extends @Nullable Object> Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> constrained(
+			Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X>() {
+			@Override
+			public Validated<X> validate(@Nullable A1 a1, @Nullable A2 a2, @Nullable A3 a3, @Nullable A4 a4,
+					@Nullable A5 a5, @Nullable A6 a6, @Nullable A7 a7, @Nullable A8 a8, @Nullable A9 a9,
+					@Nullable A10 a10, @Nullable A11 a11, @Nullable A12 a12, @Nullable A13 a13, @Nullable A14 a14,
+					@Nullable A15 a15, @Nullable A16 a16, Locale locale, ConstraintContext constraintContext) {
+				return validator
+					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, locale,
+							constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments16Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, X> constraintOnTarget(
+					Predicate<? super X> predicate, String name, ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+
+		};
 	}
 
 	/**

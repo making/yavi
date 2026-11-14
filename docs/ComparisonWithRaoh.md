@@ -572,6 +572,8 @@ the same validator: `DiscriminatedUnionValidator.<Payment>of("method").when("cre
 
 A rule that is a predicate on the created object is `constraintOnTarget`. It is evaluated
 only when all properties are valid, like `flatMap`, and its name locates the violation.
+Rules added one after another are all checked, and every violated rule is reported; a rule
+added after `map` or `andThen` is checked only when the rules before it hold.
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {}

@@ -1268,12 +1268,35 @@ passwordChangeValidator.validate(Map.of(
         "currentPassword", "newSecret1",
         "newPassword", "newSecret1",
         "confirmPassword", "different"))
-// ==> Invalid[errors=[/confirmPassword: "confirmPassword" must match "newPassword" (password.mismatch)]]
+// ==> Invalid[errors=[/confirmPassword: "confirmPassword" must match "newPassword" (password.mismatch), /newPassword: "newPassword" must differ from "currentPassword" (password.same)]]
 ```
 
-The rules are checked only when all properties are valid, and a rule only when the rules
-before it hold, like the checks inside `flatMap`: the last input violates both rules and
-reports the first.
+The rules are checked only when all properties are valid, like the checks inside
+`flatMap`. Unlike them, the rules added one after another are all checked: the last input
+violates both rules and reports both, so the user corrects the form once.
+
+A rule that makes sense only when another holds is added after `map` or `andThen`, which
+are given a value that satisfies the rules before them. Here the rule on `newPassword` is
+checked only when the confirmation matches:
+
+```java
+var stepwiseValidator = Yavi.schema()
+        ._string("currentPassword", c -> c.notBlank())
+        ._string("newPassword", c -> c.greaterThanOrEqual(8).lessThanOrEqual(128))
+        ._string("confirmPassword", c -> c.notBlank())
+        .fromMap(PasswordForm::new)
+        .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
+                ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
+        .map(form -> new PasswordChange(form.current(), form.newPassword()))
+        .constraintOnTarget(change -> !change.current().equals(change.newPassword()), "newPassword",
+                ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
+
+stepwiseValidator.validate(Map.of(
+        "currentPassword", "newSecret1",
+        "newPassword", "newSecret1",
+        "confirmPassword", "different"))
+// ==> Invalid[errors=[/confirmPassword: "confirmPassword" must match "newPassword" (password.mismatch)]]
+```
 
 ## 24. Pagination and query parameters
 

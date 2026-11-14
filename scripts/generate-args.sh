@@ -572,6 +572,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -594,6 +595,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -912,6 +914,12 @@ fi)
 	 * {@code false}, a violation with the given name and message is reported; its last
 	 * message argument is the produced value.
 	 *
+	 * <p>
+	 * Rules added one after another are all checked on the produced value, and every
+	 * violated rule is reported, as {@link ValueValidator#constraintOnTarget} states. A
+	 * rule that is checked only when other rules hold is added after {@link #map} or
+	 * {@link #andThen(ValueValidator)}.
+	 *
 	 * @param predicate the rule that the produced value must satisfy
 	 * @param name the name of the reported violation
 	 * @param violationMessage the message key and the default message format of the
@@ -921,51 +929,8 @@ fi)
 	 */$(if [ "${i}" == "1" ];then echo;echo "	@Override"; fi)
 	default ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-$(if [ "${i}" == "1" ];then
-cat <<EOD
-		return new Arguments1Validator<A1, X>() {
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
-				return Arguments1Validator.this.validate(a1, locale, constraintContext)
-					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale));
-			}
-
-			@Override
-			public Arguments1Validator<A1, Supplier<X>> lazy() {
-				return Arguments1Validator.this.lazy()
-					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
-						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
-						.map(x -> () -> x));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return Arguments1Validator.this.description();
-			}
-
-			@Override
-			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
-				return Arguments1Validator.this.readingWith(reader).constraintOnTarget(predicate, name, violationMessage);
-			}
-
-			@Override
-			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
-				return Arguments1Validator.this.preprocess(transform).constraintOnTarget(predicate, name, violationMessage);
-			}
-		};
-EOD
-else
-cat <<EOD
-		return ArgumentsValidators.derived(
-				(${as}, locale, constraintContext) -> this.validate(${as}, locale, constraintContext)
-					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale)),
-				() -> this.lazy()
-					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
-						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
-						.map(x -> () -> x)),
-				this::description);
-EOD
-fi)
+		return ArgumentsValidators.constrained(this,
+				TargetConstraints.<X>empty().and(predicate, name, violationMessage));
 	}
 
 	/**
@@ -1883,6 +1848,7 @@ package am.ik.yavi.arguments;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -1890,7 +1856,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
-import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -1927,17 +1894,70 @@ public class ${class} {
 	public ${class}() {
 	}
 
+$(for i in `seq 1 ${nn}`;do
+tas=$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//')
+cat <<EOD
 	/**
-	 * Returns the given value if it satisfies the given predicate, or else a violation
-	 * with the given name and message. This is the rule of {@code constraintOnTarget},
-	 * applied to a value that passed validation.
+	 * Returns a validator that checks the value produced by the given validator with
+	 * the given rules, and that checks a rule added with {@code constraintOnTarget}
+	 * together with them.
 	 */
-	static <X extends @Nullable Object> Validated<X> constrained(X value, Predicate<? super X> predicate, String name,
-			ViolationMessage violationMessage, Locale locale) {
-		return predicate.test(value) ? Validated.successWith(value)
-				: Validated.failureWith(ConstraintViolation.of(violationMessage, value, locale).prefixed(name));
+	static <${tas}, X extends @Nullable Object> Arguments${i}Validator<${tas}, X> constrained(Arguments${i}Validator<${tas}, X> validator,
+			TargetConstraints<X> constraints) {
+		return new Arguments${i}Validator<${tas}, X>() {
+			@Override
+			public Validated<X> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
+				return validator.validate($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'), locale, constraintContext)
+					.flatMap(x -> constraints.check(x, locale));
+			}
+
+			@Override
+			public Arguments${i}Validator<${tas}, Supplier<X>> lazy() {
+				return validator.lazy()
+					.andThen((xSupplier, locale, constraintContext) -> constraints
+						.check(Objects.requireNonNull(xSupplier).get(), locale)
+						.map(x -> () -> x));
+			}
+
+			@Override
+			public ValueDescription description() {
+				return validator.description();
+			}
+
+			@Override
+			public Arguments${i}Validator<${tas}, X> constraintOnTarget(Predicate<? super X> predicate, String name,
+					ViolationMessage violationMessage) {
+				return constrained(validator, constraints.and(predicate, name, violationMessage));
+			}
+$(if [ "${i}" == "1" ];then
+cat <<EOS
+
+			@Override
+			public Arguments1Validator<A1, X> describedAs(ValueDescription description) {
+				return constrained(validator.describedAs(description), constraints);
+			}
+
+			@Override
+			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
+				return constraints.constrain(validator.readingWith(reader));
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
+				return constrained(validator.preprocess(transform), constraints);
+			}
+
+			@Override
+			public Arguments1Validator<A1, X> named(String name) {
+				return constrained(validator.named(name), constraints.prefixed(name));
+			}
+EOS
+fi)
+		};
 	}
 
+EOD
+done)
 $(for i in `seq 2 ${nn}`;do cat <<EOD
 	/**
 	 * Returns a validator that validates with the given validator and takes its lazy

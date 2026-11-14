@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.StringCoercion;
@@ -138,6 +139,19 @@ class ReversibleValidatorTest {
 	@Test
 	void anObjectIsWrittenBackAsTheMapItIsReadFrom() {
 		final Employee employee = employee();
+		// the rules on the created object are all checked and keep the reverse
+		final ObjectInputValidator.Reversible<Address> withStreet = addressValidator
+			.constraintOnTarget(address -> address.street().isPresent(), "street", ViolationMessage.of("street", "!"));
+		assertThat(withStreet.validate(withStreet.toMap(new Address("nowhere", Optional.empty()))).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("city", "street");
+		final ReversibleValueValidator<String, Email> ofExample = emailValidator
+			.constraintOnTarget(email -> email.value().endsWith("@example.com"), "domain",
+					ViolationMessage.of("domain", "!"))
+			.constraintOnTarget(email -> email.value().length() > 20, "length", ViolationMessage.of("length", "!"));
+		assertThat(ofExample.validate(ofExample.reverse(new Email("a@example.org"))).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("domain", "length");
 		final Map<String, Object> map = employeeValidator.toMap(employee);
 		// the properties in their order, embedded ones and the rest in the same map
 		assertThat(map).containsExactly(entry("id", 1), entry("first_name", "Taro"), entry("last_name", "Yamada"),
