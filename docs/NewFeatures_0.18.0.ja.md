@@ -907,6 +907,19 @@ userValidator.excluding("pasword");
 * パスは、その深さのプロパティだけを指します。自分自身を含むバリデータの `children.memo` は子の `memo` で、孫の `memo` ではありません。
 * `Yavi.reversibleDynamicSchema()` と `DiscriminatedUnionValidator.Reversible` でも同じ方法でビューを作れます。`ParameterTree.ofValues(view.toMap(x))` とすれば、保存済みのオブジェクトを秘密の値なしでフォームに表示できます。
 
+**別の形で保存する値。** パスワードは送信されたまま読み取り、ハッシュにして保存します。ハッシュはアプリケーションが計算する値で、元の入力に戻る値ではないので、バリデータが書く内容には含まれません。ビューでパスワードを外し、ハッシュは SQL 文のパラメータとして別に渡します。
+
+```java
+static final PropertyView<User> ROW = userValidator.excluding("password");
+
+jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
+        .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: password は含まれない
+        .param("password_hash", passwordEncoder.encode(user.password()))
+        .update();
+```
+
+`userValidator.toMap(user)` は、送信されたままのパスワードを含みます。書く側のコードには、バリデータではなくビューを公開してください。
+
 名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._string(PASSWORD)` と `excluding(PASSWORD)`）。
 
 ### 保存済みのオブジェクトをフォームに表示する

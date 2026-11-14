@@ -1126,6 +1126,23 @@ What is written:
   views in the same way, and `ParameterTree.ofValues(view.toMap(x))` shows a stored
   object in a form without its secret.
 
+**A value that is stored in another form.** A password is read as it is sent and stored
+as a hash, which the application computes: it is not a value that goes back, so it is not
+part of what the validator writes. A view leaves the password out and the statement is
+given the hash as one more parameter:
+
+```java
+static final PropertyView<User> ROW = userValidator.excluding("password");
+
+jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, :password_hash)")
+        .params(ROW.toMap(user)) // {id=1, name=Taro, address={...}}: no password
+        .param("password_hash", passwordEncoder.encode(user.password()))
+        .update();
+```
+
+`userValidator.toMap(user)` would hold the password as it was sent. Publish the view, not
+the validator, to the code that writes.
+
 To keep the names in one place, share a constant between the schema and the view
 (`._string(PASSWORD)` and `excluding(PASSWORD)`).
 
