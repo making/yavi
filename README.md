@@ -717,7 +717,7 @@ validator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30,
 * The rules are given to `readingParameters(coercion)`, `ParameterTree.reader(coercion)` and `coercingStrings(coercion)` of any reader. The reader that coerces strings is an `InputReader` and cannot be coerced again, so `reader.coercingStrings(rules).coercingStrings()` does not compile: the rules are given once.
 * A validator reads with the last reader it is given: `readingWith(reader)` after `readingWith(reader.coercingStrings())` or `readingParameters()` coerces no string. For any other text, override `InputReader#value(node, type)` in a reader of your own.
 
-See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, and [Comparison with Raoh](docs/ComparisonWithRaoh.md) for the Raoh tutorial written with YAVI.
+See [Comparison with Zod](docs/ComparisonWithZod.md) for how these features map to Zod, [Comparison with Raoh](docs/ComparisonWithRaoh.md) for how they map to Raoh, and [The Raoh tutorial in YAVI](docs/RaohTutorialInYavi.md) for the Raoh tutorial written with YAVI.
 
 See [Breaking changes in 0.18.0](docs/BreakingChanges_0.18.0.md) to migrate from an earlier version, and [Limitations of NullAway](docs/NullAwayLimitations.md) if NullAway reports correct code.
 

@@ -5,6 +5,8 @@ Zod: a decoder takes untyped input and returns either a domain object or all the
 with their paths. YAVI covers the same workflow since 0.18.0. This page writes the
 sections of the [Raoh tutorial](https://github.com/raoh-project/raoh-java/blob/main/docs/tutorial.md)
 with YAVI, in the same order, and lists what YAVI cannot do yet.
+[The Raoh tutorial in YAVI](RaohTutorialInYavi.md) is the whole tutorial with the output of
+every example.
 
 * [Vocabulary](#vocabulary)
 * [Values](#values): primitives, constraints, coercion, domain primitives
