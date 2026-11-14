@@ -7,17 +7,23 @@ package am.ik.yavi.constraint;
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolatedValue;
+import am.ik.yavi.core.ViolationMessage;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
+
+import org.jspecify.annotations.Nullable;
 
 import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_CONTAINS_ALL;
 import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE;
+import static am.ik.yavi.core.ViolationMessage.Default.COLLECTION_UNIQUE_BY;
 
 /**
  * Constraints on a collection value.
@@ -75,15 +81,35 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 	 * @since 0.8.3
 	 */
 	public CollectionConstraint<T, L, E> unique() {
+		return this.unique(Function.identity(), COLLECTION_UNIQUE);
+	}
+
+	/**
+	 * Requires the elements of the collection to be unique by the given key, such as the
+	 * id of an object: no two elements have keys that are equal.
+	 *
+	 * <p>
+	 * A violation is reported with the message key {@code collection.uniqueBy} and the
+	 * default message {@code "{0}" must be unique. {1} is/are duplicated.}, where
+	 * {@code {1}} is the set of duplicated keys.
+	 * </p>
+	 * @param key the function that returns the key of an element; the key may be
+	 * {@code null}
+	 * @return this constraint
+	 * @since 0.18.0
+	 */
+	public CollectionConstraint<T, L, E> unique(Function<? super E, ?> key) {
+		return this.unique(Objects.requireNonNull(key, "'key' must not be null"), COLLECTION_UNIQUE_BY);
+	}
+
+	private CollectionConstraint<T, L, E> unique(Function<? super E, ?> key, ViolationMessage message) {
 		this.predicates().add(ConstraintPredicate.withViolatedValue(collection -> {
-			final Set<E> duplicates = new LinkedHashSet<>();
-			final Set<E> uniqElements = new HashSet<>(collection.size());
+			final Set<@Nullable Object> duplicates = new LinkedHashSet<>();
+			final Set<@Nullable Object> keys = new HashSet<>(collection.size());
 			for (E element : collection) {
-				if (uniqElements.contains(element)) {
-					duplicates.add(element);
-				}
-				else {
-					uniqElements.add(element);
+				final Object k = key.apply(element);
+				if (!keys.add(k)) {
+					duplicates.add(k);
 				}
 			}
 			if (duplicates.isEmpty()) {
@@ -92,7 +118,7 @@ public class CollectionConstraint<T, L extends Collection<E>, E>
 			else {
 				return Optional.of(new ViolatedValue(duplicates));
 			}
-		}, COLLECTION_UNIQUE, () -> new Object[] {}, VALID));
+		}, message, () -> new Object[] {}, VALID));
 		return this;
 	}
 

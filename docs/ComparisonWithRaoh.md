@@ -753,7 +753,7 @@ ConstraintViolations violations = validated.errors();
 | `issues.flatten()` | `violations.messagesByPointer()` (`/items/1/name`), `violations.messagesByName()` (`items[1].name`) |
 | `issues.toJsonList()` | `violations.details()`, a list of `ViolationDetail` (`name`, `pointer`, `messageKey`, `message`, `params`, and `alternatives` for `object.anyOf`) |
 | `issue.meta()` (`{"min": 0, "max": 150}`) | `violation.params()` (`{"max": 150}`), `params` of a `ViolationDetail`; the violated value is not in it |
-| `issues.resolve(resolver, locale)` | `validate(input, locale)`, and `violation.message(messageFormatter)` for another source of messages |
+| `issues.resolve(resolver, locale)` with a `ResourceBundleMessageResolver` | `validator.formattingWith(new ResourceBundleMessageFormatter("messages")).validate(input, locale)`, or `violations.formattedWith(formatter)` afterwards |
 
 A message of YAVI holds the name of the property (`"age" must be less than or equal to
 150`), a message of Raoh does not (`must be between 0 and 150`). The locale is given when
@@ -798,11 +798,10 @@ is written and refuse a key written twice.
 record Product(String id, BigDecimal price) {}
 
 ValueValidator<Map<String, Object>, Map<String, BigDecimal>> priceMapValidator = Yavi.schema()
-        ._list("products", productValidator)
-        .fromMap(products -> products)
-        .constraintOnTarget(products -> products.stream().map(Product::id).distinct().count() == products.size(),
-                "products", ViolationMessage.of("products.duplicateIds", "\"{0}\" must not contain duplicate ids"))
+        ._list("products", productValidator, c -> c.unique(Product::id))
+        .fromMap()
         .map(products -> products.stream().collect(Collectors.toMap(Product::id, Product::price)));
+// products: "products" must be unique. [APPLE] is/are duplicated.
 ```
 
 ### Known fields and the remaining fields

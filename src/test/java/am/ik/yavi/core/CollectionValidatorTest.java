@@ -12,6 +12,8 @@ import am.ik.yavi.Country;
 import am.ik.yavi.FormWithCollection;
 import am.ik.yavi.PhoneNumber;
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.jsonschema.JsonSchema;
+import am.ik.yavi.validator.Yavi;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -113,6 +115,18 @@ class CollectionValidatorTest extends AbstractCollectionValidatorTest {
 		assertThat(violations.isValid()).isFalse();
 		assertThat(violations).hasSize(1);
 		assertThat(violations.get(0).message()).isEqualTo("\"texts\" must be unique. [b, c] is/are duplicated.");
+		// by a key of the elements: the duplicated keys are reported, and the JSON Schema
+		// has no keyword for it
+		ValueValidator<Iterable<? extends String>, List<String>> byKey = Yavi
+			._list(Yavi._string(), c -> c.unique(String::length))
+			.named("texts");
+		ConstraintViolation violation = byKey.validate(Arrays.asList("a", "bb", "c", "dd", "eee")).errors().get(0);
+		assertThat(violation.messageKey()).isEqualTo("collection.uniqueBy");
+		assertThat(violation.message()).isEqualTo("\"texts\" must be unique. [1, 2] is/are duplicated.");
+		assertThat(violation.params()).containsOnlyKeys("duplicates");
+		assertThat(JsonSchema.toJson(byKey.description())).doesNotContain("uniqueItems");
+		assertThat(JsonSchema.toJson(Yavi._list(Yavi._string(), c -> c.unique()).description()))
+			.contains("\"uniqueItems\":true");
 	}
 
 	@Override

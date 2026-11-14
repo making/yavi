@@ -77,6 +77,10 @@ class CollectionConstraintTest {
 		Predicate<List<String>> predicate = retrievePredicate(c -> c.unique());
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "d"))).isTrue();
 		assertThat(predicate.test(Arrays.asList("a", "b", "c", "b"))).isFalse();
+		// by a key of the elements
+		Predicate<List<String>> byKey = retrievePredicate(c -> c.unique(String::length));
+		assertThat(byKey.test(Arrays.asList("a", "bb", "ccc"))).isTrue();
+		assertThat(byKey.test(Arrays.asList("a", "bb", "c"))).isFalse();
 	}
 
 	@Test

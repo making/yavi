@@ -116,6 +116,13 @@ Yavi._integer("quantity", c -> c.multipleOf(12));
 Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
 ```
 
+`CollectionConstraint` に `unique(key)` が追加されました。オブジェクトの ID のような、要素のキーで一意であることを求めます。重複したキーはメッセージと `params` に入ります。JSON Schema には対応するキーワードがないため、`uniqueItems` は `unique()` に対してだけ出力されます。
+
+```java
+Yavi.schema()._list("products", productValidator, c -> c.unique(Product::id));
+// "products" must be unique. [APPLE] is/are duplicated.
+```
+
 `CharSequenceConstraint` に 3 つの形式が追加されました。
 
 | 制約 | 受け付ける値 | メッセージキー |
@@ -616,6 +623,17 @@ violations.labeled(violation -> messageSource.getMessage("label." + violation.na
 
 `labeled` は、関数が `null` を返した違反をそのままにします。
 
+Spring を使わない場合は、`ResourceBundleMessageFormatter` がクラスパス上のリソースバンドルからキーでメッセージを探します。
+
+```java
+// messages_ja.properties: numeric.lessThanOrEqual="{0}" は {1} 以下で入力してください
+MessageFormatter formatter = new ResourceBundleMessageFormatter("messages");
+validator.formattingWith(formatter).validate(input, Locale.JAPANESE);
+```
+
+* バンドルにないキーはデフォルトのメッセージで整形されます。バンドルには置き換えるメッセージだけを書きます。
+* バンドルは検証のロケールのもの、次に基底のバンドルの順に探します。`ResourceBundle.getBundle` と違い、プラットフォームのデフォルトロケールのバンドルにはフォールバックしません。日本語のサーバーで英語のロケールで検証しても、日本語のメッセージは返りません。
+
 フォーマッタは違反のキーでメッセージを探しますが、1 つの制約や 1 つのプロパティのためにコードに書いたテキスト（`message("...")`、`required("...")`、`typeMessage("...")`）については探しません。バンドルがキーのすべての違反に対して持つメッセージより、具体的なテキストが優先されます。違反のキーは変わりません。
 
 ```java
@@ -1049,6 +1067,18 @@ switch (userValidator.validate(map)) {
 
 `Arguments1` から `Arguments16` も record になりました（`case Validated.Valid(Arguments2(var name, var age))`）。
 
+失敗した結果と違反は、ログや jshell やアサーションの失敗メッセージで、読める形で出力されます。ポインタ、メッセージ、メッセージキーの順です。
+
+```java
+userValidator.validate(Map.of("email", "invalid", "age", 300)).toString();
+// Invalid[errors=[/email: "email" must be a valid email address (charSequence.email),
+//                 /age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)]]
+Yavi._integer(c -> c.positive()).validate(-1).toString();
+// Invalid[errors=[The value must be positive (numeric.positive)]]
+```
+
+違反した値は、メッセージが表示する場合を除いて出力されません。
+
 違反の位置は、名前をパースしなくても取得できます。
 
 ```java
@@ -1110,7 +1140,7 @@ violation.violatedValue(); // 300
 | `charSequence.endsWith` | `suffix` |
 | `charSequence.pattern`, `charSequence.localdate` | `pattern` |
 | `collection.contains`, `array.contains` | `element` |
-| `collection.unique` | `duplicates` |
+| `collection.unique`, `collection.uniqueBy` | `duplicates` |
 | `collection.containsAll` | `values`, `missing` |
 | `map.containsKey` | `key` |
 | `codePoints.asWhiteList`, `codePoints.asBlackList` | `notAllowed` |
@@ -1245,6 +1275,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | 書き戻すスキーマの `splitBy(pattern, delimiter)`、`withheld()` や `splitBy` の前の `label` と `typeMessage` | [#583](https://github.com/making/yavi/pull/583) |
+| コレクションの `unique(key)`、`ResourceBundleMessageFormatter`、違反の `toString()` | [#584](https://github.com/making/yavi/pull/584) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |
