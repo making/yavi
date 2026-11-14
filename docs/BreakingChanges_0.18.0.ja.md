@@ -783,6 +783,26 @@ Arguments1Validator<Optional<? extends String>, Optional<PhoneNumber>> phone = p
 
 関連するプルリクエスト: [#576](https://github.com/making/yavi/pull/576)
 
+### 単一の値のビルダーの `build()` は逆変換を知っているバリデータを返す
+
+`StringValidatorBuilder`、`IntegerValidatorBuilder` などの単一の値のビルダーの `build()` は、`StringValidator.Reversible`、`IntegerValidator.Reversible` などを返します。これまでは `StringValidator<String>`、`IntegerValidator<Integer>` などでした。新しい型はこれまでの型を継承しているので、これまでの型で宣言しているコードはそのままコンパイルできます。0.17 でコンパイルしたコードは、ほかの変更と同じく再コンパイルが必要です。
+
+`var` で宣言した変数は新しい型になり、値を変換したバリデータを代入できません。型を宣言するか、別の変数に代入します。
+
+```java
+// before
+var name = StringValidatorBuilder.of("name", c -> c.notBlank()).build();
+name = name.map(String::strip);
+
+// after
+StringValidator<String> name = StringValidatorBuilder.of("name", c -> c.notBlank()).build();
+name = name.map(String::strip);
+```
+
+新しい型は、バリデータを書き戻せることを表します。詳しくは [オブジェクトを読み取り元のマップに書き戻す](NewFeatures_0.18.0.ja.md#オブジェクトを読み取り元のマップに書き戻す) を参照してください。
+
+関連するプルリクエスト: [#579](https://github.com/making/yavi/pull/579)
+
 ### `emoji()` は拡張書記素クラスタを数える
 
 絵文字ではない一部の並びが、2 ではなく 1 と数えられるようになりました。`"\r\n"` や、濁点付きの半角カタカナ（`ｶﾞ`）が該当します。`Emoji` クラスは削除されました。

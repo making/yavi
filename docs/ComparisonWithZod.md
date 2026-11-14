@@ -356,10 +356,11 @@ validator that writes what it reads:
 | --- | --- |
 | `z.codec(z.string(), z.custom<Email>(), { decode, encode })` | `Yavi._string("email", c -> c.email()).map(Email::new, Email::value)` (`ReversibleValueValidator`) |
 | `z.encode(codec, value)` | `validator.reverse(value)` |
-| `z.encode(objectSchema, value)` | `Yavi.schema()...fromMapReversible(f, accessor1, ...)`, then `validator.toMap(value)` |
+| `z.encode(objectSchema, value)` | `Yavi.reversibleSchema()...fromMapReversible(f, accessor1, ...)`, then `validator.toMap(value)` |
 
 A validator that does not know its reverse, such as `map(f)`, is the counterpart of a
-transform, which Zod refuses to encode at run time. See
+transform, which Zod refuses to encode at run time. YAVI refuses it at compile time: it is
+not a `ReversibleValueValidator`, which a schema of `Yavi.reversibleSchema()` takes. See
 [New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
 
 ## Not available

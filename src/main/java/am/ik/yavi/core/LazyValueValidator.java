@@ -5,7 +5,6 @@
 package am.ik.yavi.core;
 
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -84,20 +83,6 @@ final class LazyValueValidator<T, X extends @Nullable Object> implements ValueVa
 				() -> this.resolve().readingWith(reader));
 		this.reading = new Reading<>(reader, validator);
 		return validator;
-	}
-
-	/**
-	 * Returns this validator as one that goes back with the validator referred to, which
-	 * is asked for its reverse when a value goes back.
-	 */
-	@Override
-	public Optional<ReversibleValueValidator<T, X>> reversible() {
-		final Function<? super X, ? extends @Nullable T> reverse = value -> this.resolve()
-			.reversible()
-			.orElseThrow(() -> new IllegalStateException(
-					"The validator that a lazy validator refers to does not know its reverse."))
-			.reverse(value);
-		return Optional.of(new ReversedValueValidator<>(this, reverse));
 	}
 
 	@Override

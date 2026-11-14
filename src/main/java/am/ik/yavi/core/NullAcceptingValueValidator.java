@@ -29,14 +29,15 @@ import org.jspecify.annotations.Nullable;
  * {@link ValueValidator#prefixed(String)}, is a plain {@link ValueValidator}, unless it
  * is only given another name with {@link #named(String)}. The interface is sealed, and
  * therefore not a functional interface: a lambda is never taken for a validator that
- * accepts {@code null}.
+ * accepts {@code null}. A validator of this type that also knows its reverse is a
+ * {@link ReversibleValueValidator.NullAccepting}.
  *
  * @param <T> the type of the object to be validated
  * @param <X> the type of the validated and transformed result
  * @since 0.18.0
  */
-public sealed interface NullAcceptingValueValidator<T, X extends @Nullable Object>
-		extends ValueValidator<T, X>permits DescribedNullAcceptingValueValidator {
+public sealed interface NullAcceptingValueValidator<T, X extends @Nullable Object> extends
+		ValueValidator<T, X>permits DescribedNullAcceptingValueValidator,ReversibleValueValidator.NullAccepting {
 
 	/**
 	 * Returns a validator that reports the violations of the validated value under the

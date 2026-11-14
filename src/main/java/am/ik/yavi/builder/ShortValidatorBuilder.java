@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.ShortValidator;
 import am.ik.yavi.constraint.ShortConstraint;
@@ -88,21 +86,18 @@ public class ShortValidatorBuilder implements ValueValidatorBuilder<Short, Short
 	 */
 	@Override
 	public <T extends @Nullable Object> ShortValidator<T> build(Function<? super Short, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> ShortValidator<T> create(Function1<? super Short, ? extends T> mapper) {
 		final Validator<Arguments1<Short>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new ShortValidator<>(validator, mapper);
+		return new ShortValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public ShortValidator<Short> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public ShortValidator.Reversible build() {
+		return new ShortValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

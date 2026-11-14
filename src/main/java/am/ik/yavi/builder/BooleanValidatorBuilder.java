@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.BooleanValidator;
 import am.ik.yavi.constraint.BooleanConstraint;
@@ -89,21 +87,18 @@ public class BooleanValidatorBuilder implements ValueValidatorBuilder<Boolean, B
 	 */
 	@Override
 	public <T extends @Nullable Object> BooleanValidator<T> build(Function<? super Boolean, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> BooleanValidator<T> create(Function1<? super Boolean, ? extends T> mapper) {
 		final Validator<Arguments1<Boolean>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new BooleanValidator<>(validator, mapper);
+		return new BooleanValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public BooleanValidator<Boolean> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public BooleanValidator.Reversible build() {
+		return new BooleanValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

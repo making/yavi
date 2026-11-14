@@ -723,10 +723,10 @@ See [Breaking changes in 0.18.0](docs/BreakingChanges_0.18.0.md) to migrate from
 
 #### Writing an object back as the map it is read from
 
-`fromMapReversible` is `fromMap` with the accessors of the created object. The validator it builds also writes the object back as the map it is read from, for example as the named parameters of a statement:
+`Yavi.reversibleSchema()` is `Yavi.schema()` for an object that is written back, and its `fromMapReversible` is `fromMap` with the accessors of the created object. The validator it builds also writes the object back as the map it is read from, for example as the named parameters of a statement:
 
 ```java
-ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._embedded(userNameValidator) // first_name, last_name
         ._string(Yavi._string("email", c -> c.notBlank().email()).map(Email::new, Email::value))
@@ -742,7 +742,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 ```
 
-`validate(toMap(x))` is `Valid(x)`. A value object goes back with `map(f, g)`, and `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form, to show a stored object. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
+`validate(toMap(x))` is `Valid(x)`. A value object goes back with `map(f, g)`. A property that cannot be written back, such as one with `map(f)`, does not compile: the schema takes a `ReversibleValueValidator` where `Yavi.schema()` takes a `ValueValidator`. `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form, to show a stored object. See [New features in 0.18.0](docs/NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).
 
 #### Returning the violations
 

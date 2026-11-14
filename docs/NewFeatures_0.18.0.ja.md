@@ -740,7 +740,7 @@ class SignupController {
 
 ## オブジェクトを読み取り元のマップに書き戻す
 
-スキーマには、入力のプロパティ名を一度だけ書きます。`fromMapReversible` で作ったバリデータは、作成したオブジェクトを読み取り元のマップに書き戻すこともできます。SQL 文のパラメータや、保存済みのオブジェクトを表示するフォームのために、プロパティ名をもう一度書く必要はありません。
+スキーマには、入力のプロパティ名を一度だけ書きます。`Yavi.reversibleSchema()` の `fromMapReversible` で作ったバリデータは、作成したオブジェクトを読み取り元のマップに書き戻すこともできます。SQL 文のパラメータや、保存済みのオブジェクトを表示するフォームのために、プロパティ名をもう一度書く必要はありません。
 
 ```java
 record Email(String value) {}
@@ -750,12 +750,12 @@ record Employee(Integer id, UserName name, Email email, Optional<String> nicknam
 ReversibleValueValidator<String, Email> emailValidator = Yavi._string("email", c -> c.notBlank().email())
         .map(Email::new, Email::value);
 
-ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
+ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.reversibleSchema()
         ._string("first_name", c -> c.notBlank())
         ._string("last_name", c -> c.notBlank())
         .fromMapReversible(UserName::new, UserName::first, UserName::last);
 
-ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._embedded(userNameValidator)
         ._string(emailValidator)
@@ -774,6 +774,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
         .update();
 ```
 
+* `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。
 * `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
 * `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。
 * 返るバリデータは `ObjectInputValidator` です。これまでどおりネストでき、埋め込めて、`readingWith` や `readingParameters` で読めます。`rejectingUnknownProperties()` や `constraintOnTarget` のあとも `Reversible` のままです。
@@ -795,15 +796,43 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 
 値は、プロパティの読み取り元である JDK の型の値で、JDBC ドライバや JSON ライブラリにそのまま渡せます。`URI` や `Year` などもそのまま書くので、ドライバが受け取れない型は変換してください。
 
-**値オブジェクト。** `map(f, g)` は、`map(f)` に、変換後の値から入力へ戻す関数を加えたものです。返り値は `ReversibleValueValidator` で、`reverse(x)` は `x` の読み取り元の入力を返します。逆変換を知っているかどうかは、どのバリデータにも `reversible()` で尋ねられます。単一の値のバリデータは、値を変換していなければ逆変換を知っています。`named`、`optional()`、`nullable()`、`defaultValue`、`recover`、`constraintOnTarget` は逆変換を引き継ぎます。それ以外のバリデータの逆変換は `ReversibleValueValidator.of(validator, g)` で与えます。
+**値オブジェクト。** `map(f, g)` は、`map(f)` に、変換後の値から入力へ戻す関数を加えたものです。返り値は `ReversibleValueValidator` で、`reverse(x)` は `x` の読み取り元の入力を返します。バリデータが逆変換を知っているかどうかは、型で分かります。
 
-**書き戻せないもの。** 逆変換のない `map(f)`、ラムダ、`andThen`、`anyOf` と、逆変換を知らないバリデータを渡した `_object`、`_embedded`、`_list`、`_map`、`_rest` は書き戻せません。この場合、`fromMapReversible` はバリデータの作成時に、プロパティ名を示す `IllegalStateException` を投げます。
+| バリデータ | 型 |
+| --- | --- |
+| `Yavi._string("name")` などの単一の値のバリデータ、`XxxValidatorBuilder#build()` | `StringValidator.Reversible` など(`ReversibleValueValidator` を実装) |
+| `map(f, g)`、`ReversibleValueValidator.of(validator, g)` | `ReversibleValueValidator` |
+| 上記に対する `named`、`describedAs`、`preprocess`、`prefixed`、`formattingWith`、`constraintOnTarget`、`untrimmed()`、`ignoringCase()` | `ReversibleValueValidator` |
+| 上記に対する `optional()`、`nullable()`、`defaultValue`、`recover`、`recoverWith` | `ReversibleValueValidator.NullAccepting`(`NullAcceptingValueValidator` でもある) |
+| 上記に対する `liftList()`、`liftSet()`、`liftCollection(factory)`、`liftMap()`、`liftOptional()`、`liftPresence()` | コンテナの `ReversibleValueValidator` |
+| `ReversibleValueValidator.lazy(supplier)`、`recursive(self -> ...)` | `ReversibleValueValidator` |
+| `fromMapReversible`、`DiscriminatedUnionValidator.Reversible` | マップの `ReversibleValueValidator` |
+| `map(f)`、`andThen`、`anyOf`、ラムダ、`Yavi._list`、`Yavi._map`、`fromMap` | `ValueValidator` |
+
+**書き戻せないもの。** `ReversibleValueValidator` ではないバリデータ、つまり逆変換のない `map(f)`、ラムダ、`andThen`、`anyOf` は書き戻せません。`Yavi.reversibleSchema()` のスキーマは、プロパティとしても、`_object`、`_embedded`、`_list`、`_map`、`_rest` の引数としても、これらを受け取りません。書き戻せないプロパティは、追加した箇所でコンパイルエラーになります。
 
 ```java
-Yavi.schema()
-        ._string(Yavi._string("email").map(Email::new)) // 逆変換がない
-        .fromMapReversible(Contact::new, Contact::email);
-// IllegalStateException: The property 'email' cannot be written back, because its validator does not know its reverse. ...
+Yavi.reversibleSchema()
+        ._string("name")
+        ._string(Yavi._string("email").map(Email::new)) // コンパイルエラー: 逆変換がない
+        .fromMapReversible(Contact::new, Contact::name, Contact::email);
+// error: no suitable method found for _string(StringValidator<Email>)
+
+Yavi.reversibleSchema()
+        ._string("name")
+        ._string(Yavi._string("email").map(Email::new, Email::value)) // コンパイルできる
+        .fromMapReversible(Contact::new, Contact::name, Contact::email);
+```
+
+`Yavi.schema()` に `fromMapReversible` はありません。書き戻さないスキーマは影響を受けず、これまでどおりどのバリデータも受け取ります。
+
+**自分自身を含む構造。** `ReversibleValueValidator.recursive(self -> ...)` は、逆変換を知っている参照を渡す `ValueValidator.recursive` です。
+
+```java
+ObjectInputValidator.Reversible<Tree> treeValidator = ReversibleValueValidator.recursive(self -> Yavi.reversibleSchema()
+        ._string("name")
+        ._list("children", self).defaultValue(List.of())
+        .fromMapReversible(Tree::new, Tree::name, Tree::children));
 ```
 
 **ネストしたオブジェクト。** ネストしたマップは SQL 文にバインドできません。行のカラムは `_embedded` で読むか、`ParameterTree.parametersOf` でマップを違反の名前のキーに展開してバインドします。
@@ -826,14 +855,16 @@ DiscriminatedUnionValidator.Reversible<Shape> shapeValidator = DiscriminatedUnio
 shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 ```
 
-**実行時にプロパティが決まるスキーマ。** `Yavi.dynamicSchema()` の `buildReversible()` は、検証済みの値のマップを書き戻すバリデータを返します。
+**実行時にプロパティが決まるスキーマ。** `Yavi.reversibleDynamicSchema()` は、`property` と `rest` が `ReversibleValueValidator` を受け取る `Yavi.dynamicSchema()` です。`build()` は、検証済みの値のマップを書き戻すバリデータを返します。
+
+**スキーマに収まらない数のプロパティ。** `ObjectInputValidator.ofReversible` は、`ObjectInputValidator.ReversiblePart` のリストを受け取ります。`ReversiblePart` は、パートに逆変換とアクセサを組にしたものです。
 
 ### 保存済みのオブジェクトをフォームに表示する
 
 `ParameterTree.ofValues` は、バリデータが書いたマップを受け取り、その値をパラメータのテキストとして保持します。保存済みのオブジェクトの最初の表示と、送信後の再表示を同じコードで扱えます。
 
 ```java
-ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
         ._string("name", c -> c.notBlank())
         ._integer("age")
         ._boolean("agreed").defaultValue(false)
@@ -1066,6 +1097,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | コードに書いたテキストはメッセージを探さない、`ViolationMessage#withText`、`localizable()`、`Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `ParameterTree#toMap`、`toParameters`、`parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
+| `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |

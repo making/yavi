@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.DoubleValidator;
 import am.ik.yavi.constraint.DoubleConstraint;
@@ -89,21 +87,18 @@ public class DoubleValidatorBuilder implements ValueValidatorBuilder<Double, Dou
 	 */
 	@Override
 	public <T extends @Nullable Object> DoubleValidator<T> build(Function<? super Double, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> DoubleValidator<T> create(Function1<? super Double, ? extends T> mapper) {
 		final Validator<Arguments1<Double>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		return new DoubleValidator<>(validator, mapper);
+		return new DoubleValidator<>(validator, mapper::apply);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public DoubleValidator<Double> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public DoubleValidator.Reversible build() {
+		return new DoubleValidator.Reversible(this.builder.apply(ValidatorBuilder.of()).build());
 	}
 
 }

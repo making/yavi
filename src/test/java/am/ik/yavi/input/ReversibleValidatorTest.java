@@ -12,9 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ReversibleValueValidator;
@@ -25,9 +24,6 @@ import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.validator.Yavi;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -65,26 +61,26 @@ class ReversibleValidatorTest {
 		._string("email", c -> c.trim().notBlank().email())
 		.map(Email::new, Email::value);
 
-	static final ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.schema()
+	static final ObjectInputValidator.Reversible<UserName> userNameValidator = Yavi.reversibleSchema()
 		._string("first_name", c -> c.notBlank())
 		._string("last_name", c -> c.notBlank())
 		.fromMapReversible(UserName::new, UserName::first, UserName::last);
 
-	static final ObjectInputValidator.Reversible<Department> departmentValidator = Yavi.schema()
+	static final ObjectInputValidator.Reversible<Department> departmentValidator = Yavi.reversibleSchema()
 		._string("dept_name", c -> c.notBlank())
 		._string("dept_code", c -> c.notBlank())
 		.flatFromMapReversible((name, code) -> Validated.successWith(new Department(name, code)), Department::name,
 				Department::code)
 		.rejectingUnknownProperties();
 
-	static final ObjectInputValidator.Reversible<Address> addressValidator = Yavi.schema()
+	static final ObjectInputValidator.Reversible<Address> addressValidator = Yavi.reversibleSchema()
 		._string("city", c -> c.notBlank())
 		._string("street")
 		.optional()
 		.fromMapReversible(Address::new, Address::city, Address::street)
 		.constraintOnTarget(address -> !address.city().equals("nowhere"), "city", ViolationMessage.of("city", "!"));
 
-	static final ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.schema()
+	static final ObjectInputValidator.Reversible<Employee> employeeValidator = Yavi.reversibleSchema()
 		._integer("id")
 		._embedded(userNameValidator)
 		._embedded(departmentValidator)
@@ -177,51 +173,24 @@ class ReversibleValidatorTest {
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("The property 'id' is written twice.");
 
-		// a validator that is derived without changing the value still goes back
+		// a validator that is derived without changing the value still goes back, which
+		// its type tells
 		assertThat(emailValidator.reverse(emailValidator.validated(" taro@example.com ")))
 			.isEqualTo("taro@example.com");
-		assertThat(emailValidator.named("contact").reverse(new Email("a@example.com"))).isEqualTo("a@example.com");
-		assertThat(emailValidator.optional().reversible().orElseThrow().reverse(Optional.empty())).isNull();
-		assertThat(Yavi._integer("page").defaultValue(1).named("p").reversible().orElseThrow().reverse(2)).isEqualTo(2);
-		assertThat(Yavi._string("name").map(String::length).reversible()).isEmpty();
+		final Email email = new Email("a@example.com");
+		assertThat(emailValidator.named("contact").reverse(email)).isEqualTo("a@example.com");
+		assertThat(emailValidator.optional().named("contact").reverse(Optional.empty())).isNull();
+		assertThat(Yavi._integer("page").defaultValue(1).named("p").reverse(2)).isEqualTo(2);
 		final ValueValidator<String, String> lambda = (value, locale, context) -> Validated
 			.successWith(String.valueOf(value));
-		assertThat(lambda.reversible()).isEmpty();
-		assertThat(ReversibleValueValidator.of(lambda, value -> value).reverse("a")).isEqualTo("a");
-	}
-
-	static Stream<Arguments> irreversible() {
-		final ValueValidator<Map<String, Object>, UserName> plain = Yavi.schema()
-			._string("first_name")
-			._string("last_name")
-			.fromMap(UserName::new);
-		return Stream.of(
-				Arguments.of((Supplier<Object>) () -> Yavi.schema()
-					._string(Yavi._string("email").map(Email::new))
-					.fromMapReversible(email -> email, email -> email), "The property 'email'"),
-				Arguments.of(
-						(Supplier<Object>) () -> Yavi.schema()
-							._string("id")
-							._embedded(plain)
-							.fromMapReversible((id, name) -> name, name -> "", name -> name),
-						"The embedded validator at position 2"),
-				Arguments.of((Supplier<Object>) () -> Yavi.schema()
-					._list("names", plain)
-					.fromMapReversible(names -> names, names -> names), "The property 'names'"),
-				Arguments.of((Supplier<Object>) () -> Yavi.schema()
-					._object("name", plain)
-					.optional()
-					.fromMapReversible(name -> name, name -> name), "The property 'name'"),
-				Arguments.of((Supplier<Object>) () -> Yavi.schema()
-					._rest(Yavi._string().map(Email::new))
-					.fromMapReversible(rest -> rest, rest -> rest), "The rest of the properties"));
-	}
-
-	@ParameterizedTest
-	@MethodSource("irreversible")
-	void aPropertyThatDoesNotKnowItsReverseIsRejectedWhenTheValidatorIsBuilt(Supplier<Object> schema, String part) {
-		assertThatThrownBy(schema::get).isInstanceOf(IllegalStateException.class)
-			.hasMessageStartingWith(part + " cannot be written back");
+		assertThat(ReversibleValueValidator.of(lambda, value -> value).prefixed("p").reverse("a")).isEqualTo("a");
+		// a container of values goes back to the container of their inputs
+		assertThat(emailValidator.liftSet().reverse(Set.of(email))).isEqualTo(List.of("a@example.com"));
+		assertThat(Yavi._integer().liftList().reverse(List.of(1, 2))).isEqualTo(List.of(1, 2));
+		assertThat(emailValidator.liftMap().reverse(Map.of("k", email))).isEqualTo(Map.of("k", "a@example.com"));
+		assertThat(emailValidator.liftOptional().reverse(Optional.of(email))).isEqualTo(Optional.of("a@example.com"));
+		assertThat(emailValidator.liftPresence().reverse(Presence.of(email))).isEqualTo(Presence.of("a@example.com"));
+		assertThat(emailValidator.liftPresence().reverse(Presence.absent())).isEqualTo(Presence.absent());
 	}
 
 	sealed interface Shape {
@@ -239,10 +208,10 @@ class ReversibleValidatorTest {
 
 	@Test
 	void aUnionAndARecursiveValidatorAreWrittenBack() {
-		final ObjectInputValidator.Reversible<Circle> circleValidator = Yavi.schema()
+		final ObjectInputValidator.Reversible<Circle> circleValidator = Yavi.reversibleSchema()
 			._double("radius")
 			.fromMapReversible(Circle::new, Circle::radius);
-		final ObjectInputValidator.Reversible<Square> squareValidator = Yavi.schema()
+		final ObjectInputValidator.Reversible<Square> squareValidator = Yavi.reversibleSchema()
 			._double("side")
 			._string("type")
 			.fromMapReversible(Square::new, Square::side, Square::type);
@@ -261,7 +230,7 @@ class ReversibleValidatorTest {
 		// a union is embedded and nested like any reversible validator
 		record Drawing(String title, Shape shape, List<Shape> others) {
 		}
-		final ObjectInputValidator.Reversible<Drawing> drawingValidator = Yavi.schema()
+		final ObjectInputValidator.Reversible<Drawing> drawingValidator = Yavi.reversibleSchema()
 			._string("title")
 			._embedded(shapeValidator)
 			._list("others", shapeValidator)
@@ -273,26 +242,28 @@ class ReversibleValidatorTest {
 			.isEqualTo(Validated.successWith(drawing));
 		// an alternative without its type gives a union that does not write
 		final DiscriminatedUnionValidator<Shape> reading = shapeValidator.when("other", circleValidator);
-		assertThat(reading.reversible()).isEmpty();
+		assertThat(reading).isNotInstanceOf(ReversibleValueValidator.class);
 
-		final ObjectInputValidator.Reversible<Tree> treeValidator = ValueValidator.recursive(self -> Yavi.schema()
-			._string("name")
-			._list("children", self)
-			.defaultValue(List.of())
-			.fromMapReversible(Tree::new, Tree::name, Tree::children));
+		final ObjectInputValidator.Reversible<Tree> treeValidator = ReversibleValueValidator
+			.recursive(self -> Yavi.reversibleSchema()
+				._string("name")
+				._list("children", self)
+				.defaultValue(List.of())
+				.fromMapReversible(Tree::new, Tree::name, Tree::children));
 		final Tree tree = new Tree("root", List.of(new Tree("leaf", List.of())));
 		assertThat(treeValidator.toMap(tree))
 			.isEqualTo(mapOf("name", "root", "children", List.of(mapOf("name", "leaf", "children", List.of()))));
 		assertThat(treeValidator.validate(treeValidator.toMap(tree))).isEqualTo(Validated.successWith(tree));
 
 		// a schema whose properties are known at run time writes the map it produces
-		final ObjectInputValidator.Reversible<Map<String, Object>> dynamicValidator = Yavi.<Object>dynamicSchema()
+		final ObjectInputValidator.Reversible<Map<String, Object>> dynamicValidator = Yavi
+			.<Object>reversibleDynamicSchema()
 			.property("email", emailValidator)
 			.property("shape", shapeValidator)
 			.property("memo", Yavi._string().nullable())
 			.presence()
 			.rest(Yavi._integer())
-			.buildReversible();
+			.build();
 		final Map<String, Object> values = mapOf("email", new Email("a@example.com"), "shape", new Circle(1.0), "n", 1);
 		assertThat(dynamicValidator.toMap(values)).containsExactly(entry("email", "a@example.com"),
 				entry("shape", mapOf("type", "circle", "radius", 1.0)), entry("n", 1));
@@ -305,7 +276,7 @@ class ReversibleValidatorTest {
 
 	@Test
 	void aStoredObjectIsShownInAFormAsTheParametersThatAreSentForIt() {
-		final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.schema()
+		final ObjectInputValidator.Reversible<Signup> signupSchema = Yavi.reversibleSchema()
 			._string("name", c -> c.notBlank())
 			._integer("age")
 			._enum("role", Role.class)
@@ -353,7 +324,7 @@ class ReversibleValidatorTest {
 
 	@Test
 	void anObjectIsWrittenAsTheParametersOfAStatementAndReadFromItsRow() {
-		final ObjectInputValidator.Reversible<Event> eventValidator = Yavi.schema()
+		final ObjectInputValidator.Reversible<Event> eventValidator = Yavi.reversibleSchema()
 			._integer("id")
 			._embedded(userNameValidator)
 			._string("note")
@@ -397,7 +368,7 @@ class ReversibleValidatorTest {
 		// a nested object is bound under the names of its violations
 		record Venue(Integer id, Address address) {
 		}
-		final ObjectInputValidator.Reversible<Venue> venueValidator = Yavi.schema()
+		final ObjectInputValidator.Reversible<Venue> venueValidator = Yavi.reversibleSchema()
 			._integer("id")
 			._object("address", addressValidator)
 			.fromMapReversible(Venue::new, Venue::id, Venue::address);

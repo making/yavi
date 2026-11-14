@@ -41,6 +41,8 @@ import am.ik.yavi.builder.LocalTimeValidatorBuilder;
 import am.ik.yavi.builder.LongValidatorBuilder;
 import am.ik.yavi.builder.MapValidatorBuilder;
 import am.ik.yavi.builder.ObjectValidatorBuilder;
+import am.ik.yavi.builder.ReversibleDynamicSchema;
+import am.ik.yavi.builder.ReversibleYaviSchema;
 import am.ik.yavi.builder.OffsetDateTimeValidatorBuilder;
 import am.ik.yavi.builder.ShortValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
@@ -232,6 +234,39 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a new, empty schema whose validator also writes the created object back as
+	 * the map that it is read from.
+	 *
+	 * <p>
+	 * The properties are added as to a schema of {@link #schema()}, and
+	 * {@code fromMapReversible} takes the function that creates the object and the
+	 * accessor of every property:
+	 *
+	 * <pre>{@code
+	 * ObjectInputValidator.Reversible<Person> validator = Yavi.reversibleSchema()
+	 *     ._string("name", c -> c.notBlank())
+	 *     ._string(Yavi._string("email").map(Email::new, Email::value))
+	 *     ._integer("age").optional()
+	 *     .fromMapReversible(Person::new, Person::name, Person::email, Person::age);
+	 * Map<String, Object> map = validator.toMap(person); // {name=Alice, email=alice@example.com, age=null}
+	 * }</pre>
+	 *
+	 * <p>
+	 * Every property must be one that can be written back, which the compiler checks: a
+	 * property of constraints always is, and where {@link #schema()} takes any
+	 * {@link ValueValidator}, this schema takes a
+	 * {@link am.ik.yavi.core.ReversibleValueValidator} only. A validator that maps its
+	 * value without saying how to go back, such as
+	 * {@code Yavi._string("email").map(Email::new)}, is rejected where it is added.
+	 * @return a new schema
+	 * @since 0.18.0
+	 * @see am.ik.yavi.input.ObjectInputValidator.Reversible
+	 */
+	public static ReversibleYaviSchema reversibleSchema() {
+		return new ReversibleYaviSchema();
+	}
+
+	/**
 	 * Returns a new, empty schema whose properties are known only at run time, such as
 	 * the questions of a survey or the custom fields of a record.
 	 *
@@ -262,6 +297,20 @@ public final class Yavi {
 	}
 
 	/**
+	 * Returns a new, empty schema whose properties are known only at run time, as
+	 * {@link #dynamicSchema()} does, and whose validator also writes the produced map
+	 * back as the map that it is read from. A property is added with a validator that
+	 * knows its reverse, which the compiler checks.
+	 * @param <V> the type of the values of the produced map
+	 * @return a new schema
+	 * @since 0.18.0
+	 * @see am.ik.yavi.input.ObjectInputValidator.Reversible
+	 */
+	public static <V extends @Nullable Object> ReversibleDynamicSchema<V> reversibleDynamicSchema() {
+		return new ReversibleDynamicSchema<>();
+	}
+
+	/**
 	 * Returns a new, empty schema.
 	 * @return a new schema
 	 * @since 0.14.0
@@ -280,7 +329,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigDecimal(Function)
 	 */
-	public static BigDecimalValidator<BigDecimal> _bigDecimal() {
+	public static BigDecimalValidator.Reversible _bigDecimal() {
 		return _bigDecimal("", Function.identity());
 	}
 
@@ -291,7 +340,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigDecimal(String, Function)
 	 */
-	public static BigDecimalValidator<BigDecimal> _bigDecimal(
+	public static BigDecimalValidator.Reversible _bigDecimal(
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return _bigDecimal("", constraints);
 	}
@@ -304,7 +353,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigDecimal(String, Function)
 	 */
-	public static BigDecimalValidator<BigDecimal> _bigDecimal(String name) {
+	public static BigDecimalValidator.Reversible _bigDecimal(String name) {
 		return _bigDecimal(name, Function.identity());
 	}
 
@@ -321,7 +370,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static BigDecimalValidator<BigDecimal> _bigDecimal(String name,
+	public static BigDecimalValidator.Reversible _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return BigDecimalValidatorBuilder.of(name, constraints).build();
 	}
@@ -333,7 +382,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigInteger(Function)
 	 */
-	public static BigIntegerValidator<BigInteger> _bigInteger() {
+	public static BigIntegerValidator.Reversible _bigInteger() {
 		return _bigInteger("", Function.identity());
 	}
 
@@ -344,7 +393,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigInteger(String, Function)
 	 */
-	public static BigIntegerValidator<BigInteger> _bigInteger(
+	public static BigIntegerValidator.Reversible _bigInteger(
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return _bigInteger("", constraints);
 	}
@@ -357,7 +406,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_bigInteger(String, Function)
 	 */
-	public static BigIntegerValidator<BigInteger> _bigInteger(String name) {
+	public static BigIntegerValidator.Reversible _bigInteger(String name) {
 		return _bigInteger(name, Function.identity());
 	}
 
@@ -374,7 +423,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static BigIntegerValidator<BigInteger> _bigInteger(String name,
+	public static BigIntegerValidator.Reversible _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return BigIntegerValidatorBuilder.of(name, constraints).build();
 	}
@@ -386,7 +435,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_boolean(Function)
 	 */
-	public static BooleanValidator<Boolean> _boolean() {
+	public static BooleanValidator.Reversible _boolean() {
 		return _boolean("", Function.identity());
 	}
 
@@ -397,7 +446,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_boolean(String, Function)
 	 */
-	public static BooleanValidator<Boolean> _boolean(
+	public static BooleanValidator.Reversible _boolean(
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return _boolean("", constraints);
 	}
@@ -410,7 +459,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_boolean(String, Function)
 	 */
-	public static BooleanValidator<Boolean> _boolean(String name) {
+	public static BooleanValidator.Reversible _boolean(String name) {
 		return _boolean(name, Function.identity());
 	}
 
@@ -427,7 +476,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static BooleanValidator<Boolean> _boolean(String name,
+	public static BooleanValidator.Reversible _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return BooleanValidatorBuilder.of(name, constraints).build();
 	}
@@ -439,7 +488,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_double(Function)
 	 */
-	public static DoubleValidator<Double> _double() {
+	public static DoubleValidator.Reversible _double() {
 		return _double("", Function.identity());
 	}
 
@@ -450,7 +499,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_double(String, Function)
 	 */
-	public static DoubleValidator<Double> _double(
+	public static DoubleValidator.Reversible _double(
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return _double("", constraints);
 	}
@@ -463,7 +512,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_double(String, Function)
 	 */
-	public static DoubleValidator<Double> _double(String name) {
+	public static DoubleValidator.Reversible _double(String name) {
 		return _double(name, Function.identity());
 	}
 
@@ -480,7 +529,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static DoubleValidator<Double> _double(String name,
+	public static DoubleValidator.Reversible _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return DoubleValidatorBuilder.of(name, constraints).build();
 	}
@@ -494,7 +543,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public static <E extends Enum<E>> EnumValidator<E, E> _enum(Class<E> type) {
+	public static <E extends Enum<E>> EnumValidator.Reversible<E> _enum(Class<E> type) {
 		return _enum("", type, Function.identity());
 	}
 
@@ -507,7 +556,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public static <E extends Enum<E>> EnumValidator<E, E> _enum(Class<E> type,
+	public static <E extends Enum<E>> EnumValidator.Reversible<E> _enum(Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return _enum("", type, constraints);
 	}
@@ -526,7 +575,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_enum(String, Class, Function)
 	 */
-	public static <E extends Enum<E>> EnumValidator<E, E> _enum(String name, Class<E> type) {
+	public static <E extends Enum<E>> EnumValidator.Reversible<E> _enum(String name, Class<E> type) {
 		return _enum(name, type, Function.identity());
 	}
 
@@ -547,7 +596,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static <E extends Enum<E>> EnumValidator<E, E> _enum(String name, Class<E> type,
+	public static <E extends Enum<E>> EnumValidator.Reversible<E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return EnumValidatorBuilder.of(name, type, constraints).build();
 	}
@@ -559,7 +608,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_float(Function)
 	 */
-	public static FloatValidator<Float> _float() {
+	public static FloatValidator.Reversible _float() {
 		return _float("", Function.identity());
 	}
 
@@ -570,7 +619,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_float(String, Function)
 	 */
-	public static FloatValidator<Float> _float(
+	public static FloatValidator.Reversible _float(
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return _float("", constraints);
 	}
@@ -583,7 +632,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_float(String, Function)
 	 */
-	public static FloatValidator<Float> _float(String name) {
+	public static FloatValidator.Reversible _float(String name) {
 		return _float(name, Function.identity());
 	}
 
@@ -600,7 +649,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static FloatValidator<Float> _float(String name,
+	public static FloatValidator.Reversible _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return FloatValidatorBuilder.of(name, constraints).build();
 	}
@@ -612,7 +661,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_instant(Function)
 	 */
-	public static InstantValidator<Instant> _instant() {
+	public static InstantValidator.Reversible _instant() {
 		return _instant("", Function.identity());
 	}
 
@@ -623,7 +672,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_instant(String, Function)
 	 */
-	public static InstantValidator<Instant> _instant(
+	public static InstantValidator.Reversible _instant(
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return _instant("", constraints);
 	}
@@ -636,7 +685,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_instant(String, Function)
 	 */
-	public static InstantValidator<Instant> _instant(String name) {
+	public static InstantValidator.Reversible _instant(String name) {
 		return _instant(name, Function.identity());
 	}
 
@@ -653,7 +702,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static InstantValidator<Instant> _instant(String name,
+	public static InstantValidator.Reversible _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return InstantValidatorBuilder.of(name, constraints).build();
 	}
@@ -665,7 +714,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_integer(Function)
 	 */
-	public static IntegerValidator<Integer> _integer() {
+	public static IntegerValidator.Reversible _integer() {
 		return _integer("", Function.identity());
 	}
 
@@ -676,7 +725,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_integer(String, Function)
 	 */
-	public static IntegerValidator<Integer> _integer(
+	public static IntegerValidator.Reversible _integer(
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return _integer("", constraints);
 	}
@@ -689,7 +738,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_integer(String, Function)
 	 */
-	public static IntegerValidator<Integer> _integer(String name) {
+	public static IntegerValidator.Reversible _integer(String name) {
 		return _integer(name, Function.identity());
 	}
 
@@ -706,7 +755,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static IntegerValidator<Integer> _integer(String name,
+	public static IntegerValidator.Reversible _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return IntegerValidatorBuilder.of(name, constraints).build();
 	}
@@ -761,7 +810,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDateTime(Function)
 	 */
-	public static LocalDateTimeValidator<LocalDateTime> _localDateTime() {
+	public static LocalDateTimeValidator.Reversible _localDateTime() {
 		return _localDateTime("", Function.identity());
 	}
 
@@ -772,7 +821,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDateTime(String, Function)
 	 */
-	public static LocalDateTimeValidator<LocalDateTime> _localDateTime(
+	public static LocalDateTimeValidator.Reversible _localDateTime(
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return _localDateTime("", constraints);
 	}
@@ -785,7 +834,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDateTime(String, Function)
 	 */
-	public static LocalDateTimeValidator<LocalDateTime> _localDateTime(String name) {
+	public static LocalDateTimeValidator.Reversible _localDateTime(String name) {
 		return _localDateTime(name, Function.identity());
 	}
 
@@ -802,7 +851,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static LocalDateTimeValidator<LocalDateTime> _localDateTime(String name,
+	public static LocalDateTimeValidator.Reversible _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return LocalDateTimeValidatorBuilder.of(name, constraints).build();
 	}
@@ -814,7 +863,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localTime(Function)
 	 */
-	public static LocalTimeValidator<LocalTime> _localTime() {
+	public static LocalTimeValidator.Reversible _localTime() {
 		return _localTime("", Function.identity());
 	}
 
@@ -825,7 +874,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localTime(String, Function)
 	 */
-	public static LocalTimeValidator<LocalTime> _localTime(
+	public static LocalTimeValidator.Reversible _localTime(
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return _localTime("", constraints);
 	}
@@ -838,7 +887,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localTime(String, Function)
 	 */
-	public static LocalTimeValidator<LocalTime> _localTime(String name) {
+	public static LocalTimeValidator.Reversible _localTime(String name) {
 		return _localTime(name, Function.identity());
 	}
 
@@ -855,7 +904,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static LocalTimeValidator<LocalTime> _localTime(String name,
+	public static LocalTimeValidator.Reversible _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return LocalTimeValidatorBuilder.of(name, constraints).build();
 	}
@@ -867,7 +916,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDate(Function)
 	 */
-	public static LocalDateValidator<LocalDate> _localDate() {
+	public static LocalDateValidator.Reversible _localDate() {
 		return _localDate("", Function.identity());
 	}
 
@@ -878,7 +927,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDate(String, Function)
 	 */
-	public static LocalDateValidator<LocalDate> _localDate(
+	public static LocalDateValidator.Reversible _localDate(
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return _localDate("", constraints);
 	}
@@ -891,7 +940,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_localDate(String, Function)
 	 */
-	public static LocalDateValidator<LocalDate> _localDate(String name) {
+	public static LocalDateValidator.Reversible _localDate(String name) {
 		return _localDate(name, Function.identity());
 	}
 
@@ -908,7 +957,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static LocalDateValidator<LocalDate> _localDate(String name,
+	public static LocalDateValidator.Reversible _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return LocalDateValidatorBuilder.of(name, constraints).build();
 	}
@@ -920,7 +969,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_long(Function)
 	 */
-	public static LongValidator<Long> _long() {
+	public static LongValidator.Reversible _long() {
 		return _long("", Function.identity());
 	}
 
@@ -931,7 +980,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_long(String, Function)
 	 */
-	public static LongValidator<Long> _long(
+	public static LongValidator.Reversible _long(
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return _long("", constraints);
 	}
@@ -944,7 +993,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_long(String, Function)
 	 */
-	public static LongValidator<Long> _long(String name) {
+	public static LongValidator.Reversible _long(String name) {
 		return _long(name, Function.identity());
 	}
 
@@ -961,7 +1010,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static LongValidator<Long> _long(String name,
+	public static LongValidator.Reversible _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return LongValidatorBuilder.of(name, constraints).build();
 	}
@@ -1019,7 +1068,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_object(Class, Function)
 	 */
-	public static <T> ObjectValidator<T, T> _object(Class<T> type) {
+	public static <T> ObjectValidator.Reversible<T> _object(Class<T> type) {
 		return _object("", type, Function.identity());
 	}
 
@@ -1032,7 +1081,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public static <T> ObjectValidator<T, T> _object(Class<T> type,
+	public static <T> ObjectValidator.Reversible<T> _object(Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return _object("", type, constraints);
 	}
@@ -1051,7 +1100,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_object(String, Class, Function)
 	 */
-	public static <T> ObjectValidator<T, T> _object(String name, Class<T> type) {
+	public static <T> ObjectValidator.Reversible<T> _object(String name, Class<T> type) {
 		return _object(name, type, Function.identity());
 	}
 
@@ -1072,7 +1121,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static <T> ObjectValidator<T, T> _object(String name, Class<T> type,
+	public static <T> ObjectValidator.Reversible<T> _object(String name, Class<T> type,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return ObjectValidatorBuilder.of(name, type, constraints).build();
 	}
@@ -1090,7 +1139,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_object(String, Function)
 	 */
-	public static <T> ObjectValidator<T, T> _object(
+	public static <T> ObjectValidator.Reversible<T> _object(
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return _object("", constraints);
 	}
@@ -1108,7 +1157,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static <T> ObjectValidator<T, T> _object(String name,
+	public static <T> ObjectValidator.Reversible<T> _object(String name,
 			Function<ObjectConstraint<Arguments1<T>, T>, ObjectConstraint<Arguments1<T>, T>> constraints) {
 		return ObjectValidatorBuilder.of(name, constraints).build();
 	}
@@ -1120,7 +1169,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_offsetDateTime(Function)
 	 */
-	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime() {
+	public static OffsetDateTimeValidator.Reversible _offsetDateTime() {
 		return _offsetDateTime("", Function.identity());
 	}
 
@@ -1131,7 +1180,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_offsetDateTime(String, Function)
 	 */
-	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime(
+	public static OffsetDateTimeValidator.Reversible _offsetDateTime(
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return _offsetDateTime("", constraints);
 	}
@@ -1144,7 +1193,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_offsetDateTime(String, Function)
 	 */
-	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime(String name) {
+	public static OffsetDateTimeValidator.Reversible _offsetDateTime(String name) {
 		return _offsetDateTime(name, Function.identity());
 	}
 
@@ -1161,7 +1210,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static OffsetDateTimeValidator<OffsetDateTime> _offsetDateTime(String name,
+	public static OffsetDateTimeValidator.Reversible _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return OffsetDateTimeValidatorBuilder.of(name, constraints).build();
 	}
@@ -1173,7 +1222,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_short(Function)
 	 */
-	public static ShortValidator<Short> _short() {
+	public static ShortValidator.Reversible _short() {
 		return _short("", Function.identity());
 	}
 
@@ -1184,7 +1233,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_short(String, Function)
 	 */
-	public static ShortValidator<Short> _short(
+	public static ShortValidator.Reversible _short(
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return _short("", constraints);
 	}
@@ -1197,7 +1246,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_short(String, Function)
 	 */
-	public static ShortValidator<Short> _short(String name) {
+	public static ShortValidator.Reversible _short(String name) {
 		return _short(name, Function.identity());
 	}
 
@@ -1214,7 +1263,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static ShortValidator<Short> _short(String name,
+	public static ShortValidator.Reversible _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return ShortValidatorBuilder.of(name, constraints).build();
 	}
@@ -1226,7 +1275,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_string(Function)
 	 */
-	public static StringValidator<String> _string() {
+	public static StringValidator.Reversible _string() {
 		return _string("", Function.identity());
 	}
 
@@ -1237,7 +1286,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_string(String, Function)
 	 */
-	public static StringValidator<String> _string(
+	public static StringValidator.Reversible _string(
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return _string("", constraints);
 	}
@@ -1250,7 +1299,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_string(String, Function)
 	 */
-	public static StringValidator<String> _string(String name) {
+	public static StringValidator.Reversible _string(String name) {
 		return _string(name, Function.identity());
 	}
 
@@ -1273,7 +1322,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static StringValidator<String> _string(String name,
+	public static StringValidator.Reversible _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return StringValidatorBuilder.of(name, constraints).build();
 	}
@@ -1285,7 +1334,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_yearMonth(Function)
 	 */
-	public static YearMonthValidator<YearMonth> _yearMonth() {
+	public static YearMonthValidator.Reversible _yearMonth() {
 		return _yearMonth("", Function.identity());
 	}
 
@@ -1296,7 +1345,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_yearMonth(String, Function)
 	 */
-	public static YearMonthValidator<YearMonth> _yearMonth(
+	public static YearMonthValidator.Reversible _yearMonth(
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return _yearMonth("", constraints);
 	}
@@ -1309,7 +1358,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_yearMonth(String, Function)
 	 */
-	public static YearMonthValidator<YearMonth> _yearMonth(String name) {
+	public static YearMonthValidator.Reversible _yearMonth(String name) {
 		return _yearMonth(name, Function.identity());
 	}
 
@@ -1326,7 +1375,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static YearMonthValidator<YearMonth> _yearMonth(String name,
+	public static YearMonthValidator.Reversible _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return YearMonthValidatorBuilder.of(name, constraints).build();
 	}
@@ -1338,7 +1387,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_year(Function)
 	 */
-	public static YearValidator<Year> _year() {
+	public static YearValidator.Reversible _year() {
 		return _year("", Function.identity());
 	}
 
@@ -1349,7 +1398,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_year(String, Function)
 	 */
-	public static YearValidator<Year> _year(
+	public static YearValidator.Reversible _year(
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return _year("", constraints);
 	}
@@ -1362,7 +1411,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_year(String, Function)
 	 */
-	public static YearValidator<Year> _year(String name) {
+	public static YearValidator.Reversible _year(String name) {
 		return _year(name, Function.identity());
 	}
 
@@ -1379,7 +1428,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static YearValidator<Year> _year(String name,
+	public static YearValidator.Reversible _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return YearValidatorBuilder.of(name, constraints).build();
 	}
@@ -1391,7 +1440,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_zonedDateTime(Function)
 	 */
-	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime() {
+	public static ZonedDateTimeValidator.Reversible _zonedDateTime() {
 		return _zonedDateTime("", Function.identity());
 	}
 
@@ -1402,7 +1451,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_zonedDateTime(String, Function)
 	 */
-	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime(
+	public static ZonedDateTimeValidator.Reversible _zonedDateTime(
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return _zonedDateTime("", constraints);
 	}
@@ -1415,7 +1464,7 @@ public final class Yavi {
 	 * @since 0.18.0
 	 * @see #_zonedDateTime(String, Function)
 	 */
-	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime(String name) {
+	public static ZonedDateTimeValidator.Reversible _zonedDateTime(String name) {
 		return _zonedDateTime(name, Function.identity());
 	}
 
@@ -1432,7 +1481,7 @@ public final class Yavi {
 	 * @return a validator of the value
 	 * @since 0.18.0
 	 */
-	public static ZonedDateTimeValidator<ZonedDateTime> _zonedDateTime(String name,
+	public static ZonedDateTimeValidator.Reversible _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return ZonedDateTimeValidatorBuilder.of(name, constraints).build();
 	}

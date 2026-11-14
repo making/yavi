@@ -468,7 +468,17 @@ class YaviSchemaTest {
 				"s._string(\"x\")._rest().recover(Map.of()).fromMap((x, rest) -> x)", "s._rest().recover(Map.of())",
 				"s._embedded(s._string(\"x\").fromMap(x -> x)).optional()",
 				"DiscriminatedUnionValidator.<String>of(\"type\").when(\"a\", s._string(\"x\").fromMap(x -> x))"
-						+ ".validate(Map.of())");
+						+ ".validate(Map.of())",
+				// a schema that is written back takes what knows its reverse
+				"r._string(Yavi._string(\"x\").untrimmed().named(\"y\").preprocess(x -> x))"
+						+ "._integer(Yavi._integer(\"i\").map(String::valueOf, Integer::valueOf).optional())"
+						+ ".rejectingNull()._list(\"l\", Yavi._enum(TimeUnit.class).ignoringCase().liftSet())"
+						+ "._embedded(r._string(\"e\").fromMapReversible(e -> e, e -> e).nullable())"
+						+ "._rest(Yavi._long().describedAs(Yavi._long().description()))"
+						+ ".fromMapReversible((x, i, l, e, rest) -> x, x -> x, x -> Optional.empty(), "
+						+ "x -> java.util.List.of(), x -> null, x -> Map.of())",
+				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().recover(\"\")).required()"
+						+ ".rest(Yavi._integer()).build()");
 		final List<String> rejected = List.of(
 				// only the last one would decide what null produces
 				"s._string(\"x\").nullable().optional()", "s._string(\"x\").optional().nullable()",
@@ -524,17 +534,32 @@ class YaviSchemaTest {
 				// an enum or an object without its type cannot be read from a map
 				"s._enum(\"x\")", "s._object(\"x\")", "s.<String>_object(\"x\", c -> c.notNull())",
 				// a union without alternatives would reject every input
-				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())");
+				"DiscriminatedUnionValidator.<String>of(\"type\").validate(Map.of())",
+				// a property that does not know its reverse is not written back
+				"s._string(\"x\").fromMapReversible(x -> x, x -> x)",
+				"r._string(Yavi._string(\"x\").map(String::length))",
+				"r._string(Yavi._string(\"x\").andThen(Yavi._string()))",
+				"r._string((value, locale, context) -> Validated.successWith(value))",
+				"r._integer(Yavi._integer(\"x\").map(String::valueOf).nullable())",
+				"r._object(\"x\", s._string(\"y\").fromMap(y -> y))",
+				"r._list(\"x\", s._string(\"y\").fromMap(y -> y))",
+				"r._map(\"x\", ValueValidator.anyOf(Yavi._string(), Yavi._string()))",
+				"r._embedded(s._string(\"y\").fromMap(y -> y))", "r._rest(Yavi._string().map(String::length))",
+				"r._list(\"x\", ValueValidator.lazy(() -> Yavi._string()))",
+				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().map(String::length))",
+				"Yavi.<Object>reversibleDynamicSchema().rest(Yavi._string().map(String::length))",
+				"Yavi.<Object>dynamicSchema().property(\"x\", Yavi._string()).presence().buildReversible()");
 		final List<String> chains = new ArrayList<>(accepted);
 		chains.addAll(rejected);
 		final String source = """
 				import java.util.Map; import java.util.Optional; import java.util.concurrent.TimeUnit; \
+				import am.ik.yavi.builder.ReversibleYaviSchema; import am.ik.yavi.core.ValueValidator; \
 				import am.ik.yavi.builder.YaviSchema; import am.ik.yavi.core.ViolationMessage; \
 				import am.ik.yavi.core.InputReader; import am.ik.yavi.core.StringCoercion; \
 				import am.ik.yavi.core.Validated; import am.ik.yavi.input.DiscriminatedUnionValidator; \
 				import am.ik.yavi.input.ParameterTree; \
 				import am.ik.yavi.validator.Yavi; \
-				class Chains { void chains(YaviSchema s) { Object[] chains = {
+				class Chains { void chains(YaviSchema s, ReversibleYaviSchema r) { Object[] chains = {
 				%s
 				}; } }""".formatted(String.join(",\n", chains));
 		final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();

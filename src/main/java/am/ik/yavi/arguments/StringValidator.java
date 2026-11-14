@@ -192,4 +192,51 @@ public class StringValidator<T extends @Nullable Object> extends DefaultArgument
 		};
 	}
 
+	/**
+	 * A {@link StringValidator} whose value is the validated argument itself, which is
+	 * what the builder builds without a mapper. It knows its reverse by its type: the
+	 * argument that a value is read from is that value. {@link #named(String)} and
+	 * {@link #preprocess(Function)} keep the type; {@link #map(Function)} returns a
+	 * validator that does not know its reverse, unlike {@link #map(Function, Function)}.
+	 *
+	 * @since 0.18.0
+	 */
+	public static final class Reversible extends StringValidator<String>
+			implements ReversibleArguments1Validator<String, String> {
+
+		/**
+		 * Creates a validator that produces the validated value itself.
+		 * @param validator the validator applied to the wrapped argument
+		 */
+		public Reversible(Validator<Arguments1<String>> validator) {
+			this(validator, null, false);
+		}
+
+		private Reversible(Validator<Arguments1<String>> validator,
+				@Nullable Function<? super String, ? extends @Nullable String> transform, boolean untrimmed) {
+			super(validator, value -> value, transform, untrimmed);
+		}
+
+		@Override
+		public String reverse(String value) {
+			return value;
+		}
+
+		@Override
+		public Reversible preprocess(Function<? super String, ? extends @Nullable String> transform) {
+			return new Reversible(super.validator, composed(transform, super.transform), super.untrimmed);
+		}
+
+		@Override
+		public Reversible named(String name) {
+			return new Reversible(super.renamed(name), super.transform, super.untrimmed);
+		}
+
+		@Override
+		public ReversibleArguments1Validator<String, String> untrimmed() {
+			return new Reversible(super.validator, super.transform, true);
+		}
+
+	}
+
 }

@@ -7,7 +7,6 @@ package am.ik.yavi.arguments;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -15,7 +14,6 @@ import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.InputReader;
-import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.Validator;
@@ -55,9 +53,6 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 
 	/** The mapper applied to the validated arguments. */
 	protected final Function1<? super A1, ? extends X> mapper;
-
-	/** The mapper of a validator that produces the validated argument itself. */
-	private static final Function1<Object, Object> UNMAPPED = a1 -> a1;
 
 	private final Class<?> valueType;
 
@@ -222,36 +217,6 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	@Override
 	public ValueDescription description() {
 		return this.describe();
-	}
-
-	/**
-	 * Returns the mapper of a validator that produces the validated argument itself. A
-	 * validator created with it knows its reverse: the argument that a value is read from
-	 * is that value. This is the mapper of the validators that the builders of single
-	 * values build without a function.
-	 * @param <A1> the type of the argument
-	 * @return the mapper that returns its argument
-	 * @since 0.18.0
-	 * @see #reversible()
-	 */
-	@SuppressWarnings("unchecked")
-	public static <A1> Function1<A1, A1> unmapped() {
-		return (Function1<A1, A1>) (Function1<?, ?>) UNMAPPED;
-	}
-
-	/**
-	 * Returns this validator as one that goes back from its value to its argument, which
-	 * is the value itself, if the mapper is {@link #unmapped()}. A validator whose value
-	 * is mapped does not know its reverse; state it with
-	 * {@link ValueValidator#map(Function, Function)}.
-	 * @return this validator with its reverse, or an empty {@code Optional}
-	 * @since 0.18.0
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public Optional<ReversibleValueValidator<A1, X>> reversible() {
-		return this.mapper == UNMAPPED ? Optional.of(ReversibleValueValidator.of(this, value -> (A1) value))
-				: Optional.empty();
 	}
 
 	/**

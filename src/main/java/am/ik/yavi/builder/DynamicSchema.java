@@ -6,12 +6,9 @@ package am.ik.yavi.builder;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
@@ -66,6 +63,9 @@ import org.jspecify.annotations.Nullable;
  * it is a property of another schema ({@code _object("answers", answersValidator)}),
  * describes its properties, and reads request parameters and the tree model of a JSON
  * library.
+ *
+ * <p>
+ * A schema whose validator also writes the map back is a {@link ReversibleDynamicSchema}.
  *
  * @param <V> the type of the values of the produced map; nullable if a validator produces
  * {@code null}
@@ -159,20 +159,6 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 		return build(this.definitions);
 	}
 
-	/**
-	 * Creates the validator like {@link #build()} that also writes a map of validated
-	 * values back as the map that it is read from, as
-	 * {@link ObjectInputValidator.Reversible} states: a value object is written as the
-	 * value it wraps and a nested object as its map.
-	 * @return a validator that ignores the keys that no property is defined for, and that
-	 * also writes the produced map back
-	 * @throws IllegalStateException as {@link #build()} does, and if the validator of a
-	 * property does not {@linkplain ValueValidator#reversible() know its reverse}
-	 */
-	public ObjectInputValidator.Reversible.IgnoringUnknown<Map<String, V>> buildReversible() {
-		return buildReversible(this.definitions);
-	}
-
 	private List<ArgumentDefinition<?, ?>> with(String name, ArgumentDefinition<?, ?> definition) {
 		if (this.definitions.stream().anyMatch(defined -> name.equals(defined.name()))) {
 			throw new IllegalArgumentException("The property '" + name + "' is defined twice.");
@@ -198,44 +184,18 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 	private static <V extends @Nullable Object> ObjectInputValidator.IgnoringUnknown<Map<String, V>> build(
 			List<ArgumentDefinition<?, ?>> definitions) {
 		final List<ArgumentDefinition<?, ?>> defined = List.copyOf(definitions);
-		return ObjectInputValidator.of(parts(defined), values -> mapOf(defined, values));
-	}
-
-	private static <V extends @Nullable Object> ObjectInputValidator.Reversible.IgnoringUnknown<Map<String, V>> buildReversible(
-			List<ArgumentDefinition<?, ?>> definitions) {
-		final List<ArgumentDefinition<?, ?>> defined = List.copyOf(definitions);
-		final Set<@Nullable String> names = new HashSet<>();
-		defined.forEach(definition -> names.add(definition.name()));
-		final List<Function<Map<String, V>, @Nullable Object>> accessors = new ArrayList<>(defined.size());
-		for (ArgumentDefinition<?, ?> definition : defined) {
-			final String name = definition.name();
-			accessors.add(switch (definition.source()) {
-				case PRESENCE -> map -> map.containsKey(name) ? Presence.ofNullable(map.get(name)) : Presence.absent();
-				case REST -> map -> {
-					final Map<String, V> rest = new LinkedHashMap<>();
-					map.forEach((key, value) -> {
-						if (!names.contains(key)) {
-							rest.put(key, value);
-						}
-					});
-					return rest;
-				};
-				default -> map -> map.get(name);
-			});
-		}
-		return ObjectInputValidator.ofReversible(parts(defined), values -> mapOf(defined, values), accessors);
-	}
-
-	private static List<ObjectInputValidator.Part<?>> parts(List<ArgumentDefinition<?, ?>> defined) {
 		final List<ObjectInputValidator.Part<?>> parts = new ArrayList<>(defined.size());
 		for (int i = 0; i < defined.size(); i++) {
 			parts.add(defined.get(i).part(i + 1));
 		}
-		return parts;
+		return ObjectInputValidator.of(parts, values -> mapOf(defined, values));
 	}
 
+	/**
+	 * Returns the map of the validated values of the given definitions by their names.
+	 */
 	@SuppressWarnings("unchecked")
-	private static <V extends @Nullable Object> Map<String, V> mapOf(List<ArgumentDefinition<?, ?>> defined,
+	static <V extends @Nullable Object> Map<String, V> mapOf(List<ArgumentDefinition<?, ?>> defined,
 			List<@Nullable Object> values) {
 		final Map<String, V> map = new LinkedHashMap<>();
 		for (int i = 0; i < defined.size(); i++) {
@@ -424,18 +384,6 @@ public sealed class DynamicSchema<V extends @Nullable Object> permits DynamicSch
 		 */
 		public ObjectInputValidator<Map<String, V>> build() {
 			return DynamicSchema.build(this.definitions);
-		}
-
-		/**
-		 * Creates the validator like {@link #build()} that also writes a map of validated
-		 * values back as the map that it is read from, as
-		 * {@link DynamicSchema#buildReversible()} does.
-		 * @return a validator to which no property is unknown, and that also writes the
-		 * produced map back
-		 * @throws IllegalStateException as {@link DynamicSchema#buildReversible()} does
-		 */
-		public ObjectInputValidator.Reversible<Map<String, V>> buildReversible() {
-			return DynamicSchema.buildReversible(this.definitions);
 		}
 
 	}

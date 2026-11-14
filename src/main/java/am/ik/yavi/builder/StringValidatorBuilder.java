@@ -6,10 +6,8 @@ package am.ik.yavi.builder;
 
 import java.util.function.Function;
 
-import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
 
-import am.ik.yavi.arguments.DefaultArguments1Validator;
 import am.ik.yavi.arguments.Arguments1;
 import am.ik.yavi.arguments.StringValidator;
 import am.ik.yavi.constraint.CharSequenceConstraint;
@@ -107,22 +105,21 @@ public class StringValidatorBuilder implements ValueValidatorBuilder<String, Str
 	 */
 	@Override
 	public <T extends @Nullable Object> StringValidator<T> build(Function<? super String, ? extends T> mapper) {
-		return this.create(mapper::apply);
-	}
-
-	private <T extends @Nullable Object> StringValidator<T> create(Function1<? super String, ? extends T> mapper) {
 		final Validator<Arguments1<String>> validator = this.builder.apply(ValidatorBuilder.of()).build();
-		final StringValidator<T> built = new StringValidator<>(validator, mapper);
+		final StringValidator<T> built = new StringValidator<>(validator, mapper::apply);
 		return this.transform == null ? built : built.preprocess(this.transform);
 	}
 
 	/**
-	 * Builds a validator whose result type is the validated value.
+	 * Builds a validator whose result type is the validated value. The validator knows
+	 * its reverse by its type: the argument that a value is read from is that value.
 	 * @return a new validator
 	 */
 	@Override
-	public StringValidator<String> build() {
-		return this.create(DefaultArguments1Validator.unmapped());
+	public StringValidator.Reversible build() {
+		final StringValidator.Reversible built = new StringValidator.Reversible(
+				this.builder.apply(ValidatorBuilder.of()).build());
+		return this.transform == null ? built : built.preprocess(this.transform);
 	}
 
 }
