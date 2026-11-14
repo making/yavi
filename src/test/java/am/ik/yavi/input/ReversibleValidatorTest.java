@@ -173,6 +173,61 @@ class ReversibleValidatorTest {
 			.isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("The property 'id' is written twice.");
 
+		// a view writes some of the properties: those of the elements of a list by the
+		// path to them and those of an embedded validator by their names. What is not in
+		// the view has no entry, and the rest is written only by a view that excludes
+		final PropertyView<Employee> summary = employeeValidator.including("id", "first_name", "addresses.city",
+				"rates", "memo");
+		assertThat(summary.toMap(employee)).containsExactly(entry("id", 1), entry("first_name", "Taro"),
+				entry("addresses", List.of(mapOf("city", "Tokyo"), mapOf("city", "Osaka"))),
+				entry("rates", Map.of("jpy", new BigDecimal("1.5"))), entry("memo", "hello"));
+		assertThat(summary.toMap(empty)).containsExactly(entry("id", 2), entry("first_name", "Hanako"),
+				entry("addresses", List.of()), entry("rates", Map.of()));
+		final PropertyView<Employee> withoutContact = employeeValidator.excluding("email", "dept_code",
+				"addresses.street", "level");
+		assertThat(withoutContact.toMap(employee)).containsExactly(entry("id", 1), entry("first_name", "Taro"),
+				entry("last_name", "Yamada"), entry("dept_name", "Sales"), entry("nickname", "taro"),
+				entry("role", "ADMIN"), entry("joined", LocalDate.of(2024, 4, 1)), entry("tags", "java,yavi"),
+				entry("scores", List.of(1, 2)),
+				entry("addresses", List.of(mapOf("city", "Tokyo"), mapOf("city", "Osaka"))),
+				entry("rates", Map.of("jpy", new BigDecimal("1.5"))), entry("memo", "hello"), entry("active", true),
+				entry("extra", "x"));
+		// a view is made narrower, and keeps what it left out of a nested object
+		assertThat(withoutContact.including("id", "addresses").excluding("id").toMap(employee))
+			.containsExactly(entry("addresses", List.of(mapOf("city", "Tokyo"), mapOf("city", "Osaka"))));
+		// the accessor of a property that is not written is not called
+		final ObjectInputValidator.Reversible<UserName> firstNameOnly = Yavi.reversibleSchema()
+			._string("first_name")
+			._string("last_name")
+			.fromMapReversible(UserName::new, UserName::first, name -> {
+				throw new IllegalStateException("not loaded");
+			});
+		assertThat(firstNameOnly.excluding("last_name").toMap(employee.name()))
+			.containsExactly(entry("first_name", "Taro"));
+		// a name is checked when the view is built
+		assertThatThrownBy(() -> employeeValidator.excluding("emial")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith(
+					"The property 'emial' is not defined by the validator. The properties are [id, first_name, ");
+		assertThatThrownBy(() -> employeeValidator.including("id", "addresses.town"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'addresses.town' is not defined by the validator. "
+					+ "The properties of 'addresses' are [city, street].");
+		assertThatThrownBy(() -> employeeValidator.excluding("extra")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith("The property 'extra' is not defined by the validator.");
+		assertThatThrownBy(() -> employeeValidator.including("id.value")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'id' does not describe an object, so no property of it can be chosen. "
+					+ "Name it as a whole.");
+		assertThatThrownBy(() -> employeeValidator.including("id", "id")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'id' is given twice.");
+		assertThatThrownBy(() -> employeeValidator.excluding("addresses", "addresses.city"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'addresses' is given as a whole and with the paths to its properties [city].");
+		assertThatThrownBy(() -> withoutContact.excluding("addresses.street"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'addresses.street' is not written by the view that is made narrower.");
+		assertThatThrownBy(() -> summary.including("email")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'email' is not written by the view that is made narrower.");
+
 		// a validator that is derived without changing the value still goes back, which
 		// its type tells
 		assertThat(emailValidator.reverse(emailValidator.validated(" taro@example.com ")))
@@ -240,6 +295,17 @@ class ReversibleValidatorTest {
 				entry("radius", 1.0), entry("others", List.of(mapOf("side", 2.0, "type", "square"))));
 		assertThat(drawingValidator.validate(drawingValidator.toMap(drawing)))
 			.isEqualTo(Validated.successWith(drawing));
+		// a view of a union writes the properties that an alternative defines, and
+		// always the discriminator, also of a union that is nested
+		final PropertyView<Shape> radius = shapeValidator.including("radius");
+		assertThat(radius.toMap(new Circle(1.5))).containsExactly(entry("type", "circle"), entry("radius", 1.5));
+		assertThat(radius.toMap(new Square(2.0, "square"))).containsExactly(entry("type", "square"));
+		assertThatThrownBy(() -> shapeValidator.excluding("type")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The discriminator 'type' is always written: it is neither included nor excluded.");
+		assertThat(drawingValidator.including("title", "others.side").toMap(drawing))
+			.containsExactly(entry("title", "a"), entry("others", List.of(mapOf("side", 2.0, "type", "square"))));
+		assertThat(drawingValidator.excluding("radius", "others").toMap(drawing)).containsExactly(entry("title", "a"),
+				entry("type", "circle"));
 		// an alternative without its type gives a union that does not write
 		final DiscriminatedUnionValidator<Shape> reading = shapeValidator.when("other", circleValidator);
 		assertThat(reading).isNotInstanceOf(ReversibleValueValidator.class);
@@ -254,6 +320,9 @@ class ReversibleValidatorTest {
 		assertThat(treeValidator.toMap(tree))
 			.isEqualTo(mapOf("name", "root", "children", List.of(mapOf("name", "leaf", "children", List.of()))));
 		assertThat(treeValidator.validate(treeValidator.toMap(tree))).isEqualTo(Validated.successWith(tree));
+		// a path names the properties at its depth
+		assertThat(treeValidator.excluding("children.name").toMap(tree))
+			.isEqualTo(mapOf("name", "root", "children", List.of(mapOf("children", List.of()))));
 
 		// a schema whose properties are known at run time writes the map it produces
 		final ObjectInputValidator.Reversible<Map<String, Object>> dynamicValidator = Yavi
@@ -268,6 +337,8 @@ class ReversibleValidatorTest {
 		assertThat(dynamicValidator.toMap(values)).containsExactly(entry("email", "a@example.com"),
 				entry("shape", mapOf("type", "circle", "radius", 1.0)), entry("n", 1));
 		assertThat(dynamicValidator.validate(dynamicValidator.toMap(values))).isEqualTo(Validated.successWith(values));
+		assertThat(dynamicValidator.including("email", "shape.radius").toMap(values))
+			.containsExactly(entry("email", "a@example.com"), entry("shape", mapOf("type", "circle", "radius", 1.0)));
 	}
 
 	record Signup(String name, Integer age, Role role, Boolean agreed, LocalDate birthday, List<String> tags,
@@ -315,6 +386,12 @@ class ReversibleValidatorTest {
 			.containsEntry("agreed", "true")
 			.containsEntry("tags", "")
 			.containsEntry("others", List.of());
+		// a view feeds the tree as the whole map does: a field that is not written is
+		// shown without a value
+		assertThat(ParameterTree.ofValues(signupSchema.excluding("age", "address.street", "others").toMap(stored))
+			.toParameters(signupSchema.description())).containsExactly(entry("name", "Taro"), entry("age", ""),
+					entry("role", "ADMIN"), entry("birthday", "2000-01-02"), entry("tags", "a,b"),
+					entry("address.city", "Tokyo"), entry("address.street", ""));
 		assertThat(StringCoercion.textOf(new BigDecimal("1E+3"))).isEqualTo("1000");
 	}
 

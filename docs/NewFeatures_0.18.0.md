@@ -1058,6 +1058,77 @@ shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 **More properties than a schema supports.** `ObjectInputValidator.ofReversible` takes a
 list of `ObjectInputValidator.ReversiblePart`: a part with its reverse and its accessor.
 
+### Writing some of the properties
+
+`toMap` writes every property. A list shows a few of them, a response must not contain a
+secret, an `UPDATE` binds the columns that may change. `including` and `excluding` of the
+validator build a `PropertyView` that writes the chosen properties:
+
+```java
+ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
+        ._integer("id")
+        ._string("name")
+        ._string("password")
+        ._object("address", addressValidator) // city, street
+        .fromMapReversible(User::new, User::id, User::name, User::password, User::address);
+
+// built once, next to the validator
+static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+
+PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+
+userValidator.excluding("pasword");
+// IllegalArgumentException: The property 'pasword' is not defined by the validator.
+// The properties are [id, name, password, address].
+```
+
+* **The names are checked when the view is built**, against what the validator describes,
+  not when an object is written. A name that the validator does not define, that the view
+  does not write, or that is given twice is an `IllegalArgumentException`. A view that is
+  a constant next to its validator therefore fails when the class is loaded, on every
+  path and in every test that uses the validator. Removing a key from the map that
+  `toMap` returns (`map.remove("pasword")`) is checked by nobody.
+* **The view is chosen where the object is written.** The use case holds the view it
+  needs and calls its `toMap`; the schema does not know the views.
+* **A view only writes.** It is not a validator and not a `ReversibleValueValidator`: a
+  map without a required property is not read back, so the compiler rejects a view where
+  the round trip is needed, such as a property of `Yavi.reversibleSchema()`. What the
+  validator reads does not change.
+* A view is made narrower with its own `including` and `excluding`:
+  `userValidator.including("id", "address").excluding("address.street")`.
+
+A property is named as its violations are:
+
+| Property | Name |
+| --- | --- |
+| of the validator | `name` |
+| of a nested object (`_object`) | `address.city`; `address` stands for all of them |
+| of the elements of `_list` and the values of `_map` | `addresses.city`, without an index or a key |
+| of an `_embedded` validator | its own name, as it is in the same map |
+| of a union | a name that an alternative defines; an alternative without it is written without it |
+
+What is written:
+
+* A property that is not in the view has **no entry**; it is not written as `null`. A
+  view is for a statement with fewer parameters, not a way to bind `null`.
+* The accessor of a property of the validator that is not written is not called, so a
+  view can leave out what is expensive to get.
+* The rest (`_rest`), whose names are not known when the view is built, is written by
+  `excluding` and not by `including`.
+* The discriminator of a union is always written, by the view of a union and for a union
+  that is nested, and is neither included nor excluded. The discriminator of an
+  `_embedded` union is a property of the object that embeds it and is named as any other.
+* A path names the properties at its depth: `children.memo` of a validator that contains
+  itself is the `memo` of the children, not of their children.
+* `Yavi.reversibleDynamicSchema()` and `DiscriminatedUnionValidator.Reversible` build
+  views in the same way, and `ParameterTree.ofValues(view.toMap(x))` shows a stored
+  object in a form without its secret.
+
+To keep the names in one place, share a constant between the schema and the view
+(`._string(PASSWORD)` and `excluding(PASSWORD)`).
+
 ### Showing a stored object in a form
 
 `ParameterTree.ofValues` takes the map that a validator writes and holds its values as
@@ -1292,6 +1363,8 @@ String json = JsonSchema.toJson(description);
 * The constraints of a list or map are written as `minItems`, `uniqueItems` and so on,
   `rejectingUnknownProperties()` as `additionalProperties: false`, and a recursive
   structure as `$ref`.
+* The alternatives of a `DiscriminatedUnionValidator` are an `AnyOf` whose
+  `discriminator()` is the name of the property that selects one.
 * A lambda, a conditional constraint, `constraintOnTarget` and a bean `Validator` built
   with `ValidatorBuilder` are not described. `describedAs(...)` describes a lambda.
 
@@ -1330,6 +1403,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `ParameterTree#toMap`, `toParameters`, `parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
+| `PropertyView`, `including` and `excluding` of a reversible validator, `ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |

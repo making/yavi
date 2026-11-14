@@ -859,6 +859,56 @@ shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 
 **スキーマに収まらない数のプロパティ。** `ObjectInputValidator.ofReversible` は、`ObjectInputValidator.ReversiblePart` のリストを受け取ります。`ReversiblePart` は、パートに逆変換とアクセサを組にしたものです。
 
+### 一部のプロパティだけを書く
+
+`toMap` はすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、レスポンスに秘密の値を含めてはいけません。`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `including` と `excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
+
+```java
+ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
+        ._integer("id")
+        ._string("name")
+        ._string("password")
+        ._object("address", addressValidator) // city, street
+        .fromMapReversible(User::new, User::id, User::name, User::password, User::address);
+
+// バリデータの隣で一度だけ作る
+static final PropertyView<User> PUBLIC = userValidator.excluding("password");
+static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
+
+PUBLIC.toMap(user);  // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
+SUMMARY.toMap(user); // {id=1, name=Taro, address={city=Tokyo}}
+
+userValidator.excluding("pasword");
+// IllegalArgumentException: The property 'pasword' is not defined by the validator.
+// The properties are [id, name, password, address].
+```
+
+* **名前はビューを作るときに検査します。** 検査の基準はバリデータの記述（`description()`）で、オブジェクトを書くときには検査しません。バリデータが定義していない名前、ビューが書かない名前、重複した名前は `IllegalArgumentException` になります。ビューをバリデータの隣の定数にしておけば、名前の誤りはクラスのロード時に失敗するので、そのバリデータを使うすべての経路とテストで見つかります。`toMap` が返したマップからキーを削除する方法（`map.remove("pasword")`）では、誰も名前を検査しません。
+* **ビューはオブジェクトを書く場所で選びます。** ユースケースが必要なビューを持ち、その `toMap` を呼びます。スキーマはビューを知りません。
+* **ビューは書くだけです。** バリデータでも `ReversibleValueValidator` でもありません。必須のプロパティを欠いたマップは読み戻せないからです。`Yavi.reversibleSchema()` のプロパティのように往復が必要な箇所にビューを渡すと、コンパイルエラーになります。バリデータが読む内容は変わりません。
+* ビューは、ビュー自身の `including` と `excluding` でさらに絞り込めます。例: `userValidator.including("id", "address").excluding("address.street")`
+
+プロパティは、違反の名前と同じ形式で指定します。
+
+| プロパティ | 名前 |
+| --- | --- |
+| バリデータ自身のプロパティ | `name` |
+| ネストしたオブジェクト（`_object`）のプロパティ | `address.city`。`address` はそのすべてのプロパティを表す |
+| `_list` の要素と `_map` の値のプロパティ | `addresses.city`。インデックスやキーは書かない |
+| `_embedded` のバリデータのプロパティ | そのままの名前（同じマップに書かれるため） |
+| ユニオンのプロパティ | いずれかの選択肢が定義している名前。定義していない選択肢は、そのプロパティなしで書かれる |
+
+書かれる内容は次のとおりです。
+
+* ビューに含まれないプロパティは、**エントリ自体がありません**。`null` として書かれるわけではありません。ビューはパラメータの少ない SQL 文のためのもので、`null` をバインドする手段ではありません。
+* バリデータ自身のプロパティのうち、書かないもののアクセサは呼びません。取得にコストがかかる値をビューから外せます。
+* 残りのキー（`_rest`）は、ビューを作る時点では名前が分かりません。`excluding` のビューは書き、`including` のビューは書きません。
+* ユニオンの判別子は、ユニオンのビューでも、ネストしたユニオンでも常に書かれます。`including` にも `excluding` にも指定できません。`_embedded` のユニオンの判別子は、埋め込み先のオブジェクトのプロパティなので、ほかのプロパティと同じように指定します。
+* パスは、その深さのプロパティだけを指します。自分自身を含むバリデータの `children.memo` は子の `memo` で、孫の `memo` ではありません。
+* `Yavi.reversibleDynamicSchema()` と `DiscriminatedUnionValidator.Reversible` でも同じ方法でビューを作れます。`ParameterTree.ofValues(view.toMap(x))` とすれば、保存済みのオブジェクトを秘密の値なしでフォームに表示できます。
+
+名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._string(PASSWORD)` と `excluding(PASSWORD)`）。
+
 ### 保存済みのオブジェクトをフォームに表示する
 
 `ParameterTree.ofValues` は、バリデータが書いたマップを受け取り、その値をパラメータのテキストとして保持します。保存済みのオブジェクトの最初の表示と、送信後の再表示を同じコードで扱えます。
@@ -1065,6 +1115,7 @@ String json = JsonSchema.toJson(description);
 
 * プロパティは、存在しないキーを受け付ける場合を除いて `required` になります。
 * リストやマップの制約は `minItems` や `uniqueItems` などとして、`rejectingUnknownProperties()` は `additionalProperties: false` として、再帰的な構造は `$ref` として出力されます。
+* `DiscriminatedUnionValidator` の選択肢は `AnyOf` として記述され、その `discriminator()` は選択肢を決めるプロパティの名前を返します。
 * ラムダ、条件付きの制約、`constraintOnTarget`、`ValidatorBuilder` で作った Bean の `Validator` は記述に含まれません。ラムダには `describedAs(...)` で記述を与えられます。
 
 ## JSpecify による null 性
@@ -1098,6 +1149,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `ParameterTree#toMap`、`toParameters`、`parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
+| `PropertyView`、リバーシブルなバリデータの `including` と `excluding`、`ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |

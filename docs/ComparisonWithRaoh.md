@@ -966,5 +966,8 @@ itemValidator.toMap(item);     // encodes: {id=1, name=pen, note=null}
 * A property that cannot be written back does not compile: the schema takes a
   `ReversibleValueValidator` where `Yavi.schema()` takes a `ValueValidator`.
 * `ParameterTree.ofValues(validator.toMap(x))` holds the values as the text of a form.
+* Some of the properties are written by a view of the same schema,
+  `validator.excluding("note").toMap(item)`, where Raoh writes a second encoder. The names
+  are checked when the view is built.
 
 See [New features in 0.18.0](NewFeatures_0.18.0.md#writing-an-object-back-as-the-map-it-is-read-from).

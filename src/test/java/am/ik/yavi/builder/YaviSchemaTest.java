@@ -478,7 +478,10 @@ class YaviSchemaTest {
 						+ ".fromMapReversible((x, i, l, e, rest) -> x, x -> x, x -> Optional.empty(), "
 						+ "x -> java.util.List.of(), x -> null, x -> Map.of())",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().recover(\"\")).required()"
-						+ ".rest(Yavi._integer()).build()");
+						+ ".rest(Yavi._integer()).build()",
+				// a view of the properties that are written is made narrower
+				"r._string(\"x\")._string(\"y\").fromMapReversible((x, y) -> x, x -> x, x -> x).including(\"x\")"
+						+ ".excluding(\"x\").toMap(\"a\")");
 		final List<String> rejected = List.of(
 				// only the last one would decide what null produces
 				"s._string(\"x\").nullable().optional()", "s._string(\"x\").optional().nullable()",
@@ -548,7 +551,12 @@ class YaviSchemaTest {
 				"r._list(\"x\", ValueValidator.lazy(() -> Yavi._string()))",
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().map(String::length))",
 				"Yavi.<Object>reversibleDynamicSchema().rest(Yavi._string().map(String::length))",
-				"Yavi.<Object>dynamicSchema().property(\"x\", Yavi._string()).presence().buildReversible()");
+				"Yavi.<Object>dynamicSchema().property(\"x\", Yavi._string()).presence().buildReversible()",
+				// a view names a property, and only writes: it is not read and not nested
+				"r._string(\"x\").fromMapReversible(x -> x, x -> x).including()",
+				"r._string(\"x\").fromMapReversible(x -> x, x -> x).excluding()",
+				"r._string(\"x\").fromMapReversible(x -> x, x -> x).excluding(\"x\").validate(Map.of())",
+				"r._object(\"o\", r._string(\"x\").fromMapReversible(x -> x, x -> x).including(\"x\"))");
 		final List<String> chains = new ArrayList<>(accepted);
 		chains.addAll(rejected);
 		final String source = """

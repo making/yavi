@@ -21,3 +21,6 @@ defined by the round trip with `readingWith(reader)` of the same model.
 * Whether the gain over `mapper.valueToTree(validator.toMap(x))` justifies an interface
   that every tree model implements. If not, close this item as cancelled and say so in
   `docs/NewFeatures_0.18.0.md`.
+* A `PropertyView` (`including`, `excluding` of a reversible validator) writes a map too.
+  If an `OutputWriter` is added, give the view the same `writingWith(writer)`: the view
+  holds the selection, the writer the target.
