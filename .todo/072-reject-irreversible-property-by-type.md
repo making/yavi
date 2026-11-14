@@ -171,7 +171,7 @@ What is left is a second track of the generated builders.
   * `@SuppressWarnings("NullAway")` is used where a map holds `null` although its type
     is `Map<String, Object>` (`ObjectInputValidator.Reversible#toMap`).
 * `./mvnw -o test` runs 2,337 tests in about a minute; `-Dtest=ReversibleValidatorTest`
-  runs the tests of this feature, with Spring JDBC and H2 in the test scope.
+  runs the tests of this feature, with Spring JDBC and SQLite in the test scope.
   `./mvnw -o -q javadoc:javadoc` checks the links.
 * The owner wants few tests: extend `ReversibleValidatorTest` rather than add classes.
   The parameterized test `aPropertyThatDoesNotKnowItsReverseIsRejectedWhenTheValidatorIsBuilt`

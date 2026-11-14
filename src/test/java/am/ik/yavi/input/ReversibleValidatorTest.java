@@ -23,13 +23,13 @@ import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
 import am.ik.yavi.validator.Yavi;
-import org.h2.jdbcx.JdbcDataSource;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -363,11 +363,11 @@ class ReversibleValidatorTest {
 			._localTime("start_time")
 			._localDateTime("created_at")
 			._bigDecimal("price")
-			._boolean("open")
+			// a database without a boolean holds 0 or 1
+			._integer(Yavi._integer("open").map(open -> open == 1, open -> open ? 1 : 0))
 			.fromMapReversible(Event::new, Event::id, Event::owner, Event::note, Event::role, Event::day, Event::start,
 					Event::createdAt, Event::price, Event::open);
-		final JdbcDataSource dataSource = new JdbcDataSource();
-		dataSource.setURL("jdbc:h2:mem:reversible;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE");
+		final SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:sqlite::memory:", true);
 		final JdbcClient jdbcClient = JdbcClient.create(dataSource);
 		jdbcClient
 			.sql("CREATE TABLE event (id INT PRIMARY KEY, first_name VARCHAR(32) NOT NULL, last_name VARCHAR(32) NOT NULL, "
@@ -377,9 +377,9 @@ class ReversibleValidatorTest {
 		final List<Event> events = List.of(
 				new Event(1, new UserName("Taro", "Yamada"), Optional.of("memo"), Role.ADMIN,
 						LocalDate.of(2026, 11, 14), LocalTime.of(9, 30), LocalDateTime.of(2026, 11, 1, 12, 0, 5),
-						new BigDecimal("1200.50"), true),
+						new BigDecimal("1200.5"), true),
 				new Event(2, new UserName("Hanako", "Sato"), Optional.empty(), Role.USER, LocalDate.of(2026, 12, 1),
-						LocalTime.of(18, 0), LocalDateTime.of(2026, 11, 2, 8, 0), new BigDecimal("0.00"), false));
+						LocalTime.of(18, 0), LocalDateTime.of(2026, 11, 2, 8, 0), new BigDecimal("0"), false));
 		for (Event event : events) {
 			assertThat(jdbcClient
 				.sql("INSERT INTO event (id, first_name, last_name, note, role, event_day, start_time, created_at, price, open) "
@@ -387,6 +387,13 @@ class ReversibleValidatorTest {
 				.params(eventValidator.toMap(event))
 				.update()).isEqualTo(1);
 		}
+		// a driver that holds a date or a time as a type of java.sql
+		final Map<String, Object> row = eventValidator.toMap(events.get(0));
+		row.put("event_day", java.sql.Date.valueOf(events.get(0).day()));
+		row.put("start_time", java.sql.Time.valueOf(events.get(0).start()));
+		row.put("created_at", java.sql.Timestamp.valueOf(events.get(0).createdAt()));
+		assertThat(eventValidator.validate(row)).isEqualTo(Validated.successWith(events.get(0)));
+
 		// a nested object is bound under the names of its violations
 		record Venue(Integer id, Address address) {
 		}
