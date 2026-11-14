@@ -156,6 +156,39 @@ class YaviSchemaTest {
 		assertThat(violations)
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::message)
 			.containsExactly(tuple("roles", "user.adultAdmin", "\"roles\" must not contain \"admin\" for a minor"));
+		// the rules added one after another are all checked, by the lazy validator too
+		final ViolationMessage minor = ViolationMessage.of("user.minor", "\"{0}\" must be 18 or greater");
+		final Arguments7Validator<String, String, Integer, Map<String, String>, Map<String, String>, List<? extends String>, Map<String, ? extends Integer>, User> adult = validator
+			.constraintOnTarget(user -> user.age() >= 18, "age", minor);
+		assertThat(adult.validate("yavi@example.com", null, 17, address, null, List.of("admin"), Map.of()).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("roles", "user.adultAdmin"), tuple("age", "user.minor"));
+		assertThat(
+				adult.lazy().validate("yavi@example.com", null, 17, address, null, List.of("admin"), Map.of()).errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("roles", "user.adultAdmin"), tuple("age", "user.minor"));
+		assertThat(adult.validate("yavi@example.com", null, 17, address, null, List.of(), Map.of()).errors())
+			.extracting(ConstraintViolation::name)
+			.containsExactly("age");
+		// a rule after map is checked only when the rules before it hold
+		assertThat(validator.map(user -> user)
+			.constraintOnTarget(user -> user.age() >= 18, "age", minor)
+			.validate("yavi@example.com", null, 17, address, null, List.of("admin"), Map.of())
+			.errors()).extracting(ConstraintViolation::name).containsExactly("roles");
+		// the rules of a single value stay together under another name, with another
+		// description and input, and are located where they were added
+		final ValueValidator<Object, String> code = Yavi._string("code", c -> c.notBlank())
+			.constraintOnTarget(s -> s.length() > 3, "length", ViolationMessage.of("code.length", "too short"))
+			.named("id")
+			.describedAs(new ValueDescription.Unknown())
+			.preprocess(String::strip)
+			.untyped()
+			.constraintOnTarget(s -> s.startsWith("A"), "prefix", ViolationMessage.of("code.prefix", "no prefix"));
+		assertThat(code.validate(" b ").errors())
+			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("id.length", "code.length", "b"), tuple("prefix", "code.prefix", "b"));
+		assertThat(code.validate(" ").errors()).extracting(ConstraintViolation::name).containsExactly("id");
+		assertThat(code.validated(" Abcd ")).isEqualTo("Abcd");
 	}
 
 	@Test

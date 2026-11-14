@@ -19,6 +19,7 @@ import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.StringCoercion;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -97,7 +98,7 @@ public sealed class DiscriminatedUnionValidator<X>
 	 */
 	private final Map<String, ValueDescription.Reference> references;
 
-	private final List<TargetRule<X>> rules;
+	private final TargetConstraints<X> rules;
 
 	private final Reading<Object> reading;
 
@@ -139,7 +140,7 @@ public sealed class DiscriminatedUnionValidator<X>
 		 */
 		public DiscriminatedUnionValidator<X> when(String value,
 				ValueValidator<? super Map<String, Object>, ? extends X> validator) {
-			return new DiscriminatedUnionValidator<>(this.key, Map.of(value, validator), List.of());
+			return new DiscriminatedUnionValidator<>(this.key, Map.of(value, validator), TargetConstraints.empty());
 		}
 
 		/**
@@ -155,7 +156,7 @@ public sealed class DiscriminatedUnionValidator<X>
 		 */
 		public <Y extends X> Reversible<X> when(String value, Class<Y> type,
 				ReversibleValueValidator<Map<String, Object>, Y> validator) {
-			return new Reversible<>(this.key, Map.of(value, validator), List.of(),
+			return new Reversible<>(this.key, Map.of(value, validator), TargetConstraints.empty(),
 					List.of(new Alternative<>(value, type, validator)));
 		}
 
@@ -163,7 +164,7 @@ public sealed class DiscriminatedUnionValidator<X>
 
 	private DiscriminatedUnionValidator(String discriminator,
 			Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
-			List<TargetRule<X>> rules) {
+			TargetConstraints<X> rules) {
 		this.discriminator = discriminator;
 		this.rules = rules;
 		this.alternatives = alternatives;
@@ -242,7 +243,7 @@ public sealed class DiscriminatedUnionValidator<X>
 
 		private Reversible(String discriminator,
 				Map<String, ValueValidator<? super Map<String, Object>, ? extends X>> alternatives,
-				List<TargetRule<X>> rules, List<Alternative<? extends X>> written) {
+				TargetConstraints<X> rules, List<Alternative<? extends X>> written) {
 			super(discriminator, alternatives, rules);
 			this.written = written;
 			this.shown = this.all().withoutWithheld();
@@ -359,7 +360,7 @@ public sealed class DiscriminatedUnionValidator<X>
 		public Reversible<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 				ViolationMessage violationMessage) {
 			return new Reversible<>(this.discriminator(), this.alternatives(),
-					TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)), this.written);
+					this.rules().and(predicate, name, violationMessage), this.written);
 		}
 
 	}
@@ -372,7 +373,7 @@ public sealed class DiscriminatedUnionValidator<X>
 		return this.alternatives;
 	}
 
-	final List<TargetRule<X>> rules() {
+	final TargetConstraints<X> rules() {
 		return this.rules;
 	}
 
@@ -405,7 +406,7 @@ public sealed class DiscriminatedUnionValidator<X>
 	public DiscriminatedUnionValidator<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
 		return new DiscriminatedUnionValidator<>(this.discriminator, this.alternatives,
-				TargetRule.append(this.rules, new TargetRule<>(predicate, name, violationMessage)));
+				this.rules.and(predicate, name, violationMessage));
 	}
 
 	/**
@@ -612,8 +613,8 @@ public sealed class DiscriminatedUnionValidator<X>
 					.failureWith(ObjectInputValidator.violation(discriminator, ViolationMessage.Default.OBJECT_ONE_OF,
 							value, locale, List.copyOf(this.alternatives.keySet())));
 			}
-			return TargetRule.check(DiscriminatedUnionValidator.this.rules,
-					Validated.of(alternative.validate(input, locale, constraintContext)), locale);
+			return Validated.<X>of(alternative.validate(input, locale, constraintContext))
+				.flatMap(x -> DiscriminatedUnionValidator.this.rules.check(x, locale));
 		}
 
 		@Override

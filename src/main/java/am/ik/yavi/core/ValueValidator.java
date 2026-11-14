@@ -918,37 +918,38 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * The predicate is evaluated only when this validator succeeds. If it returns
 	 * {@code false}, a violation with the given name and message is reported; its last
 	 * message argument is the produced value.
+	 *
+	 * <p>
+	 * Rules added one after another are all checked on the produced value, and every
+	 * violated rule is reported, like the violations of the properties:
+	 *
+	 * <pre>{@code
+	 * Yavi.schema()
+	 *     ._string("currentPassword", c -> c.notBlank())
+	 *     ._string("newPassword", c -> c.greaterThanOrEqual(8))
+	 *     ._string("confirmPassword", c -> c.notBlank())
+	 *     .fromMap(PasswordForm::new)
+	 *     .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
+	 *             ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
+	 *     .constraintOnTarget(form -> !form.current().equals(form.newPassword()), "newPassword",
+	 *             ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
+	 * }</pre>
+	 *
+	 * A predicate therefore must not rely on the rules before it. A rule that is checked
+	 * only when other rules hold is added after {@link #map(Function)} or
+	 * {@link #andThen(ValueValidator)}, which are applied to a value that satisfies the
+	 * rules before them, for example after {@code map(Function.identity())}.
 	 * @param predicate the rule that the produced value must satisfy
 	 * @param name the name of the reported violation
 	 * @param violationMessage the message key and the default message format of the
 	 * reported violation
 	 * @return a value validator with the additional rule
 	 * @since 0.18.0
+	 * @see TargetConstraints
 	 */
 	default ValueValidator<T, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-		return onTarget(this, predicate, violationMessage, violation -> violation.prefixed(name));
-	}
-
-	/**
-	 * Returns a validator that additionally checks the value produced by the given
-	 * validator with the given predicate and locates the violation of the predicate with
-	 * the given function. Under another name of the validated value, the violation is a
-	 * violation of a property of that value.
-	 */
-	private static <T, X extends @Nullable Object> ValueValidator<T, X> onTarget(ValueValidator<T, X> validator,
-			Predicate<? super X> predicate, ViolationMessage violationMessage,
-			Function<ConstraintViolation, ConstraintViolation> located) {
-		return described(
-				(t, locale, constraintContext) -> validator.validate(t, locale, constraintContext)
-					.flatMap(x -> predicate.test(x) ? Validated.successWith(x)
-							: Validated
-								.failureWith(located.apply(ConstraintViolation.of(violationMessage, x, locale)))),
-				validator::description,
-				reader -> onTarget(validator.readingWith(reader), predicate, violationMessage, located),
-				transform -> onTarget(validator.preprocess(transform), predicate, violationMessage, located),
-				name -> onTarget(validator.named(name), predicate, violationMessage,
-						violation -> located.apply(violation).prefixed(name)));
+		return TargetConstraints.<X>empty().and(predicate, name, violationMessage).constrain(this);
 	}
 
 	/**

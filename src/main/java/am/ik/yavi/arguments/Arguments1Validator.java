@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validatable;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
@@ -284,6 +285,12 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	 * The predicate is evaluated only when this validator succeeds. If it returns
 	 * {@code false}, a violation with the given name and message is reported; its last
 	 * message argument is the produced value.
+	 *
+	 * <p>
+	 * Rules added one after another are all checked on the produced value, and every
+	 * violated rule is reported, as {@link ValueValidator#constraintOnTarget} states. A
+	 * rule that is checked only when other rules hold is added after {@link #map} or
+	 * {@link #andThen(ValueValidator)}.
 	 * @param predicate the rule that the produced value must satisfy
 	 * @param name the name of the reported violation
 	 * @param violationMessage the message key and the default message format of the
@@ -294,38 +301,8 @@ public interface Arguments1Validator<A1, X extends @Nullable Object> extends Val
 	@Override
 	default Arguments1Validator<A1, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-		return new Arguments1Validator<A1, X>() {
-			@Override
-			public Validated<X> validate(@Nullable A1 a1, Locale locale, ConstraintContext constraintContext) {
-				return Arguments1Validator.this.validate(a1, locale, constraintContext)
-					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale));
-			}
-
-			@Override
-			public Arguments1Validator<A1, Supplier<X>> lazy() {
-				return Arguments1Validator.this.lazy()
-					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
-						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
-						.map(x -> () -> x));
-			}
-
-			@Override
-			public ValueDescription description() {
-				return Arguments1Validator.this.description();
-			}
-
-			@Override
-			public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
-				return Arguments1Validator.this.readingWith(reader)
-					.constraintOnTarget(predicate, name, violationMessage);
-			}
-
-			@Override
-			public Arguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
-				return Arguments1Validator.this.preprocess(transform)
-					.constraintOnTarget(predicate, name, violationMessage);
-			}
-		};
+		return ArgumentsValidators.constrained(this,
+				TargetConstraints.<X>empty().and(predicate, name, violationMessage));
 	}
 
 	/**

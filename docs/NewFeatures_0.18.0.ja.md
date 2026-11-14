@@ -167,7 +167,25 @@ Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<? e
 * `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。
 * `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
 * `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
-* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。
+* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。続けて追加したルールはすべて検査され、プロパティの違反と同じように、違反したルールがすべて報告されます。`map` や `andThen` のあとに追加したルールは、それより前のルールを満たす場合にだけ検査されます。
+
+```java
+ObjectInputValidator<PasswordForm> passwordFormValidator = Yavi.schema()
+        ._string("currentPassword", c -> c.notBlank())
+        ._string("newPassword", c -> c.greaterThanOrEqual(8))
+        ._string("confirmPassword", c -> c.notBlank())
+        .fromMap(PasswordForm::new)
+        .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
+                ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
+        .constraintOnTarget(form -> !form.current().equals(form.newPassword()), "newPassword",
+                ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
+
+passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassword", "newSecret1",
+        "confirmPassword", "different"));
+// Invalid: confirmPassword (password.mismatch), newPassword (password.same)
+```
+
+* `constraintOnTarget` をオーバーライドして自身の型を返す独自の `ValueValidator` は、ルールを `TargetConstraints` に保持します。`and` でルールを追加し、`check` で値が違反したルールをすべて報告します。
 * `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
 
 ## パース済みの JSON オブジェクトなどのマップを検証する
@@ -1304,6 +1322,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | 書き戻すスキーマの `splitBy(pattern, delimiter)`、`withheld()` や `splitBy` の前の `label` と `typeMessage` | [#583](https://github.com/making/yavi/pull/583) |
 | コレクションの `unique(key)`、`ResourceBundleMessageFormatter`、違反の `toString()` | [#584](https://github.com/making/yavi/pull/584) |
 | `failureWith(message, args...)`、`localizedWith(locale)`、`flatFromMap`・`flatApply`・`andThen` の違反のロケール | [#585](https://github.com/making/yavi/pull/585) |
+| `constraintOnTarget` の違反したルールをすべて報告、`TargetConstraints` | [#586](https://github.com/making/yavi/pull/586) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |

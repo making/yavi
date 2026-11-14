@@ -22,6 +22,7 @@ import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ReversibleValueValidator;
 import am.ik.yavi.core.StringCoercion;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -177,7 +178,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 
 	private final boolean rejectUnknownProperties;
 
-	private final List<TargetRule<X>> rules;
+	private final TargetConstraints<X> rules;
 
 	private final ValueDescription description;
 
@@ -393,7 +394,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	public static <X extends @Nullable Object> IgnoringUnknown<X> of(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
 		return new IgnoringUnknown<>(List.copyOf(parts), values -> Validated.successWith(mapper.apply(values)),
-				List.of());
+				TargetConstraints.empty());
 	}
 
 	/**
@@ -417,7 +418,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 */
 	public static <X extends @Nullable Object> IgnoringUnknown<X> flatOf(List<? extends Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
-		return new IgnoringUnknown<>(List.copyOf(parts), mapper, List.of());
+		return new IgnoringUnknown<>(List.copyOf(parts), mapper, TargetConstraints.empty());
 	}
 
 	/**
@@ -465,7 +466,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	public static <X> Reversible.IgnoringUnknown<X> ofReversible(List<? extends ReversiblePart<? super X, ?>> parts,
 			Function<? super List<@Nullable Object>, ? extends X> mapper) {
 		return new Reversible.IgnoringUnknown<>(List.copyOf(parts),
-				values -> Validated.successWith(mapper.apply(values)), List.of());
+				values -> Validated.successWith(mapper.apply(values)), TargetConstraints.empty());
 	}
 
 	/**
@@ -482,12 +483,12 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 */
 	public static <X> Reversible.IgnoringUnknown<X> flatOfReversible(List<? extends ReversiblePart<? super X, ?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper) {
-		return new Reversible.IgnoringUnknown<>(List.copyOf(parts), mapper, List.of());
+		return new Reversible.IgnoringUnknown<>(List.copyOf(parts), mapper, TargetConstraints.empty());
 	}
 
 	private ObjectInputValidator(List<Part<?>> parts,
 			Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-			boolean rejectUnknownProperties, List<TargetRule<X>> rules) {
+			boolean rejectUnknownProperties, TargetConstraints<X> rules) {
 		// the described object: the properties of every way to read it, which are several
 		// if an embedded validator has alternatives
 		List<List<ValueDescription.Property>> alternatives = List.of(List.of());
@@ -655,7 +656,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 
 		private IgnoringUnknown(List<Part<?>> parts,
 				Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-				List<TargetRule<X>> rules) {
+				TargetConstraints<X> rules) {
 			super(parts, mapper, false, rules);
 		}
 
@@ -685,8 +686,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		@Override
 		public IgnoringUnknown<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 				ViolationMessage violationMessage) {
-			return new IgnoringUnknown<>(super.parts, super.mapper,
-					TargetRule.append(super.rules, new TargetRule<>(predicate, name, violationMessage)));
+			return new IgnoringUnknown<>(super.parts, super.mapper, super.rules.and(predicate, name, violationMessage));
 		}
 
 	}
@@ -771,7 +771,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 
 		private Reversible(List<ReversiblePart<? super X, ?>> written,
 				Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-				boolean rejectUnknownProperties, List<TargetRule<X>> rules) {
+				boolean rejectUnknownProperties, TargetConstraints<X> rules) {
 			super(written.stream().<Part<?>>map(ReversiblePart::part).toList(), mapper, rejectUnknownProperties, rules);
 			this.written = written;
 			this.shown = PropertyView.of(this::write, this.description()).withoutWithheld();
@@ -945,7 +945,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		public Reversible<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 				ViolationMessage violationMessage) {
 			return new Reversible<>(this.written, this.mapper(), this.rejectsUnknownProperties(),
-					TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)));
+					this.rules().and(predicate, name, violationMessage));
 		}
 
 		/**
@@ -963,7 +963,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 
 			private IgnoringUnknown(List<ReversiblePart<? super X, ?>> written,
 					Function<? super List<@Nullable Object>, ? extends Validated<? extends X>> mapper,
-					List<TargetRule<X>> rules) {
+					TargetConstraints<X> rules) {
 				super(written, mapper, false, rules);
 			}
 
@@ -996,7 +996,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 			public IgnoringUnknown<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 					ViolationMessage violationMessage) {
 				return new IgnoringUnknown<>(this.written(), this.mapper(),
-						TargetRule.append(this.rules(), new TargetRule<>(predicate, name, violationMessage)));
+						this.rules().and(predicate, name, violationMessage));
 			}
 
 		}
@@ -1011,7 +1011,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		return this.mapper;
 	}
 
-	final List<TargetRule<X>> rules() {
+	final TargetConstraints<X> rules() {
 		return this.rules;
 	}
 
@@ -1042,7 +1042,7 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	public ObjectInputValidator<X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
 		return new ObjectInputValidator<>(this.parts, this.mapper, this.rejectUnknownProperties,
-				TargetRule.append(this.rules, new TargetRule<>(predicate, name, violationMessage)));
+				this.rules.and(predicate, name, violationMessage));
 	}
 
 	/**
@@ -1250,10 +1250,10 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 					}
 				}
 			}
-			return violations.isEmpty() ? TargetRule.check(ObjectInputValidator.this.rules,
-					Validated.<X>of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
-						.localizedWith(locale),
-					locale)
+			return violations.isEmpty()
+					? Validated.<X>of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+						.localizedWith(locale)
+						.flatMap(x -> ObjectInputValidator.this.rules.check(x, locale))
 					: Validated.failureWith(violations);
 		}
 

@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintGroup;
 import am.ik.yavi.core.ConstraintViolationsException;
+import am.ik.yavi.core.TargetConstraints;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -172,6 +173,12 @@ public interface Arguments3Validator<A1, A2, A3, X extends @Nullable Object> {
 	 * The predicate is evaluated only when this validator succeeds. If it returns
 	 * {@code false}, a violation with the given name and message is reported; its last
 	 * message argument is the produced value.
+	 *
+	 * <p>
+	 * Rules added one after another are all checked on the produced value, and every
+	 * violated rule is reported, as {@link ValueValidator#constraintOnTarget} states. A
+	 * rule that is checked only when other rules hold is added after {@link #map} or
+	 * {@link #andThen(ValueValidator)}.
 	 * @param predicate the rule that the produced value must satisfy
 	 * @param name the name of the reported violation
 	 * @param violationMessage the message key and the default message format of the
@@ -181,14 +188,8 @@ public interface Arguments3Validator<A1, A2, A3, X extends @Nullable Object> {
 	 */
 	default Arguments3Validator<A1, A2, A3, X> constraintOnTarget(Predicate<? super X> predicate, String name,
 			ViolationMessage violationMessage) {
-		return ArgumentsValidators.derived(
-				(a1, a2, a3, locale, constraintContext) -> this.validate(a1, a2, a3, locale, constraintContext)
-					.flatMap(x -> ArgumentsValidators.constrained(x, predicate, name, violationMessage, locale)),
-				() -> this.lazy()
-					.andThen((xSupplier, locale, constraintContext) -> ArgumentsValidators
-						.constrained(Objects.requireNonNull(xSupplier).get(), predicate, name, violationMessage, locale)
-						.map(x -> () -> x)),
-				this::description);
+		return ArgumentsValidators.constrained(this,
+				TargetConstraints.<X>empty().and(predicate, name, violationMessage));
 	}
 
 	/**

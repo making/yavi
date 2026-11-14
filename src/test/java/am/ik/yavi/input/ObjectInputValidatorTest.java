@@ -360,6 +360,14 @@ class ObjectInputValidatorTest {
 					input("email", "a@example.com", "age", 1, "role", "ADMIN", "address",
 							map("street", "1-2-3", "city", "Tokyo"), "tags", List.of(), "scores", map()))
 			.errors()).extracting(ConstraintViolation::messageKey).containsExactly("user.adminTags");
+		// every violated rule on the created object is reported
+		assertThat(model.validate(
+				userValidator.constraintOnTarget(user -> user.age() >= 18, "age",
+						ViolationMessage.of("user.adult", "\"{0}\" must be 18 or greater")),
+				input("email", "a@example.com", "age", 1, "role", "ADMIN", "address",
+						map("street", "1-2-3", "city", "Tokyo"), "tags", List.of(), "scores", map()))
+			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
+			.containsExactly(tuple("tags", "user.adminTags"), tuple("age", "user.adult"));
 		assertThat(model.validate(userValidator, null).errors()).extracting(ConstraintViolation::messageKey)
 			.containsExactly("object.notNull");
 		// any input is taken once untyped
@@ -483,10 +491,12 @@ class ObjectInputValidatorTest {
 		assertThat(shapeValidator
 			.constraintOnTarget(shape -> shape instanceof Circle, "type",
 					ViolationMessage.of("shape.round", "\"{0}\" must be round"))
+			// and is checked together with the rules before it
+			.constraintOnTarget(shape -> false, "", ViolationMessage.of("shape.none", "no shape is accepted"))
 			.readingParameters()
 			.validate(Map.of("type", "square", "side", "3"))
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
-			.containsExactly(tuple("type", "shape.round"));
+			.containsExactly(tuple("type", "shape.round"), tuple("", "shape.none"));
 		final ValueValidator<Map<String, ?>, Address> address = addressValidator.readingParameters();
 		assertThat(address.validate(Map.of("street", "1-2-3", "city", "")).errors())
 			.extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
