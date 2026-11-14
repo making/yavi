@@ -815,7 +815,7 @@ is called only when all properties are valid.
 record DateRange(LocalDate start, LocalDate end) {
     static Validated<DateRange> parse(LocalDate start, LocalDate end) {
         if (!start.isBefore(end)) {
-            return Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start, Locale.getDefault());
+            return Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
         }
         return Validated.successWith(new DateRange(start, end));
     }
@@ -838,8 +838,16 @@ Yavi.schema()._object("period", dateRangeValidator).fromMap()
 ```
 
 The violation is reported on the object itself, and under `period` where the validator
-is nested. `failureWith` takes the message, the violated value and a locale, which the
-function of `flatFromMap` is not given.
+is nested. `failureWith(message, args...)` is `Result.fail(code, message)`: the factory
+method names neither a violated value nor a locale, which it is not given. The validator
+reports the violation with the locale of the validation, like the violations of the
+properties.
+
+```java
+dateRangeValidator.validate(Map.of("start", "2025-12-31", "end", "2025-01-01"), Locale.JAPANESE)
+        .errors().get(0).locale()
+// ==> ja
+```
 
 A rule that is a predicate on the created object needs no factory method:
 `constraintOnTarget` takes the predicate, the name that locates the violation (the empty
@@ -1330,7 +1338,7 @@ var moneyValidator = Yavi.schema()
             };
             if (amount.scale() > maxScale) {
                 return Validated.failureWith(ViolationMessage.of("money.scale", "{1} does not allow more than {2} decimal places", "currency", "maxScale"),
-                        amount, Locale.getDefault(), currency, maxScale);
+                        currency, maxScale);
             }
             return Validated.successWith(new Money(amount, currency));
         });

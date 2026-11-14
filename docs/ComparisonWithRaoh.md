@@ -45,7 +45,7 @@ import am.ik.yavi.validator.Yavi;
 | `decoder.pipe(next)` | `validator.andThen(next)` |
 | `decoder.flatMap(f)` | `validator.andThen(next)`, or `constraintOnTarget` for a predicate |
 | `combine(field(...), ...).flatMap(f)` | `Yavi.schema()._xxx(...).flatFromMap(f)` (`flatApply(f)` for arguments) |
-| `Result.fail(code, message)` | `Validated.failureWith(ViolationMessage.of(key, format), value, locale)` |
+| `Result.fail(code, message)` | `Validated.failureWith(ViolationMessage.of(key, format))`; in a validator, which is given the value and the locale, `Validated.failureWith(ViolationMessage.of(key, format), value, locale)` |
 | `result.map(f)` / `result.flatMap(f)` | `validated.map(f)` / `validated.flatMap(f)` |
 
 In Raoh the kind of input is chosen first, with the static import (`MapDecoders.*` or
@@ -629,8 +629,7 @@ record DateRange(LocalDate start, LocalDate end) {
 
     static Validated<DateRange> parse(LocalDate start, LocalDate end) {
         return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
-                : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"), start,
-                        Locale.getDefault());
+                : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
     }
 }
 
@@ -640,10 +639,13 @@ ObjectInputValidator<DateRange> dateRangeValidator = Yavi.schema()
         .flatFromMap(DateRange::parse);
 ```
 
-`Validated.failureWith(message, value, locale, args...)` creates a violation with the empty
-name; `ConstraintViolation.of(message, value, locale).prefixed("end")` locates it on a
-property. A step on a single value, or one that needs the locale of the validation, is a
-validator given to `andThen`, as `parseJson` above.
+`Validated.failureWith(message, args...)` creates a violation with the empty name;
+`ConstraintViolation.of(message).prefixed("end")` locates it on a property. The function
+is given neither the violated value nor the locale of the validation, so the violation
+names neither: the validator reports it with the locale it is called with
+(`validate(input, locale)`), like the violations of the properties. A step on a single
+value is a validator given to `andThen`, as `parseJson` above, which passes on the value
+and the locale that it is given.
 
 ## Defaults and recovery
 

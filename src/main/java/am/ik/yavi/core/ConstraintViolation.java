@@ -371,7 +371,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			newArgs[0] = label;
 		}
 		return this.copy(label, newArgs, this.messageKey, this.defaultMessageFormat, this.paramNames, this.localizable,
-				this.messageFormatter);
+				this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -395,7 +395,7 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	public ConstraintViolation withMessage(ViolationMessage message) {
 		return this.copy(this.label, this.args, message.messageKey(), message.defaultMessageFormat(),
 				message.paramNames().isEmpty() ? this.paramNames : message.paramNames(), message.localizable(),
-				this.messageFormatter);
+				this.messageFormatter, this.locale);
 	}
 
 	/**
@@ -410,7 +410,27 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 */
 	public ConstraintViolation formattedWith(MessageFormatter messageFormatter) {
 		return this.copy(this.label, this.args, this.messageKey, this.defaultMessageFormat, this.paramNames,
-				this.localizable, messageFormatter);
+				this.localizable, messageFormatter, this.locale);
+	}
+
+	/**
+	 * Returns this violation with the given locale instead of the one it was created
+	 * with, so that {@link #message()} and {@link #detail()} are formatted for it. The
+	 * violations of the alternatives of a {@link NoAlternativeMatched} are given the
+	 * locale too.
+	 *
+	 * <p>
+	 * A validator does this to the violations of a function that is not given the locale
+	 * of the validation, as {@link Validated#localizedWith(Locale)} states.
+	 * @param locale the locale of the returned violation
+	 * @return a violation with the locale, which is this violation if it has the locale
+	 * already
+	 * @since 0.18.0
+	 * @see ConstraintViolations#localizedWith(Locale)
+	 */
+	public ConstraintViolation localizedWith(Locale locale) {
+		return locale.equals(this.locale) ? this : this.copy(this.label, this.args, this.messageKey,
+				this.defaultMessageFormat, this.paramNames, this.localizable, this.messageFormatter, locale);
 	}
 
 	/**
@@ -418,9 +438,9 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 	 * given properties.
 	 */
 	ConstraintViolation copy(@Nullable String label, Object[] args, String messageKey, String defaultMessageFormat,
-			List<String> paramNames, boolean localizable, MessageFormatter messageFormatter) {
+			List<String> paramNames, boolean localizable, MessageFormatter messageFormatter, Locale locale) {
 		return new ConstraintViolation(this.name, this.path, label, this.separator, messageKey, defaultMessageFormat,
-				paramNames, localizable, args, messageFormatter, this.locale);
+				paramNames, localizable, args, messageFormatter, locale);
 	}
 
 	/**
@@ -607,15 +627,15 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 				List<ConstraintViolations> alternatives, ConstraintViolation source,
 				MessageFormatter messageFormatter) {
 			this(name, path, source.label, args, source.messageKey, source.defaultMessageFormat, source.paramNames,
-					source.localizable, messageFormatter, alternatives, source);
+					source.localizable, messageFormatter, source.locale, alternatives, source);
 		}
 
 		private NoAlternativeMatched(String name, List<PathSegment> path, @Nullable String label, Object[] args,
 				String messageKey, String defaultMessageFormat, List<String> paramNames, boolean localizable,
-				MessageFormatter messageFormatter, List<ConstraintViolations> alternatives,
+				MessageFormatter messageFormatter, Locale locale, List<ConstraintViolations> alternatives,
 				ConstraintViolation source) {
 			super(name, path, label, source.separator, messageKey, defaultMessageFormat, paramNames, localizable, args,
-					messageFormatter, source.locale);
+					messageFormatter, locale);
 			this.alternatives = alternatives;
 		}
 
@@ -666,18 +686,26 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 			return (NoAlternativeMatched) super.formattedWith(messageFormatter);
 		}
 
+		// an alternative may have another locale than this violation, so the locale is
+		// given to the alternatives even if this violation has it already
+		@Override
+		public NoAlternativeMatched localizedWith(Locale locale) {
+			return this.copy(super.label, this.args(), this.messageKey(), this.defaultMessageFormat(), super.paramNames,
+					this.localizable(), super.messageFormatter, locale);
+		}
+
 		@Override
 		NoAlternativeMatched copy(@Nullable String label, Object[] args, String messageKey, String defaultMessageFormat,
-				List<String> paramNames, boolean localizable, MessageFormatter messageFormatter) {
-			final List<ConstraintViolations> alternatives = messageFormatter == super.messageFormatter
-					? this.alternatives
-					: this.alternatives.stream()
-						.map(violations -> unmodifiable(violations.stream()
-							.map(violation -> violation.formattedWith(messageFormatter))
-							.toList()))
-						.toList();
+				List<String> paramNames, boolean localizable, MessageFormatter messageFormatter, Locale locale) {
+			final boolean formatted = messageFormatter != super.messageFormatter;
+			final List<ConstraintViolations> alternatives = this.alternatives.stream()
+				.map(violations -> unmodifiable(violations.stream()
+					.map(violation -> (formatted ? violation.formattedWith(messageFormatter) : violation)
+						.localizedWith(locale))
+					.toList()))
+				.toList();
 			return new NoAlternativeMatched(this.name(), this.path(), label, args, messageKey, defaultMessageFormat,
-					paramNames, localizable, messageFormatter, alternatives, this);
+					paramNames, localizable, messageFormatter, locale, alternatives, this);
 		}
 
 		@Override
@@ -746,6 +774,28 @@ public sealed class ConstraintViolation permits ConstraintViolation.NoAlternativ
 		return new ConstraintViolation("", null, null, DEFAULT_SEPARATOR, message.messageKey(),
 				message.defaultMessageFormat(), message.paramNames(), message.localizable(), completeArgs,
 				SimpleMessageFormatter.getInstance(), locale);
+	}
+
+	/**
+	 * Creates a constraint violation of the given message that names neither a violated
+	 * value nor a locale. This is the violation of a function that is not a validator,
+	 * such as a factory method that checks a rule of the domain, and so is given neither.
+	 *
+	 * <p>
+	 * The violation is like the one of
+	 * {@link #of(ViolationMessage, Object, Locale, Object...)} with {@code null} as the
+	 * violated value and {@link Locale#getDefault()} as the locale. A validator that
+	 * receives it from a function gives it the locale of the validation, as
+	 * {@link Validated#localizedWith(Locale)} states.
+	 * @param message the message key and the default message format
+	 * @param args the message arguments from <code>{1}</code> on, each possibly
+	 * {@code null}
+	 * @return a new constraint violation with an empty name
+	 * @since 0.18.0
+	 * @see Validated#failureWith(ViolationMessage, Object...)
+	 */
+	public static ConstraintViolation of(ViolationMessage message, @Nullable Object... args) {
+		return of(message, null, Locale.getDefault(), args);
 	}
 
 	/**

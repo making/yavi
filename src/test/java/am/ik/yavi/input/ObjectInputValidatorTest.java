@@ -373,9 +373,8 @@ class ObjectInputValidatorTest {
 	record DateRange(LocalDate start, LocalDate end) {
 
 		static Validated<DateRange> parse(LocalDate start, LocalDate end) {
-			return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
-					: Validated.failureWith(ViolationMessage.of("dateRange.invalid", "\"{0}\" must start before {1}"),
-							start, Locale.ENGLISH, end);
+			return start.isBefore(end) ? Validated.successWith(new DateRange(start, end)) : Validated
+				.failureWith(ViolationMessage.of("dateRange.invalid", "\"{0}\" must start before {1}"), end);
 		}
 
 	}
@@ -399,8 +398,7 @@ class ObjectInputValidatorTest {
 			.errors();
 		assertThat(violations).extracting(ConstraintViolation::name, ConstraintViolation::messageKey,
 				ConstraintViolation::message, ConstraintViolation::violatedValue)
-			.containsExactly(tuple("period", "dateRange.invalid", "\"period\" must start before 2026-01-31",
-					LocalDate.of(2026, 2, 1)));
+			.containsExactly(tuple("period", "dateRange.invalid", "\"period\" must start before 2026-01-31", null));
 		assertThat(violations.get(0).path()).containsExactly(new PathSegment.Property("period"));
 		// the function is not applied to invalid arguments
 		assertThat(model.validate(validator, input("period", map("start", "2026-02-01", "zone", "UTC"))).errors())
@@ -409,6 +407,14 @@ class ObjectInputValidatorTest {
 		if (model != Model.MAP) {
 			return;
 		}
+		// the function is not given the locale of the validation, which its violation is
+		// reported with like the others
+		final Locale locale = Locale.getDefault().equals(Locale.JAPANESE) ? Locale.FRENCH : Locale.JAPANESE;
+		final MessageFormatter localeOf = (messageKey, defaultMessageFormat, args, l) -> messageKey + " in " + l;
+		final Map<String, Object> reversed = input("start", "2026-02-01", "end", "2026-01-31");
+		assertThat(validator.formattingWith(localeOf).validate(input("period", reversed), locale).errors())
+			.extracting(ConstraintViolation::message)
+			.containsExactly("dateRange.invalid in " + locale);
 		// the same function over arguments, and the arguments themselves as a record
 		assertThat(Yavi.schema()
 			._localDate("start", c -> c.notNull())
@@ -417,6 +423,20 @@ class ObjectInputValidatorTest {
 			.validate(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 31))
 			.errors()).extracting(ConstraintViolation::name, ConstraintViolation::messageKey)
 			.containsExactly(tuple("", "dateRange.invalid"));
+		// and so is the violation of a validator that does not pass its locale on
+		final ValueValidator<Map<String, Object>, DateRange> chained = Yavi.schema()
+			._localDate("start", c -> c.notNull())
+			._localDate("end", c -> c.notNull())
+			.fromMap(DateRange::new)
+			.andThen((range, l, context) -> DateRange.parse(Objects.requireNonNull(range).start(), range.end()));
+		assertThat(chained.validate(reversed, locale).errors()).extracting(ConstraintViolation::locale)
+			.containsExactly(locale);
+		assertThat(Yavi.schema()
+			._localDate("start")
+			._localDate("end")
+			.flatApply(DateRange::parse)
+			.validate(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 31), locale)
+			.errors()).extracting(ConstraintViolation::locale).containsExactly(locale);
 		assertThat(Yavi.schema()._string("name", c -> c.notBlank()).flatApply(name -> Validated.successWith(name.length())).validate("abc").value())
 			.isEqualTo(3);
 		final String described = switch (Yavi.schema()

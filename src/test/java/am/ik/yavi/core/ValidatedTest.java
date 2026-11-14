@@ -132,6 +132,20 @@ class ValidatedTest {
 		assertThat(violation.locale()).isEqualTo(Locale.ENGLISH);
 		assertThat(port.prefixed("port").errors().get(0).message()).isEqualTo("\"port\" must be in 1-999 but was 0");
 		assertThat(ConstraintViolation.of(outOfRange, null, Locale.ENGLISH, 1, 999).violatedValue()).isNull();
+		// a function that is not a validator names neither a violated value nor a locale
+		final Validated<Integer> unlocalized = Validated.failureWith(outOfRange, 1, 999);
+		assertThat(unlocalized.errors().get(0))
+			.extracting(ConstraintViolation::name, ConstraintViolation::violatedValue, ConstraintViolation::locale,
+					ConstraintViolation::message)
+			.containsExactly("", null, Locale.getDefault(), "The value must be in 1-999 but was null");
+		// the locale is given by whoever knows it; a result that has it is kept
+		final Locale other = Locale.getDefault().equals(Locale.JAPANESE) ? Locale.FRENCH : Locale.JAPANESE;
+		assertThat(unlocalized.localizedWith(other).errors()).extracting(ConstraintViolation::locale)
+			.containsExactly(other);
+		assertThat(unlocalized.localizedWith(Locale.getDefault())).isSameAs(unlocalized);
+		assertThat(port.localizedWith(Locale.ENGLISH)).isSameAs(port);
+		final Validated<Integer> valid = Validated.successWith(80);
+		assertThat(valid.localizedWith(other)).isSameAs(valid);
 	}
 
 	@Test

@@ -625,7 +625,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	/**
 	 * Returns a validator that applies this validator and, if it succeeds, passes the
 	 * produced value to the given validator. Violations of this validator are returned
-	 * without invoking the next validator.
+	 * without invoking the next validator. The violations of the given validator are
+	 * reported with the locale of the validation, also if it does not pass the locale on
+	 * (see {@link Validated#localizedWith(Locale)}).
 	 * @param validator the validator to apply to the validated value
 	 * @param <X2> the type produced by the next validator
 	 * @return a chained value validator
@@ -635,7 +637,7 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return described(
 				(t, locale, constraintContext) -> ValueValidator.this.validate(t, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+					.flatMap(v -> validator.validate(v, locale, constraintContext).localizedWith(locale)),
 				this::description, reader -> this.readingWith(reader).andThen(validator),
 				transform -> this.preprocess(transform).andThen(validator),
 				name -> this.named(name).andThen(validator.named(name)));

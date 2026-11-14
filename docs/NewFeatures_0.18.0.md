@@ -1528,6 +1528,42 @@ return Validated.failureWith(ConstraintViolation.builder()
 return Validated.failureWith(ViolationMessage.of("json.invalid", "\"{0}\" cannot be parsed as JSON"), value, locale);
 ```
 
+A function that is not a validator, such as a factory method of the domain that
+`flatFromMap` or `flatApply` takes, is given neither the violated value nor the locale of
+the validation. It fails without them, and the validator reports the violation with the
+locale it is called with:
+
+```java
+record DateRange(LocalDate start, LocalDate end) {
+
+    static Validated<DateRange> of(LocalDate start, LocalDate end) {
+        return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
+                // before: Validated.failureWith(message, start, Locale.getDefault())
+                : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
+    }
+}
+
+ObjectInputValidator<DateRange> validator = Yavi.schema()
+    ._localDate("start")
+    ._localDate("end")
+    .flatFromMap(DateRange::of);
+
+validator.validate(input, Locale.JAPANESE).errors().get(0).locale(); // ja
+```
+
+`Validated.failureWith(message, args...)` and `ConstraintViolation.of(message, args...)`
+create a violation of `Locale.getDefault()` without a violated value. `flatFromMap`,
+`flatApply` and `andThen` give the violations of their function or validator the locale of
+the validation, whichever locale they were created with, so a function that returns the
+result of `validator.validate(value)` is covered too. `localizedWith(locale)` of
+`Validated`, `ConstraintViolations` and `ConstraintViolation` does the same anywhere else,
+as `formattedWith(messageFormatter)` does for the formatter:
+
+```java
+ValueValidator<String, DateRange> dateRange = (s, locale, context) -> DateRange.parse(s).localizedWith(locale);
+violations.localizedWith(Locale.JAPANESE).messagesByName();
+```
+
 ## Describing a validator and generating a JSON Schema
 
 A validator describes the input it expects. `description()` returns a read-only tree
@@ -1603,6 +1639,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | `splitBy(pattern, delimiter)` of a reversible schema, `label` and `typeMessage` before `withheld()` and `splitBy` | [#583](https://github.com/making/yavi/pull/583) |
 | `unique(key)` of a collection, `ResourceBundleMessageFormatter`, `toString()` of a violation | [#584](https://github.com/making/yavi/pull/584) |
+| `failureWith(message, args...)`, `localizedWith(locale)`, the locale of the violations of `flatFromMap`, `flatApply` and `andThen` | [#585](https://github.com/making/yavi/pull/585) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
 | `trimming()` of a `String`, `untrimmed()`, a name without constraints (`Yavi._enum(name, type)`), `Yavi._list(elementValidator)`, an empty string for every format | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`, `_rest` | [#545](https://github.com/making/yavi/pull/545) |

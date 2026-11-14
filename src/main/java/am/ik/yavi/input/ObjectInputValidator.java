@@ -404,7 +404,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 * <p>
 	 * The function is applied only when all parts are valid. A violation it reports is
 	 * located relative to the map: one with an empty name is reported on the map itself
-	 * and takes the name of the property the validator is applied to.
+	 * and takes the name of the property the validator is applied to. The function is not
+	 * given the locale of the validation, so its violations are reported with that
+	 * locale, whichever locale they were created with.
 	 * @param parts the parts in the order of the values
 	 * @param mapper function that creates the result from the validated values, in the
 	 * order of the parts, or reports violations
@@ -1249,7 +1251,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 				}
 			}
 			return violations.isEmpty() ? TargetRule.check(ObjectInputValidator.this.rules,
-					Validated.of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values))), locale)
+					Validated.<X>of(ObjectInputValidator.this.mapper.apply(Collections.unmodifiableList(values)))
+						.localizedWith(locale),
+					locale)
 					: Validated.failureWith(violations);
 		}
 

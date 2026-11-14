@@ -1212,6 +1212,33 @@ return Validated.failureWith(ConstraintViolation.builder()
 return Validated.failureWith(ViolationMessage.of("json.invalid", "\"{0}\" cannot be parsed as JSON"), value, locale);
 ```
 
+ドメインのファクトリメソッドのように、バリデータではない関数（`flatFromMap` や `flatApply` に渡す関数）には、違反した値も検証のロケールも渡されません。そのような関数はどちらも指定せずに失敗を返せます。違反は、バリデータが呼び出されたときのロケールで報告されます。
+
+```java
+record DateRange(LocalDate start, LocalDate end) {
+
+    static Validated<DateRange> of(LocalDate start, LocalDate end) {
+        return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
+                // before: Validated.failureWith(message, start, Locale.getDefault())
+                : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
+    }
+}
+
+ObjectInputValidator<DateRange> validator = Yavi.schema()
+    ._localDate("start")
+    ._localDate("end")
+    .flatFromMap(DateRange::of);
+
+validator.validate(input, Locale.JAPANESE).errors().get(0).locale(); // ja
+```
+
+`Validated.failureWith(message, args...)` と `ConstraintViolation.of(message, args...)` は、違反した値を持たない `Locale.getDefault()` の違反を作ります。`flatFromMap`、`flatApply`、`andThen` は、渡された関数やバリデータの違反を、作られたときのロケールにかかわらず検証のロケールに付け替えます。そのため、関数が `validator.validate(value)` の結果をそのまま返す場合も同じロケールになります。それ以外の場所では、`Validated`、`ConstraintViolations`、`ConstraintViolation` の `localizedWith(locale)` で同じことができます。フォーマッタに対する `formattedWith(messageFormatter)` と対になるメソッドです。
+
+```java
+ValueValidator<String, DateRange> dateRange = (s, locale, context) -> DateRange.parse(s).localizedWith(locale);
+violations.localizedWith(Locale.JAPANESE).messagesByName();
+```
+
 ## バリデータの記述と JSON Schema の生成
 
 バリデータは、自分が期待する入力を記述できます。`description()` は、オブジェクト、リスト、マップ、選択肢、制約付きの値からなる読み取り専用のツリー（`ValueDescription`）を返し、ツールはこのツリーをたどれます。`JsonSchema` はそのようなツールの 1 つで、JSON ライブラリを必要としません。
@@ -1276,6 +1303,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | 書き戻すスキーマの `splitBy(pattern, delimiter)`、`withheld()` や `splitBy` の前の `label` と `typeMessage` | [#583](https://github.com/making/yavi/pull/583) |
 | コレクションの `unique(key)`、`ResourceBundleMessageFormatter`、違反の `toString()` | [#584](https://github.com/making/yavi/pull/584) |
+| `failureWith(message, args...)`、`localizedWith(locale)`、`flatFromMap`・`flatApply`・`andThen` の違反のロケール | [#585](https://github.com/making/yavi/pull/585) |
 | lift したバリデータ、`_list`、`_map` はサブタイプのコンテナを受け取る | [#576](https://github.com/making/yavi/pull/576) |
 | `String` の `trimming()`、`untrimmed()`、制約のない名前付きバリデータ（`Yavi._enum(name, type)`）、`Yavi._list(elementValidator)`、すべての形式の制約での空文字列 | [#573](https://github.com/making/yavi/pull/573) |
 | `_embedded`、`_rest` | [#545](https://github.com/making/yavi/pull/545) |

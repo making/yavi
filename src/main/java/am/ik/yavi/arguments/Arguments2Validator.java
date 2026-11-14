@@ -139,7 +139,8 @@ public interface Arguments2Validator<A1, A2, X extends @Nullable Object> {
 	 *
 	 * <p>
 	 * If this validator fails, the given validator is not invoked and its violations are
-	 * not collected.
+	 * not collected. The violations of the given validator are reported with the locale
+	 * of the validation, also if it does not pass the locale on.
 	 * @param validator the validator applied to the validated value
 	 * @param <X2> the type of the value produced by the given validator
 	 * @return a chained validator
@@ -149,7 +150,7 @@ public interface Arguments2Validator<A1, A2, X extends @Nullable Object> {
 			ValueValidator<? super @NonNull X, ? extends X2> validator) {
 		return ArgumentsValidators.derived(
 				(a1, a2, locale, constraintContext) -> this.validate(a1, a2, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+					.flatMap(v -> validator.validate(v, locale, constraintContext).localizedWith(locale)),
 				() -> this.lazy()
 					.andThen((xSupplier, locale, constraintContext) -> validator
 						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
