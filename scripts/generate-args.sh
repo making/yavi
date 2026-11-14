@@ -2538,6 +2538,45 @@ EOD
 fi
 }
 
+# The terminals of a builder whose only argument is the rest: the map of the validated
+# values is the result.
+single_complete_terminals() {
+cat <<EOD
+
+		/**
+		 * Builds a {@link ObjectInputValidator} that reads every key of the map as the
+		 * rest and returns the map of the validated values as the result, as
+		 * {@link ${class}#fromMap()} does for one argument.
+		 *
+		 * <pre>{@code
+		 * ObjectInputValidator<Map<String, Integer>> scores = Yavi.schema()._rest(Yavi._integer()).fromMap();
+		 * }</pre>
+		 * @return a new object input validator of the map of the validated values
+		 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+		 */
+		public ObjectInputValidator<R1> fromMap() {
+			return this.builder.fromMap();
+		}
+EOD
+if [ "${track}" == "reversible" ];then
+cat <<EOD
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} that reads every key of the
+		 * map as the rest and returns the map of the validated values as the result,
+		 * which is also what is written back, as {@link ${class}#fromMapReversible()}
+		 * does for one argument.
+		 * @return a new object input validator of the map of the validated values that
+		 * also writes it back
+		 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+		 */
+		public ObjectInputValidator.Reversible<R1> fromMapReversible() {
+			return this.builder.fromMapReversible();
+		}
+EOD
+fi
+}
+
 reversible_complete_terminals() {
 cat <<EOD
 
@@ -4900,6 +4939,7 @@ $(modifier_withheld NullAccepting)
 			return this.builder.from(reader, f);
 		}
 $(if [ "${track}" == "reversible" ];then reversible_complete_terminals;fi)
+$(if [ "${i}" == "1" ];then single_complete_terminals;fi)
 
 	}
 

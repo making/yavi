@@ -3180,6 +3180,35 @@ public sealed class ReversibleArguments1ValidatorBuilder<A1, R1 extends @Nullabl
 			return this.builder.flatFromMapReversible(f, accessor1);
 		}
 
+		/**
+		 * Builds a {@link ObjectInputValidator} that reads every key of the map as the
+		 * rest and returns the map of the validated values as the result, as
+		 * {@link ReversibleArguments1ValidatorBuilder#fromMap()} does for one argument.
+		 *
+		 * <pre>{@code
+		 * ObjectInputValidator<Map<String, Integer>> scores = Yavi.schema()._rest(Yavi._integer()).fromMap();
+		 * }</pre>
+		 * @return a new object input validator of the map of the validated values
+		 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+		 */
+		public ObjectInputValidator<R1> fromMap() {
+			return this.builder.fromMap();
+		}
+
+		/**
+		 * Builds a {@link ObjectInputValidator.Reversible} that reads every key of the
+		 * map as the rest and returns the map of the validated values as the result,
+		 * which is also what is written back, as
+		 * {@link ReversibleArguments1ValidatorBuilder#fromMapReversible()} does for one
+		 * argument.
+		 * @return a new object input validator of the map of the validated values that
+		 * also writes it back
+		 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+		 */
+		public ObjectInputValidator.Reversible<R1> fromMapReversible() {
+			return this.builder.fromMapReversible();
+		}
+
 	}
 
 	/**

@@ -960,7 +960,9 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 * A schema of one property has `fromMap()` and `fromMapReversible()` without arguments:
   the validated value is the result, as with `get()`. One property is defined once in
   this way, with its constraints and modifiers, and embedded in several schemas
-  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`).
+  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`). A schema whose
+  only property is the rest has them too: `Yavi.schema()._rest(Yavi._integer()).fromMap()`
+  is a validator of a `Map<String, Integer>`.
 * `toMap(x)` is defined by the round trip: `validator.validate(validator.toMap(x))` is
   `Valid(x)` for every `x` that the validator creates. A property that is defined with
   `withheld()` is not written by `toMap`; `reverse(x)` writes it and keeps the round trip
@@ -1478,7 +1480,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`, `including` and `excluding` of a reversible validator, `ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
-| `withheld()` of a property, `ValueDescription.Property#withheld`, `fromMap()` and `fromMapReversible()` of one property | [#581](https://github.com/making/yavi/pull/581) |
+| `withheld()` of a property, `ValueDescription.Property#withheld`, `fromMap()` and `fromMapReversible()` of one property | [#581](https://github.com/making/yavi/pull/581), [#582](https://github.com/making/yavi/pull/582) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
