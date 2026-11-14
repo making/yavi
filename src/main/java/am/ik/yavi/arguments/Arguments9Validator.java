@@ -165,7 +165,8 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X exten
 	 *
 	 * <p>
 	 * If this validator fails, the given validator is not invoked and its violations are
-	 * not collected.
+	 * not collected. The violations of the given validator are reported with the locale
+	 * of the validation, also if it does not pass the locale on.
 	 * @param validator the validator applied to the validated value
 	 * @param <X2> the type of the value produced by the given validator
 	 * @return a chained validator
@@ -176,7 +177,7 @@ public interface Arguments9Validator<A1, A2, A3, A4, A5, A6, A7, A8, A9, X exten
 		return ArgumentsValidators.derived(
 				(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext) -> this
 					.validate(a1, a2, a3, a4, a5, a6, a7, a8, a9, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+					.flatMap(v -> validator.validate(v, locale, constraintContext).localizedWith(locale)),
 				() -> this.lazy()
 					.andThen((xSupplier, locale, constraintContext) -> validator
 						.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)

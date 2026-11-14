@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.function.Function;
@@ -404,6 +405,29 @@ public class ConstraintViolations implements List<ConstraintViolation> {
 			formatted.add(violation.formattedWith(messageFormatter));
 		}
 		return new ConstraintViolations(formatted);
+	}
+
+	/**
+	 * Returns these violations with the given locale instead of the one they were created
+	 * with, so that {@link ConstraintViolation#message()} and {@link #details()} are
+	 * formatted for it: <pre>{@code
+	 * violations.localizedWith(Locale.JAPANESE).messagesByName();
+	 * }</pre>
+	 * @param locale the locale of the returned violations
+	 * @return violations with the locale, which are these violations if all of them have
+	 * the locale already
+	 * @since 0.18.0
+	 * @see ConstraintViolation#localizedWith(Locale)
+	 */
+	public ConstraintViolations localizedWith(Locale locale) {
+		final List<ConstraintViolation> localized = new ArrayList<>(this.delegate.size());
+		boolean changed = false;
+		for (ConstraintViolation violation : this.delegate) {
+			final ConstraintViolation l = violation.localizedWith(locale);
+			changed |= l != violation;
+			localized.add(l);
+		}
+		return changed ? new ConstraintViolations(localized) : this;
 	}
 
 	private Map<String, List<String>> messagesBy(Function<ConstraintViolation, String> key) {

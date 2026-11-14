@@ -858,7 +858,8 @@ fi)
 	 *
 	 * <p>
 	 * If this validator fails, the given validator is not invoked and its violations are
-	 * not collected.
+	 * not collected. The violations of the given validator are reported with the
+	 * locale of the validation, also if it does not pass the locale on.
 	 *
 	 * @param validator the validator applied to the validated value
 	 * @param <X2> the type of the value produced by the given validator
@@ -872,7 +873,7 @@ cat <<EOD
 			@Override
 			public Validated<X2> validate($(echo $(for j in `seq 1 ${i}`;do echo -n "@Nullable A${j} a${j}, ";done) | sed 's/,$//'), Locale locale, ConstraintContext constraintContext) {
 				return ${class}.this.validate(${as}, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext));
+					.flatMap(v -> validator.validate(v, locale, constraintContext).localizedWith(locale));
 			}
 
 			@Override
@@ -892,7 +893,7 @@ EOD
 else
 cat <<EOD
 		return ArgumentsValidators.derived((${as}, locale, constraintContext) -> this.validate(${as}, locale, constraintContext)
-					.flatMap(v -> validator.validate(v, locale, constraintContext)),
+					.flatMap(v -> validator.validate(v, locale, constraintContext).localizedWith(locale)),
 				() -> this.lazy().andThen((xSupplier, locale, constraintContext) -> validator
 					.validate(Objects.requireNonNull(xSupplier).get(), locale, constraintContext)
 					.map(x2 -> () -> x2)),
@@ -4541,8 +4542,10 @@ cat <<EOD
 	 * <p>
 	 * The function is applied only when all arguments are valid. A violation it
 	 * reports is located relative to the arguments: one with an empty name, as
-	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object...)}
 	 * creates, is reported on the arguments as a whole.
+	 * The function is not given the locale of the validation, so its violations
+	 * are reported with that locale, whichever locale they were created with.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values or reports
 	 * violations
@@ -4581,8 +4584,10 @@ cat <<EOD
 	 * <p>
 	 * The function is applied only when the argument is valid. A violation it reports
 	 * is located relative to the argument: one with an empty name, as
-	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object...)}
 	 * creates, is reported on the argument itself.
+	 * The function is not given the locale of the validation, so its violations
+	 * are reported with that locale, whichever locale they were created with.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated value or reports
 	 * violations
@@ -4653,10 +4658,12 @@ cat <<EOD
 	 * <p>
 	 * The function is applied only when all arguments are valid. A violation it
 	 * reports is located relative to the map: one with an empty name, as
-	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object...)}
 	 * creates, is reported on the map itself and takes the name of the property the
 	 * validator is applied to. Read another tree model with
 	 * {@code flatFromMap(f).readingWith(reader)}.
+	 * The function is not given the locale of the validation, so its violations
+	 * are reported with that locale, whichever locale they were created with.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values or reports
 	 * violations

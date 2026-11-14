@@ -16,6 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class ConstraintViolationsTest {
 
@@ -100,6 +101,13 @@ public class ConstraintViolationsTest {
 		assertThat(formatted.details().get(1)).isInstanceOfSatisfying(ViolationDetail.NoAlternativeMatched.class,
 				detail -> assertThat(detail.alternatives().get(0)).extracting(ViolationDetail::message)
 					.containsExactly("charSequence.notBlank of email"));
+		// and so does a locale, also if only an alternative has another one
+		ConstraintViolations localized = formatted.localizedWith(Locale.ENGLISH);
+		assertThat(localized.get(0)).isSameAs(formatted.get(0));
+		assertThat(localized.get(1).message()).isEqualTo("object.anyOf of ");
+		assertThat(((ConstraintViolation.NoAlternativeMatched) localized.get(1)).alternatives().get(0))
+			.extracting(ConstraintViolation::locale, ConstraintViolation::message)
+			.containsExactly(tuple(Locale.ENGLISH, "charSequence.notBlank of email"));
 	}
 
 	@Test

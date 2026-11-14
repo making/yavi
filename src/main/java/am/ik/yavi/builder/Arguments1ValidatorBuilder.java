@@ -1706,8 +1706,10 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	 * <p>
 	 * The function is applied only when the argument is valid. A violation it reports is
 	 * located relative to the argument: one with an empty name, as
-	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
-	 * creates, is reported on the argument itself.
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object...)} creates,
+	 * is reported on the argument itself. The function is not given the locale of the
+	 * validation, so its violations are reported with that locale, whichever locale they
+	 * were created with.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated value or reports
 	 * violations
@@ -1774,10 +1776,12 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 	 * <p>
 	 * The function is applied only when all arguments are valid. A violation it reports
 	 * is located relative to the map: one with an empty name, as
-	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object, java.util.Locale, Object...)}
-	 * creates, is reported on the map itself and takes the name of the property the
-	 * validator is applied to. Read another tree model with
-	 * {@code flatFromMap(f).readingWith(reader)}.
+	 * {@link Validated#failureWith(am.ik.yavi.core.ViolationMessage, Object...)} creates,
+	 * is reported on the map itself and takes the name of the property the validator is
+	 * applied to. Read another tree model with
+	 * {@code flatFromMap(f).readingWith(reader)}. The function is not given the locale of
+	 * the validation, so its violations are reported with that locale, whichever locale
+	 * they were created with.
 	 * @param <X> type of the result
 	 * @param f function that creates the result from the validated values or reports
 	 * violations

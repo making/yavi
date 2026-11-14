@@ -202,6 +202,39 @@ public sealed interface Validated<T extends @Nullable Object> extends Validation
 	}
 
 	/**
+	 * Returns a failed validation result that holds a single violation of the given
+	 * message, created with {@link ConstraintViolation#of(ViolationMessage, Object...)}.
+	 * This is the way to fail in a function that is not a validator and so is given
+	 * neither the violated value nor the locale of the validation, such as a factory
+	 * method that checks a rule of the domain: <pre>{@code
+	 * record DateRange(LocalDate start, LocalDate end) {
+	 *     static Validated<DateRange> of(LocalDate start, LocalDate end) {
+	 *         return start.isBefore(end) ? Validated.successWith(new DateRange(start, end))
+	 *                 : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
+	 *     }
+	 * }
+	 * }</pre>
+	 *
+	 * <p>
+	 * The violation has an empty name and no violated value. Its message is formatted for
+	 * {@link Locale#getDefault()} until a validator receives the result: the function of
+	 * {@code flatFromMap} and {@code flatApply} and the validator given to
+	 * {@code andThen} report it with the locale of the validation, as
+	 * {@link #localizedWith(Locale)} does. A validator that is called on its own passes
+	 * the locale it is given with
+	 * {@link #failureWith(ViolationMessage, Object, Locale, Object...)}.
+	 * @param message the message key and the default message format
+	 * @param args the message arguments from <code>{1}</code> on, each possibly
+	 * {@code null}
+	 * @param <T> value type in the case of success
+	 * @return a failed validation result
+	 * @since 0.18.0
+	 */
+	static <T extends @Nullable Object> Validated<T> failureWith(ViolationMessage message, @Nullable Object... args) {
+		return failureWith(ConstraintViolation.of(message, args));
+	}
+
+	/**
 	 * Returns the validated value.
 	 * @return the value produced by the successful validation; {@code null} if the
 	 * validation succeeded with {@code null}
@@ -318,6 +351,33 @@ public sealed interface Validated<T extends @Nullable Object> extends Validation
 	 */
 	default Validated<T> prefixed(int index) {
 		return Validated.of(this.mapError(violation -> violation.prefixed(index)));
+	}
+
+	/**
+	 * Returns a validation result in which every constraint violation has the given
+	 * locale, so that its message is formatted for it. A successful result, and a failed
+	 * one whose violations have the locale already, is returned as it is.
+	 *
+	 * <p>
+	 * A validator does this to a result that it does not create itself, so that the
+	 * violations of one validation have one locale: the result of the function of
+	 * {@code flatFromMap} and {@code flatApply}, which is not given the locale, and the
+	 * result of the validator given to {@code andThen}. A hand-written validator does the
+	 * same to the result of a function it calls: <pre>{@code
+	 * ValueValidator<String, DateRange> dateRange = (s, locale, context) -> DateRange.parse(s).localizedWith(locale);
+	 * }</pre>
+	 * @param locale the locale of the violations
+	 * @return a validation result whose violations have the locale
+	 * @since 0.18.0
+	 * @see ConstraintViolation#localizedWith(Locale)
+	 */
+	default Validated<T> localizedWith(Locale locale) {
+		if (isValid()) {
+			return this;
+		}
+		final ConstraintViolations errors = errors();
+		final ConstraintViolations localized = errors.localizedWith(locale);
+		return localized == errors ? this : new Invalid<>(localized);
 	}
 
 	/**
