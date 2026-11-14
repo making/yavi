@@ -1295,6 +1295,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `label`, `required(message)`, `typeMessage`, `formattingWith`, `labeled`, `formattedWith` | [#571](https://github.com/making/yavi/pull/571) |
 | A text written in code is not looked up, `ViolationMessage#withText`, `localizable()`, `Constraint#predicates(List)` | [#575](https://github.com/making/yavi/pull/575) |
 | `ParameterTree#toMap`, `toParameters`, `parametersOf` | [#577](https://github.com/making/yavi/pull/577) |
+| `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
 | A lifted validator, `_list` and `_map` take a container of a subtype | [#576](https://github.com/making/yavi/pull/576) |
