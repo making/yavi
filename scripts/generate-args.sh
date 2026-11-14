@@ -2652,8 +2652,8 @@ import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;'; fi)
-$(if [ "${track}" == "plain" ];then printf 'import am.ik.yavi.core.NullAcceptingValueValidator;';fi)$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
-$(if [ "${track}" == "reversible" ];then printf 'import am.ik.yavi.core.ReversibleValueValidator;\n';fi)$(if [ "${track}" == "plain" ] || [ "${i}" -gt 0 ];then printf 'import am.ik.yavi.core.ValueValidator;';fi)
+import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
+$(if [ "${track}" == "reversible" ];then printf 'import am.ik.yavi.core.ReversibleValueValidator;\n';fi)import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
 import am.ik.yavi.core.ViolationMessage;
@@ -2812,7 +2812,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_bigDecimal(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2880,7 +2880,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_bigInteger(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -2948,7 +2948,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_boolean(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3016,7 +3016,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_double(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_double(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3085,7 +3085,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_enum(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3157,7 +3157,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_float(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_float(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3225,7 +3225,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_instant(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3293,7 +3293,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_integer(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3361,7 +3361,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3429,7 +3429,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3497,7 +3497,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_localDate(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3565,7 +3565,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_long(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_long(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3634,7 +3634,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_object(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3709,7 +3709,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_offsetDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3777,7 +3777,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_short(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_short(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3845,7 +3845,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_string(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_string(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3919,7 +3919,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_yearMonth(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -3987,7 +3987,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_year(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_year(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -4055,7 +4055,7 @@ cat <<EOD
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by its
+	 * This is {@link #_zonedDateTime(${value_validator})} for a validator that is known by its
 	 * type to accept {@code null}: the returned builder offers {@code required()}
 	 * and {@code rejectingNull()}, and no modifier that would accept {@code null}
 	 * again.
@@ -4131,7 +4131,7 @@ cat <<EOD
 	 * given value validator that accepts {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(String, ValueValidator)} for a validator that is known by
+	 * This is {@link #_object(String, ${value_validator})} for a validator that is known by
 	 * its type to accept {@code null}: {@code null} is given to {@code validator}, which
 	 * decides what it produces, and the violations of any other value are located under
 	 * {@code name}. The returned builder offers {@code required()} and
@@ -4180,7 +4180,7 @@ cat <<EOD
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The elements are validated like {@link #_list(String, ValueValidator)} does. The
+	 * The elements are validated like {@link #_list(String, ${value_validator})} does. The
 	 * constraints are checked on the list of the validated elements, only when every
 	 * element is valid, and their violations are reported on {@code name}.
 	 *
@@ -4228,7 +4228,7 @@ cat <<EOD
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The values are validated like {@link #_map(String, ValueValidator)} does. The
+	 * The values are validated like {@link #_map(String, ${value_validator})} does. The
 	 * constraints are checked on the map of the validated values, only when every value
 	 * is valid, and their violations are reported on {@code name}.
 	 *
@@ -4304,7 +4304,7 @@ cat <<EOD
 	 * is defined for, whose values are taken as they are.
 	 * @return a builder that creates the validator
 	 * @since 0.18.0
-	 * @see #_rest(ValueValidator)
+	 * @see #_rest(${value_validator})
 	 */
 	public ${next_class}.Rest<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Map<String, ?>, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Map<String, @Nullable Object>> _rest() {
 		return new ${next_class}.Rest<>(new ${next_class}<>(${prev_definitions}${definition}.rest()));

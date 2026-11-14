@@ -48,7 +48,7 @@ import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
-
+import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ReversibleValueValidator;
@@ -144,9 +144,10 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigDecimal(ValueValidator)} for a validator that is known by its
-	 * type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_bigDecimal(ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: the returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -216,9 +217,10 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_bigInteger(ValueValidator)} for a validator that is known by its
-	 * type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_bigInteger(ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: the returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -288,9 +290,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_boolean(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_boolean(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -358,8 +360,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_double(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_double(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -429,8 +431,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_enum(ValueValidator)} for a validator that is known by its type to
-	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_enum(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <E> the enum type of the argument
 	 * @param <T> type of the value produced by {@code validator}
@@ -504,8 +506,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_float(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_float(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -575,9 +577,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_instant(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_instant(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -647,9 +649,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_integer(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_integer(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -719,9 +721,10 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDateTime(ValueValidator)} for a validator that is known by
-	 * its type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_localDateTime(ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: the returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -793,9 +796,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localTime(ValueValidator)} for a validator that is known by its
-	 * type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_localTime(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -865,9 +868,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_localDate(ValueValidator)} for a validator that is known by its
-	 * type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_localDate(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -936,8 +939,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_long(ValueValidator)} for a validator that is known by its type to
-	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_long(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -1007,8 +1010,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_object(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T1> type of the value validated by {@code validator}
 	 * @param <T2> type of the value produced by {@code validator}
@@ -1085,9 +1088,10 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_offsetDateTime(ValueValidator)} for a validator that is known by
-	 * its type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_offsetDateTime(ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: the returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -1158,8 +1162,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_short(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_short(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -1228,8 +1232,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_string(ValueValidator)} for a validator that is known by its type
-	 * to accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_string(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -1305,9 +1309,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_yearMonth(ValueValidator)} for a validator that is known by its
-	 * type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_yearMonth(ReversibleValueValidator)} for a validator that is known
+	 * by its type to accept {@code null}: the returned builder offers {@code required()}
+	 * and {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -1376,8 +1380,8 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_year(ValueValidator)} for a validator that is known by its type to
-	 * accept {@code null}: the returned builder offers {@code required()} and
+	 * This is {@link #_year(ReversibleValueValidator)} for a validator that is known by
+	 * its type to accept {@code null}: the returned builder offers {@code required()} and
 	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
@@ -1447,9 +1451,10 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_zonedDateTime(ValueValidator)} for a validator that is known by
-	 * its type to accept {@code null}: the returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_zonedDateTime(ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: the returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 * @param <T> type of the value produced by {@code validator}
 	 * @param validator value validator for the argument, which accepts {@code null}
 	 * @return a builder for the next argument
@@ -1529,11 +1534,12 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * given value validator that accepts {@code null}.
 	 *
 	 * <p>
-	 * This is {@link #_object(String, ValueValidator)} for a validator that is known by
-	 * its type to accept {@code null}: {@code null} is given to {@code validator}, which
-	 * decides what it produces, and the violations of any other value are located under
-	 * {@code name}. The returned builder offers {@code required()} and
-	 * {@code rejectingNull()}, and no modifier that would accept {@code null} again.
+	 * This is {@link #_object(String, ReversibleValueValidator)} for a validator that is
+	 * known by its type to accept {@code null}: {@code null} is given to
+	 * {@code validator}, which decides what it produces, and the violations of any other
+	 * value are located under {@code name}. The returned builder offers
+	 * {@code required()} and {@code rejectingNull()}, and no modifier that would accept
+	 * {@code null} again.
 	 *
 	 * <pre>{@code
 	 * ._object("address", addressValidator.nullable())
@@ -1581,9 +1587,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The elements are validated like {@link #_list(String, ValueValidator)} does. The
-	 * constraints are checked on the list of the validated elements, only when every
-	 * element is valid, and their violations are reported on {@code name}.
+	 * The elements are validated like {@link #_list(String, ReversibleValueValidator)}
+	 * does. The constraints are checked on the list of the validated elements, only when
+	 * every element is valid, and their violations are reported on {@code name}.
 	 *
 	 * <pre>{@code
 	 * ._list("tags", Yavi._string(c -> c.trim().notBlank()), c -> c.notEmpty().lessThanOrEqual(10).unique())
@@ -1633,9 +1639,9 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * validated by the given value validator and which satisfies the given constraints.
 	 *
 	 * <p>
-	 * The values are validated like {@link #_map(String, ValueValidator)} does. The
-	 * constraints are checked on the map of the validated values, only when every value
-	 * is valid, and their violations are reported on {@code name}.
+	 * The values are validated like {@link #_map(String, ReversibleValueValidator)} does.
+	 * The constraints are checked on the map of the validated values, only when every
+	 * value is valid, and their violations are reported on {@code name}.
 	 *
 	 * <pre>{@code
 	 * ._map("prices", Yavi._bigDecimal(c -> c.positive()), c -> c.notEmpty())
@@ -1715,7 +1721,7 @@ public sealed class ReversibleArguments2ValidatorBuilder<A1, A2, R1 extends @Nul
 	 * defined for, whose values are taken as they are.
 	 * @return a builder that creates the validator
 	 * @since 0.18.0
-	 * @see #_rest(ValueValidator)
+	 * @see #_rest(ReversibleValueValidator)
 	 */
 	public ReversibleArguments3ValidatorBuilder.Rest<A1, A2, Map<String, ?>, R1, R2, Map<String, @Nullable Object>> _rest() {
 		return new ReversibleArguments3ValidatorBuilder.Rest<>(
