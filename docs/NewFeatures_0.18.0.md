@@ -960,7 +960,9 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 * A schema of one property has `fromMap()` and `fromMapReversible()` without arguments:
   the validated value is the result, as with `get()`. One property is defined once in
   this way, with its constraints and modifiers, and embedded in several schemas
-  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`).
+  (`_embedded(passwordSchema)`, `_embedded(passwordSchema).optional()`). A schema whose
+  only property is the rest has them too: `Yavi.schema()._rest(Yavi._integer()).fromMap()`
+  is a validator of a `Map<String, Integer>`.
 * `toMap(x)` is defined by the round trip: `validator.validate(validator.toMap(x))` is
   `Valid(x)` for every `x` that the validator creates. A property that is defined with
   `withheld()` is not written by `toMap`; `reverse(x)` writes it and keeps the round trip

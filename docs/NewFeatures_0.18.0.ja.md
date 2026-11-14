@@ -777,7 +777,7 @@ jdbcClient.sql("INSERT INTO employee (id, first_name, last_name, email, nickname
 
 * `Yavi.reversibleSchema()` は、書き戻すオブジェクトのための `Yavi.schema()` です。メソッドは同じですが、`Yavi.schema()` が `ValueValidator` を受け取る箇所で `ReversibleValueValidator` を受け取ります。`ReversibleValueValidator` は、逆変換を知っていることが型で分かるバリデータです。
 * `fromMapReversible(f, accessor1, ..., accessorN)` は、`fromMap(f)` に引数ごとのアクセサを加えたものです。アクセサは、その引数の検証済みの値をオブジェクトから返します。型はコンパイラが検査するので、レコードならコンストラクタとアクセサのメソッド参照を渡せます。`flatFromMap` には `flatFromMapReversible` が対応します。
-* プロパティが 1 つのスキーマには、引数なしの `fromMap()` と `fromMapReversible()` があります。`get()` と同じく、検証済みの値がそのまま結果になります。1 つのプロパティを制約や修飾子ごと一度だけ定義して、複数のスキーマに埋め込めます（`_embedded(passwordSchema)`、`_embedded(passwordSchema).optional()`）。
+* プロパティが 1 つのスキーマには、引数なしの `fromMap()` と `fromMapReversible()` があります。`get()` と同じく、検証済みの値がそのまま結果になります。1 つのプロパティを制約や修飾子ごと一度だけ定義して、複数のスキーマに埋め込めます（`_embedded(passwordSchema)`、`_embedded(passwordSchema).optional()`）。`_rest` だけのスキーマにも同じ終端があります。`Yavi.schema()._rest(Yavi._integer()).fromMap()` は `Map<String, Integer>` のバリデータです。
 * `toMap(x)` は往復で定義されます。バリデータが作るすべての `x` について、`validator.validate(validator.toMap(x))` は `Valid(x)` です。`withheld()` を付けて定義したプロパティは `toMap` が書きません。`reverse(x)` はそれも書くので、往復が成り立ちます（[一部のプロパティだけを書く](#一部のプロパティだけを書く)）。
 * 返るバリデータは `ObjectInputValidator` です。これまでどおりネストでき、埋め込めて、`readingWith` や `readingParameters` で読めます。`rejectingUnknownProperties()` や `constraintOnTarget` のあとも `Reversible` のままです。
 * マップは新しく作られます。SQL 文に必要な値は `map.put("updated_by", user)` のように足せます。

@@ -3017,6 +3017,21 @@ public sealed class Arguments1ValidatorBuilder<A1, R1 extends @Nullable Object> 
 			return this.builder.from(reader, f);
 		}
 
+		/**
+		 * Builds a {@link ObjectInputValidator} that reads every key of the map as the
+		 * rest and returns the map of the validated values as the result, as
+		 * {@link Arguments1ValidatorBuilder#fromMap()} does for one argument.
+		 *
+		 * <pre>{@code
+		 * ObjectInputValidator<Map<String, Integer>> scores = Yavi.schema()._rest(Yavi._integer()).fromMap();
+		 * }</pre>
+		 * @return a new object input validator of the map of the validated values
+		 * @throws IllegalStateException as {@link #fromMap(Function1)} does
+		 */
+		public ObjectInputValidator<R1> fromMap() {
+			return this.builder.fromMap();
+		}
+
 	}
 
 	/**

@@ -491,6 +491,8 @@ class YaviSchemaTest {
 				// one property is its own result
 				"s._string(\"x\").withheld().fromMap().rejectingUnknownProperties()",
 				"s._embedded(r._string(\"x\").optional().fromMapReversible()).optional()",
+				"s._rest().recover(Map.of()).fromMap().validate(Map.of())",
+				"r._rest(Yavi._integer()).fromMapReversible().toMap(Map.of())",
 				// a view of the properties that are written is made narrower
 				"r._string(\"x\")._string(\"y\").fromMapReversible((x, y) -> x, x -> x, x -> x).including(\"x\")"
 						+ ".excluding(\"x\").toMap(\"a\")");
@@ -579,7 +581,9 @@ class YaviSchemaTest {
 				"Yavi.<Object>reversibleDynamicSchema().property(\"x\", Yavi._string().nullable()).withheld().withheld()",
 				// several properties are not one result
 				"s._string(\"x\")._string(\"y\").fromMap()", "r._string(\"x\")._string(\"y\").fromMapReversible()",
-				"s._string(\"x\").fromMapReversible()",
+				"s._string(\"x\").fromMapReversible()", "s._string(\"x\")._rest().fromMap()",
+				"r._string(\"x\")._rest().fromMapReversible()", "s._rest().fromMapReversible()",
+				"s._rest().fromMap().rejectingUnknownProperties()",
 				// a view names a property, and only writes: it is not read and not nested
 				"r._string(\"x\").fromMapReversible(x -> x, x -> x).including()",
 				"r._string(\"x\").fromMapReversible(x -> x, x -> x).excluding()",
