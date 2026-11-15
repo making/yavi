@@ -137,6 +137,27 @@ class ReversibleValidatorTest {
 		return typed;
 	}
 
+	static String camelCase(String name) {
+		final StringBuilder key = new StringBuilder();
+		boolean upper = false;
+		for (char c : name.toCharArray()) {
+			if (c == '_') {
+				upper = true;
+			}
+			else {
+				key.append(upper ? Character.toUpperCase(c) : c);
+				upper = false;
+			}
+		}
+		return key.toString();
+	}
+
+	// what a function that looks a name up in a map returns for a name that is not in it
+	@SuppressWarnings("NullAway")
+	static String unlessEmail(String name) {
+		return name.equals("email") ? null : name;
+	}
+
 	@Test
 	void anObjectIsWrittenBackAsTheMapItIsReadFrom() {
 		final Employee employee = employee();
@@ -251,6 +272,54 @@ class ReversibleValidatorTest {
 		assertThatThrownBy(() -> summary.including("email")).isInstanceOf(IllegalArgumentException.class)
 			.hasMessage("The property 'email' is not written by the view that is made narrower.");
 
+		// a view writes the properties under other keys: all that the validator defines
+		// with a function, at any depth, and one by its path, which wins. The keys of the
+		// rest and of a map are written as they are, and a property is still named as
+		// the validator defines it
+		final PropertyView<Employee> renamed = employeeValidator.renaming("addresses.city", "town")
+			.renaming(ReversibleValidatorTest::camelCase)
+			.renaming("id", "employeeId");
+		final Map<String, Object> response = mapOf("employeeId", 1, "firstName", "Taro", "lastName", "Yamada",
+				"deptName", "Sales", "nickname", "taro", "role", "ADMIN", "joined", LocalDate.of(2024, 4, 1), "tags",
+				"java,yavi", "scores", "1 2", "addresses", List.of(mapOf("town", "Tokyo"), mapOf("town", "Osaka")),
+				"rates", Map.of("jpy", new BigDecimal("1.5")), "memo", "hello", "active", true, "extra", "x");
+		assertThat(renamed.excluding("email", "dept_code", "addresses.street", "level").toMap(employee))
+			.containsExactlyEntriesOf(response);
+		assertThat(withoutContact.renaming(ReversibleValidatorTest::camelCase)
+			.renaming("id", "employeeId")
+			.renaming("addresses.city", "town")
+			.toMap(employee)).containsExactlyEntriesOf(response);
+		// the key of a property that the view does not write is free
+		assertThat(employeeValidator.including("id", "first_name").renaming("id", "email").toMap(employee))
+			.containsExactly(entry("email", 1), entry("first_name", "Taro"));
+		assertThatThrownBy(() -> employeeValidator.renaming("emial", "mail"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith(
+					"The property 'emial' is not defined by the validator. The properties are [id, first_name, ");
+		assertThatThrownBy(() -> summary.renaming("email", "mail")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'email' is not written by the view that renames it.");
+		assertThatThrownBy(() -> employeeValidator.renaming("id", "a").renaming("id", "b"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'id' is renamed twice.");
+		assertThatThrownBy(() -> employeeValidator.renaming("id", "email")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The properties 'id' and 'email' are both written as 'email'.");
+		assertThatThrownBy(() -> employeeValidator.renaming("addresses.city", "street"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The properties 'addresses.city' and 'addresses.street' are both written as 'street'.");
+		assertThatThrownBy(() -> employeeValidator.renaming(name -> name.startsWith("dept") ? "dept" : name))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The properties 'dept_name' and 'dept_code' are both written as 'dept'.");
+		assertThatThrownBy(() -> renamed.renaming(String::toUpperCase)).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The view is already given a function that renames its properties. Combine the two functions.");
+		assertThatThrownBy(() -> employeeValidator.renaming(ReversibleValidatorTest::unlessEmail))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The function returns null for the property 'email'. "
+					+ "Return the name for a property that is not renamed.");
+		// a key of the rest is not known when the view is built
+		assertThatThrownBy(() -> employeeValidator.renaming("memo", "extra").toMap(employee))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'extra' is written twice.");
+
 		// a validator that is derived without changing the value still goes back, which
 		// its type tells
 		assertThat(emailValidator.reverse(emailValidator.validated(" taro@example.com ")))
@@ -329,6 +398,13 @@ class ReversibleValidatorTest {
 			.containsExactly(entry("title", "a"), entry("others", List.of(mapOf("side", 2.0, "type", "square"))));
 		assertThat(drawingValidator.excluding("radius", "others").toMap(drawing)).containsExactly(entry("title", "a"),
 				entry("type", "circle"));
+		// the discriminator is renamed as a property, and the properties of two
+		// alternatives are written under one key
+		final PropertyView<Shape> sized = shapeValidator.renaming("type", "kind")
+			.renaming("radius", "size")
+			.renaming("side", "size");
+		assertThat(sized.toMap(new Circle(1.5))).containsExactly(entry("kind", "circle"), entry("size", 1.5));
+		assertThat(sized.toMap(new Square(2.0, "square"))).containsExactly(entry("size", 2.0), entry("kind", "square"));
 		// an alternative without its type gives a union that does not write
 		final DiscriminatedUnionValidator<Shape> reading = shapeValidator.when("other", circleValidator);
 		assertThat(reading).isNotInstanceOf(ReversibleValueValidator.class);
@@ -346,6 +422,8 @@ class ReversibleValidatorTest {
 		// a path names the properties at its depth
 		assertThat(treeValidator.excluding("children.name").toMap(tree))
 			.isEqualTo(mapOf("name", "root", "children", List.of(mapOf("children", List.of()))));
+		assertThat(treeValidator.renaming(String::toUpperCase).renaming("children.name", "label").toMap(tree))
+			.isEqualTo(mapOf("NAME", "root", "CHILDREN", List.of(mapOf("label", "leaf", "CHILDREN", List.of()))));
 
 		// a schema whose properties are known at run time writes the map it produces
 		final ObjectInputValidator.Reversible<Map<String, Object>> dynamicValidator = Yavi
@@ -362,6 +440,8 @@ class ReversibleValidatorTest {
 		assertThat(dynamicValidator.validate(dynamicValidator.toMap(values))).isEqualTo(Validated.successWith(values));
 		assertThat(dynamicValidator.including("email", "shape.radius").toMap(values))
 			.containsExactly(entry("email", "a@example.com"), entry("shape", mapOf("type", "circle", "radius", 1.0)));
+		assertThat(dynamicValidator.renaming(String::toUpperCase).toMap(values)).containsExactly(
+				entry("EMAIL", "a@example.com"), entry("SHAPE", mapOf("TYPE", "circle", "RADIUS", 1.0)), entry("n", 1));
 	}
 
 	record Signup(String name, Integer age, Role role, Boolean agreed, LocalDate birthday, List<String> tags,
@@ -607,6 +687,17 @@ class ReversibleValidatorTest {
 		assertThat(orderValidator.excluding("memo").toMap(order)).containsExactly(entry("id", 7),
 				entry("user", mapOf("id", 1, "name", "Taro")),
 				entry("watchers", List.of(mapOf("id", 2, "name", "Hanako"))));
+		// a renamed view of the validator writes what toMap writes, and a withheld
+		// property is renamed by a view that includes it
+		assertThat(orderValidator.renaming(String::toUpperCase).toMap(order)).containsExactly(entry("ID", 7),
+				entry("MEMO", "gift"), entry("USER", mapOf("ID", 1, "NAME", "Taro")),
+				entry("WATCHERS", List.of(mapOf("ID", 2, "NAME", "Hanako"))));
+		assertThat(credentials.renaming("password_hash", "hash").toMap(account)).containsExactly(entry("id", 1),
+				entry("hash", "{bcrypt}x"));
+		assertThatThrownBy(() -> accountValidator.renaming("password_hash", "hash"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("The property 'password_hash' is not written by the view that renames it: it is "
+					+ "withheld, and written only by a view that includes it by its name.");
 		assertThat(orderValidator.including("id", "user").toMap(order)).containsExactly(entry("id", 7),
 				entry("user", mapOf("id", 1, "name", "Taro")));
 		assertThat(orderValidator.toMap(order)).containsExactly(entry("id", 7), entry("memo", "gift"),

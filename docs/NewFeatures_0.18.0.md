@@ -1337,6 +1337,75 @@ the password field is empty. The whole flow is in the
 To keep the names in one place, share a constant between the schema and the view
 (`._object(ADDRESS, addressValidator)` and `excluding(ADDRESS)`).
 
+### Writing a property under another key
+
+A row is read with `first_name` and an API sends `firstName`. A JSON library renames the
+properties of a class, not the keys of a map, so the view does it: `renaming` writes a
+property under another key.
+
+```java
+static final PropertyView<Employee> RESPONSE = employeeValidator
+        .renaming(Names::snakeToCamel) // every property, at every depth
+        .renaming("id", "employeeId")  // one property
+        .excluding("email");
+
+employeeValidator.toMap(employee);
+// {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
+RESPONSE.toMap(employee);
+// {employeeId=1, firstName=Taro, lastName=Yamada, nickname=null, role=ADMIN}
+
+@GetMapping("/employees/{id}")
+Map<String, Object> get(@PathVariable Integer id) {
+    return RESPONSE.toMap(employeeRepository.findById(id));
+}
+```
+
+* `renaming(function)` is given the name of every property that the validator defines:
+  of a nested object, of the elements of a list and of an `_embedded` validator too. It
+  returns the name itself for a property that is not renamed
+  (`name -> keys.getOrDefault(name, name)`). `Names::snakeToCamel` is a function of the
+  application; YAVI has none.
+* `renaming(path, key)` renames one property. The path is that of `including` and
+  `excluding` (`address.zip_code`), the key is one key of the object that has the
+  property. It is used instead of what the function returns, whichever is written first.
+* The validator has both methods, for a view of what `toMap` writes, and so has a view.
+* **A property is always named as the validator defines it**, also after it is renamed
+  and in any order: `RESPONSE.excluding("first_name")`, not `excluding("firstName")`.
+* **Only the key changes.** The value is written as before, since a JSON library formats
+  a date or an enum of a map as it does elsewhere. A view does not nest, flatten or add a
+  property: an output of another shape is another schema.
+
+| Key | Written as |
+| --- | --- |
+| of a property, of a nested object, of the elements of a list, of an `_embedded` validator | the new key |
+| of the discriminator of a union | the new key; its value (`circle`) is not changed |
+| of the rest (`_rest`) and of a map (`_map`) | the key itself: it is data, not a name |
+
+What is checked when the view is built:
+
+| Call | `IllegalArgumentException` |
+| --- | --- |
+| `renaming("emial", "mail")` | `The property 'emial' is not defined by the validator. The properties are [...]` |
+| `renaming("id", "email")` | `The properties 'id' and 'email' are both written as 'email'.` |
+| `renaming("id", "a").renaming("id", "b")` | `The property 'id' is renamed twice.` |
+| `renaming("password_hash", "hash")` of a property that the view does not write | `The property 'password_hash' is not written by the view that renames it` |
+| `renaming(f).renaming(g)` | a view takes one function |
+| a function that returns `null` | `The function returns null for the property 'email'.` |
+
+* Two properties are compared if the view writes both, so a property takes the key of one
+  that is left out before: `excluding("name").renaming("display_name", "name")`. The
+  properties of two alternatives of a union may be written under one key.
+* A key of the rest is not known when the view is built. If it is the key that a property
+  is renamed to, `toMap` fails with `The property 'extra' is written twice.`
+* A property that is withheld is renamed by a view that includes it:
+  `userValidator.including("id", "password_hash").renaming("password_hash", "hash")`.
+
+**A renamed view is for a response.** Its map is not what the validator describes, so it
+is not read back, not shown in a form of the validator
+(`ParameterTree.ofValues(...).toMap(description)`) and not described by its JSON Schema.
+A request with other names is read by a schema with those names, which usually differs
+from the row anyway: it has no `id` and a `password` instead of a `password_hash`.
+
 ### Showing a stored object in a form
 
 `ParameterTree.ofValues` takes the map that a validator writes and holds its values as
@@ -1688,6 +1757,7 @@ Only the value of a `nullable()` property is `@Nullable`. See
 | `fromMapReversible`, `toMap`, `map(f, g)`, `ReversibleValueValidator`, `ParameterTree.ofValues`, `java.sql` dates of a row | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`, `Yavi.reversibleDynamicSchema()`, `StringValidator.Reversible` and the like, `ReversibleValueValidator.NullAccepting`, `ReversibleArguments1Validator`, `ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`, `including` and `excluding` of a reversible validator, `ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
+| `renaming` of a `PropertyView` and of a reversible validator | [#588](https://github.com/making/yavi/pull/588) |
 | `withheld()` of a property, `ValueDescription.Property#withheld`, `fromMap()` and `fromMapReversible()` of one property | [#581](https://github.com/making/yavi/pull/581), [#582](https://github.com/making/yavi/pull/582) |
 | `object.required` for an empty text of a property, `InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`, `splitBy`, `liftList(separator)`, `Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |

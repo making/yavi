@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import am.ik.yavi.core.ValueDescription;
 import org.jspecify.annotations.Nullable;
@@ -116,6 +117,32 @@ import org.jspecify.annotations.Nullable;
  * </ul>
  *
  * <p>
+ * A view writes a property under another key with {@link #renaming(UnaryOperator)} and
+ * {@link #renaming(String, String)}: a row that is read with {@code first_name} is sent
+ * as {@code firstName}. A JSON library does not rename the keys of a map as it renames
+ * the properties of a class, so the view does:
+ *
+ * <pre>{@code
+ * static final PropertyView<Employee> RESPONSE = employeeValidator
+ *     .renaming(Names::snakeToCamel) // every property that the validator defines, at every depth
+ *     .renaming("id", "employeeId"); // one property, whatever the function returns for it
+ *
+ * RESPONSE.toMap(employee); // {employeeId=1, firstName=Taro, lastName=Yamada}
+ * }</pre>
+ *
+ * <ul>
+ * <li>Only the key changes: the value is written as before, and so is a key that the
+ * validator does not define, such as one of the rest or of a map.</li>
+ * <li>A property is always named as the validator defines it, also after it is renamed:
+ * {@code RESPONSE.excluding("first_name")}.</li>
+ * <li>Two properties of an object that the view writes under one key are an
+ * {@link IllegalArgumentException} when the view is built.</li>
+ * <li>The map of a renamed view is not what the validator
+ * {@linkplain am.ik.yavi.core.ValueValidator#description() describes}, so it is for a
+ * response and not for a form of the validator.</li>
+ * </ul>
+ *
+ * <p>
  * A view only writes. It is not a validator and not a
  * {@link am.ik.yavi.core.ReversibleValueValidator}: a map without a required property is
  * not read back, so the round trip that defines
@@ -140,6 +167,11 @@ public final class PropertyView<X> {
 	private final Described described;
 
 	private final Shape shape;
+
+	/**
+	 * The keys that the properties are written under, or {@code null} for their names.
+	 */
+	private final @Nullable Naming naming;
 
 	/**
 	 * Writes an object as the map that a validator reads it from.
@@ -193,6 +225,89 @@ public final class PropertyView<X> {
 	}
 
 	/**
+	 * The keys that are given for the properties of the objects of a value, by their
+	 * paths.
+	 *
+	 * @param depth the number of lists and maps that the objects are the elements of
+	 * @param keys the keys of the properties of the objects, by their names
+	 * @param nested what is given for the values of the properties, by their names
+	 */
+	private record Renamed(int depth, Map<String, String> keys, Map<String, Renamed> nested) {
+	}
+
+	/**
+	 * The function that is given for the names of all properties. A name is converted
+	 * once.
+	 */
+	private static final class Convention {
+
+		private final UnaryOperator<String> function;
+
+		private final Map<String, String> keys = new ConcurrentHashMap<>();
+
+		private Convention(UnaryOperator<String> function) {
+			this.function = function;
+		}
+
+		private String keyOf(String name) {
+			return this.keys.computeIfAbsent(name, defined -> {
+				final String key = this.function.apply(defined);
+				if (key == null) {
+					throw new IllegalArgumentException("The function returns null for the property '" + defined
+							+ "'. Return the name for a property that is not renamed.");
+				}
+				return key;
+			});
+		}
+
+	}
+
+	/**
+	 * The keys that the properties of a value are written under.
+	 *
+	 * @param convention the function for the names of all properties, if one is given
+	 * @param renamed the keys that are given for the properties of the value by their
+	 * paths, if any
+	 * @param depth the number of lists and maps between the value and the objects that
+	 * {@code renamed} is given for
+	 */
+	private record Naming(@Nullable Convention convention, @Nullable Renamed renamed, int depth) {
+
+		/** Returns the key of the property with the given name of the value. */
+		private String keyOf(String name) {
+			final String key = this.renamed != null && this.depth == 0 ? this.renamed.keys().get(name) : null;
+			return key != null ? key : this.convention != null ? this.convention.keyOf(name) : name;
+		}
+
+		/** Returns the keys of the value of the property with the given name. */
+		private @Nullable Naming property(String name) {
+			final Renamed nested = this.renamed != null && this.depth == 0 ? this.renamed.nested().get(name) : null;
+			return nested != null ? new Naming(this.convention, nested, nested.depth()) : this.others();
+		}
+
+		/**
+		 * Returns the keys of an element of the value as a list, or of a value of it as a
+		 * map.
+		 */
+		private @Nullable Naming element() {
+			return this.depth > 0 ? new Naming(this.convention, this.renamed, this.depth - 1) : this.others();
+		}
+
+		/** Returns the keys of a value that no key is given for by its path. */
+		private @Nullable Naming others() {
+			return this.renamed == null ? this : this.convention != null ? new Naming(this.convention, null, 0) : null;
+		}
+
+		/**
+		 * Returns the keys of the objects that the value is, or is a list or a map of.
+		 */
+		private Naming object() {
+			return this.depth == 0 ? this : new Naming(this.convention, this.renamed, 0);
+		}
+
+	}
+
+	/**
 	 * What the descriptions of a value tell about it, one for every way to read it. It is
 	 * found when it is asked for and kept: a structure that contains itself is described
 	 * as far as a written value goes.
@@ -210,6 +325,8 @@ public final class PropertyView<X> {
 		private volatile @Nullable Described each;
 
 		private volatile @Nullable Described others;
+
+		private volatile @Nullable Set<String> names;
 
 		/** The values of the properties that an object defines, by their name. */
 		private final Map<String, Described> properties = new ConcurrentHashMap<>();
@@ -278,10 +395,15 @@ public final class PropertyView<X> {
 
 		/** Returns the names of the properties that the value defines as an object. */
 		private Set<String> names() {
-			final Set<String> names = new LinkedHashSet<>();
-			this.content()
-				.objects()
-				.forEach(object -> object.properties().forEach(property -> names.add(property.name())));
+			Set<String> names = this.names;
+			if (names == null) {
+				final Set<String> defined = new LinkedHashSet<>();
+				this.content()
+					.objects()
+					.forEach(object -> object.properties().forEach(property -> defined.add(property.name())));
+				names = Collections.unmodifiableSet(defined);
+				this.names = names;
+			}
 			return names;
 		}
 
@@ -316,23 +438,31 @@ public final class PropertyView<X> {
 				}
 			}
 			if (values.isEmpty()) {
-				// a key of the rest or of a map, of which there are as many as the values
-				// say
-				Described others = this.others;
-				if (others == null) {
-					final List<ValueDescription> rest = new ArrayList<>(content.values());
-					content.objects().forEach(object -> {
-						if (object.rest() != null) {
-							rest.add(object.rest());
-						}
-					});
-					others = rest.isEmpty() ? UNKNOWN : new Described(rest);
-					this.others = others;
-				}
-				return others;
+				return this.others();
 			}
 			values.addAll(content.values());
 			return this.properties.computeIfAbsent(name, key -> new Described(values));
+		}
+
+		/**
+		 * Returns what is known about the value of a key that the value does not define
+		 * as an object: a key of the rest or of a map, of which there are as many as the
+		 * values say.
+		 */
+		private Described others() {
+			Described others = this.others;
+			if (others == null) {
+				final Content content = this.content();
+				final List<ValueDescription> rest = new ArrayList<>(content.values());
+				content.objects().forEach(object -> {
+					if (object.rest() != null) {
+						rest.add(object.rest());
+					}
+				});
+				others = rest.isEmpty() ? UNKNOWN : new Described(rest);
+				this.others = others;
+			}
+			return others;
 		}
 
 		/**
@@ -399,10 +529,11 @@ public final class PropertyView<X> {
 	private record Level(Described object, int depth) {
 	}
 
-	private PropertyView(Writer<X> writer, Described described, Shape shape) {
+	private PropertyView(Writer<X> writer, Described described, Shape shape, @Nullable Naming naming) {
 		this.writer = writer;
 		this.described = described;
 		this.shape = shape;
+		this.naming = naming;
 	}
 
 	/**
@@ -411,7 +542,7 @@ public final class PropertyView<X> {
 	 * @param description the description of the validator that reads the map
 	 */
 	static <X> PropertyView<X> of(Writer<X> writer, ValueDescription description) {
-		return new PropertyView<>(writer, new Described(List.of(description)), ALL);
+		return new PropertyView<>(writer, new Described(List.of(description)), ALL, null);
 	}
 
 	/**
@@ -419,7 +550,7 @@ public final class PropertyView<X> {
 	 * not withheld.
 	 */
 	PropertyView<X> withoutWithheld() {
-		return new PropertyView<>(this.writer, this.described, written(this.shape));
+		return new PropertyView<>(this.writer, this.described, written(this.shape), this.naming);
 	}
 
 	/**
@@ -453,21 +584,87 @@ public final class PropertyView<X> {
 	}
 
 	/**
+	 * Returns a view that writes every property under the key that the given function
+	 * returns for its name: a property of the validator, of a nested object, of the
+	 * elements of a list and of an embedded validator, at any depth.
+	 *
+	 * <pre>{@code
+	 * static final PropertyView<UserName> RESPONSE = userNameValidator.renaming(Names::snakeToCamel);
+	 *
+	 * RESPONSE.toMap(name); // {firstName=Taro, lastName=Yamada}
+	 * }</pre>
+	 *
+	 * The function is given the names that the validator defines, each once, and not the
+	 * keys of the rest or of a map, which are written as they are. It returns the name
+	 * itself for a property that is not renamed. A key that
+	 * {@link #renaming(String, String)} gives for a property is used instead of what the
+	 * function returns for it, whichever is called first.
+	 * @param function returns the key that a property of the given name is written under
+	 * @return a view that writes the same properties under other keys
+	 * @throws IllegalArgumentException if this view is already given a function, if the
+	 * function returns {@code null}, or if two properties of an object that this view
+	 * writes are written under one key
+	 */
+	public PropertyView<X> renaming(UnaryOperator<String> function) {
+		Objects.requireNonNull(function, "'function' must not be null.");
+		if (this.naming != null && this.naming.convention() != null) {
+			throw new IllegalArgumentException(
+					"The view is already given a function that renames its properties. Combine the two functions.");
+		}
+		return this
+			.renamed(new Naming(new Convention(function), this.naming != null ? this.naming.renamed() : null, 0));
+	}
+
+	/**
+	 * Returns a view that writes the given property under the given key.
+	 *
+	 * <pre>{@code
+	 * userValidator.renaming("id", "userId").renaming("address.zip_code", "postalCode").toMap(user);
+	 * // {userId=1, name=Taro, address={city=Tokyo, postalCode=100-0001}}
+	 * }</pre>
+	 *
+	 * The property is named as its violations are, and as the validator defines it: also
+	 * after it is renamed, and by the views that are made of the returned one.
+	 * @param path the name of a property, or the path to a property of a nested object
+	 * @param key the key that the property is written under, which is one key of the
+	 * object that has the property whatever characters it holds
+	 * @return a view that writes the property under the key
+	 * @throws IllegalArgumentException if the validator does not define a property of the
+	 * given path, if this view does not write it, if it is already given a key, or if two
+	 * properties of an object that this view writes are written under one key
+	 */
+	public PropertyView<X> renaming(String path, String key) {
+		Objects.requireNonNull(path, "'path' must not be null.");
+		Objects.requireNonNull(key, "'key' must not be null.");
+		final Renamed renamed = rename(this.naming != null ? this.naming.renamed() : null, this.shape, this.described,
+				path, key, "");
+		return this.renamed(new Naming(this.naming != null ? this.naming.convention() : null, renamed, 0));
+	}
+
+	private PropertyView<X> renamed(Naming naming) {
+		verify(this.shape, this.described, naming, "", Collections.newSetFromMap(new IdentityHashMap<>()),
+				Collections.newSetFromMap(new IdentityHashMap<>()));
+		return new PropertyView<>(this.writer, this.described, this.shape, naming);
+	}
+
+	/**
 	 * Returns the properties of this view of the map that the validator reads the given
 	 * object from.
 	 * @param object an object that the validator creates
 	 * @return a new map of the properties in the order of the validator, which the caller
 	 * may change. A property that is not in the view has no entry
-	 * @throws IllegalArgumentException as {@code toMap} of the validator does
+	 * @throws IllegalArgumentException as {@code toMap} of the validator does, or if a
+	 * key of the rest is the key that a property is renamed to
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> toMap(X object) {
-		if ((this.shape instanceof All) || (this.shape instanceof Whole && this.described.isPlain())) {
-			return this.writer.write(object, name -> true);
+		final boolean whole = (this.shape instanceof All) || (this.shape instanceof Whole && this.described.isPlain());
+		final Map<String, Object> written = this.writer.write(object,
+				whole ? name -> true : name -> !(shapeOf(this.shape, name, this.described) instanceof Nothing));
+		if (whole && this.naming == null) {
+			return written;
 		}
-		final Predicate<String> names = name -> !(shapeOf(this.shape, name, this.described) instanceof Nothing);
-		final Object written = prune(this.writer.write(object, names), this.shape, this.described);
-		return (Map<String, Object>) Objects.requireNonNull(written);
+		return (Map<String, Object>) Objects.requireNonNull(prune(written, this.shape, this.described, this.naming));
 	}
 
 	private PropertyView<X> narrowed(boolean including, String name, String... names) {
@@ -477,7 +674,7 @@ public final class PropertyView<X> {
 			paths.add(Objects.requireNonNull(other, "'names' must not contain null."));
 		}
 		return new PropertyView<>(this.writer, this.described,
-				narrow(this.shape, this.described, paths, including, false, ""));
+				narrow(this.shape, this.described, paths, including, false, ""), this.naming);
 	}
 
 	/**
@@ -506,11 +703,7 @@ public final class PropertyView<X> {
 			String prefix) {
 		final Level level = level(value, prefix);
 		final Described object = level.object();
-		Shape inner = shape;
-		for (int i = 0; i < level.depth() && inner instanceof Each each; i++) {
-			inner = each.element();
-		}
-		final Shape current = inner;
+		final Shape current = elementOf(shape, level.depth());
 		final Set<String> defined = object.names();
 		final Set<String> discriminators = object.discriminators();
 		final Set<String> named = new LinkedHashSet<>();
@@ -518,10 +711,7 @@ public final class PropertyView<X> {
 		for (String path : paths) {
 			final String name = nameOf(path, defined);
 			if (name == null) {
-				throw new IllegalArgumentException(
-						"The property '" + prefix + path + "' is not defined by the validator. The properties "
-								+ (prefix.isEmpty() ? "" : "of '" + prefix.substring(0, prefix.length() - 1) + "' ")
-								+ "are " + defined + ".");
+				throw undefined(prefix, path, defined);
 			}
 			if (discriminators.contains(name)) {
 				throw new IllegalArgumentException("The discriminator '" + prefix + name
@@ -585,6 +775,162 @@ public final class PropertyView<X> {
 			narrowed = new Each(narrowed);
 		}
 		return narrowed;
+	}
+
+	/**
+	 * Returns the given keys with the given key for the property of the given path of a
+	 * value with the given shape.
+	 * @param prefix the path to the value, which ends with a period unless it is empty
+	 */
+	private static Renamed rename(@Nullable Renamed renamed, Shape shape, Described value, String path, String key,
+			String prefix) {
+		final Level level = level(value, prefix);
+		final Described object = level.object();
+		final Shape current = elementOf(shape, level.depth());
+		final Set<String> defined = object.names();
+		final String name = nameOf(path, defined);
+		if (name == null) {
+			throw undefined(prefix, path, defined);
+		}
+		final Shape written = shapeOf(current, name, object);
+		if (written instanceof Nothing) {
+			throw new IllegalArgumentException("The property '" + prefix + name
+					+ "' is not written by the view that renames it" + (object.withholds(name)
+							? ": it is withheld, and written only by a view that includes it by its name." : "."));
+		}
+		final Map<String, String> keys = new LinkedHashMap<>(renamed != null ? renamed.keys() : Map.of());
+		final Map<String, Renamed> nested = new LinkedHashMap<>(renamed != null ? renamed.nested() : Map.of());
+		if (path.length() > name.length()) {
+			nested.put(name, rename(nested.get(name), written, object.property(name), path.substring(name.length() + 1),
+					key, prefix + name + "."));
+		}
+		else if (keys.putIfAbsent(name, key) != null) {
+			throw new IllegalArgumentException("The property '" + prefix + name + "' is renamed twice.");
+		}
+		return new Renamed(level.depth(), Collections.unmodifiableMap(keys), Collections.unmodifiableMap(nested));
+	}
+
+	/**
+	 * Checks that no two properties of an object of a value with the given shape are
+	 * written under one key.
+	 * @param prefix the path to the value, which ends with a period unless it is empty
+	 * @param all the objects that are checked as they are written with what they withhold
+	 * @param shown the objects that are checked as they are written without it
+	 * @throws IllegalArgumentException if two properties are written under one key
+	 */
+	private static void verify(Shape shape, Described value, @Nullable Naming naming, String prefix,
+			Set<ValueDescription> all, Set<ValueDescription> shown) {
+		if (naming == null || shape instanceof Nothing) {
+			return;
+		}
+		final Convention convention = naming.convention();
+		if (naming.renamed() == null && (shape instanceof All || shape instanceof Whole)) {
+			// the same at any depth, so an object is checked once: a structure that
+			// contains itself ends here
+			if (convention != null) {
+				final boolean withheld = shape instanceof All;
+				value.descriptions
+					.forEach(description -> verify(description, convention, withheld, withheld ? all : shown));
+			}
+			return;
+		}
+		final Level level = level(value, prefix);
+		final Described object = level.object();
+		final Shape current = elementOf(shape, level.depth());
+		final Naming keys = naming.object();
+		for (ValueDescription.Properties properties : object.content().objects()) {
+			final Map<String, String> names = new LinkedHashMap<>();
+			for (ValueDescription.Property property : properties.properties()) {
+				if (!(shapeOf(current, property.name(), object) instanceof Nothing)) {
+					unique(names, keys.keyOf(property.name()), property.name(), prefix);
+				}
+			}
+		}
+		for (String name : object.names()) {
+			verify(shapeOf(current, name, object), object.property(name), keys.property(name), prefix + name + ".", all,
+					shown);
+		}
+		final Shape others = current instanceof All ? ALL
+				: current instanceof Obj properties && !properties.others() ? NOTHING : WHOLE;
+		verify(others, object.others(), keys.others(), prefix, all, shown);
+	}
+
+	/**
+	 * Checks that no two properties of an object of the given description are written
+	 * under one key by the given function, at any depth.
+	 * @param withheld whether the properties that are withheld are written
+	 * @param seen the objects and the references that are checked
+	 */
+	private static void verify(@Nullable ValueDescription description, Convention convention, boolean withheld,
+			Set<ValueDescription> seen) {
+		switch (description) {
+			case null -> {
+			}
+			case ValueDescription.Properties properties -> {
+				if (!seen.add(properties)) {
+					return;
+				}
+				final Map<String, String> names = new LinkedHashMap<>();
+				for (ValueDescription.Property property : properties.properties()) {
+					if (withheld || !property.withheld()) {
+						unique(names, convention.keyOf(property.name()), property.name(), "");
+						verify(property.value(), convention, withheld, seen);
+					}
+				}
+				verify(properties.rest(), convention, withheld, seen);
+			}
+			case ValueDescription.AnyOf anyOf ->
+				anyOf.alternatives().forEach(alternative -> verify(alternative, convention, withheld, seen));
+			case ValueDescription.NotNull notNull -> verify(notNull.value(), convention, withheld, seen);
+			case ValueDescription.Optional optional -> verify(optional.value(), convention, withheld, seen);
+			case ValueDescription.Presence presence -> verify(presence.value(), convention, withheld, seen);
+			case ValueDescription.Required required -> verify(required.value(), convention, withheld, seen);
+			case ValueDescription.Reference reference -> {
+				if (seen.add(reference)) {
+					verify(reference.target(), convention, withheld, seen);
+				}
+			}
+			case ValueDescription.Elements elements -> verify(elements.element(), convention, withheld, seen);
+			case ValueDescription.Entries entries -> verify(entries.value(), convention, withheld, seen);
+			case ValueDescription.Value value -> {
+			}
+			case ValueDescription.Unknown unknown -> {
+			}
+			case ValueDescription.Never never -> {
+			}
+		}
+	}
+
+	/**
+	 * Adds the key of the property with the given name to the keys of an object.
+	 * @param names the names of the properties of the object, by their keys
+	 * @throws IllegalArgumentException if another property is written under the key
+	 */
+	private static void unique(Map<String, String> names, String key, String name, String prefix) {
+		final String other = names.putIfAbsent(key, name);
+		if (other != null && !other.equals(name)) {
+			throw new IllegalArgumentException("The properties '" + prefix + other + "' and '" + prefix + name
+					+ "' are both written as '" + key + "'.");
+		}
+	}
+
+	/**
+	 * Returns the shape of the objects of a value with the given shape, which are the
+	 * elements of the given number of lists and maps.
+	 */
+	private static Shape elementOf(Shape shape, int depth) {
+		Shape inner = shape;
+		for (int i = 0; i < depth && inner instanceof Each each; i++) {
+			inner = each.element();
+		}
+		return inner;
+	}
+
+	private static IllegalArgumentException undefined(String prefix, String path, Set<String> defined) {
+		return new IllegalArgumentException(
+				"The property '" + prefix + path + "' is not defined by the validator. The properties "
+						+ (prefix.isEmpty() ? "" : "of '" + prefix.substring(0, prefix.length() - 1) + "' ") + "are "
+						+ defined + ".");
 	}
 
 	/**
@@ -656,51 +1002,73 @@ public final class PropertyView<X> {
 		}
 	}
 
-	private static @Nullable Object prune(@Nullable Object value, Shape shape, Described described) {
+	/**
+	 * Returns the given written value with the given shape, and with the keys of the
+	 * given naming if there is one.
+	 */
+	private static @Nullable Object prune(@Nullable Object value, Shape shape, Described described,
+			@Nullable Naming naming) {
 		return switch (shape) {
-			case All all -> value;
 			case Nothing nothing -> throw new IllegalStateException("A value that is not written has no shape.");
-			case Whole whole -> {
-				if (described.isPlain()) {
-					yield value;
-				}
-				if (value instanceof List<?> elements) {
-					yield each(elements, WHOLE, described);
-				}
-				yield value instanceof Map<?, ?> properties ? properties(properties, WHOLE, described) : value;
-			}
+			case All all -> naming == null ? value : whole(value, shape, described, naming);
+			case Whole whole ->
+				naming == null && described.isPlain() ? value : whole(value, shape, described, naming);
 			case Each each -> {
+				final Naming element = naming != null ? naming.element() : null;
 				if (value instanceof List<?> elements) {
-					yield each(elements, each.element(), described);
+					yield each(elements, each.element(), described, element);
 				}
 				if (value instanceof Map<?, ?> entries) {
 					final Described entry = described.each();
 					final Map<Object, @Nullable Object> pruned = new LinkedHashMap<>();
-					entries.forEach((key, element) -> pruned.put(key, prune(element, each.element(), entry)));
+					entries.forEach((key, entryValue) -> pruned.put(key, prune(entryValue, each.element(), entry, element)));
 					yield pruned;
 				}
 				yield value;
 			}
-			case Obj object -> value instanceof Map<?, ?> properties ? properties(properties, object, described)
+			case Obj object -> value instanceof Map<?, ?> properties ? properties(properties, object, described, naming)
 					: value;
 		};
 	}
 
-	private static List<@Nullable Object> each(List<?> elements, Shape shape, Described described) {
+	private static @Nullable Object whole(@Nullable Object value, Shape shape, Described described,
+			@Nullable Naming naming) {
+		if (value instanceof List<?>elements) {
+			return each(elements, shape, described, naming != null ? naming.element() : null);
+		}
+		return value instanceof Map<?, ?>properties ? properties(properties, shape, described, naming) : value;
+	}
+
+	private static List<@Nullable Object> each(List<?> elements, Shape shape, Described described,
+			@Nullable Naming naming) {
 		final Described element = described.each();
 		final List<@Nullable Object> pruned = new ArrayList<>(elements.size());
-		elements.forEach(value -> pruned.add(prune(value, shape, element)));
+		elements.forEach(value -> pruned.add(prune(value, shape, element, naming)));
 		return pruned;
 	}
 
-	private static Map<Object, @Nullable Object> properties(Map<?, ?> properties, Shape shape, Described described) {
+	private static Map<Object, @Nullable Object> properties(Map<?, ?> properties, Shape shape, Described described,
+			@Nullable Naming naming) {
+		final Set<String> defined = naming != null ? described.names() : Set.of();
 		final Map<Object, @Nullable Object> pruned = new LinkedHashMap<>();
 		properties.forEach((key, property) -> {
 			final String name = String.valueOf(key);
 			final Shape kept = shapeOf(shape, name, described);
-			if (!(kept instanceof Nothing)) {
-				pruned.put(key, prune(property, kept, described.property(name)));
+			if (kept instanceof Nothing) {
+				return;
 			}
+			if (naming == null) {
+				pruned.put(key, prune(property, kept, described.property(name), null));
+				return;
+			}
+			// a key that the object does not define is one of the rest or of a map
+			final boolean renamed = defined.contains(name);
+			final Object written = renamed ? naming.keyOf(name) : key;
+			if (pruned.containsKey(written)) {
+				throw new IllegalArgumentException("The property '" + written + "' is written twice.");
+			}
+			pruned.put(written, prune(property, kept, described.property(name),
+					renamed ? naming.property(name) : naming.element()));
 		});
 		return pruned;
 	}

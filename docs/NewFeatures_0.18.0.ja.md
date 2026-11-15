@@ -1039,6 +1039,56 @@ jdbcClient.sql("INSERT INTO users (id, name, password_hash) VALUES (:id, :name, 
 
 名前を 1 か所にまとめるには、スキーマとビューで定数を共有します（`._object(ADDRESS, addressValidator)` と `excluding(ADDRESS)`）。
 
+### プロパティを別のキーで書く
+
+行は `first_name` で読み、API は `firstName` で返す、ということがあります。JSON ライブラリが名前を変換するのはクラスのプロパティで、マップのキーは変換しません。そこで、ビューの `renaming` でプロパティを別のキーで書きます。
+
+```java
+static final PropertyView<Employee> RESPONSE = employeeValidator
+        .renaming(Names::snakeToCamel) // すべてのプロパティ。どの深さでも
+        .renaming("id", "employeeId")  // 1 つのプロパティ
+        .excluding("email");
+
+employeeValidator.toMap(employee);
+// {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
+RESPONSE.toMap(employee);
+// {employeeId=1, firstName=Taro, lastName=Yamada, nickname=null, role=ADMIN}
+
+@GetMapping("/employees/{id}")
+Map<String, Object> get(@PathVariable Integer id) {
+    return RESPONSE.toMap(employeeRepository.findById(id));
+}
+```
+
+* `renaming(function)` の関数には、バリデータが定義するすべてのプロパティの名前が渡されます。ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティも含みます。名前を変えないプロパティには、渡された名前をそのまま返します（`name -> keys.getOrDefault(name, name)`）。`Names::snakeToCamel` はアプリケーションの関数です。YAVI は変換関数を提供しません。
+* `renaming(path, key)` は 1 つのプロパティの名前を変えます。パスは `including` や `excluding` と同じ形式（`address.zip_code`）で、キーはそのプロパティを持つオブジェクトの 1 つのキーです。どちらを先に書いても、関数が返す値より優先されます。
+* 2 つのメソッドはバリデータにもビューにもあります。バリデータのものは、`toMap` が書く内容のビューを返します。
+* **プロパティは、常にバリデータが定義した名前で指定します。** 名前を変えた後でも、どの順序で書いても同じです。`RESPONSE.excluding("first_name")` と書き、`excluding("firstName")` とは書きません。
+* **変わるのはキーだけです。** 値はこれまでどおりに書かれます。マップの中の日付や enum も、JSON ライブラリがほかの場所と同じように整形するからです。ビューは、プロパティをネストしたり、平坦にしたり、追加したりはしません。形の違う出力は、別のスキーマで書きます。
+
+| キー | 書かれ方 |
+| --- | --- |
+| プロパティ、ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティ | 新しいキー |
+| ユニオンの判別子 | 新しいキー。値（`circle`）は変わらない |
+| 残りのキー（`_rest`）とマップ（`_map`）のキー | そのまま。名前ではなくデータであるため |
+
+ビューを作るときに検査する内容は次のとおりです。
+
+| 呼び出し | `IllegalArgumentException` |
+| --- | --- |
+| `renaming("emial", "mail")` | `The property 'emial' is not defined by the validator. The properties are [...]` |
+| `renaming("id", "email")` | `The properties 'id' and 'email' are both written as 'email'.` |
+| `renaming("id", "a").renaming("id", "b")` | `The property 'id' is renamed twice.` |
+| ビューが書かないプロパティへの `renaming("password_hash", "hash")` | `The property 'password_hash' is not written by the view that renames it` |
+| `renaming(f).renaming(g)` | ビューが受け取る関数は 1 つ |
+| `null` を返す関数 | `The function returns null for the property 'email'.` |
+
+* キーの重複は、ビューが両方のプロパティを書く場合に検査します。先に外したプロパティのキーは使えます。例: `excluding("name").renaming("display_name", "name")`。ユニオンの別々の選択肢のプロパティは、同じキーで書けます。
+* 残りのキーは、ビューを作る時点では分かりません。プロパティの新しいキーと同じキーが残りにあると、`toMap` が `The property 'extra' is written twice.` で失敗します。
+* `withheld()` のプロパティの名前は、それを含めたビューで変えます。例: `userValidator.including("id", "password_hash").renaming("password_hash", "hash")`
+
+**名前を変えたビューはレスポンスのためのものです。** そのマップはバリデータの記述とは一致しないので、読み戻せず、バリデータのフォームにも表示できず（`ParameterTree.ofValues(...).toMap(description)`）、JSON Schema にも記述されません。別の名前のリクエストは、その名前のスキーマで読みます。リクエストには `id` がなく、`password_hash` の代わりに `password` があるというように、行とは形が違うのが普通です。
+
 ### 保存済みのオブジェクトをフォームに表示する
 
 `ParameterTree.ofValues` は、バリデータが書いたマップを受け取り、その値をパラメータのテキストとして保持します。保存済みのオブジェクトの最初の表示と、送信後の再表示を同じコードで扱えます。
@@ -1336,6 +1386,7 @@ Arguments2Validator<String, @Nullable String, Member> memberValidator = Yavi.sch
 | `fromMapReversible`、`toMap`、`map(f, g)`、`ReversibleValueValidator`、`ParameterTree.ofValues`、行の `java.sql` の日付 | [#578](https://github.com/making/yavi/pull/578) |
 | `Yavi.reversibleSchema()`、`Yavi.reversibleDynamicSchema()`、`StringValidator.Reversible` など、`ReversibleValueValidator.NullAccepting`、`ReversibleArguments1Validator`、`ObjectInputValidator.ReversiblePart` | [#579](https://github.com/making/yavi/pull/579) |
 | `PropertyView`、リバーシブルなバリデータの `including` と `excluding`、`ValueDescription.AnyOf#discriminator` | [#580](https://github.com/making/yavi/pull/580) |
+| `PropertyView` とリバーシブルなバリデータの `renaming` | [#588](https://github.com/making/yavi/pull/588) |
 | プロパティの `withheld()`、`ValueDescription.Property#withheld`、1 つのプロパティの `fromMap()` と `fromMapReversible()` | [#581](https://github.com/making/yavi/pull/581)、[#582](https://github.com/making/yavi/pull/582) |
 | プロパティの空のテキストに対する `object.required`、`InputReader#isEmptyText` | [#570](https://github.com/making/yavi/pull/570) |
 | `named`、`splitBy`、`liftList(separator)`、`Yavi.dynamicSchema()` | [#572](https://github.com/making/yavi/pull/572) |
