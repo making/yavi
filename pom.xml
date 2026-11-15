@@ -109,7 +109,7 @@
         <dependency>
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
-            <version>0.19</version>
+            <version>0.24.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -280,8 +280,8 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <!-- compile-testing instantiates javac in-process and needs access to
-                         com.sun.tools.javac.api, which is encapsulated since JDK 16. -->
-                    <argLine>@{argLine} --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED ${test.argLine}</argLine>
+                         the com.sun.tools.javac internals, which are encapsulated since JDK 16. -->
+                    <argLine>@{argLine} --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED ${test.argLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
