@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
  * SPDX-License-Identifier: Apache-2.0
  */
-package am.ik.yavi.constraint.charsequence;
+package am.ik.yavi.constraint;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,7 +14,7 @@ import static am.ik.yavi.core.NullAs.VALID;
 import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_ALL_INCLUDED;
 import static am.ik.yavi.core.ViolationMessage.Default.CODE_POINTS_NOT_INCLUDED;
 
-import am.ik.yavi.constraint.CharSequenceConstraint;
+import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.core.ConstraintPredicate;
 import am.ik.yavi.core.ViolatedValue;
 

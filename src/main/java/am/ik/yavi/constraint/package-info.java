@@ -39,7 +39,10 @@
  * {@link am.ik.yavi.constraint.YearConstraint},
  * {@link am.ik.yavi.constraint.YearMonthConstraint} and
  * {@link am.ik.yavi.constraint.ZonedDateTimeConstraint}</li>
- * <li>char sequences: {@link am.ik.yavi.constraint.CharSequenceConstraint}, and
+ * <li>char sequences: {@link am.ik.yavi.constraint.CharSequenceConstraint},
+ * {@link am.ik.yavi.constraint.ByteSizeConstraint},
+ * {@link am.ik.yavi.constraint.CodePointsConstraint},
+ * {@link am.ik.yavi.constraint.EmojiConstraint}, and
  * {@link am.ik.yavi.constraint.StringValueConstraint} for a {@code String} validated as a
  * value, which can be transformed before it is constrained</li>
  * <li>other values: {@link am.ik.yavi.constraint.ObjectConstraint},
@@ -51,7 +54,7 @@
  *
  * <p>
  * Subpackages provide constraints on arrays ({@code am.ik.yavi.constraint.array}), char
- * sequence details ({@code am.ik.yavi.constraint.charsequence}), IP addresses
+ * sequence helpers ({@code am.ik.yavi.constraint.charsequence}), IP addresses
  * ({@code am.ik.yavi.constraint.inetaddress}), password policies
  * ({@code am.ik.yavi.constraint.password}) and the shared base classes
  * ({@code am.ik.yavi.constraint.base}).

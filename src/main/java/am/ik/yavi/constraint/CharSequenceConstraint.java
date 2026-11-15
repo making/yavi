@@ -5,13 +5,10 @@
 package am.ik.yavi.constraint;
 
 import am.ik.yavi.constraint.base.ContainerConstraintBase;
-import am.ik.yavi.constraint.charsequence.ByteSizeConstraint;
 import am.ik.yavi.constraint.charsequence.CodePoints;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges;
 import am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet;
 import am.ik.yavi.constraint.charsequence.CodePoints.Range;
-import am.ik.yavi.constraint.charsequence.CodePointsConstraint;
-import am.ik.yavi.constraint.charsequence.EmojiConstraint;
 import am.ik.yavi.constraint.charsequence.UrlConstraintBuilder;
 import am.ik.yavi.constraint.charsequence.variant.VariantOptions;
 import am.ik.yavi.constraint.inetaddress.InetAddressUtils;

@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2018-2026 Toshiaki Maki <makingx@gmail.com>
  * SPDX-License-Identifier: Apache-2.0
  */
-package am.ik.yavi.constraint.charsequence;
+package am.ik.yavi.constraint;
 
 import java.nio.charset.Charset;
 
@@ -13,7 +13,6 @@ import static am.ik.yavi.core.ViolationMessage.Default.BYTE_SIZE_GREATER_THAN_OR
 import static am.ik.yavi.core.ViolationMessage.Default.BYTE_SIZE_LESS_THAN;
 import static am.ik.yavi.core.ViolationMessage.Default.BYTE_SIZE_LESS_THAN_OR_EQUAL;
 
-import am.ik.yavi.constraint.CharSequenceConstraint;
 import am.ik.yavi.core.ConstraintPredicate;
 
 /**
