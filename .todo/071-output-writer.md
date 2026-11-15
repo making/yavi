@@ -23,4 +23,4 @@ defined by the round trip with `readingWith(reader)` of the same model.
   `docs/NewFeatures_0.18.0.md`.
 * A `PropertyView` (`including`, `excluding` of a reversible validator) writes a map too.
   If an `OutputWriter` is added, give the view the same `writingWith(writer)`: the view
-  holds the selection, the writer the target.
+  holds the selection and the keys (`renaming`), the writer the target.

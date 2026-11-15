@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.ConstraintViolation;
@@ -843,6 +844,35 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 		 */
 		public PropertyView<X> excluding(String name, String... names) {
 			return PropertyView.of(this::write, this.description()).excluding(name, names);
+		}
+
+		/**
+		 * Returns a view that writes what {@link #toMap(Object)} writes, with every
+		 * property under the key that the given function returns for its name, at any
+		 * depth: a row that is read with {@code first_name} is sent as {@code firstName}.
+		 * The keys of the rest and of a map are written as they are.
+		 * @param function returns the key that a property of the given name is written
+		 * under
+		 * @return a view of the properties under other keys, which only writes
+		 * @throws IllegalArgumentException as
+		 * {@link PropertyView#renaming(UnaryOperator)} states
+		 */
+		public PropertyView<X> renaming(UnaryOperator<String> function) {
+			return this.shown.renaming(function);
+		}
+
+		/**
+		 * Returns a view that writes what {@link #toMap(Object)} writes, with the given
+		 * property under the given key.
+		 * @param path the name of a property, or the path to a property of a nested
+		 * object as {@link PropertyView} states
+		 * @param key the key that the property is written under
+		 * @return a view of the properties with the other key, which only writes
+		 * @throws IllegalArgumentException if this validator does not define a property
+		 * of the given path, or as {@link PropertyView#renaming(String, String)} states
+		 */
+		public PropertyView<X> renaming(String path, String key) {
+			return this.shown.renaming(path, key);
 		}
 
 		/**
