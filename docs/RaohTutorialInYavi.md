@@ -685,7 +685,8 @@ Yavi.schema()._string("middleName").optional().rejectingNull().fromMap()
 // ==> Invalid[errors=[/middleName: "middleName" must not be null (object.notNull)]]
 ```
 
-`presence()` reads a property as a `Presence`, which tells the three states apart.
+`presence()` reads a property as a `Presence`, which tells the three states apart
+(`Present(value)`, `PresentNull`, `Absent`).
 
 ```java
 var bioValidator = Yavi.schema()._string("bio").nullable().presence().fromMap();

@@ -677,7 +677,8 @@ Yavi.schema()._string("middleName").optional().rejectingNull().fromMap()
 // ==> Invalid[errors=[/middleName: "middleName" must not be null (object.notNull)]]
 ```
 
-`presence()` はプロパティを `Presence` として読み、3 つの状態を区別します。
+`presence()` はプロパティを `Presence` として読み、`Present(value)`、`PresentNull`、
+`Absent` の 3 つの状態を区別します。
 
 ```java
 var bioValidator = Yavi.schema()._string("bio").nullable().presence().fromMap();
