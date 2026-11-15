@@ -5,3 +5,4 @@ credentials.yml
 .DS_Store
 .project
 .classpath
+__pycache__/
