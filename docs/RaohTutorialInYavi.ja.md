@@ -258,9 +258,9 @@ Yavi._instant(c -> c.past(clock)).validate(Instant.parse("2025-06-15T11:00:00Z")
 
 ### 文字列から型への変換 (coerce)
 
-Raoh では変換がデコーダの一部です（`string().toInt().range(0, 150)`）。YAVI では変換は入力の
-側にあり、`Integer` のバリデータはそのままで、リーダーが型を表すテキストとして文字列を受け
-取ります。
+Raoh では変換がデコーダの一部です（`string().toInt().range(0, 150)`）。YAVI では変換は
+`InputReader` が担います。`Integer` のバリデータはそのままで、リーダーが型を表す
+テキストとして文字列を受け取ります。
 
 ```java
 InputReader<Object> text = InputReader.ofJdkTypes().coercingStrings();

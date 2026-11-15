@@ -263,8 +263,8 @@ Yavi._instant(c -> c.past(clock)).validate(Instant.parse("2025-06-15T11:00:00Z")
 ### String-to-type conversions (coerce)
 
 In Raoh the conversion is a part of the decoder (`string().toInt().range(0, 150)`). In
-YAVI it belongs to the input: the validator of an `Integer` stays the same, and the
-reader takes a string as text that stands for the type.
+YAVI it belongs to the input reader: the validator of an `Integer` stays the same, and
+the reader takes a string as text that stands for the type.
 
 ```java
 InputReader<Object> text = InputReader.ofJdkTypes().coercingStrings();
