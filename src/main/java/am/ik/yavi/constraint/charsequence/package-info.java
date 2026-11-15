@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * Constraints and helpers for {@code CharSequence} values that go beyond the fluent
+ * Helpers for the constraints on {@code CharSequence} values that go beyond the fluent
  * methods of {@link am.ik.yavi.constraint.CharSequenceConstraint}.
  *
  * <p>
- * {@link am.ik.yavi.constraint.charsequence.ByteSizeConstraint} counts the size in bytes
- * of a charset, {@link am.ik.yavi.constraint.charsequence.EmojiConstraint} counts emoji,
- * and {@link am.ik.yavi.constraint.charsequence.CodePointsConstraint} restricts the
- * Unicode code points of a value. {@link am.ik.yavi.constraint.charsequence.CodePoints}
- * supplies the code points for such a constraint,
+ * {@link am.ik.yavi.constraint.charsequence.CodePoints} supplies the code points for
+ * {@link am.ik.yavi.constraint.CodePointsConstraint},
  * {@link am.ik.yavi.constraint.charsequence.codepoints.CompositeCodePoints} combines
  * several sources, and the
  * {@link am.ik.yavi.constraint.charsequence.variant.VariantOptions} decide which Unicode

@@ -979,3 +979,10 @@ the text, such as an assertion of a test, compares `messageKey()`, `name()` and 
 instead.
 
 Related pull request: [#584](https://github.com/making/yavi/pull/584)
+
+### The char sequence constraints are in `am.ik.yavi.constraint`
+
+`ByteSizeConstraint`, `CodePointsConstraint` and `EmojiConstraint` are in
+`am.ik.yavi.constraint` instead of `am.ik.yavi.constraint.charsequence`. The fluent
+methods of `CharSequenceConstraint` return them as before; code that imports them uses
+the other package.

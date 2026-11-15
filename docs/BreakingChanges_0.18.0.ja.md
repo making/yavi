@@ -848,3 +848,7 @@ new ValidatorBuilder<Order>("/")
 `ConstraintViolation#toString()` は `/age: "age" must be less than or equal to 150 (numeric.lessThanOrEqual)` を返し、`ConstraintViolations#toString()` はそのリストを返します。これまでは `ConstraintViolation{name='age', messageKey='numeric.lessThanOrEqual', defaultMessageFormat='"{0}" must be less than or equal to {1}', args=[age, 150, 300]}` でした。違反した値は、メッセージが表示する場合を除いて出力されなくなりました。テストのアサーションなどでこのテキストを比較しているコードは、`messageKey()`、`name()`、`args()` を比較してください。
 
 関連するプルリクエスト: [#584](https://github.com/making/yavi/pull/584)
+
+### 文字列の制約は `am.ik.yavi.constraint` にあります
+
+`ByteSizeConstraint`、`CodePointsConstraint`、`EmojiConstraint` は `am.ik.yavi.constraint.charsequence` ではなく `am.ik.yavi.constraint` にあります。`CharSequenceConstraint` の fluent メソッドの戻り値はこれまでどおりです。これらのクラスをインポートしているコードは、インポート先を変更してください。

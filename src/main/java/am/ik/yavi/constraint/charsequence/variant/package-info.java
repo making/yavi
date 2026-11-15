@@ -12,7 +12,7 @@
  * collects the settings for the standardized, ideographic and Mongolian free variation
  * selectors and is used by the size constraints of
  * {@link am.ik.yavi.constraint.CharSequenceConstraint} and
- * {@link am.ik.yavi.constraint.charsequence.EmojiConstraint}.
+ * {@link am.ik.yavi.constraint.EmojiConstraint}.
  * </p>
  *
  * @since 0.0.14
