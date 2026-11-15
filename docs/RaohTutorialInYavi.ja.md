@@ -54,8 +54,8 @@ input (typed arguments / Map / JSON tree / request parameters)
 Valid[domain object]  or  Invalid[violations with a name, a path, a message key and a message]
 ```
 
-Raoh のデコーダはここでは `ValueValidator<I, T>`、`decode` は `validate`、`Ok` / `Err` は
-`Validated.Valid` / `Validated.Invalid` にあたります。
+Raoh のデコーダはここでは `ValueValidator<I, T>`、Raoh の `decode` は `validate`、
+Raoh の `Ok` / `Err` は `Validated.Valid` / `Validated.Invalid` にあたります。
 
 ## 0. セットアップ
 
@@ -107,7 +107,7 @@ Yavi._object(byte[].class).validate(new byte[]{1, 2, 3})
 // ==> Valid[value=[B@...]
 ```
 
-`ObjectDecoders` のデコーダと違い、これらのバリデータには型があります。
+Raoh の `ObjectDecoders` のデコーダと違い、これらのバリデータには型があります。
 `Yavi._integer().validate("not a number")` はコンパイルできません。`untyped()` は `Object` の
 バリデータを返し、最初に型を検査します。
 
@@ -154,8 +154,9 @@ Yavi._object(UUID.class).untyped().validate("550e8400-e29b-41d4-a716-44665544000
 
 * 変換（`trim()`、`toLowerCase()`）は最初の制約より前に書きます。`c.email().trim()` は
   コンパイルできません。
-* 文字列の長さは size です。`greaterThanOrEqual(3)` は `minLength(3)`、
-  `lessThanOrEqual(20)` は `maxLength(20)`、`fixedSize(n)` は `fixedLength(n)` にあたります。
+* 文字列の長さは size です。`greaterThanOrEqual(3)` は Raoh の `minLength(3)`、
+  `lessThanOrEqual(20)` は Raoh の `maxLength(20)`、`fixedSize(n)` は Raoh の
+  `fixedLength(n)` にあたります。
 * 制約は値の型を変えません。別の型の値は、その型のバリデータが読みます。
   `Yavi._object(UUID.class)` は正規形の文字列を読みます。
 
@@ -391,7 +392,8 @@ Yavi.schema()
 
 ## 5. ネストしたオブジェクト
 
-`nested(decoder)` は `_object(name, validator)` にあたります。違反のパスは組み合わされます。
+Raoh の `nested(decoder)` は `_object(name, validator)` にあたります。違反のパスは
+組み合わされます。
 
 ```java
 record Address(String city, String zip) {}
@@ -423,8 +425,8 @@ customerValidator.validate(Map.of(
 
 ## 6. フラットなデータの構造化
 
-JOIN の結果や CSV ファイルはフラットです。`_embedded` は `flat` にあたり、埋め込むバリデータは
-プロパティと同じマップを読みます。
+JOIN の結果や CSV ファイルはフラットです。`_embedded` は Raoh の `flat` にあたり、
+埋め込むバリデータはプロパティと同じマップを読みます。
 
 ```java
 record UserName(String first, String last) {}
@@ -455,9 +457,9 @@ employeeValidator.validate(Map.of(
 ```
 
 埋め込む側のバリデータは、埋め込んだバリデータのプロパティを知っています。そのため strict に
-でき（[17 節](#17-不明なプロパティの拒否)）、`flat` を使う結合ではこれができません。2 つの
-埋め込みバリデータが同じ名前を定義すると、バリデータの作成時に拒否されます。列は SQL の別名で
-改名します。
+でき（[17 節](#17-不明なプロパティの拒否)）、Raoh の `flat` を使う結合ではこれができません。
+2 つの埋め込みバリデータが同じ名前を定義すると、バリデータの作成時に拒否されます。列は SQL の
+別名で改名します。
 
 LEFT JOIN では、行がないとき結合した側のすべての列が `null` になります。`null` を受け付ける
 埋め込みバリデータには、そのプロパティのどれにも値がないとき `null` が渡されます。そのため
@@ -600,8 +602,8 @@ pricesValidator.validate(Map.of("prices", Map.of("apple", -1)))
 
 ### 文字列に入った JSON
 
-`pipe` は `andThen` にあたります。パーサーは、失敗を違反として報告するバリデータです。ここでは
-Jackson を使うので、jshell のクラスパスに追加します。
+Raoh の `pipe` は `andThen` にあたります。パーサーは、失敗を違反として報告するバリデータです。
+ここでは Jackson を使うので、jshell のクラスパスに追加します。
 
 ```java
 var mapper = new tools.jackson.databind.ObjectMapper();
@@ -713,7 +715,7 @@ profilePatchValidator.validate(Collections.singletonMap("nickname", null))
 ## 10. enum
 
 enum の定数は、その名前から読みます。名前は完全に一致させます。enum のバリデータの
-`ignoringCase()` を付けると、`enumOf` と同じく大文字と小文字を区別しません。
+`ignoringCase()` を付けると、Raoh の `enumOf` と同じく大文字と小文字を区別しません。
 
 ```java
 enum Role { ADMIN, MEMBER, GUEST }
@@ -733,8 +735,8 @@ Yavi.schema()._enum("role", Role.class).defaultValue(Role.MEMBER).fromMap().vali
 
 ## 11. ユニオン型
 
-`oneOf(a, b)` は `ValueValidator.anyOf(a, b)` にあたり、最初に有効だった選択肢を返します。
-`literal("email")` は制約 `equalTo` にあたります。
+Raoh の `oneOf(a, b)` は `ValueValidator.anyOf(a, b)` にあたり、最初に有効だった選択肢を
+返します。Raoh の `literal("email")` は制約 `equalTo` にあたります。
 
 ```java
 interface Contact {}
@@ -774,8 +776,9 @@ if (contactValidator.validate(Map.of("kind", "fax", "value", "123")).errors().ge
 
 ### 判別可能なユニオン
 
-`discriminate("type", variant(...), ...)` は `DiscriminatedUnionValidator` にあたります。
-最初に判別子を読み、選ばれた選択肢だけを検証します。選択肢は判別子を定義しません。
+Raoh の `discriminate("type", variant(...), ...)` は `DiscriminatedUnionValidator` に
+あたります。最初に判別子を読み、選ばれた選択肢だけを検証します。選択肢は判別子を
+定義しません。
 
 ```java
 interface Shape {}
@@ -804,9 +807,9 @@ shapeValidator.validate(Map.of("type", "hexagon"))
 
 ## 12. 複数フィールドにまたがる検証
 
-`flatMap` は `flatFromMap` にあたります。関数は検証済みのプロパティを受け取って `Validated` を
-返すので、ドメインのルールを検査するファクトリメソッドをそのまま渡せます。すべてのプロパティ
-が有効なときにだけ呼ばれます。
+Raoh の `flatMap` は `flatFromMap` にあたります。関数は検証済みのプロパティを受け取って
+`Validated` を返すので、ドメインのルールを検査するファクトリメソッドをそのまま渡せます。
+すべてのプロパティが有効なときにだけ呼ばれます。
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {
@@ -835,9 +838,9 @@ Yavi.schema()._object("period", dateRangeValidator).fromMap()
 ```
 
 違反はオブジェクト自体で報告され、バリデータをネストした箇所では `period` の下で報告され
-ます。`failureWith(message, args...)` は `Result.fail(code, message)` にあたります。ファクトリ
-メソッドは、違反した値もロケールも指定しません。どちらも渡されないからです。バリデータは、
-プロパティの違反と同じく、検証のロケールで違反を報告します。
+ます。`failureWith(message, args...)` は Raoh の `Result.fail(code, message)` にあたります。
+ファクトリメソッドは、違反した値もロケールも指定しません。どちらも渡されないからです。
+バリデータは、プロパティの違反と同じく、検証のロケールで違反を報告します。
 
 ```java
 dateRangeValidator.validate(Map.of("start", "2025-12-31", "end", "2025-01-01"), Locale.JAPANESE)
@@ -894,7 +897,7 @@ paymentValidator.validate(Map.of("method", "cash"))
 ## 14. 異なる入力の結果の結合
 
 スキーマは 1 つの入力のプロパティを結合します。異なる入力の 2 つの結果は `combine` で結合し
-ます。これは `Result.map2` にあたります。
+ます。これは Raoh の `Result.map2` にあたります。
 
 ```java
 record PersonalName(String first, String last) {}
@@ -925,8 +928,9 @@ nameValidator.validate(Map.of("first", ""))
 
 ## 15. リストの行の検証
 
-`Result.traverse(rows, decoder::decode, Path.of("orders"))` は、`prefixed` を付けた `liftList()`
-にあたります。各行が検証され、違反はそのインデックスの下に位置づけられます。
+Raoh の `Result.traverse(rows, decoder::decode, Path.of("orders"))` は、`prefixed` を
+付けた `liftList()` にあたります。各行が検証され、違反はそのインデックスの下に
+位置づけられます。
 
 ```java
 record Order(String orderId, BigDecimal total) {}
@@ -949,8 +953,8 @@ orderValidator.liftList().prefixed("orders").validate(rows)
 
 ### defaultValue
 
-`withDefault` は `defaultValue(...)` にあたります。既定値は、存在しないキーと `null` に適用
-されます。値が存在して無効な場合は違反です。
+Raoh の `withDefault` は `defaultValue(...)` にあたります。既定値は、存在しないキーと
+`null` に適用されます。値が存在して無効な場合は違反です。
 
 ```java
 var roleValidator = Yavi.schema()
@@ -992,7 +996,7 @@ pageSizeValidator.validate(Map.of())
 
 ## 17. 不明なプロパティの拒否
 
-`strict(f)` はバリデータの `rejectingUnknownProperties()` にあたります。
+Raoh の `strict(f)` はバリデータの `rejectingUnknownProperties()` にあたります。
 
 ```java
 record ApiRequest(String action, int amount) {}
@@ -1059,8 +1063,8 @@ var result = checkValidator.validate(Map.of("email", "bad", "age", 300));
 
 ### フォーム向け
 
-`issues.flatten()` は `messagesByPointer()`、フォームのフィールドの名前を使うなら
-`messagesByName()` にあたります。
+Raoh の `issues.flatten()` は `messagesByPointer()`、フォームのフィールドの名前を
+使うなら `messagesByName()` にあたります。
 
 ```java
 switch (result) {
@@ -1075,8 +1079,8 @@ result.errors().messagesByName()
 
 ### API 向け
 
-`issues.toJsonList()` は `details()` にあたります。JSON ライブラリがそのまま直列化する record
-のリストです。`params` は `meta` にあたります。
+Raoh の `issues.toJsonList()` は `details()` にあたります。JSON ライブラリがそのまま
+直列化する record のリストです。`params` は Raoh の `meta` にあたります。
 
 ```java
 result.errors().details()
@@ -1461,9 +1465,9 @@ appConfigValidator.validate(Map.of(
 
 ## 28. タプル
 
-`Arguments::of` は `Tuple2::new` にあたります。`fromMap(Arguments::of)` は `Arguments2` を
-作ります。これは `switch` で分解できる record です。`Arguments1` から `Arguments16` まで
-あります。
+`Arguments::of` は Raoh の `Tuple2::new` にあたります。`fromMap(Arguments::of)` は
+`Arguments2` を作ります。これは `switch` で分解できる record です。`Arguments1` から
+`Arguments16` まであります。
 
 ```java
 var input = Map.<String, Object>of("name", "Alice", "age", 30);
@@ -1486,8 +1490,8 @@ switch (tupleValidator.validate(input)) {
 
 Raoh はデコーダの隣にエンコーダを書きます。YAVI では、マップを読むスキーマがそのまま書き戻し
 も行います。`Yavi.reversibleSchema()` を `fromMapReversible` で終えます。これは `fromMap` に
-プロパティごとのアクセサーを加えたもので、`toMap` は `encode` にあたります。名前を書くのは
-1 回だけです。
+プロパティごとのアクセサーを加えたもので、`toMap` は Raoh の `encode` にあたります。
+名前を書くのは 1 回だけです。
 
 ```java
 record ItemId(long value) {}

@@ -54,8 +54,8 @@ input (typed arguments / Map / JSON tree / request parameters)
 Valid[domain object]  or  Invalid[violations with a name, a path, a message key and a message]
 ```
 
-What Raoh calls a decoder is a `ValueValidator<I, T>` here, `decode` is `validate`, and
-`Ok` / `Err` are `Validated.Valid` / `Validated.Invalid`.
+What Raoh calls a decoder is a `ValueValidator<I, T>` here, Raoh's `decode` is
+`validate`, and Raoh's `Ok` / `Err` are `Validated.Valid` / `Validated.Invalid`.
 
 ## 0. Setup
 
@@ -107,7 +107,7 @@ Yavi._object(byte[].class).validate(new byte[]{1, 2, 3})
 // ==> Valid[value=[B@...]
 ```
 
-Unlike a decoder of `ObjectDecoders`, these validators are typed:
+Unlike a decoder of Raoh's `ObjectDecoders`, these validators are typed:
 `Yavi._integer().validate("not a number")` does not compile. `untyped()` returns the
 validator of an `Object`, which checks the type first:
 
@@ -156,8 +156,9 @@ Yavi._object(UUID.class).untyped().validate("550e8400-e29b-41d4-a716-44665544000
 
 * The transforms (`trim()`, `toLowerCase()`) are written before the first constraint;
   `c.email().trim()` does not compile.
-* The length of a string is its size: `greaterThanOrEqual(3)` is `minLength(3)`,
-  `lessThanOrEqual(20)` is `maxLength(20)` and `fixedSize(n)` is `fixedLength(n)`.
+* The length of a string is its size: `greaterThanOrEqual(3)` is Raoh's `minLength(3)`,
+  `lessThanOrEqual(20)` is Raoh's `maxLength(20)` and `fixedSize(n)` is Raoh's
+  `fixedLength(n)`.
 * A constraint keeps the type of the value. A value of another type is read by the
   validator of that type: `Yavi._object(UUID.class)` reads the canonical string.
 
@@ -393,11 +394,12 @@ Yavi.schema()
 The schema is not bound to a map. The same properties end with `apply(User::new)` for
 typed arguments, and the validator of `fromMap` reads a JSON tree with `readingWith` and
 request parameters with `readingParameters`. Raoh chooses the input first, with the
-static import of `MapDecoders` or `JsonDecoders`.
+static import of Raoh's `MapDecoders` or `JsonDecoders`.
 
 ## 5. Nested objects
 
-`nested(decoder)` is `_object(name, validator)`. The path of a violation is composed.
+Raoh's `nested(decoder)` is `_object(name, validator)`. The path of a violation is
+composed.
 
 ```java
 record Address(String city, String zip) {}
@@ -429,8 +431,8 @@ message shows.
 
 ## 6. Structuring flat data
 
-The result of a JOIN and a CSV file are flat. `_embedded` is `flat`: the embedded
-validator reads the same map as the properties.
+The result of a JOIN and a CSV file are flat. `_embedded` is Raoh's `flat`: the
+embedded validator reads the same map as the properties.
 
 ```java
 record UserName(String first, String last) {}
@@ -462,8 +464,8 @@ employeeValidator.validate(Map.of(
 
 The properties of an embedded validator are known to the validator that embeds it, so it
 can be strict ([section 17](#17-rejecting-unknown-properties)), which a combiner with
-`flat` cannot. A name that two embedded validators define is rejected when the validator
-is built; rename the columns with SQL aliases.
+Raoh's `flat` cannot. A name that two embedded validators define is rejected when the
+validator is built; rename the columns with SQL aliases.
 
 With a LEFT JOIN all columns of the joined side are `null` when there is no row. An
 embedded validator that accepts `null` is given `null` when none of its properties has a
@@ -607,7 +609,8 @@ pricesValidator.validate(Map.of("prices", Map.of("apple", -1)))
 
 ### JSON stored in a string
 
-`pipe` is `andThen`. The parser is a validator that reports its failure as a violation.
+Raoh's `pipe` is `andThen`. The parser is a validator that reports its failure as a
+violation.
 This one uses Jackson, which is added to the class path of jshell.
 
 ```java
@@ -720,7 +723,7 @@ profilePatchValidator.validate(Collections.singletonMap("nickname", null))
 ## 10. Enums
 
 An enum constant is read from its name. The name is matched exactly; `ignoringCase()` of
-the validator of the enum takes any case, as `enumOf` does.
+the validator of the enum takes any case, as Raoh's `enumOf` does.
 
 ```java
 enum Role { ADMIN, MEMBER, GUEST }
@@ -740,8 +743,8 @@ Yavi.schema()._enum("role", Role.class).defaultValue(Role.MEMBER).fromMap().vali
 
 ## 11. Union types
 
-`oneOf(a, b)` is `ValueValidator.anyOf(a, b)`: the first alternative that is valid.
-`literal("email")` is the constraint `equalTo`.
+Raoh's `oneOf(a, b)` is `ValueValidator.anyOf(a, b)`: the first alternative that is
+valid. Raoh's `literal("email")` is the constraint `equalTo`.
 
 ```java
 interface Contact {}
@@ -781,9 +784,9 @@ if (contactValidator.validate(Map.of("kind", "fax", "value", "123")).errors().ge
 
 ### A discriminated union
 
-`discriminate("type", variant(...), ...)` is `DiscriminatedUnionValidator`. It reads the
-discriminator first and validates only the selected alternative, which does not define
-the discriminator.
+Raoh's `discriminate("type", variant(...), ...)` is `DiscriminatedUnionValidator`. It
+reads the discriminator first and validates only the selected alternative, which does not
+define the discriminator.
 
 ```java
 interface Shape {}
@@ -813,9 +816,9 @@ built.
 
 ## 12. Cross-field validation
 
-`flatMap` is `flatFromMap`: the function receives the validated properties and returns a
-`Validated`, so a factory method that checks a rule of the domain is given as it is. It
-is called only when all properties are valid.
+Raoh's `flatMap` is `flatFromMap`: the function receives the validated properties and
+returns a `Validated`, so a factory method that checks a rule of the domain is given as
+it is. It is called only when all properties are valid.
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {
@@ -844,10 +847,10 @@ Yavi.schema()._object("period", dateRangeValidator).fromMap()
 ```
 
 The violation is reported on the object itself, and under `period` where the validator
-is nested. `failureWith(message, args...)` is `Result.fail(code, message)`: the factory
-method names neither a violated value nor a locale, which it is not given. The validator
-reports the violation with the locale of the validation, like the violations of the
-properties.
+is nested. `failureWith(message, args...)` is Raoh's `Result.fail(code, message)`: the
+factory method names neither a violated value nor a locale, which it is not given. The
+validator reports the violation with the locale of the validation, like the violations of
+the properties.
 
 ```java
 dateRangeValidator.validate(Map.of("start", "2025-12-31", "end", "2025-01-01"), Locale.JAPANESE)
@@ -905,7 +908,7 @@ paymentValidator.validate(Map.of("method", "cash"))
 ## 14. Combining results of different sources
 
 A schema combines the properties of one input. Two results of different inputs are
-combined with `combine`, which is `Result.map2`:
+combined with `combine`, which is Raoh's `Result.map2`:
 
 ```java
 record PersonalName(String first, String last) {}
@@ -936,7 +939,7 @@ nameValidator.validate(Map.of("first", ""))
 
 ## 15. Validating the rows of a list
 
-`Result.traverse(rows, decoder::decode, Path.of("orders"))` is `liftList()` with
+Raoh's `Result.traverse(rows, decoder::decode, Path.of("orders"))` is `liftList()` with
 `prefixed`: every row is validated and its violations are located under its index.
 
 ```java
@@ -960,7 +963,7 @@ orderValidator.liftList().prefixed("orders").validate(rows)
 
 ### defaultValue
 
-`withDefault` is `defaultValue(...)`: the default applies to an absent key and to
+Raoh's `withDefault` is `defaultValue(...)`: the default applies to an absent key and to
 `null`. A value that is present but invalid is a violation.
 
 ```java
@@ -1003,7 +1006,7 @@ fallback from the violations, for example to log them.
 
 ## 17. Rejecting unknown properties
 
-`strict(f)` is `rejectingUnknownProperties()` of the validator.
+Raoh's `strict(f)` is `rejectingUnknownProperties()` of the validator.
 
 ```java
 record ApiRequest(String action, int amount) {}
@@ -1070,8 +1073,8 @@ handled with a `switch`. `errors()` returns the violations of a failed result.
 
 ### For forms
 
-`issues.flatten()` is `messagesByPointer()`, or `messagesByName()` with the names of the
-fields of a form.
+Raoh's `issues.flatten()` is `messagesByPointer()`, or `messagesByName()` with the names
+of the fields of a form.
 
 ```java
 switch (result) {
@@ -1086,8 +1089,8 @@ result.errors().messagesByName()
 
 ### For APIs
 
-`issues.toJsonList()` is `details()`: a list of records that a JSON library serializes
-as they are. `params` is `meta`.
+Raoh's `issues.toJsonList()` is `details()`: a list of records that a JSON library
+serializes as they are. `params` is Raoh's `meta`.
 
 ```java
 result.errors().details()
@@ -1475,8 +1478,9 @@ appConfigValidator.validate(Map.of(
 
 ## 28. Tuples
 
-`Arguments::of` is `Tuple2::new`: `fromMap(Arguments::of)` produces an `Arguments2`, a
-record that is deconstructed in a `switch`. There are `Arguments1` to `Arguments16`.
+`Arguments::of` is Raoh's `Tuple2::new`: `fromMap(Arguments::of)` produces an
+`Arguments2`, a record that is deconstructed in a `switch`. There are `Arguments1` to
+`Arguments16`.
 
 ```java
 var input = Map.<String, Object>of("name", "Alice", "age", 30);
@@ -1499,7 +1503,8 @@ The elements are `arg1()`, `arg2()`, ... without a pattern.
 
 Raoh writes an encoder next to the decoder. In YAVI the schema that reads a map also
 writes it: `Yavi.reversibleSchema()` ends with `fromMapReversible`, which is `fromMap`
-with one accessor per property, and `toMap` is `encode`. The names are written once.
+with one accessor per property, and `toMap` is Raoh's `encode`. The names are written
+once.
 
 ```java
 record ItemId(long value) {}
