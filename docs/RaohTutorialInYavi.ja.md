@@ -128,7 +128,7 @@ Yavi._bigDecimal().untyped().validate(19.99)
 
 ## 2. 制約の追加
 
-制約は、バリデータに与える関数です。制約に違反すると、検証は失敗します。
+制約は、バリデータにラムダ式で与えます。制約に違反すると、検証は失敗します。
 
 ### 文字列の制約
 
@@ -162,7 +162,7 @@ Yavi._object(UUID.class).untyped().validate("550e8400-e29b-41d4-a716-44665544000
 
 ### 正規化
 
-size の制約は NFC 形式のコードポイントを数えるので、分解された が（U+304B U+3099）は、
+size の制約は NFC 形式のコードポイントを数えるので、分解された `が`（U+304B U+3099）は、
 変換なしでも 1 文字です。値そのものは変わらず、`toNormalForm(form)` が正規化します。
 
 ```java
@@ -556,8 +556,8 @@ orderItemsValidator.validate(Map.of("items", List.of(
 // ==> Invalid[errors=[/items/1/productId: "items[1].productId" must not be blank (charSequence.notBlank), /items/1/quantity: "items[1].quantity" must be positive (numeric.positive)]]
 ```
 
-プロパティ 1 つのスキーマは、関数を渡さない `fromMap()` で終えます。プロパティの値が結果に
-なります。Raoh の `field(...)` 1 つの代わりです。
+プロパティ 1 つのスキーマは、メソッド参照を渡さない `fromMap()` で終えます。プロパティの値が
+結果になります。Raoh の `field(...)` 1 つの代わりです。
 
 ```java
 Yavi.schema()._list("tags", Yavi._string(), c -> c.greaterThanOrEqual(1).lessThanOrEqual(10)).fromMap()
@@ -807,9 +807,9 @@ shapeValidator.validate(Map.of("type", "hexagon"))
 
 ## 12. 複数フィールドにまたがる検証
 
-Raoh の `flatMap` は `flatFromMap` にあたります。関数は検証済みのプロパティを受け取って
-`Validated` を返すので、ドメインのルールを検査するファクトリメソッドをそのまま渡せます。
-すべてのプロパティが有効なときにだけ呼ばれます。
+Raoh の `flatMap` は `flatFromMap` にあたります。ドメインのルールを検査するファクトリメソッドを
+そのままメソッド参照で渡せます。渡されるのは検証済みのプロパティで、返り値は `Validated` です。
+呼ばれるのは、すべてのプロパティが有効なときだけです。
 
 ```java
 record DateRange(LocalDate start, LocalDate end) {
@@ -1016,8 +1016,8 @@ apiRequestValidator.validate(Map.of("action", "transfer", "amount", 100, "extra"
 
 ## 18. 再帰的な構造
 
-`ValueValidator.recursive(self -> ...)` は、バリデータを作る関数にそのバリデータ自身への参照を
-渡します。代入より前にバリデータを配列で保持する必要はありません。
+`ValueValidator.recursive(self -> ...)` は、バリデータを作るラムダ式にそのバリデータ自身への
+参照を渡します。代入より前にバリデータを配列で保持する必要はありません。
 
 ```java
 record Comment(String body, List<Comment> replies) {}
