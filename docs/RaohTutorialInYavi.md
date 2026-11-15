@@ -694,8 +694,7 @@ var bioValidator = Yavi.schema()._string("bio").nullable().presence().fromMap();
 bioValidator.validate(Map.of("bio", "hello"))
 // ==> Valid[value=Present[value=hello]]
 
-var m = new HashMap<String, Object>(); m.put("bio", null);
-bioValidator.validate(m)
+bioValidator.validate(Collections.singletonMap("bio", null))
 // ==> Valid[value=PresentNull[]]
 
 bioValidator.validate(Map.of())
