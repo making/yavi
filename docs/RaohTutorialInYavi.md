@@ -1,5 +1,7 @@
 # The Raoh tutorial in YAVI
 
+[日本語](RaohTutorialInYavi.ja.md)
+
 This page is the [Raoh decoder practical guide](https://github.com/raoh-project/raoh-java/blob/main/docs/tutorial.md)
 written with YAVI 0.18.0, section by section and with the same numbers, so that the two
 can be read side by side. Every example was run with jshell; the comments show what it
