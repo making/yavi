@@ -2,11 +2,10 @@
 
 [English](NewFeatures_0.18.0.md)
 
-YAVI 0.18.0 では、`Yavi.schema()` で入力を一度記述すれば、型付きの引数、マップ、JSON のツリー、リクエストパラメータのどれからでも読み取れるようになりました。`Yavi.schema()` は `Yavi.arguments()` を置き換えるもので、`Yavi.arguments()` は非推奨になりました。
+YAVI 0.18.0 では、`Yavi.schema()` で入力を一度記述すれば、型付きの引数、マップ、JSON のツリー、リクエストパラメータのどれからでも読み取れるようになりました。`Yavi.schema()` は `Yavi.arguments()` を置き換えるもので、`Yavi.arguments()` は非推奨になりました。`Yavi.schema()` と `fromMap` が今回のリリースの中心で、このドキュメントのほかの機能は、その一部か拡張です。
 
+* [入力を記述してマップから読み取る](#入力を記述してマップから読み取る)
 * [単一の値のバリデータ](#単一の値のバリデータ)
-* [省略可能なプロパティとネストしたオブジェクトやリストやマップ](#省略可能なプロパティとネストしたオブジェクトやリストやマップ)
-* [パース済みの JSON オブジェクトなどのマップを検証する](#パース済みの-json-オブジェクトなどのマップを検証する)
 * [JSON ライブラリのツリーモデルを検証する](#json-ライブラリのツリーモデルを検証する)
 * [リクエストパラメータを検証する](#リクエストパラメータを検証する)
 * [オブジェクトを読み取り元のマップに書き戻す](#オブジェクトを読み取り元のマップに書き戻す)
@@ -25,192 +24,41 @@ record Address(String street, String city) {}
 record User(String email, Optional<String> nickname, Integer age, Role role, Address address, List<String> tags) {}
 ```
 
-## 単一の値のバリデータ
+## 入力を記述してマップから読み取る
 
-`Yavi._string`、`Yavi._integer`、`Yavi._localDate` などは、1 つの値のバリデータを、ビルダークラスと `build()` なしで作ります。メソッド名は `Yavi.schema()` のプロパティと同じです。
-
-```java
-// before
-StringValidator<String> emailValidator = StringValidatorBuilder.of("email", c -> c.notBlank().email()).build();
-
-// after
-StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank().email());
-```
-
-* リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。そのメッセージは、名前の代わりに「The value」と表示します（`The value must not be blank`）。
-* `Yavi.schema()` のプロパティと同じく、名前の有無にかかわらず制約も省略できます（`Yavi._boolean("subscribed")`、`Yavi._enum("role", Role.class)`、`Yavi._object("id", UUID.class)`、`Yavi._string()`）。
-* `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。`Yavi._list(elementValidator)` と `Yavi._map(valueValidator)` は、要素や値だけを検証します。
-* `named(name)` は、バリデータを別の名前で使います。[後述](#ルールを別の名前で使う)します。
-
-### 制約の前に値を変換する
-
-`String` の変換は、制約の前に書きます。それ以外の値は `preprocess` で変換します。`null` は変換されません。
+`Yavi.schema()` で入力のプロパティを一度記述し、`fromMap` でそのプロパティに、マップを
+オブジェクトに読み取るバリデータを付けます。同じ記述で、JSON のツリー
+([後述](#json-ライブラリのツリーモデルを検証する)) とリクエストパラメータ
+([後述](#リクエストパラメータを検証する)) も読み取れ、オブジェクトを書き戻す
+([後述](#オブジェクトを読み取り元のマップに書き戻す)) こともできます。
 
 ```java
-StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
-emailValidator.validate("  USER@Example.COM "); // Valid[value=user@example.com]
+record Signup(String email, Optional<String> nickname, Integer age, Role role) {}
 
-BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.positive())
-        .preprocess(BigDecimal::stripTrailingZeros);
+ObjectInputValidator<Signup> signupValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email())
+        ._string("nickname", c -> c.notBlank()).optional()
+        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+        ._enum("role", Role.class)
+        .fromMap(Signup::new);
+
+signupValidator.validate(Map.of("email", "jd@example.com", "age", 30, "role", "ADMIN"));
+// Valid[value=Signup[email=jd@example.com, nickname=Optional.empty, age=30, role=ADMIN]]
 ```
 
-`String` の変換には、`trim()`、`toLowerCase()`、`toUpperCase()`、`toNormalForm(form)`、`transform(f)` があります。
+1 つの値のバリデータは `Yavi._string`、`Yavi._integer` などで作ります。詳しくは
+[単一の値のバリデータ](#単一の値のバリデータ)を参照してください。
 
-### ルールを別の名前で使う
+### マップからのオブジェクトの読み取り
 
-バリデータは、作成時に与えられた名前を保持します。`named(name)` は、同じバリデータを別の名前で返します。値のルールを 1 か所で定義し、複数のプロパティで使えます。
-
-```java
-public final class Email {
-    public static final StringValidator<String> VALIDATOR = Yavi._string("email", c -> c.trim().notBlank().email());
-}
-
-record Contact(String email, @Nullable String backupEmail, String replyTo) {}
-
-ObjectInputValidator<Contact> contactValidator = Yavi.schema()
-        ._string(Email.VALIDATOR)                                 // キーも名前も "email"
-        ._string(Email.VALIDATOR.named("backupEmail")).nullable() // キーも名前も "backupEmail"
-        ._object("replyTo", Email.VALIDATOR)                      // named("replyTo") と同じ
-        .fromMap(Contact::new);
-
-contactValidator.validate(Map.of("email", "a", "backupEmail", "b", "replyTo", "c"));
-// email:       "email" must be a valid email address
-// backupEmail: "backupEmail" must be a valid email address
-// replyTo:     "replyTo" must be a valid email address
-```
-
-* 単一の値のバリデータでは、違反の名前、メッセージ、`description()` の名前が、指定した名前に置き換わります。そのため、バリデータだけを渡して追加したプロパティのキーも、指定した名前になります。
-* オブジェクト、リスト、マップ、ラムダの値のように自身の名前を持たない値では、違反が `prefixed(name)` と同じく指定した名前の下に位置づけられます（`addressValidator.named("home")` は `home.street` を報告します）。
-* 名前はコンビネータを越えて引き継がれます。`Email.VALIDATOR.map(Email::new).nullable().named("x")` と `Email.VALIDATOR.named("x").map(Email::new).nullable()` は同じ結果になり、`untyped().named("x")` と `named("x").untyped()` も同じ結果になります。`andThen` は前後両方のバリデータに、`anyOf` はすべての選択肢に名前を渡します。
-* スキーマの `_object(name, validator)` は、バリデータを `name` の名前で使います。
-
-### コンビネータ
-
-すべての `ValueValidator` に次のメソッドがあります。
-
-| メソッド | 結果 |
-| --- | --- |
-| `nullable()`、`optional()`、`defaultValue(value)` | `null` を受け付け、`null`、`Optional.empty()`、デフォルト値のいずれかを返す |
-| `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
-| `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる。要素は入力の型のサブタイプでもよいので、`Object` のバリデータを lift すると `List<String>` を検証できる |
-| `liftList(separator)` | `liftList()` に加えて、`1,2,3` のような 1 つのテキストからもリストを読む |
-| `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
-| `named(name)` | 値の違反を別の名前で報告する |
-| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。この違反は `ConstraintViolation.NoAlternativeMatched` で、各選択肢の違反はその `alternatives()` にある |
-| `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
-
-### 新しい制約
-
-`BigDecimalConstraint` に `fractionDigits(max)` と `integerDigits(max)` が追加されました。Bean Validation の `@Digits` に相当します。桁数は表記ではなく値に対して数えるので、`1.500` の小数部は 1 桁です。
-
-```java
-Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
-// 1.505: "price" must have at most 2 fraction digits
-```
-
-整数型、`BigInteger`、`BigDecimal` の制約に `multipleOf(divisor)` が追加されました。`Double` と `Float` にはありません。2 進小数の剰余は正確ではないためです。
-
-```java
-Yavi._integer("quantity", c -> c.multipleOf(12));
-// 30: "quantity" must be a multiple of 12
-Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
-```
-
-`CollectionConstraint` に `unique(key)` が追加されました。オブジェクトの ID のような、要素のキーで一意であることを求めます。重複したキーはメッセージと `params` に入ります。JSON Schema には対応するキーワードがないため、`uniqueItems` は `unique()` に対してだけ出力されます。
-
-```java
-Yavi.schema()._list("products", productValidator, c -> c.unique(Product::id));
-// "products" must be unique. [APPLE] is/are duplicated.
-```
-
-`CharSequenceConstraint` に 3 つの形式が追加されました。
-
-| 制約 | 受け付ける値 | メッセージキー |
-| --- | --- | --- |
-| `ip()` | IPv4 または IPv6 のアドレス | `charSequence.ip` |
-| `uri()` | スキームを持つ URI（`mailto:a@example.com`、`urn:isbn:...`、`s3://bucket/key`）。`url()` と違い、`java.net.URL` が扱えるプロトコルに限らない | `charSequence.uri` |
-| `ulid()` | ULID。大文字と小文字のどちらでもよい | `charSequence.ulid` |
-
-`JsonSchema` はこれらを `multipleOf` と `"format": "uri"` として出力します。
-
-形式の制約はすべて、`email()` や `url()` と同じく空文字列を受け付けます。形式の制約は与えられたテキストの形を決めるもので、テキストが与えられていることは `notBlank()` や `notEmpty()` が決めます。そのため、省略可能なテキストの制約は形式によらず同じ書き方になります。`ipv4()`、`ipv6()`、`luhn()`、`isoLocalDate()`、`localDate(pattern)` は 0.17 では `""` を拒否していました。[破壊的変更](BreakingChanges_0.18.0.ja.md#文字列の形式の制約は空文字列を受け付ける)を参照してください。
-
-```java
-Yavi._string("homepage", c -> c.url()).validate("");       // valid
-Yavi._string("proxy", c -> c.ip()).validate("");           // valid
-Yavi._string("proxy", c -> c.notBlank().ip()).validate(""); // "proxy" must not be blank
-```
-
-## 省略可能なプロパティとネストしたオブジェクトやリストやマップ
-
-`Yavi.schema()` のプロパティは、直後の修飾メソッドで変えない限り `null` を拒否します。プロパティには、オブジェクト、リスト、マップも指定できます。
+`fromMap` は、プロパティの定義から、`Map<String, Object>` を読むバリデータを作ります。このバリデータは、プロパティを名前で読み取り、型を検査し、オブジェクトを生成します。キャストもリフレクションも使いません。
 
 ```java
 ObjectInputValidator<Address> addressValidator = Yavi.schema()
         ._string("street", c -> c.notBlank())
         ._string("city", c -> c.notBlank())
-        .fromMap(Address::new); // 次の節を参照
+        .fromMap(Address::new);
 
-Arguments6Validator<String, String, Integer, Role, Map<String, Object>, List<? extends String>, User> userValidator = Yavi.schema()
-        ._string("email", c -> c.notBlank().email())
-        ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
-        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
-        ._enum("role", Role.class).recover(Role.GUEST)
-        ._object("address", addressValidator)                    // address.street
-        ._list("tags", Yavi._string(c -> c.notBlank()),          // tags[0]
-                c -> c.notEmpty().lessThanOrEqual(10).unique())  // tags
-        .apply(User::new)
-        .constraintOnTarget(user -> user.age() >= 18 || user.role() != Role.ADMIN, "role",
-                ViolationMessage.of("user.adultAdmin", "\"{0}\" must not be ADMIN for a minor"));
-```
-
-* `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。
-* `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
-* `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
-* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。続けて追加したルールはすべて検査され、プロパティの違反と同じように、違反したルールがすべて報告されます。`map` や `andThen` のあとに追加したルールは、それより前のルールを満たす場合にだけ検査されます。
-
-```java
-ObjectInputValidator<PasswordForm> passwordFormValidator = Yavi.schema()
-        ._string("currentPassword", c -> c.notBlank())
-        ._string("newPassword", c -> c.greaterThanOrEqual(8))
-        ._string("confirmPassword", c -> c.notBlank())
-        .fromMap(PasswordForm::new)
-        .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
-                ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
-        .constraintOnTarget(form -> !form.current().equals(form.newPassword()), "newPassword",
-                ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
-
-passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassword", "newSecret1",
-        "confirmPassword", "different"));
-// Invalid: confirmPassword (password.mismatch), newPassword (password.same)
-```
-
-* `constraintOnTarget` をオーバーライドして自身の型を返す独自の `ValueValidator` は、ルールを `TargetConstraints` に保持します。`and` でルールを追加し、`check` で値が違反したルールをすべて報告します。
-* `flatApply(f)` は、検証を行うファクトリメソッドのような、`Validated` を返す関数を受け取ります。
-
-### プロパティを値オブジェクトに変換する
-
-プロパティの直後の `map(f)` は、検証済みの値を値オブジェクトなどに変換します。ほかの修飾メソッドと同じ位置に書けるので、プロパティをその場で定義したまま変換できます。
-
-```java
-ObjectInputValidator<User> userValidator = Yavi.schema()
-        ._string("email", c -> c.notBlank().email()).map(Email::new)
-        ._string("nickname").map(Nickname::new).optional()   // Optional<Nickname>
-        ._integer("age", c -> c.greaterThanOrEqual(0)).map(Age::new).defaultValue(new Age(20))
-        .fromMap(User::new);
-```
-
-* 関数には制約を満たした値が渡されます。プロパティの読み取り、違反の報告、記述は変わりません。キー、`object.type` の型、ラベル、JSON Schema は `map` の前の値のものです。
-* `map` は、`null` の扱いを決める修飾メソッドより前に書きます。それらは変換後の値に適用されます。関数に `null` は渡されず、`optional()` の結果は `Optional<Nickname>` になり、デフォルト値は変換後の値で指定します。`.optional().map(f)` や `.defaultValue(v).map(f)` はコンパイルできません。
-* `label`、`typeMessage`、`withheld()` は `map` の前後どちらにも書けます。リストをテキストから読む指定は `map` より前に書きます（`.splitBy(",").map(Set::copyOf)`）。
-* `Yavi.reversibleSchema()` では、書き戻すための逆変換を取る `map(f, g)` になります（`._string("email").map(Email::new, Email::value)`）。`map(f)` だけではコンパイルできません。
-* 別の場所で定義したバリデータは、これまでどおりそのまま渡します（`._string(Email.VALIDATOR)`、`._object("email", emailValidator)`）。
-
-## パース済みの JSON オブジェクトなどのマップを検証する
-
-`fromMap` は、同じプロパティの定義から、`Map<String, Object>` を読むバリデータを作ります。このバリデータは、プロパティを名前で読み取り、型を検査し、オブジェクトを生成します。キャストもリフレクションも使いません。
-
-```java
 ObjectInputValidator<User> userValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
         ._string("nickname", c -> c.notBlank()).optional()
@@ -241,6 +89,66 @@ Validated<User> validated = userValidator.validate(Map.of(
 * `ignoringCase()` を付けると、enum の定数名の大文字と小文字を区別せずに読み取ります。`._enum(Yavi._enum("role", Role.class).ignoringCase())` は `"admin"` を受け付けます。
 * `flatFromMap(f)` は `Validated` を返す関数を受け取ります（`.flatFromMap(DateRange::parse)`）。
 * `untyped()` は、バリデータを `ValueValidator<Object, X>` に変えます。たとえば、型の異なる選択肢を組み合わせるときに使います（`ValueValidator.anyOf(Yavi._integer(c -> c.positive()).untyped(), Yavi._string(c -> c.uuid()).untyped())`）。
+* `fromMap(f)` の代わりに `apply(f)` を付けると、同じプロパティからこれまで通り `ArgumentsNValidator` が得られます。`flatApply(f)` は、その `flatFromMap(f)` にあたります。
+
+### プロパティと修飾子
+
+`Yavi.schema()` のプロパティは、直後の修飾メソッドで変えない限り `null` を拒否します。プロパティには、オブジェクト、リスト、マップも指定できます。
+
+```java
+ObjectInputValidator<User> userValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email())
+        ._string("nickname", c -> c.notBlank()).optional()       // Optional<String>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+        ._enum("role", Role.class).recover(Role.GUEST)
+        ._object("address", addressValidator)                    // address.street
+        ._list("tags", Yavi._string(c -> c.notBlank()),          // tags[0]
+                c -> c.notEmpty().lessThanOrEqual(10).unique())  // tags
+        .fromMap(User::new)
+        .constraintOnTarget(user -> user.age() >= 18 || user.role() != Role.ADMIN, "role",
+                ViolationMessage.of("user.adultAdmin", "\"{0}\" must not be ADMIN for a minor"));
+```
+
+* `nullable()`、`optional()`、`defaultValue(...)`、`recover(...)`、`recoverWith(...)` は、直前に追加したプロパティに適用されます。
+* `_object(name, validator)`、`_list(name, elementValidator)`、`_map(name, valueValidator)` の違反は、`name()`（`address.street`、`tags[1]`、`prices.pen`）でも `path()` でも、プロパティの名前の下に位置づけられます。
+* `_list` と `_map` の制約は、すべての要素が有効な場合に検査され、プロパティに対して報告されます（`"tags" must be unique. [a] is/are duplicated.`）。
+* `constraintOnTarget` は、複数のプロパティにまたがるルールです。すべてのプロパティが有効な場合に検査されます。続けて追加したルールはすべて検査され、プロパティの違反と同じように、違反したルールがすべて報告されます。`map` や `andThen` のあとに追加したルールは、それより前のルールを満たす場合にだけ検査されます。
+
+```java
+ObjectInputValidator<PasswordForm> passwordFormValidator = Yavi.schema()
+        ._string("currentPassword", c -> c.notBlank())
+        ._string("newPassword", c -> c.greaterThanOrEqual(8))
+        ._string("confirmPassword", c -> c.notBlank())
+        .fromMap(PasswordForm::new)
+        .constraintOnTarget(form -> form.newPassword().equals(form.confirm()), "confirmPassword",
+                ViolationMessage.of("password.mismatch", "\"{0}\" must match \"newPassword\""))
+        .constraintOnTarget(form -> !form.current().equals(form.newPassword()), "newPassword",
+                ViolationMessage.of("password.same", "\"{0}\" must differ from \"currentPassword\""));
+
+passwordFormValidator.validate(Map.of("currentPassword", "newSecret1", "newPassword", "newSecret1",
+        "confirmPassword", "different"));
+// Invalid: confirmPassword (password.mismatch), newPassword (password.same)
+```
+
+* `constraintOnTarget` をオーバーライドして自身の型を返す独自の `ValueValidator` は、ルールを `TargetConstraints` に保持します。`and` でルールを追加し、`check` で値が違反したルールをすべて報告します。
+
+### プロパティを値オブジェクトに変換する
+
+プロパティの直後の `map(f)` は、検証済みの値を値オブジェクトなどに変換します。ほかの修飾メソッドと同じ位置に書けるので、プロパティをその場で定義したまま変換できます。
+
+```java
+ObjectInputValidator<User> userValidator = Yavi.schema()
+        ._string("email", c -> c.notBlank().email()).map(Email::new)
+        ._string("nickname").map(Nickname::new).optional()   // Optional<Nickname>
+        ._integer("age", c -> c.greaterThanOrEqual(0)).map(Age::new).defaultValue(new Age(20))
+        .fromMap(User::new);
+```
+
+* 関数には制約を満たした値が渡されます。プロパティの読み取り、違反の報告、記述は変わりません。キー、`object.type` の型、ラベル、JSON Schema は `map` の前の値のものです。
+* `map` は、`null` の扱いを決める修飾メソッドより前に書きます。それらは変換後の値に適用されます。関数に `null` は渡されず、`optional()` の結果は `Optional<Nickname>` になり、デフォルト値は変換後の値で指定します。`.optional().map(f)` や `.defaultValue(v).map(f)` はコンパイルできません。
+* `label`、`typeMessage`、`withheld()` は `map` の前後どちらにも書けます。リストをテキストから読む指定は `map` より前に書きます（`.splitBy(",").map(Set::copyOf)`）。
+* `Yavi.reversibleSchema()` では、書き戻すための逆変換を取る `map(f, g)` になります（`._string("email").map(Email::new, Email::value)`）。`map(f)` だけではコンパイルできません。
+* 別の場所で定義したバリデータは、これまでどおりそのまま渡します（`._string(Email.VALIDATOR)`、`._object("email", emailValidator)`）。
 
 ### 判別可能なユニオン
 
@@ -395,6 +303,122 @@ ObjectInputValidator<Comment> commentValidator = ValueValidator.recursive(self -
 // 違反の例: replies[0].replies[0].body
 ```
 
+## 単一の値のバリデータ
+
+`Yavi._string`、`Yavi._integer`、`Yavi._localDate` などは、1 つの値のバリデータを、ビルダークラスと `build()` なしで作ります。メソッド名は `Yavi.schema()` のプロパティと同じです。
+
+```java
+// before
+StringValidator<String> emailValidator = StringValidatorBuilder.of("email", c -> c.notBlank().email()).build();
+
+// after
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.notBlank().email());
+```
+
+* リストの要素のようにプロパティではない値では、名前を省略できます（`Yavi._string(c -> c.notBlank())`）。そのメッセージは、名前の代わりに「The value」と表示します（`The value must not be blank`）。
+* `Yavi.schema()` のプロパティと同じく、名前の有無にかかわらず制約も省略できます（`Yavi._boolean("subscribed")`、`Yavi._enum("role", Role.class)`、`Yavi._object("id", UUID.class)`、`Yavi._string()`）。
+* `Yavi._list(elementValidator, c -> c.notEmpty().unique())` と `Yavi._map(valueValidator, c -> c.notEmpty())` は、リストやマップを検証し、リストやマップ自体にも制約を付けます。`Yavi._list(elementValidator)` と `Yavi._map(valueValidator)` は、要素や値だけを検証します。
+* `named(name)` は、バリデータを別の名前で使います。[後述](#ルールを別の名前で使う)します。
+
+### 制約の前に値を変換する
+
+`String` の変換は、制約の前に書きます。それ以外の値は `preprocess` で変換します。`null` は変換されません。
+
+```java
+StringValidator<String> emailValidator = Yavi._string("email", c -> c.trim().toLowerCase().notBlank().email());
+emailValidator.validate("  USER@Example.COM "); // Valid[value=user@example.com]
+
+BigDecimalValidator<BigDecimal> priceValidator = Yavi._bigDecimal("price", c -> c.positive())
+        .preprocess(BigDecimal::stripTrailingZeros);
+```
+
+`String` の変換には、`trim()`、`toLowerCase()`、`toUpperCase()`、`toNormalForm(form)`、`transform(f)` があります。
+
+### ルールを別の名前で使う
+
+バリデータは、作成時に与えられた名前を保持します。`named(name)` は、同じバリデータを別の名前で返します。値のルールを 1 か所で定義し、複数のプロパティで使えます。
+
+```java
+public final class Email {
+    public static final StringValidator<String> VALIDATOR = Yavi._string("email", c -> c.trim().notBlank().email());
+}
+
+record Contact(String email, @Nullable String backupEmail, String replyTo) {}
+
+ObjectInputValidator<Contact> contactValidator = Yavi.schema()
+        ._string(Email.VALIDATOR)                                 // キーも名前も "email"
+        ._string(Email.VALIDATOR.named("backupEmail")).nullable() // キーも名前も "backupEmail"
+        ._object("replyTo", Email.VALIDATOR)                      // named("replyTo") と同じ
+        .fromMap(Contact::new);
+
+contactValidator.validate(Map.of("email", "a", "backupEmail", "b", "replyTo", "c"));
+// email:       "email" must be a valid email address
+// backupEmail: "backupEmail" must be a valid email address
+// replyTo:     "replyTo" must be a valid email address
+```
+
+* 単一の値のバリデータでは、違反の名前、メッセージ、`description()` の名前が、指定した名前に置き換わります。そのため、バリデータだけを渡して追加したプロパティのキーも、指定した名前になります。
+* オブジェクト、リスト、マップ、ラムダの値のように自身の名前を持たない値では、違反が `prefixed(name)` と同じく指定した名前の下に位置づけられます（`addressValidator.named("home")` は `home.street` を報告します）。
+* 名前はコンビネータを越えて引き継がれます。`Email.VALIDATOR.map(Email::new).nullable().named("x")` と `Email.VALIDATOR.named("x").map(Email::new).nullable()` は同じ結果になり、`untyped().named("x")` と `named("x").untyped()` も同じ結果になります。`andThen` は前後両方のバリデータに、`anyOf` はすべての選択肢に名前を渡します。
+* スキーマの `_object(name, validator)` は、バリデータを `name` の名前で使います。
+
+### コンビネータ
+
+すべての `ValueValidator` に次のメソッドがあります。
+
+| メソッド | 結果 |
+| --- | --- |
+| `nullable()`、`optional()`、`defaultValue(value)` | `null` を受け付け、`null`、`Optional.empty()`、デフォルト値のいずれかを返す |
+| `recover(fallback)`、`recoverWith(violations -> ...)` | 失敗しない。`null` と不正な値に対してフォールバック値を返す |
+| `liftList()`、`liftSet()`、`liftMap()` | すべての要素または値を検証する。違反はインデックスまたはキーの下に位置づけられる。要素は入力の型のサブタイプでもよいので、`Object` のバリデータを lift すると `List<String>` を検証できる |
+| `liftList(separator)` | `liftList()` に加えて、`1,2,3` のような 1 つのテキストからもリストを読む |
+| `prefixed(name)` | 違反の名前の前に名前を付ける（`orders[1].id`） |
+| `named(name)` | 値の違反を別の名前で報告する |
+| `ValueValidator.anyOf(a, b)` | 最初に有効だった選択肢の結果。すべて失敗した場合は `object.anyOf` の違反 1 件。この違反は `ConstraintViolation.NoAlternativeMatched` で、各選択肢の違反はその `alternatives()` にある |
+| `ValueValidator.lazy(supplier)`、`recursive(self -> ...)` | まだ作られていないバリデータへの参照 |
+
+### 新しい制約
+
+`BigDecimalConstraint` に `fractionDigits(max)` と `integerDigits(max)` が追加されました。Bean Validation の `@Digits` に相当します。桁数は表記ではなく値に対して数えるので、`1.500` の小数部は 1 桁です。
+
+```java
+Yavi._bigDecimal("price", c -> c.fractionDigits(2).integerDigits(6));
+// 1.505: "price" must have at most 2 fraction digits
+```
+
+整数型、`BigInteger`、`BigDecimal` の制約に `multipleOf(divisor)` が追加されました。`Double` と `Float` にはありません。2 進小数の剰余は正確ではないためです。
+
+```java
+Yavi._integer("quantity", c -> c.multipleOf(12));
+// 30: "quantity" must be a multiple of 12
+Yavi._bigDecimal("price", c -> c.multipleOf(new BigDecimal("0.05")));
+```
+
+`CollectionConstraint` に `unique(key)` が追加されました。オブジェクトの ID のような、要素のキーで一意であることを求めます。重複したキーはメッセージと `params` に入ります。JSON Schema には対応するキーワードがないため、`uniqueItems` は `unique()` に対してだけ出力されます。
+
+```java
+Yavi.schema()._list("products", productValidator, c -> c.unique(Product::id));
+// "products" must be unique. [APPLE] is/are duplicated.
+```
+
+`CharSequenceConstraint` に 3 つの形式が追加されました。
+
+| 制約 | 受け付ける値 | メッセージキー |
+| --- | --- | --- |
+| `ip()` | IPv4 または IPv6 のアドレス | `charSequence.ip` |
+| `uri()` | スキームを持つ URI（`mailto:a@example.com`、`urn:isbn:...`、`s3://bucket/key`）。`url()` と違い、`java.net.URL` が扱えるプロトコルに限らない | `charSequence.uri` |
+| `ulid()` | ULID。大文字と小文字のどちらでもよい | `charSequence.ulid` |
+
+`JsonSchema` はこれらを `multipleOf` と `"format": "uri"` として出力します。
+
+形式の制約はすべて、`email()` や `url()` と同じく空文字列を受け付けます。形式の制約は与えられたテキストの形を決めるもので、テキストが与えられていることは `notBlank()` や `notEmpty()` が決めます。そのため、省略可能なテキストの制約は形式によらず同じ書き方になります。`ipv4()`、`ipv6()`、`luhn()`、`isoLocalDate()`、`localDate(pattern)` は 0.17 では `""` を拒否していました。[破壊的変更](BreakingChanges_0.18.0.ja.md#文字列の形式の制約は空文字列を受け付ける)を参照してください。
+
+```java
+Yavi._string("homepage", c -> c.url()).validate("");       // valid
+Yavi._string("proxy", c -> c.ip()).validate("");           // valid
+Yavi._string("proxy", c -> c.notBlank().ip()).validate(""); // "proxy" must not be blank
+```
+
 ## JSON ライブラリのツリーモデルを検証する
 
 `readingWith(reader)` は、Jackson の `JsonNode` のような JSON ライブラリのツリーモデルを、マップと同じルールと違反でそのまま読み取ります。ツリーをマップにコピーすることはありません。スキーマの `from(reader, f)` は、`fromMap(f).readingWith(reader)` と同じです。
@@ -501,9 +525,11 @@ Object search(@RequestParam MultiValueMap<String, String> params) {
 バリデータは、`Map<String, String>`、Spring の `MultiValueMap` のような `Map<String, List<String>>`、Servlet API の `Map<String, String[]>` のどの形のマップも受け取ります。型は代入先にかかわらず `ValueValidator<Map<String, ?>, X>` なので、`readingParameters()` の後にどのコンビネータも続けられます。
 
 ```java
-ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
+record SignupForm(String email) {}
+
+ValueValidator<Map<String, ?>, SignupForm> signupValidator = Yavi.schema()
         ._string("email", c -> c.notBlank().email())
-        .fromMap(Signup::new)
+        .fromMap(SignupForm::new)
         .readingParameters()
         .formattingWith(new MessageSourceMessageFormatter(messageSource::getMessage));
 ```
@@ -526,17 +552,17 @@ ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
 フォームのフィールドや CSV のセルのように人が書いたテキストに対しては、`StringCoercion` でこれらのルールを緩められます。
 
 ```java
-record Signup(Integer age, Boolean subscribed) {}
+record Registration(Integer age, Boolean subscribed) {}
 
 StringCoercion form = StringCoercion.strict().trimming().booleanWords();
 
-ValueValidator<Map<String, ?>, Signup> signupValidator = Yavi.schema()
+ValueValidator<Map<String, ?>, Registration> signupValidator = Yavi.schema()
         ._integer("age")
         ._boolean("subscribed").defaultValue(false) // チェックされていないチェックボックスは何も送信しない
-        .fromMap(Signup::new)
+        .fromMap(Registration::new)
         .readingParameters(form);
 
-signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Signup[age=30, subscribed=true]
+signupValidator.validate(Map.of("age", " 30 ", "subscribed", "on")); // Registration[age=30, subscribed=true]
 ```
 
 * `trimming()`: どのプロパティのテキストも、前後の空白を除いて読み取られます。空白だけの文字列は `null` と同じように検証されます。
@@ -955,16 +981,24 @@ shapeValidator.toMap(new Circle(1.5)); // {type=circle, radius=1.5}
 `toMap` は、`withheld()` でないすべてのプロパティを書きます。しかし、一覧画面に出すのは一部だけですし、`UPDATE` 文にバインドするのも変更できるカラムだけです。バリデータの `including` と `excluding` は、選んだプロパティだけを書く `PropertyView` を作ります。
 
 ```java
-ObjectInputValidator.Reversible<User> userValidator = Yavi.reversibleSchema()
+record AccountUser(Integer id, String name, String passwordHash, Address address) {}
+
+ObjectInputValidator.Reversible<Address> addressSchema = Yavi.reversibleSchema()
+        ._string("street", c -> c.notBlank())
+        ._string("city", c -> c.notBlank())
+        .fromMapReversible(Address::new, Address::street, Address::city);
+
+ObjectInputValidator.Reversible<AccountUser> userValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._string("name")
         ._string("password_hash").withheld()
-        ._object("address", addressValidator) // city, street
-        .fromMapReversible(User::new, User::id, User::name, User::passwordHash, User::address);
+        ._object("address", addressSchema) // city, street
+        .fromMapReversible(AccountUser::new, AccountUser::id, AccountUser::name, AccountUser::passwordHash,
+                AccountUser::address);
 
 // バリデータの隣で一度だけ作る
-static final PropertyView<User> SUMMARY = userValidator.including("id", "name", "address.city");
-static final PropertyView<User> LISTED = userValidator.excluding("address");
+static final PropertyView<AccountUser> SUMMARY = userValidator.including("id", "name", "address.city");
+static final PropertyView<AccountUser> LISTED = userValidator.excluding("address");
 
 userValidator.toMap(user); // {id=1, name=Taro, address={city=Tokyo, street=1-1}}
 SUMMARY.toMap(user);       // {id=1, name=Taro, address={city=Tokyo}}
@@ -1002,19 +1036,21 @@ userValidator.excluding("adress");
 **書き出しを保留するプロパティ。** 書いたマップは、レスポンス、フォーム、ログなどで人の目に触れます。パスワードのように見せてはいけないプロパティを呼び出し側が毎回外すことにすると、そのスキーマをネストしたバリデータの呼び出し側まで、全員が外し忘れないようにしなければなりません。そこで、定義する場所で一度だけ `withheld()` を付けます。
 
 ```java
-Yavi.reversibleSchema()
+record AccountRow(Integer id, String name, String passwordHash) {}
+
+ObjectInputValidator.Reversible<AccountRow> rowValidator = Yavi.reversibleSchema()
         ._integer("id")
         ._string("name")
         ._string("password_hash").withheld()
-        .fromMapReversible(User::new, User::id, User::name, User::passwordHash);
+        .fromMapReversible(AccountRow::new, AccountRow::id, AccountRow::name, AccountRow::passwordHash);
 
-userValidator.toMap(user);                                  // {id=1, name=Taro}
-userValidator.excluding("name").toMap(user);                // {id=1}
-userValidator.including("id", "password_hash").toMap(user); // {id=1, password_hash=...}
-userValidator.reverse(user);                                // {id=1, name=Taro, password_hash=...}
-orderValidator.toMap(order);                                // {id=7, memo=gift, user={id=1, name=Taro}}
-orderValidator.including("user", "user.password_hash");     // user 全体と、そのハッシュも書く
-userValidator.excluding("password_hash");                   // IllegalArgumentException: 効果がない
+rowValidator.toMap(row);                                  // {id=1, name=Taro}
+rowValidator.excluding("name").toMap(row);                // {id=1}
+rowValidator.including("id", "password_hash").toMap(row); // {id=1, password_hash=...}
+rowValidator.reverse(row);                                // {id=1, name=Taro, password_hash=...}
+orderValidator.toMap(order);                              // {id=7, memo=gift, user={id=1, name=Taro}}
+orderValidator.including("user", "user.password_hash");   // user 全体と、そのハッシュも書く
+rowValidator.excluding("password_hash");                  // IllegalArgumentException: 効果がない
 ```
 
 * `toMap` と `excluding` のビューは、`withheld()` のプロパティをどの深さでも書きません。ネストしたオブジェクト、リストの要素、`_embedded` のバリデータのプロパティも同じです。
@@ -1121,6 +1157,18 @@ Map<String, Object> form = tree.toMap(signupSchema.description());
   ParameterTree.ofValues(Map.of("age", 20, "agreed", true)).toMap(signupSchema.description());
   // {name="", age="20", agreed="true", birthday="", address={city="", street=""}}
   ```
+
+**2 つの `toMap` は別のものです。** リバーシブルなバリデータの `toMap(x)` は、オブジェクトを、バリデータが読む値として書きます。`ParameterTree` の `toMap(description)` は、パラメータを、フォームが表示するテキストとして書きます。`ParameterTree.ofValues` が前者を後者につなぎます。
+
+| | `validator.toMap(x)` | `tree.toMap(description)` |
+| --- | --- | --- |
+| 書く元 | バリデータが作ったオブジェクト | 送信されたパラメータ。不正な値も含みます |
+| 値 | JDK の型の値（`30`、`LocalDate`） | テキスト（`"30"`、`"abc"`）。トリムも変換も検証もしません |
+| 値がない場合 | `nullable()` と `optional()` は `null` のエントリ | 空文字列。`Boolean` はエントリなし |
+| `withheld()` | エントリなし | 空文字列 |
+| バリデータ | `Yavi.reversibleSchema()` のもの | どのバリデータでも可。記述だけを使います |
+| 読み戻し | `validate(toMap(x))` は `Valid(x)` | 定義されません。送信されたものそのままです |
+| 用途 | ステートメントのパラメータ、レスポンス | フォーム |
 
 **フォームの型が保存する型と違う場合。** フォームは `ArticleInput(title, body)` として読み、保存するオブジェクトは `Article(id, title, body, createdAt)` やライブラリのクラスである、という場合です。フォームのスキーマが書くのは `ArticleInput` なので、アプリケーションが保存済みのオブジェクトから `ArticleInput` を作ります。
 
@@ -1310,6 +1358,12 @@ record DateRange(LocalDate start, LocalDate end) {
                 // before: Validated.failureWith(message, start, Locale.getDefault())
                 : Validated.failureWith(ViolationMessage.of("dateRange.invalid", "start must be before end"));
     }
+
+    static Validated<DateRange> parse(String text) {
+        String[] dates = text.split("/");
+        return of(LocalDate.parse(dates[0]), LocalDate.parse(dates[1]));
+    }
+
 }
 
 ObjectInputValidator<DateRange> validator = Yavi.schema()
