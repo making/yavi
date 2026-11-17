@@ -19,14 +19,16 @@ on:
     - .github/workflows/doc-site.yaml
   workflow_dispatch:
 
-# develop and main both publish to the same gh-pages branch. Serialize them instead of
-# cancelling a deploy that is already pushing.
+# develop and main both publish the same site. Serialize them instead of cancelling a
+# deploy that is already in progress.
 concurrency:
   group: doc-site-deploy
   cancel-in-progress: false
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -102,46 +104,35 @@ jobs:
         grep -q 'url=0.17/en/index.html' _site/index.html
         grep -q 'url=0.17/en/getting-started.html' _site/getting-started.html
         grep -q 'url=0.17/en/built-in-constraints.html' _site/built-in-constraints.html
-    - name: Upload the site
+    # The Web Image is hundreds of MB (it compresses to well under the 100 MB git blob
+    # limit). Publishing the site as a Pages artifact keeps it out of git history; a
+    # gh-pages push would be rejected for the uncompressed wasm alone.
+    - name: Add the custom domain
+      run: |
+        cp doc-site/CNAME _site/CNAME
+        touch _site/.nojekyll
+    - name: Configure Pages
       if: github.event_name != 'pull_request'
-      uses: actions/upload-artifact@v4
+      uses: actions/configure-pages@v5
+    - name: Upload the Pages artifact
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-pages-artifact@v4
       with:
-        name: doc-site
         path: _site
-        retention-days: 1
 
-  # Publishes to the gh-pages branch that serves yavi.ik.am. CNAME and root-level
-  # repository files stay in place; every other file is replaced by this build.
+  # Publishes the artifact to GitHub Pages. The repository's Pages source must be
+  # "GitHub Actions"; the custom domain stays configured in the repository settings.
   deploy:
     needs: build
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
-      contents: write
+      pages: write
+      id-token: write
     steps:
-    - name: Checkout gh-pages
-      uses: actions/checkout@v7
-      with:
-        ref: gh-pages
-        path: gh-pages
-    - name: Download the site
-      uses: actions/download-artifact@v4
-      with:
-        name: doc-site
-        path: _site
-    - name: Publish
-      working-directory: gh-pages
-      run: |
-        set -euo pipefail
-        find . -mindepth 1 -maxdepth 1 ! -name .git ! -name CNAME ! -name favicon.ico -exec rm -rf {} +
-        cp -R ../_site/. .
-        touch .nojekyll
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add -A
-        if git diff --cached --quiet; then
-          echo "No changes to publish"
-          exit 0
-        fi
-        git commit -m "Publish documentation site"
-        git push origin gh-pages
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
