@@ -11,5 +11,7 @@ languages:
 versions:
   - version: "1.0"
     label: "1.0"
+    yavi_release: "1.0.0"
   - version: "2.0"
     label: "2.0"
+    yavi_release: "2.0.0"

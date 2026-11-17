@@ -11,3 +11,5 @@ languages:
 versions:
   - version: "0.17"
     label: "0.17"
+    # The YAVI release whose classes are baked into this version's browser runtime.
+    yavi_release: "0.17.3"

@@ -61,15 +61,49 @@ jobs:
         echo "$PWD/binaryen-version_130/bin" >> "$GITHUB_PATH"
         # LD_LIBRARY_PATH is unset on a fresh runner; `${VAR:-}` keeps `set -u` happy.
         echo "LD_LIBRARY_PATH=$PWD/binaryen-version_130/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
-    - name: Build the browser runtime
+    # The documentation-to-YAVI mapping lives in versions.yaml only. Derive one line per
+    # version for the runtime build and the generated-site check below.
+    - name: Read the version mapping
+      run: |
+        set -euo pipefail
+        python3 - <<'PY'
+        import sys
+        import yaml
+        with open("doc-site/content/versions.yaml", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        lines = []
+        for entry in data.get("versions") or []:
+            version = str(entry.get("version") or "").strip()
+            release = str(entry.get("yavi_release") or "").strip()
+            if not version or not release:
+                sys.exit(f"versions.yaml: entry {entry!r} needs both version and yavi_release")
+            lines.append(f"{version} {release}")
+        if not lines:
+            sys.exit("versions.yaml lists no versions")
+        with open("runtime-versions.txt", "w", encoding="utf-8") as out:
+            out.write("\n".join(lines) + "\n")
+        PY
+        cat runtime-versions.txt
+    # One Web Image per documented version: the YAVI classes are baked into the image, so
+    # a shared image cannot serve two releases. Adding a version to versions.yaml without
+    # a reachable release fails here (and in the generator's versions.yaml validation).
+    - name: Build the browser runtimes
       run: |
         set -euo pipefail
         # The Espresso/Truffle artifacts must match the installed GraalVM exactly; take
         # the version from the release string instead of duplicating it here.
         GRAALVM_MVN_VERSION=$(native-image --version | sed -nE 's/.*Oracle GraalVM ([0-9.]+)\+.*/\1/p' | head -1)
-        echo "Building the runtime for GraalVM $GRAALVM_MVN_VERSION"
-        ./mvnw -V --no-transfer-progress -f doc-site/runtime/pom.xml -Pweb package -DskipTests \
-          -Dgraalvm.version="$GRAALVM_MVN_VERSION"
+        while read -r version release; do
+          echo "::group::Runtime for documentation $version (YAVI $release)"
+          echo "Building the runtime for GraalVM $GRAALVM_MVN_VERSION"
+          ./mvnw -V --no-transfer-progress -f doc-site/runtime/pom.xml -Pweb package -DskipTests \
+            -Dgraalvm.version="$GRAALVM_MVN_VERSION" \
+            -Ddocs.version="$version" \
+            -Dyavi.version="$release"
+          test -f "doc-site/runtime/target/web/$version/yavi-runtime-wasm.js.wasm" \
+            || { echo "missing runtime for documentation version $version"; exit 1; }
+          echo "::endgroup::"
+        done < runtime-versions.txt
     # Compiles and runs every ```java runnable block of both language trees and asserts
     # the hidden expected output; a broken or drifted example fails the build here.
     - name: Test the documented examples in the browser runtime
@@ -96,13 +130,20 @@ jobs:
             0.17/en/getting-started.html \
             0.17/ja/index.html \
             0.17/en/search-index.json \
-            assets/runtime/0.17/yavi-runtime.js \
-            assets/runtime/0.17/yavi-runtime-wasm.js \
-            assets/runtime/0.17/yavi-runtime-wasm.js.wasm \
             getting-started.html \
             built-in-constraints.html; do
           test -f "_site/${path}" || { echo "missing _site/${path}"; exit 1; }
         done
+        # Every documented version must publish a full runtime, never the stub: the three
+        # files are what the page loads, and their absence would silently disable Run.
+        while read -r version release; do
+          test -f "_site/${version}/en/index.html" \
+            || { echo "missing page tree for documentation version $version"; exit 1; }
+          for file in yavi-runtime.js yavi-runtime-wasm.js yavi-runtime-wasm.js.wasm; do
+            test -f "_site/assets/runtime/${version}/${file}" \
+              || { echo "missing runtime file for documentation version $version: ${file} (YAVI $release)"; exit 1; }
+          done
+        done < runtime-versions.txt
         grep -q 'url=0.17/en/index.html' _site/index.html
         grep -q 'url=0.17/en/getting-started.html' _site/getting-started.html
         grep -q 'url=0.17/en/built-in-constraints.html' _site/built-in-constraints.html

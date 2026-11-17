@@ -4,7 +4,9 @@
  */
 package am.ik.yavi.docgen;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -161,21 +163,64 @@ class DocGenTest {
 	}
 
 	/**
-	 * A runtime built for a version replaces the stub for that version only; versions
-	 * without a build keep the stub, whose cells explain that execution is unavailable.
+	 * A runtime is published per version. A runtime directory that lacks a listed version
+	 * fails naming it (a deployed tree must not fall back to the stub), while a build
+	 * without {@code --runtime} warns for each version and publishes the stub.
 	 */
 	@Test
-	void aBuiltRuntimeReplacesTheStubPerVersion(@TempDir Path tmp) throws IOException {
-		Path runtime = Files.createDirectories(tmp.resolve("runtime/1.0"));
-		Files.writeString(runtime.resolve("yavi-runtime.js"), "window.YaviRuntime = { real: true };");
-		Files.writeString(runtime.resolve("yavi-runtime-wasm.js"), "// launcher");
-		Files.writeString(runtime.resolve("yavi-runtime-wasm.js.wasm"), "wasm");
+	void runtimesArePublishedPerVersionAndTheStubIsNamedOnStderr(@TempDir Path tmp) throws IOException {
+		Path runtime = tmp.resolve("runtime");
+		for (String version : List.of("1.0", "2.0")) {
+			Path dir = Files.createDirectories(runtime.resolve(version));
+			Files.writeString(dir.resolve("yavi-runtime.js"), "window.YaviRuntime = { version: \"" + version + "\" };");
+			Files.writeString(dir.resolve("yavi-runtime-wasm.js"), "// launcher " + version);
+			Files.writeString(dir.resolve("yavi-runtime-wasm.js.wasm"), "wasm " + version);
+		}
 		Path out = tmp.resolve("site");
-		new DocGen(FIXTURE, out, tmp.resolve("runtime")).generate();
-		assertThat(Files.readString(out.resolve("assets/runtime/1.0/yavi-runtime.js"))).contains("real: true");
-		assertThat(out.resolve("assets/runtime/1.0/yavi-runtime-wasm.js.wasm")).hasContent("wasm");
-		assertThat(Files.readString(out.resolve("assets/runtime/2.0/yavi-runtime.js")))
+		new DocGen(FIXTURE, out, runtime).generate();
+		assertThat(Files.readString(out.resolve("assets/runtime/1.0/yavi-runtime.js"))).contains("version: \"1.0\"");
+		assertThat(Files.readString(out.resolve("assets/runtime/2.0/yavi-runtime.js"))).contains("version: \"2.0\"");
+		assertThat(out.resolve("assets/runtime/2.0/yavi-runtime-wasm.js.wasm")).hasContent("wasm 2.0");
+
+		// A listed version without a build under --runtime is an error naming the
+		// version.
+		try (Stream<Path> files = Files.walk(runtime.resolve("2.0"))) {
+			for (Path file : files.sorted((a, b) -> b.compareTo(a)).toList()) {
+				Files.delete(file);
+			}
+		}
+		assertThatThrownBy(() -> new DocGen(FIXTURE, tmp.resolve("missing"), runtime).generate())
+			.isInstanceOf(IOException.class)
+			.hasMessageContaining("'2.0'")
+			.hasMessageContaining("No runtime build");
+
+		// Without --runtime the stub is published and every version is named on stderr.
+		ByteArrayOutputStream err = new ByteArrayOutputStream();
+		PrintStream original = System.err;
+		try {
+			System.setErr(new PrintStream(err, true, StandardCharsets.UTF_8));
+			new DocGen(FIXTURE, tmp.resolve("stub")).generate();
+		}
+		finally {
+			System.setErr(original);
+		}
+		assertThat(err.toString(StandardCharsets.UTF_8)).contains("stub").contains("'1.0'").contains("'2.0'");
+		assertThat(Files.readString(tmp.resolve("stub/assets/runtime/1.0/yavi-runtime.js")))
 			.contains("Code execution is not available yet");
+	}
+
+	/** A listed version needs the YAVI release its runtime is built from. */
+	@Test
+	void aVersionWithoutAYaviReleaseFailsTheBuild(@TempDir Path tmp) throws IOException {
+		for (String replacement : List.of("", "yavi_release:")) {
+			Path content = copyFixture(tmp.resolve("content-" + replacement.hashCode()));
+			Path versions = content.resolve("versions.yaml");
+			String yaml = Files.readString(versions, StandardCharsets.UTF_8);
+			Files.writeString(versions, yaml.replace("yavi_release: \"2.0.0\"", replacement), StandardCharsets.UTF_8);
+			assertThatThrownBy(() -> new DocGen(content, tmp.resolve("out")).generate()).isInstanceOf(IOException.class)
+				.hasMessageContaining("'2.0'")
+				.hasMessageContaining("yavi_release");
+		}
 	}
 
 	@Test

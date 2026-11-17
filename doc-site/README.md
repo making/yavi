@@ -12,18 +12,29 @@ java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out doc-si
 ```
 
 To publish the real browser runtime (see "Runnable Java code" below), build it first and
-pass its output directory:
+pass its output directory. The runtime module takes the documentation version and the
+YAVI release it embeds as properties; both come from the `versions.yaml` mapping:
 
 ```bash
-./mvnw -f doc-site/runtime/pom.xml -Pweb package        # needs the GraalVM setup below
+./mvnw -f doc-site/runtime/pom.xml -Pweb package \
+  -Ddocs.version=0.17 -Dyavi.version=0.17.3                # needs the GraalVM setup below
 java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out doc-site/target/site \
   --runtime doc-site/runtime/target/web
 ```
 
+The runtime module has no version defaults, so a build without the two properties fails
+with a message pointing at `versions.yaml`.
+
 Without `--runtime` every version tree gets the stub, whose cells report that execution
-is not available. The runtime module needs Oracle GraalVM 25.5 or later (`native-image`
-with the `svm-wasm` tool), Binaryen 119 or later (for `wasm-as`) and a JDK 25 to compile
-with; the generator itself keeps building with JDK 21.
+is not available, and the generator prints a warning on stderr naming each version, so a
+local preview is distinguishable from a deployment that forgot the flag. With
+`--runtime`, every version listed in `versions.yaml` must have a build under
+`<runtime>/<version>/`; a missing one fails the build naming the version, so a deployed
+tree never silently falls back to the stub.
+
+The runtime module needs Oracle GraalVM 25.5 or later (`native-image` with the `svm-wasm`
+tool), Binaryen 119 or later (for `wasm-as`) and a JDK 25 to compile with; the generator
+itself keeps building with JDK 21.
 
 Then open `doc-site/target/site/index.html`. From inside `doc-site/` the defaults are
 `--source content --out target/site`. The search index and the runtime are fetched over
@@ -76,11 +87,16 @@ languages:
 versions:
   - version: "0.17"
     label: "0.17"
+    yavi_release: "0.17.3"
 ```
 
-`label` is what the version switcher shows. The default version and language must be
-listed. Adding a version means adding `content/<version>/<lang>/nav.yaml` and every page
-it names.
+`label` is what the version switcher shows. `yavi_release` is the YAVI release whose
+classes are baked into that version's browser runtime; it is required and the build fails
+naming the version when it is missing or blank. This file is the only place the mapping is
+declared: the deployment workflow reads it to build one runtime per version, and the
+runtime module refuses to build without the values passed from here. The default version
+and language must be listed. Adding a version means adding `content/<version>/<lang>/nav.yaml`
+and every page it names, plus its `yavi_release` entry.
 
 ### `nav.yaml`
 
@@ -199,9 +215,11 @@ never requests it. "Reset runtime" reloads the page, which discards any runtime 
   needs, so the cell's source is compiled inside the browser;
 - Espresso, the JVM written in Java, in its pure-Java mode, which executes the class
   files javac produced;
-- the YAVI jar of that tree's version (`yavi.version` in the runtime pom, currently
-  `0.17.3` for the 0.17 tree), unpacked so no zip support is needed. Examples can import
-  `am.ik.yavi.*` without any setup.
+- the YAVI jar of that tree's version (the `yavi_release` declared for the tree in
+  `versions.yaml`, currently `0.17.3` for the 0.17 tree), unpacked so no zip support is
+  needed. Examples can import `am.ik.yavi.*` without any setup. The release is passed to
+  the build as `-Dyavi.version` and filtered into the image, so the image reports the jar
+  it actually contains.
 
 `WebMain` publishes `globalThis.YaviJs`; `assets/yavi-runtime.js` wraps it in the
 `window.YaviRuntime` contract. The launcher is loaded into a Web Worker: the interpreter
@@ -226,18 +244,24 @@ Limitations:
   highly compressible; serve the site with compression enabled.
 
 The generator installs a runtime from `--runtime <dir>` by looking up a sub-directory
-named after each documentation version (here `<dir>/0.17/`), so a future version tree
-gets its own build against its own YAVI version. The version's page loads
-`assets/runtime/<version>/yavi-runtime.js`; a version without a build keeps the stub,
-which loads successfully (the status indicator reads "runtime ready") but whose `Run`
-resolves with "Code execution is not available yet. …".
+named after each documentation version (here `<dir>/0.17/`), so every version tree gets
+its own build against its own YAVI release. The version's page loads
+`assets/runtime/<version>/yavi-runtime.js`. With `--runtime`, a listed version without a
+build fails the generator naming the version. Without `--runtime`, the stub is copied and
+the version is named in a warning on stderr; the stub loads successfully (the status
+indicator reads "runtime ready") but its `Run` resolves with "Code execution is not
+available yet. …".
 
 ```bash
-# build one version's runtime
-./mvnw -f doc-site/runtime/pom.xml -Pweb package            # output: target/web/0.17/
+# build one version's runtime; the values come from versions.yaml
+./mvnw -f doc-site/runtime/pom.xml -Pweb package \
+  -Ddocs.version=0.17 -Dyavi.version=0.17.3                 # output: target/web/0.17/
 # drive it without a browser
 node --experimental-wasm-exnref doc-site/runtime/test/run.js
 ```
+
+Building several versions into the same `target/` is supported: the build clears the
+previous release's unpacked classes before each run.
 
 ## Tests
 
@@ -262,7 +286,12 @@ node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
 ## Deployment
 
 `.github/workflows/doc-site.yaml` builds, tests and renders the site on every change to
-`doc-site/**`, then publishes it through GitHub Pages with an Actions artifact. The
+`doc-site/**`, then publishes it through GitHub Pages with an Actions artifact. It reads
+`content/versions.yaml` and builds one browser runtime per listed version, passing that
+version's `yavi_release` to the runtime module; the generated-site check derives the same
+list and requires `assets/runtime/<version>/yavi-runtime.js`, `yavi-runtime-wasm.js` and
+`yavi-runtime-wasm.js.wasm` for every version. Adding a version to `versions.yaml` without
+a runtime build therefore fails the workflow instead of deploying a stub. The
 repository's Pages source must be "GitHub Actions"; the custom domain stays configured in
 the repository settings, and `doc-site/CNAME` carries it into the artifact. Old
 unversioned URLs are covered by the root redirect stubs the generator emits, and `/`
