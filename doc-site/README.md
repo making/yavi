@@ -121,6 +121,11 @@ not sidebar rows. Every page named in `nav.yaml` must have its Markdown file.
   by the generator at build time. There is no client-side highlighter and no network
   request when a page is viewed; the token classes are styled in `assets/docs.css` for
   both themes.
+- The header's theme control switches between the system palette (the default, following
+  `prefers-color-scheme`), light and dark. The choice is stored in
+  `localStorage["yavi-doc-theme"]` and replayed by an inline head script before the
+  stylesheet loads, so a reload keeps the theme without a flash; the palettes are
+  `html[data-theme="light"]` / `html[data-theme="dark"]` in `assets/docs.css`.
 
 ## Runnable Java code
 

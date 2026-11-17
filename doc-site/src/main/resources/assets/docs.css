@@ -67,8 +67,17 @@
 	--content-max: 70ch;
 }
 
+/*
+ * Theme switching. `data-theme-mode` records the visitor's choice ("system",
+ * "light" or "dark") and `data-theme` the palette in effect. The inline script in
+ * the page head sets both before the first paint, and docs.js updates them from
+ * the header control. System mode resolves through the media query below, which
+ * also keeps the site following the OS setting when JavaScript does not run. The
+ * dark token block is duplicated because plain CSS cannot share declarations
+ * between an attribute selector and a media query.
+ */
 @media (prefers-color-scheme: dark) {
-	:root {
+	html:not([data-theme]) {
 		--paper:        #160b12;
 		--paper-2:      #1f0f19;
 		--paper-3:      #2a1622;
@@ -107,6 +116,49 @@
 		--shadow:       rgba(0, 0, 0, 0.55);
 	}
 }
+
+html[data-theme="dark"] {
+	color-scheme: dark;
+
+	--paper:        #160b12;
+	--paper-2:      #1f0f19;
+	--paper-3:      #2a1622;
+	--ink:          #ecdce4;
+	--ink-strong:   #fbf2f6;
+	--muted:        #b39da8;
+	--muted-2:      #d6c3cc;
+	--rule:         #3a2230;
+	--rule-strong:  #5c3b4b;
+	--accent:       #e2a2ba;
+	--accent-ink:   #1a0d15;
+	--accent-soft:  #3a1c2b;
+	--rose:         #e2a2ba;
+	--gold:         #f7e093;
+	--ok:           #86d6a7;
+	--err:          #ff9fa5;
+	--code-bg:      #1d1017;
+	--code-ink:     #f1e5ea;
+	--syn-key:      #e2a2ba;
+	--syn-type:     #f7e093;
+	--syn-fn:       #d9c2f0;
+	--syn-str:      #86d6a7;
+	--syn-num:      #f0b47a;
+	--syn-com:      #b39da8;
+	--syn-ann:      #f7e093;
+	--syn-tag:      #e2a2ba;
+	--syn-attr:     #f7e093;
+	--syn-var:      #f0b47a;
+	--syn-lit:      #e2a2ba;
+	--table-head:   #590f3b;
+	--table-head-ink: #f7e093;
+	--brand-fill:   #590f3b;
+	--brand-fill-ink: #fdf9fb;
+	--logo-plate:   #f7f3f3;
+	--focus-ring:   #f7e093;
+	--shadow:       rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="light"] { color-scheme: light; }
 
 * { box-sizing: border-box; }
 
@@ -324,6 +376,77 @@ a:hover { text-decoration-thickness: 2px; }
 .runtime-status[data-state="loading"] { color: var(--accent); }
 .runtime-status[data-state="ready"] { color: var(--ok); }
 .runtime-status[data-state="error"] { color: var(--err); }
+
+/* --- theme switcher --- */
+.themeswitch {
+	position: relative;
+	display: inline-flex;
+}
+.theme-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	background: transparent;
+	color: var(--muted-2);
+	border: 1px solid var(--rule-strong);
+	border-radius: 0;
+	cursor: pointer;
+}
+.theme-open:hover,
+.theme-open[aria-expanded="true"] {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+.theme-open .theme-icon { display: none; }
+html:not([data-theme-mode]) .theme-open .theme-icon-system,
+html[data-theme-mode="system"] .theme-open .theme-icon-system,
+html[data-theme-mode="light"] .theme-open .theme-icon-light,
+html[data-theme-mode="dark"] .theme-open .theme-icon-dark { display: block; }
+.theme-icon {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.theme-menu {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 50;
+	min-width: 148px;
+	padding: 4px;
+	display: flex;
+	flex-direction: column;
+	background: var(--paper);
+	border: 1px solid var(--ink);
+	box-shadow: 6px 6px 0 var(--shadow);
+}
+.theme-menu[hidden] { display: none; }
+.theme-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 9px;
+	background: transparent;
+	color: var(--ink);
+	border: 0;
+	border-radius: 0;
+	cursor: pointer;
+	text-align: left;
+	font-family: var(--font-ui);
+	font-size: 12.5px;
+}
+.theme-option:hover { background: var(--accent-soft); color: var(--accent); }
+.theme-option[aria-pressed="true"] {
+	background: var(--brand-fill);
+	color: var(--gold);
+}
+.theme-option .theme-icon { display: block; }
+.theme-option-label { white-space: nowrap; }
 
 /* --- search trigger --- */
 .search-open {
@@ -1238,6 +1361,7 @@ a.colophon-item:hover { color: var(--accent); }
 	.reset-runtime,
 	.runtime-status { display: none; }
 	.versionswitch, .langswitch { display: none; }
+	.theme-open { width: 40px; height: 40px; }
 	.search-open { min-width: 0; width: 40px; height: 40px; padding: 0; justify-content: center; }
 	.search-open::before { width: 10px; height: 10px; }
 	.search-open-label, .search-open-key { display: none; }

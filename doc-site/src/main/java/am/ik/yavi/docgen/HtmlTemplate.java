@@ -11,10 +11,17 @@ import java.util.List;
  * Renders the full HTML page shell around a rendered Markdown body: the top bar (site
  * title, search, version switcher, language switcher, runtime status, reset), the left
  * sidebar navigation, the content, and previous/next links. The theme lives in
- * {@code assets/docs.css}; the runnable-cell wiring and the search dialog in
- * {@code assets/docs.js}, which finds this tree's {@link SearchIndex} files through the
- * {@code data-search-base} the body carries and loads the Java runtime from the
- * {@code data-runtime-src} beside it.
+ * {@code assets/docs.css}; the runnable-cell wiring, the theme control and the search
+ * dialog in {@code assets/docs.js}, which finds this tree's {@link SearchIndex} files
+ * through the {@code data-search-base} the body carries and loads the Java runtime from
+ * the {@code data-runtime-src} beside it.
+ *
+ * <p>
+ * A tiny inline script runs before the stylesheet so the stored theme
+ * ({@code localStorage["yavi-doc-theme"]}) is on {@code <html>} before the first paint;
+ * without it the page would render the system palette and then flip. The rest of the
+ * shell is English, but the theme labels are translated for every language the site
+ * publishes.
  */
 public final class HtmlTemplate {
 
@@ -79,6 +86,19 @@ public final class HtmlTemplate {
 		html.append("<meta name=\"theme-color\" content=\"#590f3b\" media=\"(prefers-color-scheme: light)\">\n");
 		html.append("<meta name=\"theme-color\" content=\"#160b12\" media=\"(prefers-color-scheme: dark)\">\n");
 		html.append("<link rel=\"icon\" href=\"").append(faviconSrc).append("\" type=\"image/svg+xml\">\n");
+		// Before the stylesheet: the stored choice has to be on <html> for the first
+		// paint, or the page would briefly show the system palette and then flip.
+		html.append("<script>")
+			.append("(function(){try{")
+			.append("var m=localStorage.getItem(\"yavi-doc-theme\");")
+			.append("if(m!==\"light\"&&m!==\"dark\"){m=\"system\";}")
+			.append("var d=m===\"dark\"||(m===\"system\"&&window.matchMedia&&")
+			.append("window.matchMedia(\"(prefers-color-scheme: dark)\").matches);")
+			.append("var e=document.documentElement;")
+			.append("e.setAttribute(\"data-theme-mode\",m);")
+			.append("e.setAttribute(\"data-theme\",d?\"dark\":\"light\");")
+			.append("}catch(e){}})();")
+			.append("</script>\n");
 		html.append("<link rel=\"stylesheet\" href=\"").append(assetsCss).append("\">\n");
 		html.append("</head>\n");
 		// The search index lives beside the pages of this tree; docs.js resolves every
@@ -140,6 +160,7 @@ public final class HtmlTemplate {
 			.append("<span class=\"search-open-label\">Search</span>")
 			.append("<kbd class=\"search-open-key\" aria-hidden=\"true\">Ctrl K</kbd>")
 			.append("</button>\n");
+		appendThemeSwitcher(html, ctx.lang());
 		appendSwitcher(html, "versionswitch", "Version", ctx.currentDocPath(), ctx.versions());
 		appendSwitcher(html, "langswitch", "Language", ctx.currentDocPath(), ctx.languages());
 		html.append("<a href=\"https://github.com/making/yavi\" target=\"_blank\" rel=\"noopener\">GitHub</a>\n");
@@ -172,6 +193,87 @@ public final class HtmlTemplate {
 			}
 		}
 		html.append("</span>\n");
+	}
+
+	/**
+	 * The theme switcher. {@code html[data-theme-mode]} holds the visitor's choice and
+	 * {@code html[data-theme]} the palette the page is actually wearing; the inline head
+	 * script and {@code assets/docs.js} are the only writers of both.
+	 */
+	private static void appendThemeSwitcher(StringBuilder html, String lang) {
+		ThemeLabels labels = themeLabels(lang);
+		String initial = labels.trigger(labels.system());
+		html.append("<div class=\"themeswitch\">\n");
+		html.append("<button type=\"button\" class=\"theme-open\" aria-label=\"")
+			.append(esc(initial))
+			.append("\" aria-expanded=\"false\" aria-controls=\"theme-menu\" aria-haspopup=\"true\" title=\"")
+			.append(esc(initial))
+			.append("\" data-theme-label=\"")
+			.append(esc(labels.group()))
+			.append("\" data-label-system=\"")
+			.append(esc(labels.system()))
+			.append("\" data-label-light=\"")
+			.append(esc(labels.light()))
+			.append("\" data-label-dark=\"")
+			.append(esc(labels.dark()))
+			.append("\">\n");
+		appendThemeIcon(html, "system");
+		appendThemeIcon(html, "light");
+		appendThemeIcon(html, "dark");
+		html.append("</button>\n");
+		html.append("<div class=\"theme-menu\" id=\"theme-menu\" role=\"group\" aria-label=\"")
+			.append(esc(labels.group()))
+			.append("\" hidden>\n");
+		appendThemeOption(html, "system", labels.system(), true);
+		appendThemeOption(html, "light", labels.light(), false);
+		appendThemeOption(html, "dark", labels.dark(), false);
+		html.append("</div>\n");
+		html.append("</div>\n");
+	}
+
+	private static void appendThemeOption(StringBuilder html, String mode, String label, boolean pressed) {
+		html.append("<button type=\"button\" class=\"theme-option\" data-theme-value=\"")
+			.append(mode)
+			.append("\" aria-pressed=\"")
+			.append(pressed ? "true" : "false")
+			.append("\" title=\"")
+			.append(esc(label))
+			.append("\">");
+		appendThemeIcon(html, mode);
+		html.append("<span class=\"theme-option-label\">").append(esc(label)).append("</span></button>\n");
+	}
+
+	private static void appendThemeIcon(StringBuilder html, String mode) {
+		html.append("<svg class=\"theme-icon theme-icon-")
+			.append(mode)
+			.append("\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\"")
+			.append(" focusable=\"false\">");
+		switch (mode) {
+			case "light" -> html.append(
+					"<circle cx=\"12\" cy=\"12\" r=\"4\"></circle><path d=\"M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8\"></path>");
+			case "dark" -> html.append("<path d=\"M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z\"></path>");
+			default -> html.append(
+					"<rect x=\"3\" y=\"4\" width=\"18\" height=\"12\" rx=\"1.5\"></rect><path d=\"M8 20h8M12 16v4\"></path>");
+		}
+		html.append("</svg>");
+	}
+
+	/**
+	 * The labels of the theme switcher. The rest of the page shell is English, so only
+	 * these are translated; an unpublished language falls back to English.
+	 */
+	private record ThemeLabels(String group, String system, String light, String dark) {
+
+		String trigger(String mode) {
+			return this.group + ": " + mode;
+		}
+	}
+
+	private static ThemeLabels themeLabels(String lang) {
+		if ("ja".equals(lang)) {
+			return new ThemeLabels("カラーテーマ", "システム", "ライト", "ダーク");
+		}
+		return new ThemeLabels("Color theme", "System", "Light", "Dark");
 	}
 
 	private static void appendSidebar(StringBuilder html, PageContext ctx) {

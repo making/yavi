@@ -1,5 +1,11 @@
 /*
- * Runnable Java cells and the search dialog for the yavi documentation site.
+ * Runnable Java cells, the theme switcher and the search dialog for the yavi
+ * documentation site.
+ *
+ * The theme control writes the visitor's choice to localStorage["yavi-doc-theme"]
+ * and swaps html[data-theme-mode] / html[data-theme]; the inline head script replays
+ * that before the first paint. "system" tracks prefers-color-scheme through
+ * matchMedia, the other two override it. The palette itself stays in docs.css.
  *
  * Each ".code-cell" is an editable textarea plus a Run button. The Java runtime
  * (assets/yavi-runtime.js) is loaded lazily on the first Run click anywhere on the
@@ -256,6 +262,116 @@
 		});
 		window.addEventListener("resize", function () {
 			if (window.innerWidth > 900) setOpen(false, false);
+		});
+	}
+
+	/* ------------------------------------------------------------------ *
+	 * Theme
+	 * ------------------------------------------------------------------ */
+
+	// Same key as the inline head script. "system" follows the OS setting through
+	// matchMedia; an explicit choice wins even when the OS says otherwise.
+	var THEME_KEY = "yavi-doc-theme";
+
+	function themeMode() {
+		var current = document.documentElement.getAttribute("data-theme-mode");
+		if (current === "system" || current === "light" || current === "dark") return current;
+		try {
+			var stored = localStorage.getItem(THEME_KEY);
+			if (stored === "light" || stored === "dark") return stored;
+		} catch (e) {
+			/* storage unavailable: stay on system */
+		}
+		return "system";
+	}
+
+	function systemPrefersDark() {
+		return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+	}
+
+	function applyTheme(mode, persist) {
+		var resolved = mode === "light" || mode === "dark" ? mode
+			: (systemPrefersDark() ? "dark" : "light");
+		var root = document.documentElement;
+		root.setAttribute("data-theme-mode", mode);
+		root.setAttribute("data-theme", resolved);
+		if (persist) {
+			try { localStorage.setItem(THEME_KEY, mode); } catch (e) { /* ignore */ }
+		}
+		var trigger = document.querySelector(".theme-open");
+		if (trigger) {
+			var modeLabel = trigger.getAttribute("data-label-" + mode);
+			var label = trigger.getAttribute("data-theme-label") + ": " + modeLabel;
+			trigger.setAttribute("aria-label", label);
+			trigger.setAttribute("title", label);
+		}
+		var menu = document.querySelector(".theme-menu");
+		if (menu) {
+			Array.prototype.forEach.call(menu.querySelectorAll(".theme-option"), function (option) {
+				var selected = option.getAttribute("data-theme-value") === mode;
+				option.setAttribute("aria-pressed", selected ? "true" : "false");
+			});
+		}
+	}
+
+	function wireTheme() {
+		var trigger = document.querySelector(".theme-open");
+		var menu = document.querySelector(".theme-menu");
+		if (!trigger || !menu) return;
+		applyTheme(themeMode(), false);
+
+		// A live OS change while the page is open only matters in system mode; the
+		// palette tokens are swapped by the stylesheet's media query, the attribute
+		// keeps the trigger and the stored state consistent.
+		var query = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+		if (query) {
+			var onSystemChange = function () {
+				if (themeMode() === "system") applyTheme("system", false);
+			};
+			if (query.addEventListener) query.addEventListener("change", onSystemChange);
+			else if (query.addListener) query.addListener(onSystemChange);
+		}
+
+		function setOpen(open) {
+			menu.hidden = !open;
+			trigger.setAttribute("aria-expanded", open ? "true" : "false");
+			if (open) {
+				var selected = menu.querySelector('.theme-option[aria-pressed="true"]');
+				(selected || menu.querySelector(".theme-option")).focus();
+			}
+		}
+
+		trigger.addEventListener("click", function () { setOpen(menu.hidden); });
+		Array.prototype.forEach.call(menu.querySelectorAll(".theme-option"), function (option) {
+			option.addEventListener("click", function () {
+				applyTheme(option.getAttribute("data-theme-value"), true);
+				setOpen(false);
+				trigger.focus();
+			});
+		});
+		menu.addEventListener("keydown", function (ev) {
+			var options = Array.prototype.slice.call(menu.querySelectorAll(".theme-option"));
+			var index = options.indexOf(document.activeElement);
+			if (ev.key === "Escape") {
+				ev.preventDefault();
+				setOpen(false);
+				trigger.focus();
+			} else if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+				ev.preventDefault();
+				var next = ev.key === "ArrowDown" ? index + 1 : index - 1;
+				next = (next + options.length) % options.length;
+				options[next].focus();
+			}
+		});
+		document.addEventListener("keydown", function (ev) {
+			if (ev.key === "Escape" && !menu.hidden) {
+				setOpen(false);
+				trigger.focus();
+			}
+		});
+		document.addEventListener("click", function (ev) {
+			if (menu.hidden) return;
+			if (!ev.target.closest || !ev.target.closest(".themeswitch")) setOpen(false);
 		});
 	}
 
@@ -688,6 +804,7 @@
 		Array.prototype.forEach.call(document.querySelectorAll(".switch.active"), function (el) {
 			el.setAttribute("aria-current", "true");
 		});
+		wireTheme();
 		wireSearch();
 		wireNavToggle();
 		wireToc();
