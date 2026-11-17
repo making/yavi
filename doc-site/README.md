@@ -287,15 +287,27 @@ node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
 
 `.github/workflows/doc-site.yaml` builds, tests and renders the site on every change to
 `doc-site/**`, then publishes it through GitHub Pages with an Actions artifact. It reads
-`content/versions.yaml` and builds one browser runtime per listed version, passing that
-version's `yavi_release` to the runtime module; the generated-site check derives the same
-list and requires `assets/runtime/<version>/yavi-runtime.js`, `yavi-runtime-wasm.js` and
+`content/versions.yaml` and builds one browser runtime per listed version in a matrix
+job, passing that version's `yavi_release` to the runtime module; the site job then
+downloads those runtimes, runs the example harness and the generator, and finally the
+generated-site check derives the same list and requires
+`assets/runtime/<version>/yavi-runtime.js`, `yavi-runtime-wasm.js` and
 `yavi-runtime-wasm.js.wasm` for every version. Adding a version to `versions.yaml` without
 a runtime build therefore fails the workflow instead of deploying a stub. The
 repository's Pages source must be "GitHub Actions"; the custom domain stays configured in
 the repository settings, and `doc-site/CNAME` carries it into the artifact. Old
 unversioned URLs are covered by the root redirect stubs the generator emits, and `/`
 redirects to the default version and language.
+
+Each runtime matrix job restores a cache before doing anything else. The key covers
+everything the image is derived from: a hash of `doc-site/runtime/**`, the GraalVM
+release, the Binaryen version, and the documentation version with its `yavi_release`.
+On a hit the job downloads neither GraalVM nor Binaryen and skips `native-image`; it
+checks the restored files and uploads them as this run's artifact. On a miss (including
+a cache eviction, since the repository cache is size-limited) it rebuilds the image,
+checks it, saves the cache and uploads the artifact. A miss is therefore only a slower
+run, never a wrong one: the image is checked before it is cached or handed to the site
+job, and the generator still fails when a listed version has no build.
 
 The runtime's WebAssembly binary is hundreds of MB. It is published as part of the Pages
 artifact, not pushed to a `gh-pages` branch: a git push would be rejected for exceeding

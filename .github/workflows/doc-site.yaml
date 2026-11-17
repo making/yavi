@@ -30,80 +30,163 @@ permissions:
   pages: write
   id-token: write
 
+# The Web Image is derived from the GraalVM release and Binaryen (it assembles the wasm),
+# so both are part of the runtime cache key. They are declared only here so the toolchain
+# setup and the key cannot drift apart.
+env:
+  GRAALVM_VERSION: '25.5'
+  BINARYEN_VERSION: '130'
+
 jobs:
-  build:
+  # The documented versions are the matrix for the runtime build. Parsing here means a
+  # version added to versions.yaml is built (and required by the generated-site check)
+  # without touching this workflow.
+  versions:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.read.outputs.matrix }}
     steps:
     - uses: actions/checkout@v7
-    - name: Set up JDK 21
-      uses: actions/setup-java@v6
-      with:
-        java-version: '21'
-        distribution: 'liberica'
-        cache: maven
-    # The runnable cells execute Java in a Web Image (doc-site/runtime). Building it needs
-    # Oracle GraalVM 25.5 (javac and Espresso on the WebAssembly backend) and Binaryen.
-    - name: Set up GraalVM
-      uses: graalvm/setup-graalvm@v1
-      with:
-        # A 25.5 release: the Web Image backend and Espresso on it need 25.5 (25.0.x
-        # cannot compile Truffle for WebAssembly).
-        version: '25.5'
-        distribution: 'graalvm'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        cache: maven
-    - name: Set up Binaryen
-      run: |
-        set -euo pipefail
-        curl -sSL -o binaryen.tar.gz \
-          https://github.com/WebAssembly/binaryen/releases/download/version_130/binaryen-version_130-x86_64-linux.tar.gz
-        tar xzf binaryen.tar.gz
-        echo "$PWD/binaryen-version_130/bin" >> "$GITHUB_PATH"
-        # LD_LIBRARY_PATH is unset on a fresh runner; `${VAR:-}` keeps `set -u` happy.
-        echo "LD_LIBRARY_PATH=$PWD/binaryen-version_130/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
-    # The documentation-to-YAVI mapping lives in versions.yaml only. Derive one line per
-    # version for the runtime build and the generated-site check below.
     - name: Read the version mapping
+      id: read
       run: |
         set -euo pipefail
         python3 - <<'PY'
+        import json
+        import os
         import sys
         import yaml
         with open("doc-site/content/versions.yaml", encoding="utf-8") as f:
             data = yaml.safe_load(f)
-        lines = []
+        include = []
         for entry in data.get("versions") or []:
             version = str(entry.get("version") or "").strip()
             release = str(entry.get("yavi_release") or "").strip()
             if not version or not release:
                 sys.exit(f"versions.yaml: entry {entry!r} needs both version and yavi_release")
-            lines.append(f"{version} {release}")
-        if not lines:
+            include.append({"version": version, "yavi_release": release})
+        if not include:
             sys.exit("versions.yaml lists no versions")
         with open("runtime-versions.txt", "w", encoding="utf-8") as out:
-            out.write("\n".join(lines) + "\n")
+            out.write("".join(f"{e['version']} {e['yavi_release']}\n" for e in include))
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+            out.write("matrix=" + json.dumps({"include": include}) + "\n")
         PY
         cat runtime-versions.txt
-    # One Web Image per documented version: the YAVI classes are baked into the image, so
-    # a shared image cannot serve two releases. Adding a version to versions.yaml without
-    # a reachable release fails here (and in the generator's versions.yaml validation).
-    - name: Build the browser runtimes
+    - name: Upload the version mapping
+      uses: actions/upload-artifact@v4
+      with:
+        name: version-mapping
+        path: runtime-versions.txt
+
+  # One Web Image per documented version: the YAVI classes are baked into the image, so
+  # a shared image cannot serve two releases. Building a version without a reachable
+  # release fails here (and in the generator's versions.yaml validation).
+  runtime:
+    needs: versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.versions.outputs.matrix) }}
+    steps:
+    - uses: actions/checkout@v7
+    # A cache hit skips the toolchain setup and native-image. The key covers everything
+    # the image is derived from: the runtime sources and build config, the GraalVM
+    # release, Binaryen, and the documentation version with its YAVI release. Repository
+    # caches are size-limited and can be evicted at any time, so a miss only makes the
+    # run slower: the image is rebuilt and checked below before it is uploaded. A
+    # restored entry is checked as well, so a partial one can never reach the site job.
+    - name: Restore the browser runtime
+      id: cache
+      uses: actions/cache/restore@v4
+      with:
+        path: doc-site/runtime/target/web/${{ matrix.version }}
+        key: docs-runtime-${{ matrix.version }}-yavi-${{ matrix.yavi_release }}-graalvm-${{ env.GRAALVM_VERSION }}-binaryen-${{ env.BINARYEN_VERSION }}-${{ hashFiles('doc-site/runtime/**') }}
+    # The runnable cells execute Java in a Web Image (doc-site/runtime). Building it needs
+    # Oracle GraalVM 25.5 (javac and Espresso on the WebAssembly backend) and Binaryen.
+    - name: Set up GraalVM
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: graalvm/setup-graalvm@v1
+      with:
+        # A 25.5 release: the Web Image backend and Espresso on it need 25.5 (25.0.x
+        # cannot compile Truffle for WebAssembly).
+        version: ${{ env.GRAALVM_VERSION }}
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        cache: maven
+    - name: Set up Binaryen
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        set -euo pipefail
+        curl -sSL -o binaryen.tar.gz \
+          "https://github.com/WebAssembly/binaryen/releases/download/version_${{ env.BINARYEN_VERSION }}/binaryen-version_${{ env.BINARYEN_VERSION }}-x86_64-linux.tar.gz"
+        tar xzf binaryen.tar.gz
+        echo "$PWD/binaryen-version_${{ env.BINARYEN_VERSION }}/bin" >> "$GITHUB_PATH"
+        # LD_LIBRARY_PATH is unset on a fresh runner; `${VAR:-}` keeps `set -u` happy.
+        echo "LD_LIBRARY_PATH=$PWD/binaryen-version_${{ env.BINARYEN_VERSION }}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+    - name: Build the browser runtime
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         set -euo pipefail
         # The Espresso/Truffle artifacts must match the installed GraalVM exactly; take
         # the version from the release string instead of duplicating it here.
         GRAALVM_MVN_VERSION=$(native-image --version | sed -nE 's/.*Oracle GraalVM ([0-9.]+)\+.*/\1/p' | head -1)
-        while read -r version release; do
-          echo "::group::Runtime for documentation $version (YAVI $release)"
-          echo "Building the runtime for GraalVM $GRAALVM_MVN_VERSION"
-          ./mvnw -V --no-transfer-progress -f doc-site/runtime/pom.xml -Pweb package -DskipTests \
-            -Dgraalvm.version="$GRAALVM_MVN_VERSION" \
-            -Ddocs.version="$version" \
-            -Dyavi.version="$release"
-          test -f "doc-site/runtime/target/web/$version/yavi-runtime-wasm.js.wasm" \
-            || { echo "missing runtime for documentation version $version"; exit 1; }
-          echo "::endgroup::"
-        done < runtime-versions.txt
+        echo "Building the runtime for documentation ${{ matrix.version }} (YAVI ${{ matrix.yavi_release }}) with GraalVM $GRAALVM_MVN_VERSION"
+        ./mvnw -V --no-transfer-progress -f doc-site/runtime/pom.xml -Pweb package -DskipTests \
+          -Dgraalvm.version="$GRAALVM_MVN_VERSION" \
+          -Ddocs.version="${{ matrix.version }}" \
+          -Dyavi.version="${{ matrix.yavi_release }}"
+    # Checked on a hit as well: the site job must never receive a stub or a partial entry.
+    - name: Check the browser runtime
+      run: |
+        set -euo pipefail
+        dir="doc-site/runtime/target/web/${{ matrix.version }}"
+        for file in yavi-runtime.js yavi-runtime-wasm.js yavi-runtime-wasm.js.wasm; do
+          test -s "$dir/$file" || { echo "missing runtime file $dir/$file"; exit 1; }
+        done
+    - name: Save the browser runtime
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: doc-site/runtime/target/web/${{ matrix.version }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+    - name: Upload the browser runtime
+      uses: actions/upload-artifact@v4
+      with:
+        name: runtime-${{ matrix.version }}
+        path: doc-site/runtime/target/web/${{ matrix.version }}
+        # The artifact is consumed by the site job of this run only.
+        retention-days: 1
+        if-no-files-found: error
+
+  site:
+    needs: [versions, runtime]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Download the version mapping
+      uses: actions/download-artifact@v4
+      with:
+        name: version-mapping
+    # Each matrix job uploads one version's runtime. The unmerged download keeps the
+    # artifact names apart; lay them out under the directory the harness and the
+    # generator read, in the same shape a local multi-version build produces.
+    - name: Download the browser runtimes
+      uses: actions/download-artifact@v4
+      with:
+        pattern: runtime-*
+        path: runtime-artifacts
+    - name: Lay out the browser runtimes
+      run: |
+        set -euo pipefail
+        mkdir -p doc-site/runtime/target/web
+        for dir in runtime-artifacts/runtime-*; do
+          test -d "$dir" || { echo "no runtime artifacts downloaded"; exit 1; }
+          version=${dir#runtime-artifacts/runtime-}
+          mkdir -p "doc-site/runtime/target/web/$version"
+          cp -a "$dir"/. "doc-site/runtime/target/web/$version/"
+        done
+        ls -l doc-site/runtime/target/web
     # Compiles and runs every ```java runnable block of both language trees and asserts
     # the hidden expected output; a broken or drifted example fails the build here.
     - name: Test the documented examples in the browser runtime
@@ -166,7 +249,7 @@ jobs:
   # Publishes the artifact to GitHub Pages. The repository's Pages source must be
   # "GitHub Actions"; the custom domain stays configured in the repository settings.
   deploy:
-    needs: build
+    needs: site
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment:
