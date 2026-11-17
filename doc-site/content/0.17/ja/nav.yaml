@@ -1,0 +1,29 @@
+title: YAVI
+lang_name: 日本語
+sections:
+  - title: はじめに
+    pages:
+      - file: index.md
+        title: 概要
+      - file: introduction.md
+        title: はじめに
+      - file: getting-started.md
+        title: はじめる
+      - file: using-yavi.md
+        title: YAVI の使い方
+  - title: ガイド
+    pages:
+      - file: combining-validation-results.md
+        title: バリデーション結果の結合
+      - file: validating-arguments.md
+        title: 引数のバリデーション
+      - file: combining-validators.md
+        title: バリデータの組み合わせ
+      - file: built-in-constraints.md
+        title: 組み込みの制約
+  - title: リファレンス
+    pages:
+      - file: annotation-processor.md
+        title: アノテーションプロセッサ
+      - file: integrations.md
+        title: 連携

@@ -1,0 +1,107 @@
+name: Documentation Site
+
+# Builds the standalone generator and the site from doc-site/. A pull request that only
+# touches the Java library does not run this: the paths filter keeps it on doc-site/**.
+on:
+  push:
+    branches:
+    - develop
+    - main
+    paths:
+    - doc-site/**
+    - .github/workflows/doc-site.yaml
+  pull_request:
+    branches:
+    - develop
+    - main
+    paths:
+    - doc-site/**
+    - .github/workflows/doc-site.yaml
+  workflow_dispatch:
+
+# develop and main both publish to the same gh-pages branch. Serialize them instead of
+# cancelling a deploy that is already pushing.
+concurrency:
+  group: doc-site-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up JDK 21
+      uses: actions/setup-java@v6
+      with:
+        java-version: '21'
+        distribution: 'liberica'
+        cache: maven
+    - name: Unit Tests
+      run: ./mvnw -V --no-transfer-progress -f doc-site/pom.xml test
+    - name: Build the generator
+      run: ./mvnw -V --no-transfer-progress -f doc-site/pom.xml package -DskipTests
+    - name: Generate the site
+      run: java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out _site
+    - name: Check the generated site
+      run: |
+        set -euo pipefail
+        for path in \
+            index.html \
+            versions.json \
+            0.17/en/index.html \
+            0.17/en/getting-started.html \
+            0.17/ja/index.html \
+            0.17/en/search-index.json \
+            getting-started.html \
+            built-in-constraints.html; do
+          test -f "_site/${path}" || { echo "missing _site/${path}"; exit 1; }
+        done
+        grep -q 'url=0.17/en/index.html' _site/index.html
+        grep -q 'url=0.17/en/getting-started.html' _site/getting-started.html
+        grep -q 'url=0.17/en/built-in-constraints.html' _site/built-in-constraints.html
+    - name: Upload the site
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v4
+      with:
+        name: doc-site
+        path: _site
+        retention-days: 1
+
+  # Publishes to the gh-pages branch that serves yavi.ik.am. CNAME and root-level
+  # repository files stay in place; every other file is replaced by this build.
+  deploy:
+    needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout gh-pages
+      uses: actions/checkout@v7
+      with:
+        ref: gh-pages
+        path: gh-pages
+    - name: Download the site
+      uses: actions/download-artifact@v4
+      with:
+        name: doc-site
+        path: _site
+    - name: Publish
+      working-directory: gh-pages
+      run: |
+        set -euo pipefail
+        find . -mindepth 1 -maxdepth 1 ! -name .git ! -name CNAME ! -name favicon.ico -exec rm -rf {} +
+        cp -R ../_site/. .
+        touch .nojekyll
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -A
+        if git diff --cached --quiet; then
+          echo "No changes to publish"
+          exit 0
+        fi
+        git commit -m "Publish documentation site"
+        git push origin gh-pages

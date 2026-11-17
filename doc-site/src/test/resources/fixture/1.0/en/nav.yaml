@@ -1,0 +1,14 @@
+title: Fixture
+lang_name: English
+sections:
+  - title: Guide
+    pages:
+      - file: index.md
+        title: Overview
+      - file: guide.md
+        title: Guide
+        subpages:
+          - file: guide/deep.md
+            title: Deep
+      - file: code.md
+        title: Code

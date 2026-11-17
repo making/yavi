@@ -1,0 +1,15 @@
+site:
+  title: Fixture
+  description: Fixture documentation
+default_version: "1.0"
+default_language: en
+languages:
+  - code: en
+    name: English
+  - code: ja
+    name: 日本語
+versions:
+  - version: "1.0"
+    label: "1.0"
+  - version: "2.0"
+    label: "2.0"

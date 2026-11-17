@@ -1,0 +1,13 @@
+site:
+  title: YAVI
+  description: Yet Another Validation (lambda based type safe validation) for Java
+default_version: "0.17"
+default_language: en
+languages:
+  - code: en
+    name: English
+  - code: ja
+    name: 日本語
+versions:
+  - version: "0.17"
+    label: "0.17"

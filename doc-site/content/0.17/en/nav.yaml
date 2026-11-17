@@ -1,0 +1,29 @@
+title: YAVI
+lang_name: English
+sections:
+  - title: Getting Started
+    pages:
+      - file: index.md
+        title: Overview
+      - file: introduction.md
+        title: Introduction
+      - file: getting-started.md
+        title: Getting Started
+      - file: using-yavi.md
+        title: Using YAVI
+  - title: Guides
+    pages:
+      - file: combining-validation-results.md
+        title: Combining Validation Results
+      - file: validating-arguments.md
+        title: Validating Arguments
+      - file: combining-validators.md
+        title: Combining Validators
+      - file: built-in-constraints.md
+        title: Built-in Constraints
+  - title: Reference
+    pages:
+      - file: annotation-processor.md
+        title: Annotation Processor
+      - file: integrations.md
+        title: Integrations
