@@ -1051,6 +1051,44 @@ ConstraintViolations violations = validator.validate(new Age(0)); // Invalid ("a
 | `numeric.negative` | `"{0}" must be negative` | - `{0}` ... field name<br>- `{1}` ... the given value |
 | `numeric.negativeOrZero` | `"{0}" must be negative or zero` | - `{0}` ... field name<br>- `{1}` ... the given value |
 
+The constraints on this page do not have to be used one at a time. The program below combines string and numeric constraints on an account and prints the violations. Press Run to compile and execute it in your browser; the output appears below the cell.
+
+```java runnable
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Account(String username, String email, int age) {
+    }
+
+    static final Validator<Account> validator = ValidatorBuilder.<Account>of()
+        .constraint(Account::username, "username",
+                c -> c.notBlank().pattern("[a-z0-9_]{3,16}"))
+        .constraint(Account::email, "email", c -> c.notBlank().email())
+        .constraint(Account::age, "age", c -> c.greaterThanOrEqual(18).lessThanOrEqual(120))
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator
+            .validate(new Account("A!", "not-an-email", 17));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.message()));
+
+        System.out.println("adult account is valid: "
+                + validator.validate(new Account("john_doe", "jdoe@example.com", 30)).isValid());
+    }
+}
+```
+<!-- run: expected output
+violations: 3
+- "username" must match [a-z0-9_]{3,16}
+- "email" must be a valid email address
+- "age" must be greater than or equal to 18
+adult account is valid: true
+-->
+
 ## Temporal
 
 YAVI provides temporal constraints for the following types, with the corresponding builder shortcuts:
@@ -1177,6 +1215,51 @@ ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024
 | Message Key | Default Message Format | Args |
 | --- | --- | --- |
 | `temporal.field` | `The {1} of "{0}" is invalid` | - `{0}` ... field name<br>- `{1}` ... the temporal field<br>- `{2}` ... the given value |
+
+The program below validates booking dates against a fixed clock, so the result does not depend on when it is run. It prints the violations. Press Run to compile and execute it in your browser; the output appears below the cell.
+
+```java runnable
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Booking(LocalDate checkIn, LocalDate checkOut) {
+    }
+
+    static final Clock clock = Clock.fixed(Instant.parse("2024-06-01T00:00:00Z"),
+            ZoneOffset.UTC);
+
+    static final Validator<Booking> validator = ValidatorBuilder.<Booking>of()
+        ._localDate(Booking::checkIn, "checkIn", c -> c.futureOrPresent(clock))
+        ._localDate(Booking::checkOut, "checkOut",
+                c -> c.after(() -> LocalDate.of(2024, 6, 1)))
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator
+            .validate(new Booking(LocalDate.of(2024, 5, 31), LocalDate.of(2024, 5, 31)));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.message()));
+
+        System.out.println("June booking is valid: " + validator
+            .validate(new Booking(LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 30)))
+            .isValid());
+    }
+}
+```
+<!-- run: expected output
+violations: 2
+- "checkIn" must be a date in the present or in the future
+- "checkOut" has to be after 2024-06-01
+June booking is valid: true
+-->
 
 ## Boolean
 

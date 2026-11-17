@@ -109,6 +109,52 @@ Validator<Address> validator = ValidatorBuilder.<Address> of()
 
 ネストしたフィールドが null になり得る場合は、`nest` の代わりに `nestIfPresent` を使います。
 
+次のプログラムは国と都市のバリデータをネストし、ネストしたパスを含む違反名を出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Country(String name) {
+    }
+
+    record City(String name) {
+    }
+
+    record Address(Country country, City city) {
+    }
+
+    static final Validator<Country> countryValidator = ValidatorBuilder.<Country>of()
+        .constraint(Country::name, "name", c -> c.notBlank().lessThanOrEqual(20))
+        .build();
+
+    static final Validator<City> cityValidator = ValidatorBuilder.<City>of()
+        .constraint(City::name, "name", c -> c.notNull().notBlank().lessThanOrEqual(100))
+        .build();
+
+    static final Validator<Address> validator = ValidatorBuilder.<Address>of()
+        .nest(Address::country, "country", countryValidator)
+        .nest(Address::city, "city", cityValidator)
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator
+            .validate(new Address(new Country(""), new City(null)));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+    }
+}
+```
+<!-- run: expected output
+violations: 3
+- country.name: "country.name" must not be blank
+- city.name: "city.name" must not be null
+- city.name: "city.name" must not be blank
+-->
+
 ## Collection / Map / Array の要素への制約
 
 `forEach` メソッドを使うと、Collection / Map / Array の各要素に制約を適用できます。
@@ -170,6 +216,45 @@ collection / map / array のフィールドが null になり得る場合は、`
 >     .forEach(toCollection, "codeMap", b -> b._string(String::toString, "value", c -> c.notEmpty()))
 >     .build();
 > ```
+
+次のプログラムは要素のバリデータをリストに適用し、要素のインデックスを含む違反名を出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import java.util.List;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record History(int revision) {
+    }
+
+    record Histories(List<History> value) {
+    }
+
+    static final Validator<History> historyValidator = ValidatorBuilder.<History>of()
+        .constraint(History::revision, "revision", c -> c.greaterThanOrEqual(1))
+        .build();
+
+    static final Validator<Histories> validator = ValidatorBuilder.<Histories>of()
+        .forEach(Histories::value, "histories", historyValidator)
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator
+            .validate(new Histories(List.of(new History(0), new History(1), new History(-1))));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+    }
+}
+```
+<!-- run: expected output
+violations: 2
+- histories[0].revision: "histories[0].revision" must be greater than or equal to 1
+- histories[2].revision: "histories[2].revision" must be greater than or equal to 1
+-->
 
 ## 特定の条件にだけ制約を適用する
 
@@ -339,6 +424,70 @@ public class InstantRangeConstraint implements CustomConstraint<Instant> {
 }
 ```
 
+次のプログラムは ISBN-13 の検査を `CustomConstraint` として実装し、`predicate` で適用します。チェックディジットが不正な値の違反を出力し、正しい ISBN を受け入れます。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.CustomConstraint;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Book(String title, String isbn) {
+    }
+
+    static final class Isbn13Constraint implements CustomConstraint<String> {
+
+        @Override
+        public boolean test(String isbn) {
+            if (isbn == null || !isbn.matches("[0-9]{13}")) {
+                return false;
+            }
+            int sum = 0;
+            for (int i = 0; i < 12; i++) {
+                int digit = isbn.charAt(i) - '0';
+                sum += (i % 2 == 0) ? digit : digit * 3;
+            }
+            int checkDigit = (10 - sum % 10) % 10;
+            return checkDigit == isbn.charAt(12) - '0';
+        }
+
+        @Override
+        public String messageKey() {
+            return "string.isbn13";
+        }
+
+        @Override
+        public String defaultMessageFormat() {
+            return "\"{0}\" must be ISBN13 format";
+        }
+
+    }
+
+    static final Validator<Book> validator = ValidatorBuilder.<Book>of()
+        .constraint(Book::title, "title", c -> c.notBlank().lessThanOrEqual(64))
+        .constraint(Book::isbn, "isbn",
+                c -> c.notBlank().predicate(new Isbn13Constraint()))
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator
+            .validate(new Book("Effective Java", "9780306406158"));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.message()));
+
+        System.out.println("valid ISBN is accepted: "
+                + validator.validate(new Book("Effective Java", "9780306406157")).isValid());
+    }
+}
+```
+<!-- run: expected output
+violations: 1
+- "isbn" must be ISBN13 format
+valid ISBN is accepted: true
+-->
+
 ## フィールドをまたぐ検証
 
 対象のクラス自体に制約を適用したい場合は、`constraintOnTarget` を使えます。
@@ -394,6 +543,58 @@ Validator<User> validator = ValidatorBuilder.<User> of()
 
 `message` は、メッセージキーと既定のメッセージ形式を持つ `am.ik.yavi.core.ViolationMessage` も受け取ります。たとえば `ViolationMessage.of("string.isbn13", "\"{0}\" must be ISBN13 format")` です。
 0.17.2 以降、制約のメッセージを上書きしても、メッセージの引数に違反した値が保持されます。
+
+次のプログラムは独自の `MessageFormatter` を設定し、`message` と `ViolationMessage` で 2 つの制約メッセージを上書きします。生成されるメッセージを出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import java.util.Locale;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.core.ViolationMessage;
+import am.ik.yavi.message.MessageFormatter;
+import am.ik.yavi.message.SimpleMessageFormatter;
+
+public class Main {
+
+    record User(String name, String email) {
+    }
+
+    static final class PrefixedMessageFormatter implements MessageFormatter {
+
+        @Override
+        public String format(String messageKey, String defaultMessageFormat, Object[] args,
+                Locale locale) {
+            String message = SimpleMessageFormatter.getInstance()
+                .format(messageKey, defaultMessageFormat, args, locale);
+            return "[ERR] " + message;
+        }
+
+    }
+
+    static final Validator<User> validator = ValidatorBuilder.<User>of()
+        .messageFormatter(new PrefixedMessageFormatter())
+        .constraint(User::name, "name", c -> c.notNull().message("{0} is required!"))
+        .constraint(User::email, "email", c -> c.notBlank()
+            .email()
+            .message(ViolationMessage.of("email.invalid", "\"{0}\" is not a valid address"))
+            .lessThanOrEqual(50)
+            .message("{0} is too long!"))
+        .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator.validate(new User(null, "john@"));
+        System.out.println("violations: " + violations.size());
+        violations.forEach(v -> System.out.println("- " + v.message()));
+    }
+}
+```
+<!-- run: expected output
+violations: 2
+- [ERR] name is required!
+- [ERR] "email" is not a valid address
+-->
 
 ## Value バリデータ
 

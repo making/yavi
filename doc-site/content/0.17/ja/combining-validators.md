@@ -84,6 +84,53 @@ Arguments2Validator<Email, PhoneNumber, ContactInfo> contactInfoValidator = Argu
 Validated<ContactInfo> contactInfoValidated = contactInfoValidator.validate(new Email("yavi@example.com"), new PhoneNumber("090-123-4567"));
 ```
 
+次のプログラムは、コンストラクタ引数用の 3 つの小さなバリデータを作成し、`split` で組み合わせます。不正な引数の組と正しい組を検証し、違反を出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.arguments.ArgumentsValidators;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
+import am.ik.yavi.builder.IntegerValidatorBuilder;
+import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.core.Validated;
+
+public class Main {
+
+    record Person(String name, String email, int age) {
+    }
+
+    public static void main(String[] args) {
+        StringValidator<String> nameValidator = StringValidatorBuilder
+            .of("name", c -> c.notBlank().lessThanOrEqual(20))
+            .build();
+        StringValidator<String> emailValidator = StringValidatorBuilder
+            .of("email", c -> c.notBlank().email())
+            .build();
+        IntegerValidator<Integer> ageValidator = IntegerValidatorBuilder
+            .of("age", c -> c.greaterThanOrEqual(18))
+            .build();
+        Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidators
+            .split(nameValidator, emailValidator, ageValidator)
+            .apply(Person::new);
+
+        Validated<Person> invalid = validator.validate("", "not-an-email", 15);
+        System.out.println("valid: " + invalid.isValid());
+        invalid.errors().forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+
+        Validated<Person> valid = validator.validate("John Doe", "jdoe@example.com", 30);
+        System.out.println("created: " + valid.value().name() + " <" + valid.value().email() + ">");
+    }
+}
+```
+<!-- run: expected output
+valid: false
+- name: "name" must not be blank
+- email: "email" must be a valid email address
+- age: "age" must be greater than or equal to 18
+created: John Doe <jdoe@example.com>
+-->
+
 ## 値バリデータの連鎖とマッピング
 
 `ValueValidator#andThen(ValueValidator)` は、あるバリデータが生成した値を次のバリデータに適用します。

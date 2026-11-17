@@ -200,6 +200,12 @@ public class Main {
     }
 }
 ```
+<!-- run: expected output
+Validation failed: 3 constraint violations
+- manufacturer: "manufacturer" must not be null
+- licensePlate: The size of "licensePlate" must be greater than or equal to 2. The given size is 1
+- seatCount: "seatCount" must be greater than or equal to 2
+-->
 
 ## Always Valid モデル
 

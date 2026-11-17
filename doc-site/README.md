@@ -141,6 +141,30 @@ public class Main {
 
 Every other fenced block stays static and gets a copy button.
 
+Every runnable block is followed directly by a hidden comment that carries the exact
+standard output the program must produce:
+
+````markdown
+```java runnable
+public class Main {
+
+	public static void main(String[] args) {
+		System.out.println("Hello");
+	}
+
+}
+```
+<!-- run: expected output
+Hello
+-->
+````
+
+The comment is invisible on the page. `doc-site/runtime/test/run.js` compiles and runs
+every such block in both language trees, asserts the output, and fails when a block has
+no expectation or when the English and Japanese programs differ. The programs must be
+complete, deterministic and free of threads, sockets, deep recursion and file access; see
+"Runtime contract" for the limits.
+
 ### Runtime contract
 
 The cell runs through a runtime that `docs.js` loads lazily on the first Run click from
@@ -220,9 +244,10 @@ The tests build a fixture tree under `src/test/resources/fixture` and assert the
 tree, version/language switching, anchor alignment, runnable-cell rendering, link
 rewriting and validation, and the search index shape.
 
-The runtime has its own harness, which reads the shipped `java runnable` example from
-`content/0.17/en/getting-started.md` and asserts that it compiles and prints its
-violations, that a compiler error and a run-time exception are reported, and that an
+The runtime has its own harness, which extracts every `java runnable` block from
+`content/0.17/{en,ja}`, compiles and runs each one, and asserts the output against the
+hidden expectation next to it. It also checks that both language trees carry the same
+programs, that a compiler error and a run-time exception are reported, and that an
 endless loop is stopped:
 
 ```bash

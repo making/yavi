@@ -84,6 +84,53 @@ Arguments2Validator<Email, PhoneNumber, ContactInfo> contactInfoValidator = Argu
 Validated<ContactInfo> contactInfoValidated = contactInfoValidator.validate(new Email("yavi@example.com"), new PhoneNumber("090-123-4567"));
 ```
 
+The program below builds the three small validators for the constructor arguments and combines them with `split`. It validates an invalid and a valid set of arguments and prints the violations. Press Run to compile and execute it in your browser; the output appears below the cell.
+
+```java runnable
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.arguments.ArgumentsValidators;
+import am.ik.yavi.arguments.IntegerValidator;
+import am.ik.yavi.arguments.StringValidator;
+import am.ik.yavi.builder.IntegerValidatorBuilder;
+import am.ik.yavi.builder.StringValidatorBuilder;
+import am.ik.yavi.core.Validated;
+
+public class Main {
+
+    record Person(String name, String email, int age) {
+    }
+
+    public static void main(String[] args) {
+        StringValidator<String> nameValidator = StringValidatorBuilder
+            .of("name", c -> c.notBlank().lessThanOrEqual(20))
+            .build();
+        StringValidator<String> emailValidator = StringValidatorBuilder
+            .of("email", c -> c.notBlank().email())
+            .build();
+        IntegerValidator<Integer> ageValidator = IntegerValidatorBuilder
+            .of("age", c -> c.greaterThanOrEqual(18))
+            .build();
+        Arguments3Validator<String, String, Integer, Person> validator = ArgumentsValidators
+            .split(nameValidator, emailValidator, ageValidator)
+            .apply(Person::new);
+
+        Validated<Person> invalid = validator.validate("", "not-an-email", 15);
+        System.out.println("valid: " + invalid.isValid());
+        invalid.errors().forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+
+        Validated<Person> valid = validator.validate("John Doe", "jdoe@example.com", 30);
+        System.out.println("created: " + valid.value().name() + " <" + valid.value().email() + ">");
+    }
+}
+```
+<!-- run: expected output
+valid: false
+- name: "name" must not be blank
+- email: "email" must be a valid email address
+- age: "age" must be greater than or equal to 18
+created: John Doe <jdoe@example.com>
+-->
+
 ## Chaining and mapping value validators
 
 `ValueValidator#andThen(ValueValidator)` applies the value produced by one validator to the next validator.
