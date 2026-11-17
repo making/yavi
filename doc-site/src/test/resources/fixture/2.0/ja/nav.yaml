@@ -1,0 +1,9 @@
+title: Fixture
+lang_name: 日本語
+sections:
+  - title: ガイド
+    pages:
+      - file: index.md
+        title: 概要
+      - file: code.md
+        title: コード
