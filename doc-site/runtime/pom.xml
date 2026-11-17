@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--
+		Browser runtime for the documentation site's runnable cells. It builds a
+		GraalVM Web Image (WebAssembly) containing javac and Espresso (the JVM
+		written in Java) plus the YAVI jar of the documented version, and binds
+		window.YaviRuntime.run(source) to it.
+
+		Standalone module (its own reactor like doc-site/) because it needs
+		Oracle GraalVM 25.5, while the generator builds with JDK 21.
+		See doc-site/README.md for the build commands.
+	-->
+
+	<groupId>am.ik.yavi</groupId>
+	<artifactId>yavi-runtime</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>yavi-runtime</name>
+	<description>GraalVM Web Image runtime for the yavi documentation examples</description>
+
+	<properties>
+		<java.version>25</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- The YAVI version preloaded into the image and the documentation tree it serves. -->
+		<yavi.version>0.17.3</yavi.version>
+		<docs.version>0.17</docs.version>
+		<asm.version>9.11.1</asm.version>
+		<!-- Must match the Oracle GraalVM used to build the Web Image. -->
+		<graalvm.version>25.5.5.0.3</graalvm.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>am.ik.yavi</groupId>
+			<artifactId>yavi</artifactId>
+			<version>${yavi.version}</version>
+		</dependency>
+		<!-- Inserts the execution budget hook into the compiled example classes. -->
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>polyglot</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<!-- Espresso: the JVM written in Java that executes the compiled example. -->
+		<dependency>
+			<groupId>org.graalvm.espresso</groupId>
+			<artifactId>espresso-language</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.espresso</groupId>
+			<artifactId>espresso-runtime-resources-jdk25</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.graalvm.espresso</groupId>
+			<artifactId>espresso-libs-resources</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>yavi-runtime</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.16.0</version>
+				<configuration>
+					<!-- @JS annotated host methods need parameter names. -->
+					<compilerArgs>
+						<arg>-parameters</arg>
+						<arg>--add-modules</arg>
+						<arg>org.graalvm.webimage.api</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+			<!--
+				Unpacks the documented YAVI classes into the image as resources (see
+				-H:IncludeResources in the runtime configuration). Class files, not a
+				jar: neither the javac in the image nor Espresso needs zip support,
+				which the Web Image does not provide.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.8.1</version>
+				<executions>
+					<execution>
+						<id>embed-yavi-classes</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>am.ik.yavi</groupId>
+									<artifactId>yavi</artifactId>
+									<version>${yavi.version}</version>
+									<outputDirectory>${project.build.outputDirectory}/yavi-classes</outputDirectory>
+									<excludes>META-INF/**</excludes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Index of the unpacked classes: the image has no directory listing. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>yavi-classes-index</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<pathconvert property="yavi.classes" pathsep="&#10;">
+									<fileset dir="${project.build.outputDirectory}/yavi-classes" includes="**/*.class"/>
+									<map from="${project.build.outputDirectory}/" to=""/>
+								</pathconvert>
+								<echo file="${project.build.outputDirectory}/yavi-classes.index">${yavi.classes}</echo>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<!--
+			./mvnw -f doc-site/runtime/pom.xml -Pweb package
+			builds the Web Image and copies the JavaScript binding beside it under
+			target/web/<docs.version>/. Needs Oracle GraalVM 25.5 (native-image on
+			PATH) and Binaryen (wasm-as) 119 or later.
+		-->
+		<profile>
+			<id>web</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.graalvm.buildtools</groupId>
+						<artifactId>native-maven-plugin</artifactId>
+						<version>0.10.6</version>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<id>build-web-image</id>
+								<phase>package</phase>
+								<goals>
+									<goal>compile-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<mainClass>am.ik.yavi.runtime.WebMain</mainClass>
+							<imageName>web/${docs.version}/yavi-runtime-wasm</imageName>
+							<buildArgs>
+								<buildArg>--tool:svm-wasm</buildArg>
+								<buildArg>--initialize-at-run-time=com.oracle.truffle.espresso.runtime.PlatformBuilder,com.oracle.truffle.espresso.runtime.LinuxBuilder,com.oracle.truffle.espresso.runtime.DarwinBuilder,com.oracle.truffle.espresso.runtime.WindowsBuilder</buildArg>
+							</buildArgs>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>mkdir-web</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<mkdir dir="${project.build.directory}/web/${docs.version}"/>
+									</target>
+								</configuration>
+							</execution>
+							<execution>
+								<id>copy-js-binding</id>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<mkdir dir="${project.build.directory}/web/${docs.version}"/>
+										<copy todir="${project.build.directory}/web/${docs.version}">
+											<fileset dir="${project.build.outputDirectory}/assets"/>
+										</copy>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

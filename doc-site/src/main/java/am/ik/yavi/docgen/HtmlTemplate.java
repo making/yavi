@@ -64,7 +64,7 @@ public final class HtmlTemplate {
 	public static String render(PageContext ctx) {
 		String assetsCss = rel(ctx.currentDocPath(), "assets/docs.css");
 		String assetsJs = rel(ctx.currentDocPath(), "assets/docs.js");
-		String runtimeSrc = rel(ctx.currentDocPath(), "assets/yavi-runtime.js");
+		String runtimeSrc = rel(ctx.currentDocPath(), "assets/runtime/" + ctx.version() + "/yavi-runtime.js");
 		String faviconSrc = rel(ctx.currentDocPath(), "assets/favicon.svg");
 		String searchBase = rel(ctx.currentDocPath(), ctx.version() + "/" + ctx.lang());
 		String pageTitle = ctx.title() + " · " + ctx.siteTitle() + " " + ctx.version() + " documentation";

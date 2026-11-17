@@ -33,6 +33,18 @@
 	--err:          #a3243a;
 	--code-bg:      #f1e8ea;
 	--code-ink:     #21131b;
+	/* Build-time syntax highlighting. Every token stays on the code surface. */
+	--syn-key:      #6d123f;
+	--syn-type:     #7d2348;
+	--syn-fn:       #3f2a66;
+	--syn-str:      #2c6a4a;
+	--syn-num:      #8a4b12;
+	--syn-com:      #6b5561;
+	--syn-ann:      #6f4a00;
+	--syn-tag:      #590f3b;
+	--syn-attr:     #7d2348;
+	--syn-var:      #7a3a10;
+	--syn-lit:      #6d123f;
 	--table-head:   #590f3b;
 	--table-head-ink: #f7e093;
 	--brand-fill:   #590f3b;
@@ -75,6 +87,17 @@
 		--err:          #ff9fa5;
 		--code-bg:      #1d1017;
 		--code-ink:     #f1e5ea;
+		--syn-key:      #e2a2ba;
+		--syn-type:     #f7e093;
+		--syn-fn:       #d9c2f0;
+		--syn-str:      #86d6a7;
+		--syn-num:      #f0b47a;
+		--syn-com:      #b39da8;
+		--syn-ann:      #f7e093;
+		--syn-tag:      #e2a2ba;
+		--syn-attr:     #f7e093;
+		--syn-var:      #f0b47a;
+		--syn-lit:      #e2a2ba;
 		--table-head:   #590f3b;
 		--table-head-ink: #f7e093;
 		--brand-fill:   #590f3b;
@@ -869,6 +892,21 @@ body.search-open-body { overflow: hidden; }
 	color: inherit;
 	font-size: 13px;
 }
+
+/* Syntax highlighting emitted by the generator (CodeHighlighter). The spans are inline
+   and carry no background or padding, so the block's overflow, selection, copy button
+   and print behavior are unchanged. */
+.markdown pre .tok-key   { color: var(--syn-key); font-weight: 600; }
+.markdown pre .tok-type  { color: var(--syn-type); }
+.markdown pre .tok-fn    { color: var(--syn-fn); }
+.markdown pre .tok-str   { color: var(--syn-str); }
+.markdown pre .tok-num   { color: var(--syn-num); }
+.markdown pre .tok-com   { color: var(--syn-com); font-style: italic; }
+.markdown pre .tok-ann   { color: var(--syn-ann); }
+.markdown pre .tok-tag   { color: var(--syn-tag); font-weight: 600; }
+.markdown pre .tok-attr  { color: var(--syn-attr); }
+.markdown pre .tok-var   { color: var(--syn-var); }
+.markdown pre .tok-lit   { color: var(--syn-lit); font-weight: 600; }
 
 .code-block {
 	position: relative;
