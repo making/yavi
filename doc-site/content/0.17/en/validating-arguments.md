@@ -43,6 +43,65 @@ The Arguments Validator can be used as follows:
 Validated<Person> personValidated = Person.validator.validate("John Doe", "jdoe@example.com", 30);
 ```
 
+The program below builds the same arguments validator for a class whose only constructor is private, so a `Person` can be created only through `Validated`. It prints the violations of an invalid call and the object created by a valid one. Press Run to compile and execute it in your browser; the output appears below the cell.
+
+```java runnable
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    static final class Person {
+
+        private final String name;
+
+        private final String email;
+
+        private final int age;
+
+        private static final Arguments3Validator<String, String, Integer, Person> validator = Yavi
+            .arguments()
+            ._string("name", c -> c.notBlank().lessThanOrEqual(20))
+            ._string("email", c -> c.notBlank().email())
+            ._integer("age", c -> c.greaterThanOrEqual(18))
+            .apply(Person::new);
+
+        private Person(String name, String email, int age) {
+            this.name = name;
+            this.email = email;
+            this.age = age;
+        }
+
+        static Validated<Person> create(String name, String email, int age) {
+            return validator.validate(name, email, age);
+        }
+
+        @Override
+        public String toString() {
+            return this.name + " <" + this.email + ">, age " + this.age;
+        }
+
+    }
+
+    public static void main(String[] args) {
+        Validated<Person> invalid = Person.create("", "john@", 17);
+        System.out.println("valid: " + invalid.isValid());
+        invalid.errors().forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+
+        Validated<Person> valid = Person.create("John Doe", "jdoe@example.com", 30);
+        System.out.println("created: " + valid.value());
+    }
+}
+```
+<!-- run: expected output
+valid: false
+- name: "name" must not be blank
+- email: "email" must be a valid email address
+- age: "age" must be greater than or equal to 18
+created: John Doe <jdoe@example.com>, age 30
+-->
+
 `am.ik.yavi.arguments.Arguments1Validator` to `am.ik.yavi.arguments.Arguments16Validator` are available.
 The maximum number of arguments is 16.
 

@@ -117,6 +117,61 @@ Validated<ContactInfo> contactInfoValidated = Validations.combine(emailValidated
 * "phoneNumber" must match [0-9\-]+
 ```
 
+次のプログラムは、失敗する 2 つの検証を組み合わせて蓄積された違反をすべて出力し、その後、成功する 2 つの検証から `ContactInfo` を生成します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.fn.Validations;
+
+public class Main {
+
+    record Email(String value) {
+    }
+
+    record PhoneNumber(String value) {
+    }
+
+    record ContactInfo(Email email, PhoneNumber phoneNumber) {
+    }
+
+    static final Validator<Email> emailValidator = ValidatorBuilder.<Email>of()
+        .constraint(Email::value, "email", c -> c.notBlank().email())
+        .build();
+
+    static final Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<PhoneNumber>of()
+        .constraint(PhoneNumber::value, "phoneNumber", c -> c.notBlank().pattern("[0-9\\-]+"))
+        .build();
+
+    public static void main(String[] args) {
+        Validated<Email> email = emailValidator.applicative().validate(new Email(" "));
+        Validated<PhoneNumber> phoneNumber = phoneNumberValidator.applicative()
+            .validate(new PhoneNumber("a"));
+        Validated<ContactInfo> invalid = Validations.combine(email, phoneNumber)
+            .apply(ContactInfo::new);
+        System.out.println("valid: " + invalid.isValid());
+        System.out.println("violations: " + invalid.errors().size());
+        invalid.errors().forEach(v -> System.out.println("- " + v.message()));
+
+        Validated<ContactInfo> valid = Validations
+            .combine(emailValidator.applicative().validate(new Email("yavi@example.com")),
+                    phoneNumberValidator.applicative().validate(new PhoneNumber("090-123-4567")))
+            .apply(ContactInfo::new);
+        System.out.println("contact: " + valid.value().email().value() + " / "
+                + valid.value().phoneNumber().value());
+    }
+}
+```
+<!-- run: expected output
+valid: false
+violations: 3
+- "email" must not be blank
+- "email" must be a valid email address
+- "phoneNumber" must match [0-9\-]+
+contact: yavi@example.com / 090-123-4567
+-->
+
 > **ヒント**
 >
 > 上の例での `ContactInfo` の検証は、次のように `nest` メソッドを使っても実現できます:

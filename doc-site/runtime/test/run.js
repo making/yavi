@@ -5,17 +5,30 @@
 //
 //   node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
 //
-// The shipped example is read from the content tree, so the test fails when the page's
-// cell and the runtime disagree. Only output is asserted; the watchdog is a hang guard.
+// Every ```java runnable block in content/0.17/{en,ja} is a complete program followed by
+// a hidden expectation:
+//
+//   ```java runnable
+//   ... complete compilation unit ...
+//   ```
+//   <!-- run: expected output
+//   ... exact standard output ...
+//   -->
+//
+// The harness compiles and runs each block and asserts its output. The comment keeps the
+// expectation next to the program it belongs to and is invisible on the page. It also
+// checks that the English and Japanese trees carry the same programs. A block without an
+// expectation, a changed runtime message or a program that fails to compile therefore
+// fails the CI step that runs this file.
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
 
 const repository = path.resolve(__dirname, "..", "..", "..");
+const contentDir = path.join(repository, "doc-site", "content", "0.17");
 const runtimeDir =
 	process.argv[2] || path.join(repository, "doc-site", "runtime", "target", "web", "0.17");
-const contentFile = path.join(repository, "doc-site", "content", "0.17", "en", "getting-started.md");
 
 let failures = 0;
 function check(name, condition, detail) {
@@ -27,13 +40,31 @@ function check(name, condition, detail) {
 	}
 }
 
-function exampleSource() {
-	const markdown = fs.readFileSync(contentFile, "utf8");
-	const match = /```java runnable\n([\s\S]*?)```/.exec(markdown);
-	if (!match) {
-		throw new Error("no ```java runnable block in " + contentFile);
+const BLOCK = /```java runnable\n([\s\S]*?)\n```\n<!-- run: expected output\n([\s\S]*?)\n-->/g;
+const RUNNABLE = /```java runnable\n([\s\S]*?)\n```/g;
+
+// Every runnable block of a language tree, in page order: the page, the program and the
+// expected output. The expectation must be the one directly after the fence.
+function examples(language) {
+	const root = path.join(contentDir, language);
+	const found = [];
+	for (const file of fs.readdirSync(root).sort()) {
+		if (!file.endsWith(".md")) {
+			continue;
+		}
+		const markdown = fs.readFileSync(path.join(root, file), "utf8");
+		const total = [...markdown.matchAll(RUNNABLE)].length;
+		const matched = [...markdown.matchAll(BLOCK)];
+		if (total !== matched.length) {
+			throw new Error(
+				`${language}/${file}: ${total} java runnable block(s) but ${matched.length} expected-output comment(s)`,
+			);
+		}
+		for (const match of matched) {
+			found.push({ page: `${language}/${file}`, source: match[1] + "\n", expected: match[2] });
+		}
 	}
-	return match[1];
+	return found;
 }
 
 function waitForBinding(timeoutMillis) {
@@ -55,32 +86,51 @@ function waitForBinding(timeoutMillis) {
 // all come back as the promise's text.
 function run(binding, source) {
 	const result = binding.run(source);
-	return result === null || result === undefined ? "" : String(result);
+	const text = result === null || result === undefined ? "" : String(result);
+	return text.replace(/\r\n/g, "\n").replace(/\n+$/, "");
 }
 
 (async () => {
+	// Ten example programs are compiled and interpreted; the first run also initializes
+	// the in-image file system. The watchdog only guards against a hang.
 	const watchdog = setTimeout(() => {
 		console.error("FAIL the harness did not finish; the runtime is hung");
 		process.exit(1);
-	}, 120000);
+	}, 900000);
+
+	const english = examples("en");
+	const japanese = examples("ja");
+	check("the content tree carries ten runnable examples", english.length >= 10, String(english.length));
+	check(
+		"the English and Japanese trees carry the same programs",
+		english.length === japanese.length &&
+			english.every((example, index) => example.page.replace(/^en\//, "") === japanese[index].page.replace(/^ja\//, "") &&
+				example.source === japanese[index].source &&
+				example.expected === japanese[index].expected),
+		`${english.length} vs ${japanese.length}`,
+	);
 
 	require(path.join(runtimeDir, "yavi-runtime-wasm.js"));
 	const binding = await waitForBinding(60000);
 
-	const source = exampleSource();
-	const output = run(binding, source);
-	for (const line of [
-		"Validation failed: 3 constraint violations",
-		'- manufacturer: "manufacturer" must not be null',
-		'- licensePlate: The size of "licensePlate" must be greater than or equal to 2. The given size is 1',
-		'- seatCount: "seatCount" must be greater than or equal to 2',
-	]) {
-		check("example prints " + JSON.stringify(line), output.includes(line), output);
+	const numbers = new Map();
+	for (const example of english) {
+		const number = (numbers.get(example.page) || 0) + 1;
+		numbers.set(example.page, number);
+		const name = `${example.page} example ${number}`;
+		const output = run(binding, example.source);
+		check(`${name} matches its expected output`, output === example.expected, output);
+		check(
+			`${name} finishes within the step budget`,
+			!output.includes("Execution stopped after") && !output.includes("Exception:"),
+			output,
+		);
 	}
 
 	// The same source runs again: each cell is independent and nothing leaks between runs.
-	const again = run(binding, source);
-	check("example is repeatable", again === output, again);
+	const first = english[0];
+	const again = run(binding, first.source);
+	check("example is repeatable", again === first.expected, again);
 
 	const compileError = run(binding, 'public class Main { public static void main(String[] a) { int x = "oops"; } }');
 	check(

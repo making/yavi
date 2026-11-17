@@ -117,6 +117,61 @@ For example, if you put a blank space in `Email` and `a` in `PhoneNumber` and tr
 * "phoneNumber" must match [0-9\-]+
 ```
 
+The program below combines two failing validations and prints every accumulated violation, then combines two successful validations into a `ContactInfo`. Press Run to compile and execute it in your browser; the output appears below the cell.
+
+```java runnable
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.core.Validator;
+import am.ik.yavi.fn.Validations;
+
+public class Main {
+
+    record Email(String value) {
+    }
+
+    record PhoneNumber(String value) {
+    }
+
+    record ContactInfo(Email email, PhoneNumber phoneNumber) {
+    }
+
+    static final Validator<Email> emailValidator = ValidatorBuilder.<Email>of()
+        .constraint(Email::value, "email", c -> c.notBlank().email())
+        .build();
+
+    static final Validator<PhoneNumber> phoneNumberValidator = ValidatorBuilder.<PhoneNumber>of()
+        .constraint(PhoneNumber::value, "phoneNumber", c -> c.notBlank().pattern("[0-9\\-]+"))
+        .build();
+
+    public static void main(String[] args) {
+        Validated<Email> email = emailValidator.applicative().validate(new Email(" "));
+        Validated<PhoneNumber> phoneNumber = phoneNumberValidator.applicative()
+            .validate(new PhoneNumber("a"));
+        Validated<ContactInfo> invalid = Validations.combine(email, phoneNumber)
+            .apply(ContactInfo::new);
+        System.out.println("valid: " + invalid.isValid());
+        System.out.println("violations: " + invalid.errors().size());
+        invalid.errors().forEach(v -> System.out.println("- " + v.message()));
+
+        Validated<ContactInfo> valid = Validations
+            .combine(emailValidator.applicative().validate(new Email("yavi@example.com")),
+                    phoneNumberValidator.applicative().validate(new PhoneNumber("090-123-4567")))
+            .apply(ContactInfo::new);
+        System.out.println("contact: " + valid.value().email().value() + " / "
+                + valid.value().phoneNumber().value());
+    }
+}
+```
+<!-- run: expected output
+valid: false
+violations: 3
+- "email" must not be blank
+- "email" must be a valid email address
+- "phoneNumber" must match [0-9\-]+
+contact: yavi@example.com / 090-123-4567
+-->
+
 > **Tip**
 >
 > Validation for `ContactInfo` in the above example can be achieved by using `nest` method as follows:

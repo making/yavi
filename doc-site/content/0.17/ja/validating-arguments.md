@@ -42,6 +42,65 @@ public class Person {
 Validated<Person> personValidated = Person.validator.validate("John Doe", "jdoe@example.com", 30);
 ```
 
+次のプログラムは、private コンストラクタだけを持つクラスに対して同じ引数バリデータを構築します。`Person` は `Validated` を通してのみ生成できます。不正な呼び出しの違反と、正しい呼び出しで生成されたオブジェクトを出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
+
+```java runnable
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    static final class Person {
+
+        private final String name;
+
+        private final String email;
+
+        private final int age;
+
+        private static final Arguments3Validator<String, String, Integer, Person> validator = Yavi
+            .arguments()
+            ._string("name", c -> c.notBlank().lessThanOrEqual(20))
+            ._string("email", c -> c.notBlank().email())
+            ._integer("age", c -> c.greaterThanOrEqual(18))
+            .apply(Person::new);
+
+        private Person(String name, String email, int age) {
+            this.name = name;
+            this.email = email;
+            this.age = age;
+        }
+
+        static Validated<Person> create(String name, String email, int age) {
+            return validator.validate(name, email, age);
+        }
+
+        @Override
+        public String toString() {
+            return this.name + " <" + this.email + ">, age " + this.age;
+        }
+
+    }
+
+    public static void main(String[] args) {
+        Validated<Person> invalid = Person.create("", "john@", 17);
+        System.out.println("valid: " + invalid.isValid());
+        invalid.errors().forEach(v -> System.out.println("- " + v.name() + ": " + v.message()));
+
+        Validated<Person> valid = Person.create("John Doe", "jdoe@example.com", 30);
+        System.out.println("created: " + valid.value());
+    }
+}
+```
+<!-- run: expected output
+valid: false
+- name: "name" must not be blank
+- email: "email" must be a valid email address
+- age: "age" must be greater than or equal to 18
+created: John Doe <jdoe@example.com>, age 30
+-->
+
 `am.ik.yavi.arguments.Arguments1Validator` から `am.ik.yavi.arguments.Arguments16Validator` まで利用できます。
 引数の最大数は 16 です。
 
