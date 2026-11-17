@@ -72,6 +72,16 @@ class DocGenTest {
 			// Markdown links are rewritten to .html
 			.contains("href=\"index.html\"")
 			.contains("href=\"guide/deep.html\"");
+		// The theme switcher sits in the header with an English label, and the head
+		// script that replays the stored choice precedes the stylesheet.
+		assertThat(guide).contains("<button type=\"button\" class=\"theme-open\" aria-label=\"Color theme: System\"")
+			.contains("aria-expanded=\"false\" aria-controls=\"theme-menu\"")
+			.contains("data-theme-value=\"system\" aria-pressed=\"true\" title=\"System\"")
+			.contains("data-theme-value=\"light\" aria-pressed=\"false\" title=\"Light\"")
+			.contains("data-theme-value=\"dark\" aria-pressed=\"false\" title=\"Dark\"");
+		assertThat(guide.indexOf("<script>(function(){try{var m=localStorage.getItem(\"yavi-doc-theme\");"))
+			.isGreaterThanOrEqualTo(0)
+			.isLessThan(guide.indexOf("<link rel=\"stylesheet\""));
 
 		String deep = Files.readString(site.resolve("1.0/en/guide/deep.html"), StandardCharsets.UTF_8);
 		assertThat(deep).contains("<a class=\"backlink\" href=\"../guide.html\">&larr; Guide</a>")
@@ -83,7 +93,12 @@ class DocGenTest {
 		String jaGuide = Files.readString(site.resolve("1.0/ja/guide.html"), StandardCharsets.UTF_8);
 		assertThat(jaGuide).contains("<h2 id=\"options\">オプション</h2>")
 			.contains("<h2 id=\"result\">結果</h2>")
-			.contains("<a class=\"switch\" href=\"../../2.0/ja/index.html\">2.0</a>");
+			.contains("<a class=\"switch\" href=\"../../2.0/ja/index.html\">2.0</a>")
+			// The theme control is translated for the Japanese tree.
+			.contains("aria-label=\"カラーテーマ: システム\"")
+			.contains("data-theme-value=\"dark\" aria-pressed=\"false\" title=\"ダーク\"")
+			.contains("<span class=\"theme-option-label\">ライト</span>")
+			.contains("localStorage.getItem(\"yavi-doc-theme\")");
 
 		// A page that exists in the other version is linked directly, not by fallback.
 		String code = Files.readString(site.resolve("1.0/en/code.html"), StandardCharsets.UTF_8);
