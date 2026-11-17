@@ -57,7 +57,8 @@ jobs:
           https://github.com/WebAssembly/binaryen/releases/download/version_130/binaryen-version_130-x86_64-linux.tar.gz
         tar xzf binaryen.tar.gz
         echo "$PWD/binaryen-version_130/bin" >> "$GITHUB_PATH"
-        echo "$PWD/binaryen-version_130/lib" >> "$LD_LIBRARY_PATH"
+        # LD_LIBRARY_PATH is unset on a fresh runner; `${VAR:-}` keeps `set -u` happy.
+        echo "LD_LIBRARY_PATH=$PWD/binaryen-version_130/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
     - name: Build the browser runtime
       run: |
         set -euo pipefail
