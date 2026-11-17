@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Using YAVI · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/using-yavi.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link active" href="using-yavi.html" aria-current="page">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/using-yavi.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="using-yavi">Using YAVI</h1>
+<p>This section describes the basic usage of YAVI.</p>
+<h2 id="defining-and-obtaining-a-core-validator-instance">Defining and obtaining a core <code>Validator</code> instance</h2>
+<p>The core validator <code>am.ik.yavi.core.Validator</code> can be defined and obtained via <code>am.ik.yavi.builder.ValidatorBuilder</code>.
+Here is an example:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+
+ConstraintViolations violations = validator.validate(user);
+boolean isValid = violations.isValid();
+violations.forEach(x -&gt; System.out.println(x.message()));
+</code></pre>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p>YAVI accumulates all violation messages by default. If a violation is found during the validation, it will not be shortcut. If you want to return from the current validation as soon as the first constraint violation occurs, use &quot;<a href="#fail-fast-mode">fail fast mode</a>&quot;.</p>
+</blockquote>
+<p>In order to avoid ambiguous type inferences, you can use explicit <code>_&lt;type&gt;</code> method per type instead of constraint as follows:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    ._string(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    ._string(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    ._integer(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+</code></pre>
+<p>The first argument of the <code>constraint</code> method does not have to be a &quot;Getter&quot; as long as it is a <code>java.util.function.Function</code>.</p>
+<p>For example, If you want to create a <code>Validator</code> for <a href="https://openjdk.java.net/jeps/395">Records</a>, you can implement it straightforwardly like bellow:</p>
+<pre><code class="language-java">public record User(String name, String email, int age) {
+}
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::name, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::email, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::age, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+</code></pre>
+<p>Or if you don't want your method to expose the target field, you can define the constraint like following:</p>
+<pre><code class="language-java">public class User {
+    private final String name;
+
+    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+        ._string(x -&gt; x.name, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+        .build();
+
+    public User(String name) {
+        this.name = name;
+    }
+    // Omits others
+}
+</code></pre>
+<p>See &quot;<a href="built-in-constraints.html">Built-in Constraints</a>&quot; for other constraint rules.</p>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p>If you don't like to specify the field name as a string literal, you can use &quot;<a href="annotation-processor.html">Annotation Processor</a>&quot; to make it completely type-safe.</p>
+</blockquote>
+<h2 id="constraints-on-nested-objects">Constraints on nested objects</h2>
+<p>You can use <code>nest</code> method to apply constraints to the nested fields.
+You can delegate to the <code>Validator</code> for the nested field, or you can also define a set of constraints on the nested field inside.</p>
+<pre><code class="language-java">public class Address {
+    private Country country;
+    private City city;
+    // Omits other fields and getters
+}
+
+Validator&lt;Country&gt; countryValidator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(20))
+    .build();
+Validator&lt;City&gt; cityValidator = ValidatorBuilder.&lt;City&gt; of()
+    .constraint(City::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build();
+
+Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+    .nest(Address::getCountry, &quot;country&quot;, countryValidator)
+    .nest(Address::getCity, &quot;city&quot;, cityValidator)
+    .build();
+</code></pre>
+<p>Or:</p>
+<pre><code class="language-java">Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+    .nest(Address::getCountry, &quot;country&quot;,
+        b -&gt; b.constraint(Country::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(20)))
+    .nest(Address::getCity, &quot;city&quot;,
+        b -&gt; b.constraint(City::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100)))
+    .build();
+</code></pre>
+<p>If the nested field is nullable, use <code>nestIfPresent</code> instead of <code>nest</code>.</p>
+<h2 id="constraints-on-elements-in-a-collection--map--array">Constraints on elements in a Collection / Map / Array</h2>
+<p>You can use <code>forEach</code> method to apply constraints to each element of Collection / Map / Array.
+Like nested fields, You can delegate to the <code>Validator</code> for validating each element,
+or you can also define a set of constraints on the elements inside.</p>
+<pre><code class="language-java">public class History {
+	private final int revision;
+
+	public History(int revision) {
+		this.revision = revision;
+	}
+
+	public int getRevision() {
+		return revision;
+	}
+}
+
+public class Histories {
+	private final List&lt;History&gt; value;
+
+	public Histories(List&lt;History&gt; value) {
+		this.value = value;
+	}
+
+	public List&lt;History&gt; asList() {
+		return value;
+	}
+}
+
+Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
+    .constraint(History::getRevision, &quot;revision&quot;, c -&gt; c.notNull().greaterThanOrEqual(1))
+    .build();
+
+Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, &quot;histories&quot;, historyValidator)
+    .build();
+</code></pre>
+<p>Or:</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, &quot;histories&quot;,
+        b -&gt; b.constraint(History::getRevision, &quot;revision&quot;, c -&gt; c.notNull().greaterThanOrEqual(1)))
+    .build();
+</code></pre>
+<p>If the colletion / map / array field is nullable, use <code>forEachIfPresent</code> instead of <code>forEach</code>.</p>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>For the constraints on elements in a map, only values can be applied out of the box.
+If you want to apply constraints on keys in a map, you need to convert the map to key's <code>Set</code> and regard it as a collection as follows</p>
+<pre><code class="language-java">ToCollection&lt;CodeMap, Collection&lt;String&gt;, String&gt; toCollection = codeMap -&gt; codeMap.asMap().keySet();
+Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+    .forEach(toCollection, &quot;codeMap&quot;, b -&gt; b._string(String::toString, &quot;value&quot;, c -&gt; c.notEmpty()))
+    .build();
+</code></pre>
+</blockquote>
+<h2 id="applying-constraints-only-to-specific-conditions">Applying constraints only to specific conditions</h2>
+<p>You can apply constraints only to specific conditions with <code>am.ik.yavi.core.ConstraintCondition</code>.
+Since 0.11.0 a condition receives an <code>am.ik.yavi.core.ConstraintContext</code> instead of a <code>ConstraintGroup</code>, so it can read arbitrary attributes of the validation call:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, context) -&gt; !user.getName().isEmpty(),
+        b -&gt; b.constraint(User::getEmail, &quot;email&quot;, c -&gt; c.email().notEmpty()))
+    .build();
+</code></pre>
+<p>The constraint above on email will only be activated if the name is not empty.</p>
+<p>A <code>ConstraintContext</code> can be created from a <code>Map</code> or from a lookup function, and passed to the validation method:</p>
+<pre><code class="language-java">ConstraintContext context = ConstraintContext.from(Map.of(&quot;country&quot;, &quot;IT&quot;));
+// or
+ConstraintContext context = ConstraintContext.from(key -&gt; lookupAttribute(key));
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, ctx) -&gt; &quot;IT&quot;.equals(ctx.attribute(&quot;country&quot;).value()),
+        b -&gt; b.constraint(User::getTaxId, &quot;taxId&quot;, c -&gt; c.notBlank()))
+    .build();
+
+ConstraintViolations violations = validator.validate(user, context);
+</code></pre>
+<p><code>ConstraintCondition.hasAttribute(String)</code> and <code>ConstraintCondition.hasAttributeWithValue(String, Object)</code> are shortcuts for the common attribute checks:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(ConstraintCondition.hasAttributeWithValue(&quot;country&quot;, &quot;IT&quot;),
+        b -&gt; b.constraint(User::getTaxId, &quot;taxId&quot;, c -&gt; c.notBlank()))
+    .build();
+</code></pre>
+<p>If the attribute is absent, <code>context.attribute(&quot;key&quot;).value()</code> returns <code>null</code>.</p>
+<h2 id="applying-constraints-only-to-specific-groups">Applying constraints only to specific groups</h2>
+<p>A <code>ConstraintGroup</code> is a <code>ConstraintContext</code> that only carries a name.
+You can apply constraints only to specific groups as follows:</p>
+<pre><code class="language-java">enum Group implements ConstraintGroup {
+    CREATE, UPDATE, DELETE
+}
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(Group.CREATE.toCondition(), b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.isNull()))
+    .constraintOnCondition(Group.UPDATE.toCondition(), b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.notNull()))
+    .build();
+</code></pre>
+<p>A group can also be created from a name without declaring an enum:</p>
+<pre><code class="language-java">ConstraintGroup create = ConstraintGroup.of(&quot;CREATE&quot;);
+</code></pre>
+<p>The group to validate can be specified in <code>validate</code> method:</p>
+<pre><code class="language-java">ConstraintViolations violations = validator.validate(user, ConstraintGroup.of(&quot;CREATE&quot;));
+// or, with the enum above
+violations = validator.validate(user, Group.CREATE);
+</code></pre>
+<p>You can use a shortcut <code>constraintOnGroup</code> method</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnGroup(Group.CREATE, b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.isNull()))
+    .constraintOnGroup(Group.UPDATE, b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.notNull()))
+    .build();
+</code></pre>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>Note that all constraints without conditions will be validated for any constraint group.
+Also, if no group is specified in the <code>validate</code> method, <code>ConstraintGroup.DEFAULT</code> is used.
+Groups match by name; two groups are equal when their names are equal.</p>
+</blockquote>
+<h2 id="creating-a-custom-constraint">Creating a custom constraint</h2>
+<p>If you want to apply constraints that are not in the &quot;<a href="built-in-constraints.html">Built-in Constraints</a>&quot;, you can create custom constraints by implementing <code>am.ik.yavi.core.CustomConstraint</code> interface as bellow:</p>
+<pre><code class="language-java">public class IsbnConstraint implements CustomConstraint&lt;String&gt; {
+
+    @Override
+    public boolean test(String s) {
+        // Delegate processing to another method
+        return ISBNValidator.isISBN13(s);
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;string.isbn13&quot;;
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;;
+    }
+}
+</code></pre>
+<p>The created custom constraint can be specified by <code>predicate</code> method as follows:</p>
+<pre><code class="language-java">IsbnConstraint isbn = new IsbnConstraint();
+Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
+    .constraint(Book::getTitle, &quot;title&quot;, c -&gt; c.notBlank().lessThanOrEqual(64))
+    .constraint(Book::getIsbn, &quot;isbn&quot;, c -&gt; c.notBlank().predicate(isbn))
+    .build();
+</code></pre>
+<p>You can also write constraint rules directly in the <code>predicate</code> method instead of defining the <code>CustomConstraint</code> class.</p>
+<pre><code class="language-java">Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
+    .constraint(Book::getTitle, &quot;title&quot;, c -&gt; c.notBlank().lessThanOrEqual(64))
+    .constraint(Book::getIsbn, &quot;isbn&quot;, c -&gt; c.notBlank()
+        .predicate(s -&gt; ISBNValidator.isISBN13(s), &quot;string.isbn13&quot;, &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;))
+    .build();
+</code></pre>
+<p>The first argument of the violation message is the field name. Also, the last argument is the violated value.</p>
+<p>If you want to use other arguments, override <code>arguments</code> method as bellow:</p>
+<pre><code class="language-java">public class InstantRangeConstraint implements CustomConstraint&lt;Instant&gt; {
+
+    private final Instant end;
+
+    private final Instant start;
+
+    InstantRangeConstraint(Instant start, Instant end) {
+        this.start = Objects.requireNonNull(start);
+        this.end = Objects.requireNonNull(end);
+    }
+
+    @Override
+    public Object[] arguments(Instant violatedValue) {
+        return new Object[] { this.start /* {1} */, this.end /* {2} */};
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;Instant value \&quot;{0}\&quot; must be between \&quot;{1}\&quot; and \&quot;{2}\&quot;.&quot;;
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;instant.range&quot;;
+    }
+
+    @Override
+    public boolean test(Instant instant) {
+        return instant.isAfter(this.start) &amp;&amp; instant.isBefore(this.end);
+    }
+}
+</code></pre>
+<h2 id="cross-field-validation">Cross-field validation</h2>
+<p>If you want to apply constraints on target class itself, you can use <code>constraintOnTarget</code>.
+It can be used when you want to apply cross-field constraints as follows:</p>
+<pre><code class="language-java">Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
+    .constraint(range::getFrom, &quot;from&quot;, c -&gt; c.greaterThan(0))
+    .constraint(range::getTo, &quot;to&quot;, c -&gt; c.greaterThan(0))
+    .constraintOnTarget(range -&gt; range.getTo() &gt; range.getFrom(), &quot;to&quot;, &quot;to.isGreaterThanFrom&quot;, &quot;\&quot;to\&quot; must be greater than \&quot;from\&quot;&quot;)
+    .build();
+</code></pre>
+<p>You can also create a custom constraint for the cross-field validation as follows:</p>
+<pre><code class="language-java">public class RangeConstraint implements CustomConstraint&lt;Range&gt; {
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;\&quot;to\&quot; must be greater than \&quot;from\&quot;&quot;;
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;to.isGreaterThanFrom&quot;;
+    }
+
+    @Override
+    public boolean test(Range range) {
+        return range.getTo() &gt; range.getFrom();
+    }
+}
+
+RangeConstraint range = new RangeConstraint();
+Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
+        .constraintOnTarget(range, &quot;to&quot;)
+        .build();
+</code></pre>
+<h2 id="overriding-violation-messages">Overriding violation messages</h2>
+<p>The default violation message for each constraint is defined in &quot;<a href="built-in-constraints.html">Built-in Constraints</a>&quot;.</p>
+<p>If you want to customize the violation message, append <code>message</code> method on the target constraint as follows:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().message(&quot;{0} is required!&quot;)
+        .greaterThanOrEqual(1).message(&quot;{0} is too small!&quot;)
+        .lessThanOrEqual(20).message(&quot;{0} is too large!&quot;))
+    .build();
+</code></pre>
+<p><code>message</code> also accepts an <code>am.ik.yavi.core.ViolationMessage</code> that carries the message key and the default message format, for example <code>ViolationMessage.of(&quot;string.isbn13&quot;, &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;)</code>.
+Since 0.17.2, overriding the message of a constraint preserves the violated value in the message arguments.</p>
+<h2 id="value-validators">Value validators</h2>
+<p><code>am.ik.yavi.core.ValueValidator</code> validates an input and produces a validated value.
+It is the applicative counterpart of <code>Validator</code>; see &quot;<a href="combining-validators.html">Combining Validators</a>&quot; for combining value validators and &quot;<a href="combining-validation-results.html">Combining Validation Results</a>&quot; for the <code>Validated</code> result type.</p>
+<p>A value validator maps the validated value with <code>map</code>:</p>
+<pre><code class="language-java">ValueValidator&lt;String, String&gt; trimmed = ValueValidator.&lt;String&gt; passThrough().map(String::trim);
+</code></pre>
+<p><code>andThen(Function)</code> is deprecated since 0.17.0; use <code>map(Function)</code> instead.
+<code>andThen(ValueValidator)</code> is still supported and chains validators, applying the next validator to the value produced by the previous one:</p>
+<pre><code class="language-java">ValueValidator&lt;String, Integer&gt; length = trimmed
+    .andThen(ValueValidator.&lt;String&gt; passThrough().map(String::length));
+</code></pre>
+<p><code>validated(...)</code> validates the input and returns the value, throwing <code>am.ik.yavi.core.ConstraintViolationsException</code> when a violation exists.
+The same behavior is available through <code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code>:</p>
+<pre><code class="language-java">try {
+    String value = trimmed.validated(input);
+}
+catch (ConstraintViolationsException e) {
+    // handle the violations
+}
+
+ConstraintViolations violations = validator.validate(user);
+violations.throwIfInvalid(ConstraintViolationsException::new);
+</code></pre>
+<p>A value validator can be converted to a regular <code>Validator</code> with <code>Validatable.from(ValueValidator)</code>, which discards the produced value and only reports the violations:</p>
+<pre><code class="language-java">Validatable&lt;String&gt; validator = Validatable.from(trimmed);
+</code></pre>
+<h2 id="handling-violation-results">Handling violation results</h2>
+<p><code>ConstraintViolation</code> has a staged builder since 0.15.0.
+The <code>name</code>, <code>messageKey</code> and <code>defaultMessageFormat</code> stages are required; the argument, formatter and locale methods are optional:</p>
+<pre><code class="language-java">ConstraintViolation violation = ConstraintViolation.builder()
+    .name(&quot;email&quot;)
+    .messageKey(&quot;email.invalid&quot;)
+    .defaultMessageFormat(&quot;\&quot;{0}\&quot; must be a valid email address&quot;)
+    .argsWithPrependedNameAndAppendedViolatedValue(new Object[] {}, new ViolatedValue(input))
+    .messageFormatter(SimpleMessageFormatter.getInstance())
+    .locale(Locale.JAPAN)
+    .build();
+</code></pre>
+<p><code>ConstraintViolation#violatedValue()</code> returns the value that violated the constraint.</p>
+<p><code>SimpleMessageFormatter</code> can be obtained with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is still available but is deprecated since 0.16.0.</p>
+<h2 id="message-formatter">Message Formatter</h2>
+<p>YAVI provides <code>am.ik.yavi.message.MessageFormatter</code> interface for constructing violation messages.</p>
+<p>By default, <code>am.ik.yavi.message.SimpleMessageFormatter</code> is used, which simply uses <code>java.text.MessageFormat</code> to interpolate the message.
+A shared instance is available with <code>SimpleMessageFormatter.getInstance()</code>; the public no-arg constructor is kept for backward compatibility but is deprecated.
+A list of message keys and default message formats is given in &quot;<a href="built-in-constraints.html">Built-in Constraints</a>&quot;.</p>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>As a feature of error messages, the following are supported compared to Bean Validation:</p>
+<ul>
+<li>Include field name in error message by default</li>
+<li>Allows you to include the violated values in the error message</li>
+</ul>
+<p>The first placeholder <code>{0}</code> of the message is set to the field name, and the last placeholder is set to the violation value.</p>
+<p>Especially for the second one, since it is not supported by the general Validation library, for example, even if the error message &quot;xyz should be 100 characters or less&quot; is returned, what characters are actually entered now? Sometimes I try to cut the letters little by little because I don't know if they are counted. By default, the following message is displayed so that the user does not have to do this wasteful thing.</p>
+<p><img src="https://user-images.githubusercontent.com/106908/44784067-4b010600-abc7-11e8-8878-930d017405bb.png" alt="" /></p>
+</blockquote>
+<p>If you want to customize the message interpolation, implement <code>MessageFormatter</code>.
+As an example, the implementation that reads messages in <code>messages.properties</code> is shown as follows:</p>
+<pre><code class="language-java">import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import am.ik.yavi.message.MessageFormatter;
+
+public enum ResourceBundleMessageFormatter implements MessageFormatter {
+    SINGLETON;
+
+    @Override
+    public String format(String messageKey, String defaultMessageFormat, Object[] args,
+            Locale locale) {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(&quot;messages&quot;, locale);
+        String format;
+        try {
+            format = resourceBundle.getString(messageKey);
+        }
+        catch (MissingResourceException e) {
+            format = defaultMessageFormat;
+        }
+        try {
+            String target = resourceBundle.getString((String) args[0] /* field name */);
+            args[0] = target;
+        }
+        catch (MissingResourceException e) {
+        }
+        return new MessageFormat(format, locale).format(args);
+    }
+}
+</code></pre>
+<p>If you want to replace the <code>MessageFormatter</code>, you can set it as follows.</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .messageFormatter(ResourceBundleMessageFormatter.SINGLETON)
+    // ...
+    .build();
+</code></pre>
+<h2 id="fail-fast-mode">Fail fast mode</h2>
+<p>Using the fail fast mode, YAVI allows to return from the current validation as soon as the first constraint violation occurs.
+This can be useful for the validation of large object graphs where you are only interested in a quick check whether there is any constraint violation at all.</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .failFast(true) // &lt;-- Enable the fail fast mode
+    .build();
+</code></pre>
+<p>You can switch an existing <code>Validator</code> to the fail fast mode as follows:</p>
+<pre><code class="language-java">Validator&lt;User&gt; failFastValidator = validator.failFast(true);
+</code></pre>
+<p>The <code>failFast(boolean)</code> and <code>isFailFast()</code> methods are also declared on <code>am.ik.yavi.core.Validatable</code>, so the mode can be read and switched through that interface:</p>
+<pre><code class="language-java">boolean failFast = failFastValidator.isFailFast();
+Validatable&lt;User&gt; validatable = validator.failFast(true);
+</code></pre>
+<p>Since 0.13.0 nested, collection and conditional validators honor the parent's fail-fast mode.
+The mode is passed down to nested validators and element validators, so the validation stops at the first violation in those validators as well.</p>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>This feature comes from <a href="https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-fail-fast">the fail fast mode of Hibernate Validator.</a></p>
+</blockquote>
+<h2 id="resolving-conflicting-constraint-names">Resolving conflicting constraint names</h2>
+<p>When the same constraint name is registered more than once, <code>ValidatorBuilder#conflictStrategy(ConflictStrategy)</code> decides what happens when the validator is built.
+The default, <code>am.ik.yavi.builder.ConflictStrategy.NOOP</code>, keeps the existing constraints and appends the new one, so the target is validated by all of them.
+<code>ConflictStrategy.OVERRIDE</code> removes the existing constraints and keeps only the new one:</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .conflictStrategy(ConflictStrategy.OVERRIDE)
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull())
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notBlank()) // replaces the previous &quot;name&quot; constraint
+    .build();
+</code></pre>
+<p>A custom strategy can mutate the list of existing predicates; the new predicate is appended after the strategy returns:</p>
+<pre><code class="language-java">ConflictStrategy keepFirst = new ConflictStrategy() {
+    @Override
+    public &lt;T&gt; void resolveConflict(List&lt;ConstraintPredicates&lt;T, ?&gt;&gt; predicatesList,
+            ConstraintPredicates&lt;T, ?&gt; predicates) {
+        while (predicatesList.size() &gt; 1) {
+            predicatesList.remove(predicatesList.size() - 1);
+        }
+    }
+};
+</code></pre>
+<h2 id="kotlin-support">Kotlin Support</h2>
+<p>If you are using Kotlin, you can define a <code>Validator</code> with DSL as follows.
+The DSL obtains property names with Kotlin reflection, so <code>kotlin-reflect</code> must be on the runtime classpath.</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+	User::name {
+		notNull()
+		lessThanOrEqual(20)
+	}
+	User::email {
+		notNull()
+		greaterThanOrEqual(5)
+		lessThanOrEqual(50)
+		email()
+	}
+	User::age {
+		notNull()
+		greaterThanOrEqual(0)
+		lessThanOrEqual(100)
+	}
+}
+</code></pre>
+<p>Field names can be overridden like bellow:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+	(User::name)(&quot;Name&quot;) {
+		notNull()
+		lessThanOrEqual(20)
+	}
+	(User::email)(&quot;Email&quot;) {
+		notNull()
+		greaterThanOrEqual(5)
+		lessThanOrEqual(50)
+		email()
+	}
+	(User::age)(&quot;Age&quot;) {
+		notNull()
+		greaterThanOrEqual(0)
+		lessThanOrEqual(100)
+	}
+}
+</code></pre>
+<p><code>forEach</code> example:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoForEachCollection&gt; {
+    DemoForEachCollection::x forEach {
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
+    }
+}
+</code></pre>
+<p><code>nest</code> example:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoNested&gt; {
+    DemoNested::x nest {
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
+    }
+}
+</code></pre>
+<p><code>nest</code> delegate example:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoNested&gt; {
+    DemoNested::x nest demoStringValidator
+}
+</code></pre>
+<p><code>nestIfPresent</code> and <code>forEachIfPresent</code> validate nullable nested objects, collections, maps and arrays only when they are present:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;Order&gt; {
+    Order::customer nestIfPresent {
+        Customer::name {
+            notBlank()
+        }
+    }
+    Order::items forEachIfPresent {
+        OrderItem::name {
+            notBlank()
+        }
+    }
+}
+</code></pre>
+<p>Temporal and enum properties have their own overloads.
+For example, <code>LocalDate</code>, <code>LocalTime</code>, <code>LocalDateTime</code>, <code>ZonedDateTime</code>, <code>OffsetDateTime</code>, <code>Instant</code>, <code>Year</code> and <code>YearMonth</code> properties can use the date and time constraints, and enum properties can use <code>oneOf</code>.
+See &quot;<a href="built-in-constraints.html">Built-in Constraints</a>&quot; for the available constraints:</p>
+<pre><code class="language-kotlin">enum class Status { ACTIVE, INACTIVE }
+
+val validator = validator&lt;Account&gt; {
+    Account::createdAt {
+        notNull()
+        past()
+    }
+    Account::status {
+        notNull()
+        oneOf(Status.ACTIVE)
+    }
+}
+</code></pre>
+<p><code>onCondition</code> and <code>onGroup</code> add conditional and group-specific constraints, and <code>unwrap</code> gives access to the underlying <code>ValidatorBuilder</code>:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+    onCondition({ _, context -&gt; &quot;IT&quot;.equals(context.attribute(&quot;country&quot;).value()) }) {
+        User::taxId {
+            notNull()
+        }
+    }
+    onGroup(ConstraintGroup.of(&quot;CREATE&quot;)) {
+        User::id {
+            isNull()
+        }
+    }
+    unwrap().failFast(true)
+}
+</code></pre>
+<h3 id="coroutines-support">Coroutines support</h3>
+<p>The extensions in <code>am.ik.yavi.fn.ValidationExtensions</code> suspend the validation result handling.
+<code>awaitFold</code>, <code>awaitBimap</code>, <code>awaitMap</code>, <code>awaitMapErrors</code> and <code>awaitMapError</code> correspond to <code>fold</code>, <code>bimap</code>, <code>map</code>, <code>mapErrors</code> and <code>mapError</code>.
+They require <code>kotlinx-coroutines-core</code>:</p>
+<pre><code class="language-kotlin">import am.ik.yavi.fn.awaitFold
+
+suspend fun createUser(validated: Validated&lt;User&gt;): HttpStatus = validated.awaitFold(
+    errorsMapper = { violations -&gt; HttpStatus.BAD_REQUEST },
+    mapper = { user -&gt; HttpStatus.OK },
+)
+</code></pre>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="getting-started.html"><span class="dir">&larr; Previous</span><span class="label">Getting Started</span></a>
+<a class="next" href="combining-validation-results.html"><span class="dir">Next &rarr;</span><span class="label">Combining Validation Results</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#defining-and-obtaining-a-core-validator-instance">Defining and obtaining a core <code>Validator</code> instance</a></li>
+<li class="toc-h2"><a href="#constraints-on-nested-objects">Constraints on nested objects</a></li>
+<li class="toc-h2"><a href="#constraints-on-elements-in-a-collection--map--array">Constraints on elements in a Collection / Map / Array</a></li>
+<li class="toc-h2"><a href="#applying-constraints-only-to-specific-conditions">Applying constraints only to specific conditions</a></li>
+<li class="toc-h2"><a href="#applying-constraints-only-to-specific-groups">Applying constraints only to specific groups</a></li>
+<li class="toc-h2"><a href="#creating-a-custom-constraint">Creating a custom constraint</a></li>
+<li class="toc-h2"><a href="#cross-field-validation">Cross-field validation</a></li>
+<li class="toc-h2"><a href="#overriding-violation-messages">Overriding violation messages</a></li>
+<li class="toc-h2"><a href="#value-validators">Value validators</a></li>
+<li class="toc-h2"><a href="#handling-violation-results">Handling violation results</a></li>
+<li class="toc-h2"><a href="#message-formatter">Message Formatter</a></li>
+<li class="toc-h2"><a href="#fail-fast-mode">Fail fast mode</a></li>
+<li class="toc-h2"><a href="#resolving-conflicting-constraint-names">Resolving conflicting constraint names</a></li>
+<li class="toc-h2"><a href="#kotlin-support">Kotlin Support</a></li>
+<li class="toc-h3"><a href="#coroutines-support">Coroutines support</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

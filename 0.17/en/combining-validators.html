@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combining Validators · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/combining-validators.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link active" href="combining-validators.html" aria-current="page">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/combining-validators.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="combining-validators">Combining Validators</h1>
+<p><code>ApplicativeValidator&lt;T&gt;</code> and <code>Arguments1Validator&lt;S, T&gt;</code> we've seen so far extend <code>ValueValidator&lt;S, T&gt;</code>.
+(<code>T</code> is the type of the target object to be validated and <code>S</code> is the type of the source object to create the target object.)</p>
+<p><code>ApplicativeValidator&lt;T&gt;</code> is a <code>ValueValidator&lt;T, T&gt;</code>.</p>
+<p>Multiple <code>ValueValidator</code> s can be combined to validate a larger object.</p>
+<p><code>ArgumentsValidators#split</code> and <code>ArgumentsValidators#combine</code> support up to 16 arguments since 0.10.0.
+The <code>apply</code> method consumes <code>Function1</code> to <code>Function16</code> accordingly.</p>
+<h2 id="splitting-a-validator-for-an-object-into-small-pieces">Splitting a validator for an object into small pieces</h2>
+<p>You can use <code>split</code> method to split a validator for the arguments of a constructor or a factory method for creating a large object into small validators and combine them.</p>
+<p>Let's take a look at an example.</p>
+<p>Validator for constructor <code>Person(String, String, Integer)</code> is <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code>.
+This can be divided into two <code>StringValidator&lt;String&gt;</code> s and one <code>IntegerValidator&lt;Integer&gt;</code> and then combined.</p>
+<p>It can be defined as bellow:</p>
+<pre><code class="language-java">public class Person {
+    public Person(String name, String email, Integer age) {
+        // ...
+    }
+}
+
+StringValidator&lt;String&gt; nameValidator = /* see examples above */;
+StringValidator&lt;String&gt; emailValidator = /* see examples above */;
+IntegerValidator&lt;Integer&gt; ageValidator = /* see examples above */;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);
+</code></pre>
+<p>The same goes for Validators for Value Objects.</p>
+<pre><code class="language-java">public class Person {
+    public Person(Name name, Email email, Age age) {
+        // ...
+    }
+}
+
+StringValidator&lt;Name&gt; nameValidator = /* see examples above */;
+StringValidator&lt;Email&gt; emailValidator = /* see examples above */;
+IntegerValidator&lt;Age&gt; ageValidator = /* see examples above */;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);
+</code></pre>
+<p>The created Validator can be used as follows:</p>
+<pre><code class="language-java">Validated&lt;Person&gt; personValidated = Person.validator.validate(&quot;Jone Doe&quot;, &quot;jdoe@example.com&quot;, 30);
+</code></pre>
+<p>Since the arguments of <code>ArgumentsValidators#split</code> are <code>ValueValidator</code> s rather than <code>Arguments1Validator</code> s, you can also combine <code>ApplicativeValidator</code> s as follows:</p>
+<pre><code class="language-java">ApplicativeValidator&lt;Email&gt; emailValidator = /* see examples above */;
+ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = /* see examples above */;
+
+Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
+    .split(emailValidator, phoneNumberValidator)
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email(&quot;yavi@example.com&quot;), new PhoneNumber(&quot;090-123-4567&quot;));
+</code></pre>
+<h2 id="chaining-and-mapping-value-validators">Chaining and mapping value validators</h2>
+<p><code>ValueValidator#andThen(ValueValidator)</code> applies the value produced by one validator to the next validator.
+<code>ValueValidator#map(Function)</code> maps the validated value without applying further validation.
+<code>andThen(Function)</code> is deprecated since 0.17.0 and is equivalent to <code>map(Function)</code>.</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+ValueValidator&lt;String, String&gt; emailValue = emailValidator.map(Email::value);
+ValueValidator&lt;String, String&gt; checked = emailValidator
+    .andThen(ValueValidator.&lt;Email&gt; passThrough().map(Email::value));
+</code></pre>
+<h2 id="validating-every-element-of-an-iterable">Validating every element of an iterable</h2>
+<p><code>ArgumentsValidators#sequenceN</code> applies every given validator to the same arguments and collects the validated values into a <code>List</code>.
+<code>ArgumentsValidators#traverseN</code> builds a validator from an iterable of values and a function that produces a validator for each value.
+Both are available for 1 to 16 arguments since 0.10.0.</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+Arguments1Validator&lt;String, Email&gt; adminEmailValidator = /* see examples above */;
+Arguments1Validator&lt;String, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators
+    .sequence1(List.of(emailValidator, adminEmailValidator));
+
+Validated&lt;List&lt;Email&gt;&gt; emails = emailsValidator.validate(&quot;yavi@example.com&quot;);
+</code></pre>
+<p>See <a href="validating-arguments.html">Validating arguments</a> for constructing arguments validators.</p>
+<h2 id="validating-the-source-object-before-creating-the-target-object">Validating the source object before creating the target object</h2>
+<p>In a web application, you often get values from a <code>Map</code>, Form Object, or <code>HttpServletRequest</code> to create a Domain Object.</p>
+<p><code>Arguments1Validator</code> can validate the source object and then convert it to the target object using <code>compose</code> method.</p>
+<p>For example, in the case where <code>name</code>, <code>email</code> and <code>age</code> are obtained from <code>HttpServletRequest</code> object as HTTP request parameters in Servlet, it can be defined as follows:</p>
+<pre><code class="language-java">Arguments1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
+    .compose(req -&gt; req.getParameter(&quot;name&quot;));
+Arguments1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
+    .compose(req -&gt; req.getParameter(&quot;email&quot;));
+Arguments1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
+    .compose(req -&gt; Integer.valueOf(req.getParameter(&quot;age&quot;)));
+
+HttpServletRequest request = ...;
+Validated&lt;Name&gt; nameValidated = requestNameValidator.validate(request);
+Validated&lt;Email&gt; emailValidated = requestEmailValidator.validate(request);
+Validated&lt;Age&gt; ageValidated = requestAgeValidator.validate(request);
+</code></pre>
+<p>You can combine these Validators with <code>combine</code> method as follows to create a Validator for <code>Person</code> object:</p>
+<pre><code class="language-java">Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = ArgumentsValidators
+    .combine(requestNameValidator, requestEmailValidator, requestAgeValidator)
+    .apply(Person::new);
+// or
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = requestNameValidator
+    .combine(requestEmailValidator)
+    .combine(requestAgeValidator)
+    .apply(Person::new);
+
+HttpServletRequest request = ...;
+Validated&lt;Person&gt; personValidated = requestPersonValidator.validate(request);
+</code></pre>
+<p>This Validator can also be converted from <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code> as follows:</p>
+<pre><code class="language-java">Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = /* see examples above */;
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = personValidator
+    .compose(req -&gt; Arguments.of(req.getParameter(&quot;name&quot;), req.getParameter(&quot;email&quot;), Integer.valueOf(req.getParameter(&quot;age&quot;))));
+</code></pre>
+<p>By combining Validators in this way, you can create various patterns of Validators. Creating a small Arguments Validator not only allows you to validate the values before creating the object, but also makes it more reusable.</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="validating-arguments.html"><span class="dir">&larr; Previous</span><span class="label">Validating Arguments</span></a>
+<a class="next" href="built-in-constraints.html"><span class="dir">Next &rarr;</span><span class="label">Built-in Constraints</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#splitting-a-validator-for-an-object-into-small-pieces">Splitting a validator for an object into small pieces</a></li>
+<li class="toc-h2"><a href="#chaining-and-mapping-value-validators">Chaining and mapping value validators</a></li>
+<li class="toc-h2"><a href="#validating-every-element-of-an-iterable">Validating every element of an iterable</a></li>
+<li class="toc-h2"><a href="#validating-the-source-object-before-creating-the-target-object">Validating the source object before creating the target object</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

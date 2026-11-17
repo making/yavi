@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はじめに · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/introduction.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link active" href="introduction.html" aria-current="page">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/introduction.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="introduction">はじめに</h1>
+<p>YAVI は日本語の俗語「ヤバイ（YABAI）」と同じ響きで、文脈によって「すごい」とも「ひどい」ともいいます（英語の &quot;Crazy&quot; に近い）。
+YAVI を使えば、その意味が前者であることがすぐにわかります。</p>
+<p>設計方針は次のとおりです。</p>
+<ul>
+<li>リフレクションを使いません</li>
+<li>（実行時の）アノテーションを使いません</li>
+<li>Java Beans に限りません</li>
+<li>依存関係はゼロです</li>
+</ul>
+<p><a href="https://beanvalidation.org/">Bean Validation</a> が好みでないなら、YAVI は優れた代替になります。</p>
+<p>YAVI には次の機能があります。</p>
+<ul>
+<li>型安全な制約。サポートされていない制約を誤った型に適用できません</li>
+<li>流れるように書ける直感的な API</li>
+<li>任意のオブジェクトへの制約。Java Beans、<a href="https://openjdk.java.net/jeps/395">Records</a>、<a href="https://developers.google.com/protocol-buffers">Protocol Buffers</a>、<a href="https://immutables.github.io/">Immutables</a> など</li>
+<li>日時や enum の制約を含む、多数の強力な組み込み制約</li>
+<li>独自の制約を簡単に定義できます</li>
+<li>制約グループとコンテキストごとの検証、条件付き検証、競合時の戦略</li>
+<li>オブジェクトを生成する前の引数の検証と、不正なオブジェクトを生成できなくする「Always Valid モデル」</li>
+<li>コルーチン拡張を含む Kotlin 連携</li>
+<li>関数型プログラミングの考え方を取り入れた、検証結果とバリデータを組み合わせる API</li>
+</ul>
+<p>Bean Validation からの移行については、<a href="https://github.com/making/yavi/blob/develop/docs/FromBeanValidationToYAVI.md">ガイド</a> を参照してください。</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="index.html"><span class="dir">&larr; Previous</span><span class="label">概要</span></a>
+<a class="next" href="getting-started.html"><span class="dir">Next &rarr;</span><span class="label">はじめる</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

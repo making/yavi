@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annotation Processor · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/annotation-processor.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link active" href="annotation-processor.html" aria-current="page">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/annotation-processor.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="annotation-processor">Annotation Processor</h1>
+<p>YAVI provides Annotation Processor to generates classes which defines meta classes
+that implement <code>am.ik.yavi.meta.ConstraintMeta</code> for each target which is annotated with <code>am.ik.yavi.meta.ConstraintTarget</code> or <code>am.ik.yavi.meta.ConstraintArguments</code>.</p>
+<h2 id="enabling-the-annotation-processor">Enabling the annotation processor</h2>
+<p>The annotation processor is packaged in the <code>yavi</code> artifact.
+With JDK 21 and earlier, <code>mvn clean compile</code> discovers it on the compile classpath automatically.
+JDK 23 and later no longer run annotation processors found on the classpath implicitly, so declare the processor explicitly in <code>pom.xml</code>:</p>
+<pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;annotationProcessorPaths&gt;
+            &lt;path&gt;
+                &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+                &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+                &lt;version&gt;0.17.3&lt;/version&gt;
+            &lt;/path&gt;
+        &lt;/annotationProcessorPaths&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+</code></pre>
+<p>When you have a class as following, run <code>mvn clean compile</code>:</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private String name;
+
+    private String email;
+
+    private Integer age;
+
+    @ConstraintTarget
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @ConstraintTarget
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @ConstraintTarget
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+</code></pre>
+<p>You'll see <code>target/generated-sources/annotations/com/example/_UserFormMeta.java</code> is automatically generated.</p>
+<blockquote>
+<p><strong>Note</strong></p>
+<p><code>@ConstraintTarget</code> and <code>@ConstraintArguments</code> are compile-time annotations, so they disappear at runtime.
+This won't break YAVI's &quot;No annotation!&quot; concept ;)</p>
+</blockquote>
+<h2 id="annotating-constrainttarget">Annotating <code>@ConstraintTarget</code></h2>
+<p><code>@ConstraintTarget</code> is used to generate meta classes that can be used with <code>ValidatorBuilder#constraint</code>.
+It can be annotated on methods or constructor arguments.</p>
+<p><code>Xyz</code> class that is annotated with <code>@ConstraintTarget</code> will generate <code>_XyzMeta</code>.</p>
+<p><code>Validator</code> can be built as follows:</p>
+<pre><code class="language-java">Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt; of()
+    .constraint(_UserFormMeta.NAME, c -&gt; c.notBlank())
+    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notBlank().email())
+    .constraint(_UserFormMeta.AGE, c -&gt; c.greaterThan(0))
+    .build();
+</code></pre>
+<p>No more string literal is required and it's really type-safe.</p>
+<p>The example above is available for the following 4 ways of generation.</p>
+<h3 id="constrainttarget-on-getters"><code>@ConstraintTarget</code> on getters</h3>
+<p>If you like &quot;Java Beans&quot; style, this way would be straightforward.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private String name;
+
+    private String email;
+
+    private Integer age;
+
+    @ConstraintTarget
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @ConstraintTarget
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @ConstraintTarget
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.335171+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getName;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getEmail;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::getAge;
+        }
+    };
+}
+</code></pre>
+<h3 id="on-constructor-arguments--getters">on constructor arguments + getters</h3>
+<p>If you prefer an immutable class like Value Object, annotate <code>@ConstraintTarget</code> on constructor arguments.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private final String name;
+
+    private final String email;
+
+    private final Integer age;
+
+    public UserForm(@ConstraintTarget String name,
+                    @ConstraintTarget String email,
+                    @ConstraintTarget Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.335171+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getName;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getEmail;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::getAge;
+        }
+    };
+}
+</code></pre>
+<p>This is as same as the first example.</p>
+<h3 id="on-constructor-arguments--non-getters">on constructor arguments + non-getters</h3>
+<p>You may not like &quot;getter&quot; style for immutable objects.
+You can use filed name as method name using <code>getter = false</code>. This will be a great fit for <a href="https://openjdk.java.net/jeps/395">Records</a>.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private final String name;
+
+    private final String email;
+
+    private final Integer age;
+
+    public UserForm(@ConstraintTarget(getter = false) String name,
+                    @ConstraintTarget(getter = false) String email,
+                    @ConstraintTarget(getter = false) Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+
+
+    public String name() {
+        return name;
+    }
+
+    public String email() {
+        return email;
+    }
+
+    public Integer age() {
+        return age;
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.333598+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::name;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::email;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::age;
+        }
+    };
+}
+</code></pre>
+<h3 id="on-constructor-arguments--field-access">on constructor arguments + field access</h3>
+<p>You may prefer accessing fields directly rather than accessors, then use <code>field = true</code>.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    final String name;
+
+    final String email;
+
+    final Integer age;
+
+    public UserForm(@ConstraintTarget(field = true) String name,
+                    @ConstraintTarget(field = true) String email,
+                    @ConstraintTarget(field = true) Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.331344+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return x  -&gt; x.name;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return x  -&gt; x.email;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return x  -&gt; x.age;
+        }
+    };
+}
+</code></pre>
+<h2 id="annotating-constraintarguments">Annotating <code>@ConstraintArguments</code></h2>
+<p><code>@ConstraintArguments</code> is used to generate meta classes that can be used with <code>ArgumentsValidatorBuilder</code>.
+It can be annotated on constructors or methods.</p>
+<p>The constructor of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzArgumentsMeta</code>.</p>
+<p><code>doSomething</code> method of <code>Xyz</code> class that is annotated with <code>@ConstraintArguments</code> will generate <code>_XyzDoSomethingArgumentsMeta</code>.</p>
+<h3 id="validating-constructor-arguments">Validating Constructor Arguments</h3>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintArguments;
+
+public class User {
+
+    private final String name;
+
+    private final String email;
+
+    private final int age;
+
+    @ConstraintArguments
+    public User(String name, String email, int age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.325765+09:00
+public class _UserArgumentsMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg1;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg2;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.Integer&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg3;
+        }
+    };
+}
+</code></pre>
+<p><code>ArgumentsNValidator</code> can be built as follows:</p>
+<pre><code class="language-java">Arguments3Validator&lt;String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
+    .of(User::new)
+    .builder(b -&gt; b
+        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
+        .constraint(_UserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
+    )
+    .build();
+</code></pre>
+<h3 id="validating-method-arguments">Validating Method Arguments</h3>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintArguments;
+
+public class UserService {
+
+    @ConstraintArguments
+    public User createUser(String name, String email, int age) {
+        return new User(name, email, age);
+    }
+}
+</code></pre>
+<p>will generate</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.329116+09:00
+public class _UserServiceCreateUserArgumentsMeta {
+
+    public static final am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; USERSERVICE = new am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;userService&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg1;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg2;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg3;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.Integer&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg4;
+        }
+    };
+}
+</code></pre>
+<p><code>ArgumentsNValidator</code> can be built as follows:</p>
+<pre><code class="language-java">Arguments4Validator&lt;UserService, String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
+    .of(UserService::createUser)
+    .builder(b -&gt; b
+        .constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE, c -&gt; c.notNull())
+        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
+        .constraint(_UserServiceCreateUserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
+    )
+    .build();
+</code></pre>
+<h2 id="supported-meta-types">Supported meta types</h2>
+<p>The processor generates a meta for the declared type of the annotated target.
+The following meta types are available in <code>am.ik.yavi.meta</code>:</p>
+<ul>
+<li><code>StringConstraintMeta</code></li>
+<li><code>BooleanConstraintMeta</code>, <code>CharacterConstraintMeta</code>, <code>ByteConstraintMeta</code>, <code>ShortConstraintMeta</code>, <code>IntegerConstraintMeta</code>, <code>LongConstraintMeta</code>, <code>FloatConstraintMeta</code>, <code>DoubleConstraintMeta</code></li>
+<li><code>BigIntegerConstraintMeta</code>, <code>BigDecimalConstraintMeta</code></li>
+<li><code>ObjectConstraintMeta</code></li>
+<li><code>LocalDateConstraintMeta</code>, <code>LocalTimeConstraintMeta</code>, <code>LocalDateTimeConstraintMeta</code>, <code>OffsetDateTimeConstraintMeta</code>, <code>InstantConstraintMeta</code>, <code>YearConstraintMeta</code>, <code>YearMonthConstraintMeta</code>, <code>ZonedDateTimeConstraintMeta</code></li>
+</ul>
+<p>There is no dedicated meta type for enums; an enum target uses <code>ObjectConstraintMeta</code>.</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="built-in-constraints.html"><span class="dir">&larr; Previous</span><span class="label">Built-in Constraints</span></a>
+<a class="next" href="integrations.html"><span class="dir">Next &rarr;</span><span class="label">Integrations</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#enabling-the-annotation-processor">Enabling the annotation processor</a></li>
+<li class="toc-h2"><a href="#annotating-constrainttarget">Annotating <code>@ConstraintTarget</code></a></li>
+<li class="toc-h3"><a href="#constrainttarget-on-getters"><code>@ConstraintTarget</code> on getters</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--getters">on constructor arguments + getters</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--non-getters">on constructor arguments + non-getters</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--field-access">on constructor arguments + field access</a></li>
+<li class="toc-h2"><a href="#annotating-constraintarguments">Annotating <code>@ConstraintArguments</code></a></li>
+<li class="toc-h3"><a href="#validating-constructor-arguments">Validating Constructor Arguments</a></li>
+<li class="toc-h3"><a href="#validating-method-arguments">Validating Method Arguments</a></li>
+<li class="toc-h2"><a href="#supported-meta-types">Supported meta types</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

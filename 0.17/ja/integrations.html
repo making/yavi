@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>連携 · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/integrations.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link active" href="integrations.html" aria-current="page">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/integrations.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="integrations">連携</h1>
+<p>YAVI は何にも依存しないが、フレームワークに自然に組み込めるインターフェースを備えています。</p>
+<h2 id="integration-with-bindingresult-in-spring-mvc">Spring MVC の <code>BindingResult</code> との連携</h2>
+<p><code>ConstraintViolations#apply</code> は、Spring Framework の <code>BindingResult#rejectValue</code> メソッドと同じ引数を持つ関数インターフェースを受け取り、違反メッセージを渡します。</p>
+<p>YAVI による検証結果を Spring MVC のコントローラに反映するには、次のコードを書きます。</p>
+<pre><code class="language-java">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    ConstraintViolations violations = validator.validate(userForm);
+    if (!violations.isValid()) {
+        violations.apply(bindingResult::rejectValue);
+        return &quot;userForm&quot;;
+    }
+    // ...
+    return &quot;redirect:/&quot;;
+}
+</code></pre>
+<p>関数型の書き方が好みなら、次のようにも書けます:</p>
+<pre><code class="language-java">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    return validator.applicative()
+        .validate(userForm)
+        .fold(violations -&gt; {
+            ConstraintViolations.of(violations).apply(bindingResult::rejectValue);
+            return &quot;userForm&quot;;
+        }, form -&gt; {
+            // ...
+            return &quot;redirect:/&quot;;
+        });
+}
+</code></pre>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p><code>Validated#fold</code> の第 1 引数の関数には <code>ConstraintViolations</code> ではなく <code>List&lt;ConstraintViolation&gt;</code> が渡されます。<code>List&lt;ContraintViolation&gt;</code> は <code>ConstraintViolations#of</code> メソッドで <code>ConstraintViolations</code> に変換できます。</p>
+</blockquote>
+<blockquote>
+<p><strong>注意</strong></p>
+<p><a href="https://github.com/making/demo-spring-mvc-yavi">https://github.com/making/demo-spring-mvc-yavi</a> は完全な例です。</p>
+</blockquote>
+<h2 id="converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"><code>ConstraintViolations</code> をレスポンスボディとしてシリアライズできる形式への変換</h2>
+<p><code>ConstraintViolation</code> は Jackson のようなシリアライザでのシリアライズには向いていません。代わりに <code>ConstraintViolation#detail</code> メソッドを使うと、シリアライズしやすい <code>ViolationDetail</code> オブジェクトに変換できます。</p>
+<p><code>ConstraintViolations#details</code> メソッドはすべての <code>ConstraintViolation</code> を変換し、<code>List&lt;ViolationDetail&gt;</code> を返します。</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    ConstraintViolations violations = validator.validate(request);
+    if (violations.isValid()) {
+        User created = userService.create(request.toUser());
+        return ResponseEntity.ok(created);
+    } else {
+        return ResponseEntity.badRequest().body(violations.details());
+    }
+}
+</code></pre>
+<p>関数型の書き方が好みなら、次のようにも書けます:</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    return validator.applicative()
+        .validate(request)
+        .map(req -&gt; userService.create(req.toUser()))
+        .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
+        // or .mapError(ConstraintViolation::detail)
+        .fold(details -&gt; ResponseEntity.badRequest().body(details),
+            created -&gt; ResponseEntity.ok(created));
+}
+</code></pre>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p><code>ViolationDetail</code> は GraalVM ネイティブイメージでそのまま動作します。</p>
+</blockquote>
+<h2 id="integration-with-spring-webfluxfn">Spring WebFlux.fn との連携</h2>
+<p>YAVI は <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-fn">Spring WebFlux.fn</a> によく合います。</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+public RouterFunction&lt;ServerResponse&gt; routes() {
+    return RouterFunctions.route()
+        .POST(&quot;/users&quot;, request -&gt; request.bodyToMono(UserCreateRequest.class)
+            .flatMap(body -&gt; validator.applicative()
+                .validate(body)
+                .map(req -&gt; userService.create(req.toUser()))
+                .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
+                // or .mapError(ConstraintViolation::detail)
+                .fold(details -&gt; ServerResponse.badRequest().bodyValue(details),
+                    created -&gt; ServerResponse.ok().bodyValue(created))))
+        .build();
+}
+</code></pre>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p>YAVI はもともと、Spring WebFlux.fn に自然に適合するバリデータとして開発されました。</p>
+</blockquote>
+<h2 id="integration-with-messagesource-in-spring-framework">Spring Framework の <code>MessageSource</code> との連携</h2>
+<p><code>am.ik.yavi.message.MessageSourceMessageFormatter</code> は、Spring Framework の <code>MessageSource#getMessage</code> と同じ引数を持つ関数インターフェースを受け取ります。
+これにより、違反メッセージのフォーマットの制御を Spring Framework に委ねられます。</p>
+<p><code>MessageSourceMessageFormatter</code> は次のように使えます:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(MessageSource messageSource) {
+        MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+        this.validator = ValidatorBuilder.&lt;CartItem&gt; of()
+            .constraints(...)
+            .messageFormatter(messageFormatter)
+            .build();
+    }
+}
+</code></pre>
+<h2 id="managing-validatorbuilder-in-an-ioc-container">IoC コンテナでの <code>ValidatorBuilder</code> の管理</h2>
+<p><code>ValidatorBuilder</code> をカスタマイズして Spring Framework のような IoC コンテナで管理したい場合は、<code>am.ik.yavi.factory.ValidatorFactory</code> を使えます。</p>
+<p>次は Spring Framework で <code>ValidatorFactory</code> を定義する例です:</p>
+<pre><code class="language-java">@Bean
+public ValidatorFactory yaviValidatorFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new ValidatorFactory(&quot;.&quot; /* Message Key Separator */, messageFormatter);
+}
+</code></pre>
+<p>Validator の使い方は次のようになります:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(ValidatorFactory factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}
+</code></pre>
+<h2 id="obtaining-a-biconsumer"><code>BiConsumer</code> の取得</h2>
+<p>0.16.0 から、バリデータは専用の型ではなく <code>java.util.function.BiConsumer&lt;T, E&gt;</code> として公開されます。<code>T</code> は対象オブジェクトの型、<code>E</code> はエラーオブジェクトの型です。</p>
+<p>これは、YAVI と、<code>org.springframework.validation.Validator#validate(Object, Errors)</code> のようにこれら 2 つの引数を受け取る他の検証フレームワークの両方に対応したいライブラリやアプリに役立ちます。</p>
+<p><code>Validatable#toBiConsumer</code> と <code>ValueValidator#toBiConsumer</code> は <code>am.ik.yavi.core.ErrorHandler&lt;E&gt;</code> を受け取ります:</p>
+<pre><code class="language-java">public interface ErrorHandler&lt;E&gt; {
+    void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
+}
+</code></pre>
+<p>Spring Framework の <code>Errors</code> に対しては、ハンドラで <code>Errors#rejectValue</code> を使って違反を記録できます:</p>
+<pre><code class="language-java">Validator&lt;CartItem&gt; cartItemValidator = ...;
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator
+    .toBiConsumer((errors, name, messageKey, args, defaultMessage) -&gt;
+        errors.rejectValue(name, messageKey, args, defaultMessage));
+// or
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator.toBiConsumer(Errors::rejectValue);
+</code></pre>
+<p><code>BiConsumer</code> のファクトリもあります:</p>
+<pre><code class="language-java">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory() {
+    return new BiConsumerFactory&lt;&gt;(Errors::rejectValue);
+}
+</code></pre>
+<p>または、メッセージの設定をカスタマイズする場合:</p>
+<pre><code class="language-java">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new BiConsumerFactory&lt;&gt;(&quot;.&quot; /* Message Key Separator */, messageFormatter, Errors::rejectValue);
+}
+</code></pre>
+<p><code>BiConsumer</code> の使い方は次のようになります:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final BiConsumer&lt;CartItem, Errors&gt; validator;
+
+    public OrderController(BiConsumerFactory&lt;Errors&gt; factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}
+</code></pre>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="annotation-processor.html"><span class="dir">&larr; Previous</span><span class="label">アノテーションプロセッサ</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#integration-with-bindingresult-in-spring-mvc">Spring MVC の <code>BindingResult</code> との連携</a></li>
+<li class="toc-h2"><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body"><code>ConstraintViolations</code> をレスポンスボディとしてシリアライズできる形式への変換</a></li>
+<li class="toc-h2"><a href="#integration-with-spring-webfluxfn">Spring WebFlux.fn との連携</a></li>
+<li class="toc-h2"><a href="#integration-with-messagesource-in-spring-framework">Spring Framework の <code>MessageSource</code> との連携</a></li>
+<li class="toc-h2"><a href="#managing-validatorbuilder-in-an-ioc-container">IoC コンテナでの <code>ValidatorBuilder</code> の管理</a></li>
+<li class="toc-h2"><a href="#obtaining-a-biconsumer"><code>BiConsumer</code> の取得</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

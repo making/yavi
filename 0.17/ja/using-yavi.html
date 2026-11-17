@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YAVI の使い方 · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/using-yavi.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link active" href="using-yavi.html" aria-current="page">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/using-yavi.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="using-yavi">YAVI の使い方</h1>
+<p>この節では YAVI の基本的な使い方を説明します。</p>
+<h2 id="defining-and-obtaining-a-core-validator-instance">中核となる <code>Validator</code> インスタンスの定義と取得</h2>
+<p>中核となるバリデータ <code>am.ik.yavi.core.Validator</code> は <code>am.ik.yavi.builder.ValidatorBuilder</code> で定義し、取得できます。
+例を示します。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of() // or ValidatorBuilder.of(User.class)
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+
+ConstraintViolations violations = validator.validate(user);
+boolean isValid = violations.isValid();
+violations.forEach(x -&gt; System.out.println(x.message()));
+</code></pre>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p>YAVI は既定で違反メッセージをすべて蓄積します。検証中に違反が見つかっても、そこで打ち切りません。最初の制約違反が起きた時点で現在の検証から戻りたい場合は、「<a href="#fail-fast-mode">フェイルファストモード</a>」を使います。</p>
+</blockquote>
+<p>型推論の曖昧さを避けるには、<code>constraint</code> の代わりに型ごとの明示的な <code>_&lt;type&gt;</code> メソッドを使います。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    ._string(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    ._string(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    ._integer(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+</code></pre>
+<p><code>constraint</code> メソッドの第 1 引数は、<code>java.util.function.Function</code> であれば「getter」でなくてもかまいません。</p>
+<p>たとえば <a href="https://openjdk.java.net/jeps/395">Records</a> の <code>Validator</code> を作るなら、次のように素直に実装できます。</p>
+<pre><code class="language-java">public record User(String name, String email, int age) {
+}
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::name, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::email, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::age, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .build();
+</code></pre>
+<p>また、対象のフィールドをメソッドから公開したくない場合は、次のように制約を定義できます。</p>
+<pre><code class="language-java">public class User {
+    private final String name;
+
+    public final Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+        ._string(x -&gt; x.name, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+        .build();
+
+    public User(String name) {
+        this.name = name;
+    }
+    // Omits others
+}
+</code></pre>
+<p>他の制約ルールについては「<a href="built-in-constraints.html">組み込み制約</a>」を参照してください。</p>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p>フィールド名を文字列リテラルで指定したくない場合は、「<a href="annotation-processor.html">アノテーションプロセッサ</a>」を使って完全に型安全にできます。</p>
+</blockquote>
+<h2 id="constraints-on-nested-objects">ネストしたオブジェクトへの制約</h2>
+<p><code>nest</code> メソッドを使うと、ネストしたフィールドに制約を適用できます。
+ネストしたフィールド用の <code>Validator</code> に委譲してもよいですし、ネストしたフィールドに対する制約の組をその場で定義してもかまいません。</p>
+<pre><code class="language-java">public class Address {
+    private Country country;
+    private City city;
+    // Omits other fields and getters
+}
+
+Validator&lt;Country&gt; countryValidator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(20))
+    .build();
+Validator&lt;City&gt; cityValidator = ValidatorBuilder.&lt;City&gt; of()
+    .constraint(City::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build();
+
+Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+    .nest(Address::getCountry, &quot;country&quot;, countryValidator)
+    .nest(Address::getCity, &quot;city&quot;, cityValidator)
+    .build();
+</code></pre>
+<p>または次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;Address&gt; validator = ValidatorBuilder.&lt;Address&gt; of()
+    .nest(Address::getCountry, &quot;country&quot;,
+        b -&gt; b.constraint(Country::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(20)))
+    .nest(Address::getCity, &quot;city&quot;,
+        b -&gt; b.constraint(City::getName, &quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100)))
+    .build();
+</code></pre>
+<p>ネストしたフィールドが null になり得る場合は、<code>nest</code> の代わりに <code>nestIfPresent</code> を使います。</p>
+<h2 id="constraints-on-elements-in-a-collection--map--array">Collection / Map / Array の要素への制約</h2>
+<p><code>forEach</code> メソッドを使うと、Collection / Map / Array の各要素に制約を適用できます。
+ネストしたフィールドと同様に、各要素を検証する <code>Validator</code> に委譲してもよいですし、要素に対する制約の組をその場で定義してもかまいません。</p>
+<pre><code class="language-java">public class History {
+	private final int revision;
+
+	public History(int revision) {
+		this.revision = revision;
+	}
+
+	public int getRevision() {
+		return revision;
+	}
+}
+
+public class Histories {
+	private final List&lt;History&gt; value;
+
+	public Histories(List&lt;History&gt; value) {
+		this.value = value;
+	}
+
+	public List&lt;History&gt; asList() {
+		return value;
+	}
+}
+
+Validator&lt;History&gt; historyValidator = ValidatorBuilder.&lt;History&gt; of()
+    .constraint(History::getRevision, &quot;revision&quot;, c -&gt; c.notNull().greaterThanOrEqual(1))
+    .build();
+
+Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, &quot;histories&quot;, historyValidator)
+    .build();
+</code></pre>
+<p>または次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, &quot;histories&quot;,
+        b -&gt; b.constraint(History::getRevision, &quot;revision&quot;, c -&gt; c.notNull().greaterThanOrEqual(1)))
+    .build();
+</code></pre>
+<p>collection / map / array のフィールドが null になり得る場合は、<code>forEach</code> の代わりに <code>forEachIfPresent</code> を使います。</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>map の要素への制約は、既定では値にだけ適用できます。
+map のキーに制約を適用したい場合は、map をキーの <code>Set</code> に変換し、それをコレクションとして扱います。</p>
+<pre><code class="language-java">ToCollection&lt;CodeMap, Collection&lt;String&gt;, String&gt; toCollection = codeMap -&gt; codeMap.asMap().keySet();
+Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+    .forEach(toCollection, &quot;codeMap&quot;, b -&gt; b._string(String::toString, &quot;value&quot;, c -&gt; c.notEmpty()))
+    .build();
+</code></pre>
+</blockquote>
+<h2 id="applying-constraints-only-to-specific-conditions">特定の条件にだけ制約を適用する</h2>
+<p><code>am.ik.yavi.core.ConstraintCondition</code> を使うと、特定の条件にだけ制約を適用できます。
+0.11.0 以降、条件は <code>ConstraintGroup</code> ではなく <code>am.ik.yavi.core.ConstraintContext</code> を受け取るので、検証呼び出しの任意の属性を読めます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, context) -&gt; !user.getName().isEmpty(),
+        b -&gt; b.constraint(User::getEmail, &quot;email&quot;, c -&gt; c.email().notEmpty()))
+    .build();
+</code></pre>
+<p>上の email への制約は、name が空でないときにだけ有効になります。</p>
+<p><code>ConstraintContext</code> は <code>Map</code> またはルックアップ関数から作成し、検証メソッドに渡せます。</p>
+<pre><code class="language-java">ConstraintContext context = ConstraintContext.from(Map.of(&quot;country&quot;, &quot;IT&quot;));
+// or
+ConstraintContext context = ConstraintContext.from(key -&gt; lookupAttribute(key));
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition((user, ctx) -&gt; &quot;IT&quot;.equals(ctx.attribute(&quot;country&quot;).value()),
+        b -&gt; b.constraint(User::getTaxId, &quot;taxId&quot;, c -&gt; c.notBlank()))
+    .build();
+
+ConstraintViolations violations = validator.validate(user, context);
+</code></pre>
+<p><code>ConstraintCondition.hasAttribute(String)</code> と <code>ConstraintCondition.hasAttributeWithValue(String, Object)</code> は、よくある属性の確認を短く書くためのメソッドです。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(ConstraintCondition.hasAttributeWithValue(&quot;country&quot;, &quot;IT&quot;),
+        b -&gt; b.constraint(User::getTaxId, &quot;taxId&quot;, c -&gt; c.notBlank()))
+    .build();
+</code></pre>
+<p>属性が存在しない場合、<code>context.attribute(&quot;key&quot;).value()</code> は <code>null</code> を返します。</p>
+<h2 id="applying-constraints-only-to-specific-groups">特定のグループにだけ制約を適用する</h2>
+<p><code>ConstraintGroup</code> は名前だけを持つ <code>ConstraintContext</code> です。
+特定のグループにだけ次のように制約を適用できます。</p>
+<pre><code class="language-java">enum Group implements ConstraintGroup {
+    CREATE, UPDATE, DELETE
+}
+
+Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnCondition(Group.CREATE.toCondition(), b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.isNull()))
+    .constraintOnCondition(Group.UPDATE.toCondition(), b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.notNull()))
+    .build();
+</code></pre>
+<p>enum を宣言せず、名前からグループを作ることもできます。</p>
+<pre><code class="language-java">ConstraintGroup create = ConstraintGroup.of(&quot;CREATE&quot;);
+</code></pre>
+<p>検証するグループは <code>validate</code> メソッドで指定できます。</p>
+<pre><code class="language-java">ConstraintViolations violations = validator.validate(user, ConstraintGroup.of(&quot;CREATE&quot;));
+// or, with the enum above
+violations = validator.validate(user, Group.CREATE);
+</code></pre>
+<p><code>constraintOnGroup</code> メソッドというショートカットも使えます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraintOnGroup(Group.CREATE, b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.isNull()))
+    .constraintOnGroup(Group.UPDATE, b -&gt; b.constraint(User::getId, &quot;id&quot;, c -&gt; c.notNull()))
+    .build();
+</code></pre>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>条件のないすべての制約は、どの制約グループでも検証されます。
+また、<code>validate</code> メソッドでグループを指定しない場合は <code>ConstraintGroup.DEFAULT</code> が使われます。
+グループは名前で照合し、名前が等しい 2 つのグループは等しいとみなします。</p>
+</blockquote>
+<h2 id="creating-a-custom-constraint">独自の制約の作成</h2>
+<p>「<a href="built-in-constraints.html">組み込み制約</a>」にない制約を適用したい場合は、<code>am.ik.yavi.core.CustomConstraint</code> インタフェースを次のように実装して独自の制約を作成できます。</p>
+<pre><code class="language-java">public class IsbnConstraint implements CustomConstraint&lt;String&gt; {
+
+    @Override
+    public boolean test(String s) {
+        // Delegate processing to another method
+        return ISBNValidator.isISBN13(s);
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;string.isbn13&quot;;
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;;
+    }
+}
+</code></pre>
+<p>作成した独自の制約は <code>predicate</code> メソッドで次のように指定できます。</p>
+<pre><code class="language-java">IsbnConstraint isbn = new IsbnConstraint();
+Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
+    .constraint(Book::getTitle, &quot;title&quot;, c -&gt; c.notBlank().lessThanOrEqual(64))
+    .constraint(Book::getIsbn, &quot;isbn&quot;, c -&gt; c.notBlank().predicate(isbn))
+    .build();
+</code></pre>
+<p><code>CustomConstraint</code> クラスを定義せず、制約ルールを <code>predicate</code> メソッドに直接書くこともできます。</p>
+<pre><code class="language-java">Validator&lt;Book&gt; book = ValidatorBuilder.&lt;Book&gt; of()
+    .constraint(Book::getTitle, &quot;title&quot;, c -&gt; c.notBlank().lessThanOrEqual(64))
+    .constraint(Book::getIsbn, &quot;isbn&quot;, c -&gt; c.notBlank()
+        .predicate(s -&gt; ISBNValidator.isISBN13(s), &quot;string.isbn13&quot;, &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;))
+    .build();
+</code></pre>
+<p>違反メッセージの第 1 引数はフィールド名です。また、最後の引数は違反した値です。</p>
+<p>別の引数を使いたい場合は、<code>arguments</code> メソッドを次のように上書きします。</p>
+<pre><code class="language-java">public class InstantRangeConstraint implements CustomConstraint&lt;Instant&gt; {
+
+    private final Instant end;
+
+    private final Instant start;
+
+    InstantRangeConstraint(Instant start, Instant end) {
+        this.start = Objects.requireNonNull(start);
+        this.end = Objects.requireNonNull(end);
+    }
+
+    @Override
+    public Object[] arguments(Instant violatedValue) {
+        return new Object[] { this.start /* {1} */, this.end /* {2} */};
+    }
+
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;Instant value \&quot;{0}\&quot; must be between \&quot;{1}\&quot; and \&quot;{2}\&quot;.&quot;;
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;instant.range&quot;;
+    }
+
+    @Override
+    public boolean test(Instant instant) {
+        return instant.isAfter(this.start) &amp;&amp; instant.isBefore(this.end);
+    }
+}
+</code></pre>
+<h2 id="cross-field-validation">フィールドをまたぐ検証</h2>
+<p>対象のクラス自体に制約を適用したい場合は、<code>constraintOnTarget</code> を使えます。
+フィールドをまたぐ制約を適用したいときに、次のように使います。</p>
+<pre><code class="language-java">Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
+    .constraint(range::getFrom, &quot;from&quot;, c -&gt; c.greaterThan(0))
+    .constraint(range::getTo, &quot;to&quot;, c -&gt; c.greaterThan(0))
+    .constraintOnTarget(range -&gt; range.getTo() &gt; range.getFrom(), &quot;to&quot;, &quot;to.isGreaterThanFrom&quot;, &quot;\&quot;to\&quot; must be greater than \&quot;from\&quot;&quot;)
+    .build();
+</code></pre>
+<p>フィールドをまたぐ検証用の独自の制約も、次のように作成できます。</p>
+<pre><code class="language-java">public class RangeConstraint implements CustomConstraint&lt;Range&gt; {
+    @Override
+    public String defaultMessageFormat() {
+        return &quot;\&quot;to\&quot; must be greater than \&quot;from\&quot;&quot;;
+    }
+
+    @Override
+    public String messageKey() {
+        return &quot;to.isGreaterThanFrom&quot;;
+    }
+
+    @Override
+    public boolean test(Range range) {
+        return range.getTo() &gt; range.getFrom();
+    }
+}
+
+RangeConstraint range = new RangeConstraint();
+Validator&lt;Range&gt; validator = ValidatorBuilder.&lt;Range&gt; of()
+        .constraintOnTarget(range, &quot;to&quot;)
+        .build();
+</code></pre>
+<h2 id="overriding-violation-messages">違反メッセージの上書き</h2>
+<p>各制約の既定の違反メッセージは「<a href="built-in-constraints.html">組み込み制約</a>」に定義されています。</p>
+<p>違反メッセージをカスタマイズしたい場合は、対象の制約に <code>message</code> メソッドを次のように追加します。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().message(&quot;{0} is required!&quot;)
+        .greaterThanOrEqual(1).message(&quot;{0} is too small!&quot;)
+        .lessThanOrEqual(20).message(&quot;{0} is too large!&quot;))
+    .build();
+</code></pre>
+<p><code>message</code> は、メッセージキーと既定のメッセージ形式を持つ <code>am.ik.yavi.core.ViolationMessage</code> も受け取ります。たとえば <code>ViolationMessage.of(&quot;string.isbn13&quot;, &quot;\&quot;{0}\&quot; must be ISBN13 format&quot;)</code> です。
+0.17.2 以降、制約のメッセージを上書きしても、メッセージの引数に違反した値が保持されます。</p>
+<h2 id="value-validators">Value バリデータ</h2>
+<p><code>am.ik.yavi.core.ValueValidator</code> は入力を検証し、検証済みの値を生成します。
+これは <code>Validator</code> のアプリカティブな対応物です。value バリデータの組み合わせについては「<a href="combining-validators.html">バリデータの組み合わせ</a>」を、<code>Validated</code> の結果型については「<a href="combining-validation-results.html">検証結果の組み合わせ</a>」を参照してください。</p>
+<p>value バリデータは、検証済みの値を <code>map</code> で変換します。</p>
+<pre><code class="language-java">ValueValidator&lt;String, String&gt; trimmed = ValueValidator.&lt;String&gt; passThrough().map(String::trim);
+</code></pre>
+<p><code>andThen(Function)</code> は 0.17.0 以降で非推奨です。代わりに <code>map(Function)</code> を使ってください。
+<code>andThen(ValueValidator)</code> は引き続きサポートされ、バリデータを連鎖させます。前のバリデータが生成した値に次のバリデータを適用します。</p>
+<pre><code class="language-java">ValueValidator&lt;String, Integer&gt; length = trimmed
+    .andThen(ValueValidator.&lt;String&gt; passThrough().map(String::length));
+</code></pre>
+<p><code>validated(...)</code> は入力を検証して値を返し、違反があると <code>am.ik.yavi.core.ConstraintViolationsException</code> を投げます。
+同じ動作は <code>Validation#throwIfInvalid</code> と <code>ConstraintViolations#throwIfInvalid</code> でも利用できます。</p>
+<pre><code class="language-java">try {
+    String value = trimmed.validated(input);
+}
+catch (ConstraintViolationsException e) {
+    // handle the violations
+}
+
+ConstraintViolations violations = validator.validate(user);
+violations.throwIfInvalid(ConstraintViolationsException::new);
+</code></pre>
+<p>value バリデータは <code>Validatable.from(ValueValidator)</code> で通常の <code>Validator</code> に変換できます。生成された値は捨て、違反だけを報告します。</p>
+<pre><code class="language-java">Validatable&lt;String&gt; validator = Validatable.from(trimmed);
+</code></pre>
+<h2 id="handling-violation-results">違反結果の扱い</h2>
+<p><code>ConstraintViolation</code> は 0.15.0 以降、段階的に組み立てるビルダーを持ちます。
+<code>name</code>、<code>messageKey</code>、<code>defaultMessageFormat</code> の各段階は必須で、引数、フォーマッタ、ロケールのメソッドは任意です。</p>
+<pre><code class="language-java">ConstraintViolation violation = ConstraintViolation.builder()
+    .name(&quot;email&quot;)
+    .messageKey(&quot;email.invalid&quot;)
+    .defaultMessageFormat(&quot;\&quot;{0}\&quot; must be a valid email address&quot;)
+    .argsWithPrependedNameAndAppendedViolatedValue(new Object[] {}, new ViolatedValue(input))
+    .messageFormatter(SimpleMessageFormatter.getInstance())
+    .locale(Locale.JAPAN)
+    .build();
+</code></pre>
+<p><code>ConstraintViolation#violatedValue()</code> は、制約に違反した値を返します。</p>
+<p><code>SimpleMessageFormatter</code> は <code>SimpleMessageFormatter.getInstance()</code> で取得できます。public な引数なしのコンストラクタも引き続き利用できますが、0.16.0 以降で非推奨です。</p>
+<h2 id="message-formatter">メッセージフォーマッタ</h2>
+<p>YAVI は違反メッセージを組み立てるための <code>am.ik.yavi.message.MessageFormatter</code> インタフェースを提供します。</p>
+<p>既定では <code>am.ik.yavi.message.SimpleMessageFormatter</code> が使われ、<code>java.text.MessageFormat</code> を使ってメッセージを補間するだけです。
+共有のインスタンスは <code>SimpleMessageFormatter.getInstance()</code> で取得できます。public な引数なしのコンストラクタは後方互換性のために残されていますが、非推奨です。
+メッセージキーと既定のメッセージ形式の一覧は「<a href="built-in-constraints.html">組み込み制約</a>」にあります。</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>エラーメッセージの機能として、Bean Validation と比べて次の点をサポートしています。</p>
+<ul>
+<li>既定でフィールド名をエラーメッセージに含める</li>
+<li>違反した値をエラーメッセージに含められる</li>
+</ul>
+<p>メッセージの最初のプレースホルダ <code>{0}</code> にはフィールド名が、最後のプレースホルダには違反した値が設定されます。</p>
+<p>特に 2 点目は一般的な検証ライブラリでサポートされていません。たとえば「xyz は 100 文字以下にしてください」というエラーメッセージが返っても、実際に何文字入力されているのか、文字数を数えられているのかわからないので、少しずつ文字を削って試すことがあります。既定では次のメッセージが表示されるので、利用者はそのような無駄な作業をしなくて済みます。</p>
+<p><img src="https://user-images.githubusercontent.com/106908/44784067-4b010600-abc7-11e8-8878-930d017405bb.png" alt="" /></p>
+</blockquote>
+<p>メッセージの補間をカスタマイズしたい場合は、<code>MessageFormatter</code> を実装します。
+例として、<code>messages.properties</code> のメッセージを読み込む実装を示します。</p>
+<pre><code class="language-java">import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import am.ik.yavi.message.MessageFormatter;
+
+public enum ResourceBundleMessageFormatter implements MessageFormatter {
+    SINGLETON;
+
+    @Override
+    public String format(String messageKey, String defaultMessageFormat, Object[] args,
+            Locale locale) {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle(&quot;messages&quot;, locale);
+        String format;
+        try {
+            format = resourceBundle.getString(messageKey);
+        }
+        catch (MissingResourceException e) {
+            format = defaultMessageFormat;
+        }
+        try {
+            String target = resourceBundle.getString((String) args[0] /* field name */);
+            args[0] = target;
+        }
+        catch (MissingResourceException e) {
+        }
+        return new MessageFormat(format, locale).format(args);
+    }
+}
+</code></pre>
+<p><code>MessageFormatter</code> を置き換えたい場合は、次のように設定できます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .messageFormatter(ResourceBundleMessageFormatter.SINGLETON)
+    // ...
+    .build();
+</code></pre>
+<h2 id="fail-fast-mode">フェイルファストモード</h2>
+<p>フェイルファストモードを使うと、YAVI は最初の制約違反が起きた時点で現在の検証から戻ります。
+制約違反がそもそも存在するかを素早く確認したいだけの、大きなオブジェクトグラフの検証で役立ちます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    .constraint(User::getEmail, &quot;email&quot;, c -&gt; c.notNull().greaterThanOrEqual(5).lessThanOrEqual(50).email())
+    .constraint(User::getAge, &quot;age&quot;, c -&gt; c.notNull().greaterThanOrEqual(0).lessThanOrEqual(200))
+    .failFast(true) // &lt;-- Enable the fail fast mode
+    .build();
+</code></pre>
+<p>既存の <code>Validator</code> をフェイルファストモードに切り替えることもできます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; failFastValidator = validator.failFast(true);
+</code></pre>
+<p><code>failFast(boolean)</code> と <code>isFailFast()</code> メソッドは <code>am.ik.yavi.core.Validatable</code> にも宣言されているので、このインタフェースを通じてモードを読み取ったり切り替えたりできます。</p>
+<pre><code class="language-java">boolean failFast = failFastValidator.isFailFast();
+Validatable&lt;User&gt; validatable = validator.failFast(true);
+</code></pre>
+<p>0.13.0 以降、ネストしたバリデータ、コレクションのバリデータ、条件付きバリデータは親のフェイルファストモードに従います。
+モードはネストしたバリデータと要素のバリデータに引き継がれるので、それらのバリデータでも最初の違反で検証が止まります。</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>この機能は <a href="https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-fail-fast">Hibernate Validator のフェイルファストモード</a> に由来します。</p>
+</blockquote>
+<h2 id="resolving-conflicting-constraint-names">競合する制約名の解決</h2>
+<p>同じ制約名が複数回登録された場合、バリデータの構築時にどうするかを <code>ValidatorBuilder#conflictStrategy(ConflictStrategy)</code> が決めます。
+既定の <code>am.ik.yavi.builder.ConflictStrategy.NOOP</code> は既存の制約を残して新しい制約を追加するので、対象はすべての制約で検証されます。
+<code>ConflictStrategy.OVERRIDE</code> は既存の制約を削除し、新しい制約だけを残します。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .conflictStrategy(ConflictStrategy.OVERRIDE)
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull())
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notBlank()) // replaces the previous &quot;name&quot; constraint
+    .build();
+</code></pre>
+<p>独自の戦略は既存の述語のリストを変更できます。新しい述語は戦略が戻った後に追加されます。</p>
+<pre><code class="language-java">ConflictStrategy keepFirst = new ConflictStrategy() {
+    @Override
+    public &lt;T&gt; void resolveConflict(List&lt;ConstraintPredicates&lt;T, ?&gt;&gt; predicatesList,
+            ConstraintPredicates&lt;T, ?&gt; predicates) {
+        while (predicatesList.size() &gt; 1) {
+            predicatesList.remove(predicatesList.size() - 1);
+        }
+    }
+};
+</code></pre>
+<h2 id="kotlin-support">Kotlin サポート</h2>
+<p>Kotlin を使っている場合は、次のように DSL で <code>Validator</code> を定義できます。
+DSL は Kotlin のリフレクションでプロパティ名を取得するので、<code>kotlin-reflect</code> を実行時クラスパスに置く必要があります。</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+	User::name {
+		notNull()
+		lessThanOrEqual(20)
+	}
+	User::email {
+		notNull()
+		greaterThanOrEqual(5)
+		lessThanOrEqual(50)
+		email()
+	}
+	User::age {
+		notNull()
+		greaterThanOrEqual(0)
+		lessThanOrEqual(100)
+	}
+}
+</code></pre>
+<p>フィールド名は次のように上書きできます。</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+	(User::name)(&quot;Name&quot;) {
+		notNull()
+		lessThanOrEqual(20)
+	}
+	(User::email)(&quot;Email&quot;) {
+		notNull()
+		greaterThanOrEqual(5)
+		lessThanOrEqual(50)
+		email()
+	}
+	(User::age)(&quot;Age&quot;) {
+		notNull()
+		greaterThanOrEqual(0)
+		lessThanOrEqual(100)
+	}
+}
+</code></pre>
+<p><code>forEach</code> の例:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoForEachCollection&gt; {
+    DemoForEachCollection::x forEach {
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
+    }
+}
+</code></pre>
+<p><code>nest</code> の例:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoNested&gt; {
+    DemoNested::x nest {
+        DemoString::x {
+            greaterThan(1)
+            lessThan(5)
+        }
+    }
+}
+</code></pre>
+<p><code>nest</code> の委譲の例:</p>
+<pre><code class="language-kotlin">val validator = validator&lt;DemoNested&gt; {
+    DemoNested::x nest demoStringValidator
+}
+</code></pre>
+<p><code>nestIfPresent</code> と <code>forEachIfPresent</code> は、null になり得るネストしたオブジェクト、コレクション、マップ、配列を、存在する場合にだけ検証します。</p>
+<pre><code class="language-kotlin">val validator = validator&lt;Order&gt; {
+    Order::customer nestIfPresent {
+        Customer::name {
+            notBlank()
+        }
+    }
+    Order::items forEachIfPresent {
+        OrderItem::name {
+            notBlank()
+        }
+    }
+}
+</code></pre>
+<p>日時と enum のプロパティには専用のオーバーロードがあります。
+たとえば <code>LocalDate</code>、<code>LocalTime</code>、<code>LocalDateTime</code>、<code>ZonedDateTime</code>、<code>OffsetDateTime</code>、<code>Instant</code>、<code>Year</code>、<code>YearMonth</code> のプロパティには日時の制約を、enum のプロパティには <code>oneOf</code> を使えます。
+利用できる制約については「<a href="built-in-constraints.html">組み込み制約</a>」を参照してください。</p>
+<pre><code class="language-kotlin">enum class Status { ACTIVE, INACTIVE }
+
+val validator = validator&lt;Account&gt; {
+    Account::createdAt {
+        notNull()
+        past()
+    }
+    Account::status {
+        notNull()
+        oneOf(Status.ACTIVE)
+    }
+}
+</code></pre>
+<p><code>onCondition</code> と <code>onGroup</code> は条件付きの制約とグループ固有の制約を追加し、<code>unwrap</code> は基になる <code>ValidatorBuilder</code> へのアクセスを提供します。</p>
+<pre><code class="language-kotlin">val validator = validator&lt;User&gt; {
+    onCondition({ _, context -&gt; &quot;IT&quot;.equals(context.attribute(&quot;country&quot;).value()) }) {
+        User::taxId {
+            notNull()
+        }
+    }
+    onGroup(ConstraintGroup.of(&quot;CREATE&quot;)) {
+        User::id {
+            isNull()
+        }
+    }
+    unwrap().failFast(true)
+}
+</code></pre>
+<h3 id="coroutines-support">コルーチンのサポート</h3>
+<p><code>am.ik.yavi.fn.ValidationExtensions</code> の拡張は、検証結果の処理を中断可能にします。
+<code>awaitFold</code>、<code>awaitBimap</code>、<code>awaitMap</code>、<code>awaitMapErrors</code>、<code>awaitMapError</code> は <code>fold</code>、<code>bimap</code>、<code>map</code>、<code>mapErrors</code>、<code>mapError</code> に対応します。
+これらには <code>kotlinx-coroutines-core</code> が必要です。</p>
+<pre><code class="language-kotlin">import am.ik.yavi.fn.awaitFold
+
+suspend fun createUser(validated: Validated&lt;User&gt;): HttpStatus = validated.awaitFold(
+    errorsMapper = { violations -&gt; HttpStatus.BAD_REQUEST },
+    mapper = { user -&gt; HttpStatus.OK },
+)
+</code></pre>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="getting-started.html"><span class="dir">&larr; Previous</span><span class="label">はじめる</span></a>
+<a class="next" href="combining-validation-results.html"><span class="dir">Next &rarr;</span><span class="label">バリデーション結果の結合</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#defining-and-obtaining-a-core-validator-instance">中核となる <code>Validator</code> インスタンスの定義と取得</a></li>
+<li class="toc-h2"><a href="#constraints-on-nested-objects">ネストしたオブジェクトへの制約</a></li>
+<li class="toc-h2"><a href="#constraints-on-elements-in-a-collection--map--array">Collection / Map / Array の要素への制約</a></li>
+<li class="toc-h2"><a href="#applying-constraints-only-to-specific-conditions">特定の条件にだけ制約を適用する</a></li>
+<li class="toc-h2"><a href="#applying-constraints-only-to-specific-groups">特定のグループにだけ制約を適用する</a></li>
+<li class="toc-h2"><a href="#creating-a-custom-constraint">独自の制約の作成</a></li>
+<li class="toc-h2"><a href="#cross-field-validation">フィールドをまたぐ検証</a></li>
+<li class="toc-h2"><a href="#overriding-violation-messages">違反メッセージの上書き</a></li>
+<li class="toc-h2"><a href="#value-validators">Value バリデータ</a></li>
+<li class="toc-h2"><a href="#handling-violation-results">違反結果の扱い</a></li>
+<li class="toc-h2"><a href="#message-formatter">メッセージフォーマッタ</a></li>
+<li class="toc-h2"><a href="#fail-fast-mode">フェイルファストモード</a></li>
+<li class="toc-h2"><a href="#resolving-conflicting-constraint-names">競合する制約名の解決</a></li>
+<li class="toc-h2"><a href="#kotlin-support">Kotlin サポート</a></li>
+<li class="toc-h3"><a href="#coroutines-support">コルーチンのサポート</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

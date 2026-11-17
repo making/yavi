@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アノテーションプロセッサ · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/annotation-processor.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link active" href="annotation-processor.html" aria-current="page">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/annotation-processor.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="annotation-processor">アノテーションプロセッサ</h1>
+<p>YAVI はアノテーションプロセッサを提供しています。これは、<code>am.ik.yavi.meta.ConstraintTarget</code> または <code>am.ik.yavi.meta.ConstraintArguments</code> で注釈した対象ごとに、<code>am.ik.yavi.meta.ConstraintMeta</code> を実装するメタクラスを定義したクラスを生成します。</p>
+<h2 id="enabling-the-annotation-processor">アノテーションプロセッサの有効化</h2>
+<p>アノテーションプロセッサは <code>yavi</code> アーティファクトに含まれています。
+JDK 21 以前では、<code>mvn clean compile</code> がコンパイルクラスパス上のプロセッサを自動的に検出します。
+JDK 23 以降はクラスパス上で見つかったアノテーションプロセッサを暗黙には実行しないため、<code>pom.xml</code> でプロセッサを明示的に宣言します:</p>
+<pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;annotationProcessorPaths&gt;
+            &lt;path&gt;
+                &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+                &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+                &lt;version&gt;0.17.3&lt;/version&gt;
+            &lt;/path&gt;
+        &lt;/annotationProcessorPaths&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+</code></pre>
+<p>次のようなクラスがあるときに <code>mvn clean compile</code> を実行すると:</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private String name;
+
+    private String email;
+
+    private Integer age;
+
+    @ConstraintTarget
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @ConstraintTarget
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @ConstraintTarget
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+</code></pre>
+<p><code>target/generated-sources/annotations/com/example/_UserFormMeta.java</code> が自動的に生成されます。</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p><code>@ConstraintTarget</code> と <code>@ConstraintArguments</code> はコンパイル時のアノテーションであるため、実行時には存在しません。
+これは YAVI の「アノテーションなし！」というコンセプトを壊すことはありません ;)</p>
+</blockquote>
+<h2 id="annotating-constrainttarget"><code>@ConstraintTarget</code> の付与</h2>
+<p><code>@ConstraintTarget</code> は、<code>ValidatorBuilder#constraint</code> で使用できるメタクラスを生成するために使います。
+メソッドまたはコンストラクタ引数に付与できます。</p>
+<p><code>@ConstraintTarget</code> を付与した <code>Xyz</code> クラスからは <code>_XyzMeta</code> が生成されます。</p>
+<p><code>Validator</code> は次のように構築できます:</p>
+<pre><code class="language-java">Validator&lt;UserForm&gt; validator = ValidatorBuilder.&lt;UserForm&gt; of()
+    .constraint(_UserFormMeta.NAME, c -&gt; c.notBlank())
+    .constraint(_UserFormMeta.EMAIL, c -&gt; c.notBlank().email())
+    .constraint(_UserFormMeta.AGE, c -&gt; c.greaterThan(0))
+    .build();
+</code></pre>
+<p>文字列リテラルは不要になり、完全に型安全です。</p>
+<p>上の例は、次の 4 つの生成方法で利用できます。</p>
+<h3 id="constrainttarget-on-getters">getter への <code>@ConstraintTarget</code> の付与</h3>
+<p>「Java Beans」スタイルが好みなら、この方法が素直です。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private String name;
+
+    private String email;
+
+    private Integer age;
+
+    @ConstraintTarget
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @ConstraintTarget
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @ConstraintTarget
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.335171+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getName;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getEmail;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::getAge;
+        }
+    };
+}
+</code></pre>
+<h3 id="on-constructor-arguments--getters">コンストラクタ引数 + getter の場合</h3>
+<p>値オブジェクトのような不変クラスが好みなら、コンストラクタ引数に <code>@ConstraintTarget</code> を付与します。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private final String name;
+
+    private final String email;
+
+    private final Integer age;
+
+    public UserForm(@ConstraintTarget String name,
+                    @ConstraintTarget String email,
+                    @ConstraintTarget Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.335171+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getName;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::getEmail;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::getAge;
+        }
+    };
+}
+</code></pre>
+<p>これは最初の例と同じです。</p>
+<h3 id="on-constructor-arguments--non-getters">コンストラクタ引数 + getter 以外の場合</h3>
+<p>不変オブジェクトで「getter」スタイルを使いたくないこともあります。
+<code>getter = false</code> を使うと、フィールド名をメソッド名として使えます。<a href="https://openjdk.java.net/jeps/395">Records</a> によく合います。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    private final String name;
+
+    private final String email;
+
+    private final Integer age;
+
+    public UserForm(@ConstraintTarget(getter = false) String name,
+                    @ConstraintTarget(getter = false) String email,
+                    @ConstraintTarget(getter = false) Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+
+
+    public String name() {
+        return name;
+    }
+
+    public String email() {
+        return email;
+    }
+
+    public Integer age() {
+        return age;
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.333598+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::name;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return com.example.UserForm::email;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return com.example.UserForm::age;
+        }
+    };
+}
+</code></pre>
+<h3 id="on-constructor-arguments--field-access">コンストラクタ引数 + フィールドアクセスの場合</h3>
+<p>アクセサではなくフィールドに直接アクセスしたい場合は、<code>field = true</code> を使います。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintTarget;
+
+public class UserForm {
+
+    final String name;
+
+    final String email;
+
+    final Integer age;
+
+    public UserForm(@ConstraintTarget(field = true) String name,
+                    @ConstraintTarget(field = true) String email,
+                    @ConstraintTarget(field = true) Integer age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.331344+09:00
+public class _UserFormMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return x  -&gt; x.name;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.String&gt; toValue() {
+            return x  -&gt; x.email;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;com.example.UserForm&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;com.example.UserForm, java.lang.Integer&gt; toValue() {
+            return x  -&gt; x.age;
+        }
+    };
+}
+</code></pre>
+<h2 id="annotating-constraintarguments"><code>@ConstraintArguments</code> の付与</h2>
+<p><code>@ConstraintArguments</code> は、<code>ArgumentsValidatorBuilder</code> で使用できるメタクラスを生成するために使います。
+コンストラクタまたはメソッドに付与できます。</p>
+<p><code>@ConstraintArguments</code> を付与した <code>Xyz</code> クラスのコンストラクタからは <code>_XyzArgumentsMeta</code> が生成されます。</p>
+<p><code>@ConstraintArguments</code> を付与した <code>Xyz</code> クラスの <code>doSomething</code> メソッドからは <code>_XyzDoSomethingArgumentsMeta</code> が生成されます。</p>
+<h3 id="validating-constructor-arguments">コンストラクタ引数の検証</h3>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintArguments;
+
+public class User {
+
+    private final String name;
+
+    private final String email;
+
+    private final int age;
+
+    @ConstraintArguments
+    public User(String name, String email, int age) {
+        this.name = name;
+        this.email = email;
+        this.age = age;
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.325765+09:00
+public class _UserArgumentsMeta {
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg1;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg2;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments3&lt;java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.Integer&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments3::arg3;
+        }
+    };
+}
+</code></pre>
+<p><code>ArgumentsNValidator</code> は次のように構築できます:</p>
+<pre><code class="language-java">Arguments3Validator&lt;String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
+    .of(User::new)
+    .builder(b -&gt; b
+        .constraint(_UserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
+        .constraint(_UserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
+    )
+    .build();
+</code></pre>
+<h3 id="validating-method-arguments">メソッド引数の検証</h3>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.meta.ConstraintArguments;
+
+public class UserService {
+
+    @ConstraintArguments
+    public User createUser(String name, String email, int age) {
+        return new User(name, email, age);
+    }
+}
+</code></pre>
+<p>このコードからは次が生成されます:</p>
+<pre><code class="language-java">package com.example;
+
+// Generated at 2026-11-12T12:52:16.329116+09:00
+public class _UserServiceCreateUserArgumentsMeta {
+
+    public static final am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; USERSERVICE = new am.ik.yavi.meta.ObjectConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;userService&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, com.example.UserService&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg1;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; NAME = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;name&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg2;
+        }
+    };
+
+    public static final am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; EMAIL = new am.ik.yavi.meta.StringConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;email&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.String&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg3;
+        }
+    };
+
+    public static final am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt; AGE = new am.ik.yavi.meta.IntegerConstraintMeta&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;&gt;() {
+
+        @Override
+        public String name() {
+            return &quot;age&quot;;
+        }
+
+        @Override
+        public java.util.function.Function&lt;am.ik.yavi.arguments.Arguments4&lt;com.example.UserService, java.lang.String, java.lang.String, java.lang.Integer&gt;, java.lang.Integer&gt; toValue() {
+            return am.ik.yavi.arguments.Arguments4::arg4;
+        }
+    };
+}
+</code></pre>
+<p><code>ArgumentsNValidator</code> は次のように構築できます:</p>
+<pre><code class="language-java">Arguments4Validator&lt;UserService, String, String, Integer, User&gt; validator = ArgumentsValidatorBuilder
+    .of(UserService::createUser)
+    .builder(b -&gt; b
+        .constraint(_UserServiceCreateUserArgumentsMeta.USERSERVICE, c -&gt; c.notNull())
+        .constraint(_UserServiceCreateUserArgumentsMeta.NAME, c -&gt; c.notBlank())
+        .constraint(_UserServiceCreateUserArgumentsMeta.EMAIL, c -&gt; c.notBlank().email())
+        .constraint(_UserServiceCreateUserArgumentsMeta.AGE, c -&gt; c.greaterThan(0))
+    )
+    .build();
+</code></pre>
+<h2 id="supported-meta-types">サポートされるメタ型</h2>
+<p>プロセッサは、注釈した対象の宣言された型に対するメタを生成します。
+<code>am.ik.yavi.meta</code> では次のメタ型を利用できます:</p>
+<ul>
+<li><code>StringConstraintMeta</code></li>
+<li><code>BooleanConstraintMeta</code>, <code>CharacterConstraintMeta</code>, <code>ByteConstraintMeta</code>, <code>ShortConstraintMeta</code>, <code>IntegerConstraintMeta</code>, <code>LongConstraintMeta</code>, <code>FloatConstraintMeta</code>, <code>DoubleConstraintMeta</code></li>
+<li><code>BigIntegerConstraintMeta</code>, <code>BigDecimalConstraintMeta</code></li>
+<li><code>ObjectConstraintMeta</code></li>
+<li><code>LocalDateConstraintMeta</code>, <code>LocalTimeConstraintMeta</code>, <code>LocalDateTimeConstraintMeta</code>, <code>OffsetDateTimeConstraintMeta</code>, <code>InstantConstraintMeta</code>, <code>YearConstraintMeta</code>, <code>YearMonthConstraintMeta</code>, <code>ZonedDateTimeConstraintMeta</code></li>
+</ul>
+<p>enum 専用のメタ型はありません。enum の対象には <code>ObjectConstraintMeta</code> が使われます。</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="built-in-constraints.html"><span class="dir">&larr; Previous</span><span class="label">組み込みの制約</span></a>
+<a class="next" href="integrations.html"><span class="dir">Next &rarr;</span><span class="label">連携</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#enabling-the-annotation-processor">アノテーションプロセッサの有効化</a></li>
+<li class="toc-h2"><a href="#annotating-constrainttarget"><code>@ConstraintTarget</code> の付与</a></li>
+<li class="toc-h3"><a href="#constrainttarget-on-getters">getter への <code>@ConstraintTarget</code> の付与</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--getters">コンストラクタ引数 + getter の場合</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--non-getters">コンストラクタ引数 + getter 以外の場合</a></li>
+<li class="toc-h3"><a href="#on-constructor-arguments--field-access">コンストラクタ引数 + フィールドアクセスの場合</a></li>
+<li class="toc-h2"><a href="#annotating-constraintarguments"><code>@ConstraintArguments</code> の付与</a></li>
+<li class="toc-h3"><a href="#validating-constructor-arguments">コンストラクタ引数の検証</a></li>
+<li class="toc-h3"><a href="#validating-method-arguments">メソッド引数の検証</a></li>
+<li class="toc-h2"><a href="#supported-meta-types">サポートされるメタ型</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

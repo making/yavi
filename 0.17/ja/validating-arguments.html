@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>引数のバリデーション · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/validating-arguments.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link active" href="validating-arguments.html" aria-current="page">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/validating-arguments.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="validating-arguments">引数のバリデーション</h1>
+<p>YAVI は Arguments Validator を使って、<strong>オブジェクトを生成する前に</strong> コンストラクタやファクトリメソッドの引数を検証できます。</p>
+<p>これは YAVI 固有の機能のひとつです。</p>
+<p>Arguments Validator はその名のとおり、引数に対する Validator です。</p>
+<p>Bean Validation のような通常の Validator は、値を設定したオブジェクトに対してその値が妥当かを検証します。これに対し Arguments Validator は、オブジェクトに設定する<strong>引数</strong>が妥当であることを検証します。</p>
+<p>通常の Validator では検証の前にオブジェクトが生成されるため、不完全な状態のオブジェクトが一時的に存在し得ます。
+たとえば、Validator 側で <code>notNull()</code> の制約を課していても、コンストラクタに <code>null</code> チェックを実装している場合、Validator による検証より先にその <code>null</code> チェックが働きます。</p>
+<p>Arguments Validator は<strong>検証の後にオブジェクトを生成する</strong>ため、不完全なオブジェクトを気にする必要はありません。
+<a href="getting-started.html#the-always-valid-model">Always Valid モデル</a>では、これを private コンストラクタや record と組み合わせて、不正なオブジェクトを生成できなくする方法を示しています。</p>
+<h2 id="defining-an-arguments-validator">引数バリデータの定義</h2>
+<p>引数バリデータを構築するには <code>am.ik.yavi.validator.Yavi#arguments()</code> を使います。
+各 <code>_xxx</code> メソッドは引数を 1 つ追加し、その名前と制約を指定します。<code>apply</code> がバリデータを生成します:</p>
+<pre><code class="language-java">import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public class Person {
+
+    public static final Arguments3Validator&lt;String, String, Integer, Person&gt; validator = Yavi.arguments()
+        ._string(&quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100)) // Constraint on the first argument of Person::new
+        ._string(&quot;email&quot;, c -&gt; c.notBlank().lessThanOrEqual(100).email()) // Constraint on the second argument of Person::new
+        ._integer(&quot;age&quot;, c -&gt; c.greaterThanOrEqual(0).lessThan(200)) // Constraint on the third argument of Person::new
+        .apply(Person::new);
+
+    // ...
+}
+</code></pre>
+<p>引数バリデータは次のように使えます:</p>
+<pre><code class="language-java">Validated&lt;Person&gt; personValidated = Person.validator.validate(&quot;John Doe&quot;, &quot;jdoe@example.com&quot;, 30);
+</code></pre>
+<p><code>am.ik.yavi.arguments.Arguments1Validator</code> から <code>am.ik.yavi.arguments.Arguments16Validator</code> まで利用できます。
+引数の最大数は 16 です。</p>
+<h2 id="available-argument-kinds">利用できる引数の種類</h2>
+<p>次の引数の種類を利用できます。種類ごとに対応する制約型があります:</p>
+<ul>
+<li><code>_string</code></li>
+<li><code>_boolean</code></li>
+<li><code>_short</code>, <code>_integer</code>, <code>_long</code>, <code>_float</code>, <code>_double</code></li>
+<li><code>_bigInteger</code>, <code>_bigDecimal</code></li>
+<li><code>_localDate</code>, <code>_localTime</code>, <code>_localDateTime</code>, <code>_offsetDateTime</code>, <code>_instant</code>, <code>_year</code>, <code>_yearMonth</code>, <code>_zonedDateTime</code></li>
+<li><code>_enum</code></li>
+<li><code>_object</code></li>
+</ul>
+<p><code>_object</code> は配列、コレクション、マップを含む任意の参照型を受け付けます:</p>
+<pre><code class="language-java">Arguments1Validator&lt;LocalDate, LocalDate&gt; dateValidator = Yavi.arguments()
+    ._localDate(&quot;date&quot;, c -&gt; c.notNull())
+    .apply(date -&gt; date);
+
+Arguments1ValidatorBuilder&lt;Color, Color&gt; colorValidatorBuilder = Yavi.arguments()
+    ._enum(&quot;color&quot;, c -&gt; c.notNull());
+Arguments1Validator&lt;Color, Color&gt; colorValidator = colorValidatorBuilder.apply(color -&gt; color);
+
+Arguments1Validator&lt;List&lt;String&gt;, List&lt;String&gt;&gt; tagsValidator = Yavi.arguments()
+    ._object(ObjectValidatorBuilder.&lt;List&lt;String&gt;&gt;of(&quot;tags&quot;, c -&gt; c.notNull()).build())
+    .apply(tags -&gt; tags);
+</code></pre>
+<p><code>_collection</code>、<code>_map</code>、<code>_objectArray</code> は引数の種類ではなく、オブジェクトのコレクション、マップ、配列のプロパティを検証するための <code>ValidatorBuilder</code> のメソッドです。
+詳細は <a href="using-yavi.html">YAVI の使い方</a> を参照してください。</p>
+<h2 id="validating-method-arguments">メソッド引数のバリデーション</h2>
+<p>Arguments Validator はメソッドの引数の検証にも使えます。</p>
+<pre><code class="language-java">// From https://beanvalidation.org/
+public class UserService {
+    public User createUser(/* @Email */ String email,
+                           /* @NotNull */ String name) {
+        // ...
+    }
+}
+</code></pre>
+<p>上の例の <code>UserService.createUser</code> の引数は <code>ArgumentsValidatorBuilder</code> で検証できます:</p>
+<pre><code class="language-java">Arguments3Validator&lt;UserService, String, String, User&gt; validator = ArgumentsValidatorBuilder
+    .of(UserService::createUser)
+    .builder(b -&gt; b
+        ._object(Arguments3::arg1, &quot;userService&quot;, c -&gt; c.notNull())
+        ._string(Arguments3::arg2, &quot;email&quot;, c -&gt; c.email())
+        ._string(Arguments3::arg3, &quot;name&quot;, c -&gt; c.notBlank()))
+    .build();
+
+UserService userService = new UserService();
+Validated&lt;User&gt; userValidated = validator.validate(userService, &quot;jdoe@example.com&quot;, &quot;John Doe&quot;);
+</code></pre>
+<p>値がインスタンスメソッド参照から得られる場合はこの形式を使います。レシーバが第 1 引数として検証されるためです。
+これは <a href="annotation-processor.html">アノテーションプロセッサ</a> で説明する、アノテーションプロセッサが生成するメタ定数を使う形式でもあります。
+ビルダーの <code>_xxx</code> メソッドは名前だけでなく、引数の位置に対応するアクセサ (<code>Arguments3::arg1</code> など) を受け取ります。<code>Arguments1Validator</code>..<code>Arguments16Validator</code> は互いに継承しないため、ビルダーの引数の個数に合ったアクセサを使います。</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p><code>void</code> は戻り値の型として使えません。<code>java.lang.Void</code> は利用できます。</p>
+</blockquote>
+<h2 id="defining-a-validator-for-a-single-value">単一の値に対する Validator の定義</h2>
+<p>単一の <code>String</code> や <code>Integer</code> などに対する <code>Arguments1Validator</code> を定義したいだけなら、次のように書けます:</p>
+<pre><code class="language-java">StringValidator&lt;String&gt; nameValidator = StringValidatorBuilder
+    .of(&quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build();
+
+IntegerValidator&lt;Integer&gt; ageValidator = IntegerValidatorBuilder
+    .of(&quot;age&quot;, c -&gt; c.greaterThanOrEqual(0).lessThan(200))
+    .build();
+
+Validated&lt;String&gt; nameValidated = nameValidator.validate(&quot;John Doe&quot;);
+Validated&lt;Integer&gt; ageValidated = ageValidator.validate(30);
+</code></pre>
+<p><code>build(Function)</code> は検証済みの値を値オブジェクトに変換します:</p>
+<pre><code class="language-java">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
+    .of(&quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build(Name::new);
+
+StringValidator&lt;Email&gt; emailValidator = StringValidatorBuilder
+    .of(&quot;email&quot;, c -&gt; c.notBlank().lessThanOrEqual(100).email())
+    .build(Email::new);
+
+IntegerValidator&lt;Age&gt; ageValidator = IntegerValidatorBuilder
+    .of(&quot;age&quot;, c -&gt; c.greaterThanOrEqual(0).lessThan(200))
+    .build(Age::new);
+</code></pre>
+<p>既存のバリデータを <code>map(Function)</code> でマッピングすることもできます:</p>
+<pre><code class="language-java">StringValidator&lt;Name&gt; nameValidator = StringValidatorBuilder
+    .of(&quot;name&quot;, c -&gt; c.notBlank().lessThanOrEqual(100))
+    .build()
+    .map(Name::new);
+</code></pre>
+<p><code>andThen(Function)</code> は同じ結果を生成し、<code>map(Function)</code> の代わりとして 0.17.0 から非推奨です。
+<code>andThen(ValueValidator)</code> は非推奨ではなく、生成された値に別のバリデータを連鎖させます:</p>
+<pre><code class="language-java">ObjectValidator&lt;Name, Name&gt; nonNullNameValidator = ObjectValidatorBuilder
+    .&lt;Name&gt;of(&quot;name&quot;, c -&gt; c.notNull())
+    .build();
+
+Arguments1Validator&lt;String, Name&gt; checkedNameValidator = nameValidator
+    .andThen(nonNullNameValidator);
+</code></pre>
+<h2 id="composing-and-adapting-validators">バリデータの合成と変換</h2>
+<p><code>compose(Function)</code> は検証の前にソースオブジェクトを変換します:</p>
+<pre><code class="language-java">Arguments1Validator&lt;Integer, Name&gt; nameFromIdValidator = nameValidator.compose(Object::toString);
+</code></pre>
+<p><code>wrap()</code> は引数バリデータを <code>ArgumentsN</code> コンテナを検証するバリデータに変換し、<code>Arguments1Validator.unwrap(...)</code>（または <code>ArgumentsNValidator.unwrap(...)</code>）はそれを元に戻します:</p>
+<pre><code class="language-java">Arguments1Validator&lt;Arguments1&lt;String&gt;, Name&gt; wrappedValidator = nameValidator.wrap();
+Arguments1Validator&lt;String, Name&gt; unwrappedValidator = Arguments1Validator.unwrap(wrappedValidator);
+</code></pre>
+<p><code>lazy()</code> は検証済みの値の <code>Supplier</code> を生成するバリデータを返します。
+値はサプライヤが使用されるときにだけ生成されるため、コンストラクタ内でコンストラクタへ再帰せずに引数を検証できます:</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Supplier&lt;Name&gt;&gt; lazyValidator = nameValidator.lazy();
+Supplier&lt;Name&gt; nameSupplier = lazyValidator.validated(&quot;John Doe&quot;);
+</code></pre>
+<p>record のコンストラクタでの <code>lazy()</code> の使い方については <a href="getting-started.html#the-always-valid-model">Always Valid モデル</a> を参照してください。</p>
+<p><code>indexed(int)</code> は違反名に <code>[index]</code> を付加し、コレクション要素の違反を区別できるようにします:</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Email&gt; indexedEmailValidator = emailValidator.indexed(0);
+</code></pre>
+<p><code>List</code> に対する <code>Arguments1Validator</code> を生成したい場合は、リストの要素に対する <code>Validator</code> を次のように「リフト」できます:</p>
+<pre><code class="language-java">Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailsValidator = emailValidator.liftList();
+Validated&lt;List&lt;Email&gt;&gt; emailsValidated = emailsValidator.validate(List.of(&quot;foo@example.com&quot;, &quot;bar@example.com&quot;));
+
+Arguments1Validator&lt;Iterable&lt;String&gt;, Set&lt;Email&gt;&gt; emailSetValidator = emailValidator.liftSet();
+Arguments1Validator&lt;Iterable&lt;String&gt;, List&lt;Email&gt;&gt; emailCollectionValidator = emailValidator
+    .liftCollection(ArrayList::new);
+Arguments1Validator&lt;Optional&lt;String&gt;, Optional&lt;Email&gt;&gt; emailOptionalValidator = emailValidator.liftOptional();
+</code></pre>
+<p><code>liftList()</code>、<code>liftSet()</code>、<code>liftCollection(Supplier)</code>、<code>liftOptional()</code> も利用できます。</p>
+<p><code>split(...)</code> は別々の引数を別々のバリデータで検証し、<code>combine(...)</code> は同じ入力を複数のバリデータで検証します。
+<code>ArgumentsValidators.split(...)</code> と <code>ArgumentsValidators.combine(...)</code> については <a href="combining-validators.html">バリデータの組み合わせ</a> で説明しています。</p>
+<p><code>ArgumentsValidators.traverseN(...)</code> は、関数が生成するバリデータで指定したコレクションの各要素を検証し、結果を収集します。
+<code>sequenceN(...)</code> は複数のバリデータを同じ引数に適用し、結果を収集します:</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, List&lt;Name&gt;&gt; namesValidator = ArgumentsValidators
+    .traverse1(List.of(&quot;John&quot;, &quot;Jane&quot;), value -&gt; nameValidator);
+
+Arguments1Validator&lt;String, List&lt;String&gt;&gt; sequencedValidator = ArgumentsValidators
+    .sequence1(List.of(nameValidator.map(Name::value), nameValidator.map(Name::value)));
+</code></pre>
+<p>これらの「小さな Validator」は、<a href="combining-validators.html">バリデータの組み合わせ</a> で説明する Validator コンビネータと組み合わせると、強力な部品になります。</p>
+<h2 id="arguments-containers">Arguments コンテナ</h2>
+<p><code>Arguments1</code> から <code>Arguments16</code> は、検証済みの引数の不変コンテナです。
+生成には <code>Arguments.of(...)</code> を使います:</p>
+<pre><code class="language-java">Arguments3&lt;String, String, Integer&gt; arguments = Arguments.of(&quot;John Doe&quot;, &quot;jdoe@example.com&quot;, 30);
+String name = arguments.arg1();
+String email = arguments.arg2();
+Integer age = arguments.arg3();
+</code></pre>
+<p><code>argN()</code> は位置 <code>N</code> の引数を返します。<code>firstN()</code> と <code>lastN()</code> は先頭または末尾の <code>N</code> 個の引数を新しいコンテナとして返し、<code>append</code>、<code>prepend</code>、<code>reverse</code> は変更したコピーを返します:</p>
+<pre><code class="language-java">Arguments1&lt;String&gt; first = arguments.first1();
+Arguments2&lt;String, String&gt; firstTwo = arguments.first2();
+Arguments1&lt;Integer&gt; last = arguments.last1();
+Arguments2&lt;String, Integer&gt; lastTwo = arguments.last2();
+
+Arguments4&lt;String, String, Integer, String&gt; appended = arguments.append(&quot;extra&quot;);
+Arguments4&lt;String, String, String, Integer&gt; prepended = arguments.prepend(&quot;extra&quot;);
+Arguments3&lt;Integer, String, String&gt; reversed = arguments.reverse();
+</code></pre>
+<p><code>equals</code> と <code>hashCode</code> はコンテナの内容に対して実装されています。
+<code>Arguments</code> は final であり、<code>ArgumentsN</code> は <code>ArgumentsM</code> を継承しません。等価性の判定には具体的なコンテナクラスも含まれます。</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="combining-validation-results.html"><span class="dir">&larr; Previous</span><span class="label">バリデーション結果の結合</span></a>
+<a class="next" href="combining-validators.html"><span class="dir">Next &rarr;</span><span class="label">バリデータの組み合わせ</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#defining-an-arguments-validator">引数バリデータの定義</a></li>
+<li class="toc-h2"><a href="#available-argument-kinds">利用できる引数の種類</a></li>
+<li class="toc-h2"><a href="#validating-method-arguments">メソッド引数のバリデーション</a></li>
+<li class="toc-h2"><a href="#defining-a-validator-for-a-single-value">単一の値に対する Validator の定義</a></li>
+<li class="toc-h2"><a href="#composing-and-adapting-validators">バリデータの合成と変換</a></li>
+<li class="toc-h2"><a href="#arguments-containers">Arguments コンテナ</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>組み込みの制約 · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/built-in-constraints.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link active" href="built-in-constraints.html" aria-current="page">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/built-in-constraints.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="built-in-constraints">組み込みの制約</h1>
+<p>YAVI には、型ごとによく使われる組み込みの制約が多数用意されています。</p>
+<h2 id="string">String</h2>
+<p><code>String</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_string</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._string(/* Function from TargetClass to String  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>より汎用的な <code>CharSequence</code> に制約を適用する場合は、<code>_charSequence</code> メソッドを使います。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._charSequence(/* Function from TargetClass to CharSequence  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>以下に示す制約では、特に断りのない限り <code>null</code> は有効な値として扱われ、検査はスキップされます。</p>
+<h3 id="notnull"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::asString, &quot;email&quot;, c -&gt; c.notNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Email(&quot;yavi@example.com&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid (&quot;email&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getId, &quot;id&quot;, c -&gt; c.isNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new User(null)); // Valid
+ConstraintViolations violations = validator.validate(new User(&quot;1234&quot;)); // Invalid (&quot;id&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="notempty"><code>notEmpty()</code></h3>
+<p>対象の値が <code>null</code> でも空でもないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::asString, &quot;email&quot;, c -&gt; c.notEmpty())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Email(&quot;yavi@example.com&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid (&quot;email&quot; must not be empty)
+ConstraintViolations violations = validator.validate(new Email(&quot;&quot;)); // Invalid (&quot;email&quot; must not be empty)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.notEmpty</code></td><td><code>&quot;{0}&quot; must not be empty</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="notblank"><code>notBlank()</code></h3>
+<p>対象の値が <code>null</code> でなく、前後の空白を除いた値の長さが <code>0</code> より大きいことを検査します。
+<code>notEmpty()</code> との違いは、前後の空白が無視されることです。</p>
+<pre><code class="language-java">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::asString, &quot;email&quot;, c -&gt; c.notBlank())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Email(&quot;yavi@example.com&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Invalid (&quot;email&quot; must not be blank)
+ConstraintViolations violations = validator.validate(new Email(&quot; &quot;)); // Invalid (&quot;email&quot; must not be blank)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.notBlank</code></td><td><code>&quot;{0}&quot; must not be blank</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="fixedsizeint"><code>fixedSize(int)</code></h3>
+<p>対象の値のサイズが指定したサイズであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, &quot;zipCode&quot;, c -&gt; c.fixedSize(7))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;1234567&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;123-4567&quot;)); // Invalid (The size of &quot;zipCode&quot; must be 7. The given size is 8)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.fixedSize</code></td><td><code>The size of &quot;{0}&quot; must be {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanint"><code>greaterThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより大きいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::asString, &quot;country&quot;, c -&gt; c.greaterThan(2))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Country(&quot;Japan&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
+ConstraintViolations violations = validator.validate(new Country(&quot;J&quot;)); // Invalid (The size of &quot;country&quot; must be greater than 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThan</code></td><td><code>The size of &quot;{0}&quot; must be greater than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanorequalint"><code>greaterThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以上であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::asString, &quot;country&quot;, c -&gt; c.greaterThanOrEqual(2))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Country(&quot;Japan&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
+ConstraintViolations violations = validator.validate(new Country(&quot;J&quot;)); // Invalid (The size of &quot;country&quot; must be greater than or equal to 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be greater than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanint"><code>lessThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより小さいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::asString, &quot;country&quot;, c -&gt; c.lessThan(4))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Country(&quot;JP&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
+ConstraintViolations violations = validator.validate(new Country(&quot;Japan&quot;)); // Invalid (The size of &quot;country&quot; must be less than 4. The given size is 5)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThan</code></td><td><code>The size of &quot;{0}&quot; must be less than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanorequalint"><code>lessThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以下であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Country&gt; validator = ValidatorBuilder.&lt;Country&gt; of()
+    .constraint(Country::asString, &quot;country&quot;, c -&gt; c.lessThanOrEqual(4))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Country(&quot;JP&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Country(null)); // Valid
+ConstraintViolations violations = validator.validate(new Country(&quot;Japan&quot;)); // Invalid (The size of &quot;country&quot; must be less than or equal to 4. The given size is 5)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be less than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="containscharsequence"><code>contains(CharSequence)</code></h3>
+<p>対象の値が指定した文字列を含むことを検査します。</p>
+<pre><code class="language-java">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, &quot;zipCode&quot;, c -&gt; c.contains(&quot;-&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;123-4567&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;1234567&quot;)); // Invalid (&quot;zipCode&quot; must contain -)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.contains</code></td><td><code>&quot;{0}&quot; must contain {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した文字列<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="startswithcharsequence"><code>startsWith(CharSequence)</code></h3>
+<p>対象の値が指定した接頭辞で始まることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Code&gt; validator = ValidatorBuilder.&lt;Code&gt; of()
+    .constraint(Code::asString, &quot;code&quot;, c -&gt; c.startsWith(&quot;JP-&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Code(&quot;JP-1234&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Code(null)); // Valid
+ConstraintViolations violations = validator.validate(new Code(&quot;US-1234&quot;)); // Invalid (&quot;code&quot; must start with &quot;JP-&quot;)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.startsWith</code></td><td><code>&quot;{0}&quot; must start with &quot;{1}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した接頭辞<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="endswithcharsequence"><code>endsWith(CharSequence)</code></h3>
+<p>対象の値が指定した接尾辞で終わることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Domain&gt; validator = ValidatorBuilder.&lt;Domain&gt; of()
+    .constraint(Domain::asString, &quot;domain&quot;, c -&gt; c.endsWith(&quot;.example.com&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Domain(&quot;www.example.com&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Domain(null)); // Valid
+ConstraintViolations violations = validator.validate(new Domain(&quot;example.com&quot;)); // Invalid (&quot;domain&quot; must end with &quot;.example.com&quot;)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.endsWith</code></td><td><code>&quot;{0}&quot; must end with &quot;{1}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した接尾辞<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="patternstring"><code>pattern(String)</code></h3>
+<p>対象の値が指定した正規表現に一致することを検査します。</p>
+<pre><code class="language-java">Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, &quot;zipCode&quot;, c -&gt; c.pattern(&quot;[0-9]{3}-[0-9]{4}&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;123-4567&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;1234567&quot;)); // Invalid (&quot;zipCode&quot; must match [0-9]{3}-[0-9]{4})
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.pattern</code></td><td><code>&quot;{0}&quot; must match {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した正規表現<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="patternpattern--patternsupplierpattern"><code>pattern(Pattern)</code> / <code>pattern(Supplier&lt;Pattern&gt;)</code></h3>
+<p>対象の値が指定した正規表現に一致することを、<code>pattern(String)</code> と同じように検査します。
+<code>Supplier&lt;Pattern&gt;</code> を受け取るオーバーロードは、検証のたびにサプライヤを呼び出します。検証時に動的に組み立てる正規表現を想定しています。</p>
+<pre><code class="language-java">Pattern zipCode = Pattern.compile(&quot;[0-9]{3}-[0-9]{4}&quot;);
+Validator&lt;ZipCode&gt; validator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, &quot;zipCode&quot;, c -&gt; c.pattern(zipCode))
+    .build();
+
+Validator&lt;ZipCode&gt; dynamicValidator = ValidatorBuilder.&lt;ZipCode&gt; of()
+    .constraint(ZipCode::asString, &quot;zipCode&quot;, c -&gt; c.pattern(() -&gt; Pattern.compile(&quot;[0-9]{3}-[0-9]{4}&quot;)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;123-4567&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(null)); // Valid
+ConstraintViolations violations = validator.validate(new ZipCode(&quot;1234567&quot;)); // Invalid (&quot;zipCode&quot; must match [0-9]{3}-[0-9]{4})
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.pattern</code></td><td><code>&quot;{0}&quot; must match {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した正規表現<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="email"><code>email()</code></h3>
+<p>対象の値が有効なメールアドレスであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Email&gt; validator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::asString, &quot;email&quot;, c -&gt; c.email())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Email(&quot;yavi@example.com&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Email(null)); // Valid
+ConstraintViolations violations = validator.validate(new Email(&quot;example.com&quot;)); // Invalid (&quot;email&quot; must be a valid email address)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.email</code></td><td><code>&quot;{0}&quot; must be a valid email address</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="uuid"><code>uuid()</code></h3>
+<p>対象の値が 8-4-4-4-12 の 16 進数形式の有効な UUID であることを検査します。バージョンとバリアントは検査せず、空の値は有効です。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getId, &quot;id&quot;, c -&gt; c.uuid())
+    .build();
+
+ConstraintViolations violations = validator.validate(new User(&quot;123e4567-e89b-12d3-a456-426614174000&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new User(null)); // Valid
+ConstraintViolations violations = validator.validate(new User(&quot;&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new User(&quot;1234&quot;)); // Invalid (&quot;id&quot; must be a valid UUID)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.uuid</code></td><td><code>&quot;{0}&quot; must be a valid UUID</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="password"><code>password(...)</code></h3>
+<p>対象の値が指定したパスワードポリシーを満たすことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
+		.constraint(Password::value, &quot;password&quot;, c -&gt; c.password(policy -&gt; policy
+				.uppercase()
+				.lowercase()
+				// or .required(PasswordPolicy.UPPERCASE, PasswordPolicy.LOWERCASE)
+				.optional(1, PasswordPolicy.NUMBERS, PasswordPolicy.SYMBOLS)
+				.build()))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Password(&quot;Yavi123&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Password(null)); // Valid
+ConstraintViolations violations = validator.validate(new Password(&quot;yavi123&quot;)); // Invalid (&quot;password&quot; must meet Uppercase policy)
+ConstraintViolations violations = validator.validate(new Password(&quot;yavi&quot;)); // Invalid (&quot;password&quot; must meet Uppercase policy, &quot;password&quot; must meet at least 1 policies from [Numbers, Symbols])
+ConstraintViolations violations = validator.validate(new Password(&quot;&quot;)); // Invalid (&quot;password&quot; must meet Uppercase policy, &quot;password&quot; must meet Lowercase policy, &quot;password&quot; must meet at least 1 policies from [Numbers, Symbols])
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>password.required</code></td><td><code>&quot;{0}&quot; must meet {1} policy</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したポリシー名<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>password.optional</code></td><td><code>&quot;{0}&quot; must meet at least {1} policies from {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 最低要件<br>- <code>{2}</code> ... 指定したポリシー名<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<p>組み込みのパスワードポリシーは次のとおりです。</p>
+<ul>
+<li><code>am.ik.yavi.constraint.password.PasswordPolicy#UPPERCASE</code></li>
+<li><code>am.ik.yavi.constraint.password.PasswordPolicy#LOWERCASE</code></li>
+<li><code>am.ik.yavi.constraint.password.PasswordPolicy#ALPHABETS</code></li>
+<li><code>am.ik.yavi.constraint.password.PasswordPolicy#NUMBERS</code></li>
+<li><code>am.ik.yavi.constraint.password.PasswordPolicy#SYMBOLS</code></li>
+</ul>
+<p>パターンの数を指定するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
+		.constraint(Password::value, &quot;password&quot;, c -&gt; c.password(policy -&gt; policy
+				.uppercase(2) // at least 2 upper case characters are required
+				.lowercase(2) // at least 2 lower case characters are required
+				// or .required(PasswordPolicy.UPPERCASE.count(2), PasswordPolicy.LOWERCASE.count(2))
+				.build()))
+		.build();
+</code></pre>
+<p>独自のパスワードポリシーは次のように定義できます。</p>
+<pre><code class="language-java">PasswordPolicy&lt;String&gt; passwordPolicy = new PasswordPolicy&lt;&gt;() {
+	@Override
+	public String name() {
+		return &quot;DoNotIncludePassword&quot;;
+	}
+
+	@Override
+	public boolean test(String s) {
+		return !s.equalsIgnoreCase(&quot;password&quot;);
+	}
+};
+
+
+Validator&lt;Password&gt; validator = ValidatorBuilder.&lt;Password&gt; of()
+		.constraint(Password::value, &quot;password&quot;, c -&gt; c.password(policy -&gt; policy
+				.required(passwordPolicy)
+				// ...
+				.build()))
+		.build();
+</code></pre>
+<h3 id="ipv4"><code>ipv4()</code></h3>
+<p>対象の値が有効な IPv4 アドレスであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
+    .constraint(IpAddress::asString, &quot;ipAddress&quot;, c -&gt; c.ipv4())
+    .build();
+
+ConstraintViolations violations = validator.validate(new IpAddress(&quot;192.0.2.1&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(&quot;example.com&quot;)); // Invalid (&quot;ipAddress&quot; must be a valid IPv4)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.ipv4</code></td><td><code>&quot;{0}&quot; must be a valid IPv4</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="ipv6"><code>ipv6()</code></h3>
+<p>対象の値が有効な IPv6 アドレスであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;IpAddress&gt; validator = ValidatorBuilder.&lt;IpAddress&gt; of()
+    .constraint(IpAddress::asString, &quot;ipAddress&quot;, c -&gt; c.ipv6())
+    .build();
+
+ConstraintViolations violations = validator.validate(new IpAddress(&quot;2001:0db8:bd05:01d2:288a:1fc0:0001:10ee&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(null)); // Valid
+ConstraintViolations violations = validator.validate(new IpAddress(&quot;192.0.2.1&quot;)); // Invalid (&quot;ipAddress&quot; must be a valid IPv6)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.ipv6</code></td><td><code>&quot;{0}&quot; must be a valid IPv6</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="url"><code>url()</code></h3>
+<p>対象の値が有効な URL であることを検査します。空の値は有効です。</p>
+<blockquote>
+<p><strong>注意:</strong> 0.17.0 から、値は非推奨の <code>URL(String)</code> コンストラクタではなく <code>java.net.URI</code> として解析されます。<code>URL(String)</code> は先頭と末尾の文字を黙って取り除いていました。この取り除きによってのみ通っていた値、エンコードされていない文字を含む値、authority が空の値は、現在は拒否されます。</p>
+</blockquote>
+<pre><code class="language-java">Validator&lt;Url&gt; validator = ValidatorBuilder.&lt;Url&gt; of()
+    .constraint(Url::asString, &quot;url&quot;, c -&gt; c.url())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Url(&quot;https://yavi.ik.am&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Url(null)); // Valid
+ConstraintViolations violations = validator.validate(new Url(&quot;yavi.ik.am&quot;)); // Invalid (&quot;url&quot; must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url(&quot; https://yavi.ik.am &quot;)); // Invalid (&quot;url&quot; must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url(&quot;https://yavi.ik.am/path with space&quot;)); // Invalid (&quot;url&quot; must be a valid URL)
+ConstraintViolations violations = validator.validate(new Url(&quot;https://&quot;)); // Invalid (&quot;url&quot; must be a valid URL)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.url</code></td><td><code>&quot;{0}&quot; must be a valid URL</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="url-1"><code>url(...)</code></h3>
+<p>対象の値が有効な URL であり、そのプロトコル、ホスト、ポートを制限することを検査します。
+値はまず有効な URL である必要があり、想定外の属性は URL の違反に加えて報告されます。
+これは Bean Validation の <code>@URL(protocol = &quot;https&quot;, host = &quot;example.com&quot;, port = 8443)</code> に相当します。
+空の値は有効です。</p>
+<p>ホストは大文字と小文字を区別せずに比較しますが、記述されたとおりに照合するため、<code>host(&quot;example.com&quot;)</code> は <code>https://www.example.com</code> を受け付けません。
+ポートを明示しない URL は、そのプロトコルの既定のポートと照合するため、<code>port(443)</code> は <code>https://example.com</code> を受け付けます。
+URL として解析できない値では、<code>charSequence.url</code> だけが報告されます。</p>
+<pre><code class="language-java">Validator&lt;Url&gt; validator = ValidatorBuilder.&lt;Url&gt; of()
+    .constraint(Url::asString, &quot;url&quot;, c -&gt; c.url(url -&gt; url
+            .protocol(&quot;https&quot;)
+            .host(&quot;example.com&quot;)
+            .port(8443)
+            .build()))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Url(&quot;https://example.com:8443/app&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Url(&quot;http://example.com:8443/app&quot;)); // Invalid (The protocol of &quot;url&quot; must be one of the following values: [https])
+ConstraintViolations violations = validator.validate(new Url(&quot;https://other.example.com:8443/app&quot;)); // Invalid (The host of &quot;url&quot; must be one of the following values: [example.com])
+ConstraintViolations violations = validator.validate(new Url(&quot;https://example.com:9999/app&quot;)); // Invalid (The port of &quot;url&quot; must be one of the following values: [8443])
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.url</code></td><td><code>&quot;{0}&quot; must be a valid URL</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+<tr><td><code>charSequence.url.protocol</code></td><td><code>The protocol of &quot;{0}&quot; must be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したプロトコル<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>charSequence.url.host</code></td><td><code>The host of &quot;{0}&quot; must be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したホスト<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>charSequence.url.port</code></td><td><code>The port of &quot;{0}&quot; must be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したポート<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="luhn"><code>luhn()</code></h3>
+<p>対象の値の数字が Luhn チェックサムアルゴリズムを満たすことを検査します（<a href="http://en.wikipedia.org/wiki/Luhn_algorithm">Luhn algorithm</a> も参照）。</p>
+<pre><code class="language-java">Validator&lt;CreditCard&gt; validator = ValidatorBuilder.&lt;CreditCard&gt; of()
+    .constraint(CreditCard::number, &quot;creditCardNumber&quot;, c -&gt; c.luhn())
+    .build();
+
+ConstraintViolations violations = validator.validate(new CreditCard(&quot;4111111111111111&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new CreditCard(null)); // Valid
+ConstraintViolations violations = validator.validate(new CreditCard(&quot;4111111111111112&quot;)); // Invalid (the check digit for &quot;creditCardNumber&quot; is invalid, Luhn checksum failed)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.luhn</code></td><td><code>the check digit for &quot;{0}&quot; is invalid, Luhn checksum failed</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isbyte"><code>isByte()</code></h3>
+<p>対象の値が <code>Byte</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+    .constraint(UserId::asString, &quot;userId&quot;, c -&gt; c.isByte())
+    .build();
+
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;127&quot;)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;a&quot;)); // Invalid (&quot;userId&quot; must be a valid representation of a byte)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.byte</code></td><td><code>&quot;{0}&quot; must be a valid representation of a byte</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isshort"><code>isShort()</code></h3>
+<p>対象の値が <code>Short</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+    .constraint(UserId::asString, &quot;userId&quot;, c -&gt; c.isShort())
+    .build();
+
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;32767&quot;)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;a&quot;)); // Invalid (&quot;userId&quot; must be a valid representation of a short)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.short</code></td><td><code>&quot;{0}&quot; must be a valid representation of a short</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isinteger"><code>isInteger()</code></h3>
+<p>対象の値が <code>Integer</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+    .constraint(UserId::asString, &quot;userId&quot;, c -&gt; c.isInteger())
+    .build();
+
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;2147483647&quot;)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;a&quot;)); // Invalid (&quot;userId&quot; must be a valid representation of an integer)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.integer</code></td><td><code>&quot;{0}&quot; must be a valid representation of an integer</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="islong"><code>isLong()</code></h3>
+<p>対象の値が <code>Long</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+    .constraint(UserId::asString, &quot;userId&quot;, c -&gt; c.isLong())
+    .build();
+
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;9223372036854775807&quot;)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;a&quot;)); // Invalid (&quot;userId&quot; must be a valid representation of a long)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.long</code></td><td><code>&quot;{0}&quot; must be a valid representation of a long</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isfloat"><code>isFloat()</code></h3>
+<p>対象の値が <code>Float</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+    .constraint(Money::asString, &quot;money&quot;, c -&gt; c.isFloat())
+    .build();
+
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;0.1&quot;)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;a&quot;)); // Invalid (&quot;money&quot; must be a valid representation of a float)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.float</code></td><td><code>&quot;{0}&quot; must be a valid representation of a float.</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isdouble"><code>isDouble()</code></h3>
+<p>対象の値が <code>Double</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+    .constraint(Money::asString, &quot;money&quot;, c -&gt; c.isDouble())
+    .build();
+
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;0.1&quot;)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;a&quot;)); // Invalid (&quot;money&quot; must be a valid representation of a double)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.double</code></td><td><code>&quot;{0}&quot; must be a valid representation of a double</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isbiginteger"><code>isBigInteger()</code></h3>
+<p>対象の値が <code>BigInteger</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;UserId&gt; validator = ValidatorBuilder.&lt;UserId&gt; of()
+    .constraint(UserId::asString, &quot;userId&quot;, c -&gt; c.isBigInteger())
+    .build();
+
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;127&quot;)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(UserId.valueOf(&quot;a&quot;)); // Invalid (&quot;userId&quot; must be a valid representation of a big integer)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.biginteger</code></td><td><code>&quot;{0}&quot; must be a valid representation of a big integer</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isbigdecimal"><code>isBigDecimal()</code></h3>
+<p>対象の値が <code>BigDecimal</code> の値として解析できることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Money&gt; validator = ValidatorBuilder.&lt;Money&gt; of()
+    .constraint(Money::asString, &quot;money&quot;, c -&gt; c.isBigDecimal())
+    .build();
+
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;50.0&quot;)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(null)); // Valid
+ConstraintViolations violations = validator.validate(Money.valueOf(&quot;a&quot;)); // Invalid (&quot;money&quot; must be a valid representation of a big decimal)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.bigdecimal</code></td><td><code>&quot;{0}&quot; must be a valid representation of a big decimal</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isolocaldate--localdatestring-pattern"><code>isoLocalDate()</code> / <code>localDate(String pattern)</code></h3>
+<p>対象の値が、指定したパターンの有効なローカル日付であることを検査します。解決には <code>ResolverStyle.STRICT</code> を使います。
+<code>isoLocalDate()</code> はパターン <code>uuuu-MM-dd</code> を使います。
+フォーマッタは値の検証のたびに作成されます。
+空の値は有効です。</p>
+<pre><code class="language-java">Validator&lt;BirthDate&gt; validator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, &quot;birthDate&quot;, c -&gt; c.isoLocalDate())
+    .build();
+Validator&lt;BirthDate&gt; customValidator = ValidatorBuilder.&lt;BirthDate&gt; of()
+    .constraint(BirthDate::asString, &quot;birthDate&quot;, c -&gt; c.localDate(&quot;dd/MM/uuuu&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new BirthDate(&quot;2024-12-31&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate(null)); // Valid
+ConstraintViolations violations = validator.validate(new BirthDate(&quot;2024-02-30&quot;)); // Invalid (&quot;birthDate&quot; must be a valid representation of a local date using the pattern: uuuu-MM-dd. The give value is: 2024-02-30)
+ConstraintViolations violations = customValidator.validate(new BirthDate(&quot;31/12/2024&quot;)); // Valid
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>charSequence.localdate</code></td><td><code>&quot;{0}&quot; must be a valid representation of a local date using the pattern: {1}. The give value is: {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した日付パターン<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="codepoints"><code>codePoints(...)</code></h3>
+<p>対象の値が指定したコードポイントの集合に含まれることを検査します。
+コードポイントは、許可する文字（ホワイトリスト）または禁止する文字（ブラックリスト）として指定できます。</p>
+<p>コードポイントの集合は <code>am.ik.yavi.constraint.charsequence.CodePoints</code> インタフェースで表します。<code>java.util.Set</code> で集合を表す <code>am.ik.yavi.constraint.charsequence.CodePoints.CodePointsSet</code> インタフェースと、コードポイントの範囲のリストを表す <code>am.ik.yavi.constraint.charsequence.CodePoints.CodePointsRanges</code> インタフェースもあります。</p>
+<p>たとえば、&quot;A, B, C, D, a, b, c, d&quot; からなるコードポイントの集合は次のように表します。</p>
+<pre><code class="language-java">CodePointsSet&lt;String&gt; codePoints = () -&gt; Set.of(
+		0x0041 /* A */, 0x0042 /* B */, 0x0043 /* C */, 0x0044 /* D */,
+        0x0061 /* a */, 0x0062 /* b */, 0x0063 /* c */, 0x0064 /* d */);
+</code></pre>
+<p>または、次のように表します。</p>
+<pre><code class="language-java">CodePointsRanges&lt;String&gt; codePoints = () -&gt; List.of(
+        Range.of(0x0041/* A */, 0x0044 /* D */),
+        Range.of(0x0061/* a */, 0x0064 /* d */));
+</code></pre>
+<p>連続するコードポイントでは、後者のほうがメモリ効率がはるかに良くなります。</p>
+<p>コードポイントの集合をホワイトリスト（許可する文字）として扱う場合は、次のように指定します。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.codePoints(codePoints).asWhiteList())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;aBCd&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Message(null)); // Valid
+ConstraintViolations violations = validator.validate(new Message(&quot;aBCe&quot;)); // Invalid (&quot;[e]&quot; is/are not allowed for &quot;text&quot;)
+</code></pre>
+<p>コードポイントの集合をブラックリスト（禁止する文字）として扱う場合は、次のように指定します。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.codePoints(codePoints).asBlackList())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;hello&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Message(null)); // Valid
+ConstraintViolations violations = validator.validate(new Message(&quot;hallo&quot;)); // Invalid (&quot;[a]&quot; is/are not allowed for &quot;text&quot;)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>codePoints.asWhiteList</code></td><td><code>&quot;{1}&quot; is/are not allowed for &quot;{0}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 違反した値</td></tr>
+<tr><td><code>codePoints.asBlackList</code></td><td><code>&quot;{1}&quot; is/are not allowed for &quot;{0}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 違反した値</td></tr>
+</tbody>
+</table>
+<p>組み込みのコードポイントの集合は次のとおりです。</p>
+<ul>
+<li><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#ASCII_PRINTABLE_CHARS</code> ... ASCII の印字可能文字</li>
+<li><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#ASCII_CONTROL_CHARS</code> ... ASCII の制御文字</li>
+<li><code>am.ik.yavi.constraint.charsequence.codepoints.AsciiCodePoints#CRLF</code> ... <code>0x000A</code>（LINE FEED）と <code>0x000D</code>（CARRIAGE RETURN）</li>
+<li><code>am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints#HIRAGANA</code> ... Unicode で定義された<a href="https://www.unicode.org/charts/nameslist/c_3040.html">ひらがな</a>（JIS X 0208 の定義とは異なります）</li>
+<li><code>am.ik.yavi.constraint.charsequence.codepoints.UnicodeCodePoints#KATAKANA</code> ... Unicode で定義された<a href="https://www.unicode.org/charts/nameslist/c_30A0.html">カタカナ</a>と<a href="https://www.unicode.org/charts/nameslist/c_31F0.html">カタカナ音声拡張</a>（JIS X 0208 の定義とは異なります）</li>
+</ul>
+<p>複数のコードポイントの集合の和集合は、<code>am.ik.yavi.constraint.charsequence.codepoints.CompositeCodePoints</code> クラスでも表せます。</p>
+<h3 id="advanced-character-length-check">文字数の高度な検査</h3>
+<p>文字数に関する制約では、YAVI は入力された文字を、見た目どおりの文字数として数えます。Unicode に多様な文字が定義された結果、見た目の大きさと <code>String#length</code> メソッドの戻り値は大きく異なります。</p>
+<p>YAVI は次の文字の種類に対応しています。</p>
+<ul>
+<li>サロゲートペア</li>
+<li>結合文字</li>
+<li>異体字セレクタ
+<ul>
+<li>IVS（Ideographic Variation Sequence）</li>
+<li>SVS（Standardized Variation Sequence）</li>
+<li>FVS（Mongolian Free Variation Selector）</li>
+</ul>
+</li>
+<li>絵文字</li>
+</ul>
+<p>YAVI は、サロゲートペアと結合文字については、見た目どおりの文字数で制約を検査します（絵文字、IVS、SVS、FVS は、性能の理由から既定では見た目どおりのサイズを検査しません）。</p>
+<p>典型的な例をいくつか示します。</p>
+<h4 id="surrogate-pair">サロゲートペア</h4>
+<p><code>𠮷野屋</code> はサロゲートペアの例です。3 文字に見えますが、<code>length</code> メソッドの結果は 4 です（<code>\uD842\uDFB7野屋</code>）。</p>
+<pre><code class="language-java">System.out.println(&quot;𠮷野屋&quot;.length()); // 4 (\uD842\uDFB7野屋)
+</code></pre>
+<p>YAVI は文字の長さをコードポイントの長さとして扱うため、この文字列は 3 文字とみなされます。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.lessThanOrEqual(3))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;𠮷野屋&quot;)); // Valid
+</code></pre>
+<h4 id="combining-character">結合文字</h4>
+<p><code>モジ</code> は結合文字の例です。2 文字に見えますが、<code>シ</code> と濁点(<code>゙</code>) が結合しており、<code>length()</code> の結果は 3 です（<code>モシ\u3099</code>）。</p>
+<pre><code class="language-java">System.out.println(&quot;モジ&quot;.length()); // 3 (モシ\u3099)
+</code></pre>
+<p>YAVI はこの文字列を既定では 2 文字とみなします。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.lessThanOrEqual(2))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;モジ&quot;)); // Valid
+</code></pre>
+<p>YAVI は既定で <code>java.text.Normalizer</code> を使い、<code>java.text.Normalizer.Form#NFC</code> で正規化します。この動作は次のように変更できます（<code>null</code> を設定すると正規化しません）。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.normalizer(normalizerForm)
+				.lessThanOrEqual(2))
+    .build();
+</code></pre>
+<h4 id="variation-selector">異体字セレクタ</h4>
+<p><code>𠮟󠄀</code> は異体字シーケンス（Ideographic Variation Sequence）の例です。異体字セレクタは <code>Normalizer</code> で正規化できません。
+1 文字に見えますが、UTF-16 で表すと &quot;D842 DF9F DB40 DD00&quot; になるため、<code>length()</code> の結果は 4 です。</p>
+<pre><code class="language-java">System.out.println(&quot;𠮟󠄀&quot;.length()); // 4 (\uD842\uDF9F\uDB40\uDD00󠄀)
+</code></pre>
+<p>YAVI は性能の低下を防ぐため、この文字を既定では 1 文字とみなしません。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+		.constraint(Message::getText, &quot;text&quot;, c -&gt; c.lessThanOrEqual(1))
+		.build();
+ConstraintViolations violations = validator.validate(new Message(&quot;𠮟󠄀&quot;)); // Invalid (The size of &quot;text&quot; must be less than or equal to 1. The given size is 2)
+</code></pre>
+<p>次のようにすると、IVS の範囲である <code>0xE0100</code>-<code>0xE01EF</code> のコードポイントを対象の文字列から無視（削除）できます。
+こうすると、この文字列を単なるサロゲートペアとして扱えます。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+		.constraint(Message::getText, &quot;text&quot;, c -&gt; c.variant(opts -&gt; opts.ivs(IdeographicVariationSequence.IGNORE))
+				.lessThanOrEqual(1))
+		.build();
+ConstraintViolations violations = validator.validate(new Message(&quot;𠮟󠄀&quot;)); // Valid
+</code></pre>
+<p>SVS と FVS も同じように扱えます。</p>
+<h4 id="emoji">絵文字</h4>
+<p>絵文字は、見た目の文字数とコードポイント数が大きく離れています。</p>
+<p>例を示します。</p>
+<pre><code class="language-java">System.out.println(&quot;❤️&quot;.length()); // 2
+System.out.println(&quot;🤴🏻&quot;.length()); // 4
+System.out.println(&quot;👨‍👦&quot;.length()); // 5
+System.out.println(&quot;️👨‍👨‍👧‍👦&quot;.length()); // 12
+System.out.println(&quot;🏴󠁧󠁢󠁥󠁮󠁧󠁿&quot;.length()); // 14 (WTH!)
+</code></pre>
+<p>YAVI はこれらの絵文字をできるだけ 1 文字として数えようとします。保証はありませんが、Emoji 12.0 で定義されたすべての絵文字でテストしています。</p>
+<p>この処理はコストが高く、既定では無効です。有効にするには、次のように <code>emoji()</code> メソッドを指定します。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.emoji().lessThanOrEqual(1))
+    .build();
+ConstraintViolations violations = validator.validate(new Message(&quot;❤️&quot;)); // Valid
+violations = validator.validate(new Message(&quot;🤴🏻&quot;)); // Valid
+violations = validator.validate(new Message(&quot;👨‍👦&quot;)); // Valid
+violations = validator.validate(new Message(&quot;️👨‍👨‍👧‍👦&quot;)); // Valid
+violations = validator.validate(new Message(&quot;🏴󠁧󠁢󠁥󠁮󠁧󠁿&quot;)); // Valid
+</code></pre>
+<h3 id="variant"><code>variant(...)</code></h3>
+<p>サイズを測る前に、選択した異体字セレクタを削除する制約を返します。
+値自体は変わりません。サイズの数え方だけに影響します。
+IVS、SVS、FVS の詳細は<a href="#advanced-character-length-check">文字数の高度な検査</a>を参照してください。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.variant(opts -&gt; opts.fvs(MongolianFreeVariationSelector.IGNORE))
+            .fixedSize(1))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;ᠠ᠋&quot;)); // Valid
+</code></pre>
+<p><code>variant(...)</code> は制約そのものではなく、独自のメッセージも持ちません。結果に適用したサイズの制約のメッセージが報告されます。</p>
+<h3 id="asbytearray"><code>asByteArray()</code></h3>
+<p>見た目の文字の長さと実際のコードポイントの長さが食い違うと、見た目の制限は満たしていても、データベースに格納できるサイズを超えることがあります。YAVI では、見た目のサイズに加えてバイト長を検査できます。</p>
+<pre><code class="language-java">Validator&lt;Message&gt; validator = ValidatorBuilder.&lt;Message&gt; of()
+    .constraint(Message::getText, &quot;text&quot;, c -&gt; c.emoji().lessThanOrEqual(3)
+            .asByteArray().lessThanOrEqual(16))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Message(&quot;I❤️☕️️&quot;)); // Valid
+violations = validator.validate(new Message(&quot;❤️❤️❤️️️&quot;)); // Invalid (The byte size of &quot;text&quot; must be less than or equal to 16. The given size is 24)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>byteSize.lessThan</code></td><td><code>The byte size of &quot;{0}&quot; must be less than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+<tr><td><code>byteSize.lessThanOrEqual</code></td><td><code>The byte size of &quot;{0}&quot; must be less than or equal to {1}. The given size is {2}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+<tr><td><code>byteSize.greaterThan</code></td><td><code>The byte size of &quot;{0}&quot; must be greater than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+<tr><td><code>byteSize.greaterThanOrEqual</code></td><td><code>The byte size of &quot;{0}&quot; must be greater than or equal to {1}. The given size is {2}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+<tr><td><code>byteSize.fixedSize</code></td><td><code>The byte size of &quot;{0}&quot; must be {1}. The given size is {2}&quot;</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="integershortlongcharacterbytefloatlongbigintegerbigdecimal">Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</h2>
+<p><code>Integer</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_integer</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._integer(/* Function from TargetClass to Integer  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p><code>Short</code>/<code>Long</code>/<code>Character</code>/<code>Byte</code>/<code>Float</code>/<code>Long</code> / <code>BigInteger</code> / <code>BigDecimal</code> も同様です。</p>
+<h3 id="notnull-1"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.notNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(30)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Invalid (&quot;age&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull-1"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.isNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(30)); // Invalid (&quot;age&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthan"><code>greaterThan(...)</code></h3>
+<p>対象の値が指定した値より大きいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.greaterThan(20))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(21)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(20)); // Invalid (&quot;age&quot; must be greater than 20)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>numeric.greaterThan</code></td><td><code>&quot;{0}&quot; must be greater than {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanorequal"><code>greaterThanOrEqual(...)</code></h3>
+<p>対象の値が指定した値以上であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.greaterThanOrEqual(20))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(20)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(19)); // Invalid (&quot;age&quot; must be greater than or equal to 20)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>numeric.greaterThanOrEqual</code></td><td><code>&quot;{0}&quot; must be greater than or equal to {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthan"><code>lessThan(...)</code></h3>
+<p>対象の値が指定した値より小さいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.lessThan(20))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(19)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(20)); // Invalid (&quot;age&quot; must be less than 20)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>numeric.lessThan</code></td><td><code>&quot;{0}&quot; must be less than {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanorequal"><code>lessThanOrEqual(...)</code></h3>
+<p>対象の値が指定した値以下であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.lessThanOrEqual(20))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(19)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(21)); // Invalid (&quot;age&quot; must be less than or equal to 20)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>numeric.lessThanOrEqual</code></td><td><code>&quot;{0}&quot; must be less than or equal to {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="positive--positiveorzero--negative--negativeorzero"><code>positive()</code> / <code>positiveOrZero()</code> / <code>negative()</code> / <code>negativeOrZero()</code></h3>
+<p>対象の値が正、正またはゼロ、負、負またはゼロであることを、それぞれ検査します。
+これらの制約は <code>Byte</code>、<code>Short</code>、<code>Integer</code>、<code>Long</code>、<code>Float</code>、<code>Double</code>、<code>BigInteger</code>、<code>BigDecimal</code> に適用されます。</p>
+<pre><code class="language-java">Validator&lt;Age&gt; validator = ValidatorBuilder.&lt;Age&gt; of()
+    .constraint(Age::asInt, &quot;age&quot;, c -&gt; c.positive())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Age(1)); // Valid
+ConstraintViolations violations = validator.validate(new Age(null)); // Valid
+ConstraintViolations violations = validator.validate(new Age(0)); // Invalid (&quot;age&quot; must be positive)
+</code></pre>
+<p><code>positiveOrZero</code>、<code>negative</code>、<code>negativeOrZero</code> も同じように使います。</p>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>numeric.positive</code></td><td><code>&quot;{0}&quot; must be positive</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+<tr><td><code>numeric.positiveOrZero</code></td><td><code>&quot;{0}&quot; must be positive or zero</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+<tr><td><code>numeric.negative</code></td><td><code>&quot;{0}&quot; must be negative</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+<tr><td><code>numeric.negativeOrZero</code></td><td><code>&quot;{0}&quot; must be negative or zero</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="temporal">Temporal</h2>
+<p>YAVI は次の型に対する時間の制約を、対応するビルダーのショートカットとともに提供します。</p>
+<table>
+<thead>
+<tr><th>型</th><th>制約</th><th>ビルダーのショートカット</th></tr>
+</thead>
+<tbody>
+<tr><td><code>LocalDate</code></td><td><code>am.ik.yavi.constraint.LocalDateConstraint</code></td><td><code>_localDate</code></td></tr>
+<tr><td><code>LocalTime</code></td><td><code>am.ik.yavi.constraint.LocalTimeConstraint</code></td><td><code>_localTime</code></td></tr>
+<tr><td><code>LocalDateTime</code></td><td><code>am.ik.yavi.constraint.LocalDateTimeConstraint</code></td><td><code>_localDateTime</code></td></tr>
+<tr><td><code>OffsetDateTime</code></td><td><code>am.ik.yavi.constraint.OffsetDateTimeConstraint</code></td><td><code>_offsetDateTime</code></td></tr>
+<tr><td><code>Instant</code></td><td><code>am.ik.yavi.constraint.InstantConstraint</code></td><td><code>_instant</code></td></tr>
+<tr><td><code>Year</code></td><td><code>am.ik.yavi.constraint.YearConstraint</code></td><td><code>_year</code></td></tr>
+<tr><td><code>YearMonth</code></td><td><code>am.ik.yavi.constraint.YearMonthConstraint</code></td><td><code>_yearMonth</code></td></tr>
+<tr><td><code>ZonedDateTime</code></td><td><code>am.ik.yavi.constraint.ZonedDateTimeConstraint</code></td><td><code>_zonedDateTime</code></td></tr>
+</tbody>
+</table>
+<p>独自の <code>TemporalAccessor</code> 型は、<code>ChronoLocalDateConstraintBase</code>、<code>ChronoLocalDateTimeConstraintBase</code>、<code>ChronoZonedDateTimeConstraintBase</code> のいずれかを通じて <code>TemporalConstraintBase</code> を継承すると対応できます。
+Kotlin DSL には対応するプロパティのオーバーロードがあります（Kotlin サポートの節を参照してください）。</p>
+<p>次の制約は上記のすべての型に適用されます。</p>
+<pre><code class="language-java">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, &quot;date&quot;, c -&gt; c.past())
+    .build();
+</code></pre>
+<p><code>null</code> は有効な値であり、時間の検査はすべてスキップされます。</p>
+<p><code>before</code> と <code>after</code> は境界と等しい値を拒否します。境界を含めて検査するには <code>beforeOrEqual</code> と <code>afterOrEqual</code> を使います。
+引数は常にサプライヤです。</p>
+<p><code>before</code>、<code>beforeOrEqual</code>、<code>after</code>、<code>afterOrEqual</code>、<code>between</code> には、<code>boolean memoize</code> 引数を受け取るオーバーロードがあります。
+<code>memoize</code> が <code>true</code>（既定値）のとき、サプライヤは最大 1 回だけ呼ばれ、比較と違反メッセージの両方に同じ値が使われます。
+<code>false</code> のときは、使うたびにサプライヤが呼ばれるため、呼び出しごとに異なる値を返すサプライヤでは、一方の値で比較し、別の値をメッセージに報告することがあります。
+検証時に評価する必要があるサプライヤには <code>false</code> を使います。</p>
+<p><code>past</code>、<code>pastOrPresent</code>、<code>future</code>、<code>futureOrPresent</code> メソッドにも、<code>java.time.Clock</code> を受け取るオーバーロードがあります。
+これらのオーバーロードは、決定的なテストと、システムの既定のゾーン以外の時刻源に対する検証のためにあります。</p>
+<h3 id="past--pastorpresent--future--futureorpresent"><code>past()</code> / <code>pastOrPresent()</code> / <code>future()</code> / <code>futureOrPresent()</code></h3>
+<p>対象の値が過去、過去または現在、未来、現在または未来にあることを、それぞれ検査します。
+オーバーロードは、現在時刻として使う <code>Clock</code> を受け取ります。</p>
+<pre><code class="language-java">Clock clock = Clock.fixed(Instant.parse(&quot;2024-01-01T00:00:00Z&quot;), ZoneId.of(&quot;UTC&quot;));
+Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, &quot;date&quot;, c -&gt; c.past(clock))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2023, 12, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid (&quot;date&quot; must be a past date)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 2))); // Invalid (&quot;date&quot; must be a past date)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>temporal.past</code></td><td><code>&quot;{0}&quot; must be a past date</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 比較に使う現在の日付<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.pastOrPresent</code></td><td><code>&quot;{0}&quot; must be a date in the past or in the present</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 比較に使う現在の日付<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.future</code></td><td><code>&quot;{0}&quot; must be a future date</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 比較に使う現在の日付<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.futureOrPresent</code></td><td><code>&quot;{0}&quot; must be a date in the present or in the future</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 比較に使う現在の日付<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="before--beforeorequal--after--afterorequal"><code>before(...)</code> / <code>beforeOrEqual(...)</code> / <code>after(...)</code> / <code>afterOrEqual(...)</code></h3>
+<p>対象の値と、指定したサプライヤが供給する時間との関係が、前、前または等しい、後、後または等しいのいずれかであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, &quot;date&quot;, c -&gt; c.before(() -&gt; LocalDate.of(2024, 6, 1)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 5, 31))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid (&quot;date&quot; has to be before 2024-06-01)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 2))); // Invalid (&quot;date&quot; has to be before 2024-06-01)
+</code></pre>
+<p><code>beforeOrEqual</code>、<code>after</code>、<code>afterOrEqual</code> も同じように使います。</p>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>temporal.before</code></td><td><code>&quot;{0}&quot; has to be before {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 供給された境界値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.beforeOrEqual</code></td><td><code>&quot;{0}&quot; has to be before or equals to {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 供給された境界値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.after</code></td><td><code>&quot;{0}&quot; has to be after {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 供給された境界値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>temporal.afterOrEqual</code></td><td><code>&quot;{0}&quot; has to be after or equals to {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 供給された境界値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="between"><code>between(...)</code></h3>
+<p>対象の値が、指定したサプライヤが供給する時間の間にあることを検査します。
+範囲の両端は含みません。どちらかの境界と等しい値は無効です。
+<code>rangeFrom</code> が <code>rangeTo</code> より後である場合は、検証時に <code>IllegalArgumentException</code> がスローされます。</p>
+<pre><code class="language-java">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, &quot;date&quot;, c -&gt; c.between(
+            () -&gt; LocalDate.of(2024, 1, 1), () -&gt; LocalDate.of(2024, 12, 31)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 1, 1))); // Invalid (&quot;date&quot; has to be between 2024-01-01 and 2024-12-31)
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2025, 1, 1))); // Invalid (&quot;date&quot; has to be between 2024-01-01 and 2024-12-31)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>temporal.between</code></td><td><code>&quot;{0}&quot; has to be between {1} and {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 供給された範囲の開始<br>- <code>{2}</code> ... 供給された範囲の終了<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="fieldpredicate"><code>fieldPredicate(...)</code></h3>
+<p>指定した <code>java.time.temporal.TemporalField</code> の値を、指定した述語が受け入れることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Event&gt; validator = ValidatorBuilder.&lt;Event&gt; of()
+    ._localDate(Event::getDate, &quot;date&quot;, c -&gt; c.fieldPredicate(ChronoField.DAY_OF_WEEK, d -&gt; d &gt;= 1 &amp;&amp; d &lt;= 5))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 3))); // Valid
+ConstraintViolations violations = validator.validate(new Event(null)); // Valid
+ConstraintViolations violations = validator.validate(new Event(LocalDate.of(2024, 6, 1))); // Invalid (The DayOfWeek of &quot;date&quot; is invalid)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>temporal.field</code></td><td><code>The {1} of &quot;{0}&quot; is invalid</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 時間フィールド<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="boolean">Boolean</h2>
+<p><code>Boolean</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_boolean</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._boolean(/* Function from TargetClass to Boolean  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<h3 id="notnull-2"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
+    .constraint(Confirmation::isConfirmed, &quot;confirmed&quot;, c -&gt; c.notNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(null)); // Invalid (&quot;confirmed&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull-2"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
+    .constraint(Confirmation::isConfirmed, &quot;confirmed&quot;, c -&gt; c.isNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Confirmation(null)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(true)); // Invalid (&quot;confirmed&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="istrue"><code>isTrue()</code></h3>
+<p>対象の値が <code>true</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Confirmation&gt; validator = ValidatorBuilder.&lt;Confirmation&gt; of()
+    .constraint(Confirmation::isConfirmed, &quot;confirmed&quot;, c -&gt; c.isTrue())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Confirmation(true)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(null)); // Valid
+ConstraintViolations violations = validator.validate(new Confirmation(false)); // Invalid (&quot;confirmed&quot; must be true)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>boolean.isTrue</code></td><td><code>&quot;{0}&quot; must be true</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isfalse"><code>isFalse()</code></h3>
+<p>対象の値が <code>false</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Rented&gt; validator = ValidatorBuilder.&lt;Rented&gt; of()
+    .constraint(Rented::isRented, &quot;rented&quot;, c -&gt; c.isFalse())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Rented(false)); // Valid
+ConstraintViolations violations = validator.validate(new Rented(null)); // Valid
+ConstraintViolations violations = validator.validate(new Rented(true)); // Invalid (&quot;rented&quot; must be false)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>boolean.isFalse</code></td><td><code>&quot;{0}&quot; must be false</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="collection">Collection</h2>
+<p><code>Collection</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to Collection  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_collection</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._collection(/* Function from TargetClass to Collection  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<h3 id="notnull-3"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.notNull())
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Invalid (&quot;histories&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull-3"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.isNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Invalid (&quot;histories&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="notempty-1"><code>notEmpty()</code></h3>
+<p>対象の値が空でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.notEmpty())
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Invalid (&quot;histories&quot; must not be empty)
+ConstraintViolations violations = validator.validate(new Histories(List.of())); // Invalid (&quot;histories&quot; must not be empty)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.notEmpty</code></td><td><code>&quot;{0}&quot; must not be empty</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="fixedsizeint-1"><code>fixedSize(int)</code></h3>
+<p>対象の値のサイズが指定したサイズであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.fixedSize(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of &quot;histories&quot; must be 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.fixedSize</code></td><td><code>The size of &quot;{0}&quot; must be {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanint-1"><code>greaterThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより大きいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.greaterThan(1))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of &quot;histories&quot; must be greater than 1. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThan</code></td><td><code>The size of &quot;{0}&quot; must be greater than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanorequalint-1"><code>greaterThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以上であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.greaterThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History()))); // Invalid (The size of &quot;histories&quot; must be greater than or equal to 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be greater than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanint-1"><code>lessThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより小さいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.lessThan(3))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of &quot;histories&quot; must be less than 3. The given size is 3)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThan</code></td><td><code>The size of &quot;{0}&quot; must be less than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanorequalint-1"><code>lessThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以下であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.lessThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History()))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(), new History(), new History()))); // Invalid (The size of &quot;histories&quot; must be less than or equal to 2. The given size is 3)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be less than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="contains"><code>contains(...)</code></h3>
+<p>対象の値が指定した値を含むことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+		.constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.contains(new History(2)))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(3), new History(4), new History(5)))); // Invalid (&quot;histories&quot; must contain History{revision=2})
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>collection.contains</code></td><td><code>&quot;{0}&quot; must contain {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="unique"><code>unique()</code></h3>
+<p>対象の値の要素が一意であることを検査します。
+違反には、重複した要素が含まれます。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.unique())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(1)))); // Invalid (&quot;histories&quot; must be unique. [History{revision=1}] is/are duplicated.)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>collection.unique</code></td><td><code>&quot;{0}&quot; must be unique. {1} is/are duplicated.</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 重複した要素<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="containsallcollection"><code>containsAll(Collection)</code></h3>
+<p>対象の値が指定した要素をすべて含むことを検査します。
+違反には、不足している要素が含まれます。
+<code>Set</code> と <code>Set</code> 以外のコレクションは同じ意味で扱われます。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .constraint(Histories::asList, &quot;histories&quot;, c -&gt; c.containsAll(List.of(new History(1), new History(2))))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1), new History(2), new History(3)))); // Valid
+ConstraintViolations violations = validator.validate(new Histories(null)); // Valid
+ConstraintViolations violations = validator.validate(new Histories(List.of(new History(1)))); // Invalid (&quot;histories&quot; must be have of all of the following values: [History{revision=1}, History{revision=2}], missing values: [History{revision=2}])
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>collection.containsAll</code></td><td><code>&quot;{0}&quot; must be have of all of the following values: {1}, missing values: {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 必須の要素<br>- <code>{2}</code> ... 不足している要素<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="foreach--foreachifpresent"><code>forEach(...)</code> / <code>forEachIfPresent(...)</code></h3>
+<p><code>forEach</code> は、コレクションのプロパティの各要素に要素のバリデータを適用します。<code>forEachIfPresent</code> も同じですが、<code>null</code> のコレクションを有効として扱います。
+コレクション内の <code>null</code> 要素は、プロパティ名に要素のインデックスを付けて（たとえば <code>histories[1]</code>）、<code>object.notNull</code> メッセージで報告されます。</p>
+<pre><code class="language-java">Validator&lt;Histories&gt; validator = ValidatorBuilder.&lt;Histories&gt; of()
+    .forEach(Histories::asList, &quot;histories&quot;,
+            ValidatorBuilder.&lt;History&gt; of()
+                .constraint(History::getRevision, &quot;revision&quot;, c -&gt; c.notNull())
+                .build())
+    .build();
+
+ConstraintViolations violations = validator.validate(new Histories(Arrays.asList(new History(1), null))); // Invalid (&quot;histories[1]&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... インデックス付きのフィールド名</td></tr>
+</tbody>
+</table>
+<h2 id="map">Map</h2>
+<p><code>Map</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to Map  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_map</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._map(/* Function from TargetClass to Map  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<h3 id="notnull-4"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.notNull())
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Invalid (&quot;codeMap&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull-4"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+    .constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.isNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Invalid (&quot;codeMap&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="notempty-2"><code>notEmpty()</code></h3>
+<p>対象の値が空でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.notEmpty())
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Invalid (&quot;codeMap&quot; must not be empty)
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // Invalid (&quot;codeMap&quot; must not be empty)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.notEmpty</code></td><td><code>&quot;{0}&quot; must not be empty</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="fixedsizeint-2"><code>fixedSize(int)</code></h3>
+<p>対象の値のサイズが指定したサイズであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.fixedSize(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of())); // Invalid (The size of &quot;codeMap&quot; must be 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.fixedSize</code></td><td><code>The size of &quot;{0}&quot; must be {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanint-2"><code>greaterThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより大きいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.greaterThan(1))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;))); // Invalid (The size of &quot;codeMap&quot; must be greater than 1. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThan</code></td><td><code>The size of &quot;{0}&quot; must be greater than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="greaterthanorequalint-2"><code>greaterThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以上であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.greaterThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;))); // Invalid (The size of &quot;codeMap&quot; must be greater than or equal to 2. The given size is 1)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.greaterThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be greater than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanint-2"><code>lessThan(int)</code></h3>
+<p>対象の値のサイズが指定したサイズより小さいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.lessThan(3))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;, &quot;c&quot;, &quot;C&quot;))); // Invalid (The size of &quot;histories&quot; must be less than 3. The given size is 3)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThan</code></td><td><code>The size of &quot;{0}&quot; must be less than {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="lessthanorequalint-2"><code>lessThanOrEqual(int)</code></h3>
+<p>対象の値のサイズが指定したサイズ以下であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.lessThanOrEqual(2))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;, &quot;c&quot;, &quot;C&quot;))); // Invalid (The size of &quot;histories&quot; must be less than or equal to 2. The given size is 3)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>container.lessThanOrEqual</code></td><td><code>The size of &quot;{0}&quot; must be less than or equal to {1}. The given size is {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したサイズ<br>- <code>{2}</code> ... 与えられたサイズ<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="containskey"><code>containsKey(...)</code></h3>
+<p>対象の値が指定したキーを含むことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.containsKey(&quot;b&quot;))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;c&quot;, &quot;C&quot;))); // Invalid (&quot;codeMap&quot; must contain key b)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>map.containsKey</code></td><td><code>&quot;{0}&quot; must contain key {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したキー<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="containsvalue"><code>containsValue(...)</code></h3>
+<p>対象の値が指定した値を含むことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CodeMap&gt; validator = ValidatorBuilder.&lt;CodeMap&gt; of()
+		.constraint(CodeMap::asMap, &quot;codeMap&quot;, c -&gt; c.containsValue(&quot;B&quot;))
+		.build();
+
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;a&quot;, &quot;A&quot;, &quot;b&quot;, &quot;B&quot;))); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(null)); // Valid
+ConstraintViolations violations = validator.validate(new CodeMap(Map.of(&quot;c&quot;, &quot;C&quot;))); // Invalid (&quot;codeMap&quot; must contain value B)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>map.containsValue</code></td><td><code>&quot;{0}&quot; must contain value {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="object">Object</h2>
+<p>任意の <code>Object</code> に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraint(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>型推論が曖昧になる場合は、<code>constraint</code> の代わりに <code>_object</code> を明示的に使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._object(/* Function from TargetClass to Object  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>対象のクラス自体に制約を適用する場合（<a href="using-yavi.html#cross-field-validation">クロスフィールド検証</a>など）は、次のように <code>constraintOnTarget</code> を使えます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    .constraintOnTarget(/* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>これは次の記述と同じです。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._object(Function.identity(), /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<h3 id="notnull-5"><code>notNull()</code></h3>
+<p>対象の値が <code>null</code> でないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
+    .constraint(CreatedAt::asInstant, &quot;createdAt&quot;, c -&gt; c.notNull())
+    .build();
+
+ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Valid
+ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Invalid (&quot;createdAt&quot; must not be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.notNull</code></td><td><code>&quot;{0}&quot; must not be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="isnull-5"><code>isNull()</code></h3>
+<p>対象の値が <code>null</code> であることを検査します。</p>
+<pre><code class="language-java">Validator&lt;CreatedAt&gt; validator = ValidatorBuilder.&lt;CreatedAt&gt; of()
+    .constraint(CreatedAt::asInstant, &quot;createdAt&quot;, c -&gt; c.isNull())
+    .build();
+
+
+ConstraintViolations violations = validator.validate(new CreatedAt(null)); // Valid
+ConstraintViolations violations = validator.validate(new CreatedAt(Instant.now())); // Invalid (&quot;createdAt&quot; must be null)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.isNull</code></td><td><code>&quot;{0}&quot; must be null</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="equaltoobject"><code>equalTo(Object)</code></h3>
+<p>対象の値が指定した値に等しいことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, &quot;value&quot;, c -&gt; c.equalTo(&quot;expected&quot;))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box(&quot;expected&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box(&quot;other&quot;)); // Invalid (&quot;value&quot; must be equal to expected)
+</code></pre>
+<h3 id="oneofcollection"><code>oneOf(Collection)</code></h3>
+<p>対象の値が指定した値のいずれかであることを検査します。</p>
+<pre><code class="language-java">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, &quot;value&quot;, c -&gt; c.oneOf(List.of(&quot;a&quot;, &quot;b&quot;)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box(&quot;a&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box(&quot;c&quot;)); // Invalid (&quot;value&quot; must be one of the following values: [a, b])
+</code></pre>
+<h3 id="notoneofcollection"><code>notOneOf(Collection)</code></h3>
+<p>対象の値が指定した値のいずれでもないことを検査します。</p>
+<pre><code class="language-java">Validator&lt;Box&gt; validator = ValidatorBuilder.&lt;Box&gt; of()
+    ._object(Box::getValue, &quot;value&quot;, c -&gt; c.notOneOf(List.of(&quot;a&quot;, &quot;b&quot;)))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Box(&quot;c&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Box(null)); // Valid
+ConstraintViolations violations = validator.validate(new Box(&quot;a&quot;)); // Invalid (&quot;value&quot; must not be one of the following values: [a, b])
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.equalTo</code></td><td><code>&quot;{0}&quot; must be equal to {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>object.oneOf</code></td><td><code>&quot;{0}&quot; must be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 許可される値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>object.notOneOf</code></td><td><code>&quot;{0}&quot; must not be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 禁止される値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h3 id="password-1"><code>password()</code></h3>
+<p>対象の値が指定した独自のパスワードポリシーを満たすことを検査します（クロスフィールド検査など）。</p>
+<pre><code class="language-java">PasswordPolicy&lt;Account&gt; passwordPolicy = PasswordPolicy.of(&quot;DoNotIncludeUsername&quot;,
+		account -&gt; {
+			String username = account.getUsername();
+			String password = account.getPassword();
+			if (username == null || password == null) {
+				return true;
+			}
+			return !password.toUpperCase().contains(username.toUpperCase());
+		});
+Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
+		.constraintOnTarget(&quot;password&quot;, c -&gt; c.password(policy -&gt; policy
+				.required(passwordPolicy)
+				.build()))
+		.build();
+
+ConstraintViolations violations = validator.validate(new Account(&quot;foo&quot;, &quot;Bar1234&quot;)); // Valid
+ConstraintViolations violations = validator.validate(new Account(null, null)); // Valid
+ConstraintViolations violations = validator.validate(new Account(&quot;foo&quot;, &quot;Foo1234&quot;)); // Invalid (&quot;password&quot; must meet DoNotIncludeUsername policy)
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>password.required</code></td><td><code>&quot;{0}&quot; must meet {1} policy</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定したポリシー名<br>- <code>{2}</code> ... 与えられた値</td></tr>
+<tr><td><code>password.optional</code></td><td><code>&quot;{0}&quot; must meet at least {1} policies from {2}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 最低要件<br>- <code>{2}</code> ... 指定したポリシー名<br>- <code>{3}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="enum">Enum</h2>
+<p>enum に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;Account&gt; validator = ValidatorBuilder.&lt;Account&gt; of()
+    ._enum(Account::getStatus, &quot;status&quot;, c -&gt; c.oneOf(Status.ACTIVE))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Account(Status.ACTIVE)); // Valid
+ConstraintViolations violations = validator.validate(new Account(null)); // Valid
+ConstraintViolations violations = validator.validate(new Account(Status.INACTIVE)); // Invalid (&quot;status&quot; must be one of the following values: [ACTIVE])
+</code></pre>
+<p><code>_enum</code> は <code>constraint(ToEnum, String, Function)</code> の別名です。
+同じ <code>_enum</code> メソッドは、enum の引数を検証するために <code>ArgumentsValidatorBuilder</code> と <code>YaviArguments</code> でも使えます。</p>
+<p><code>EnumConstraint#oneOf(E...)</code> は、値が指定した enum 定数のいずれかであることを要求します。
+引数のリストが空の場合は <code>IllegalArgumentException</code> で拒否されます。
+<code>notNull()</code> を追加しない限り、<code>null</code> は有効な値です。
+違反には <code>object.oneOf</code> メッセージキーが使われます。</p>
+<p>単一の enum の値は、次のように <code>EnumValidatorBuilder</code> と <code>EnumValidator</code> で検証できます。</p>
+<pre><code class="language-java">EnumValidator&lt;Status, Status&gt; validator = EnumValidatorBuilder.&lt;Status&gt; of(&quot;status&quot;,
+        c -&gt; c.oneOf(Status.ACTIVE)).build();
+
+Validated&lt;Status&gt; result = validator.validate(Status.INACTIVE); // Invalid (&quot;status&quot; must be one of the following values: [ACTIVE])
+</code></pre>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>object.oneOf</code></td><td><code>&quot;{0}&quot; must be one of the following values: {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 許可される値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+<h2 id="array">Array</h2>
+<p>配列に制約を適用するには、次のように書きます。</p>
+<pre><code class="language-java">Validator&lt;TargetClass&gt; validator = ValidatorBuilder.&lt;TargetClass&gt; of()
+    ._objectArray(/* Function from TargetClass to an object array  */, /* Field Name */, /* Constraints */)
+    .build();
+</code></pre>
+<p>次の制約とビルダーのショートカットが使えます。</p>
+<table>
+<thead>
+<tr><th>配列の型</th><th>ビルダーのショートカット</th></tr>
+</thead>
+<tbody>
+<tr><td><code>E[]</code> (<code>ObjectArrayConstraint</code>)</td><td><code>_objectArray</code></td></tr>
+<tr><td><code>boolean[]</code> (<code>BooleanArrayConstraint</code>)</td><td><code>_booleanArray</code></td></tr>
+<tr><td><code>byte[]</code> (<code>ByteArrayConstraint</code>)</td><td><code>_byteArray</code></td></tr>
+<tr><td><code>char[]</code> (<code>CharArrayConstraint</code>)</td><td><code>_charArray</code></td></tr>
+<tr><td><code>short[]</code> (<code>ShortArrayConstraint</code>)</td><td><code>_shortArray</code></td></tr>
+<tr><td><code>int[]</code> (<code>IntArrayConstraint</code>)</td><td><code>_intArray</code></td></tr>
+<tr><td><code>long[]</code> (<code>LongArrayConstraint</code>)</td><td><code>_longArray</code></td></tr>
+<tr><td><code>float[]</code> (<code>FloatArrayConstraint</code>)</td><td><code>_floatArray</code></td></tr>
+<tr><td><code>double[]</code> (<code>DoubleArrayConstraint</code>)</td><td><code>_doubleArray</code></td></tr>
+</tbody>
+</table>
+<p><code>am.ik.yavi.constraint.array</code> の制約は <code>notNull</code>、<code>isNull</code>、<code>notEmpty</code>、<code>fixedSize</code>、<code>greaterThan</code>、<code>greaterThanOrEqual</code>、<code>lessThan</code>、<code>lessThanOrEqual</code>、<code>contains</code> を提供します。
+<code>null</code> の配列は有効で、<code>notEmpty()</code> を除いて検査はスキップされます。</p>
+<pre><code class="language-java">Validator&lt;Values&gt; validator = ValidatorBuilder.&lt;Values&gt; of()
+    ._intArray(Values::getNumbers, &quot;numbers&quot;, c -&gt; c.contains(3).fixedSize(3))
+    .build();
+
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2, 3 })); // Valid
+ConstraintViolations violations = validator.validate(new Values(null)); // Valid
+ConstraintViolations violations = validator.validate(new Values(new int[] { 1, 2 })); // Invalid (&quot;numbers&quot; must contain 3, The size of &quot;numbers&quot; must be 3. The given size is 2)
+</code></pre>
+<p>サイズと null の検査は、Collection の節で説明した <code>object.notNull</code>、<code>object.isNull</code>、<code>container.*</code> のメッセージキーを報告します。
+<code>contains</code> は <code>array.contains</code> を報告します。</p>
+<table>
+<thead>
+<tr><th>メッセージキー</th><th>既定のメッセージ形式</th><th>引数</th></tr>
+</thead>
+<tbody>
+<tr><td><code>array.contains</code></td><td><code>&quot;{0}&quot; must contain {1}</code></td><td>- <code>{0}</code> ... フィールド名<br>- <code>{1}</code> ... 指定した値<br>- <code>{2}</code> ... 与えられた値</td></tr>
+</tbody>
+</table>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="combining-validators.html"><span class="dir">&larr; Previous</span><span class="label">バリデータの組み合わせ</span></a>
+<a class="next" href="annotation-processor.html"><span class="dir">Next &rarr;</span><span class="label">アノテーションプロセッサ</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#string">String</a></li>
+<li class="toc-h3"><a href="#notnull"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#notempty"><code>notEmpty()</code></a></li>
+<li class="toc-h3"><a href="#notblank"><code>notBlank()</code></a></li>
+<li class="toc-h3"><a href="#fixedsizeint"><code>fixedSize(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanint"><code>greaterThan(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanorequalint"><code>greaterThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanint"><code>lessThan(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanorequalint"><code>lessThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#containscharsequence"><code>contains(CharSequence)</code></a></li>
+<li class="toc-h3"><a href="#startswithcharsequence"><code>startsWith(CharSequence)</code></a></li>
+<li class="toc-h3"><a href="#endswithcharsequence"><code>endsWith(CharSequence)</code></a></li>
+<li class="toc-h3"><a href="#patternstring"><code>pattern(String)</code></a></li>
+<li class="toc-h3"><a href="#patternpattern--patternsupplierpattern"><code>pattern(Pattern)</code> / <code>pattern(Supplier&lt;Pattern&gt;)</code></a></li>
+<li class="toc-h3"><a href="#email"><code>email()</code></a></li>
+<li class="toc-h3"><a href="#uuid"><code>uuid()</code></a></li>
+<li class="toc-h3"><a href="#password"><code>password(...)</code></a></li>
+<li class="toc-h3"><a href="#ipv4"><code>ipv4()</code></a></li>
+<li class="toc-h3"><a href="#ipv6"><code>ipv6()</code></a></li>
+<li class="toc-h3"><a href="#url"><code>url()</code></a></li>
+<li class="toc-h3"><a href="#url-1"><code>url(...)</code></a></li>
+<li class="toc-h3"><a href="#luhn"><code>luhn()</code></a></li>
+<li class="toc-h3"><a href="#isbyte"><code>isByte()</code></a></li>
+<li class="toc-h3"><a href="#isshort"><code>isShort()</code></a></li>
+<li class="toc-h3"><a href="#isinteger"><code>isInteger()</code></a></li>
+<li class="toc-h3"><a href="#islong"><code>isLong()</code></a></li>
+<li class="toc-h3"><a href="#isfloat"><code>isFloat()</code></a></li>
+<li class="toc-h3"><a href="#isdouble"><code>isDouble()</code></a></li>
+<li class="toc-h3"><a href="#isbiginteger"><code>isBigInteger()</code></a></li>
+<li class="toc-h3"><a href="#isbigdecimal"><code>isBigDecimal()</code></a></li>
+<li class="toc-h3"><a href="#isolocaldate--localdatestring-pattern"><code>isoLocalDate()</code> / <code>localDate(String pattern)</code></a></li>
+<li class="toc-h3"><a href="#codepoints"><code>codePoints(...)</code></a></li>
+<li class="toc-h3"><a href="#advanced-character-length-check">文字数の高度な検査</a></li>
+<li class="toc-h3"><a href="#variant"><code>variant(...)</code></a></li>
+<li class="toc-h3"><a href="#asbytearray"><code>asByteArray()</code></a></li>
+<li class="toc-h2"><a href="#integershortlongcharacterbytefloatlongbigintegerbigdecimal">Integer/Short/Long/Character/Byte/Float/Long/BigInteger/BigDecimal</a></li>
+<li class="toc-h3"><a href="#notnull-1"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull-1"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#greaterthan"><code>greaterThan(...)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanorequal"><code>greaterThanOrEqual(...)</code></a></li>
+<li class="toc-h3"><a href="#lessthan"><code>lessThan(...)</code></a></li>
+<li class="toc-h3"><a href="#lessthanorequal"><code>lessThanOrEqual(...)</code></a></li>
+<li class="toc-h3"><a href="#positive--positiveorzero--negative--negativeorzero"><code>positive()</code> / <code>positiveOrZero()</code> / <code>negative()</code> / <code>negativeOrZero()</code></a></li>
+<li class="toc-h2"><a href="#temporal">Temporal</a></li>
+<li class="toc-h3"><a href="#past--pastorpresent--future--futureorpresent"><code>past()</code> / <code>pastOrPresent()</code> / <code>future()</code> / <code>futureOrPresent()</code></a></li>
+<li class="toc-h3"><a href="#before--beforeorequal--after--afterorequal"><code>before(...)</code> / <code>beforeOrEqual(...)</code> / <code>after(...)</code> / <code>afterOrEqual(...)</code></a></li>
+<li class="toc-h3"><a href="#between"><code>between(...)</code></a></li>
+<li class="toc-h3"><a href="#fieldpredicate"><code>fieldPredicate(...)</code></a></li>
+<li class="toc-h2"><a href="#boolean">Boolean</a></li>
+<li class="toc-h3"><a href="#notnull-2"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull-2"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#istrue"><code>isTrue()</code></a></li>
+<li class="toc-h3"><a href="#isfalse"><code>isFalse()</code></a></li>
+<li class="toc-h2"><a href="#collection">Collection</a></li>
+<li class="toc-h3"><a href="#notnull-3"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull-3"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#notempty-1"><code>notEmpty()</code></a></li>
+<li class="toc-h3"><a href="#fixedsizeint-1"><code>fixedSize(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanint-1"><code>greaterThan(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanorequalint-1"><code>greaterThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanint-1"><code>lessThan(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanorequalint-1"><code>lessThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#contains"><code>contains(...)</code></a></li>
+<li class="toc-h3"><a href="#unique"><code>unique()</code></a></li>
+<li class="toc-h3"><a href="#containsallcollection"><code>containsAll(Collection)</code></a></li>
+<li class="toc-h3"><a href="#foreach--foreachifpresent"><code>forEach(...)</code> / <code>forEachIfPresent(...)</code></a></li>
+<li class="toc-h2"><a href="#map">Map</a></li>
+<li class="toc-h3"><a href="#notnull-4"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull-4"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#notempty-2"><code>notEmpty()</code></a></li>
+<li class="toc-h3"><a href="#fixedsizeint-2"><code>fixedSize(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanint-2"><code>greaterThan(int)</code></a></li>
+<li class="toc-h3"><a href="#greaterthanorequalint-2"><code>greaterThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanint-2"><code>lessThan(int)</code></a></li>
+<li class="toc-h3"><a href="#lessthanorequalint-2"><code>lessThanOrEqual(int)</code></a></li>
+<li class="toc-h3"><a href="#containskey"><code>containsKey(...)</code></a></li>
+<li class="toc-h3"><a href="#containsvalue"><code>containsValue(...)</code></a></li>
+<li class="toc-h2"><a href="#object">Object</a></li>
+<li class="toc-h3"><a href="#notnull-5"><code>notNull()</code></a></li>
+<li class="toc-h3"><a href="#isnull-5"><code>isNull()</code></a></li>
+<li class="toc-h3"><a href="#equaltoobject"><code>equalTo(Object)</code></a></li>
+<li class="toc-h3"><a href="#oneofcollection"><code>oneOf(Collection)</code></a></li>
+<li class="toc-h3"><a href="#notoneofcollection"><code>notOneOf(Collection)</code></a></li>
+<li class="toc-h3"><a href="#password-1"><code>password()</code></a></li>
+<li class="toc-h2"><a href="#enum">Enum</a></li>
+<li class="toc-h2"><a href="#array">Array</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

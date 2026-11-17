@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はじめる · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/getting-started.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link active" href="getting-started.html" aria-current="page">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/getting-started.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="getting-started">はじめる</h1>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>この内容は <a href="https://hibernate.org/validator/documentation/getting-started/">https://hibernate.org/validator/documentation/getting-started/</a> をもとにしています。</p>
+</blockquote>
+<p>YAVI へようこそ。</p>
+<p>以降では、YAVI をアプリケーションに組み込むための最初の手順を説明します。</p>
+<h2 id="prerequisites">前提</h2>
+<ul>
+<li><a href="http://www.oracle.com/technetwork/java/index.html">Java Runtime</a> 8 以上</li>
+<li><a href="http://maven.apache.org/">Apache Maven</a></li>
+</ul>
+<h2 id="project-set-up">プロジェクトの設定</h2>
+<p>Maven プロジェクトで YAVI を使うには、<code>pom.xml</code> に次の依存関係を追加します。</p>
+<pre><code class="language-xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+    &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+    &lt;version&gt;0.17.3&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>このチュートリアルでは JUnit 5 と AssertJ を使います。
+必要に応じて次の依存関係を追加します。</p>
+<pre><code class="language-xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+    &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
+    &lt;version&gt;5.14.4&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.assertj&lt;/groupId&gt;
+    &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
+    &lt;version&gt;3.27.7&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="applying-constraints">制約の適用</h2>
+<p>制約を適用する方法を例で見ていきます。</p>
+<p><code>src/main/java/com/example/Car.java</code> を作成し、次のコードを書きます。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.Validator;
+
+public class Car {
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final int seatCount;
+
+    public static final Validator&lt;Car&gt; validator = ValidatorBuilder.&lt;Car&gt;of()
+            .constraint(Car::getManufacturer, &quot;manufacturer&quot;, c -&gt; c.notNull())
+            .constraint(Car::getLicensePlate, &quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::getSeatCount, &quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+            .build();
+
+    public Car(String manufacturer, String licencePlate, int seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licencePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public int getSeatCount() {
+        return seatCount;
+    }
+}
+</code></pre>
+<p><code>ValidatorBuilder#constraint</code> は、<code>Car</code> インスタンスの getter の戻り値に適用する制約を宣言するために使います。</p>
+<ul>
+<li><code>manufacturer</code> は null であってはなりません</li>
+<li><code>licensePlate</code> は null であってはならず、2 文字以上 14 文字以下でなければなりません</li>
+<li><code>seatCount</code> は 2 以上でなければなりません</li>
+</ul>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p><a href="https://github.com/making/gs-yavi">完全なソースコード</a> は GitHub で公開しています。</p>
+</blockquote>
+<h2 id="validating-constraints">制約の検証</h2>
+<p>これらの制約を検証するには、<code>Validator</code> インスタンスを使います。
+簡単な単体テストで確かめます。</p>
+<p><code>src/test/java/com/example/CarTest.java</code> を作成し、次のコードを書きます。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.core.ConstraintViolations;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CarTest {
+
+    @Test
+    void manufacturerIsNull() {
+        final Car car = new Car(null, &quot;DD-AB-123&quot;, 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;\&quot;manufacturer\&quot; must not be null&quot;);
+    }
+
+    @Test
+    void licensePlateTooShort() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;D&quot;, 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;The size of \&quot;licensePlate\&quot; must be greater than or equal to 2. The given size is 1&quot;);
+    }
+
+    @Test
+    void seatCountTooLow() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;DD-AB-123&quot;, 1);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;\&quot;seatCount\&quot; must be greater than or equal to 2&quot;);
+    }
+
+    @Test
+    void carIsValid() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;DD-AB-123&quot;, 2);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isTrue();
+        assertThat(violations).hasSize(0);
+    }
+}
+</code></pre>
+<p><code>Validator</code> インスタンスはスレッドセーフであり、何度でも再利用できます。</p>
+<p><code>validate()</code> メソッドは <code>ConstraintViolations</code> インスタンスを返すので、これを反復すればどの検証エラーが起きたかがわかります。
+最初の 3 つのテストメソッドは、想定される制約違反を示しています。</p>
+<ul>
+<li><code>manufacturerIsNull()</code> では <code>manufacturer</code> の <code>notNull()</code> 制約に違反します</li>
+<li><code>licensePlateTooShort()</code> では <code>licensePlate</code> の <code>greaterThanOrEqual(int)</code> 制約に違反します</li>
+<li><code>seatCountTooLow()</code> では <code>seatCount</code> の <code>greaterThanOrEqual(int)</code> 制約に違反します</li>
+</ul>
+<p>オブジェクトが検証に成功した場合、<code>carIsValid()</code> の例のように、<code>validate()</code> は空の <code>ConstraintViolations</code> を返します。
+検証が成功したかどうかは <code>ConstraintViolations.isValid</code> メソッドでも確認できます。</p>
+<h2 id="running-the-example">例を実行する</h2>
+<p>次のプログラムは完全なコンパイル単位です。同じ検証を定義し、すべての違反を出力します。ランタイムが利用可能になれば、Run を押してブラウザで実行できます。</p>
+<div class="code-cell" data-lang="java"><div class="cell-toolbar"><button class="run" type="button">Run</button><span class="cell-status"></span></div><textarea class="cell-src" spellcheck="false" wrap="off" rows="20" aria-label="Editable Java source">import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Car(String manufacturer, String licensePlate, int seatCount) {
+    }
+
+    static final Validator&lt;Car&gt; validator = ValidatorBuilder.&lt;Car&gt;of()
+            .constraint(Car::manufacturer, &quot;manufacturer&quot;, c -&gt; c.notNull())
+            .constraint(Car::licensePlate, &quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::seatCount, &quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+            .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator.validate(new Car(null, &quot;D&quot;, 1));
+        violations.forEach(v -&gt; System.out.println(v.message()));
+    }
+}</textarea><pre class="cell-out" hidden></pre></div>
+<h2 id="the-always-valid-model">Always Valid モデル</h2>
+<p>上の例では <code>Car</code> インスタンスを生成してから検証するため、不正な <code>Car</code> が一時的に存在し得ます。
+YAVI は、コンストラクタの実行前に引数を検証し、すべての引数が有効なときだけ結果を返すことで、不正なオブジェクトを生成できなくすることもできます。</p>
+<p>コンストラクタを private にし、<code>Validated&lt;Car&gt;</code> を返す static ファクトリメソッドを公開します。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public final class Car {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string(&quot;manufacturer&quot;, c -&gt; c.notNull())
+        ._string(&quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer(&quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final Integer seatCount;
+
+    public static Validated&lt;Car&gt; of(String manufacturer, String licensePlate, Integer seatCount) {
+        return validator.validate(manufacturer, licensePlate, seatCount);
+    }
+
+    private Car(String manufacturer, String licensePlate, Integer seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licensePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String manufacturer() {
+        return manufacturer;
+    }
+
+    public String licensePlate() {
+        return licensePlate;
+    }
+
+    public Integer seatCount() {
+        return seatCount;
+    }
+}
+</code></pre>
+<p><code>Car.of(...)</code> は引数を検証し、結果を <code>Validated</code> に包んで返します。
+コンストラクタが private なので、<code>Car</code> は検証結果からしか取得できません。
+検証に失敗した場合は、<code>Validated#errors()</code> で違反を調べます。</p>
+<pre><code class="language-java">Validated&lt;Car&gt; validated = Car.of(null, &quot;DD-AB-123&quot;, 4);
+if (!validated.isValid()) {
+    ConstraintViolations violations = validated.errors();
+    // ...
+}
+</code></pre>
+<p>record を使い、コンストラクタの中で検証したい場合は、<code>lazy()</code> を使い、コンパクトコンストラクタから <code>validated(...)</code> を呼びます。</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string(&quot;manufacturer&quot;, c -&gt; c.notNull())
+        ._string(&quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer(&quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    public Car {
+        validator.lazy().validated(manufacturer, licensePlate, seatCount);
+    }
+}
+</code></pre>
+<p><code>lazy()</code> は、マッパーを呼ぶ代わりに <code>Supplier</code> を生成するバリデータを返すので、<code>Car::new</code> を再び呼ばずに検証が実行されます。
+<code>lazy()</code> を使わない場合、コンストラクタが実行中にバリデータが <code>Car</code> を生成しようとして再帰し、<code>StackOverflowError</code> になるまで続きます。</p>
+<p>不正な引数があると、コンパクトコンストラクタは <code>ConstraintViolationsException</code> を投げます。
+その <code>violations()</code> メソッドが違反を返します。</p>
+<pre><code class="language-java">assertThatThrownBy(() -&gt; new Car(null, &quot;DD-AB-123&quot;, 4))
+    .isInstanceOf(ConstraintViolationsException.class)
+    .satisfies(e -&gt; {
+        ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+        assertThat(violations).hasSize(1);
+    });
+</code></pre>
+<p><code>Yavi.arguments()</code> ビルダーと、引数バリデータを定義する他の方法については <a href="validating-arguments.html">引数の検証</a> を参照してください。</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="introduction.html"><span class="dir">&larr; Previous</span><span class="label">はじめに</span></a>
+<a class="next" href="using-yavi.html"><span class="dir">Next &rarr;</span><span class="label">YAVI の使い方</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#prerequisites">前提</a></li>
+<li class="toc-h2"><a href="#project-set-up">プロジェクトの設定</a></li>
+<li class="toc-h2"><a href="#applying-constraints">制約の適用</a></li>
+<li class="toc-h2"><a href="#validating-constraints">制約の検証</a></li>
+<li class="toc-h2"><a href="#running-the-example">例を実行する</a></li>
+<li class="toc-h2"><a href="#the-always-valid-model">Always Valid モデル</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

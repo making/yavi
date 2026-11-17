@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バリデータの組み合わせ · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/combining-validators.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link active" href="combining-validators.html" aria-current="page">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/combining-validators.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="combining-validators">バリデータの組み合わせ</h1>
+<p>これまでに見てきた <code>ApplicativeValidator&lt;T&gt;</code> と <code>Arguments1Validator&lt;S, T&gt;</code> は <code>ValueValidator&lt;S, T&gt;</code> を継承しています。
+(<code>T</code> は検証対象オブジェクトの型、<code>S</code> は対象オブジェクトを生成するソースオブジェクトの型です。)</p>
+<p><code>ApplicativeValidator&lt;T&gt;</code> は <code>ValueValidator&lt;T, T&gt;</code> です。</p>
+<p>複数の <code>ValueValidator</code> を組み合わせて、より大きなオブジェクトを検証できます。</p>
+<p><code>ArgumentsValidators#split</code> と <code>ArgumentsValidators#combine</code> は 0.10.0 から最大 16 個の引数をサポートします。
+<code>apply</code> メソッドはそれに応じて <code>Function1</code> から <code>Function16</code> を受け取ります。</p>
+<h2 id="splitting-a-validator-for-an-object-into-small-pieces">オブジェクトのバリデータを小さな部品に分割する</h2>
+<p>大きなオブジェクトを生成するコンストラクタやファクトリメソッドの引数に対するバリデータは、<code>split</code> メソッドを使って小さなバリデータに分割し、それらを組み合わせられます。</p>
+<p>例を見てみましょう。</p>
+<p>コンストラクタ <code>Person(String, String, Integer)</code> に対する Validator は <code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code> です。
+これは 2 つの <code>StringValidator&lt;String&gt;</code> と 1 つの <code>IntegerValidator&lt;Integer&gt;</code> に分割したうえで組み合わせられます。</p>
+<p>次のように定義できます:</p>
+<pre><code class="language-java">public class Person {
+    public Person(String name, String email, Integer age) {
+        // ...
+    }
+}
+
+StringValidator&lt;String&gt; nameValidator = /* see examples above */;
+StringValidator&lt;String&gt; emailValidator = /* see examples above */;
+IntegerValidator&lt;Integer&gt; ageValidator = /* see examples above */;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);
+</code></pre>
+<p>値オブジェクトに対する Validator についても同様です。</p>
+<pre><code class="language-java">public class Person {
+    public Person(Name name, Email email, Age age) {
+        // ...
+    }
+}
+
+StringValidator&lt;Name&gt; nameValidator = /* see examples above */;
+StringValidator&lt;Email&gt; emailValidator = /* see examples above */;
+IntegerValidator&lt;Age&gt; ageValidator = /* see examples above */;
+
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = ArgumentsValidators
+    .split(nameValidator, emailValidator, ageValidator)
+    .apply(Person::new);
+// or
+Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = nameValidator
+    .split(emailValidator)
+    .split(ageValidator)
+    .apply(Person::new);
+</code></pre>
+<p>生成した Validator は次のように使えます:</p>
+<pre><code class="language-java">Validated&lt;Person&gt; personValidated = Person.validator.validate(&quot;Jone Doe&quot;, &quot;jdoe@example.com&quot;, 30);
+</code></pre>
+<p><code>ArgumentsValidators#split</code> の引数は <code>Arguments1Validator</code> ではなく <code>ValueValidator</code> であるため、次のように <code>ApplicativeValidator</code> を組み合わせることもできます:</p>
+<pre><code class="language-java">ApplicativeValidator&lt;Email&gt; emailValidator = /* see examples above */;
+ApplicativeValidator&lt;PhoneNumber&gt; phoneNumberValidator = /* see examples above */;
+
+Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
+    .split(emailValidator, phoneNumberValidator)
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email(&quot;yavi@example.com&quot;), new PhoneNumber(&quot;090-123-4567&quot;));
+</code></pre>
+<h2 id="chaining-and-mapping-value-validators">値バリデータの連鎖とマッピング</h2>
+<p><code>ValueValidator#andThen(ValueValidator)</code> は、あるバリデータが生成した値を次のバリデータに適用します。
+<code>ValueValidator#map(Function)</code> は、さらなる検証を行わずに検証済みの値をマッピングします。
+<code>andThen(Function)</code> は 0.17.0 から非推奨であり、<code>map(Function)</code> と等価です。</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+ValueValidator&lt;String, String&gt; emailValue = emailValidator.map(Email::value);
+ValueValidator&lt;String, String&gt; checked = emailValidator
+    .andThen(ValueValidator.&lt;Email&gt; passThrough().map(Email::value));
+</code></pre>
+<h2 id="validating-every-element-of-an-iterable">イテラブルのすべての要素を検証する</h2>
+<p><code>ArgumentsValidators#sequenceN</code> は、与えられたすべてのバリデータを同じ引数に適用し、検証済みの値を <code>List</code> に収集します。
+<code>ArgumentsValidators#traverseN</code> は、値のイテラブルと、各値に対するバリデータを生成する関数からバリデータを構築します。
+どちらも 0.10.0 から 1 から 16 個の引数で利用できます。</p>
+<pre><code class="language-java">Arguments1Validator&lt;String, Email&gt; emailValidator = /* see examples above */;
+Arguments1Validator&lt;String, Email&gt; adminEmailValidator = /* see examples above */;
+Arguments1Validator&lt;String, List&lt;Email&gt;&gt; emailsValidator = ArgumentsValidators
+    .sequence1(List.of(emailValidator, adminEmailValidator));
+
+Validated&lt;List&lt;Email&gt;&gt; emails = emailsValidator.validate(&quot;yavi@example.com&quot;);
+</code></pre>
+<p>引数バリデータの構築については <a href="validating-arguments.html">引数のバリデーション</a> を参照してください。</p>
+<h2 id="validating-the-source-object-before-creating-the-target-object">対象オブジェクトを生成する前のソースオブジェクトの検証</h2>
+<p>Web アプリケーションでは、<code>Map</code>、フォームオブジェクト、<code>HttpServletRequest</code> から値を取得してドメインオブジェクトを生成することがよくあります。</p>
+<p><code>Arguments1Validator</code> はソースオブジェクトを検証したうえで、<code>compose</code> メソッドを使って対象オブジェクトに変換できます。</p>
+<p>たとえば、Servlet の <code>HttpServletRequest</code> オブジェクトから HTTP リクエストパラメータとして <code>name</code>、<code>email</code>、<code>age</code> を取得する場合は、次のように定義できます:</p>
+<pre><code class="language-java">Arguments1Validator&lt;HttpServletRequest, Name&gt; requestNameValidator = nameValidator
+    .compose(req -&gt; req.getParameter(&quot;name&quot;));
+Arguments1Validator&lt;HttpServletRequest, Email&gt; requestEmailValidator = emailValidator
+    .compose(req -&gt; req.getParameter(&quot;email&quot;));
+Arguments1Validator&lt;HttpServletRequest, Age&gt; requestAgeValidator = ageValidator
+    .compose(req -&gt; Integer.valueOf(req.getParameter(&quot;age&quot;)));
+
+HttpServletRequest request = ...;
+Validated&lt;Name&gt; nameValidated = requestNameValidator.validate(request);
+Validated&lt;Email&gt; emailValidated = requestEmailValidator.validate(request);
+Validated&lt;Age&gt; ageValidated = requestAgeValidator.validate(request);
+</code></pre>
+<p>これらの Validator は <code>combine</code> メソッドで次のように組み合わせ、<code>Person</code> オブジェクトに対する Validator を生成できます:</p>
+<pre><code class="language-java">Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = ArgumentsValidators
+    .combine(requestNameValidator, requestEmailValidator, requestAgeValidator)
+    .apply(Person::new);
+// or
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = requestNameValidator
+    .combine(requestEmailValidator)
+    .combine(requestAgeValidator)
+    .apply(Person::new);
+
+HttpServletRequest request = ...;
+Validated&lt;Person&gt; personValidated = requestPersonValidator.validate(request);
+</code></pre>
+<p>この Validator は、<code>Arguments3Validator&lt;String, String, Integer, Person&gt;</code> から次のように変換することもできます:</p>
+<pre><code class="language-java">Arguments3Validator&lt;String, String, Integer, Person&gt; personValidator = /* see examples above */;
+Arguments1Validator&lt;HttpServletRequest, Person&gt; requestPersonValidator = personValidator
+    .compose(req -&gt; Arguments.of(req.getParameter(&quot;name&quot;), req.getParameter(&quot;email&quot;), Integer.valueOf(req.getParameter(&quot;age&quot;))));
+</code></pre>
+<p>このように Validator を組み合わせることで、さまざまなパターンの Validator を生成できます。小さな Arguments Validator を生成しておくと、オブジェクトを生成する前に値を検証できるだけでなく、再利用しやすくなります。</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="validating-arguments.html"><span class="dir">&larr; Previous</span><span class="label">引数のバリデーション</span></a>
+<a class="next" href="built-in-constraints.html"><span class="dir">Next &rarr;</span><span class="label">組み込みの制約</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#splitting-a-validator-for-an-object-into-small-pieces">オブジェクトのバリデータを小さな部品に分割する</a></li>
+<li class="toc-h2"><a href="#chaining-and-mapping-value-validators">値バリデータの連鎖とマッピング</a></li>
+<li class="toc-h2"><a href="#validating-every-element-of-an-iterable">イテラブルのすべての要素を検証する</a></li>
+<li class="toc-h2"><a href="#validating-the-source-object-before-creating-the-target-object">対象オブジェクトを生成する前のソースオブジェクトの検証</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

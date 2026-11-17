@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integrations · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/integrations.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link active" href="integrations.html" aria-current="page">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/integrations.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="integrations">Integrations</h1>
+<p>Although YAVI doesn't depend on anything, it has interfaces that magically fit into Framework.</p>
+<h2 id="integration-with-bindingresult-in-spring-mvc">Integration with <code>BindingResult</code> in Spring MVC</h2>
+<p><code>ConstraintViolations#apply</code> accepts the Function Interface with the same arguments as Spring Framework's <code>BindingResult#rejectValue</code> method and passes the violation messages.</p>
+<p>To reflect validation results by YAVI in a Controller of Spring MVC, you can write the following code.</p>
+<pre><code class="language-java">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    ConstraintViolations violations = validator.validate(userForm);
+    if (!violations.isValid()) {
+        violations.apply(bindingResult::rejectValue);
+        return &quot;userForm&quot;;
+    }
+    // ...
+    return &quot;redirect:/&quot;;
+}
+</code></pre>
+<p>If you like a functional way, you can also write:</p>
+<pre><code class="language-java">final Validator&lt;UserForm&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public String createUser(Model model, UserForm userForm, BindingResult bindingResult) {
+    return validator.applicative()
+        .validate(userForm)
+        .fold(violations -&gt; {
+            ConstraintViolations.of(violations).apply(bindingResult::rejectValue);
+            return &quot;userForm&quot;;
+        }, form -&gt; {
+            // ...
+            return &quot;redirect:/&quot;;
+        });
+}
+</code></pre>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p><code>List&lt;ConstraintViolation&gt;</code> is passed to the function of the first argument of <code>Validated#fold</code> instead of <code>ConstraintViolations</code>. You can convert the <code>List&lt;ContraintViolation&gt;</code> to <code>ConstraintViolations</code> by using the <code>ConstraintViolations#of</code> method.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note</strong></p>
+<p><a href="https://github.com/making/demo-spring-mvc-yavi">https://github.com/making/demo-spring-mvc-yavi</a> is a full example.</p>
+</blockquote>
+<h2 id="converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">Converting <code>ConstraintViolations</code> to the format to serialize as a response body</h2>
+<p><code>ConstraintViolation</code> is not suitable for serializing with a serializer like Jackson. Instead, you can use <code>ConstraintViolation#detail</code> method to convert it to a <code>ViolationDetail</code> object that is easy to serialize.</p>
+<p>The <code>ConstraintViolations#details</code> method translates all <code>ConstraintViolation</code> s and returns <code>List&lt;ViolationDetail&gt;</code>.</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    ConstraintViolations violations = validator.validate(request);
+    if (violations.isValid()) {
+        User created = userService.create(request.toUser());
+        return ResponseEntity.ok(created);
+    } else {
+        return ResponseEntity.badRequest().body(violations.details());
+    }
+}
+</code></pre>
+<p>If you like a functional way, you can also write:</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+@PostMapping(path = &quot;users&quot;)
+public ResponseEntity&lt;?&gt; createUser(@RequestBody UserCreateRequest request) {
+    return validator.applicative()
+        .validate(request)
+        .map(req -&gt; userService.create(req.toUser()))
+        .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
+        // or .mapError(ConstraintViolation::detail)
+        .fold(details -&gt; ResponseEntity.badRequest().body(details),
+            created -&gt; ResponseEntity.ok(created));
+}
+</code></pre>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p><code>ViolationDetail</code> works with GraalVM native image out of the box.</p>
+</blockquote>
+<h2 id="integration-with-spring-webfluxfn">Integration with Spring WebFlux.fn</h2>
+<p>YAVI will be a great fit for <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web-reactive.html#webflux-fn">Spring WebFlux.fn</a>.</p>
+<pre><code class="language-java">final Validator&lt;UserCreateRequest&gt; validator = ...;
+
+public RouterFunction&lt;ServerResponse&gt; routes() {
+    return RouterFunctions.route()
+        .POST(&quot;/users&quot;, request -&gt; request.bodyToMono(UserCreateRequest.class)
+            .flatMap(body -&gt; validator.applicative()
+                .validate(body)
+                .map(req -&gt; userService.create(req.toUser()))
+                .mapErrors(violations -&gt; ConstraintViolations.of(violations).details())
+                // or .mapError(ConstraintViolation::detail)
+                .fold(details -&gt; ServerResponse.badRequest().bodyValue(details),
+                    created -&gt; ServerResponse.ok().bodyValue(created))))
+        .build();
+}
+</code></pre>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p>YAVI was originally developed as a validator naturally fit with Spring WebFlux.fn.</p>
+</blockquote>
+<h2 id="integration-with-messagesource-in-spring-framework">Integration with <code>MessageSource</code> in Spring Framework</h2>
+<p><code>am.ik.yavi.message.MessageSourceMessageFormatter</code> accepts the Functional Interface with the same arguments as Spring Framework's <code>MessageSource#getMessage</code>.
+This allows you to delegate control of the message format of violation messages to Spring Framework.</p>
+<p><code>MessageSourceMessageFormatter</code> can be used as follows:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(MessageSource messageSource) {
+        MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+        this.validator = ValidatorBuilder.&lt;CartItem&gt; of()
+            .constraints(...)
+            .messageFormatter(messageFormatter)
+            .build();
+    }
+}
+</code></pre>
+<h2 id="managing-validatorbuilder-in-an-ioc-container">Managing <code>ValidatorBuilder</code> in an IoC Container</h2>
+<p>If you want to customize <code>ValidatorBuilder</code> and manage it with an IoC Container like Spring Framework, you can use <code>am.ik.yavi.factory.ValidatorFactory</code>.</p>
+<p>The following is an example of defining a <code>ValidatorFactory</code> in Spring Framework:</p>
+<pre><code class="language-java">@Bean
+public ValidatorFactory yaviValidatorFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new ValidatorFactory(&quot;.&quot; /* Message Key Separator */, messageFormatter);
+}
+</code></pre>
+<p>The usage of a Validator would look like following:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final Validator&lt;CartItem&gt; validator;
+
+    public OrderController(ValidatorFactory factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}
+</code></pre>
+<h2 id="obtaining-a-biconsumer">Obtaining a <code>BiConsumer</code></h2>
+<p>Since 0.16.0, a validator is exposed as a <code>java.util.function.BiConsumer&lt;T, E&gt;</code> instead of a dedicated type, where <code>T</code> is the type of the target object and <code>E</code> is the type of the errors object.</p>
+<p>This is helpful for libraries or apps to adapt both YAVI and other validation frameworks that accept these two arguments, like Spring Framework's <code>org.springframework.validation.Validator#validate(Object, Errors)</code>.</p>
+<p><code>Validatable#toBiConsumer</code> and <code>ValueValidator#toBiConsumer</code> take an <code>am.ik.yavi.core.ErrorHandler&lt;E&gt;</code>:</p>
+<pre><code class="language-java">public interface ErrorHandler&lt;E&gt; {
+    void handleError(E errors, String name, String messageKey, Object[] args, String defaultMessage);
+}
+</code></pre>
+<p>For Spring Framework's <code>Errors</code>, the handler can record the violation with <code>Errors#rejectValue</code>:</p>
+<pre><code class="language-java">Validator&lt;CartItem&gt; cartItemValidator = ...;
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator
+    .toBiConsumer((errors, name, messageKey, args, defaultMessage) -&gt;
+        errors.rejectValue(name, messageKey, args, defaultMessage));
+// or
+BiConsumer&lt;CartItem, Errors&gt; validator = cartItemValidator.toBiConsumer(Errors::rejectValue);
+</code></pre>
+<p>There is a factory for <code>BiConsumer</code> as well:</p>
+<pre><code class="language-java">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory() {
+    return new BiConsumerFactory&lt;&gt;(Errors::rejectValue);
+}
+</code></pre>
+<p>or, if you want to customize the message configuration</p>
+<pre><code class="language-java">@Bean
+public BiConsumerFactory&lt;Errors&gt; biConsumerFactory(MessageSource messageSource) {
+    MessageFormatter messageFormatter = new MessageSourceMessageFormatter(messageSource::getMessage);
+    return new BiConsumerFactory&lt;&gt;(&quot;.&quot; /* Message Key Separator */, messageFormatter, Errors::rejectValue);
+}
+</code></pre>
+<p>The usage of a <code>BiConsumer</code> would look like following:</p>
+<pre><code class="language-java">@RestController
+public class OrderController {
+    private final BiConsumer&lt;CartItem, Errors&gt; validator;
+
+    public OrderController(BiConsumerFactory&lt;Errors&gt; factory) {
+        this.validator = factory.validator(builder -&gt; builder.constraint(...));
+    }
+}
+</code></pre>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="annotation-processor.html"><span class="dir">&larr; Previous</span><span class="label">Annotation Processor</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#integration-with-bindingresult-in-spring-mvc">Integration with <code>BindingResult</code> in Spring MVC</a></li>
+<li class="toc-h2"><a href="#converting-constraintviolations-to-the-format-to-serialize-as-a-response-body">Converting <code>ConstraintViolations</code> to the format to serialize as a response body</a></li>
+<li class="toc-h2"><a href="#integration-with-spring-webfluxfn">Integration with Spring WebFlux.fn</a></li>
+<li class="toc-h2"><a href="#integration-with-messagesource-in-spring-framework">Integration with <code>MessageSource</code> in Spring Framework</a></li>
+<li class="toc-h2"><a href="#managing-validatorbuilder-in-an-ioc-container">Managing <code>ValidatorBuilder</code> in an IoC Container</a></li>
+<li class="toc-h2"><a href="#obtaining-a-biconsumer">Obtaining a <code>BiConsumer</code></a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

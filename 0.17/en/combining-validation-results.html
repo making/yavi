@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combining Validation Results · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/combining-validation-results.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link active" href="combining-validation-results.html" aria-current="page">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/combining-validation-results.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="combining-validation-results">Combining Validation Results</h1>
+<p>YAVI supports a functional programming concept known as <a href="https://en.wikipedia.org/wiki/Applicative_functor">Applicative Functor</a>.
+A sequence of validations are executed while accumulating the results (<code>ConstraintViolation</code>), even if some or all of these validations fail during the execution chain.</p>
+<p>It is helpful when you want to combine validation results of multiple <a href="https://martinfowler.com/bliki/ValueObject.html">Value Object</a>s to produce a new object. (Of course, it is also useful for any objects other than Value Objects.)</p>
+<h2 id="validating-with-applicative-functor">Validating with Applicative Functor</h2>
+<p><code>am.ik.yavi.fn.Validation&lt;E, T&gt;</code> class is the implementation of Applicative Functor. <code>E</code> is the type of error and <code>T</code> is the type of target object.</p>
+<p>It can be obtained by <code>am.ik.yavi.core.ApplicativeValidator</code> that can be converted from <code>Validator</code> by <code>applicative()</code> method.</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    // ...
+    .build();
+
+ApplicativeValidator&lt;User&gt; applicativeValidator = validator.applicative();
+</code></pre>
+<p><code>am.ik.yavi.core.Validated&lt;T&gt;</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code> which is specialized for <code>Validator</code> 's usage.</p>
+<pre><code class="language-java">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::value, &quot;email&quot;, c -&gt; c.notBlank().email())
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .constraint(PhoneNumber::value, &quot;phoneNumber&quot;, c -&gt; c.notBlank().pattern(&quot;[0-9\\-]+&quot;))
+    .build();
+
+Validated&lt;Email&gt; emailValidated = emailValidator.applicative().validate(email);
+Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);
+</code></pre>
+<p>The validated target or constraint violations can be retrieved from the <code>Validated</code> instance as follows:</p>
+<pre><code class="language-java">if (emailValidated.isValid()) {
+    Email email = emailValidated.value(); // throws NoSuchElementException if it is invalid
+} else {
+    ConstraintViolations violations = emailValidated.errors(); // throws NoSuchElementException if it is valid
+}
+// or
+Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolationsException(violations));
+</code></pre>
+<p><code>Validation#throwIfInvalid</code> and <code>ConstraintViolations#throwIfInvalid</code> throw the exception supplied by their function argument instead of returning a value:</p>
+<pre><code class="language-java">emailValidated.throwIfInvalid(ConstraintViolationsException::new);
+</code></pre>
+<p><code>fold</code> method is convenient if you want to create an instance of the same type regardless of the success or failure of the validation.</p>
+<pre><code class="language-java">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, email -&gt; HttpStatus.OK);
+</code></pre>
+<p>For <code>Validated</code>, the error type of <code>fold</code> is <code>List&lt;ConstraintViolation&gt;</code>.</p>
+<h2 id="mapping-and-inspecting-validation-results">Mapping and inspecting validation results</h2>
+<p><code>Validation</code> provides <code>map</code>, <code>flatMap</code>, <code>mapError</code>, <code>mapErrors</code>, <code>bimap</code>, <code>orElseThrow</code> and <code>throwIfInvalid</code> to transform or unwrap the result:</p>
+<pre><code class="language-java">Validation&lt;ConstraintViolation, String&gt; mapped = emailValidated.map(Email::value);
+Validation&lt;String, Email&gt; mappedErrors = emailValidated.mapError(ConstraintViolation::messageKey);
+Validation&lt;String, String&gt; bimapped = emailValidated
+    .bimap(violations -&gt; List.of(&quot;invalid&quot;), Email::value);
+</code></pre>
+<p><code>am.ik.yavi.core.Validated</code> is a shortcut of <code>Validation&lt;ConstraintViolation, T&gt;</code>.
+It can be created with <code>Validated.successWith</code>, <code>Validated.failureWith</code> and <code>Validated.of</code>:</p>
+<pre><code class="language-java">Validated&lt;Email&gt; success = Validated.successWith(new Email(&quot;yavi@example.com&quot;));
+Validated&lt;Email&gt; failure = Validated.failureWith(violations); // ConstraintViolations is a List&lt;ConstraintViolation&gt;
+Validated&lt;Email&gt; fromValidation = Validated.of(Validation.success(new Email(&quot;yavi@example.com&quot;)));
+</code></pre>
+<p>Multiple results can be combined with <code>Validated.sequence</code>, <code>Validated.traverse</code>, <code>Validated.traverseIndexed</code> and <code>Validated.traverseOptional</code>:</p>
+<pre><code class="language-java">Validated&lt;List&lt;Email&gt;&gt; emails = Validated.sequence(List.of(emailValidated, anotherEmailValidated));
+Validated&lt;List&lt;Email&gt;&gt; traversed = Validated.traverse(inputs, emailValidator::validate);
+Validated&lt;List&lt;Email&gt;&gt; indexed = Validated.traverseIndexed(inputs,
+    (input, index) -&gt; emailValidator.indexed(index).validate(input));
+Validated&lt;Optional&lt;Email&gt;&gt; optional = Validated.traverseOptional(optionalInput, emailValidator::validate);
+</code></pre>
+<p><code>ConstraintViolations#of(List&lt;ConstraintViolation&gt;)</code> creates a <code>ConstraintViolations</code> from a list of violations.</p>
+<h2 id="combining-validation--validated-objects">Combining <code>Validation</code> / <code>Validated</code> objects</h2>
+<p><code>Validation</code> / <code>Validated</code> objects can be combined to produce a new object.
+In the bellow example, <code>ContactInfo</code> instance is created using <code>Email</code> and <code>PhoneNumber</code> after validating them.</p>
+<pre><code class="language-java">Validated&lt;ContactInfo&gt; contactInfoValidated = emailValidated.combine(phoneNumberValidated)
+    .apply((em, ph) -&gt; new ContactInfo(em, ph));
+// or
+Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidated)
+    .apply((em, ph) -&gt; new ContactInfo(em, ph));
+</code></pre>
+<p><code>Validations.combine(...)</code> supports 2 to 16 validations.</p>
+<p>The important thing here is that even if the validation of <code>Email</code> or <code>PhoneNumber</code> fails, all validation results are accumulated without shortcuts in the middle.</p>
+<p>For example, if you put a blank space in <code>Email</code> and <code>a</code> in <code>PhoneNumber</code> and try to create a <code>ContactInfo</code>, the validation will fail, and you will get the following three <code>ConstraintViolation</code> s:</p>
+<pre><code>* &quot;email&quot; must not be blank
+* &quot;email&quot; must be a valid email address
+* &quot;phoneNumber&quot; must match [0-9\-]+
+</code></pre>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p>Validation for <code>ContactInfo</code> in the above example can be achieved by using <code>nest</code> method as follows:</p>
+<pre><code class="language-java">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::value, &quot;value&quot;, c -&gt; c.notBlank().email())
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .constraint(PhoneNumber::value, &quot;value&quot;, c -&gt; c.notBlank().pattern(&quot;[0-9\\-]+&quot;))
+    .build();
+
+Validator&lt;ContactInfo&gt; validator = ValidatorBuilder.&lt;ContactInfo&gt; of()
+    .nest(ContactInfo::email, &quot;email&quot;, emailValidator)
+    .nest(ContactInfo::phoneNumber, &quot;phoneNumber&quot;, phoneNumberValidator)
+    .build();
+</code></pre>
+<p>Alternatively, you can combine <code>ApplicativeValidator&lt;Email&gt;</code> and <code>ApplicativeValidator&lt;PhoneNumber&gt;</code> as introduced in <a href="combining-validators.html">Combining validators</a>.</p>
+<pre><code class="language-java">Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
+    .split(emailValidator.applicative(), phoneNumberValidator.applicative())
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email(&quot;yavi@example.com&quot;), new PhoneNumber(&quot;090-123-4567&quot;));
+</code></pre>
+</blockquote>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="using-yavi.html"><span class="dir">&larr; Previous</span><span class="label">Using YAVI</span></a>
+<a class="next" href="validating-arguments.html"><span class="dir">Next &rarr;</span><span class="label">Validating Arguments</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#validating-with-applicative-functor">Validating with Applicative Functor</a></li>
+<li class="toc-h2"><a href="#mapping-and-inspecting-validation-results">Mapping and inspecting validation results</a></li>
+<li class="toc-h2"><a href="#combining-validation--validated-objects">Combining <code>Validation</code> / <code>Validated</code> objects</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

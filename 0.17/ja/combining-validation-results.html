@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バリデーション結果の結合 · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><a class="switch" href="../en/combining-validation-results.html">English</a> <span class="switch active">日本語</span></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">はじめに</div>
+<ul>
+<li><a class="nav-link" href="index.html">概要</a></li>
+<li><a class="nav-link" href="introduction.html">はじめに</a></li>
+<li><a class="nav-link" href="getting-started.html">はじめる</a></li>
+<li><a class="nav-link" href="using-yavi.html">YAVI の使い方</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">ガイド</div>
+<ul>
+<li><a class="nav-link active" href="combining-validation-results.html" aria-current="page">バリデーション結果の結合</a></li>
+<li><a class="nav-link" href="validating-arguments.html">引数のバリデーション</a></li>
+<li><a class="nav-link" href="combining-validators.html">バリデータの組み合わせ</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">組み込みの制約</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">リファレンス</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">アノテーションプロセッサ</a></li>
+<li><a class="nav-link" href="integrations.html">連携</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><a class="switch" href="../en/combining-validation-results.html">English</a> <span class="switch active">日本語</span></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="combining-validation-results">バリデーション結果の結合</h1>
+<p>YAVI は <a href="https://en.wikipedia.org/wiki/Applicative_functor">Applicative Functor</a> と呼ばれる関数型プログラミングの概念をサポートしています。
+一連のバリデーションは、実行チェーンの中で一部またはすべてのバリデーションが失敗した場合でも、結果 (<code>ConstraintViolation</code>) を蓄積しながら実行されます。</p>
+<p>これは、複数の<a href="https://martinfowler.com/bliki/ValueObject.html">値オブジェクト</a>のバリデーション結果を組み合わせて新しいオブジェクトを生成したい場合に役立ちます。（もちろん、値オブジェクト以外のオブジェクトにも使えます。）</p>
+<h2 id="validating-with-applicative-functor">Applicative Functor を使った検証</h2>
+<p><code>am.ik.yavi.fn.Validation&lt;E, T&gt;</code> クラスが Applicative Functor の実装です。<code>E</code> はエラーの型、<code>T</code> は対象オブジェクトの型です。</p>
+<p><code>am.ik.yavi.core.ApplicativeValidator</code> は <code>Validator</code> から <code>applicative()</code> メソッドで変換でき、これによって <code>Validation</code> を取得できます。</p>
+<pre><code class="language-java">Validator&lt;User&gt; validator = ValidatorBuilder.&lt;User&gt; of()
+    .constraint(User::getName, &quot;name&quot;, c -&gt; c.notNull().lessThanOrEqual(20))
+    // ...
+    .build();
+
+ApplicativeValidator&lt;User&gt; applicativeValidator = validator.applicative();
+</code></pre>
+<p><code>am.ik.yavi.core.Validated&lt;T&gt;</code> は、<code>Validator</code> での使用に特化した <code>Validation&lt;ConstraintViolation, T&gt;</code> のショートカットです。</p>
+<pre><code class="language-java">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::value, &quot;email&quot;, c -&gt; c.notBlank().email())
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .constraint(PhoneNumber::value, &quot;phoneNumber&quot;, c -&gt; c.notBlank().pattern(&quot;[0-9\\-]+&quot;))
+    .build();
+
+Validated&lt;Email&gt; emailValidated = emailValidator.applicative().validate(email);
+Validated&lt;PhoneNumber&gt; phoneNumberValidated = phoneNumberValidator.applicative().validate(phoneNumber);
+</code></pre>
+<p>検証済みの対象、または制約違反は、<code>Validated</code> インスタンスから次のように取得できます:</p>
+<pre><code class="language-java">if (emailValidated.isValid()) {
+    Email email = emailValidated.value(); // throws NoSuchElementException if it is invalid
+} else {
+    ConstraintViolations violations = emailValidated.errors(); // throws NoSuchElementException if it is valid
+}
+// or
+Email email = emailValidated.orElseThrow(violations -&gt; new ConstraintViolationsException(violations));
+</code></pre>
+<p><code>Validation#throwIfInvalid</code> と <code>ConstraintViolations#throwIfInvalid</code> は、値を返す代わりに関数引数で指定した例外を投げます:</p>
+<pre><code class="language-java">emailValidated.throwIfInvalid(ConstraintViolationsException::new);
+</code></pre>
+<p>検証の成功・失敗にかかわらず同じ型のインスタンスを生成したい場合は、<code>fold</code> メソッドが便利です。</p>
+<pre><code class="language-java">HttpStatus status = emailValidated.fold(violations -&gt; HttpStatus.BAD_REQUEST, email -&gt; HttpStatus.OK);
+</code></pre>
+<p><code>Validated</code> の場合、<code>fold</code> のエラー型は <code>List&lt;ConstraintViolation&gt;</code> です。</p>
+<h2 id="mapping-and-inspecting-validation-results">バリデーション結果のマッピングと検査</h2>
+<p><code>Validation</code> は結果を変換または取り出すための <code>map</code>、<code>flatMap</code>、<code>mapError</code>、<code>mapErrors</code>、<code>bimap</code>、<code>orElseThrow</code>、<code>throwIfInvalid</code> を提供します:</p>
+<pre><code class="language-java">Validation&lt;ConstraintViolation, String&gt; mapped = emailValidated.map(Email::value);
+Validation&lt;String, Email&gt; mappedErrors = emailValidated.mapError(ConstraintViolation::messageKey);
+Validation&lt;String, String&gt; bimapped = emailValidated
+    .bimap(violations -&gt; List.of(&quot;invalid&quot;), Email::value);
+</code></pre>
+<p><code>am.ik.yavi.core.Validated</code> は <code>Validation&lt;ConstraintViolation, T&gt;</code> のショートカットです。
+<code>Validated.successWith</code>、<code>Validated.failureWith</code>、<code>Validated.of</code> で生成できます:</p>
+<pre><code class="language-java">Validated&lt;Email&gt; success = Validated.successWith(new Email(&quot;yavi@example.com&quot;));
+Validated&lt;Email&gt; failure = Validated.failureWith(violations); // ConstraintViolations is a List&lt;ConstraintViolation&gt;
+Validated&lt;Email&gt; fromValidation = Validated.of(Validation.success(new Email(&quot;yavi@example.com&quot;)));
+</code></pre>
+<p>複数の結果は <code>Validated.sequence</code>、<code>Validated.traverse</code>、<code>Validated.traverseIndexed</code>、<code>Validated.traverseOptional</code> で結合できます:</p>
+<pre><code class="language-java">Validated&lt;List&lt;Email&gt;&gt; emails = Validated.sequence(List.of(emailValidated, anotherEmailValidated));
+Validated&lt;List&lt;Email&gt;&gt; traversed = Validated.traverse(inputs, emailValidator::validate);
+Validated&lt;List&lt;Email&gt;&gt; indexed = Validated.traverseIndexed(inputs,
+    (input, index) -&gt; emailValidator.indexed(index).validate(input));
+Validated&lt;Optional&lt;Email&gt;&gt; optional = Validated.traverseOptional(optionalInput, emailValidator::validate);
+</code></pre>
+<p><code>ConstraintViolations#of(List&lt;ConstraintViolation&gt;)</code> は違反のリストから <code>ConstraintViolations</code> を生成します。</p>
+<h2 id="combining-validation--validated-objects"><code>Validation</code> / <code>Validated</code> オブジェクトの結合</h2>
+<p><code>Validation</code> / <code>Validated</code> オブジェクトを結合して新しいオブジェクトを生成できます。
+以下の例では、<code>Email</code> と <code>PhoneNumber</code> を検証したうえで <code>ContactInfo</code> インスタンスを生成しています。</p>
+<pre><code class="language-java">Validated&lt;ContactInfo&gt; contactInfoValidated = emailValidated.combine(phoneNumberValidated)
+    .apply((em, ph) -&gt; new ContactInfo(em, ph));
+// or
+Validated&lt;ContactInfo&gt; contactInfoValidated = Validations.combine(emailValidated, phoneNumberValidated)
+    .apply((em, ph) -&gt; new ContactInfo(em, ph));
+</code></pre>
+<p><code>Validations.combine(...)</code> は 2 から 16 個のバリデーションをサポートします。</p>
+<p>ここで重要なのは、<code>Email</code> または <code>PhoneNumber</code> の検証が失敗しても、途中で打ち切られることなく、すべての検証結果が蓄積される点です。</p>
+<p>たとえば <code>Email</code> に空白を、<code>PhoneNumber</code> に <code>a</code> を指定して <code>ContactInfo</code> を生成しようとすると検証は失敗し、次の 3 つの <code>ConstraintViolation</code> が得られます:</p>
+<pre><code>* &quot;email&quot; must not be blank
+* &quot;email&quot; must be a valid email address
+* &quot;phoneNumber&quot; must match [0-9\-]+
+</code></pre>
+<blockquote>
+<p><strong>ヒント</strong></p>
+<p>上の例での <code>ContactInfo</code> の検証は、次のように <code>nest</code> メソッドを使っても実現できます:</p>
+<pre><code class="language-java">Validator&lt;Email&gt; emailValidator = ValidatorBuilder.&lt;Email&gt; of()
+    .constraint(Email::value, &quot;value&quot;, c -&gt; c.notBlank().email())
+    .build();
+Validator&lt;PhoneNumber&gt; phoneNumberValidator = ValidatorBuilder.&lt;PhoneNumber&gt; of()
+    .constraint(PhoneNumber::value, &quot;value&quot;, c -&gt; c.notBlank().pattern(&quot;[0-9\\-]+&quot;))
+    .build();
+
+Validator&lt;ContactInfo&gt; validator = ValidatorBuilder.&lt;ContactInfo&gt; of()
+    .nest(ContactInfo::email, &quot;email&quot;, emailValidator)
+    .nest(ContactInfo::phoneNumber, &quot;phoneNumber&quot;, phoneNumberValidator)
+    .build();
+</code></pre>
+<p>または、<a href="combining-validators.html">バリデータの組み合わせ</a>で紹介しているように、<code>ApplicativeValidator&lt;Email&gt;</code> と <code>ApplicativeValidator&lt;PhoneNumber&gt;</code> を組み合わせてもかまいません。</p>
+<pre><code class="language-java">Arguments2Validator&lt;Email, PhoneNumber, ContactInfo&gt; contactInfoValidator = ArgumentsValidators
+    .split(emailValidator.applicative(), phoneNumberValidator.applicative())
+    .apply(ContactInfo::new);
+
+Validated&lt;ContactInfo&gt; contactInfoValidated = contactInfoValidator.validate(new Email(&quot;yavi@example.com&quot;), new PhoneNumber(&quot;090-123-4567&quot;));
+</code></pre>
+</blockquote>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="using-yavi.html"><span class="dir">&larr; Previous</span><span class="label">YAVI の使い方</span></a>
+<a class="next" href="validating-arguments.html"><span class="dir">Next &rarr;</span><span class="label">引数のバリデーション</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">日本語</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#validating-with-applicative-functor">Applicative Functor を使った検証</a></li>
+<li class="toc-h2"><a href="#mapping-and-inspecting-validation-results">バリデーション結果のマッピングと検査</a></li>
+<li class="toc-h2"><a href="#combining-validation--validated-objects"><code>Validation</code> / <code>Validated</code> オブジェクトの結合</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

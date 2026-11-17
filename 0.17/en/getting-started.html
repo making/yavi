@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Getting Started · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/getting-started.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link" href="introduction.html">Introduction</a></li>
+<li><a class="nav-link active" href="getting-started.html" aria-current="page">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/getting-started.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="getting-started">Getting Started</h1>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>This content is derived from <a href="https://hibernate.org/validator/documentation/getting-started/">https://hibernate.org/validator/documentation/getting-started/</a></p>
+</blockquote>
+<p>Welcome to YAVI.</p>
+<p>The following paragraphs will guide you through the initial steps required to integrate YAVI into your application.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><a href="http://www.oracle.com/technetwork/java/index.html">Java Runtime</a> &gt;= 8</li>
+<li><a href="http://maven.apache.org/">Apache Maven</a></li>
+</ul>
+<h2 id="project-set-up">Project set up</h2>
+<p>In order to use YAVI within a Maven project, simply add the following dependency to your <code>pom.xml</code>:</p>
+<pre><code class="language-xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;am.ik.yavi&lt;/groupId&gt;
+    &lt;artifactId&gt;yavi&lt;/artifactId&gt;
+    &lt;version&gt;0.17.3&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>This tutorial uses JUnit 5 and AssertJ.
+Add the following dependencies as needed:</p>
+<pre><code class="language-xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+    &lt;artifactId&gt;junit-jupiter-api&lt;/artifactId&gt;
+    &lt;version&gt;5.14.4&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.assertj&lt;/groupId&gt;
+    &lt;artifactId&gt;assertj-core&lt;/artifactId&gt;
+    &lt;version&gt;3.27.7&lt;/version&gt;
+    &lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</code></pre>
+<h2 id="applying-constraints">Applying constraints</h2>
+<p>Let's dive into an example to see how to apply constraints:</p>
+<p>Create <code>src/main/java/com/example/Car.java</code> and write the following code.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.Validator;
+
+public class Car {
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final int seatCount;
+
+    public static final Validator&lt;Car&gt; validator = ValidatorBuilder.&lt;Car&gt;of()
+            .constraint(Car::getManufacturer, &quot;manufacturer&quot;, c -&gt; c.notNull())
+            .constraint(Car::getLicensePlate, &quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::getSeatCount, &quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+            .build();
+
+    public Car(String manufacturer, String licencePlate, int seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licencePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public int getSeatCount() {
+        return seatCount;
+    }
+}
+</code></pre>
+<p>The <code>ValidatorBuilder#constraint</code> is used to declare the constraints which should be applied to the return values of getter for the <code>Car</code> instance:</p>
+<ul>
+<li><code>manufacturer</code> must never be null</li>
+<li><code>licensePlate</code> must never be null and must be between 2 and 14 characters long</li>
+<li><code>seatCount</code> must be at least 2</li>
+</ul>
+<blockquote>
+<p><strong>Tip</strong></p>
+<p>You can find <a href="https://github.com/making/gs-yavi">the complete source code</a> on GitHub.</p>
+</blockquote>
+<h2 id="validating-constraints">Validating constraints</h2>
+<p>To perform a validation of these constraints, you use a <code>Validator</code> instance.
+To demonstrate this, let's have a look at a simple unit test:</p>
+<p>Create <code>src/test/java/com/example/CarTest.java</code> and write the following code.</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.core.ConstraintViolations;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CarTest {
+
+    @Test
+    void manufacturerIsNull() {
+        final Car car = new Car(null, &quot;DD-AB-123&quot;, 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;\&quot;manufacturer\&quot; must not be null&quot;);
+    }
+
+    @Test
+    void licensePlateTooShort() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;D&quot;, 4);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;The size of \&quot;licensePlate\&quot; must be greater than or equal to 2. The given size is 1&quot;);
+    }
+
+    @Test
+    void seatCountTooLow() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;DD-AB-123&quot;, 1);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isFalse();
+        assertThat(violations).hasSize(1);
+        assertThat(violations.get(0).message()).isEqualTo(&quot;\&quot;seatCount\&quot; must be greater than or equal to 2&quot;);
+    }
+
+    @Test
+    void carIsValid() {
+        final Car car = new Car(&quot;Morris&quot;, &quot;DD-AB-123&quot;, 2);
+        final ConstraintViolations violations = Car.validator.validate(car);
+
+        assertThat(violations.isValid()).isTrue();
+        assertThat(violations).hasSize(0);
+    }
+}
+</code></pre>
+<p><code>Validator</code> instances are thread-safe and may be reused multiple times.</p>
+<p>The <code>validate()</code> method returns a <code>ConstraintViolations</code> instance, which you can iterate in order to see which validation errors occurred.
+The first three test methods show some expected constraint violations:</p>
+<ul>
+<li>The <code>notNull()</code> constraint on <code>manufacturer</code> is violated in <code>manufacturerIsNull()</code></li>
+<li>The <code>greaterThanOrEqual(int)</code> constraint on <code>licensePlate</code> is violated in <code>licensePlateTooShort()</code></li>
+<li>The <code>greaterThanOrEqual(int)</code> constraint on <code>seatCount</code> is violated in <code>seatCountTooLow()</code></li>
+</ul>
+<p>If the object validates successfully, <code>validate()</code> returns an empty <code>ConstraintViolations</code> as you can see in <code>carIsValid()</code>.
+You can also check if the validation was successful with the <code>ConstraintViolations.isValid</code> method.</p>
+<h2 id="running-the-example">Running the example</h2>
+<p>The program below is a complete compilation unit. It defines the same validation and prints every violation. Press Run to execute it in the browser once the runtime is available.</p>
+<div class="code-cell" data-lang="java"><div class="cell-toolbar"><button class="run" type="button">Run</button><span class="cell-status"></span></div><textarea class="cell-src" spellcheck="false" wrap="off" rows="20" aria-label="Editable Java source">import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validator;
+
+public class Main {
+
+    record Car(String manufacturer, String licensePlate, int seatCount) {
+    }
+
+    static final Validator&lt;Car&gt; validator = ValidatorBuilder.&lt;Car&gt;of()
+            .constraint(Car::manufacturer, &quot;manufacturer&quot;, c -&gt; c.notNull())
+            .constraint(Car::licensePlate, &quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+            .constraint(Car::seatCount, &quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+            .build();
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = validator.validate(new Car(null, &quot;D&quot;, 1));
+        violations.forEach(v -&gt; System.out.println(v.message()));
+    }
+}</textarea><pre class="cell-out" hidden></pre></div>
+<h2 id="the-always-valid-model">The Always Valid model</h2>
+<p>The examples above create a <code>Car</code> instance and then validate it, so an invalid <code>Car</code> can exist temporarily.
+YAVI can also make invalid objects impossible to create by validating the arguments before the constructor runs and returning the result only when all arguments are valid.</p>
+<p>Make the constructor private and expose a static factory method that returns <code>Validated&lt;Car&gt;</code>:</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.validator.Yavi;
+
+public final class Car {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string(&quot;manufacturer&quot;, c -&gt; c.notNull())
+        ._string(&quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer(&quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    private final String manufacturer;
+
+    private final String licensePlate;
+
+    private final Integer seatCount;
+
+    public static Validated&lt;Car&gt; of(String manufacturer, String licensePlate, Integer seatCount) {
+        return validator.validate(manufacturer, licensePlate, seatCount);
+    }
+
+    private Car(String manufacturer, String licensePlate, Integer seatCount) {
+        this.manufacturer = manufacturer;
+        this.licensePlate = licensePlate;
+        this.seatCount = seatCount;
+    }
+
+    public String manufacturer() {
+        return manufacturer;
+    }
+
+    public String licensePlate() {
+        return licensePlate;
+    }
+
+    public Integer seatCount() {
+        return seatCount;
+    }
+}
+</code></pre>
+<p><code>Car.of(...)</code> validates the arguments and returns the result wrapped in <code>Validated</code>.
+Because the constructor is private, a <code>Car</code> can only be obtained from the validated result.
+When validation fails, inspect the violations with <code>Validated#errors()</code>:</p>
+<pre><code class="language-java">Validated&lt;Car&gt; validated = Car.of(null, &quot;DD-AB-123&quot;, 4);
+if (!validated.isValid()) {
+    ConstraintViolations violations = validated.errors();
+    // ...
+}
+</code></pre>
+<p>If you prefer a record and want validation inside the constructor, use <code>lazy()</code> and call <code>validated(...)</code> from the compact constructor:</p>
+<pre><code class="language-java">package com.example;
+
+import am.ik.yavi.arguments.Arguments3Validator;
+import am.ik.yavi.validator.Yavi;
+
+public record Car(String manufacturer, String licensePlate, Integer seatCount) {
+
+    private static final Arguments3Validator&lt;String, String, Integer, Car&gt; validator = Yavi.arguments()
+        ._string(&quot;manufacturer&quot;, c -&gt; c.notNull())
+        ._string(&quot;licensePlate&quot;, c -&gt; c.notNull().greaterThanOrEqual(2).lessThanOrEqual(14))
+        ._integer(&quot;seatCount&quot;, c -&gt; c.greaterThanOrEqual(2))
+        .apply(Car::new);
+
+    public Car {
+        validator.lazy().validated(manufacturer, licensePlate, seatCount);
+    }
+}
+</code></pre>
+<p><code>lazy()</code> returns a validator that produces a <code>Supplier</code> instead of invoking the mapper, so the validation runs without calling <code>Car::new</code> again.
+Without <code>lazy()</code>, the validator would construct a <code>Car</code> while the constructor is still running and recurse until a <code>StackOverflowError</code>.</p>
+<p>Invalid arguments make the compact constructor throw <code>ConstraintViolationsException</code>.
+Its <code>violations()</code> method returns the violations:</p>
+<pre><code class="language-java">assertThatThrownBy(() -&gt; new Car(null, &quot;DD-AB-123&quot;, 4))
+    .isInstanceOf(ConstraintViolationsException.class)
+    .satisfies(e -&gt; {
+        ConstraintViolations violations = ((ConstraintViolationsException) e).violations();
+        assertThat(violations).hasSize(1);
+    });
+</code></pre>
+<p>See <a href="validating-arguments.html">Validating Arguments</a> for the <code>Yavi.arguments()</code> builder and the other ways to define arguments validators.</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="introduction.html"><span class="dir">&larr; Previous</span><span class="label">Introduction</span></a>
+<a class="next" href="using-yavi.html"><span class="dir">Next &rarr;</span><span class="label">Using YAVI</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+<aside class="toc">
+<div class="toc-title">On this page</div>
+<nav>
+<ul>
+<li class="toc-h2"><a href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2"><a href="#project-set-up">Project set up</a></li>
+<li class="toc-h2"><a href="#applying-constraints">Applying constraints</a></li>
+<li class="toc-h2"><a href="#validating-constraints">Validating constraints</a></li>
+<li class="toc-h2"><a href="#running-the-example">Running the example</a></li>
+<li class="toc-h2"><a href="#the-always-valid-model">The Always Valid model</a></li>
+</ul>
+</nav>
+</aside>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>

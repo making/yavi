@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction · YAVI 0.17 documentation</title>
+<meta name="description" content="Yet Another Validation (lambda based type safe validation) for Java">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#590f3b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#160b12" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/docs.css">
+</head>
+<body data-runtime-src="../../assets/yavi-runtime.js" data-search-base=".">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+<button type="button" class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+<span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span><span class="nav-toggle-bar"></span></button>
+<a class="brand" href="index.html"><img class="brand-logo" src="../../assets/yavi-logo.png" alt="YAVI" width="108" height="36"></a>
+<nav class="topnav" aria-label="Site">
+<button type="button" class="search-open" aria-label="Search Ctrl K"><span class="search-open-label">Search</span><kbd class="search-open-key" aria-hidden="true">Ctrl K</kbd></button>
+<span class="versionswitch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/introduction.html">日本語</a></span>
+<a href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+<button type="button" class="reset-runtime" title="Reset the in-page runtime">Reset runtime</button>
+<span class="runtime-status" data-state="idle"></span>
+</nav>
+</header>
+<div class="layout">
+<div class="sidebar-backdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-head"><span class="sidebar-title">Contents</span><button type="button" class="nav-close" aria-label="Close navigation">Close</button></div>
+<nav aria-label="Documentation">
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<ul>
+<li><a class="nav-link" href="index.html">Overview</a></li>
+<li><a class="nav-link active" href="introduction.html" aria-current="page">Introduction</a></li>
+<li><a class="nav-link" href="getting-started.html">Getting Started</a></li>
+<li><a class="nav-link" href="using-yavi.html">Using YAVI</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Guides</div>
+<ul>
+<li><a class="nav-link" href="combining-validation-results.html">Combining Validation Results</a></li>
+<li><a class="nav-link" href="validating-arguments.html">Validating Arguments</a></li>
+<li><a class="nav-link" href="combining-validators.html">Combining Validators</a></li>
+<li><a class="nav-link" href="built-in-constraints.html">Built-in Constraints</a></li>
+</ul>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Reference</div>
+<ul>
+<li><a class="nav-link" href="annotation-processor.html">Annotation Processor</a></li>
+<li><a class="nav-link" href="integrations.html">Integrations</a></li>
+</ul>
+</div>
+</nav>
+<div class="sidebar-meta">
+<span class="versionswitch sidebar-switch"><span class="switch-label">Version</span><span class="switch active">0.17</span></span>
+<span class="langswitch sidebar-switch"><span class="switch-label">Language</span><span class="switch active">English</span> <a class="switch" href="../ja/introduction.html">日本語</a></span>
+<a class="sidebar-github" href="https://github.com/making/yavi" target="_blank" rel="noopener">GitHub</a>
+</div>
+</aside>
+<main class="content" id="main" tabindex="-1">
+<article class="markdown">
+<h1 id="introduction">Introduction</h1>
+<p>YAVI sounds as same as a Japanese slang &quot;YABAI (ヤバイ)&quot; that means awesome or awful depending on the context (like &quot;Crazy&quot;).
+If you use YAVI, you will surely understand that it means the former.</p>
+<p>The concepts are</p>
+<ul>
+<li>No reflection!</li>
+<li>No (runtime) annotation!</li>
+<li>Not only Java Beans!</li>
+<li>Zero dependency!</li>
+</ul>
+<p>If you are not a fan of <a href="https://beanvalidation.org/">Bean Validation</a>, YAVI will be an awesome alternative.</p>
+<p>YAVI has the following features:</p>
+<ul>
+<li>Type-safe constraints, unsupported constraints cannot be applied to the wrong type</li>
+<li>Fluent and intuitive API</li>
+<li>Constraints on any object. Java Beans, <a href="https://openjdk.java.net/jeps/395">Records</a>, <a href="https://developers.google.com/protocol-buffers">Protocol Buffers</a>, <a href="https://immutables.github.io/">Immutables</a> and anything else.</li>
+<li>Lots of powerful built-in constraints, including temporal and enum constraints</li>
+<li>Easy custom constraints</li>
+<li>Validation for constraint groups and contexts, conditional validation, and conflict strategy</li>
+<li>Validation for arguments before creating an object, and the &quot;Always Valid model&quot; that makes invalid objects impossible to create</li>
+<li>Kotlin integration, including coroutine extensions</li>
+<li>Support for API and combination of validation results and validators that incorporate the concept of functional programming</li>
+</ul>
+<p>For the migration from Bean Validation, refer <a href="https://github.com/making/yavi/blob/develop/docs/FromBeanValidationToYAVI.md">the guide</a>.</p>
+
+</article>
+<nav class="prevnext">
+<a class="prev" href="index.html"><span class="dir">&larr; Previous</span><span class="label">Overview</span></a>
+<a class="next" href="getting-started.html"><span class="dir">Next &rarr;</span><span class="label">Getting Started</span></a>
+</nav>
+<footer class="colophon">
+<span class="colophon-item">YAVI 0.17</span>
+<span class="colophon-item">English</span>
+<span class="colophon-item">Apache-2.0</span>
+<a class="colophon-item" href="https://github.com/making/yavi" target="_blank" rel="noopener">github.com/making/yavi</a>
+</footer>
+</main>
+</div>
+<script src="../../assets/docs.js"></script>
+</body>
+</html>
