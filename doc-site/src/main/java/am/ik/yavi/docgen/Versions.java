@@ -37,11 +37,18 @@ import org.yaml.snakeyaml.Yaml;
  * versions:
  *   - version: 0.17
  *     label: 0.17
+ *     yavi_release: 0.17.3
  * </pre>
  *
  * The content tree holds one directory per version ({@code content/<version>/}) and one
  * directory per language inside it. {@link DocGen} validates the list here against those
  * directories before it renders anything.
+ *
+ * <p>
+ * {@code yavi_release} is the YAVI release whose classes are baked into that version's
+ * browser runtime (see doc-site/README.md). It is required: the deployment workflow reads
+ * it from here to build one runtime per version, so a version without a release would
+ * silently publish a tree whose Run buttons are unavailable.
  */
 public record Versions(String title, String description, String defaultVersion, String defaultLanguage,
 		List<Language> languages, List<Version> versions) {
@@ -51,9 +58,10 @@ public record Versions(String title, String description, String defaultVersion, 
 	}
 
 	/**
-	 * A published version: its URL/directory name and the label shown in the switcher.
+	 * A published version: its URL/directory name, the label shown in the switcher and
+	 * the YAVI release its browser runtime embeds.
 	 */
-	public record Version(String version, String label) {
+	public record Version(String version, String label, String yaviRelease) {
 	}
 
 	/** The display name of a language code, or the code itself when it is unknown. */
@@ -95,7 +103,9 @@ public record Versions(String title, String description, String defaultVersion, 
 					Map<String, Object> versionMap = (Map<String, Object>) rawVersion;
 					String version = String.valueOf(versionMap.get("version"));
 					String label = String.valueOf(versionMap.getOrDefault("label", version));
-					versions.add(new Version(version, label));
+					Object rawYaviRelease = versionMap.get("yavi_release");
+					String yaviRelease = rawYaviRelease == null ? "" : String.valueOf(rawYaviRelease).trim();
+					versions.add(new Version(version, label, yaviRelease));
 				}
 			}
 			Versions result = new Versions(title, description, defaultVersion, defaultLanguage, List.copyOf(languages),
@@ -122,6 +132,12 @@ public record Versions(String title, String description, String defaultVersion, 
 			}
 			if (!versionNames.add(version.version())) {
 				throw new IOException("Duplicate version '" + version.version() + "' in " + file);
+			}
+			// The workflow passes this release to the runtime build; a version without
+			// one
+			// would publish the stub.
+			if (version.yaviRelease().isBlank()) {
+				throw new IOException("Version '" + version.version() + "' has no yavi_release in " + file);
 			}
 		}
 		Set<String> languageCodes = new HashSet<>();

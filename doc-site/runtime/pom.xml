@@ -27,9 +27,12 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- The YAVI version preloaded into the image and the documentation tree it serves. -->
-		<yavi.version>0.17.3</yavi.version>
-		<docs.version>0.17</docs.version>
+		<!--
+			yavi.version and docs.version are NOT defaulted here: the mapping from a
+			documentation version to its YAVI release is declared in
+			doc-site/content/versions.yaml, and the workflow passes both values explicitly.
+			See the requireProperty rules below.
+		-->
 		<asm.version>9.11.1</asm.version>
 		<!-- Must match the Oracle GraalVM used to build the Web Image. -->
 		<graalvm.version>25.5.5.0.3</graalvm.version>
@@ -72,7 +75,54 @@
 
 	<build>
 		<finalName>yavi-runtime</finalName>
+		<resources>
+			<!--
+				The image reports the YAVI release it contains (handshake and diagnostics).
+				Filter only this file: the JavaScript asset must stay byte for byte.
+			-->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>yavi-version.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>yavi-version.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
 		<plugins>
+			<!-- The two values have no default in this module; fail before building. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>require-version-properties</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireProperty>
+									<property>yavi.version</property>
+									<message>Pass -Dyavi.version=&lt;release&gt;; the documentation-to-YAVI mapping is declared in doc-site/content/versions.yaml</message>
+								</requireProperty>
+								<requireProperty>
+									<property>docs.version</property>
+									<message>Pass -Ddocs.version=&lt;version&gt;; the documentation-to-YAVI mapping is declared in doc-site/content/versions.yaml</message>
+								</requireProperty>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -104,6 +154,12 @@
 							<goal>unpack</goal>
 						</goals>
 						<configuration>
+							<!--
+								Several versions are built one after another in the same target
+								directory; always unpack, so switching yavi.version cannot keep
+								the previous release's classes.
+							-->
+							<overWriteReleases>true</overWriteReleases>
 							<artifactItems>
 								<artifactItem>
 									<groupId>am.ik.yavi</groupId>
@@ -123,6 +179,20 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>3.1.0</version>
 				<executions>
+					<!-- A release switch must not leave the previous version's classes behind. -->
+					<execution>
+						<id>clean-yavi-classes</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete dir="${project.build.outputDirectory}/yavi-classes"/>
+								<delete file="${project.build.outputDirectory}/yavi-classes.index"/>
+							</target>
+						</configuration>
+					</execution>
 					<execution>
 						<id>yavi-classes-index</id>
 						<phase>process-resources</phase>
@@ -151,10 +221,13 @@
 
 	<profiles>
 		<!--
-			./mvnw -f doc-site/runtime/pom.xml -Pweb package
+			./mvnw -f doc-site/runtime/pom.xml -Pweb package \
+			  -Ddocs.version=<version> -Dyavi.version=<release>
 			builds the Web Image and copies the JavaScript binding beside it under
-			target/web/<docs.version>/. Needs Oracle GraalVM 25.5 (native-image on
-			PATH) and Binaryen (wasm-as) 119 or later.
+			target/web/<docs.version>/. The two properties are declared in
+			doc-site/content/versions.yaml; see also the requireProperty rules above.
+			Needs Oracle GraalVM 25.5 (native-image on PATH) and Binaryen (wasm-as)
+			119 or later.
 		-->
 		<profile>
 			<id>web</id>

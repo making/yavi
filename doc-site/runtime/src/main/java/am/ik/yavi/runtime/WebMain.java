@@ -1,5 +1,10 @@
 package am.ik.yavi.runtime;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.Properties;
+
 import org.graalvm.webimage.api.JS;
 import org.graalvm.webimage.api.JSString;
 
@@ -16,8 +21,29 @@ import org.graalvm.webimage.api.JSString;
  */
 public final class WebMain {
 
-	/** Version of the YAVI jar embedded in this image. */
-	public static final String YAVI_VERSION = "0.17.3";
+	/**
+	 * Version of the YAVI jar embedded in this image. Filtered in at build time from the
+	 * {@code yavi.version} property (declared once, in doc-site/content/versions.yaml).
+	 */
+	public static final String YAVI_VERSION = loadYaviVersion();
+
+	private static String loadYaviVersion() {
+		try (InputStream in = WebMain.class.getResourceAsStream("/yavi-version.properties")) {
+			if (in == null) {
+				throw new IllegalStateException("Missing yavi-version.properties in the image");
+			}
+			Properties properties = new Properties();
+			properties.load(in);
+			String version = properties.getProperty("yavi.version", "").trim();
+			if (version.isEmpty() || version.startsWith("${")) {
+				throw new IllegalStateException("yavi-version.properties has no yavi.version: '" + version + "'");
+			}
+			return version;
+		}
+		catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+	}
 
 	/**
 	 * Shared across cells: initializing the in-browser file system with the JDK classes

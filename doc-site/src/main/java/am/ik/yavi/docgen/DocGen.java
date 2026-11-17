@@ -611,23 +611,35 @@ public final class DocGen {
 	}
 
 	/**
-	 * Publishes one documentation tree's Java runtime. A runtime built for that version
-	 * replaces the stub; without one the stub (which reports that execution is not
-	 * available) keeps the page working.
+	 * Publishes one documentation tree's Java runtime. With no {@code --runtime}
+	 * directory the stub is copied and named on stderr, so a local preview keeps working
+	 * while a deployment that forgot the flag is visible. With a runtime directory every
+	 * listed version must have a build: the deployed site must never silently fall back
+	 * to the stub for a version the workflow forgot to build.
 	 */
 	private void copyRuntime(String version, Path target) throws IOException {
 		Files.createDirectories(target);
-		Path built = this.runtime == null ? null : this.runtime.resolve(version);
-		if (built != null && Files.isDirectory(built)) {
-			for (String name : RUNTIME_FILES) {
-				Path file = built.resolve(name);
-				if (!Files.exists(file)) {
-					throw new IOException("Runtime for version '" + version + "' is missing " + name + " in " + built);
-				}
-				Files.copy(file, target.resolve(name), StandardCopyOption.REPLACE_EXISTING);
-			}
+		if (this.runtime == null) {
+			System.err.println("WARNING: no runtime directory supplied; publishing the stub for documentation version '"
+					+ version + "' (Run is unavailable)");
+			copyStubRuntime(target);
 			return;
 		}
+		Path built = this.runtime.resolve(version);
+		if (!Files.isDirectory(built)) {
+			throw new IOException("No runtime build for documentation version '" + version + "' in " + built
+					+ "; build it or remove the version from versions.yaml");
+		}
+		for (String name : RUNTIME_FILES) {
+			Path file = built.resolve(name);
+			if (!Files.exists(file)) {
+				throw new IOException("Runtime for version '" + version + "' is missing " + name + " in " + built);
+			}
+			Files.copy(file, target.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
+	private static void copyStubRuntime(Path target) throws IOException {
 		try (InputStream in = DocGen.class.getResourceAsStream("/assets/yavi-runtime.js")) {
 			if (in == null) {
 				throw new IOException("Missing classpath asset: assets/yavi-runtime.js");
