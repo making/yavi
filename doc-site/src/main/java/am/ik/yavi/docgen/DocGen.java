@@ -70,12 +70,21 @@ public final class DocGen {
 
 	private static final Pattern HEADING_ID = Pattern.compile("(<h[1-6]\\b[^>]*\\bid=\")([^\"]*)(\")");
 
-	private static final List<String> ASSETS = List.of("docs.css", "docs.js", "yavi-runtime.js", "yavi-logo.png",
-			"favicon.svg");
+	private static final List<String> ASSETS = List.of("docs.css", "docs.js", "yavi-logo.png", "favicon.svg");
+
+	/** The runtime files that replace the stub when a runtime build is supplied. */
+	private static final List<String> RUNTIME_FILES = List.of("yavi-runtime.js", "yavi-runtime-wasm.js",
+			"yavi-runtime-wasm.js.wasm");
 
 	private final Path source;
 
 	private final Path out;
+
+	/**
+	 * Directory with one sub-directory per documentation version holding that tree's
+	 * runtime (see doc-site/README.md), or {@code null} to publish the stub.
+	 */
+	private final Path runtime;
 
 	private final Versions versions;
 
@@ -103,8 +112,17 @@ public final class DocGen {
 	private SearchIndex searchIndex;
 
 	public DocGen(Path source, Path out) throws IOException {
+		this(source, out, null);
+	}
+
+	/**
+	 * @param runtime directory with one sub-directory per version holding the built
+	 * runtime, or {@code null} to publish the stub
+	 */
+	public DocGen(Path source, Path out, Path runtime) throws IOException {
 		this.source = source;
 		this.out = out;
+		this.runtime = runtime;
 		this.versions = Versions.load(source.resolve("versions.yaml"));
 		this.parser = Parser.builder(Markdown.options()).build();
 		this.renderer = HtmlRenderer.builder(Markdown.options())
@@ -116,15 +134,17 @@ public final class DocGen {
 	public static void main(String[] args) throws IOException {
 		Path source = Path.of("content");
 		Path out = Path.of("target", "site");
+		Path runtime = null;
 		for (int i = 0; i < args.length - 1; i++) {
 			switch (args[i]) {
 				case "--source" -> source = Path.of(args[++i]).toAbsolutePath().normalize();
 				case "--out" -> out = Path.of(args[++i]).toAbsolutePath().normalize();
+				case "--runtime" -> runtime = Path.of(args[++i]).toAbsolutePath().normalize();
 				default -> {
 				}
 			}
 		}
-		new DocGen(source, out).generate();
+		new DocGen(source, out, runtime).generate();
 	}
 
 	/** Generates the whole site for every configured version and language. */
@@ -584,6 +604,35 @@ public final class DocGen {
 				}
 				Files.copy(in, target.resolve(name), StandardCopyOption.REPLACE_EXISTING);
 			}
+		}
+		for (Versions.Version version : this.versions.versions()) {
+			copyRuntime(version.version(), target.resolve("runtime").resolve(version.version()));
+		}
+	}
+
+	/**
+	 * Publishes one documentation tree's Java runtime. A runtime built for that version
+	 * replaces the stub; without one the stub (which reports that execution is not
+	 * available) keeps the page working.
+	 */
+	private void copyRuntime(String version, Path target) throws IOException {
+		Files.createDirectories(target);
+		Path built = this.runtime == null ? null : this.runtime.resolve(version);
+		if (built != null && Files.isDirectory(built)) {
+			for (String name : RUNTIME_FILES) {
+				Path file = built.resolve(name);
+				if (!Files.exists(file)) {
+					throw new IOException("Runtime for version '" + version + "' is missing " + name + " in " + built);
+				}
+				Files.copy(file, target.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+			}
+			return;
+		}
+		try (InputStream in = DocGen.class.getResourceAsStream("/assets/yavi-runtime.js")) {
+			if (in == null) {
+				throw new IOException("Missing classpath asset: assets/yavi-runtime.js");
+			}
+			Files.copy(in, target.resolve("yavi-runtime.js"), StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 

@@ -6,9 +6,9 @@
  *   window.YaviRuntime.run(source) -> Promise<string>
  *
  * `source` is one complete Java compilation unit. The promise resolves with the
- * program's standard output and error text. A real runtime (for example one built
- * on GraalVM and preloading the YAVI jar) replaces only this file; the generator
- * and the pages do not change.
+ * program's standard output and error text. The generator publishes this stub as
+ * assets/runtime/<version>/yavi-runtime.js for every version tree that has no built
+ * runtime (see doc-site/runtime/ for the real one); the pages do not change.
  */
 (function () {
 	"use strict";

@@ -172,10 +172,11 @@ You can also check if the validation was successful with the `ConstraintViolatio
 
 ## Running the example
 
-The program below is a complete compilation unit. It defines the same validation and prints every violation. Press Run to execute it in the browser once the runtime is available.
+The program below is a complete compilation unit. It defines the same validation, validates an invalid `Car` and prints each violation it finds. Press Run to compile and execute it in your browser; the output appears below the cell.
 
 ```java runnable
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 
@@ -192,7 +193,10 @@ public class Main {
 
     public static void main(String[] args) {
         ConstraintViolations violations = validator.validate(new Car(null, "D", 1));
-        violations.forEach(v -> System.out.println(v.message()));
+        System.out.println("Validation failed: " + violations.size() + " constraint violations");
+        for (ConstraintViolation violation : violations) {
+            System.out.println("- " + violation.name() + ": " + violation.message());
+        }
     }
 }
 ```

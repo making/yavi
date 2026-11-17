@@ -49,7 +49,7 @@ class DocGenTest {
 		assertThat((List<?>) versions.get("versions")).hasSize(2);
 		assertThat((List<?>) versions.get("languages")).hasSize(2);
 
-		String runtime = Files.readString(site.resolve("assets/yavi-runtime.js"), StandardCharsets.UTF_8);
+		String runtime = Files.readString(site.resolve("assets/runtime/1.0/yavi-runtime.js"), StandardCharsets.UTF_8);
 		assertThat(runtime).contains("window.YaviRuntime").contains("run: function").contains("not available yet");
 		assertThat(site.resolve("assets/docs.js")).exists();
 		assertThat(site.resolve("assets/docs.css")).exists();
@@ -67,7 +67,7 @@ class DocGenTest {
 		assertThat(guide).contains("<a class=\"switch\" href=\"../../2.0/en/index.html\">2.0</a>")
 			.contains("<span class=\"switch active\">1.0</span>")
 			.contains("<a class=\"switch\" href=\"../ja/guide.html\">日本語</a>")
-			.contains("data-runtime-src=\"../../assets/yavi-runtime.js\"")
+			.contains("data-runtime-src=\"../../assets/runtime/1.0/yavi-runtime.js\"")
 			.contains("data-search-base=\".\"")
 			// Markdown links are rewritten to .html
 			.contains("href=\"index.html\"")
@@ -131,16 +131,36 @@ class DocGenTest {
 			.contains("<textarea class=\"cell-src\" spellcheck=\"false\" wrap=\"off\" rows=\"7\""
 					+ " aria-label=\"Editable Java source\">public class Main")
 			.contains("<pre class=\"cell-out\" hidden></pre>")
-			// A plain ```java block is untouched and gets its copy button from docs.js.
-			.contains("<pre><code class=\"language-java\">int x = 1;");
+			// A plain ```java block stays a static block, is highlighted at build time,
+			// and gets its copy button from docs.js.
+			.contains("<pre><code class=\"language-java\"><span class=\"tok-key\">int</span> x = "
+					+ "<span class=\"tok-num\">1</span>;");
 		// Exactly one cell on the page.
 		assertThat(code.split("class=\"code-cell\"", -1)).hasSize(2);
 		// A page without a cell carries only the lazy data attribute, never an eager
 		// <script> tag for the runtime.
 		String index = Files.readString(site.resolve("1.0/en/index.html"), StandardCharsets.UTF_8);
 		assertThat(index).doesNotContain("class=\"code-cell\"")
-			.doesNotContain("<script src=\"../../assets/yavi-runtime.js\"")
-			.contains("data-runtime-src=\"../../assets/yavi-runtime.js\"");
+			.doesNotContain("<script src=\"../../assets/runtime/1.0/yavi-runtime.js\"")
+			.contains("data-runtime-src=\"../../assets/runtime/1.0/yavi-runtime.js\"");
+	}
+
+	/**
+	 * A runtime built for a version replaces the stub for that version only; versions
+	 * without a build keep the stub, whose cells explain that execution is unavailable.
+	 */
+	@Test
+	void aBuiltRuntimeReplacesTheStubPerVersion(@TempDir Path tmp) throws IOException {
+		Path runtime = Files.createDirectories(tmp.resolve("runtime/1.0"));
+		Files.writeString(runtime.resolve("yavi-runtime.js"), "window.YaviRuntime = { real: true };");
+		Files.writeString(runtime.resolve("yavi-runtime-wasm.js"), "// launcher");
+		Files.writeString(runtime.resolve("yavi-runtime-wasm.js.wasm"), "wasm");
+		Path out = tmp.resolve("site");
+		new DocGen(FIXTURE, out, tmp.resolve("runtime")).generate();
+		assertThat(Files.readString(out.resolve("assets/runtime/1.0/yavi-runtime.js"))).contains("real: true");
+		assertThat(out.resolve("assets/runtime/1.0/yavi-runtime-wasm.js.wasm")).hasContent("wasm");
+		assertThat(Files.readString(out.resolve("assets/runtime/2.0/yavi-runtime.js")))
+			.contains("Code execution is not available yet");
 	}
 
 	@Test

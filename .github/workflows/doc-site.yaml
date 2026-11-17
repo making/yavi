@@ -39,12 +39,48 @@ jobs:
         java-version: '21'
         distribution: 'liberica'
         cache: maven
+    # The runnable cells execute Java in a Web Image (doc-site/runtime). Building it needs
+    # Oracle GraalVM 25.5 (javac and Espresso on the WebAssembly backend) and Binaryen.
+    - name: Set up GraalVM
+      uses: graalvm/setup-graalvm@v1
+      with:
+        # A 25.5 release: the Web Image backend and Espresso on it need 25.5 (25.0.x
+        # cannot compile Truffle for WebAssembly).
+        version: '25.5'
+        distribution: 'graalvm'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        cache: maven
+    - name: Set up Binaryen
+      run: |
+        set -euo pipefail
+        curl -sSL -o binaryen.tar.gz \
+          https://github.com/WebAssembly/binaryen/releases/download/version_130/binaryen-version_130-x86_64-linux.tar.gz
+        tar xzf binaryen.tar.gz
+        echo "$PWD/binaryen-version_130/bin" >> "$GITHUB_PATH"
+        echo "$PWD/binaryen-version_130/lib" >> "$LD_LIBRARY_PATH"
+    - name: Build the browser runtime
+      run: |
+        set -euo pipefail
+        # The Espresso/Truffle artifacts must match the installed GraalVM exactly; take
+        # the version from the release string instead of duplicating it here.
+        GRAALVM_MVN_VERSION=$(native-image --version | sed -nE 's/.*Oracle GraalVM ([0-9.]+)\+.*/\1/p' | head -1)
+        echo "Building the runtime for GraalVM $GRAALVM_MVN_VERSION"
+        ./mvnw -V --no-transfer-progress -f doc-site/runtime/pom.xml -Pweb package -DskipTests \
+          -Dgraalvm.version="$GRAALVM_MVN_VERSION"
+    - name: Test the browser runtime
+      run: node --experimental-wasm-exnref doc-site/runtime/test/run.js
+    - name: Set up JDK 21 for the generator
+      uses: actions/setup-java@v6
+      with:
+        java-version: '21'
+        distribution: 'liberica'
+        cache: maven
     - name: Unit Tests
       run: ./mvnw -V --no-transfer-progress -f doc-site/pom.xml test
     - name: Build the generator
       run: ./mvnw -V --no-transfer-progress -f doc-site/pom.xml package -DskipTests
     - name: Generate the site
-      run: java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out _site
+      run: java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out _site --runtime doc-site/runtime/target/web
     - name: Check the generated site
       run: |
         set -euo pipefail
@@ -55,6 +91,9 @@ jobs:
             0.17/en/getting-started.html \
             0.17/ja/index.html \
             0.17/en/search-index.json \
+            assets/runtime/0.17/yavi-runtime.js \
+            assets/runtime/0.17/yavi-runtime-wasm.js \
+            assets/runtime/0.17/yavi-runtime-wasm.js.wasm \
             getting-started.html \
             built-in-constraints.html; do
           test -f "_site/${path}" || { echo "missing _site/${path}"; exit 1; }

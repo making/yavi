@@ -172,10 +172,11 @@ class CarTest {
 
 ## 例を実行する
 
-次のプログラムは完全なコンパイル単位です。同じ検証を定義し、すべての違反を出力します。ランタイムが利用可能になれば、Run を押してブラウザで実行できます。
+次のプログラムは完全なコンパイル単位です。同じ検証を定義し、不正な `Car` を検証して見つかった違反を出力します。Run を押すとブラウザでコンパイル・実行され、結果がセルの下に表示されます。
 
 ```java runnable
 import am.ik.yavi.builder.ValidatorBuilder;
+import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.Validator;
 
@@ -192,7 +193,10 @@ public class Main {
 
     public static void main(String[] args) {
         ConstraintViolations violations = validator.validate(new Car(null, "D", 1));
-        violations.forEach(v -> System.out.println(v.message()));
+        System.out.println("Validation failed: " + violations.size() + " constraint violations");
+        for (ConstraintViolation violation : violations) {
+            System.out.println("- " + violation.name() + ": " + violation.message());
+        }
     }
 }
 ```

@@ -24,13 +24,15 @@ import com.vladsch.flexmark.util.html.MutableAttributes;
  * form. flexmark renders its info string as the code element's classes, so the block
  * arrives as {@code <pre><code class="language-java runnable">...}. This transformer
  * replaces each such block with an editable {@code <textarea>} plus a Run button and an
- * output area. {@code docs.js} lazily loads {@code assets/yavi-runtime.js} on the first
- * Run and hands the cell's source to {@code window.YaviRuntime.run(source)}; the source
- * is a complete compilation unit (see doc-site/README.md for the contract).
+ * output area. {@code docs.js} lazily loads the tree's runtime ({@code
+ * assets/runtime/<version>/yavi-runtime.js}) on the first Run and hands the cell's source
+ * to {@code window.YaviRuntime.run(source)}; the source is a complete compilation unit
+ * (see doc-site/README.md for the contract).
  *
  * <p>
  * Every other block -- a plain {@code ```java}, {@code ```bash}, a console transcript --
- * stays static and gets a copy button from {@code docs.js}.
+ * stays static and gets a copy button from {@code docs.js}; a block of a language
+ * {@link CodeHighlighter} knows is highlighted at build time.
  */
 public final class RunnableBlockTransformer {
 
@@ -83,8 +85,9 @@ public final class RunnableBlockTransformer {
 	}
 
 	/**
-	 * Replaces runnable {@code java runnable} blocks in {@code html} with cells; every
-	 * other block is left untouched.
+	 * Replaces runnable {@code java runnable} blocks in {@code html} with cells,
+	 * highlights the static blocks of a language the highlighter knows, and leaves every
+	 * other block untouched.
 	 */
 	public static String transform(String html) {
 		Matcher matcher = BLOCK.matcher(html);
@@ -93,14 +96,23 @@ public final class RunnableBlockTransformer {
 			String marker = matcher.group(1);
 			String classes = matcher.group(2);
 			String escapedCode = matcher.group(3);
+			String language = language(classes);
 			String replacement = matcher.group();
-			if ((isRunnable(marker) || isRunnable(classes)) && "java".equals(language(classes))) {
+			if ((isRunnable(marker) || isRunnable(classes)) && "java".equals(language)) {
 				replacement = runnableCell(escapedCode);
+			}
+			else if (CodeHighlighter.supports(language)) {
+				replacement = "<pre" + classAttribute(marker) + "><code" + classAttribute(classes) + ">"
+						+ CodeHighlighter.highlight(language, CodeHighlighter.unescape(escapedCode)) + "</code></pre>";
 			}
 			matcher.appendReplacement(out, Matcher.quoteReplacement(replacement));
 		}
 		matcher.appendTail(out);
 		return out.toString();
+	}
+
+	private static String classAttribute(String classes) {
+		return (classes == null) ? "" : " class=\"" + classes + "\"";
 	}
 
 	private static boolean isRunnable(String classes) {
