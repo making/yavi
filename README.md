@@ -56,33 +56,15 @@ YAVI into your application.
 
 #### Project set up
 
-This guide uses the API of YAVI 0.18.0, which is not released yet. In order to use its snapshot within a Maven project, add the following dependency and repository to
-your `pom.xml`:
+This guide uses the API of YAVI 0.18.0. Add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.18.0-SNAPSHOT</version>
+    <version>0.18.0</version>
 </dependency>
 ```
-
-```xml
-<repositories>
-    <repository>
-        <id>central-snapshots</id>
-        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
-        <releases>
-            <enabled>false</enabled>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
-    </repository>
-</repositories>
-```
-
-The latest release is 0.17.3; see [the reference documentation](https://yavi.ik.am) for its API.
 
 This tutorial uses JUnit and AssertJ. Add the following dependencies as needed:
 
