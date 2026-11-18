@@ -21,7 +21,8 @@ git push origin ${VERSION}
 # Before the release, the new documentation version is not the default and its
 # yavi_release is "<VERSION>-SNAPSHOT" (see doc-site/content/versions.yaml). Once the
 # artifact is on Maven Central, in doc-site/content/versions.yaml:
-#   - default_version to "<VERSION>"
+#   - default_version to "<VERSION>". This is what makes index.html and the
+#     unversioned page stubs redirect to the new version.
 #   - yavi_release of "<VERSION>" to "<VERSION>"
 git add doc-site/content/versions.yaml
 git commit -m "Release the ${VERSION} documentation"
