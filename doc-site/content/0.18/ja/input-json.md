@@ -14,67 +14,7 @@ YAVI は JSON ライブラリに依存しません。リーダーはツリーモ
 
 ## 入力リーダーの実装
 
-ノード型の `CoercibleInputReader` を実装します。`coercingStrings()` は、スカラーがすべて文字列のツリーを読み取れるようにします。
-
-```java
-import java.util.Map;
-
-import am.ik.yavi.core.CoercibleInputReader;
-import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.JsonNode;
-
-public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
-
-    public static final JsonNodeReader INSTANCE = new JsonNodeReader();
-
-    @Override
-    public boolean isNull(JsonNode node) {
-        return node.isNull() || node.isMissingNode();
-    }
-
-    @Override
-    public Object value(JsonNode node) { // a scalar as a JDK type
-        if (node.isString()) {
-            return node.stringValue();
-        }
-        if (node.isNumber()) {
-            return node.numberValue();
-        }
-        if (node.isBoolean()) {
-            return node.booleanValue();
-        }
-        return node;
-    }
-
-    @Override
-    public boolean isObject(JsonNode node) {
-        return node.isObject();
-    }
-
-    @Override
-    public @Nullable JsonNode property(JsonNode object, String name) {
-        return object.get(name); // null if absent
-    }
-
-    @Override
-    public Iterable<Map.Entry<String, JsonNode>> properties(JsonNode object) {
-        return object.properties();
-    }
-
-    @Override
-    public boolean isArray(JsonNode node) {
-        return node.isArray();
-    }
-
-    @Override
-    public Iterable<JsonNode> elements(JsonNode array) {
-        return array;
-    }
-
-}
-```
-
-上記のクラスは Jackson 3（`tools.jackson.databind.JsonNode`）を使います。リーダーはネストしたバリデータにも適用されるため、ネストしたバリデータは最終的に読む入力に関係なく `fromMap` で構築でき、Map のバリデータもノードを読み取れます（`mapValidator.readingWith(JsonNodeReader.INSTANCE)`）。
+ノード型の `CoercibleInputReader` を実装します。[Jackson](integrations-jackson.md#jsonnodereader) に `JsonNode` 用の完全なリーダーがあります。実装するメソッドは次のとおりです。
 
 | メソッド | 返すもの |
 | --- | --- |
@@ -83,6 +23,8 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 | `isObject(node)`, `property(object, name)`, `properties(object)` | オブジェクトのプロパティ |
 | `isArray(node)`, `elements(array)` | 配列の要素 |
 | `value(node, type)` | `type` として検査する前の値。独自の形式を読むにはオーバーライドする |
+
+リーダーはネストしたバリデータにも適用されるため、ネストしたバリデータは最終的に読む入力に関係なく `fromMap` で構築でき、Map のバリデータもノードを読み取れます（`mapValidator.readingWith(reader)`）。
 
 リーダーはツリーが保持しているとおりに数値を返します。パーサーが落とした情報をバリデータが復元することはできません。
 
@@ -103,31 +45,6 @@ public Object value(JsonValue node) {
 ```
 
 その他のメソッドは `JsonObject.asMap()` と `JsonArray.asList()` を使います。完全な実装は YAVI のテストに [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java) としてあります。このモジュールは JDK 28 のインキュベータであるため、別のソースルート（`src/test/java28`）に置かれています。それ以前の JDK では上記の Jackson のリーダーを使ってください。
-
-## マッパーの設定
-
-デフォルトの `JsonMapper` は小数を含む数値を `double` で保持し、二度書かれたキーの最後の値を残します。
-
-| JSON | デフォルトのマッパーでの読み取り |
-| --- | --- |
-| `0.10` | `_bigDecimal` は `0.1` を受け取る。スケールは失われる |
-| `12345678901234567.89` | `_bigDecimal` は `12345678901234568` を受け取る。17 桁だけが保たれる |
-| `19.990000000000000000001` | `_bigDecimal` は `19.99` を受け取り、`fractionDigits(2)` が受け入れる |
-| `1e400` | `_double` は `Infinity` を受け取る。`_bigDecimal` は `object.type` を報告する |
-| `{"role": "user", "role": "admin"}` | `role` は `admin` になる |
-
-数値を書かれたとおりに保ち、二度書かれたキーを拒否するようにマッパーを設定します。
-
-```java
-JsonMapper jsonMapper = JsonMapper.builder()
-        .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS) // 0.10 is the BigDecimal 0.10
-        .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION) // {"role": "user", "role": "admin"} is refused
-        .build();
-```
-
-これにより `_bigDecimal` はすべての桁とスケールを受け取り、`_double` と `_float` は一度だけ丸め、`1e400` は `Double` になりません。重複したキーを持つ文書は、検証前にパーサーが `JacksonException` で拒否します。
-
-同じ設定は、バリデータがツリーではなく Map を読む場合の `readValue(json, Map.class)` にも適用されます。
 
 ## 文字列の変換
 

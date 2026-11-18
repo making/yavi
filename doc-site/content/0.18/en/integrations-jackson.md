@@ -88,6 +88,8 @@ spring.jackson.read.strict-duplicate-detection=true
 
 The property names follow the Jackson features, so no builder is needed.
 
+The same settings apply to `readValue(json, Map.class)` when the validator reads a map instead of a tree.
+
 ## Duplicate keys and number fidelity
 
 | JSON | Read by a default mapper |

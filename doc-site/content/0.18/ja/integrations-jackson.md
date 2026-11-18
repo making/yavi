@@ -88,6 +88,8 @@ spring.jackson.read.strict-duplicate-detection=true
 
 プロパティ名は Jackson の機能名に対応しており、ビルダーは不要です。
 
+同じ設定は、バリデータがツリーではなく Map を読む場合の `readValue(json, Map.class)` にも適用されます。
+
 ## 重複キーと数値の忠実性
 
 | JSON | デフォルトのマッパーでの読み取り |
