@@ -82,6 +82,8 @@ Give a map to the validator.
 
 The following program is complete. Press the **Run** button below it to compile and execute the program in your browser; the output appears under the program. The first run downloads the WebAssembly runtime and can take several seconds, so the page may appear idle for a while. Later runs are faster.
 
+The input leaves out `manufacturer`, so the first run reports the missing property. The cell is editable: add `"manufacturer", "yavi"` to the `Map` and press **Run** again. The program then prints the created `Car` (`valid: Car[manufacturer=yavi, ...]`).
+
 ```java runnable
 import java.util.Map;
 

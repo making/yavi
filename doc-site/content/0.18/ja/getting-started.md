@@ -82,6 +82,8 @@ public record Car(String manufacturer, String licensePlate, Integer seatCount) {
 
 次のプログラムは完全なものです。下の **Run** ボタンを押すと、ブラウザ内でコンパイルして実行できます。結果はプログラムの下に表示されます。初回は WebAssembly ランタイムの読み込みに数秒かかることがあり、その間はページが止まって見える場合があります。2回目以降は速くなります。
 
+入力には `manufacturer` がないため、最初の実行では不足しているプロパティが報告されます。セルは編集できます。`Map` に `"manufacturer", "yavi"` を追加して再度 **Run** を押してください。作成された `Car`（`valid: Car[manufacturer=yavi, ...]`）が出力されます。
+
 ```java runnable
 import java.util.Map;
 
