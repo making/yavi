@@ -62,7 +62,11 @@ import com.vladsch.flexmark.parser.Parser;
  *
  * <pre>
  * java -jar yavi-docgen.jar --source content --out target/site
+ * java -jar yavi-docgen.jar skill --source content --out target/site/skill
  * </pre>
+ *
+ * The {@code skill} sub-command is {@link SkillGen}, which packages the newest
+ * documentation tree as a Claude skill beside the site.
  */
 public final class DocGen {
 
@@ -132,6 +136,10 @@ public final class DocGen {
 	}
 
 	public static void main(String[] args) throws IOException {
+		if (args.length > 0 && args[0].equals("skill")) {
+			SkillGen.main(java.util.Arrays.copyOfRange(args, 1, args.length));
+			return;
+		}
 		Path source = Path.of("content");
 		Path out = Path.of("target", "site");
 		Path runtime = null;

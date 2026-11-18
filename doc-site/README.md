@@ -59,6 +59,45 @@ The `<out>/<page>.html` stubs keep the unversioned URLs of the old AsciiDoc site
 (`/getting-started.html`, `/built-in-constraints.html`, ...) working: each forwards to
 the same page under the default version and language.
 
+## Agent skill
+
+`SkillGen` publishes the newest documented version as a Claude skill beside the site
+(`<out>/skill`), generated from the same Markdown: a `SKILL.md` built from
+`src/main/resources/skill/SKILL.template.md`, every page of the tree as a bundled
+reference, the plugin and a one-file marketplace. `content/0.18/en/agent-skill.md` is the
+install page and the plugin's homepage, so the instructions exist once.
+
+```bash
+# into the already generated site; --docs-version and the language default to the
+# newest tree and en
+java -jar doc-site/target/yavi-docgen.jar skill \
+  --source doc-site/content --out doc-site/target/site/skill \
+  --version 0.18.42 --commit "$(git rev-parse HEAD)" \
+  --site-base https://yavi.ik.am
+```
+
+The deployment workflow computes the version as `<documented version>.<commits that can
+change the skill>` and passes the published `version.json` back as
+`--previous-version`/`--previous-hash`; when the bundle is byte for byte the one already
+published, the version is kept so an installation is not told to re-download itself.
+
+Output tree:
+
+```
+<out>/index.html              install page, rendered from agent-skill.md
+<out>/VERSION, version.json   polled by a client to see whether it is stale
+<out>/yavi/SKILL.md           the skill
+<out>/yavi/references/**      the documentation tree, plus the generated contents.md
+<out>/yavi-skill.tar.gz       -> ~/.claude/skills/
+<out>/yavi.skill              the same tree as a zip
+<out>/yavi-full.md            everything concatenated, for agents without a skill loader
+<out>/yavi-plugin.zip         the skill as a Claude Code plugin
+<out>/marketplace.json        the marketplace listing that plugin
+```
+
+Every page a bundle carries is mirrored verbatim; a relative link that leaves the tree,
+such as one to a file in the repository, is rewritten to the site URL it means.
+
 ## Content layout
 
 ```

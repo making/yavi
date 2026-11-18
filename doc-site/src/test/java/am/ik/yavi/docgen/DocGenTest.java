@@ -262,8 +262,8 @@ class DocGenTest {
 	@Test
 	void theShippedContentBuilds(@TempDir Path tmp) throws IOException {
 		new DocGen(Path.of("content"), tmp.resolve("site")).generate();
-		assertThat(countPages(tmp.resolve("site/0.18/en"))).isEqualTo(34);
-		assertThat(countPages(tmp.resolve("site/0.18/ja"))).isEqualTo(34);
+		assertThat(countPages(tmp.resolve("site/0.18/en"))).isEqualTo(35);
+		assertThat(countPages(tmp.resolve("site/0.18/ja"))).isEqualTo(35);
 		assertThat(tmp.resolve("site/0.17/en/search-index.json")).exists();
 		assertThat(tmp.resolve("site/0.17/ja/search-index.json")).exists();
 		assertThat(tmp.resolve("site/0.18/en/search-index.json")).exists();
