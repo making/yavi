@@ -350,6 +350,9 @@ public final class DocGen {
 	 * section anchors have to be the ones the page will actually carry.
 	 */
 	private String renderBody(Tree tree, String markdown, String mdFile, String title) throws IOException {
+		// A page may name the YAVI release its tree embeds, so that the dependency in a
+		// pom.xml follows versions.yaml.
+		markdown = markdown.replace("{{yavi_release}}", yaviRelease(tree.version()));
 		String body = wrapTables(this.renderer.render(this.parser.parse(markdown)));
 		body = alignHeadingIds(tree, body, mdFile);
 		validateMarkdownLinks(tree, body, mdFile);

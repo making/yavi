@@ -15,7 +15,7 @@ Add YAVI to `pom.xml`:
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.18.0</version>
+    <version>{{yavi_release}}</version>
 </dependency>
 ```
 

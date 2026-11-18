@@ -79,6 +79,15 @@ JsonMapper jsonMapper = JsonMapper.builder()
 
 The imports are `tools.jackson.databind.json.JsonMapper`, `tools.jackson.databind.DeserializationFeature` and `tools.jackson.core.StreamReadFeature`.
 
+In Spring Boot 4, the auto-configured `JsonMapper` takes the same features from `application.properties`:
+
+```properties
+spring.jackson.deserialization.use-big-decimal-for-floats=true
+spring.jackson.read.strict-duplicate-detection=true
+```
+
+The property names follow the Jackson features, so no builder is needed.
+
 ## Duplicate keys and number fidelity
 
 | JSON | Read by a default mapper |

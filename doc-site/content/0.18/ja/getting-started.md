@@ -15,7 +15,7 @@ YAVI へようこそ。このページでは依存関係を追加し、最初の
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.18.0</version>
+    <version>{{yavi_release}}</version>
 </dependency>
 ```
 

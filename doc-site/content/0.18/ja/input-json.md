@@ -86,6 +86,24 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
 リーダーはツリーが保持しているとおりに数値を返します。パーサーが落とした情報をバリデータが復元することはできません。
 
+## JDK の JSON API（JEP 540）
+
+JDK は JSON API をインキュベートしています（JDK 28 の [JEP 540](https://openjdk.org/jeps/540)）。独自のツリーモデルを提供するため、JSON ライブラリなしでリーダーを書けます。
+
+```java
+@Override
+public Object value(JsonValue node) {
+    return switch (node) {
+        case JsonString string -> string.asString();
+        case JsonNumber number -> new BigDecimal(number.toString()); // the text of the number, so that no digit is lost
+        case JsonBoolean bool -> bool.asBoolean();
+        default -> node;
+    };
+}
+```
+
+その他のメソッドは `JsonObject.asMap()` と `JsonArray.asList()` を使います。完全な実装は YAVI のテストに [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java) としてあります。このモジュールは JDK 28 のインキュベータであるため、別のソースルート（`src/test/java28`）に置かれています。それ以前の JDK では上記の Jackson のリーダーを使ってください。
+
 ## マッパーの設定
 
 デフォルトの `JsonMapper` は小数を含む数値を `double` で保持し、二度書かれたキーの最後の値を残します。

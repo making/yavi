@@ -127,6 +127,8 @@ not sidebar rows. Every page named in `nav.yaml` must have its Markdown file.
 - Internal links must be written as `page.md` or `page.md#anchor`; the build rewrites
   them to `.html` and fails when a relative link names a page the tree does not publish.
   Absolute URLs ending in `.md` are left alone.
+- `{{yavi_release}}` in a page is replaced with the `yavi_release` of the page's version
+  from `versions.yaml`, so a dependency in a `pom.xml` follows the release mapping.
 - A translated page must have the same heading layout, in the same order, as the default
   language's page of the same path. Translations keep their own heading text but adopt
   the reference language's anchors by position, so a link written once works in every

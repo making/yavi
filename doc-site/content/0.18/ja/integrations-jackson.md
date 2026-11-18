@@ -79,6 +79,15 @@ JsonMapper jsonMapper = JsonMapper.builder()
 
 インポートは `tools.jackson.databind.json.JsonMapper`、`tools.jackson.databind.DeserializationFeature`、`tools.jackson.core.StreamReadFeature` です。
 
+Spring Boot 4 では、自動構成された `JsonMapper` が同じ機能を `application.properties` から読み取ります。
+
+```properties
+spring.jackson.deserialization.use-big-decimal-for-floats=true
+spring.jackson.read.strict-duplicate-detection=true
+```
+
+プロパティ名は Jackson の機能名に対応しており、ビルダーは不要です。
+
 ## 重複キーと数値の忠実性
 
 | JSON | デフォルトのマッパーでの読み取り |

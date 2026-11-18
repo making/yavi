@@ -15,7 +15,7 @@
             <path>
                 <groupId>am.ik.yavi</groupId>
                 <artifactId>yavi</artifactId>
-                <version>0.18.0</version>
+                <version>{{yavi_release}}</version>
             </path>
         </annotationProcessorPaths>
     </configuration>
@@ -119,4 +119,4 @@ enum の対象は `ObjectConstraintMeta` を使います。
 
 * 生成コードは API と同様に JSpecify (`@org.jspecify.annotations.Nullable`) でアノテーションされます。生成ソースをそのアノテーションに対してコンパイルする場合は、`org.jspecify:jspecify` を依存関係に追加してください。
 * `Arguments1` から `Arguments16` はレコードで、メソッドの生成メタは上記のようにレシーバのコンテナを参照します。
-* `annotationProcessorPaths` には、プロジェクトに合う YAVI アーティファクトのバージョン (ここでは `0.18.0`) を指定します。
+* `annotationProcessorPaths` には、プロジェクトに合う YAVI のバージョンを指定します。例はこのドキュメントのバージョンに従います。

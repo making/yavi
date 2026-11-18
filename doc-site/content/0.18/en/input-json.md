@@ -86,6 +86,24 @@ The class above uses Jackson 3 (`tools.jackson.databind.JsonNode`). The reader a
 
 A reader returns a number as the tree holds it. A validator cannot recover what the parser dropped.
 
+## The JDK JSON API (JEP 540)
+
+The JDK incubates a JSON API, [JEP 540](https://openjdk.org/jeps/540) in JDK 28. It provides a tree model of its own, so a reader can be written without a JSON library:
+
+```java
+@Override
+public Object value(JsonValue node) {
+    return switch (node) {
+        case JsonString string -> string.asString();
+        case JsonNumber number -> new BigDecimal(number.toString()); // the text of the number, so that no digit is lost
+        case JsonBoolean bool -> bool.asBoolean();
+        default -> node;
+    };
+}
+```
+
+The other methods use `JsonObject.asMap()` and `JsonArray.asList()`. YAVI's test suite contains the complete implementation, [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java). It lives in a separate source root (`src/test/java28`) because the module is an incubator of JDK 28; on an earlier JDK, use the Jackson reader above.
+
 ## Mapper configuration
 
 A default `JsonMapper` holds a number with a fraction as a `double` and keeps the last of a key written twice:

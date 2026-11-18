@@ -15,7 +15,7 @@ The processor is packaged in the `yavi` artifact. With JDK 21 and earlier, `mvn 
             <path>
                 <groupId>am.ik.yavi</groupId>
                 <artifactId>yavi</artifactId>
-                <version>0.18.0</version>
+                <version>{{yavi_release}}</version>
             </path>
         </annotationProcessorPaths>
     </configuration>
@@ -119,4 +119,4 @@ An enum target uses `ObjectConstraintMeta`.
 
 * The generated code is annotated with JSpecify (`@org.jspecify.annotations.Nullable`), as the API is. Add `org.jspecify:jspecify` to the dependencies if the generated sources are compiled against the annotation.
 * `Arguments1` to `Arguments16` are records, and the generated meta of a method refers to the container of the receiver, as shown above.
-* Use the version of the YAVI artifact that matches the project, `0.18.0` here, in `annotationProcessorPaths`.
+* Use the YAVI version of the project in `annotationProcessorPaths`; the example follows the version of this documentation.

@@ -15,6 +15,46 @@ Validated<User> validated = userValidator.validate(Map.of(
         "email", "jd@example.com", "age", 30, "role", "ADMIN"));
 ```
 
+次の完全なプログラムは Map を `User` に検証し、生成されたオブジェクトか、すべての違反の名前とメッセージを出力します。
+
+```java runnable
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.Validated;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record User(String email, Integer age) {
+    }
+
+    static final ObjectInputValidator<User> validator = Yavi.schema()
+            ._string("email", c -> c.notBlank().email())
+            ._integer("age", c -> c.greaterThanOrEqual(0))
+            .fromMap(User::new);
+
+    public static void main(String[] args) {
+        for (Map<String, Object> input : java.util.List.<Map<String, Object>>of(
+                Map.of("email", "jd@example.com", "age", 30),
+                Map.of("email", "not-an-email", "age", -1))) {
+            switch (validator.validate(input)) {
+                case Validated.Valid<User>(User user) -> System.out.println("valid: " + user);
+                case Validated.Invalid<User>(ConstraintViolations violations) -> violations
+                    .forEach(v -> System.out.println(v.name() + ": " + v.message()));
+            }
+        }
+    }
+
+}
+```
+<!-- run: expected output
+valid: User[email=jd@example.com, age=30]
+email: "email" must be a valid email address
+age: "age" must be greater than or equal to 0
+-->
+
 ## Map からオブジェクトを読む
 
 値はプロパティの型に対して検査されます。

@@ -32,6 +32,49 @@ ObjectInputValidator<User> userValidator = Yavi.schema()
 * `optional()` は `Optional<String>` を生成します。キーの不在または `null` に対して `Optional.empty()` です。
 * `defaultValue(20)` は、キーの不在または `null` に対して既定値を生成します。
 
+次のプログラムは `name` だけを送るため、`nickname` が `null`、`bio` が `Optional.empty()`、`age` が既定値の `User` を出力し、続けて `name` を省略して `age` を負にした入力の違反を出力します。
+
+```java runnable
+import java.util.Map;
+import java.util.Optional;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record User(String name, String nickname, Optional<String> bio, Integer age) {
+    }
+
+    static final ObjectInputValidator<User> validator = Yavi.schema()
+            ._string("name", c -> c.notBlank())
+            ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
+            ._string("bio", c -> c.lessThanOrEqual(500)).optional()
+            ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+            .fromMap(User::new);
+
+    public static void main(String[] args) {
+        // Only "name" is sent: nickname is null, bio is empty and age takes its default.
+        User user = validator.validated(Map.of("name", "yavi"));
+        System.out.println(user);
+
+        // "name" is missing and "age" is out of range.
+        ConstraintViolations violations = validator.validate(Map.of("age", -1)).errors();
+        for (ConstraintViolation violation : violations) {
+            System.out.println(violation.name() + " " + violation.messageKey() + ": " + violation.message());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+User[name=yavi, nickname=null, bio=Optional.empty, age=20]
+name object.required: "name" is required
+age numeric.greaterThanOrEqual: "age" must be greater than or equal to 0
+-->
+
 `fromMap` に渡す関数は、生成される型を受け入れなければなりません。NullAway や Kotlin を使う場合、`nullable()` のプロパティには `@Nullable` の引数（Kotlin では `String?`）が必要で、`optional()` には `Optional<String>` が必要です。
 
 効果のない修飾を含む連鎖はコンパイルできません。`.nullable().optional()`、`.defaultValue(1).nullable()`、`.defaultValue(1).recover(2)` です。既に `null` を受け入れるバリデータで追加したプロパティ、たとえば `_integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))` は、`null` を受け入れる二つ目の修飾を取りません。

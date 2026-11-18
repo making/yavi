@@ -287,6 +287,10 @@ class DocGenTest {
 			.yaviRelease();
 		assertThat(Files.readString(tmp.resolve("site/0.18/en/index.html"), StandardCharsets.UTF_8))
 			.contains("YAVI " + release);
+		// A page that names {{yavi_release}} follows the same mapping.
+		assertThat(Files.readString(tmp.resolve("site/0.18/en/getting-started.html"), StandardCharsets.UTF_8))
+			.contains(release)
+			.doesNotContain("{{yavi_release}}");
 		assertThat(countPages(tmp.resolve("site/0.17/en"))).isEqualTo(10);
 		assertThat(countPages(tmp.resolve("site/0.17/ja"))).isEqualTo(10);
 		for (String lang : List.of("en", "ja")) {

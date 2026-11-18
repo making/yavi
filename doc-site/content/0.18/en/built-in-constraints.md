@@ -2,6 +2,32 @@
 
 YAVI provides built-in constraints for each supported type. The same constraint object is used by the schema style and by the classic style, so each constraint is documented once on this page.
 
+The following program applies `email()`, `ip()` and `multipleOf(3)` and prints the violation for each invalid value.
+
+```java runnable
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = new ConstraintViolations();
+        violations.addAll(Yavi._string("email", c -> c.email()).validate("not-an-email").errors());
+        violations.addAll(Yavi._string("host", c -> c.ip()).validate("999.0.0.1").errors());
+        violations.addAll(Yavi._integer("quantity", c -> c.multipleOf(3)).validate(10).errors());
+        for (var violation : violations) {
+            System.out.println(violation.name() + ": " + violation.message());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+email: "email" must be a valid email address
+host: "host" must be a valid IP address
+quantity: "quantity" must be a multiple of 3
+-->
+
 ```java
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.Validator;

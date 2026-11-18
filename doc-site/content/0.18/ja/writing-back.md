@@ -18,6 +18,40 @@ employeeValidator.toMap(employee);
 // {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
 ```
 
+次の完全なプログラムは可逆スキーマを構築してオブジェクトを生成し、`toMap` が書き戻す Map を出力し、それを再度検証します。
+
+```java runnable
+import java.util.Optional;
+import java.util.TreeMap;
+
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record User(String name, String email, Optional<String> nickname) {
+    }
+
+    static final ObjectInputValidator.Reversible<User> validator = Yavi.reversibleSchema()
+            ._string("name", c -> c.notBlank())
+            ._string("email", c -> c.notBlank().email())
+            ._string("nickname").optional()
+            .fromMapReversible(User::new, User::name, User::email, User::nickname);
+
+    public static void main(String[] args) {
+        User user = new User("Taro", "taro@example.com", Optional.empty());
+        var map = new TreeMap<>(validator.toMap(user));
+        System.out.println(map);
+        System.out.println("round trip valid: " + validator.validate(map).isValid());
+    }
+
+}
+```
+<!-- run: expected output
+{email=taro@example.com, name=Taro, nickname=null}
+round trip valid: true
+-->
+
 ## 可逆スキーマ
 
 `Yavi.reversibleSchema()` は `Yavi.schema()` と同じメソッドを持ちますが、スキーマが `ValueValidator` を取る箇所で `ReversibleValueValidator` を取ります。これは型によって逆変換を知っているバリデータです。逆変換を指定せずに値をマップするバリデータは、追加された箇所でコンパイルできません。

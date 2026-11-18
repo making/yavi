@@ -2,6 +2,32 @@
 
 YAVI は対応する型ごとに組み込みの制約を提供します。スキーマスタイルとクラシックスタイルは同じ制約オブジェクトを使うため、各制約はこのページで一度だけ説明します。
 
+次のプログラムは無効な値に `email()`、`ip()`、`multipleOf(3)` を適用し、各違反を出力します。
+
+```java runnable
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    public static void main(String[] args) {
+        ConstraintViolations violations = new ConstraintViolations();
+        violations.addAll(Yavi._string("email", c -> c.email()).validate("not-an-email").errors());
+        violations.addAll(Yavi._string("host", c -> c.ip()).validate("999.0.0.1").errors());
+        violations.addAll(Yavi._integer("quantity", c -> c.multipleOf(3)).validate(10).errors());
+        for (var violation : violations) {
+            System.out.println(violation.name() + ": " + violation.message());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+email: "email" must be a valid email address
+host: "host" must be a valid IP address
+quantity: "quantity" must be a multiple of 3
+-->
+
 ```java
 import am.ik.yavi.builder.ValidatorBuilder;
 import am.ik.yavi.core.Validator;

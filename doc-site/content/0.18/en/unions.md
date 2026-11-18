@@ -77,6 +77,70 @@ if (violations.get(0) instanceof ConstraintViolation.NoAlternativeMatched unmatc
 }
 ```
 
+The program below builds the union, validates a value that matches neither alternative and prints the violation name, its message and the violations of each alternative.
+
+```java runnable
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    sealed interface Contact permits EmailContact, PhoneContact {
+    }
+
+    record EmailContact(String value) implements Contact {
+    }
+
+    record PhoneContact(String value) implements Contact {
+    }
+
+    record Envelope(Contact contact) {
+    }
+
+    static final ObjectInputValidator<EmailContact> emailContact = Yavi.schema()
+            ._string("value", c -> c.email())
+            .fromMap(EmailContact::new);
+
+    static final ObjectInputValidator<PhoneContact> phoneContact = Yavi.schema()
+            ._string("value", c -> c.pattern("\\+[0-9]+"))
+            .fromMap(PhoneContact::new);
+
+    static final ValueValidator<Map<String, Object>, Contact> contact = ValueValidator.anyOf(emailContact,
+            phoneContact);
+
+    static final ObjectInputValidator<Envelope> validator = Yavi.schema()
+            ._object("contact", contact)
+            .fromMap(Envelope::new);
+
+    public static void main(String[] args) {
+        // "x" is neither an email address nor a phone number.
+        ConstraintViolations violations = validator.validate(Map.of("contact", Map.of("value", "x"))).errors();
+        ConstraintViolation violation = violations.get(0);
+        System.out.println(violation.name() + " " + violation.messageKey());
+        System.out.println(violation.message());
+        if (violation instanceof ConstraintViolation.NoAlternativeMatched unmatched) {
+            System.out.println("alternatives: " + unmatched.alternatives().size());
+            for (ConstraintViolations alternative : unmatched.alternatives()) {
+                alternative.forEach(v -> System.out.println(v.name() + " " + v.messageKey()));
+            }
+        }
+    }
+
+}
+```
+<!-- run: expected output
+contact object.anyOf
+"contact" must satisfy at least one of the 2 alternatives
+alternatives: 2
+contact.value charSequence.email
+contact.value charSequence.pattern
+-->
+
 The violations of the alternatives are not mixed into the top-level list, because nothing there would tell which alternative a violation belongs to. A client that shows a specific message can pick the alternative with the fewest violations:
 
 ```java

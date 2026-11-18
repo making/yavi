@@ -39,6 +39,54 @@ ObjectInputValidator<User> userValidator = Yavi.schema()
 * 名前が空の要素バリデータは、要素のプロパティではなく要素自体の違反を報告します。
 * オブジェクトを読み取るバリデータを伴う `_list` は `addresses[0].street` を報告します。
 
+次のプログラムは、空の street と空の要素を、違反の位置を示す名前 `address.street` と `roles[1]` で報告します。
+
+```java runnable
+import java.util.List;
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record Address(String street, String city) {
+    }
+
+    record User(String email, Address address, List<String> roles) {
+    }
+
+    static final ObjectInputValidator<Address> addressValidator = Yavi.schema()
+            ._string("street", c -> c.notBlank())
+            ._string("city", c -> c.notBlank())
+            .fromMap(Address::new);
+
+    static final ObjectInputValidator<User> userValidator = Yavi.schema()
+            ._string("email", c -> c.notBlank().email())
+            ._object("address", addressValidator)
+            ._list("roles", Yavi._string(c -> c.notBlank()))
+            .fromMap(User::new);
+
+    public static void main(String[] args) {
+        // The street is blank and the second role is blank.
+        ConstraintViolations violations = userValidator
+                .validate(Map.of("email", "yavi@example.com", "address", Map.of("street", "", "city", "Tokyo"), "roles",
+                        List.of("admin", " ")))
+                .errors();
+        for (ConstraintViolation violation : violations) {
+            System.out.println(violation.name() + " " + violation.messageKey());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+address.street charSequence.notBlank
+roles[1] charSequence.notBlank
+-->
+
 ## Map
 
 `_map(name, valueValidator)` は Map の各値を検証します。キーはプロパティ名ではなくデータであるため、違反はキーの下に位置づけられます（`scores.math`）。

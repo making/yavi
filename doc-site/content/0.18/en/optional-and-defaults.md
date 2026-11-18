@@ -32,6 +32,49 @@ ObjectInputValidator<User> userValidator = Yavi.schema()
 * `optional()` produces `Optional<String>`: `Optional.empty()` for an absent key or `null`.
 * `defaultValue(20)` produces the default for an absent key or `null`.
 
+The program below sends only `name`, so it prints the created `User` with `nickname` as `null`, `bio` as `Optional.empty()` and the default `age`, and then the violations of an input that leaves `name` out and makes `age` negative.
+
+```java runnable
+import java.util.Map;
+import java.util.Optional;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record User(String name, String nickname, Optional<String> bio, Integer age) {
+    }
+
+    static final ObjectInputValidator<User> validator = Yavi.schema()
+            ._string("name", c -> c.notBlank())
+            ._string("nickname", c -> c.lessThanOrEqual(20)).nullable()
+            ._string("bio", c -> c.lessThanOrEqual(500)).optional()
+            ._integer("age", c -> c.greaterThanOrEqual(0)).defaultValue(20)
+            .fromMap(User::new);
+
+    public static void main(String[] args) {
+        // Only "name" is sent: nickname is null, bio is empty and age takes its default.
+        User user = validator.validated(Map.of("name", "yavi"));
+        System.out.println(user);
+
+        // "name" is missing and "age" is out of range.
+        ConstraintViolations violations = validator.validate(Map.of("age", -1)).errors();
+        for (ConstraintViolation violation : violations) {
+            System.out.println(violation.name() + " " + violation.messageKey() + ": " + violation.message());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+User[name=yavi, nickname=null, bio=Optional.empty, age=20]
+name object.required: "name" is required
+age numeric.greaterThanOrEqual: "age" must be greater than or equal to 0
+-->
+
 The function given to `fromMap` must accept the produced type. With NullAway or Kotlin, a `nullable()` property requires a `@Nullable` parameter (in Kotlin, `String?`), and `optional()` requires an `Optional<String>`.
 
 A modifier chain in which one modifier has no effect does not compile: `.nullable().optional()`, `.defaultValue(1).nullable()`, `.defaultValue(1).recover(2)`. A property added with a validator that already accepts `null`, such as `_integer(Yavi._integer("page", c -> c.positive()).defaultValue(1))`, takes no second modifier that accepts `null`.

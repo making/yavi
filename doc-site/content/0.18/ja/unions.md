@@ -77,6 +77,70 @@ if (violations.get(0) instanceof ConstraintViolation.NoAlternativeMatched unmatc
 }
 ```
 
+次のプログラムはユニオンを構築し、どの代替案にも一致しない値を検証して、違反名、メッセージ、各代替案の違反を出力します。
+
+```java runnable
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.core.ValueValidator;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    sealed interface Contact permits EmailContact, PhoneContact {
+    }
+
+    record EmailContact(String value) implements Contact {
+    }
+
+    record PhoneContact(String value) implements Contact {
+    }
+
+    record Envelope(Contact contact) {
+    }
+
+    static final ObjectInputValidator<EmailContact> emailContact = Yavi.schema()
+            ._string("value", c -> c.email())
+            .fromMap(EmailContact::new);
+
+    static final ObjectInputValidator<PhoneContact> phoneContact = Yavi.schema()
+            ._string("value", c -> c.pattern("\\+[0-9]+"))
+            .fromMap(PhoneContact::new);
+
+    static final ValueValidator<Map<String, Object>, Contact> contact = ValueValidator.anyOf(emailContact,
+            phoneContact);
+
+    static final ObjectInputValidator<Envelope> validator = Yavi.schema()
+            ._object("contact", contact)
+            .fromMap(Envelope::new);
+
+    public static void main(String[] args) {
+        // "x" is neither an email address nor a phone number.
+        ConstraintViolations violations = validator.validate(Map.of("contact", Map.of("value", "x"))).errors();
+        ConstraintViolation violation = violations.get(0);
+        System.out.println(violation.name() + " " + violation.messageKey());
+        System.out.println(violation.message());
+        if (violation instanceof ConstraintViolation.NoAlternativeMatched unmatched) {
+            System.out.println("alternatives: " + unmatched.alternatives().size());
+            for (ConstraintViolations alternative : unmatched.alternatives()) {
+                alternative.forEach(v -> System.out.println(v.name() + " " + v.messageKey()));
+            }
+        }
+    }
+
+}
+```
+<!-- run: expected output
+contact object.anyOf
+"contact" must satisfy at least one of the 2 alternatives
+alternatives: 2
+contact.value charSequence.email
+contact.value charSequence.pattern
+-->
+
 代替案の違反は最上位のリストに混ぜられません。そこでは、どの代替案の違反かがわからないためです。具体的なメッセージを表示するクライアントは、違反が最も少ない代替案を選べます。
 
 ```java

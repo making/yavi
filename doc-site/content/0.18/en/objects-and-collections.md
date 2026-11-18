@@ -39,6 +39,54 @@ ObjectInputValidator<User> userValidator = Yavi.schema()
 * An element validator with an empty name reports a violation on the element itself rather than on a property of it.
 * `_list` with a validator that reads an object reports `addresses[0].street`.
 
+The program below reports a blank street and a blank element with the names that locate each violation, `address.street` and `roles[1]`.
+
+```java runnable
+import java.util.List;
+import java.util.Map;
+
+import am.ik.yavi.core.ConstraintViolation;
+import am.ik.yavi.core.ConstraintViolations;
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record Address(String street, String city) {
+    }
+
+    record User(String email, Address address, List<String> roles) {
+    }
+
+    static final ObjectInputValidator<Address> addressValidator = Yavi.schema()
+            ._string("street", c -> c.notBlank())
+            ._string("city", c -> c.notBlank())
+            .fromMap(Address::new);
+
+    static final ObjectInputValidator<User> userValidator = Yavi.schema()
+            ._string("email", c -> c.notBlank().email())
+            ._object("address", addressValidator)
+            ._list("roles", Yavi._string(c -> c.notBlank()))
+            .fromMap(User::new);
+
+    public static void main(String[] args) {
+        // The street is blank and the second role is blank.
+        ConstraintViolations violations = userValidator
+                .validate(Map.of("email", "yavi@example.com", "address", Map.of("street", "", "city", "Tokyo"), "roles",
+                        List.of("admin", " ")))
+                .errors();
+        for (ConstraintViolation violation : violations) {
+            System.out.println(violation.name() + " " + violation.messageKey());
+        }
+    }
+
+}
+```
+<!-- run: expected output
+address.street charSequence.notBlank
+roles[1] charSequence.notBlank
+-->
+
 ## Maps
 
 `_map(name, valueValidator)` validates every value of a map. The keys are data, not property names, so a violation is located under the key (`scores.math`):

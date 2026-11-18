@@ -18,6 +18,40 @@ employeeValidator.toMap(employee);
 // {id=1, first_name=Taro, last_name=Yamada, email=taro@example.com, nickname=null, role=ADMIN}
 ```
 
+The following complete program builds a reversible schema, creates an object, and prints the map that `toMap` writes back and validates again.
+
+```java runnable
+import java.util.Optional;
+import java.util.TreeMap;
+
+import am.ik.yavi.input.ObjectInputValidator;
+import am.ik.yavi.validator.Yavi;
+
+public class Main {
+
+    record User(String name, String email, Optional<String> nickname) {
+    }
+
+    static final ObjectInputValidator.Reversible<User> validator = Yavi.reversibleSchema()
+            ._string("name", c -> c.notBlank())
+            ._string("email", c -> c.notBlank().email())
+            ._string("nickname").optional()
+            .fromMapReversible(User::new, User::name, User::email, User::nickname);
+
+    public static void main(String[] args) {
+        User user = new User("Taro", "taro@example.com", Optional.empty());
+        var map = new TreeMap<>(validator.toMap(user));
+        System.out.println(map);
+        System.out.println("round trip valid: " + validator.validate(map).isValid());
+    }
+
+}
+```
+<!-- run: expected output
+{email=taro@example.com, name=Taro, nickname=null}
+round trip valid: true
+-->
+
 ## Reversible schemas
 
 `Yavi.reversibleSchema()` has the same methods as `Yavi.schema()`, but takes a `ReversibleValueValidator` where a schema takes a `ValueValidator`: a validator that knows its reverse by its type. A validator that maps its value without saying how to go back does not compile where it is added.
