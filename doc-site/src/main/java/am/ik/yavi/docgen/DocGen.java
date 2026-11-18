@@ -328,9 +328,19 @@ public final class DocGen {
 			String activeNavDocPath, String body, HtmlTemplate.Crumb backlink, HtmlTemplate.Crumb prev,
 			HtmlTemplate.Crumb next) {
 		return new HtmlTemplate.PageContext(tree.nav(), this.versions.title(), this.versions.description(),
-				tree.version(), tree.lang(), title, docPath, tree.indexPath(), activeNavDocPath, body,
-				TocBuilder.build(body), backlink, prev, next, versionSwitches(tree, mdFile),
+				tree.version(), yaviRelease(tree.version()), tree.lang(), title, docPath, tree.indexPath(),
+				activeNavDocPath, body, TocBuilder.build(body), backlink, prev, next, versionSwitches(tree, mdFile),
 				languageSwitches(tree, mdFile));
+	}
+
+	/** The YAVI release that the footer shows for a documentation version. */
+	private String yaviRelease(String version) {
+		return this.versions.versions()
+			.stream()
+			.filter(v -> v.version().equals(version))
+			.map(Versions.Version::yaviRelease)
+			.findFirst()
+			.orElse("");
 	}
 
 	/**

@@ -62,9 +62,10 @@ public final class HtmlTemplate {
 	 * @param versions every published version for the version switcher
 	 * @param languages every language present in this version for the language switcher
 	 */
-	public record PageContext(Nav nav, String siteTitle, String siteDescription, String version, String lang,
-			String title, String currentDocPath, String homeDocPath, String activeNavDocPath, String bodyHtml,
-			String tocHtml, Crumb backlink, Crumb prev, Crumb next, List<Switch> versions, List<Switch> languages) {
+	public record PageContext(Nav nav, String siteTitle, String siteDescription, String version, String yaviRelease,
+			String lang, String title, String currentDocPath, String homeDocPath, String activeNavDocPath,
+			String bodyHtml, String tocHtml, Crumb backlink, Crumb prev, Crumb next, List<Switch> versions,
+			List<Switch> languages) {
 	}
 
 	/** Renders the complete HTML document for one page. */
@@ -386,7 +387,7 @@ public final class HtmlTemplate {
 		html.append("<span class=\"colophon-item\">")
 			.append(esc(ctx.siteTitle()))
 			.append(" ")
-			.append(esc(ctx.version()))
+			.append(esc(ctx.yaviRelease()))
 			.append("</span>\n");
 		html.append("<span class=\"colophon-item\">").append(esc(langName)).append("</span>\n");
 		html.append("<span class=\"colophon-item\">Apache-2.0</span>\n");

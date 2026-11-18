@@ -277,6 +277,16 @@ class DocGenTest {
 			.contains("url=" + defaultTree + "/getting-started.html");
 		assertThat(Files.readString(tmp.resolve("site/built-in-constraints.html")))
 			.contains("url=" + defaultTree + "/built-in-constraints.html");
+		// The footer names the YAVI release the tree embeds, not the documentation
+		// version.
+		String release = versions.versions()
+			.stream()
+			.filter(v -> v.version().equals("0.18"))
+			.findFirst()
+			.orElseThrow()
+			.yaviRelease();
+		assertThat(Files.readString(tmp.resolve("site/0.18/en/index.html"), StandardCharsets.UTF_8))
+			.contains("YAVI " + release);
 		assertThat(countPages(tmp.resolve("site/0.17/en"))).isEqualTo(10);
 		assertThat(countPages(tmp.resolve("site/0.17/ja"))).isEqualTo(10);
 		for (String lang : List.of("en", "ja")) {

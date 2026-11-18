@@ -1,6 +1,6 @@
 # 概要
 
-YAVI（発音は jɑ-vάɪ）は、Java で Zod のように入力の記述と検証を行うためのライブラリです。0.18 では、コードで書いたスキーマが型なしの入力を読み取り、型付きのオブジェクトを生成するか、すべての違反をその位置とともに報告します。同じ考え方は TypeScript の [Zod](https://zod.dev) や Java の [Raoh](https://github.com/raoh-project/raoh-java) にもあります。[Zod との比較](coming-from-zod.md) は両者の API を対応づけます。
+YAVI（発音は jɑ-vάɪ）は *Yet Another ValIdation* の略です。Java で Zod のように入力の記述と検証を行うためのライブラリであり、0.18 では、コードで書いたスキーマが型なしの入力を読み取り、型付きのオブジェクトを生成するか、すべての違反をその位置とともに報告します。同じ考え方は TypeScript の [Zod](https://zod.dev) や Java の [Raoh](https://github.com/raoh-project/raoh-java) にもあります。[Zod との比較](coming-from-zod.md) は両者の API を対応づけます。
 
 [GitHub でプロジェクトを見る](https://github.com/making/yavi)
 

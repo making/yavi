@@ -1,6 +1,6 @@
 # Overview
 
-YAVI (pronounced jɑ-vάɪ) gives Java a Zod-like way to describe and validate input. Since 0.18 a schema written in code reads untyped input and either creates a typed object or reports every violation with its location. The same idea is found in [Zod](https://zod.dev) for TypeScript and in [Raoh](https://github.com/raoh-project/raoh-java) for Java; [Comparison with Zod](coming-from-zod.md) maps the two APIs.
+YAVI (pronounced jɑ-vάɪ) stands for *Yet Another ValIdation*. Since 0.18 it gives Java a Zod-like way to describe and validate input. Since 0.18 a schema written in code reads untyped input and either creates a typed object or reports every violation with its location. The same idea is found in [Zod](https://zod.dev) for TypeScript and in [Raoh](https://github.com/raoh-project/raoh-java) for Java; [Comparison with Zod](coming-from-zod.md) maps the two APIs.
 
 [View the project on GitHub](https://github.com/making/yavi)
 
