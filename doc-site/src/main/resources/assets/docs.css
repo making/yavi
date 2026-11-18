@@ -1184,16 +1184,23 @@ body.search-open-body { overflow: hidden; }
 	border-right-color: var(--rule-strong);
 	border-bottom-color: var(--rule-strong);
 }
-.markdown th code { color: inherit; }
 .markdown tr:nth-child(even) td { background: var(--paper-2); }
-.markdown td code, .markdown th code {
-	white-space: normal;
+.markdown td code,
+.markdown th code {
 	overflow-wrap: anywhere;
 	background: transparent;
 	border: 0;
 	padding: 0;
-	color: var(--ink-strong);
 	font-size: 12px;
+}
+.markdown td code {
+	white-space: normal;
+	color: var(--ink-strong);
+}
+/* A code word in a header keeps the header ink and stays on one line. */
+.markdown th code {
+	white-space: nowrap;
+	color: inherit;
 }
 .markdown td:first-child code {
 	color: var(--accent);
