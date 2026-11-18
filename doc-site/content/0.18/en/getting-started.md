@@ -2,6 +2,8 @@
 
 Welcome to YAVI. This page adds the dependency, writes the first schema and validates an input.
 
+> This content is derived from https://hibernate.org/validator/documentation/getting-started/
+
 ## Prerequisites
 
 * Java 21 or later. YAVI 0.18 is compiled for Java 21.
@@ -16,23 +18,6 @@ Add YAVI to `pom.xml`:
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
     <version>{{yavi_release}}</version>
-</dependency>
-```
-
-The tests in this page use JUnit and AssertJ:
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-api</artifactId>
-    <version>6.1.3</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.assertj</groupId>
-    <artifactId>assertj-core</artifactId>
-    <version>3.27.7</version>
-    <scope>test</scope>
 </dependency>
 ```
 

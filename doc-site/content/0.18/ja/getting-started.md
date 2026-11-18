@@ -2,6 +2,8 @@
 
 YAVI へようこそ。このページでは依存関係を追加し、最初のスキーマを書き、入力を検証します。
 
+> このページは https://hibernate.org/validator/documentation/getting-started/ を元にしています。
+
 ## 前提
 
 * Java 21 以上。YAVI 0.18 は Java 21 向けにコンパイルされています。
@@ -16,23 +18,6 @@ YAVI へようこそ。このページでは依存関係を追加し、最初の
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
     <version>{{yavi_release}}</version>
-</dependency>
-```
-
-このページのテストでは JUnit と AssertJ を使います。
-
-```xml
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-api</artifactId>
-    <version>6.1.3</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.assertj</groupId>
-    <artifactId>assertj-core</artifactId>
-    <version>3.27.7</version>
-    <scope>test</scope>
 </dependency>
 ```
 
