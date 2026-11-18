@@ -68,8 +68,8 @@ remaining examples run in the site's browser runtime.
 
 ## A complete Spring MVC controller
 
-This is the shape a YAVI application has at a request boundary. The domain class and
-the `ObjectInputValidator` of its input are files of their own -- a validator belongs to
+This is the shape a YAVI application has at a request boundary. The domain class holds
+the `ObjectInputValidator` of its own input, in its own file -- a validator belongs to
 the domain, not to a controller, and is reused by a job or a test. The controller is
 where that validator is bound to request parameters with `readingParameters`, and where
 the result reaches the `BindingResult`. The individual pieces are documented under
@@ -77,15 +77,10 @@ the result reaches the `BindingResult`. The individual pieces are documented und
 
 ```java
 // signup/Signup.java
-public record Signup(String name, String email, Integer age) {}
-```
-
-```java
-// signup/SignupValidator.java -- the input of the domain, next to the domain class
 import am.ik.yavi.input.ObjectInputValidator;
 import am.ik.yavi.validator.Yavi;
 
-public final class SignupValidator {
+public record Signup(String name, String email, Integer age) {
 
     public static final ObjectInputValidator<Signup> SCHEMA = Yavi.schema()
             ._string("name", c -> c.notBlank().lessThanOrEqual(50))
@@ -118,10 +113,10 @@ import org.springframework.util.MultiValueMap;
 @Controller
 class SignupController {
 
-    // SignupValidator and SignupService are separate types in their own files.
-    // The same domain validator serves any request that carries the same input; the
-    // coercion of the text of a form is the controller's decision.
-    static final ValueValidator<Map<String, ?>, Signup> signupValidator = SignupValidator.SCHEMA
+    // Signup is a domain type in its own file, and SignupService is another. The same
+    // domain schema serves any request that carries the same input; the coercion of the
+    // text of a form is the controller's decision.
+    static final ValueValidator<Map<String, ?>, Signup> signupValidator = Signup.SCHEMA
             .readingParameters(StringCoercion.strict().trimming());
 
     private final SignupService signupService;
