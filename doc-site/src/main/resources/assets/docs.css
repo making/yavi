@@ -300,7 +300,10 @@ a:hover { text-decoration-thickness: 2px; }
 .topnav > a:hover { color: var(--accent); }
 
 /* --- version and language switchers --- */
-.versionswitch,
+.versionswitch {
+	position: relative;
+	display: inline-flex;
+}
 .langswitch {
 	display: inline-flex;
 	align-items: stretch;
@@ -322,7 +325,63 @@ a:hover { text-decoration-thickness: 2px; }
 	background: var(--paper-2);
 	border-right: 1px solid var(--rule-strong);
 }
-.versionswitch .switch,
+.version-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 30px;
+	padding: 0 9px;
+	background: transparent;
+	color: var(--muted-2);
+	border: 1px solid var(--rule-strong);
+	border-radius: 0;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	line-height: 1;
+	cursor: pointer;
+}
+.version-open:hover,
+.version-open[aria-expanded="true"] {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+.version-caret {
+	margin-left: 6px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.version-menu {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	z-index: 50;
+	min-width: 96px;
+	padding: 4px;
+	display: flex;
+	flex-direction: column;
+	background: var(--paper);
+	border: 1px solid var(--ink);
+	box-shadow: 6px 6px 0 var(--shadow);
+}
+.version-menu[hidden] { display: none; }
+.version-option {
+	display: block;
+	padding: 7px 9px;
+	color: var(--ink);
+	text-decoration: none;
+	font-family: var(--font-ui);
+	font-size: 12.5px;
+}
+.version-option:hover { background: var(--accent-soft); color: var(--accent); }
+.version-option[aria-current="true"] {
+	background: var(--brand-fill);
+	color: var(--gold);
+	font-weight: 600;
+}
+.sidebar-switch .version-menu { left: 0; right: auto; }
 .langswitch .switch {
 	display: inline-flex;
 	align-items: center;
@@ -330,11 +389,8 @@ a:hover { text-decoration-thickness: 2px; }
 	color: var(--muted-2);
 	text-decoration: none;
 }
-.versionswitch .switch + .switch,
 .langswitch .switch + .switch { border-left: 1px solid var(--rule-strong); }
-.versionswitch .switch:hover,
 .langswitch .switch:hover { color: var(--accent); background: var(--accent-soft); }
-.versionswitch .switch.active,
 .langswitch .switch.active {
 	background: var(--brand-fill);
 	color: var(--gold);
@@ -863,11 +919,11 @@ body.search-open-body { overflow: hidden; }
 
 /* --- markdown content ---
    The measure belongs to the prose, not to the article: the article fills the
-   content column and each flowing child is capped at --content-max, so a table
-   keeps the whole column and its last column stays on screen. */
+   content column and each flowing child is capped at --content-max, so the table
+   wrapper keeps the whole column and its last column stays on screen. */
 .markdown { max-width: none; }
 .markdown > * { max-width: var(--content-max); }
-.markdown > table { max-width: none; }
+.markdown > .table-scroll { max-width: none; }
 .markdown img { max-width: 100%; height: auto; }
 
 .markdown h1,
@@ -1090,27 +1146,24 @@ body.search-open-body { overflow: hidden; }
 .cell-toolbar .copy { margin-left: auto; }
 
 /* --- dense register tables --- */
-.markdown table {
-	display: block;
-	width: 100%;
+.markdown .table-scroll {
 	overflow-x: auto;
-	border-collapse: collapse;
 	border: 1px solid var(--rule-strong);
 	margin: 22px 0;
-	font-family: var(--font-ui);
-	font-size: 13px;
-	line-height: 1.5;
 	scrollbar-width: thin;
 	scrollbar-color: var(--rule-strong) transparent;
 }
-/* The table itself is a scroll container; its row groups are re-established as
-   real tables so the register rules fill the prose column instead of stopping
-   at the widest cell. */
-.markdown table > thead,
-.markdown table > tbody {
+/* The table keeps a single layout so that the header and body columns line up; the
+   wrapper, not the table, carries the horizontal scroll. */
+.markdown table {
 	display: table;
 	width: 100%;
-	table-layout: auto;
+	border-collapse: collapse;
+	border: 0;
+	margin: 0;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	line-height: 1.5;
 }
 .markdown th, .markdown td {
 	text-align: left;

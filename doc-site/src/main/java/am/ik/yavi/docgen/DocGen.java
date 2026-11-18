@@ -340,12 +340,21 @@ public final class DocGen {
 	 * section anchors have to be the ones the page will actually carry.
 	 */
 	private String renderBody(Tree tree, String markdown, String mdFile, String title) throws IOException {
-		String body = this.renderer.render(this.parser.parse(markdown));
+		String body = wrapTables(this.renderer.render(this.parser.parse(markdown)));
 		body = alignHeadingIds(tree, body, mdFile);
 		validateMarkdownLinks(tree, body, mdFile);
 		body = rewriteMarkdownLinks(body);
 		this.searchIndex.addPage(HtmlTemplate.replaceExtension(mdFile), title, body);
 		return RunnableBlockTransformer.transform(body);
+	}
+
+	/**
+	 * Wraps every table in a scroll container. The table itself must stay a real table so
+	 * that the header and body columns share one layout; a row group cannot be laid out
+	 * as a table of its own without drifting from the other rows' columns.
+	 */
+	private static String wrapTables(String body) {
+		return body.replace("<table>", "<div class=\"table-scroll\"><table>").replace("</table>", "</table></div>");
 	}
 
 	/**

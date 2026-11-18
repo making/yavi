@@ -1,0 +1,87 @@
+title: YAVI
+lang_name: 日本語
+sections:
+  - title: はじめに
+    pages:
+      - file: index.md
+        title: 概要
+      - file: introduction.md
+        title: YAVI とは
+      - file: getting-started.md
+        title: はじめる
+      - file: concepts.md
+        title: 基本概念
+  - title: スキーマ
+    pages:
+      - file: defining-a-schema.md
+        title: スキーマの定義
+      - file: optional-and-defaults.md
+        title: 省略と既定値
+      - file: value-objects.md
+        title: 値オブジェクトと変換
+      - file: objects-and-collections.md
+        title: オブジェクトとコレクション
+      - file: unions.md
+        title: ユニオン
+      - file: cross-field-rules.md
+        title: オブジェクト全体の規則
+      - file: describing-a-schema.md
+        title: スキーマの記述
+  - title: 入力
+    pages:
+      - file: input-maps.md
+        title: Map と型なしの値
+      - file: input-json.md
+        title: JSON ツリー
+      - file: input-parameters.md
+        title: リクエストパラメータとフォーム
+      - file: input-arguments.md
+        title: 型付き引数
+  - title: 結果
+    pages:
+      - file: result-handling.md
+        title: 結果の扱い
+      - file: violations.md
+        title: 違反
+      - file: messages.md
+        title: メッセージとローカライズ
+  - title: コーデック
+    pages:
+      - file: writing-back.md
+        title: オブジェクトの書き戻し
+  - title: 統合
+    pages:
+      - file: integrations.md
+        title: 統合の概要
+      - file: integrations-spring.md
+        title: Spring
+      - file: integrations-jackson.md
+        title: Jackson
+      - file: integrations-kotlin.md
+        title: Kotlin
+      - file: integrations-nullaway.md
+        title: NullAway
+  - title: Classic バリデータ
+    pages:
+      - file: using-yavi.md
+        title: オブジェクトの検証
+      - file: custom-constraints.md
+        title: カスタム制約
+      - file: validating-arguments.md
+        title: 引数の検証
+      - file: combining-validators.md
+        title: バリデータの組み合わせ
+      - file: combining-validation-results.md
+        title: 検証結果の組み合わせ
+      - file: annotation-processor.md
+        title: アノテーションプロセッサ
+  - title: リファレンス
+    pages:
+      - file: built-in-constraints.md
+        title: 組み込みの制約
+      - file: migration-0.17-to-0.18.md
+        title: 0.17 からの移行
+      - file: coming-from-zod.md
+        title: Zod との比較
+      - file: coming-from-bean-validation.md
+        title: Bean Validation との比較

@@ -1,0 +1,87 @@
+title: YAVI
+lang_name: English
+sections:
+  - title: Getting Started
+    pages:
+      - file: index.md
+        title: Overview
+      - file: introduction.md
+        title: Introduction
+      - file: getting-started.md
+        title: Getting Started
+      - file: concepts.md
+        title: Core Concepts
+  - title: Schemas
+    pages:
+      - file: defining-a-schema.md
+        title: Defining a Schema
+      - file: optional-and-defaults.md
+        title: Optional and Default Values
+      - file: value-objects.md
+        title: Value Objects and Transforms
+      - file: objects-and-collections.md
+        title: Objects and Collections
+      - file: unions.md
+        title: Unions
+      - file: cross-field-rules.md
+        title: Cross-Field Rules
+      - file: describing-a-schema.md
+        title: Describing a Schema
+  - title: Inputs
+    pages:
+      - file: input-maps.md
+        title: Maps and Untyped Values
+      - file: input-json.md
+        title: JSON Trees
+      - file: input-parameters.md
+        title: Request Parameters and Forms
+      - file: input-arguments.md
+        title: Typed Arguments
+  - title: Results
+    pages:
+      - file: result-handling.md
+        title: Handling Results
+      - file: violations.md
+        title: Violations
+      - file: messages.md
+        title: Messages and Localization
+  - title: Codecs
+    pages:
+      - file: writing-back.md
+        title: Writing an Object Back
+  - title: Integrations
+    pages:
+      - file: integrations.md
+        title: Integration Overview
+      - file: integrations-spring.md
+        title: Spring
+      - file: integrations-jackson.md
+        title: Jackson
+      - file: integrations-kotlin.md
+        title: Kotlin
+      - file: integrations-nullaway.md
+        title: NullAway
+  - title: Classic Validators
+    pages:
+      - file: using-yavi.md
+        title: Object Validation
+      - file: custom-constraints.md
+        title: Custom Constraints
+      - file: validating-arguments.md
+        title: Argument Validation
+      - file: combining-validators.md
+        title: Combining Validators
+      - file: combining-validation-results.md
+        title: Combining Results
+      - file: annotation-processor.md
+        title: Annotation Processor
+  - title: Reference
+    pages:
+      - file: built-in-constraints.md
+        title: Built-in Constraints
+      - file: migration-0.17-to-0.18.md
+        title: Migration from 0.17
+      - file: coming-from-zod.md
+        title: Comparison with Zod
+      - file: coming-from-bean-validation.md
+        title: Comparison with Bean Validation

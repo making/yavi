@@ -257,7 +257,7 @@ available yet. …".
 ./mvnw -f doc-site/runtime/pom.xml -Pweb package \
   -Ddocs.version=0.17 -Dyavi.version=0.17.3                 # output: target/web/0.17/
 # drive it without a browser
-node --experimental-wasm-exnref doc-site/runtime/test/run.js
+DOCS_VERSION=0.17 node --experimental-wasm-exnref doc-site/runtime/test/run.js
 ```
 
 Building several versions into the same `target/` is supported: the build clears the
@@ -274,14 +274,17 @@ tree, version/language switching, anchor alignment, runnable-cell rendering, lin
 rewriting and validation, and the search index shape.
 
 The runtime has its own harness, which extracts every `java runnable` block from
-`content/0.17/{en,ja}`, compiles and runs each one, and asserts the output against the
-hidden expectation next to it. It also checks that both language trees carry the same
+`content/<version>/{en,ja}`, compiles and runs each one, and asserts the output against
+the hidden expectation next to it. It also checks that both language trees carry the same
 programs, that a compiler error and a run-time exception are reported, and that an
 endless loop is stopped:
 
 ```bash
-node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
+DOCS_VERSION=0.18 node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
 ```
+
+`DOCS_VERSION` defaults to `0.18`, the default version of the site. The deployment runs
+it once per version listed in `content/versions.yaml`.
 
 ## Deployment
 

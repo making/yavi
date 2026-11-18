@@ -161,7 +161,7 @@ public final class HtmlTemplate {
 			.append("<kbd class=\"search-open-key\" aria-hidden=\"true\">Ctrl K</kbd>")
 			.append("</button>\n");
 		appendThemeSwitcher(html, ctx.lang());
-		appendSwitcher(html, "versionswitch", "Version", ctx.currentDocPath(), ctx.versions());
+		appendVersionSwitcher(html, "versionswitch", "Version", ctx.currentDocPath(), ctx.versions());
 		appendSwitcher(html, "langswitch", "Language", ctx.currentDocPath(), ctx.languages());
 		html.append("<a href=\"https://github.com/making/yavi\" target=\"_blank\" rel=\"noopener\">GitHub</a>\n");
 		html.append(
@@ -169,6 +169,44 @@ public final class HtmlTemplate {
 		html.append("<span class=\"runtime-status\" data-state=\"idle\"></span>\n");
 		html.append("</nav>\n");
 		html.append("</header>\n");
+	}
+
+	/**
+	 * The version switcher is a menu like the theme switcher: the number of published
+	 * versions grows, and a row of buttons does not. {@code assets/docs.js} opens and
+	 * closes it; each entry is a link to the same page in that version.
+	 */
+	private static void appendVersionSwitcher(StringBuilder html, String className, String label, String currentDocPath,
+			List<Switch> targets) {
+		String current = targets.stream().filter(Switch::active).map(Switch::name).findFirst().orElse("");
+		html.append("<div class=\"").append(className).append("\">\n");
+		html.append("<button type=\"button\" class=\"version-open\" aria-label=\"")
+			.append(esc(label))
+			.append(": ")
+			.append(esc(current))
+			.append("\" aria-expanded=\"false\" aria-haspopup=\"menu\" title=\"")
+			.append(esc(label))
+			.append(": ")
+			.append(esc(current))
+			.append("\">")
+			.append(esc(current))
+			.append("<svg class=\"version-caret\" viewBox=\"0 0 16 16\" width=\"10\" height=\"10\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M3.5 6l4.5 4.5L12.5 6\"></path></svg>")
+			.append("</button>\n");
+		html.append("<div class=\"version-menu\" role=\"menu\" aria-label=\"")
+			.append(esc(label))
+			.append("\" hidden>\n");
+		for (Switch target : targets) {
+			html.append("<a class=\"version-option")
+				.append(target.active() ? " active" : "")
+				.append("\" role=\"menuitem\" href=\"")
+				.append(esc(rel(currentDocPath, target.docPath())))
+				.append("\"")
+				.append(target.active() ? " aria-current=\"true\"" : "")
+				.append(">")
+				.append(esc(target.name()))
+				.append("</a>\n");
+		}
+		html.append("</div>\n</div>\n");
 	}
 
 	private static void appendSwitcher(StringBuilder html, String className, String label, String currentDocPath,
@@ -304,7 +342,7 @@ public final class HtmlTemplate {
 		}
 		html.append("</nav>\n");
 		html.append("<div class=\"sidebar-meta\">\n");
-		appendSwitcher(html, "versionswitch sidebar-switch", "Version", ctx.currentDocPath(), ctx.versions());
+		appendVersionSwitcher(html, "versionswitch sidebar-switch", "Version", ctx.currentDocPath(), ctx.versions());
 		appendSwitcher(html, "langswitch sidebar-switch", "Language", ctx.currentDocPath(), ctx.languages());
 		html.append("<a class=\"sidebar-github\" href=\"https://github.com/making/yavi\" target=\"_blank\"")
 			.append(" rel=\"noopener\">GitHub</a>\n");

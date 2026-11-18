@@ -66,8 +66,10 @@ class DocGenTest {
 			.doesNotContain("deep");
 		// A version switch prefers the same page and falls back to the version's index
 		// when the page does not exist there; a language switch stays in this version.
-		assertThat(guide).contains("<a class=\"switch\" href=\"../../2.0/en/index.html\">2.0</a>")
-			.contains("<span class=\"switch active\">1.0</span>")
+		assertThat(guide).contains("class=\"version-open\" aria-label=\"Version: 1.0\"")
+			.contains("<a class=\"version-option\" role=\"menuitem\" href=\"../../2.0/en/index.html\">2.0</a>")
+			.contains(
+					"<a class=\"version-option active\" role=\"menuitem\" href=\"guide.html\" aria-current=\"true\">1.0</a>")
 			.contains("<a class=\"switch\" href=\"../ja/guide.html\">日本語</a>")
 			.contains("data-runtime-src=\"../../assets/runtime/1.0/yavi-runtime.js\"")
 			.contains("data-search-base=\".\"")
@@ -95,7 +97,7 @@ class DocGenTest {
 		String jaGuide = Files.readString(site.resolve("1.0/ja/guide.html"), StandardCharsets.UTF_8);
 		assertThat(jaGuide).contains("<h2 id=\"options\">オプション</h2>")
 			.contains("<h2 id=\"result\">結果</h2>")
-			.contains("<a class=\"switch\" href=\"../../2.0/ja/index.html\">2.0</a>")
+			.contains("<a class=\"version-option\" role=\"menuitem\" href=\"../../2.0/ja/index.html\">2.0</a>")
 			// The theme control is translated for the Japanese tree.
 			.contains("aria-label=\"カラーテーマ: システム\"")
 			.contains("data-theme-value=\"dark\" aria-pressed=\"false\" title=\"ダーク\"")
@@ -104,7 +106,8 @@ class DocGenTest {
 
 		// A page that exists in the other version is linked directly, not by fallback.
 		String code = Files.readString(site.resolve("1.0/en/code.html"), StandardCharsets.UTF_8);
-		assertThat(code).contains("<a class=\"switch\" href=\"../../2.0/en/code.html\">2.0</a>");
+		assertThat(code)
+			.contains("<a class=\"version-option\" role=\"menuitem\" href=\"../../2.0/en/code.html\">2.0</a>");
 
 		for (String lang : List.of("en", "ja")) {
 			assertThat(loadJson(site.resolve("1.0/" + lang + "/search-index.json"))).containsKeys("pages");
@@ -253,28 +256,35 @@ class DocGenTest {
 	}
 
 	/**
-	 * The shipped 0.17 content builds: ten pages in each language, with the search index
-	 * and the redirect to the default version.
+	 * The shipped content builds: the 0.18 pages in each language, with the search index
+	 * and the redirect to the default version. The 0.17 tree keeps its ten pages.
 	 */
 	@Test
 	void theShippedContentBuilds(@TempDir Path tmp) throws IOException {
 		new DocGen(Path.of("content"), tmp.resolve("site")).generate();
-		assertThat(countPages(tmp.resolve("site/0.17/en"))).isEqualTo(10);
-		assertThat(countPages(tmp.resolve("site/0.17/ja"))).isEqualTo(10);
+		assertThat(countPages(tmp.resolve("site/0.18/en"))).isEqualTo(34);
+		assertThat(countPages(tmp.resolve("site/0.18/ja"))).isEqualTo(34);
 		assertThat(tmp.resolve("site/0.17/en/search-index.json")).exists();
 		assertThat(tmp.resolve("site/0.17/ja/search-index.json")).exists();
+		assertThat(tmp.resolve("site/0.18/en/search-index.json")).exists();
+		assertThat(tmp.resolve("site/0.18/ja/search-index.json")).exists();
 		assertThat(Files.readString(tmp.resolve("site/index.html"))).contains("url=0.17/en/index.html");
 		assertThat(Files.readString(tmp.resolve("site/getting-started.html")))
 			.contains("url=0.17/en/getting-started.html");
 		assertThat(Files.readString(tmp.resolve("site/built-in-constraints.html")))
 			.contains("url=0.17/en/built-in-constraints.html");
+		assertThat(countPages(tmp.resolve("site/0.17/en"))).isEqualTo(10);
+		assertThat(countPages(tmp.resolve("site/0.17/ja"))).isEqualTo(10);
 		for (String lang : List.of("en", "ja")) {
-			String page = Files.readString(tmp.resolve("site/0.17/" + lang + "/getting-started.html"),
+			String page = Files.readString(tmp.resolve("site/0.18/" + lang + "/getting-started.html"),
 					StandardCharsets.UTF_8);
 			// The self-contained example is marked runnable in both languages.
 			assertThat(page).contains("<div class=\"code-cell\" data-lang=\"java\">")
 				.contains("<button class=\"run\" type=\"button\">Run</button>");
 		}
+		// A table keeps one layout for the header and body; the wrapper scrolls it.
+		assertThat(Files.readString(tmp.resolve("site/0.18/en/defining-a-schema.html"), StandardCharsets.UTF_8))
+			.contains("<div class=\"table-scroll\"><table>");
 	}
 
 	/** A relative link to a page the tree does not publish fails the build. */

@@ -33,6 +33,48 @@
 		statusEl.textContent = text || "";
 	}
 
+	// The version switcher is a menu like the theme switcher. Each tree carries two
+	// instances (header and sidebar), so the wiring stays within its own root.
+	function wireVersionSwitch() {
+		Array.prototype.forEach.call(document.querySelectorAll(".versionswitch"), function (root) {
+			var trigger = root.querySelector(".version-open");
+			var menu = root.querySelector(".version-menu");
+			if (!trigger || !menu) return;
+
+			function setOpen(open) {
+				menu.hidden = !open;
+				trigger.setAttribute("aria-expanded", open ? "true" : "false");
+				if (open) {
+					var selected = menu.querySelector('.version-option[aria-current="true"]');
+					(selected || menu.querySelector(".version-option")).focus();
+				}
+			}
+
+			trigger.addEventListener("click", function (ev) {
+				ev.stopPropagation();
+				setOpen(menu.hidden);
+			});
+			menu.addEventListener("keydown", function (ev) {
+				var options = Array.prototype.slice.call(menu.querySelectorAll(".version-option"));
+				var index = options.indexOf(document.activeElement);
+				if (ev.key === "Escape") {
+					ev.preventDefault();
+					setOpen(false);
+					trigger.focus();
+				} else if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+					ev.preventDefault();
+					var next = ev.key === "ArrowDown" ? index + 1 : index - 1;
+					next = (next + options.length) % options.length;
+					options[next].focus();
+				}
+			});
+			document.addEventListener("click", function (ev) {
+				if (menu.hidden) return;
+				if (!ev.target.closest || !ev.target.closest(".versionswitch")) setOpen(false);
+			});
+		});
+	}
+
 	// Lazily inject the runtime script named by data-runtime-src. Concurrent first
 	// clicks all await the same promise.
 	function ensureRuntime() {
@@ -806,6 +848,7 @@
 		});
 		wireTheme();
 		wireSearch();
+		wireVersionSwitch();
 		wireNavToggle();
 		wireToc();
 		wireCopy();

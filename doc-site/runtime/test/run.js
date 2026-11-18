@@ -3,10 +3,10 @@
 // and drives the same entry point the pages use (globalThis.YaviJs.run, installed by
 // WebMain; the browser wrapper in assets/yavi-runtime.js forwards to it).
 //
-//   node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
+//   DOCS_VERSION=0.18 node --experimental-wasm-exnref doc-site/runtime/test/run.js [runtime-dir]
 //
-// Every ```java runnable block in content/0.17/{en,ja} is a complete program followed by
-// a hidden expectation:
+// Every ```java runnable block in content/<version>/{en,ja} is a complete program
+// followed by a hidden expectation:
 //
 //   ```java runnable
 //   ... complete compilation unit ...
@@ -26,9 +26,10 @@ const fs = require("fs");
 const path = require("path");
 
 const repository = path.resolve(__dirname, "..", "..", "..");
-const contentDir = path.join(repository, "doc-site", "content", "0.17");
+const version = process.env.DOCS_VERSION || "0.18";
+const contentDir = path.join(repository, "doc-site", "content", version);
 const runtimeDir =
-	process.argv[2] || path.join(repository, "doc-site", "runtime", "target", "web", "0.17");
+	process.argv[2] || path.join(repository, "doc-site", "runtime", "target", "web", version);
 
 let failures = 0;
 function check(name, condition, detail) {
@@ -100,7 +101,10 @@ function run(binding, source) {
 
 	const english = examples("en");
 	const japanese = examples("ja");
-	check("the content tree carries ten runnable examples", english.length >= 10, String(english.length));
+	// 0.17 carries ten examples; a newer tree only has to carry the ones it documents.
+	const minimum = version === "0.17" ? 10 : 1;
+	check(`the content tree carries runnable examples (at least ${minimum})`, english.length >= minimum,
+		String(english.length));
 	check(
 		"the English and Japanese trees carry the same programs",
 		english.length === japanese.length &&

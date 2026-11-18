@@ -38,6 +38,22 @@
 		<graalvm.version>25.5.5.0.3</graalvm.version>
 	</properties>
 
+	<!-- A documentation version may be published before its YAVI release, as 0.18 is
+	     until the release: versions.yaml then names a snapshot, which this repository
+	     serves. Releases keep resolving from Maven Central. -->
+	<repositories>
+		<repository>
+			<id>central-snapshots</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>am.ik.yavi</groupId>

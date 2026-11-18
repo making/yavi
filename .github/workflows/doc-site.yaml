@@ -190,7 +190,11 @@ jobs:
     # Compiles and runs every ```java runnable block of both language trees and asserts
     # the hidden expected output; a broken or drifted example fails the build here.
     - name: Test the documented examples in the browser runtime
-      run: node --experimental-wasm-exnref doc-site/runtime/test/run.js
+      run: |
+        set -euo pipefail
+        for version in $(cut -d' ' -f1 runtime-versions.txt); do
+          DOCS_VERSION="$version" node --experimental-wasm-exnref doc-site/runtime/test/run.js
+        done
     - name: Set up JDK 21 for the generator
       uses: actions/setup-java@v6
       with:
