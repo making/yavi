@@ -60,6 +60,7 @@ void signupForm(@RequestParam MultiValueMap<String, String> params, Model model)
 ```
 
 * `@ModelAttribute` メソッドはコントローラのすべてのハンドラより前に実行されるため、GET ハンドラは空のフォームを表示します。これがないと、リクエストは `An Errors/BindingResult argument is expected to be declared immediately after the model attribute` で失敗します。
+* フォーム 1 つにつきコントローラ 1 つにします。メソッドはすべてのハンドラより前に実行されるため、1 つのコントローラに 2 つのフォームを置くとどちらもモデルに入り、`BindingResult` の引数は最後に追加されたモデル属性に解決されます。エラーにならず、どのハンドラも最後に追加されたフォームの `BindingResult` を受け取ります。`@ModelAttribute("signupForm") BindingResult` でも選べません。モデル属性は `BindingResult` ではなくフォームのマップだからです。コントローラを分けてください。
 * フィールドは、プロパティの型でなくても（`age` に対する `abc`）、送信されたテキストを再表示します。
 * フィールドは `th:field` と同じように命名します。`address.city`、`items[0].name` です。これらは違反の名前であり、`MapBindingResult` が検索するキーです。
 * `toParameters` は単一の値のテキストと、リストプロパティのリストを返すため、テキストフィールドは `30` を表示し、チェックされたすべてのチェックボックスが再びチェックされます。

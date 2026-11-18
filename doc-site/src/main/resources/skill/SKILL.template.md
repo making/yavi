@@ -167,13 +167,19 @@ class SignupController {
 </form>
 ```
 
-- The `@ModelAttribute` method is not optional: without it a request fails with
-  `An Errors/BindingResult argument is expected to be declared immediately after the
-  model attribute`, because Spring MVC creates a `BindingResult` only for a form object
-  that it binds.
+- The `@ModelAttribute` method is not optional: without a model attribute, a handler
+  that takes a `BindingResult` fails with `An Errors/BindingResult argument is expected
+  to be declared immediately after the model attribute`, because Spring MVC creates a
+  `BindingResult` only for a form object that it binds.
+- One controller per form. `@ModelAttribute` methods run before every handler of their
+  controller, and a `BindingResult` argument resolves to the LAST model attribute added,
+  not to the form the handler validates. With two forms in one controller, every handler
+  receives the `BindingResult` of the form whose method ran last, and no error is raised
+  (verified on Spring Framework 7). `@ModelAttribute("signupForm") BindingResult` does
+  not select one either: the model attribute is the form map, not the `BindingResult`, so
+  the request fails. Split the controller instead.
 - Take the parameters as a `MultiValueMap`; a `Map<String, String>` drops all but the
   first value of a key.
-- The `BindingResult` argument must come immediately after the model attribute.
 - The code of a field error is the message key (`charSequence.email`, `object.type`), so
   a `MessageSource` replaces the message. See `references/messages.md`.
 - Thymeleaf adds a hidden `_subscribed` field to a checkbox. No property is defined for
