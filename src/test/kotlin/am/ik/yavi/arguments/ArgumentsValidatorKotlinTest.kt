@@ -5,8 +5,13 @@
 package am.ik.yavi.arguments
 
 import am.ik.yavi.builder.ArgumentsValidatorBuilder
+import am.ik.yavi.builder._enum
+import am.ik.yavi.builder._object
 import am.ik.yavi.core.ConstraintViolationsException
 import am.ik.yavi.validator.Yavi
+import am.ik.yavi.validator._enum as yaviEnum
+import am.ik.yavi.validator._object as yaviObject
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -56,5 +61,73 @@ class ArgumentsValidatorKotlinTest {
                             + "* \"lastName\" must not be empty" + System.lineSeparator()
                             + "* \"age\" must be greater than or equal to 1")
                 }
+    }
+
+    enum class Role {
+        ADMIN, MEMBER
+    }
+
+    data class Account(val role: Role, val id: UUID)
+
+    data class ReversedAccount(val id: UUID, val role: Role)
+
+    @Test
+    fun reifiedSchemaValid() {
+        val id = UUID.randomUUID()
+        val withConstraints = Yavi.schema()
+                ._enum<Role>("role", { it.oneOf(Role.ADMIN) })
+                ._object<UUID>("id")
+                .apply(::Account)
+        assertThat(withConstraints.validated(Role.ADMIN, id)).isEqualTo(Account(Role.ADMIN, id))
+
+        val withoutConstraints = Yavi.schema()
+                ._enum<Role>("role")
+                ._object<UUID>("id", { it.notNull() })
+                .apply(::Account)
+        assertThat(withoutConstraints.validated(Role.MEMBER, id)).isEqualTo(Account(Role.MEMBER, id))
+
+        val reversed = Yavi.schema()
+                ._object<UUID>("id")
+                ._enum<Role>("role")
+                .apply(::ReversedAccount)
+        assertThat(reversed.validated(id, Role.MEMBER)).isEqualTo(ReversedAccount(id, Role.MEMBER))
+
+        val reversedWithConstraints = Yavi.schema()
+                ._object<UUID>("id")
+                ._enum<Role>("role", { it.oneOf(Role.ADMIN) })
+                .apply(::ReversedAccount)
+        assertThat(reversedWithConstraints.validated(id, Role.ADMIN)).isEqualTo(ReversedAccount(id, Role.ADMIN))
+
+        assertThat(yaviEnum<Role>("role") { it.oneOf(Role.ADMIN) }.validate(Role.ADMIN).value())
+                .isEqualTo(Role.ADMIN)
+        assertThat(yaviEnum<Role>("role").validate(Role.MEMBER).value()).isEqualTo(Role.MEMBER)
+        assertThat(yaviEnum<Role> { it.oneOf(Role.ADMIN) }.validate(Role.ADMIN).value()).isEqualTo(Role.ADMIN)
+        assertThat(yaviEnum<Role>().validate(Role.MEMBER).value()).isEqualTo(Role.MEMBER)
+        assertThat(yaviObject<UUID>("id").validate(id).value()).isEqualTo(id)
+        assertThat(yaviObject<UUID>("id", { it.notNull() }).validate(id).value()).isEqualTo(id)
+        assertThat(yaviObject<UUID> { it.notNull() }.validate(id).value()).isEqualTo(id)
+        assertThat(yaviObject<UUID>().validate(id).value()).isEqualTo(id)
+
+        // the Java-style calls are still available
+        assertThat(Yavi.schema()._enum("role", Role::class.java).apply { it }.validate(Role.ADMIN).isValid()).isTrue()
+        assertThat(Yavi.schema()._object("id", UUID::class.java).apply { it }.validate(id).isValid()).isTrue()
+    }
+
+    @Test
+    fun reifiedSchemaInvalid() {
+        val id = UUID.randomUUID()
+        val validator = Yavi.schema()
+                ._enum<Role>("role", { it.oneOf(Role.ADMIN) })
+                ._object<UUID>("id")
+                .apply(::Account)
+        assertThat(validator.validate(Role.MEMBER, id).errors().map { it.message() })
+                .containsExactly("\"role\" must be one of the following values: [ADMIN]")
+
+        assertThat(
+                yaviEnum<Role>("role", { it.oneOf(Role.ADMIN) }).validate(Role.MEMBER).errors().map { it.message() })
+                .containsExactly("\"role\" must be one of the following values: [ADMIN]")
+        assertThat(
+                yaviObject<UUID>("id", { it.equalTo(id) }).validate(UUID.randomUUID()).errors().map { it.message() })
+                .containsExactly("\"id\" must be equal to $id")
     }
 }

@@ -31,6 +31,18 @@ ObjectInputValidator<Signup> signupValidator = Yavi.schema()
 
 どのメソッドにも、制約を省略した形（`._string("name")`）と、名前を省略した形（`Yavi._string(c -> ...)`）があります。後者は次で説明します。日時の値は ISO-8601 のテキストから、enum は定数名から、`UUID` と `URI` は文字列表現から読み取られます。
 
+Kotlin では、`am.ik.yavi.builder` の拡張関数に enum またはオブジェクトの型を型引数で与えると、それが Java のメソッドに渡されるため、`Class` リテラルは不要です。
+
+```kotlin
+import am.ik.yavi.builder._enum
+import am.ik.yavi.builder._object
+
+Yavi.schema()
+    ._enum<Role>("role") { it.oneOf(Role.ADMIN) }
+    ._object<UUID>("id")
+    .apply(::Account)
+```
+
 ## 制約
 
 ラムダはその型の制約オブジェクトを受け取ります。そのメソッドが、その型に適用できる制約です。
