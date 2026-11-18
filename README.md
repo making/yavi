@@ -10,25 +10,29 @@ is a lambda based type safe validation for Java.
 YAVI sounds as same as a Japanese slang "YABAI (ヤバイ)" that means awesome or awful depending on the context (like "Crazy").
 If you use YAVI, you will surely understand that it means the former.
 
-The concepts are
+Since 0.18, YAVI gives Java a Zod-like way to describe and validate input. A schema written in code reads untyped input — a map, a JSON tree, request parameters or typed arguments — and either creates a typed object or reports every violation with its location.
 
-* No reflection!
-* No (runtime) annotation!
-* Not only Java Beans!
-* Only one dependency (JSpecify)
+The design principles are
 
-If you are not a fan of [Bean Validation](https://beanvalidation.org/), YAVI will be an awesome alternative.
+* Input-first: an input is described once and the object is created only when every property is valid
+* Type safety by construction: a required, nullable or optional value has a different Java type, so NullAway and the Kotlin compiler can check its use; `Validated` is sealed and a reversible validator is checked at compile time
+* No reflection
+* No runtime annotations
+* No required runtime dependency: the JSpecify annotations are `provided` and are not needed at run time; add `org.jspecify:jspecify` to compile code that declares `@Nullable` or to run a nullness checker such as NullAway
+* Staged builders: a modifier that has no effect does not compile
+
+The classic `ValidatorBuilder` API remains for an object that already exists, as with [Bean Validation](https://beanvalidation.org/), but the schema-first API is the recommended starting point.
 
 YAVI has the following features:
 
+* Schema-based validation of untyped input from a map, a JSON tree, request parameters or typed arguments, with the object created by a function you provide
 * Type-safe constraints, unsupported constraints cannot be applied to the wrong type
-* Fluent and intuitive API
-* Constraints on any object. Java Beans, [Records](https://openjdk.java.net/jeps/395), [Protocol Buffers](https://developers.google.com/protocol-buffers), [Immutables](https://immutables.github.io/) and anything else.
+* Nested objects, collections, maps, unions, embedded schemas, recursive structures, defaults and recovery, and rules that span several properties
+* Reusable validators of a single value, and easy custom constraints
+* Descriptions and JSON Schema generation, and reversible schemas that write an object back as the map it is read from
 * Lots of powerful built-in constraints
-* Easy custom constraints
-* Validation for groups, conditional validation
-* Validation for arguments before creating an object
-* Support for API and combination of validation results and validators that incorporate the concept of functional programming
+* Validation for groups and conditional validation
+* Combination of validation results and validators that incorporate the concept of functional programming
 
 See [the reference documentation](https://yavi.ik.am) for details.
 
