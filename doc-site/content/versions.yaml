@@ -1,7 +1,7 @@
 site:
   title: YAVI
   description: Yet Another Validation (lambda based type safe validation) for Java
-default_version: "0.17"
+default_version: "0.18"
 default_language: en
 languages:
   - code: en
@@ -11,9 +11,7 @@ languages:
 versions:
   - version: "0.18"
     label: "0.18"
-    # 0.18.0 is not released yet, so the runtime is built from the snapshot. At release,
-    # change this to "0.18.0" and make 0.18 the default version; see How-To-Release.md.
-    yavi_release: "0.18.0-SNAPSHOT"
+    yavi_release: "0.18.0"
   - version: "0.17"
     label: "0.17"
     # The YAVI release whose classes are baked into this version's browser runtime.

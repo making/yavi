@@ -275,9 +275,12 @@ jobs:
               || { echo "missing runtime file for documentation version $version: ${file} (YAVI $release)"; exit 1; }
           done
         done < runtime-versions.txt
-        grep -q 'url=0.17/en/index.html' _site/index.html
-        grep -q 'url=0.17/en/getting-started.html' _site/getting-started.html
-        grep -q 'url=0.17/en/built-in-constraints.html' _site/built-in-constraints.html
+        # The root and the unversioned stubs follow the default of versions.yaml, so
+        # releasing a version does not need a change here.
+        DEFAULT=$(python3 -c 'import yaml; d = yaml.safe_load(open("doc-site/content/versions.yaml")); print(d["default_version"] + "/" + d["default_language"])')
+        grep -q "url=${DEFAULT}/index.html" _site/index.html
+        grep -q "url=${DEFAULT}/getting-started.html" _site/getting-started.html
+        grep -q "url=${DEFAULT}/built-in-constraints.html" _site/built-in-constraints.html
     # The Web Image is hundreds of MB (it compresses to well under the 100 MB git blob
     # limit). Publishing the site as a Pages artifact keeps it out of git history; a
     # gh-pages push would be rejected for the uncompressed wasm alone.
