@@ -17,6 +17,18 @@ val memberValidator = Yavi.schema()
 
 `.apply(::Member)` returns an `ArgumentsNValidator`; `.fromMap(::Member)` reads a map. The Kotlin type of a parameter tells the compiler what the validator accepts, as in Java.
 
+For a property after the first, give the constructor as a method reference (`apply(::Account)`): Kotlin cannot name the earlier argument types in the extension, so a lambda would see them as `Nothing`.
+
+A single value validator is built with the top-level functions of `am.ik.yavi.validator`, which take the enum or object type as a type argument instead of a `Class` literal. Import them by name, and alias one of them if the functions of the same name from `am.ik.yavi.builder` are imported too:
+
+```kotlin
+import am.ik.yavi.validator._enum
+import am.ik.yavi.validator._object
+
+val role = _enum<Role>("role") { it.oneOf(Role.ADMIN) }
+val id = _object<UUID>("id")
+```
+
 ## The Kotlin DSL
 
 `validator<T>` of `am.ik.yavi.builder` builds a `Validator<T>` for an object that already exists. The DSL obtains property names with Kotlin reflection, so `kotlin-reflect` must be on the runtime classpath.

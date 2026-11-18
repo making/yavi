@@ -17,6 +17,18 @@ val memberValidator = Yavi.schema()
 
 `.apply(::Member)` は `ArgumentsNValidator` を返し、`.fromMap(::Member)` は Map を読み取ります。パラメータの Kotlin の型は、Java の場合と同じく、バリデータが受け付けるものをコンパイラに伝えます。
 
+2 番目以降のプロパティでは、コンストラクタをメソッド参照（`apply(::Account)`）で与えてください。拡張関数では先行する引数の型を名指しできないため、ラムダではそれらが `Nothing` として見えます。
+
+単一値のバリデータは、`am.ik.yavi.validator` のトップレベル関数で構築できます。`Class` リテラルの代わりに、enum またはオブジェクトの型を型引数で与えます。関数は名前でインポートし、`am.ik.yavi.builder` の同名の関数もインポートする場合は一方に別名を付けます。
+
+```kotlin
+import am.ik.yavi.validator._enum
+import am.ik.yavi.validator._object
+
+val role = _enum<Role>("role") { it.oneOf(Role.ADMIN) }
+val id = _object<UUID>("id")
+```
+
 ## Kotlin DSL
 
 `am.ik.yavi.builder` の `validator<T>` は、すでに存在するオブジェクトのための `Validator<T>` を構築します。DSL は Kotlin リフレクションでプロパティ名を取得するため、実行時クラスパスに `kotlin-reflect` が必要です。

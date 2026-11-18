@@ -31,6 +31,18 @@ The methods have the names of the Java types they read:
 
 Every method has overloads without constraints (`._string("name")`) and without a name (`Yavi._string(c -> ...)`), which is described below. A temporal value is read from its ISO-8601 text, an enum from the name of its constant, and a `UUID` or a `URI` from its string form.
 
+In Kotlin, the extension functions of `am.ik.yavi.builder` take the type of an enum or an object as a type argument and pass it to the Java method, so no `Class` literal is needed:
+
+```kotlin
+import am.ik.yavi.builder._enum
+import am.ik.yavi.builder._object
+
+Yavi.schema()
+    ._enum<Role>("role") { it.oneOf(Role.ADMIN) }
+    ._object<UUID>("id")
+    .apply(::Account)
+```
+
 ## Constraints
 
 The lambda receives the constraint object of the type. Its methods are the constraints that apply to that type:
