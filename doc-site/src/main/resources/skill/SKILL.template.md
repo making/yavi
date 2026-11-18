@@ -171,19 +171,47 @@ class SignupController {
   that takes a `BindingResult` fails with `An Errors/BindingResult argument is expected
   to be declared immediately after the model attribute`, because Spring MVC creates a
   `BindingResult` only for a form object that it binds.
-- One controller per form. `@ModelAttribute` methods run before every handler of their
-  controller, and a `BindingResult` argument resolves to the LAST model attribute added,
-  not to the form the handler validates. With two forms in one controller, every handler
-  receives the `BindingResult` of the form whose method ran last, and no error is raised
-  (verified on Spring Framework 7). `@ModelAttribute("signupForm") BindingResult` does
-  not select one either: the model attribute is the form map, not the `BindingResult`, so
-  the request fails. Split the controller instead.
 - Take the parameters as a `MultiValueMap`; a `Map<String, String>` drops all but the
   first value of a key.
 - The code of a field error is the message key (`charSequence.email`, `object.type`), so
   a `MessageSource` replaces the message. See `references/messages.md`.
 - Thymeleaf adds a hidden `_subscribed` field to a checkbox. No property is defined for
   that key, so a form with a checkbox cannot use `rejectingUnknownProperties()`.
+
+### One controller per form, or the model setup inside the handler
+
+A `@ModelAttribute` method runs before every handler of its controller, and a
+`BindingResult` argument resolves to the last model attribute added -- not to the form the
+handler validates. With two forms in one controller, every handler receives the
+`BindingResult` of whichever form was added last, and no error is raised (verified on
+Spring Framework 7); `@ModelAttribute("signupForm") BindingResult` does not select one
+either, because the model attribute is the form map, not the `BindingResult`. Keep one
+form per controller, or do what the `@ModelAttribute` method does inside each handler:
+build the `MapBindingResult` from the parameters, add `getModel()` to the `Model`, and
+take no `BindingResult` argument. Nothing is added before the handler runs then, so one
+controller can serve several forms (verified).
+
+```java
+@PostMapping("/signup")
+String signup(@RequestParam MultiValueMap<String, String> params, Model model) {
+    MapBindingResult result = new MapBindingResult(
+            ParameterTree.of(params).toParameters(signupValidator.description()), "signupForm");
+    return switch (signupValidator.validate(params)) {
+        case Validated.Valid<Signup>(Signup signup) -> {
+            this.signupService.register(signup);
+            yield "redirect:/";
+        }
+        case Validated.Invalid<Signup>(ConstraintViolations violations) -> {
+            violations.apply(result::rejectValue);
+            model.addAllAttributes(result.getModel());
+            yield "signup";
+        }
+    };
+}
+```
+
+A GET handler adds the model of the empty form the same way:
+`model.addAllAttributes(new MapBindingResult(Map.of(), "signupForm").getModel())`.
 
 ## Where to look
 
