@@ -87,7 +87,7 @@ import am.ik.yavi.validator.Yavi;
 
 public final class SignupValidator {
 
-    public static final ObjectInputValidator<Signup> INSTANCE = Yavi.schema()
+    public static final ObjectInputValidator<Signup> SCHEMA = Yavi.schema()
             ._string("name", c -> c.notBlank().lessThanOrEqual(50))
             ._string("email", c -> c.notBlank().email())
             ._integer("age", c -> c.greaterThanOrEqual(18).lessThanOrEqual(120))
@@ -121,7 +121,7 @@ class SignupController {
     // SignupValidator and SignupService are separate types in their own files.
     // The same domain validator serves any request that carries the same input; the
     // coercion of the text of a form is the controller's decision.
-    static final ValueValidator<Map<String, ?>, Signup> signupValidator = SignupValidator.INSTANCE
+    static final ValueValidator<Map<String, ?>, Signup> signupValidator = SignupValidator.SCHEMA
             .readingParameters(StringCoercion.strict().trimming());
 
     private final SignupService signupService;
