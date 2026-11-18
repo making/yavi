@@ -268,11 +268,15 @@ class DocGenTest {
 		assertThat(tmp.resolve("site/0.17/ja/search-index.json")).exists();
 		assertThat(tmp.resolve("site/0.18/en/search-index.json")).exists();
 		assertThat(tmp.resolve("site/0.18/ja/search-index.json")).exists();
-		assertThat(Files.readString(tmp.resolve("site/index.html"))).contains("url=0.17/en/index.html");
+		// The redirect of the site root and the legacy stubs follows default_version in
+		// versions.yaml, so making a release the default does not need a change here.
+		Versions versions = Versions.load(Path.of("content/versions.yaml"));
+		String defaultTree = versions.defaultVersion() + "/" + versions.defaultLanguage();
+		assertThat(Files.readString(tmp.resolve("site/index.html"))).contains("url=" + defaultTree + "/index.html");
 		assertThat(Files.readString(tmp.resolve("site/getting-started.html")))
-			.contains("url=0.17/en/getting-started.html");
+			.contains("url=" + defaultTree + "/getting-started.html");
 		assertThat(Files.readString(tmp.resolve("site/built-in-constraints.html")))
-			.contains("url=0.17/en/built-in-constraints.html");
+			.contains("url=" + defaultTree + "/built-in-constraints.html");
 		assertThat(countPages(tmp.resolve("site/0.17/en"))).isEqualTo(10);
 		assertThat(countPages(tmp.resolve("site/0.17/ja"))).isEqualTo(10);
 		for (String lang : List.of("en", "ja")) {
