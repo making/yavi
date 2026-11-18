@@ -11,6 +11,8 @@ sections:
         title: はじめる
       - file: concepts.md
         title: 基本概念
+      - file: agent-skill.md
+        title: エージェントスキル
   - title: スキーマ
     pages:
       - file: defining-a-schema.md

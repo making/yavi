@@ -11,6 +11,8 @@ sections:
         title: Getting Started
       - file: concepts.md
         title: Core Concepts
+      - file: agent-skill.md
+        title: Agent Skill
   - title: Schemas
     pages:
       - file: defining-a-schema.md

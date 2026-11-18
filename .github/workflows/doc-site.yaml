@@ -164,6 +164,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        # The agent skill version counts the commits that can change it, so the
+        # history has to be here.
+        fetch-depth: 0
     - name: Download the version mapping
       uses: actions/download-artifact@v4
       with:
@@ -207,6 +211,39 @@ jobs:
       run: ./mvnw -V --no-transfer-progress -f doc-site/pom.xml package -DskipTests
     - name: Generate the site
       run: java -jar doc-site/target/yavi-docgen.jar --source doc-site/content --out _site --runtime doc-site/runtime/target/web
+    # The skill's version is <documented version>.<commits that can change it>, but only
+    # if the bundle's CONTENT actually moved: the generator compares its digest against
+    # the published one and keeps the old version when they match, so a rebuilt site does
+    # not tell every installed copy to re-download itself. Pull requests compute the same
+    # version; only a push publishes it.
+    - name: Compute the agent skill version
+      id: skill
+      run: |
+        set -euo pipefail
+        BASE=$(python3 - <<'PY'
+        import yaml
+        with open("doc-site/content/versions.yaml", encoding="utf-8") as f:
+            versions = [str(v.get("version")) for v in yaml.safe_load(f).get("versions") or []]
+        print(max(versions, key=lambda v: [int(p) if p.isdigit() else 0 for p in v.split(".")]))
+        PY
+        )
+        COMMITS=$(git rev-list --count HEAD -- doc-site/content \
+          doc-site/src/main/java/am/ik/yavi/docgen/SkillGen.java doc-site/src/main/resources/skill)
+        echo "version=${BASE}.${COMMITS}" >> "$GITHUB_OUTPUT"
+        PUBLISHED=$(curl -sSL --fail https://yavi.ik.am/skill/version.json || echo '{}')
+        echo "previous-version=$(echo "$PUBLISHED" | sed -n 's/.*"version": *"\([^"]*\)".*/\1/p')" >> "$GITHUB_OUTPUT"
+        echo "previous-hash=$(echo "$PUBLISHED" | sed -n 's/.*"contentHash": *"\([^"]*\)".*/\1/p')" >> "$GITHUB_OUTPUT"
+        echo "candidate ${BASE}.${COMMITS}; published $PUBLISHED"
+    # Generated from the same Markdown as the site, so the skill cannot drift from it.
+    - name: Generate the agent skill
+      run: |
+        java -jar doc-site/target/yavi-docgen.jar skill \
+          --source doc-site/content --out _site/skill \
+          --version '${{ steps.skill.outputs.version }}' \
+          --previous-version '${{ steps.skill.outputs.previous-version }}' \
+          --previous-hash '${{ steps.skill.outputs.previous-hash }}' \
+          --commit '${{ github.sha }}' \
+          --site-base https://yavi.ik.am
     - name: Check the generated site
       run: |
         set -euo pipefail
@@ -217,6 +254,13 @@ jobs:
             0.17/en/getting-started.html \
             0.17/ja/index.html \
             0.17/en/search-index.json \
+            0.18/en/agent-skill.html \
+            skill/index.html \
+            skill/marketplace.json \
+            skill/yavi/SKILL.md \
+            skill/yavi/references/contents.md \
+            skill/yavi-plugin.zip \
+            skill/yavi-skill.tar.gz \
             getting-started.html \
             built-in-constraints.html; do
           test -f "_site/${path}" || { echo "missing _site/${path}"; exit 1; }
