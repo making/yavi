@@ -43,7 +43,10 @@ is still supported and is the right choice only for that case.
    `case Validated.Valid<X>(X x) -> ...` and
    `case Validated.Invalid<X>(ConstraintViolations violations) -> ...`. `validate` is the
    `safeParse` of a Zod-style API; the name is kept from 0.17 for backward
-   compatibility, and there is no `parse` method.
+   compatibility, and there is no `parse` method. Where every handler of an API maps a
+   failure the same way, `validated(...)` throws `ConstraintViolationsException` and one
+   `@RestControllerAdvice` handles it; a switch in each handler repeats the response
+   mapping.
 5. Constraints are methods of the constraint object of the property type. A constraint
    of another type does not compile, so a guess surfaces at build time; check
    `references/built-in-constraints.md` before using a name, and do not invent one.
@@ -58,6 +61,18 @@ is still supported and is the right choice only for that case.
 8. The classic API (`ValidatorBuilder`) treats a `null` property as valid unless a
    constraint rejects it, and `validate` on it returns `ConstraintViolations` rather
    than a `Validated`. Do not mix the two models in one validation path.
+9. Call `rejectingUnknownProperties()` on the body and the query of an API, so a typo in
+   a key is a violation instead of being silently ignored. `readingParameters()` is
+   written after it. A form with a checkbox is the exception (Thymeleaf adds
+   `_subscribed`).
+10. A path variable is text. Take it as a `String` and validate it with the domain's own
+    validator rather than a Spring type conversion, so an invalid `{id}` produces the
+    same violation shape as a malformed body.
+11. A schema that ends in `fromMapReversible` writes the object back as the map of an SQL
+    statement; see "A JSON API and an SQL statement". A value has a text form and a Java
+    form, so the map validator reads the text and a validator that ends in `apply(f)`
+    reads the Java value. Share the single-value validators, keep the two endings, and do
+    not convert a value you already hold to text only to reuse the text validator.
 
 ## Quickstart
 
@@ -213,6 +228,89 @@ String signup(@RequestParam MultiValueMap<String, String> params, Model model) {
 A GET handler adds the model of the empty form the same way:
 `model.addAllAttributes(new MapBindingResult(Map.of(), "signupForm").getModel())`.
 
+## Where validation belongs
+
+Validation is a boundary operation: it turns untyped input -- a JSON body, request
+parameters, a path variable, a form, a row -- into a domain object, and every input of an
+API is untrusted. The handler or the reader that receives the request runs the contract;
+the service and the repository take the typed value and do not check it again. A value
+the application generated itself (an identifier, a timestamp) already has its type, so
+checking it adds nothing.
+
+At an API boundary the contract is also the error contract: reject unknown keys (rule 9),
+validate a path variable with the domain's validator (rule 10), and map
+`ConstraintViolationsException` once (rule 4).
+
+## Reusable single-value validators
+
+A field that appears in several contracts is written once as a single-value validator and
+composed into each schema:
+
+```java
+public static final ReversibleValueValidator<String, String> AUTHOR = Yavi._string("author",
+        c -> c.notBlank().lessThanOrEqual(50));
+
+// read from a map, a form or a row
+Yavi.schema()._string(AUTHOR)._string(CONTENT).fromMap(...)
+
+// read a Java value the caller already holds
+Yavi.schema()._string(AUTHOR)._string(CONTENT).apply(...)
+```
+
+- `named("x")` uses a defined validator under another key and `prefixed(...)` places it
+  under a collection element; the constraint is not copied.
+- `map(f, g)` gives a value its domain type and keeps the text form for writing back; a
+  reversible schema built from it writes the object as the parameters of a statement.
+- Share the single-value validators, not the schema endings: the map validator reads the
+  text form and the `apply` validator reads the Java value. Do not convert a value you
+  already hold to text only to reuse the map validator.
+- Reusing a validator keeps the name and the message of the field across the contracts.
+
+## A JSON API and an SQL statement
+
+The same schema carries a value from a JSON request, a row and a statement. The property
+name is the named parameter of the statement and the alias of the column; a column whose
+name differs (`created_at` for `createdAt`) is selected with an alias, not mapped by hand.
+
+```java
+this.jdbcClient.sql("""
+        INSERT INTO comments (id, author, content, created_at)
+        VALUES (:id, :author, :content, :createdAt)
+        """).params(Comment.SCHEMA.toMap(comment)).update();
+
+List<Comment> comments = this.jdbcClient.sql("""
+        SELECT id, author, content, created_at AS "createdAt" FROM comments
+        """).query().listOfRows().stream().map(Comment.SCHEMA::validated).toList();
+```
+
+`toMap` writes the text form of a value whose reversible validator maps it (a `UUID`, an
+`Instant`), and an entry with `null` for an absent nullable or optional property, because
+a named parameter needs its key. A nested map cannot be bound to a statement: read the
+columns with `_embedded`, or flatten them.
+
+For a value the application already holds, the schema ends in `apply(f)` and takes the
+Java value (`Arguments4Validator<UUID, String, String, Instant, Comment>`); the map
+validator for the same value reads the text form:
+
+```java
+public static final ReversibleValueValidator<String, UUID> ID = Yavi._string("id",
+        c -> c.notBlank().uuid()).map(UUID::fromString, UUID::toString);
+```
+
+To read a body without a record in between, build `Arguments2` with
+`fromMap(Arguments2::new)` and call `args.map((first, second) -> ...)`.
+
+At the request boundary, call `validated(...)` and handle the exception once, so the
+violations of every endpoint have one shape:
+
+```java
+@ExceptionHandler(ConstraintViolationsException.class)
+ResponseEntity<ApiError> violations(ConstraintViolationsException exception) {
+    ConstraintViolations violations = exception.violations();
+    // ...
+}
+```
+
 ## Where to look
 
 | Task | Page |
@@ -227,6 +325,9 @@ A GET handler adds the model of the empty form the same way:
 | Request parameters or a form | `references/input-parameters.md` |
 | The result, the violations, the response | `references/result-handling.md`, `references/violations.md`, `references/messages.md` |
 | Writing the validated object back | `references/writing-back.md` |
+| Where to validate | this page, "Where validation belongs" |
+| Reusing a field validator across schemas | this page, "Reusable single-value validators" |
+| A JSON API and SQL parameters | this page, "A JSON API and an SQL statement" |
 | Spring, Jackson, Kotlin, NullAway | `references/integrations-*.md` |
 | The classic `ValidatorBuilder` API | `references/using-yavi.md` and the rest of the Classic Validators section |
 | Every constraint | `references/built-in-constraints.md` |
