@@ -1384,6 +1384,12 @@ $(if [ "${i}" == "1" ];then
 cat <<EOD
 	private final Class<?> valueType;
 
+	/**
+	 * The validator that checks that an untyped input represents the raw type of the
+	 * argument, or {@code null} if the type is unknown.
+	 */
+	private final @Nullable ValueValidator<Object, @Nullable A1> checked;
+
 	private final boolean required;
 
 	/** The name under which a missing required value is reported. */
@@ -1410,7 +1416,7 @@ fi)
 	public ${class}(Validator<${arguments}> validator, Function${i}<$(echo $(for j in `seq 1 ${i}`;do echo -n "? super A${j}, ";done) | sed 's/,$//'), ? extends X> mapper) {
 $(if [ "${i}" == "1" ];then
 cat <<EOD
-		this(validator, mapper, Object.class, null, false);
+		this(validator, mapper, Object.class, null, null, false);
 	}
 
 	/**
@@ -1445,14 +1451,30 @@ cat <<EOD
 	 */
 	protected ${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<?> valueType,
 			@Nullable Function<? super A1, ? extends @Nullable A1> transform) {
-		this(validator, mapper, valueType, transform, true);
+		this(validator, mapper, valueType, checked(valueType), transform, true);
+	}
+
+	/**
+	 * Creates a validator like
+	 * {@link #DefaultArguments1Validator(Validator, Function1, Class, Function)} that
+	 * reads an untyped input with the given conversion, as
+	 * {@link ValueValidator#untyped(Class, Function)} states, instead of the one that
+	 * {@link ValueValidator#untyped(Class)} chooses by the type.
+	 */
+	${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<A1> valueType,
+			Function<Object, ? extends @Nullable A1> conversion,
+			@Nullable Function<? super A1, ? extends @Nullable A1> transform) {
+		this(validator, mapper, valueType, ValueValidator.<A1>passThrough().untyped(valueType, conversion), transform,
+				true);
 	}
 
 	private ${class}(Validator<${arguments}> validator, Function1<? super A1, ? extends X> mapper, Class<?> valueType,
+			@Nullable ValueValidator<Object, @Nullable A1> checked,
 			@Nullable Function<? super A1, ? extends @Nullable A1> transform, boolean required) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.valueType = valueType;
+		this.checked = checked;
 		this.transform = transform;
 				this.required = required;
 		// the name of the first constrained property, as ValueDescription.Value.of names
@@ -1461,6 +1483,16 @@ cat <<EOD
 		final List<String> names = new ArrayList<>();
 		validator.forEachPredicates(predicates -> names.add(predicates.name()));
 		this.name = names.isEmpty() ? "" : names.get(0);
+	}
+
+	/**
+	 * Returns the validator that checks that an untyped input represents the given type,
+	 * or {@code null} if the type is unknown ({@code Object} or {@code Enum}).
+	 */
+	@SuppressWarnings("unchecked")
+	private static <T> @Nullable ValueValidator<Object, @Nullable T> checked(Class<?> valueType) {
+		return valueType == Object.class || valueType == Enum.class ? null
+				: ValueValidator.<T>passThrough().untyped((Class<T>) valueType);
 	}
 
 	/**
@@ -1493,7 +1525,7 @@ cat <<EOD
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
-		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType,
+		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType, this.checked,
 				composed(transform, this.transform), this.required);
 	}
 
@@ -1509,8 +1541,8 @@ cat <<EOD
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, X> named(String name) {
-		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.transform,
-				this.required);
+		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.checked,
+				this.transform, this.required);
 	}
 
 	/**
@@ -1575,13 +1607,11 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
-		if (this.valueType == Object.class || this.valueType == Enum.class) {
+		if (this.checked == null) {
 			return Arguments1Validator.super.readingWith(reader);
 		}
-		return ValueValidator.<A1>passThrough()
-			.untyped((Class<A1>) this.valueType)
+		return this.checked
 			.readingWith(reader)
 			.named(this.name)
 			.andThen(this)
@@ -1604,7 +1634,7 @@ fi)
 	 */
 	@Override
 	public ${class}<$(echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done) | sed 's/,$//'), Supplier<X>> lazy() {
-		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'))$(if [ "${i}" == "1" ];then echo -n ", this.valueType, this.transform, this.required"; fi));
+		return new ${class}<>(this.validator, ($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//')) -> () -> this.mapper.apply($(echo $(for j in `seq 1 ${i}`;do echo -n "a${j}, ";done) | sed 's/,$//'))$(if [ "${i}" == "1" ];then echo -n ", this.valueType, this.checked, this.transform, this.required"; fi));
 	}
 
 	/**
@@ -2916,7 +2946,7 @@ import am.ik.yavi.constraint.StringValueConstraint;
 import am.ik.yavi.constraint.YearConstraint;
 import am.ik.yavi.constraint.YearMonthConstraint;
 import am.ik.yavi.constraint.ZonedDateTimeConstraint;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.ConstraintViolations;\nimport am.ik.yavi.core.InputReader;'; fi)
-import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;\nimport am.ik.yavi.core.Validated;'; fi)
+import am.ik.yavi.core.NullAcceptingValueValidator;$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Presence;'; fi)$(if [ "${i}" != "${n}" ];then printf '\nimport am.ik.yavi.core.UntypedConversions;'; fi)$(if [ "${i}" -gt 0 ];then printf '\nimport am.ik.yavi.core.Validated;'; fi)
 $(if [ "${track}" == "reversible" ];then printf 'import am.ik.yavi.core.ReversibleValueValidator;\n';fi)import am.ik.yavi.core.ValueValidator;
 $(if [ "${i}" -gt 0 ];then
 cat <<EOD
@@ -3078,7 +3108,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(${value_validator}<BigDecimal, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(BigDecimal.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(BigDecimal.class, UntypedConversions.toBigDecimal(), validator));
 	}
 
 	/**
@@ -3096,7 +3126,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigDecimal(${null_accepting}<BigDecimal, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(BigDecimal.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(BigDecimal.class, UntypedConversions.toBigDecimal(), validator));
 	}
 
 	/**
@@ -3114,7 +3144,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigDecimal, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigDecimal> _bigDecimal(String name,
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, BigDecimal.class, BigDecimalValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, BigDecimal.class, UntypedConversions.toBigDecimal(), BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3146,7 +3176,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(${value_validator}<BigInteger, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(BigInteger.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(BigInteger.class, UntypedConversions.toBigInteger(), validator));
 	}
 
 	/**
@@ -3164,7 +3194,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _bigInteger(${null_accepting}<BigInteger, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(BigInteger.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(BigInteger.class, UntypedConversions.toBigInteger(), validator));
 	}
 
 	/**
@@ -3182,7 +3212,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) BigInteger, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) BigInteger> _bigInteger(String name,
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, BigInteger.class, BigIntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, BigInteger.class, UntypedConversions.toBigInteger(), BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3214,7 +3244,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(${value_validator}<Boolean, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Boolean.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Boolean.class, UntypedConversions.instanceOf(Boolean.class), validator));
 	}
 
 	/**
@@ -3232,7 +3262,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _boolean(${null_accepting}<Boolean, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Boolean.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Boolean.class, UntypedConversions.instanceOf(Boolean.class), validator));
 	}
 
 	/**
@@ -3250,7 +3280,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Boolean, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Boolean> _boolean(String name,
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Boolean.class, UntypedConversions.instanceOf(Boolean.class), BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3282,7 +3312,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(${value_validator}<Double, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Double.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Double.class, UntypedConversions.toDouble(), validator));
 	}
 
 	/**
@@ -3300,7 +3330,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _double(${null_accepting}<Double, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Double.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Double.class, UntypedConversions.toDouble(), validator));
 	}
 
 	/**
@@ -3318,7 +3348,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Double, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Double> _double(String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Double.class, UntypedConversions.toDouble(), DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3389,7 +3419,7 @@ cat <<EOD
 	 */
 	public <E extends Enum<E>> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) E, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) E> _enum(String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, type, UntypedConversions.toEnum(type), EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
 	/**
@@ -3423,7 +3453,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(${value_validator}<Float, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Float.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Float.class, UntypedConversions.toFloat(), validator));
 	}
 
 	/**
@@ -3441,7 +3471,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _float(${null_accepting}<Float, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Float.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Float.class, UntypedConversions.toFloat(), validator));
 	}
 
 	/**
@@ -3459,7 +3489,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Float, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Float> _float(String name,
 			Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Float.class, UntypedConversions.toFloat(), FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3491,7 +3521,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(${value_validator}<Instant, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Instant.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Instant.class, UntypedConversions.toInstant(), validator));
 	}
 
 	/**
@@ -3509,7 +3539,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _instant(${null_accepting}<Instant, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Instant.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Instant.class, UntypedConversions.toInstant(), validator));
 	}
 
 	/**
@@ -3527,7 +3557,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Instant, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Instant> _instant(String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Instant.class, UntypedConversions.toInstant(), InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3559,7 +3589,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(${value_validator}<Integer, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Integer.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Integer.class, UntypedConversions.toInteger(), validator));
 	}
 
 	/**
@@ -3577,7 +3607,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _integer(${null_accepting}<Integer, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Integer.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Integer.class, UntypedConversions.toInteger(), validator));
 	}
 
 	/**
@@ -3595,7 +3625,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Integer, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Integer> _integer(String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Integer.class, UntypedConversions.toInteger(), IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3627,7 +3657,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(${value_validator}<LocalDateTime, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalDateTime.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalDateTime.class, UntypedConversions.toLocalDateTime(), validator));
 	}
 
 	/**
@@ -3645,7 +3675,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDateTime(${null_accepting}<LocalDateTime, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalDateTime.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalDateTime.class, UntypedConversions.toLocalDateTime(), validator));
 	}
 
 	/**
@@ -3663,7 +3693,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDateTime> _localDateTime(String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalDateTime.class, LocalDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalDateTime.class, UntypedConversions.toLocalDateTime(), LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3695,7 +3725,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(${value_validator}<LocalTime, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalTime.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalTime.class, UntypedConversions.toLocalTime(), validator));
 	}
 
 	/**
@@ -3713,7 +3743,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localTime(${null_accepting}<LocalTime, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalTime.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalTime.class, UntypedConversions.toLocalTime(), validator));
 	}
 
 	/**
@@ -3731,7 +3761,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalTime> _localTime(String name,
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalTime.class, LocalTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalTime.class, UntypedConversions.toLocalTime(), LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3763,7 +3793,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(${value_validator}<LocalDate, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalDate.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(LocalDate.class, UntypedConversions.toLocalDate(), validator));
 	}
 
 	/**
@@ -3781,7 +3811,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _localDate(${null_accepting}<LocalDate, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalDate.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(LocalDate.class, UntypedConversions.toLocalDate(), validator));
 	}
 
 	/**
@@ -3799,7 +3829,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) LocalDate, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) LocalDate> _localDate(String name,
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalDate.class, LocalDateValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, LocalDate.class, UntypedConversions.toLocalDate(), LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3831,7 +3861,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(${value_validator}<Long, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Long.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Long.class, UntypedConversions.toLong(), validator));
 	}
 
 	/**
@@ -3849,7 +3879,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _long(${null_accepting}<Long, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Long.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Long.class, UntypedConversions.toLong(), validator));
 	}
 
 	/**
@@ -3867,7 +3897,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Long, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Long> _long(String name,
 			Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Long.class, UntypedConversions.toLong(), LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -3975,7 +4005,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(${value_validator}<OffsetDateTime, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(OffsetDateTime.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), validator));
 	}
 
 	/**
@@ -3993,7 +4023,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _offsetDateTime(${null_accepting}<OffsetDateTime, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(OffsetDateTime.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), validator));
 	}
 
 	/**
@@ -4011,7 +4041,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) OffsetDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) OffsetDateTime> _offsetDateTime(String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, OffsetDateTime.class, OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4043,7 +4073,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(${value_validator}<Short, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Short.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Short.class, UntypedConversions.toShort(), validator));
 	}
 
 	/**
@@ -4061,7 +4091,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _short(${null_accepting}<Short, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Short.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Short.class, UntypedConversions.toShort(), validator));
 	}
 
 	/**
@@ -4079,7 +4109,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Short, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Short> _short(String name,
 			Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Short.class, UntypedConversions.toShort(), ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4111,7 +4141,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(${value_validator}<String, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(String.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(String.class, UntypedConversions.instanceOf(String.class), validator));
 	}
 
 	/**
@@ -4129,7 +4159,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _string(${null_accepting}<String, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(String.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(String.class, UntypedConversions.instanceOf(String.class), validator));
 	}
 
 	/**
@@ -4153,7 +4183,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) String, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) String> _string(String name,
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, String.class, UntypedConversions.instanceOf(String.class), StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4185,7 +4215,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(${value_validator}<YearMonth, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(YearMonth.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(YearMonth.class, UntypedConversions.toYearMonth(), validator));
 	}
 
 	/**
@@ -4203,7 +4233,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _yearMonth(${null_accepting}<YearMonth, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(YearMonth.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(YearMonth.class, UntypedConversions.toYearMonth(), validator));
 	}
 
 	/**
@@ -4221,7 +4251,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) YearMonth, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) YearMonth> _yearMonth(String name,
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, YearMonth.class, YearMonthValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, YearMonth.class, UntypedConversions.toYearMonth(), YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4253,7 +4283,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(${value_validator}<Year, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Year.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(Year.class, UntypedConversions.toYear(), validator));
 	}
 
 	/**
@@ -4271,7 +4301,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _year(${null_accepting}<Year, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Year.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(Year.class, UntypedConversions.toYear(), validator));
 	}
 
 	/**
@@ -4289,7 +4319,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) Year, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) Year> _year(String name,
 			Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, Year.class, UntypedConversions.toYear(), YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -4321,7 +4351,7 @@ cat <<EOD
 	 * @since 0.14.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(${value_validator}<ZonedDateTime, T> validator) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(ZonedDateTime.class, validator));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(ZonedDateTime.class, UntypedConversions.toZonedDateTime(), validator));
 	}
 
 	/**
@@ -4339,7 +4369,7 @@ cat <<EOD
 	 * @since 0.18.0
 	 */
 	public <T extends @Nullable Object> ${next_class}.AddedNullAccepting<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) T> _zonedDateTime(${null_accepting}<ZonedDateTime, T> validator) {
-		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(ZonedDateTime.class, validator));
+		return new ${next_class}.AddedNullAccepting<>(${prev_definitions}${definition}.value(ZonedDateTime.class, UntypedConversions.toZonedDateTime(), validator));
 	}
 
 	/**
@@ -4357,7 +4387,7 @@ cat <<EOD
 	 */
 	public ${next_class}.Added<$(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "A${j}, ";done);fi) ZonedDateTime, $(if [ "${i}" -gt 0 ];then echo $(for j in `seq 1 ${i}`;do echo -n "R${j}, ";done);fi) ZonedDateTime> _zonedDateTime(String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
-		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, ZonedDateTime.class, ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
+		return new ${next_class}.Added<>(${prev_definitions}${definition}.value(name, ZonedDateTime.class, UntypedConversions.toZonedDateTime(), ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**

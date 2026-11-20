@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValueDescription;
@@ -199,7 +200,7 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 
 	private EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
 			Class<E> enumType, @Nullable Function<? super E, ? extends @Nullable E> transform, boolean ignoringCase) {
-		super(validator, mapper, enumType, transform);
+		super(validator, mapper, enumType, UntypedConversions.toEnum(enumType), transform);
 		this.enumType = enumType;
 		this.ignoringCase = ignoringCase;
 	}
@@ -216,7 +217,7 @@ public class EnumValidator<E extends Enum<E>, T extends @Nullable Object> extend
 	 */
 	public EnumValidator(Validator<Arguments1<E>> validator, Function1<? super E, ? extends T> mapper,
 			Class<E> enumType) {
-		super(validator, mapper, enumType);
+		super(validator, mapper, enumType, UntypedConversions.toEnum(enumType), null);
 		this.enumType = enumType;
 		this.ignoringCase = false;
 	}

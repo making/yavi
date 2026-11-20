@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.time.YearMonth;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class YearMonthValidator<T extends @Nullable Object> extends DefaultArgum
 	 */
 	public YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
 			Function1<? super YearMonth, ? extends T> mapper) {
-		super(validator, mapper, YearMonth.class);
+		super(validator, mapper, YearMonth.class, UntypedConversions.toYearMonth(), null);
 	}
 
 	private YearMonthValidator(Validator<Arguments1<YearMonth>> validator,
 			Function1<? super YearMonth, ? extends T> mapper,
 			@Nullable Function<? super YearMonth, ? extends @Nullable YearMonth> transform) {
-		super(validator, mapper, YearMonth.class, transform);
+		super(validator, mapper, YearMonth.class, UntypedConversions.toYearMonth(), transform);
 	}
 
 	/**

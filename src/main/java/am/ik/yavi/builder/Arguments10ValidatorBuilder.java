@@ -50,6 +50,7 @@ import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueValidator;
 import am.ik.yavi.core.ViolationMessage;
@@ -173,7 +174,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigDecimal(
 			ValueValidator<BigDecimal, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(BigDecimal.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(BigDecimal.class, UntypedConversions.toBigDecimal(), validator));
 	}
 
 	/**
@@ -192,7 +194,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigDecimal, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigDecimal(
 			NullAcceptingValueValidator<BigDecimal, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(BigDecimal.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(BigDecimal.class, UntypedConversions.toBigDecimal(), validator));
 	}
 
 	/**
@@ -214,7 +217,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<BigDecimalConstraint<Arguments1<BigDecimal>>, BigDecimalConstraint<Arguments1<BigDecimal>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, BigDecimal.class,
-						BigDecimalValidatorBuilder.of(name, constraints).build()));
+						UntypedConversions.toBigDecimal(), BigDecimalValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -248,7 +251,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigInteger(
 			ValueValidator<BigInteger, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(BigInteger.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(BigInteger.class, UntypedConversions.toBigInteger(), validator));
 	}
 
 	/**
@@ -267,7 +271,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, BigInteger, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _bigInteger(
 			NullAcceptingValueValidator<BigInteger, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(BigInteger.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(BigInteger.class, UntypedConversions.toBigInteger(), validator));
 	}
 
 	/**
@@ -289,7 +294,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<BigIntegerConstraint<Arguments1<BigInteger>>, BigIntegerConstraint<Arguments1<BigInteger>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, BigInteger.class,
-						BigIntegerValidatorBuilder.of(name, constraints).build()));
+						UntypedConversions.toBigInteger(), BigIntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -323,7 +328,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _boolean(
 			ValueValidator<Boolean, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Boolean.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Boolean.class, UntypedConversions.instanceOf(Boolean.class), validator));
 	}
 
 	/**
@@ -342,7 +348,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Boolean, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _boolean(
 			NullAcceptingValueValidator<Boolean, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Boolean.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Boolean.class, UntypedConversions.instanceOf(Boolean.class), validator));
 	}
 
 	/**
@@ -364,7 +371,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<BooleanConstraint<Arguments1<Boolean>>, BooleanConstraint<Arguments1<Boolean>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Boolean.class, BooleanValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, Boolean.class, UntypedConversions.instanceOf(Boolean.class),
+						BooleanValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -396,7 +404,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _double(
 			ValueValidator<Double, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Double.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Double.class, UntypedConversions.toDouble(), validator));
 	}
 
 	/**
@@ -415,7 +424,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Double, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _double(
 			NullAcceptingValueValidator<Double, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Double.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Double.class, UntypedConversions.toDouble(), validator));
 	}
 
 	/**
@@ -436,8 +446,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<DoubleConstraint<Arguments1<Double>>, DoubleConstraint<Arguments1<Double>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Double.class, DoubleValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Double.class, UntypedConversions.toDouble(),
+						DoubleValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -511,8 +521,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name, Class<E> type,
 			Function<EnumConstraint<Arguments1<E>, E>, EnumConstraint<Arguments1<E>, E>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, type, EnumValidatorBuilder.of(name, type, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, type, UntypedConversions.toEnum(type),
+						EnumValidatorBuilder.of(name, type, constraints).build()));
 	}
 
 	/**
@@ -547,7 +557,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _float(
 			ValueValidator<Float, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Float.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Float.class, UntypedConversions.toFloat(), validator));
 	}
 
 	/**
@@ -566,7 +577,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _float(
 			NullAcceptingValueValidator<Float, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Float.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Float.class, UntypedConversions.toFloat(), validator));
 	}
 
 	/**
@@ -586,8 +598,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Float, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Float> _float(
 			String name, Function<FloatConstraint<Arguments1<Float>>, FloatConstraint<Arguments1<Float>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Float.class, FloatValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Float.class, UntypedConversions.toFloat(),
+						FloatValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -620,7 +632,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _instant(
 			ValueValidator<Instant, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Instant.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Instant.class, UntypedConversions.toInstant(), validator));
 	}
 
 	/**
@@ -639,7 +652,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Instant, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _instant(
 			NullAcceptingValueValidator<Instant, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Instant.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Instant.class, UntypedConversions.toInstant(), validator));
 	}
 
 	/**
@@ -660,8 +674,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<InstantConstraint<Arguments1<Instant>>, InstantConstraint<Arguments1<Instant>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Instant.class, InstantValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Instant.class,
+						UntypedConversions.toInstant(), InstantValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -695,7 +709,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _integer(
 			ValueValidator<Integer, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Integer.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Integer.class, UntypedConversions.toInteger(), validator));
 	}
 
 	/**
@@ -714,7 +729,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Integer, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _integer(
 			NullAcceptingValueValidator<Integer, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Integer.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Integer.class, UntypedConversions.toInteger(), validator));
 	}
 
 	/**
@@ -735,8 +751,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<IntegerConstraint<Arguments1<Integer>>, IntegerConstraint<Arguments1<Integer>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Integer.class, IntegerValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Integer.class,
+						UntypedConversions.toInteger(), IntegerValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -770,7 +786,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localDateTime(
 			ValueValidator<LocalDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalDateTime.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalDateTime.class, UntypedConversions.toLocalDateTime(), validator));
 	}
 
 	/**
@@ -789,7 +806,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localDateTime(
 			NullAcceptingValueValidator<LocalDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalDateTime.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalDateTime.class, UntypedConversions.toLocalDateTime(), validator));
 	}
 
 	/**
@@ -810,7 +828,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<LocalDateTimeConstraint<Arguments1<LocalDateTime>>, LocalDateTimeConstraint<Arguments1<LocalDateTime>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, LocalDateTime.class,
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(name, LocalDateTime.class, UntypedConversions.toLocalDateTime(),
 						LocalDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -845,7 +864,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localTime(
 			ValueValidator<LocalTime, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalTime.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalTime.class, UntypedConversions.toLocalTime(), validator));
 	}
 
 	/**
@@ -864,7 +884,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localTime(
 			NullAcceptingValueValidator<LocalTime, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalTime.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalTime.class, UntypedConversions.toLocalTime(), validator));
 	}
 
 	/**
@@ -886,7 +907,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<LocalTimeConstraint<Arguments1<LocalTime>>, LocalTimeConstraint<Arguments1<LocalTime>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, LocalTime.class,
-						LocalTimeValidatorBuilder.of(name, constraints).build()));
+						UntypedConversions.toLocalTime(), LocalTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -920,7 +941,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localDate(
 			ValueValidator<LocalDate, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalDate.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalDate.class, UntypedConversions.toLocalDate(), validator));
 	}
 
 	/**
@@ -939,7 +961,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, LocalDate, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _localDate(
 			NullAcceptingValueValidator<LocalDate, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(LocalDate.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(LocalDate.class, UntypedConversions.toLocalDate(), validator));
 	}
 
 	/**
@@ -961,7 +984,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<LocalDateConstraint<Arguments1<LocalDate>>, LocalDateConstraint<Arguments1<LocalDate>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, LocalDate.class,
-						LocalDateValidatorBuilder.of(name, constraints).build()));
+						UntypedConversions.toLocalDate(), LocalDateValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -994,7 +1017,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _long(
 			ValueValidator<Long, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Long.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Long.class, UntypedConversions.toLong(), validator));
 	}
 
 	/**
@@ -1013,7 +1037,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _long(
 			NullAcceptingValueValidator<Long, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Long.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Long.class, UntypedConversions.toLong(), validator));
 	}
 
 	/**
@@ -1033,8 +1058,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Long, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Long> _long(
 			String name, Function<LongConstraint<Arguments1<Long>>, LongConstraint<Arguments1<Long>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Long.class, LongValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Long.class, UntypedConversions.toLong(),
+						LongValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1148,7 +1173,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, OffsetDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _offsetDateTime(
 			ValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(OffsetDateTime.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), validator));
 	}
 
 	/**
@@ -1168,7 +1194,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			NullAcceptingValueValidator<OffsetDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
 				this.d6, this.d7, this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(OffsetDateTime.class, validator));
+				ArgumentDefinition.value(OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), validator));
 	}
 
 	/**
@@ -1189,7 +1215,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>, OffsetDateTimeConstraint<Arguments1<OffsetDateTime>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, OffsetDateTime.class,
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(name, OffsetDateTime.class, UntypedConversions.toOffsetDateTime(),
 						OffsetDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 
@@ -1223,7 +1250,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _short(
 			ValueValidator<Short, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Short.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Short.class, UntypedConversions.toShort(), validator));
 	}
 
 	/**
@@ -1242,7 +1270,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _short(
 			NullAcceptingValueValidator<Short, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Short.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Short.class, UntypedConversions.toShort(), validator));
 	}
 
 	/**
@@ -1262,8 +1291,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Short, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Short> _short(
 			String name, Function<ShortConstraint<Arguments1<Short>>, ShortConstraint<Arguments1<Short>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Short.class, ShortValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Short.class, UntypedConversions.toShort(),
+						ShortValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1295,7 +1324,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _string(
 			ValueValidator<String, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(String.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(String.class, UntypedConversions.instanceOf(String.class), validator));
 	}
 
 	/**
@@ -1314,7 +1344,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, String, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _string(
 			NullAcceptingValueValidator<String, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(String.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(String.class, UntypedConversions.instanceOf(String.class), validator));
 	}
 
 	/**
@@ -1342,7 +1373,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<? super StringValueConstraint<Arguments1<String>>, ? extends CharSequenceConstraint<Arguments1<String>, String>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, String.class, StringValidatorBuilder.of(name, constraints).build()));
+				ArgumentDefinition.value(name, String.class, UntypedConversions.instanceOf(String.class),
+						StringValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1375,7 +1407,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _yearMonth(
 			ValueValidator<YearMonth, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(YearMonth.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(YearMonth.class, UntypedConversions.toYearMonth(), validator));
 	}
 
 	/**
@@ -1394,7 +1427,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, YearMonth, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _yearMonth(
 			NullAcceptingValueValidator<YearMonth, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(YearMonth.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(YearMonth.class, UntypedConversions.toYearMonth(), validator));
 	}
 
 	/**
@@ -1416,7 +1450,7 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			Function<YearMonthConstraint<Arguments1<YearMonth>>, YearMonthConstraint<Arguments1<YearMonth>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
 				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, YearMonth.class,
-						YearMonthValidatorBuilder.of(name, constraints).build()));
+						UntypedConversions.toYearMonth(), YearMonthValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1449,7 +1483,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _year(
 			ValueValidator<Year, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(Year.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Year.class, UntypedConversions.toYear(), validator));
 	}
 
 	/**
@@ -1468,7 +1503,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _year(
 			NullAcceptingValueValidator<Year, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(Year.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(Year.class, UntypedConversions.toYear(), validator));
 	}
 
 	/**
@@ -1488,8 +1524,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, Year, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, Year> _year(
 			String name, Function<YearConstraint<Arguments1<Year>>, YearConstraint<Arguments1<Year>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10,
-				ArgumentDefinition.value(name, Year.class, YearValidatorBuilder.of(name, constraints).build()));
+				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, Year.class, UntypedConversions.toYear(),
+						YearValidatorBuilder.of(name, constraints).build()));
 	}
 
 	/**
@@ -1522,7 +1558,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.Added<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _zonedDateTime(
 			ValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(ZonedDateTime.class, validator));
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(ZonedDateTime.class, UntypedConversions.toZonedDateTime(), validator));
 	}
 
 	/**
@@ -1541,7 +1578,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 	public <T extends @Nullable Object> Arguments11ValidatorBuilder.AddedNullAccepting<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, ZonedDateTime, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, T> _zonedDateTime(
 			NullAcceptingValueValidator<ZonedDateTime, T> validator) {
 		return new Arguments11ValidatorBuilder.AddedNullAccepting<>(this.d1, this.d2, this.d3, this.d4, this.d5,
-				this.d6, this.d7, this.d8, this.d9, this.d10, ArgumentDefinition.value(ZonedDateTime.class, validator));
+				this.d6, this.d7, this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(ZonedDateTime.class, UntypedConversions.toZonedDateTime(), validator));
 	}
 
 	/**
@@ -1562,7 +1600,8 @@ public sealed class Arguments10ValidatorBuilder<A1, A2, A3, A4, A5, A6, A7, A8, 
 			String name,
 			Function<ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>, ZonedDateTimeConstraint<Arguments1<ZonedDateTime>>> constraints) {
 		return new Arguments11ValidatorBuilder.Added<>(this.d1, this.d2, this.d3, this.d4, this.d5, this.d6, this.d7,
-				this.d8, this.d9, this.d10, ArgumentDefinition.value(name, ZonedDateTime.class,
+				this.d8, this.d9, this.d10,
+				ArgumentDefinition.value(name, ZonedDateTime.class, UntypedConversions.toZonedDateTime(),
 						ZonedDateTimeValidatorBuilder.of(name, constraints).build()));
 	}
 

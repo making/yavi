@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import am.ik.yavi.core.ConstraintContext;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.core.ValueDescription;
@@ -68,13 +69,13 @@ public class StringValidator<T extends @Nullable Object> extends DefaultArgument
 	 * @param mapper the function applied to the validated value
 	 */
 	public StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper) {
-		super(validator, mapper, String.class);
+		super(validator, mapper, String.class, UntypedConversions.instanceOf(String.class), null);
 		this.untrimmed = false;
 	}
 
 	private StringValidator(Validator<Arguments1<String>> validator, Function1<? super String, ? extends T> mapper,
 			@Nullable Function<? super String, ? extends @Nullable String> transform, boolean untrimmed) {
-		super(validator, mapper, String.class, transform);
+		super(validator, mapper, String.class, UntypedConversions.instanceOf(String.class), transform);
 		this.untrimmed = untrimmed;
 	}
 

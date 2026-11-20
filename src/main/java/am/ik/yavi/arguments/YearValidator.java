@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.time.Year;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -54,12 +55,12 @@ public class YearValidator<T extends @Nullable Object> extends DefaultArguments1
 	 * @param mapper the function applied to the validated value
 	 */
 	public YearValidator(Validator<Arguments1<Year>> validator, Function1<? super Year, ? extends T> mapper) {
-		super(validator, mapper, Year.class);
+		super(validator, mapper, Year.class, UntypedConversions.toYear(), null);
 	}
 
 	private YearValidator(Validator<Arguments1<Year>> validator, Function1<? super Year, ? extends T> mapper,
 			@Nullable Function<? super Year, ? extends @Nullable Year> transform) {
-		super(validator, mapper, Year.class, transform);
+		super(validator, mapper, Year.class, UntypedConversions.toYear(), transform);
 	}
 
 	/**

@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.math.BigInteger;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class BigIntegerValidator<T extends @Nullable Object> extends DefaultArgu
 	 */
 	public BigIntegerValidator(Validator<Arguments1<BigInteger>> validator,
 			Function1<? super BigInteger, ? extends T> mapper) {
-		super(validator, mapper, BigInteger.class);
+		super(validator, mapper, BigInteger.class, UntypedConversions.toBigInteger(), null);
 	}
 
 	private BigIntegerValidator(Validator<Arguments1<BigInteger>> validator,
 			Function1<? super BigInteger, ? extends T> mapper,
 			@Nullable Function<? super BigInteger, ? extends @Nullable BigInteger> transform) {
-		super(validator, mapper, BigInteger.class, transform);
+		super(validator, mapper, BigInteger.class, UntypedConversions.toBigInteger(), transform);
 	}
 
 	/**

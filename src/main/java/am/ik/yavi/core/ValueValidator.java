@@ -196,8 +196,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * Nothing else is converted: {@code "1"} is not a number and {@code 1} is not a
 	 * string. An input whose values are all strings, such as request parameters, is read
 	 * with {@link CoercibleInputReader#coercingStrings()}, which takes {@code "1"} as a
-	 * number where a number is expected. For any other conversion, write a validator that
-	 * takes an {@code Object} and give it {@code Object.class}.
+	 * number where a number is expected. For any other conversion, give it with
+	 * {@link #untyped(Class, Function)}.
 	 *
 	 * <p>
 	 * With another reader, the checked input is the
@@ -212,9 +212,42 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 * @return a value validator for an untyped input
 	 * @since 0.18.0
 	 * @see #untyped()
+	 * @see #untyped(Class, Function)
 	 */
 	default ValueValidator<Object, X> untyped(Class<T> inputType) {
 		return UntypedInput.checked(InputReader.ofJdkTypes(), inputType, this);
+	}
+
+	/**
+	 * Returns a validator that accepts an input of unknown type, converts it to the given
+	 * type with the given conversion and then validates it with this validator. This is
+	 * {@link #untyped(Class)} with a conversion that the caller names: {@code null} is
+	 * passed to this validator as is, and any other input, or with another reader the
+	 * {@linkplain InputReader#value(Object, Class) value} of the node, is given to the
+	 * conversion, which returns it as the given type or {@code null} if it does not
+	 * represent that type. Such an input is reported as {@link #untyped(Class)} states.
+	 *
+	 * <p>
+	 * {@link #untyped(Class)} chooses the conversion by the given type when it is called,
+	 * so it holds the conversion of every type; those of the types it names other than
+	 * {@code Map} are the ones of {@link UntypedConversions}. Name the conversion of the
+	 * type, so that an application analyzed as a closed world, such as a native image,
+	 * keeps only that one, or write one to read a type in another way:
+	 *
+	 * <pre>{@code
+	 * ValueValidator<Object, LocalDate> day = ValueValidator.<LocalDate>passThrough()
+	 *     .untyped(LocalDate.class, value -> value instanceof Long epochDay ? LocalDate.ofEpochDay(epochDay)
+	 *         : UntypedConversions.toLocalDate().apply(value));
+	 * }</pre>
+	 * @param inputType the raw input type of this validator
+	 * @param conversion the conversion of an input other than {@code null} to the input
+	 * type, which returns {@code null} for an input that does not represent the type
+	 * @return a value validator for an untyped input
+	 * @since 0.18.1
+	 * @see UntypedConversions
+	 */
+	default ValueValidator<Object, X> untyped(Class<T> inputType, Function<Object, ? extends @Nullable T> conversion) {
+		return UntypedInput.checked(InputReader.ofJdkTypes(), inputType, conversion, this);
 	}
 
 	private static <T, X extends @Nullable Object> ValueValidator<T, X> described(ValueValidator<T, X> validator,
@@ -415,8 +448,9 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	@SuppressWarnings("unchecked")
 	private static <N, A1, R extends @Nullable Object> ValueValidator<N, Optional<@NonNull R>> untypedOptional(
 			InputReader<N> reader, ValueValidator<? super A1, ? extends R> validator) {
+		final Class<Optional<? extends N>> optional = (Class<Optional<? extends N>>) (Class<?>) Optional.class;
 		return describedNamed(
-				UntypedInput.checked(reader, (Class<Optional<? extends N>>) (Class<?>) Optional.class,
+				UntypedInput.checked(reader, optional, UntypedConversions.instanceOf(optional),
 						ValueValidator.liftOptional(validator.readingWith(reader))),
 				() -> new ValueDescription.Optional(validator.description(), null),
 				other -> untypedOptional(other, validator), name -> untypedOptional(reader, validator.named(name)));

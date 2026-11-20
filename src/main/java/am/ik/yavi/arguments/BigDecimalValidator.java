@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class BigDecimalValidator<T extends @Nullable Object> extends DefaultArgu
 	 */
 	public BigDecimalValidator(Validator<Arguments1<BigDecimal>> validator,
 			Function1<? super BigDecimal, ? extends T> mapper) {
-		super(validator, mapper, BigDecimal.class);
+		super(validator, mapper, BigDecimal.class, UntypedConversions.toBigDecimal(), null);
 	}
 
 	private BigDecimalValidator(Validator<Arguments1<BigDecimal>> validator,
 			Function1<? super BigDecimal, ? extends T> mapper,
 			@Nullable Function<? super BigDecimal, ? extends @Nullable BigDecimal> transform) {
-		super(validator, mapper, BigDecimal.class, transform);
+		super(validator, mapper, BigDecimal.class, UntypedConversions.toBigDecimal(), transform);
 	}
 
 	/**

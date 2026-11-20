@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.time.OffsetDateTime;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -56,13 +57,13 @@ public class OffsetDateTimeValidator<T extends @Nullable Object> extends Default
 	 */
 	public OffsetDateTimeValidator(Validator<Arguments1<OffsetDateTime>> validator,
 			Function1<? super OffsetDateTime, ? extends T> mapper) {
-		super(validator, mapper, OffsetDateTime.class);
+		super(validator, mapper, OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), null);
 	}
 
 	private OffsetDateTimeValidator(Validator<Arguments1<OffsetDateTime>> validator,
 			Function1<? super OffsetDateTime, ? extends T> mapper,
 			@Nullable Function<? super OffsetDateTime, ? extends @Nullable OffsetDateTime> transform) {
-		super(validator, mapper, OffsetDateTime.class, transform);
+		super(validator, mapper, OffsetDateTime.class, UntypedConversions.toOffsetDateTime(), transform);
 	}
 
 	/**
