@@ -56,6 +56,12 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 
 	private final Class<?> valueType;
 
+	/**
+	 * The validator that checks that an untyped input represents the raw type of the
+	 * argument, or {@code null} if the type is unknown.
+	 */
+	private final @Nullable ValueValidator<Object, @Nullable A1> checked;
+
 	private final boolean required;
 
 	/** The name under which a missing required value is reported. */
@@ -76,7 +82,7 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	 * @param mapper the mapper applied to the validated arguments
 	 */
 	public DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper) {
-		this(validator, mapper, Object.class, null, false);
+		this(validator, mapper, Object.class, null, null, false);
 	}
 
 	/**
@@ -109,14 +115,30 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	 */
 	protected DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
 			Class<?> valueType, @Nullable Function<? super A1, ? extends @Nullable A1> transform) {
-		this(validator, mapper, valueType, transform, true);
+		this(validator, mapper, valueType, checked(valueType), transform, true);
+	}
+
+	/**
+	 * Creates a validator like
+	 * {@link #DefaultArguments1Validator(Validator, Function1, Class, Function)} that
+	 * reads an untyped input with the given conversion, as
+	 * {@link ValueValidator#untyped(Class, Function)} states, instead of the one that
+	 * {@link ValueValidator#untyped(Class)} chooses by the type.
+	 */
+	DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
+			Class<A1> valueType, Function<Object, ? extends @Nullable A1> conversion,
+			@Nullable Function<? super A1, ? extends @Nullable A1> transform) {
+		this(validator, mapper, valueType, ValueValidator.<A1>passThrough().untyped(valueType, conversion), transform,
+				true);
 	}
 
 	private DefaultArguments1Validator(Validator<Arguments1<A1>> validator, Function1<? super A1, ? extends X> mapper,
-			Class<?> valueType, @Nullable Function<? super A1, ? extends @Nullable A1> transform, boolean required) {
+			Class<?> valueType, @Nullable ValueValidator<Object, @Nullable A1> checked,
+			@Nullable Function<? super A1, ? extends @Nullable A1> transform, boolean required) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.valueType = valueType;
+		this.checked = checked;
 		this.transform = transform;
 		this.required = required;
 		// the name of the first constrained property, as ValueDescription.Value.of names
@@ -125,6 +147,16 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 		final List<String> names = new ArrayList<>();
 		validator.forEachPredicates(predicates -> names.add(predicates.name()));
 		this.name = names.isEmpty() ? "" : names.get(0);
+	}
+
+	/**
+	 * Returns the validator that checks that an untyped input represents the given type,
+	 * or {@code null} if the type is unknown ({@code Object} or {@code Enum}).
+	 */
+	@SuppressWarnings("unchecked")
+	private static <T> @Nullable ValueValidator<Object, @Nullable T> checked(Class<?> valueType) {
+		return valueType == Object.class || valueType == Enum.class ? null
+				: ValueValidator.<T>passThrough().untyped((Class<T>) valueType);
 	}
 
 	/**
@@ -155,7 +187,7 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, X> preprocess(Function<? super A1, ? extends @Nullable A1> transform) {
-		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType,
+		return new DefaultArguments1Validator<>(this.validator, this.mapper, this.valueType, this.checked,
 				composed(transform, this.transform), this.required);
 	}
 
@@ -170,8 +202,8 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	 */
 	@Override
 	public DefaultArguments1Validator<A1, X> named(String name) {
-		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.transform,
-				this.required);
+		return new DefaultArguments1Validator<>(this.renamed(name), this.mapper, this.valueType, this.checked,
+				this.transform, this.required);
 	}
 
 	/**
@@ -232,17 +264,11 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	 * @since 0.18.0
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <N> ValueValidator<N, X> readingWith(InputReader<N> reader) {
-		if (this.valueType == Object.class || this.valueType == Enum.class) {
+		if (this.checked == null) {
 			return Arguments1Validator.super.readingWith(reader);
 		}
-		return ValueValidator.<A1>passThrough()
-			.untyped((Class<A1>) this.valueType)
-			.readingWith(reader)
-			.named(this.name)
-			.andThen(this)
-			.describedAs(this.describe());
+		return this.checked.readingWith(reader).named(this.name).andThen(this).describedAs(this.describe());
 	}
 
 	/**
@@ -253,7 +279,7 @@ public class DefaultArguments1Validator<A1, X extends @Nullable Object> implemen
 	@Override
 	public DefaultArguments1Validator<A1, Supplier<X>> lazy() {
 		return new DefaultArguments1Validator<>(this.validator, (a1) -> () -> this.mapper.apply(a1), this.valueType,
-				this.transform, this.required);
+				this.checked, this.transform, this.required);
 	}
 
 	/**

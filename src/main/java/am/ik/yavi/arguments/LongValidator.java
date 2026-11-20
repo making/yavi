@@ -6,6 +6,7 @@ package am.ik.yavi.arguments;
 
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -53,12 +54,12 @@ public class LongValidator<T extends @Nullable Object> extends DefaultArguments1
 	 * @param mapper the function applied to the validated value
 	 */
 	public LongValidator(Validator<Arguments1<Long>> validator, Function1<? super Long, ? extends T> mapper) {
-		super(validator, mapper, Long.class);
+		super(validator, mapper, Long.class, UntypedConversions.toLong(), null);
 	}
 
 	private LongValidator(Validator<Arguments1<Long>> validator, Function1<? super Long, ? extends T> mapper,
 			@Nullable Function<? super Long, ? extends @Nullable Long> transform) {
-		super(validator, mapper, Long.class, transform);
+		super(validator, mapper, Long.class, UntypedConversions.toLong(), transform);
 	}
 
 	/**

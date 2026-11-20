@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class LocalTimeValidator<T extends @Nullable Object> extends DefaultArgum
 	 */
 	public LocalTimeValidator(Validator<Arguments1<LocalTime>> validator,
 			Function1<? super LocalTime, ? extends T> mapper) {
-		super(validator, mapper, LocalTime.class);
+		super(validator, mapper, LocalTime.class, UntypedConversions.toLocalTime(), null);
 	}
 
 	private LocalTimeValidator(Validator<Arguments1<LocalTime>> validator,
 			Function1<? super LocalTime, ? extends T> mapper,
 			@Nullable Function<? super LocalTime, ? extends @Nullable LocalTime> transform) {
-		super(validator, mapper, LocalTime.class, transform);
+		super(validator, mapper, LocalTime.class, UntypedConversions.toLocalTime(), transform);
 	}
 
 	/**

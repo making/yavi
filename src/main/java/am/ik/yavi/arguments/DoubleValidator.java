@@ -6,6 +6,7 @@ package am.ik.yavi.arguments;
 
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -53,12 +54,12 @@ public class DoubleValidator<T extends @Nullable Object> extends DefaultArgument
 	 * @param mapper the function applied to the validated value
 	 */
 	public DoubleValidator(Validator<Arguments1<Double>> validator, Function1<? super Double, ? extends T> mapper) {
-		super(validator, mapper, Double.class);
+		super(validator, mapper, Double.class, UntypedConversions.toDouble(), null);
 	}
 
 	private DoubleValidator(Validator<Arguments1<Double>> validator, Function1<? super Double, ? extends T> mapper,
 			@Nullable Function<? super Double, ? extends @Nullable Double> transform) {
-		super(validator, mapper, Double.class, transform);
+		super(validator, mapper, Double.class, UntypedConversions.toDouble(), transform);
 	}
 
 	/**

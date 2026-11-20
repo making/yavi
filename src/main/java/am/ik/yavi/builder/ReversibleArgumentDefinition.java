@@ -94,6 +94,26 @@ record ReversibleArgumentDefinition<A, R extends @Nullable Object> (ArgumentDefi
 	}
 
 	/**
+	 * Returns the definition of an argument validated with the given validator, as
+	 * {@link ArgumentDefinition#value(Class, Function, ValueValidator)} does.
+	 */
+	static <A, R extends @Nullable Object> ReversibleArgumentDefinition<A, R> value(Class<A> type,
+			Function<Object, ? extends @Nullable A> conversion, ReversibleValueValidator<A, R> validator) {
+		return new ReversibleArgumentDefinition<>(ArgumentDefinition.value(type, conversion, validator),
+				reverseOf(validator));
+	}
+
+	/**
+	 * Returns the definition of an argument of constraints, as
+	 * {@link ArgumentDefinition#value(String, Class, Function, ValueValidator)} does.
+	 */
+	static <A> ReversibleArgumentDefinition<A, A> value(String name, Class<A> type,
+			Function<Object, ? extends @Nullable A> conversion, ReversibleValueValidator<A, A> validator) {
+		return new ReversibleArgumentDefinition<>(ArgumentDefinition.value(name, type, conversion, validator),
+				reverseOf(validator));
+	}
+
+	/**
 	 * Returns the definition of an argument of constraints, as
 	 * {@link ArgumentDefinition#value(String, Class, ValueValidator)} does.
 	 */

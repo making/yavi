@@ -6,6 +6,7 @@ package am.ik.yavi.arguments;
 
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -53,12 +54,12 @@ public class ShortValidator<T extends @Nullable Object> extends DefaultArguments
 	 * @param mapper the function applied to the validated value
 	 */
 	public ShortValidator(Validator<Arguments1<Short>> validator, Function1<? super Short, ? extends T> mapper) {
-		super(validator, mapper, Short.class);
+		super(validator, mapper, Short.class, UntypedConversions.toShort(), null);
 	}
 
 	private ShortValidator(Validator<Arguments1<Short>> validator, Function1<? super Short, ? extends T> mapper,
 			@Nullable Function<? super Short, ? extends @Nullable Short> transform) {
-		super(validator, mapper, Short.class, transform);
+		super(validator, mapper, Short.class, UntypedConversions.toShort(), transform);
 	}
 
 	/**

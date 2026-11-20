@@ -22,6 +22,7 @@ import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.NullAcceptingValueValidator;
 import am.ik.yavi.core.Presence;
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -184,41 +185,73 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	}
 
 	/**
-	 * Returns the definition of an argument added only with a value validator. If the
-	 * validator does not describe itself, it is described as a value of the given type.
-	 * The given type is the input type of the validator unless it is {@code Object} or
-	 * {@code Enum}, which stand for a type that the builder method does not determine. An
-	 * untyped input is read as the validator reads it, so what the validator says about
-	 * reading, such as {@code untrimmed()} of a string, holds in a schema; a validator
-	 * that does not know its input type, such as a lambda, is given a value of the given
-	 * type.
+	 * Returns the definition of an argument added only with a value validator of a type
+	 * that the builder method does not determine, given as {@code Object} or
+	 * {@code Enum}. If the validator does not describe itself, it is described as a value
+	 * of {@code Enum}. An untyped input is read as the validator reads it.
 	 */
-	@SuppressWarnings("unchecked")
 	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(Class<?> type,
 			ValueValidator<A, R> validator) {
 		final boolean undescribed = validator.description() instanceof ValueDescription.Unknown && type != Object.class;
 		final ValueValidator<A, R> described = undescribed
 				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
-		return new ArgumentDefinition<>(null, described,
-				type == Object.class || type == Enum.class ? reader -> validator.readingWith(reader) : reader -> {
-					if (!undescribed) {
-						try {
-							return validator.readingWith(reader);
-						}
-						catch (UnsupportedOperationException e) {
-							// the validator does not know its input type
-						}
-					}
-					return untyped(reader, describedName(described.description()), (Class<A>) type, described);
-				}, Source.PROPERTY, false);
+		return new ArgumentDefinition<>(null, described, reader -> validator.readingWith(reader), Source.PROPERTY,
+				false);
+	}
+
+	/**
+	 * Returns the definition of an argument of the given type added only with a value
+	 * validator. If the validator does not describe itself, it is described as a value of
+	 * the given type. An untyped input is read as the validator reads it, so what the
+	 * validator says about reading, such as {@code untrimmed()} of a string, holds in a
+	 * schema; a validator that does not know its input type, such as a lambda, is given
+	 * the input converted with the given conversion.
+	 */
+	static <A, R extends @Nullable Object> ArgumentDefinition<A, R> value(Class<A> type,
+			Function<Object, ? extends @Nullable A> conversion, ValueValidator<A, R> validator) {
+		final boolean undescribed = validator.description() instanceof ValueDescription.Unknown;
+		final ValueValidator<A, R> described = undescribed
+				? validator.describedAs(new ValueDescription.Value("", type, List.of())) : validator;
+		final ValueValidator<Object, @Nullable A> checked = ValueValidator.<A>passThrough().untyped(type, conversion);
+		return new ArgumentDefinition<>(null, described, reader -> {
+			if (!undescribed) {
+				try {
+					return validator.readingWith(reader);
+				}
+				catch (UnsupportedOperationException e) {
+					// the validator does not know its input type
+				}
+			}
+			return untyped(reader, describedName(described.description()), checked, described);
+		}, Source.PROPERTY, false);
 	}
 
 	/**
 	 * Returns the definition of a named argument of the given type, validated by the
-	 * given validator, which is built from constraints and so rejects {@code null}.
+	 * given validator, which is built from constraints and so rejects {@code null}. An
+	 * untyped input is converted as {@link ValueValidator#untyped(Class)} states.
 	 */
 	static <A> ArgumentDefinition<A, A> value(String name, Class<A> type, ValueValidator<A, A> validator) {
-		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, type, validator),
+		return checkedValue(name, ValueValidator.<A>passThrough().untyped(type), validator);
+	}
+
+	/**
+	 * Returns the definition of a named argument of the given type, validated by the
+	 * given validator, which is built from constraints and so rejects {@code null}. An
+	 * untyped input is converted with the given conversion.
+	 */
+	static <A> ArgumentDefinition<A, A> value(String name, Class<A> type,
+			Function<Object, ? extends @Nullable A> conversion, ValueValidator<A, A> validator) {
+		return checkedValue(name, ValueValidator.<A>passThrough().untyped(type, conversion), validator);
+	}
+
+	/**
+	 * Returns the definition of a named argument whose untyped input is checked by the
+	 * given validator and then validated by the other one.
+	 */
+	private static <A> ArgumentDefinition<A, A> checkedValue(String name, ValueValidator<Object, @Nullable A> checked,
+			ValueValidator<A, A> validator) {
+		return new ArgumentDefinition<>(name, validator, reader -> untyped(reader, name, checked, validator),
 				Source.PROPERTY, true);
 	}
 
@@ -315,7 +348,8 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 			untyped = reader -> ofMap.readingWith(reader);
 		}
 		catch (UnsupportedOperationException e) {
-			final ValueValidator<Object, R> checked = ofMap.untyped((Class<Map<String, Object>>) (Class<?>) Map.class);
+			final ValueValidator<Object, R> checked = ofMap.untyped((Class<Map<String, Object>>) (Class<?>) Map.class,
+					value -> InputReader.ofJdkTypes().isObject(value) ? (Map<String, Object>) value : null);
 			untyped = reader -> checked.readingWith(reader);
 		}
 		return new ArgumentDefinition<>(null, ofMap, untyped, Source.OBJECT, false);
@@ -336,7 +370,7 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 	 * argument reads and takes their values as they are.
 	 */
 	static ArgumentDefinition<Map<String, ?>, Map<String, @Nullable Object>> rest() {
-		return rest(ValueValidator.passThrough().untyped(Object.class));
+		return rest(ValueValidator.passThrough().untyped(Object.class, UntypedConversions.instanceOf(Object.class)));
 	}
 
 	ArgumentDefinition<A, Optional<@NonNull R>> asOptional() {
@@ -516,17 +550,12 @@ record ArgumentDefinition<A, R extends @Nullable Object> (@Nullable String name,
 
 	/**
 	 * Returns a validator of an untyped input read with the given reader that reports an
-	 * input not representing the given type under the given name and otherwise validates
-	 * like the given validator.
+	 * input that the given checked validator rejects under the given name and otherwise
+	 * validates like the given validator.
 	 */
 	private static <N, A, R extends @Nullable Object> ValueValidator<N, R> untyped(InputReader<N> reader, String name,
-			Class<A> type, ValueValidator<A, R> validator) {
-		return ValueValidator.<A>passThrough()
-			.untyped(type)
-			.readingWith(reader)
-			.prefixed(name)
-			.andThen(validator)
-			.describedAs(validator.description());
+			ValueValidator<Object, @Nullable A> checked, ValueValidator<A, R> validator) {
+		return checked.readingWith(reader).prefixed(name).andThen(validator).describedAs(validator.description());
 	}
 
 	/**

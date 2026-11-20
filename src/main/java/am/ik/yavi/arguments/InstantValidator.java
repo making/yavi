@@ -7,6 +7,7 @@ package am.ik.yavi.arguments;
 import java.time.Instant;
 import java.util.function.Function;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -54,12 +55,12 @@ public class InstantValidator<T extends @Nullable Object> extends DefaultArgumen
 	 * @param mapper the function applied to the validated value
 	 */
 	public InstantValidator(Validator<Arguments1<Instant>> validator, Function1<? super Instant, ? extends T> mapper) {
-		super(validator, mapper, Instant.class);
+		super(validator, mapper, Instant.class, UntypedConversions.toInstant(), null);
 	}
 
 	private InstantValidator(Validator<Arguments1<Instant>> validator, Function1<? super Instant, ? extends T> mapper,
 			@Nullable Function<? super Instant, ? extends @Nullable Instant> transform) {
-		super(validator, mapper, Instant.class, transform);
+		super(validator, mapper, Instant.class, UntypedConversions.toInstant(), transform);
 	}
 
 	/**

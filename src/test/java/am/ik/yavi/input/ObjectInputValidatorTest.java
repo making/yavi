@@ -8,9 +8,17 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.Period;
 import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -29,6 +38,7 @@ import am.ik.yavi.arguments.Arguments2;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.builder.DynamicSchema;
 import am.ik.yavi.builder.IntegerValidatorBuilder;
+import am.ik.yavi.builder.LocalDateValidatorBuilder;
 import am.ik.yavi.builder.StringValidatorBuilder;
 import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
@@ -37,6 +47,7 @@ import am.ik.yavi.core.InputReader;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.StringCoercion;
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validated;
 import am.ik.yavi.core.ValueDescription;
 import am.ik.yavi.core.ValueValidator;
@@ -1006,8 +1017,9 @@ class ObjectInputValidatorTest {
 
 	static Stream<Arguments> untypedInputs() {
 		return Stream.of(exact(Integer.class, 1L, 1), exact(Integer.class, 1.0, 1), exact(Integer.class, 1.5, null),
-				exact(Integer.class, 1L << 40, null), exact(Long.class, new BigInteger("5"), 5L),
-				exact(BigInteger.class, 5, new BigInteger("5")),
+				exact(Integer.class, 1L << 40, null), exact(Integer.class, (long) Integer.MIN_VALUE, Integer.MIN_VALUE),
+				exact(Short.class, 40000, null), exact(Byte.class, (short) -128, (byte) -128),
+				exact(Long.class, new BigInteger("5"), 5L), exact(BigInteger.class, 5, new BigInteger("5")),
 				// the digits of a huge exponent are not written out
 				exact(BigInteger.class, new BigDecimal("1e1000000000"), null), exact(Double.class, 1, 1.0),
 				exact(Double.class, new BigDecimal("0.1"), 0.1), exact(Double.class, new BigDecimal("1e400"), null),
@@ -1015,6 +1027,15 @@ class ObjectInputValidatorTest {
 				exact(BigDecimal.class, 0.1, new BigDecimal("0.1")), exact(String.class, 1, null),
 				exact(Role.class, Role.USER, Role.USER), exact(Role.class, "user", null),
 				exact(Year.class, 2026, Year.of(2026)), exact(Year.class, "2026", Year.of(2026)),
+				exact(LocalDate.class, "2026-11-20", LocalDate.of(2026, 11, 20)),
+				exact(LocalDate.class, 20261120, null), exact(LocalTime.class, "10:15", LocalTime.of(10, 15)),
+				exact(LocalDateTime.class, "2026-11-20T10:15", LocalDateTime.of(2026, 11, 20, 10, 15)),
+				exact(OffsetDateTime.class, "2026-11-20T10:15+09:00",
+						OffsetDateTime.of(2026, 11, 20, 10, 15, 0, 0, ZoneOffset.ofHours(9))),
+				exact(ZonedDateTime.class, "2026-11-20T10:15+09:00[Asia/Tokyo]",
+						ZonedDateTime.of(2026, 11, 20, 10, 15, 0, 0, ZoneId.of("Asia/Tokyo"))),
+				exact(Instant.class, "2026-11-20T01:15:00Z", Instant.parse("2026-11-20T01:15:00Z")),
+				exact(YearMonth.class, "2026-11", YearMonth.of(2026, 11)), exact(YearMonth.class, "2026-13", null),
 				// a type with a single string form is read from it
 				exact(UUID.class, "123E4567-e89b-12d3-a456-426614174000",
 						UUID.fromString("123e4567-e89b-12d3-a456-426614174000")),
@@ -1080,26 +1101,79 @@ class ObjectInputValidatorTest {
 	@MethodSource("untypedInputs")
 	<T> void untypedInputMustRepresentTheType(Class<T> type, Object input, @Nullable Object expected,
 			@Nullable Object coerced, @Nullable Object lenient) {
-		final ValueValidator<Object, @Nullable T> validator = ValueValidator.<T>passThrough().untyped(type);
-		final Map<ValueValidator<Object, @Nullable T>, @Nullable Object> expectations = new LinkedHashMap<>();
-		expectations.put(validator, expected);
-		expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
-		expectations.put(
-				validator.readingWith(
-						InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming().booleanWords())),
-				lenient);
-		expectations.forEach((untyped, value) -> {
-			final var validated = untyped.validate(input);
-			if (value == null) {
-				// the violated value is the input as it was given
-				assertThat(validated.errors())
-					.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
-					.containsExactly(tuple(type.isEnum() ? "object.oneOf" : "object.type", input));
-			}
-			else {
-				assertThat(validated.value()).isEqualTo(value);
-			}
-		});
+		// untyped(Class) reads as the conversion of UntypedConversions for the type
+		for (ValueValidator<Object, @Nullable T> validator : List.of(ValueValidator.<T>passThrough().untyped(type),
+				ValueValidator.<T>passThrough().untyped(type, conversionOf(type)))) {
+			final Map<ValueValidator<Object, @Nullable T>, @Nullable Object> expectations = new LinkedHashMap<>();
+			expectations.put(validator, expected);
+			expectations.put(validator.readingWith(InputReader.ofJdkTypes().coercingStrings()), coerced);
+			expectations.put(validator.readingWith(
+					InputReader.ofJdkTypes().coercingStrings(StringCoercion.strict().trimming().booleanWords())),
+					lenient);
+			expectations.forEach((untyped, value) -> {
+				final var validated = untyped.validate(input);
+				if (value == null) {
+					// the violated value is the input as it was given
+					assertThat(validated.errors())
+						.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+						.containsExactly(tuple(type.isEnum() ? "object.oneOf" : "object.type", input));
+				}
+				else {
+					assertThat(validated.value()).isEqualTo(value);
+				}
+			});
+		}
+	}
+
+	/**
+	 * Returns the conversion of {@link UntypedConversions} for the type, and for a map
+	 * the conversion that takes an object of the reader of JDK types.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static <T> Function<Object, ? extends @Nullable T> conversionOf(Class<T> type) {
+		final Map<Class<?>, Function<Object, ? extends @Nullable Object>> conversions = Map.ofEntries(
+				Map.entry(Integer.class, UntypedConversions.toInteger()),
+				Map.entry(Long.class, UntypedConversions.toLong()),
+				Map.entry(Short.class, UntypedConversions.toShort()),
+				Map.entry(Byte.class, UntypedConversions.toByte()),
+				Map.entry(BigInteger.class, UntypedConversions.toBigInteger()),
+				Map.entry(BigDecimal.class, UntypedConversions.toBigDecimal()),
+				Map.entry(Double.class, UntypedConversions.toDouble()),
+				Map.entry(Float.class, UntypedConversions.toFloat()),
+				Map.entry(LocalDate.class, UntypedConversions.toLocalDate()),
+				Map.entry(LocalTime.class, UntypedConversions.toLocalTime()),
+				Map.entry(LocalDateTime.class, UntypedConversions.toLocalDateTime()),
+				Map.entry(OffsetDateTime.class, UntypedConversions.toOffsetDateTime()),
+				Map.entry(ZonedDateTime.class, UntypedConversions.toZonedDateTime()),
+				Map.entry(Instant.class, UntypedConversions.toInstant()),
+				Map.entry(Year.class, UntypedConversions.toYear()),
+				Map.entry(YearMonth.class, UntypedConversions.toYearMonth()),
+				Map.entry(Duration.class, UntypedConversions.toDuration()),
+				Map.entry(Period.class, UntypedConversions.toPeriod()),
+				Map.entry(UUID.class, UntypedConversions.toUuid()), Map.entry(URI.class, UntypedConversions.toUri()),
+				Map.entry(Map.class, value -> InputReader.ofJdkTypes().isObject(value) ? value : null));
+		final Function<Object, ? extends @Nullable Object> conversion = type.isEnum()
+				? UntypedConversions.toEnum((Class) type)
+				: conversions.getOrDefault(type, UntypedConversions.instanceOf(type));
+		return (Function<Object, ? extends @Nullable T>) conversion;
+	}
+
+	@Test
+	void untypedInputIsReadWithTheGivenConversion() {
+		final ValueValidator<Object, LocalDate> day = LocalDateValidatorBuilder.of("day", c -> c.notNull())
+			.build()
+			.untyped(LocalDate.class, value -> value instanceof Long epochDay ? LocalDate.ofEpochDay(epochDay)
+					: UntypedConversions.toLocalDate().apply(value));
+		final LocalDate date = LocalDate.of(2026, 11, 20);
+		assertThat(Stream.of(date.toEpochDay(), "2026-11-20", date).map(day::validated)).containsOnly(date);
+		// an input that the conversion does not take is reported as untyped(Class)
+		// reports it, and another reader gives the conversion the value read for the type
+		assertThat(Stream.of(day.validate(1), day.readingWith(InputReader.ofJdkTypes().coercingStrings()).validate("1"))
+			.map(validated -> validated.errors().get(0)))
+			.extracting(ConstraintViolation::messageKey, ConstraintViolation::violatedValue)
+			.containsExactly(tuple("object.type", 1), tuple("object.type", "1"));
+		assertThat(day.validate(null).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("object.notNull");
 	}
 
 	record Signup(@Nullable String name, Integer age, Boolean subscribed, Role role) {

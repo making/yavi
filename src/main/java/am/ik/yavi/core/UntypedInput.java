@@ -4,24 +4,10 @@
  */
 package am.ik.yavi.core;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URI;
-import java.time.DateTimeException;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.Period;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -29,65 +15,46 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Converts an input of unknown type, such as a node of a parsed JSON document, to the
- * type a validator expects. The node is read with an {@link InputReader} and the rules
- * are stated in {@link ValueValidator#untyped(Class)}.
+ * type a validator expects. The node is read with an {@link InputReader}, converted with
+ * one of {@link UntypedConversions} and the rules are stated in
+ * {@link ValueValidator#untyped(Class)}.
  */
 final class UntypedInput {
-
-	/** The result of a conversion that the input does not allow. */
-	private static final Object MISMATCH = new Object();
-
-	/**
-	 * The largest exponent of a number taken as a {@code BigInteger}. Writing out the
-	 * digits of {@code 1e1000000000} would exhaust the memory.
-	 */
-	private static final int MAX_INTEGER_EXPONENT = 10_000;
-
-	/**
-	 * The types that are read from their string form. A parser rejects a string with a
-	 * {@code DateTimeException} or an {@code IllegalArgumentException}.
-	 */
-	private static final Map<Class<?>, Function<String, Object>> PARSERS = Map.ofEntries(
-			Map.entry(LocalDate.class, LocalDate::parse), Map.entry(LocalTime.class, LocalTime::parse),
-			Map.entry(LocalDateTime.class, LocalDateTime::parse),
-			Map.entry(OffsetDateTime.class, OffsetDateTime::parse),
-			Map.entry(ZonedDateTime.class, ZonedDateTime::parse), Map.entry(Instant.class, Instant::parse),
-			Map.entry(Year.class, Year::parse), Map.entry(YearMonth.class, YearMonth::parse),
-			Map.entry(Duration.class, Duration::parse), Map.entry(Period.class, Period::parse),
-			Map.entry(UUID.class, UntypedInput::parseUuid), Map.entry(URI.class, URI::create));
-
-	// UUID.fromString also takes forms that are not canonical, such as 1-1-1-1-1
-	private static final Pattern CANONICAL_UUID = Pattern
-		.compile("\\p{XDigit}{8}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{4}-\\p{XDigit}{12}");
 
 	private UntypedInput() {
 	}
 
-	private static UUID parseUuid(String string) {
-		if (!CANONICAL_UUID.matcher(string).matches()) {
-			throw new IllegalArgumentException("Not a canonical UUID");
-		}
-		return UUID.fromString(string);
+	/**
+	 * Returns a validator that reads its input with the given reader, converts the value
+	 * to the given type as {@link ValueValidator#untyped(Class)} states and passes it to
+	 * the given validator. A null node is passed as {@code null}. It keeps the
+	 * description of the given validator.
+	 */
+	static <N, T, X extends @Nullable Object> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
+			ValueValidator<T, X> validator) {
+		return checked(reader, type, UntypedConversions.of(type), validator);
 	}
 
 	/**
 	 * Returns a validator that reads its input with the given reader, converts the value
-	 * to the given type and passes it to the given validator. A null node is passed as
-	 * {@code null}. It keeps the description of the given validator.
+	 * to the given type with the given conversion and passes it to the given validator. A
+	 * null node is passed as {@code null}. It keeps the description of the given
+	 * validator.
 	 */
 	static <N, T, X extends @Nullable Object> ValueValidator<N, X> checked(InputReader<N> reader, Class<T> type,
-			ValueValidator<T, X> validator) {
-		return new Checked<>(reader, type, validator, "");
+			Function<Object, ? extends @Nullable T> conversion, ValueValidator<T, X> validator) {
+		return new Checked<>(reader, type, conversion, validator, "");
 	}
 
 	private record Checked<N, T, X extends @Nullable Object> (InputReader<N> reader, Class<T> type,
-			ValueValidator<T, X> validator, String name) implements ValueValidator<N, X> {
+			Function<Object, ? extends @Nullable T> conversion, ValueValidator<T, X> validator,
+			String name) implements ValueValidator<N, X> {
 
 		@Override
 		public Validated<X> validate(@Nullable N node, Locale locale, ConstraintContext constraintContext) {
 			final N present = orNull(this.reader, node);
-			final Object converted = present == null ? null : convert(this.reader.value(present, this.type), this.type);
-			if (present != null && converted == MISMATCH) {
+			final T converted = present == null ? null : this.conversion.apply(this.reader.value(present, this.type));
+			if (present != null && converted == null) {
 				// the violated value is the node as it is, not as it was read for the
 				// type
 				final Object value = this.reader.value(present);
@@ -107,12 +74,12 @@ final class UntypedInput {
 
 		@Override
 		public <M> ValueValidator<M, X> readingWith(InputReader<M> reader) {
-			return new Checked<>(reader, this.type, this.validator, this.name);
+			return new Checked<>(reader, this.type, this.conversion, this.validator, this.name);
 		}
 
 		@Override
 		public ValueValidator<N, X> named(String name) {
-			return new Checked<>(this.reader, this.type, this.validator.named(name), name);
+			return new Checked<>(this.reader, this.type, this.conversion, this.validator.named(name), name);
 		}
 
 	}
@@ -149,147 +116,6 @@ final class UntypedInput {
 	private static ConstraintViolation violation(ViolationMessage message, Object arg, @Nullable Object value,
 			Locale locale) {
 		return ConstraintViolation.of(message, value, locale, arg);
-	}
-
-	private static Object convert(Object value, Class<?> type) {
-		if (type == Map.class) {
-			return value instanceof Map<?, ?>map && map.keySet().stream().allMatch(String.class::isInstance) ? value
-					: MISMATCH;
-		}
-		if (type.isInstance(value)) {
-			return value;
-		}
-		if (value instanceof Number number) {
-			return convertNumber(number, type);
-		}
-		if (value instanceof java.util.Date date) {
-			return isSqlType(date.getClass()) ? SqlTypes.convert(date, type) : MISMATCH;
-		}
-		if (value instanceof String string) {
-			final Object[] constants = type.getEnumConstants();
-			if (constants != null) {
-				for (Object constant : constants) {
-					if (((Enum<?>) constant).name().equals(string)) {
-						return constant;
-					}
-				}
-				return MISMATCH;
-			}
-			final Function<String, Object> parser = PARSERS.get(type);
-			if (parser != null) {
-				try {
-					return parser.apply(string);
-				}
-				catch (DateTimeException | IllegalArgumentException e) {
-					return MISMATCH;
-				}
-			}
-		}
-		return MISMATCH;
-	}
-
-	/**
-	 * Tells whether the type is one of {@code java.sql}, without loading a class of that
-	 * module, which a run-time image may not have.
-	 */
-	private static boolean isSqlType(Class<?> type) {
-		for (Class<?> current = type; current != null; current = current.getSuperclass()) {
-			if (current.getName().startsWith("java.sql.")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Converts the dates and times that the row of a JDBC driver holds to the type of
-	 * {@code java.time} that stands for the same column. The class is loaded only for a
-	 * value of {@code java.sql}.
-	 */
-	private static final class SqlTypes {
-
-		private static Object convert(java.util.Date value, Class<?> type) {
-			if (value instanceof java.sql.Date date && type == LocalDate.class) {
-				return date.toLocalDate();
-			}
-			if (value instanceof java.sql.Time time && type == LocalTime.class) {
-				return time.toLocalTime();
-			}
-			if (value instanceof java.sql.Timestamp timestamp) {
-				if (type == LocalDateTime.class) {
-					return timestamp.toLocalDateTime();
-				}
-				if (type == Instant.class) {
-					return timestamp.toInstant();
-				}
-			}
-			return MISMATCH;
-		}
-
-	}
-
-	/**
-	 * Converts a number to another numeric type if the value is kept: an integral type
-	 * takes only an integral value in its range, a floating-point type takes any value in
-	 * its range.
-	 */
-	private static Object convertNumber(Number number, Class<?> type) {
-		final BigDecimal decimal = decimal(number);
-		if (decimal == null) {
-			return MISMATCH;
-		}
-		try {
-			if (type == Integer.class) {
-				return decimal.intValueExact();
-			}
-			if (type == Long.class) {
-				return decimal.longValueExact();
-			}
-			if (type == Short.class) {
-				return decimal.shortValueExact();
-			}
-			if (type == Byte.class) {
-				return decimal.byteValueExact();
-			}
-			if (type == BigInteger.class) {
-				return decimal.scale() < -MAX_INTEGER_EXPONENT ? MISMATCH : decimal.toBigIntegerExact();
-			}
-			if (type == Year.class) {
-				return Year.of(decimal.intValueExact());
-			}
-		}
-		catch (ArithmeticException | DateTimeException e) {
-			return MISMATCH;
-		}
-		if (type == BigDecimal.class) {
-			return decimal;
-		}
-		if (type == Double.class) {
-			final double converted = decimal.doubleValue();
-			return Double.isInfinite(converted) ? MISMATCH : converted;
-		}
-		if (type == Float.class) {
-			final float converted = decimal.floatValue();
-			return Float.isInfinite(converted) ? MISMATCH : converted;
-		}
-		return MISMATCH;
-	}
-
-	private static @Nullable BigDecimal decimal(Number number) {
-		if (number instanceof BigDecimal decimal) {
-			return decimal;
-		}
-		if (number instanceof BigInteger integer) {
-			return new BigDecimal(integer);
-		}
-		if (number instanceof Integer || number instanceof Long || number instanceof Short || number instanceof Byte) {
-			return BigDecimal.valueOf(number.longValue());
-		}
-		if (number instanceof Double || number instanceof Float) {
-			// the shortest decimal that identifies the value: 0.1f is 0.1
-			return Double.isFinite(number.doubleValue()) ? new BigDecimal(number.toString()) : null;
-		}
-		return null;
 	}
 
 	private static String typeName(Class<?> type) {

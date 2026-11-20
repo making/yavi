@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class ZonedDateTimeValidator<T extends @Nullable Object> extends DefaultA
 	 */
 	public ZonedDateTimeValidator(Validator<Arguments1<ZonedDateTime>> validator,
 			Function1<? super ZonedDateTime, ? extends T> mapper) {
-		super(validator, mapper, ZonedDateTime.class);
+		super(validator, mapper, ZonedDateTime.class, UntypedConversions.toZonedDateTime(), null);
 	}
 
 	private ZonedDateTimeValidator(Validator<Arguments1<ZonedDateTime>> validator,
 			Function1<? super ZonedDateTime, ? extends T> mapper,
 			@Nullable Function<? super ZonedDateTime, ? extends @Nullable ZonedDateTime> transform) {
-		super(validator, mapper, ZonedDateTime.class, transform);
+		super(validator, mapper, ZonedDateTime.class, UntypedConversions.toZonedDateTime(), transform);
 	}
 
 	/**

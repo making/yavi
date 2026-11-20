@@ -4,6 +4,7 @@
  */
 package am.ik.yavi.arguments;
 
+import am.ik.yavi.core.UntypedConversions;
 import am.ik.yavi.core.Validator;
 import am.ik.yavi.fn.Function1;
 import org.jspecify.annotations.Nullable;
@@ -55,13 +56,13 @@ public class LocalDateValidator<T extends @Nullable Object> extends DefaultArgum
 	 */
 	public LocalDateValidator(Validator<Arguments1<LocalDate>> validator,
 			Function1<? super LocalDate, ? extends T> mapper) {
-		super(validator, mapper, LocalDate.class);
+		super(validator, mapper, LocalDate.class, UntypedConversions.toLocalDate(), null);
 	}
 
 	private LocalDateValidator(Validator<Arguments1<LocalDate>> validator,
 			Function1<? super LocalDate, ? extends T> mapper,
 			@Nullable Function<? super LocalDate, ? extends @Nullable LocalDate> transform) {
-		super(validator, mapper, LocalDate.class, transform);
+		super(validator, mapper, LocalDate.class, UntypedConversions.toLocalDate(), transform);
 	}
 
 	/**
