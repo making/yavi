@@ -56,13 +56,13 @@ YAVI into your application.
 
 #### Project set up
 
-This guide uses the API of YAVI 0.18.0. Add the following dependency to your `pom.xml`:
+This guide uses the API of YAVI 0.18.1. Add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
     <groupId>am.ik.yavi</groupId>
     <artifactId>yavi</artifactId>
-    <version>0.18.0</version>
+    <version>0.18.1</version>
 </dependency>
 ```
 
