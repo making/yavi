@@ -66,6 +66,63 @@ public final class JsonNodeReader implements CoercibleInputReader<JsonNode> {
 
 スカラーがすべて文字列の文書には `JsonNodeReader.INSTANCE.coercingStrings()` を使います。[文字列の変換](input-json.md#coercing-strings)を参照してください。
 
+## JsonNodeWriter
+
+`OutputWriter`（0.18.1 以降）は、リバーシブルなバリデータの Map を、`JsonNodeReader` が読み戻せる `JsonNode` として書きます。[JSON のツリー](writing-back.md#json-trees)を参照してください。
+
+```java
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
+
+import am.ik.yavi.core.OutputWriter;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+
+public final class JsonNodeWriter implements OutputWriter<JsonNode> {
+
+    public static final JsonNodeWriter INSTANCE = new JsonNodeWriter();
+
+    private static final JsonNodeFactory factory = JsonNodeFactory.instance;
+
+    @Override
+    public JsonNode nullNode() {
+        return factory.nullNode();
+    }
+
+    @Override
+    public JsonNode scalar(Object value) { // a String, a Boolean or a Number
+        return switch (value) {
+            case String string -> factory.stringNode(string);
+            case Boolean bool -> factory.booleanNode(bool);
+            case Integer number -> factory.numberNode(number);
+            case Long number -> factory.numberNode(number);
+            case Short number -> factory.numberNode(number);
+            case Byte number -> factory.numberNode(number);
+            case BigInteger number -> factory.numberNode(number);
+            case BigDecimal number -> factory.numberNode(number);
+            case Double number -> factory.numberNode(number);
+            case Float number -> factory.numberNode(number);
+            default -> throw new IllegalArgumentException("Not a scalar: " + value.getClass().getName());
+        };
+    }
+
+    @Override
+    public JsonNode object(Map<String, JsonNode> properties) {
+        return factory.objectNode().setAll(properties);
+    }
+
+    @Override
+    public JsonNode array(List<JsonNode> elements) {
+        return factory.arrayNode().addAll(elements);
+    }
+
+}
+```
+
+`JsonNodeWriter.INSTANCE.write(validator.toMap(x))` はツリーを返し、`jsonMapper.writeValueAsString(node)` はそのテキストを返します。`LocalDate` はライターがテキストとして書くため、マッパーに `java.time` 用のモジュールは不要です。`BigDecimal` をスケールごと読み戻すには、テキストを `USE_BIG_DECIMAL_FOR_FLOATS` で解析します（下記）。
+
 ## マッパーの設定
 
 マッパーがリーダーの見るものを決めます。デフォルトの `JsonMapper` は小数を含む数値を `double` で保持し、二度書かれたキーの最後の値を残します。パースの前に設定します。

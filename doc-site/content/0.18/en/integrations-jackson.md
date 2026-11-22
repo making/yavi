@@ -66,6 +66,63 @@ The class uses Jackson 3 (`tools.jackson.databind.JsonNode`). Build the validato
 
 For a document whose scalars are all strings, use `JsonNodeReader.INSTANCE.coercingStrings()`; see [Coercing strings](input-json.md#coercing-strings).
 
+## JsonNodeWriter
+
+An `OutputWriter` (since 0.18.1) writes the map of a reversible validator as a `JsonNode` that `JsonNodeReader` reads back; see [JSON trees](writing-back.md#json-trees).
+
+```java
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
+
+import am.ik.yavi.core.OutputWriter;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+
+public final class JsonNodeWriter implements OutputWriter<JsonNode> {
+
+    public static final JsonNodeWriter INSTANCE = new JsonNodeWriter();
+
+    private static final JsonNodeFactory factory = JsonNodeFactory.instance;
+
+    @Override
+    public JsonNode nullNode() {
+        return factory.nullNode();
+    }
+
+    @Override
+    public JsonNode scalar(Object value) { // a String, a Boolean or a Number
+        return switch (value) {
+            case String string -> factory.stringNode(string);
+            case Boolean bool -> factory.booleanNode(bool);
+            case Integer number -> factory.numberNode(number);
+            case Long number -> factory.numberNode(number);
+            case Short number -> factory.numberNode(number);
+            case Byte number -> factory.numberNode(number);
+            case BigInteger number -> factory.numberNode(number);
+            case BigDecimal number -> factory.numberNode(number);
+            case Double number -> factory.numberNode(number);
+            case Float number -> factory.numberNode(number);
+            default -> throw new IllegalArgumentException("Not a scalar: " + value.getClass().getName());
+        };
+    }
+
+    @Override
+    public JsonNode object(Map<String, JsonNode> properties) {
+        return factory.objectNode().setAll(properties);
+    }
+
+    @Override
+    public JsonNode array(List<JsonNode> elements) {
+        return factory.arrayNode().addAll(elements);
+    }
+
+}
+```
+
+`JsonNodeWriter.INSTANCE.write(validator.toMap(x))` returns the tree, and `jsonMapper.writeValueAsString(node)` its text. A `LocalDate` is written as its text by the writer, so the mapper needs no module for `java.time`. To read a `BigDecimal` back with its scale, parse the text with `USE_BIG_DECIMAL_FOR_FLOATS` (below).
+
 ## Mapper settings
 
 The mapper decides what the reader sees. A default `JsonMapper` holds a number with a fraction as a `double` and keeps the last of a key written twice. Configure it before parsing:

@@ -44,7 +44,7 @@ public Object value(JsonValue node) {
 }
 ```
 
-The other methods use `JsonObject.asMap()` and `JsonArray.asList()`. YAVI's test suite contains the complete implementation, [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java). It lives in a separate source root (`src/test/java28`) because the module is an incubator of JDK 28; on an earlier JDK, use the Jackson reader above.
+The other methods use `JsonObject.asMap()` and `JsonArray.asList()`. YAVI's test suite contains the complete implementation, [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java). It lives in a separate source root (`src/test/java28`) because the module is an incubator of JDK 28; on an earlier JDK, use the Jackson reader above. Next to it, [`JdkJsonWriter.java`](https://github.com/making/yavi/blob/develop/src/test/java28/am/ik/yavi/input/JdkJsonWriter.java) writes the model with an `OutputWriter`; it writes a number with `JsonNumber.of(number.toString())` for the same reason.
 
 ## Coercing strings
 

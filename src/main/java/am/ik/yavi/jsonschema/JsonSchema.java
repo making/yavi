@@ -578,6 +578,10 @@ public final class JsonSchema {
 		if (value instanceof Enum<?>constant) {
 			return constant.name();
 		}
+		if (value instanceof Year year) {
+			// the type of a year is integer
+			return year.getValue();
+		}
 		if (value instanceof java.util.Optional<?>optional) {
 			return jsonValue(optional.orElse(null));
 		}

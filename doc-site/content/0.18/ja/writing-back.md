@@ -144,8 +144,24 @@ Map<String, Object> form = tree.toMap(signupSchema.description());
 * `ParameterTree.parametersOf(tree)` は、任意の `Map` と `List` のツリーに対する `ParameterTree.of(parameters)` の逆です。
 * `ParameterTree.of(parameters, maxIndex)` は別のインデックス制限を与えます。`ParameterTree.DEFAULT_MAX_INDEX` は 255 です。
 
+## JSON のツリー
+
+`toMap` は、プロパティを読み取る元の JDK の型の値（`LocalDate` など）をそのまま保持します。そのため、JSON ライブラリがこの Map から作るツリーは、ライブラリの設定によって変わります。`InputReader` の対になる `OutputWriter`（0.18.1 以降）は、この Map を JSON ライブラリのツリーモデルとして、そのリーダーが読み戻せる形で書きます。
+
+```java
+JsonNode node = JsonNodeWriter.INSTANCE.write(employeeValidator.toMap(employee));
+// {"id":1,"first_name":"Taro","last_name":"Yamada","email":"taro@example.com","nickname":null,"role":"ADMIN"}
+
+employeeValidator.readingWith(JsonNodeReader.INSTANCE).validate(node); // Valid(employee)
+```
+
+* ライターは、ツリーモデルに対して `nullNode()`、`scalar(value)`、`object(properties)`、`array(elements)` を実装します。Jackson の `JsonNode` 用の完全なライターは [Jackson](integrations-jackson.md#jsonnodewriter) にあります。
+* `scalar` には `String`、`Boolean`、`Number` が渡されます。enum 定数は名前として、`Year` は数値として書かれます。`LocalDate`、`LocalTime`、`LocalDateTime`、`OffsetDateTime`、`ZonedDateTime`、`Instant`、`YearMonth`、`Duration`、`Period`、`UUID`、`URI` は、バリデータが解析するテキストとして書かれます。それ以外の値は `IllegalArgumentException` になります。
+* 型に専用のノードを持つツリーモデルでは `value(Object)` をオーバーライドし、それ以外の値は `OutputWriter.super.value(value)` に任せます。
+* `write` は `Map`、`Iterable`、値からなる任意のツリーを受け取るため、ビューの Map（`SUMMARY.toMap(user)`）や `reverse` の Map も同じ方法で書けます。
+
 ## 往復
 
-`validator.validate(validator.toMap(x))` は、バリデータが生成するすべての `x` について `Valid(x)` です。`reverse` は withheld のプロパティも書くため、往復が成立します。逆変換のない `map(f)`、ラムダ、`anyOf` など `ReversibleValueValidator` でないバリデータは、コンパイル時にスキーマが拒否します。
+`validator.validate(validator.toMap(x))` は、バリデータが生成するすべての `x` について `Valid(x)` です。同じツリーモデルのリーダーとライターについては、`validator.readingWith(reader).validate(writer.write(validator.toMap(x)))` も `Valid(x)` です。`reverse` は withheld のプロパティも書くため、往復が成立します。逆変換のない `map(f)`、ラムダ、`anyOf` など `ReversibleValueValidator` でないバリデータは、コンパイル時にスキーマが拒否します。
 
 Map は新しく生成されます。ステートメントに必要なものは追加します（`map.put("updated_by", user)`）。ネストした Map はステートメントに束縛できないため、行の列は `_embedded` で読み取るか、`ParameterTree.parametersOf` で違反の名前の下に束縛します。

@@ -34,6 +34,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import am.ik.json.Json;
+import am.ik.json.JsonParseException;
 import am.ik.yavi.arguments.Arguments2;
 import am.ik.yavi.arguments.Arguments1Validator;
 import am.ik.yavi.builder.DynamicSchema;
@@ -44,6 +46,7 @@ import am.ik.yavi.core.ConstraintDescription;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.ConstraintViolations;
 import am.ik.yavi.core.InputReader;
+import am.ik.yavi.core.OutputWriter;
 import am.ik.yavi.core.PathSegment;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.StringCoercion;
@@ -126,6 +129,15 @@ class ObjectInputValidatorTest {
 					.validate(parseJdkJson(jsonMapper.writeValueAsString(input)));
 			}
 		},
+		// the same input as the tree model of tiny-json, parsed from its JSON text
+		TINY_JSON {
+			@Override
+			<X> Validated<X> validate(ValueValidator<Map<String, Object>, X> validator,
+					@Nullable Map<String, Object> input) {
+				return validator.readingWith(TinyJsonReader.INSTANCE)
+					.validate(Json.parse(jsonMapper.writeValueAsString(input)));
+			}
+		},
 		// a tree whose scalars are all strings, such as request parameters; a string is
 		// coerced only where another type is expected
 		STRINGS {
@@ -152,7 +164,58 @@ class ObjectInputValidatorTest {
 
 	}
 
+	/**
+	 * A JSON library whose tree a value is written as with an {@link OutputWriter} and
+	 * read back from with an {@link InputReader}, through the text of the tree.
+	 */
+	enum JsonText {
+
+		JACKSON {
+			@Override
+			<T, X extends @Nullable Object> Validated<X> readBack(ValueValidator<T, X> validator,
+					@Nullable Object tree) {
+				final String text = exactMapper.writeValueAsString(JsonNodeWriter.INSTANCE.write(tree));
+				return validator.readingWith(JsonNodeReader.INSTANCE).validate(exactMapper.readTree(text));
+			}
+		},
+		// the reader and the writer are compiled only by a JDK that has the model
+		JDK_JSON {
+			@Override
+			<T, X extends @Nullable Object> Validated<X> readBack(ValueValidator<T, X> validator,
+					@Nullable Object tree) {
+				final String text = jdkJsonWriter().write(tree).toString();
+				return validator.readingWith(jdkJsonReader()).validate(parseJdkJson(text));
+			}
+		},
+		TINY_JSON {
+			@Override
+			<T, X extends @Nullable Object> Validated<X> readBack(ValueValidator<T, X> validator,
+					@Nullable Object tree) {
+				final String text = Json.stringify(TinyJsonWriter.INSTANCE.write(tree));
+				return validator.readingWith(TinyJsonReader.INSTANCE).validate(Json.parse(text));
+			}
+		};
+
+		/**
+		 * Returns the libraries that the running JDK has.
+		 */
+		static List<JsonText> available() {
+			return Stream.of(values()).filter(json -> json != JDK_JSON || hasJdkJson()).toList();
+		}
+
+		abstract <T, X extends @Nullable Object> Validated<X> readBack(ValueValidator<T, X> validator,
+				@Nullable Object tree);
+
+	}
+
 	static final JsonMapper jsonMapper = new JsonMapper();
+
+	// a mapper that keeps a number as it is written and refuses a document that has a
+	// key twice
+	static final JsonMapper exactMapper = JsonMapper.builder()
+		.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+		.enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+		.build();
 
 	static boolean hasJdkJson() {
 		return Runtime.version().feature() >= 28;
@@ -162,6 +225,18 @@ class ObjectInputValidatorTest {
 	static InputReader<Object> jdkJsonReader() {
 		try {
 			return (InputReader<Object>) Class.forName("am.ik.yavi.input.JdkJsonReader")
+				.getDeclaredField("INSTANCE")
+				.get(null);
+		}
+		catch (ReflectiveOperationException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	static OutputWriter<Object> jdkJsonWriter() {
+		try {
+			return (OutputWriter<Object>) Class.forName("am.ik.yavi.input.JdkJsonWriter")
 				.getDeclaredField("INSTANCE")
 				.get(null);
 		}
@@ -1019,12 +1094,14 @@ class ObjectInputValidatorTest {
 		return Stream.of(exact(Integer.class, 1L, 1), exact(Integer.class, 1.0, 1), exact(Integer.class, 1.5, null),
 				exact(Integer.class, 1L << 40, null), exact(Integer.class, (long) Integer.MIN_VALUE, Integer.MIN_VALUE),
 				exact(Short.class, 40000, null), exact(Byte.class, (short) -128, (byte) -128),
-				exact(Long.class, new BigInteger("5"), 5L), exact(BigInteger.class, 5, new BigInteger("5")),
+				exact(Long.class, new BigInteger("5"), 5L), exact(Long.class, 1L << 40, 1L << 40),
+				exact(BigInteger.class, 5, new BigInteger("5")),
 				// the digits of a huge exponent are not written out
 				exact(BigInteger.class, new BigDecimal("1e1000000000"), null), exact(Double.class, 1, 1.0),
 				exact(Double.class, new BigDecimal("0.1"), 0.1), exact(Double.class, new BigDecimal("1e400"), null),
 				exact(Double.class, Double.NaN, Double.NaN), exact(Float.class, 0.1, 0.1f),
-				exact(BigDecimal.class, 0.1, new BigDecimal("0.1")), exact(String.class, 1, null),
+				exact(BigDecimal.class, 0.1, new BigDecimal("0.1")),
+				exact(BigDecimal.class, new BigDecimal("0.10"), new BigDecimal("0.10")), exact(String.class, 1, null),
 				exact(Role.class, Role.USER, Role.USER), exact(Role.class, "user", null),
 				exact(Year.class, 2026, Year.of(2026)), exact(Year.class, "2026", Year.of(2026)),
 				exact(LocalDate.class, "2026-11-20", LocalDate.of(2026, 11, 20)),
@@ -1122,6 +1199,13 @@ class ObjectInputValidatorTest {
 					assertThat(validated.value()).isEqualTo(value);
 				}
 			});
+		}
+		// a value is written as the tree of a JSON library and read back from its text
+		if (expected != null && type != Object.class && !expected.equals(Double.NaN)) {
+			for (JsonText json : JsonText.available()) {
+				assertThat(json.readBack(ValueValidator.<T>passThrough().untyped(type), expected).value())
+					.isEqualTo(expected);
+			}
 		}
 	}
 
@@ -1668,11 +1752,7 @@ class ObjectInputValidatorTest {
 		assertThat(price.validated(jsonMapper.readValue(scaled, new TypeReference<>() {
 		}))).isEqualTo(new BigDecimal("0.1"));
 		// a mapper that is told to keeps the number as it is written and refuses the
-		// document that has a key twice
-		final JsonMapper exactMapper = JsonMapper.builder()
-			.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-			.enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
-			.build();
+		// document that has a key twice: exactMapper
 		assertThat(node.validated(exactMapper.readTree(scaled))).isEqualTo(new BigDecimal("0.10"));
 		assertThat(node.validated(exactMapper.readTree(large))).isEqualTo(new BigDecimal("12345678901234567.89"));
 		assertThat(node.validate(exactMapper.readTree(longFraction)).errors())
@@ -1689,6 +1769,18 @@ class ObjectInputValidatorTest {
 		assertThatThrownBy(() -> exactMapper.readTree(duplicated)).isInstanceOf(JacksonException.class);
 		assertThat(price.validated(exactMapper.readValue(scaled, new TypeReference<>() {
 		}))).isEqualTo(new BigDecimal("0.10"));
+		// tiny-json keeps the text of a number, and the last of the same keys replaces
+		// the
+		// others; a number that no BigDecimal holds is refused by the parser
+		final ValueValidator<am.ik.json.JsonNode, BigDecimal> tiny = price.readingWith(TinyJsonReader.INSTANCE);
+		assertThat(tiny.validated(Json.parse(scaled))).isEqualTo(new BigDecimal("0.10"));
+		assertThat(tiny.validated(Json.parse(large))).isEqualTo(new BigDecimal("12345678901234567.89"));
+		assertThat(tiny.validate(Json.parse(longFraction)).errors()).extracting(ConstraintViolation::messageKey)
+			.containsExactly("numeric.fractionDigits");
+		assertThat(tiny.validated(Json.parse(huge))).isEqualTo(new BigDecimal("1E+400"));
+		assertThat(tiny.validated(Json.parse(duplicated))).isEqualTo(new BigDecimal("2"));
+		assertThatThrownBy(() -> Json.parse("""
+				{"price": 1e3000000000}""")).isInstanceOf(JsonParseException.class);
 		if (!hasJdkJson()) {
 			return;
 		}

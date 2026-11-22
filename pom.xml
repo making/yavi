@@ -126,6 +126,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>am.ik.json</groupId>
+            <artifactId>tiny-json</artifactId>
+            <version>0.3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <version>7.0.10</version>

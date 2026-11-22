@@ -44,7 +44,7 @@ public Object value(JsonValue node) {
 }
 ```
 
-その他のメソッドは `JsonObject.asMap()` と `JsonArray.asList()` を使います。完全な実装は YAVI のテストに [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java) としてあります。このモジュールは JDK 28 のインキュベータであるため、別のソースルート（`src/test/java28`）に置かれています。それ以前の JDK では上記の Jackson のリーダーを使ってください。
+その他のメソッドは `JsonObject.asMap()` と `JsonArray.asList()` を使います。完全な実装は YAVI のテストに [`JdkJsonReader.java`](https://github.com/making/yavi/blob/7cd63eb24c23b2569e67f0a3e4f8ea1b83adc38e/src/test/java28/am/ik/yavi/input/JdkJsonReader.java) としてあります。このモジュールは JDK 28 のインキュベータであるため、別のソースルート（`src/test/java28`）に置かれています。それ以前の JDK では上記の Jackson のリーダーを使ってください。隣の [`JdkJsonWriter.java`](https://github.com/making/yavi/blob/develop/src/test/java28/am/ik/yavi/input/JdkJsonWriter.java) は、このモデルを `OutputWriter` で書きます。同じ理由で、数値は `JsonNumber.of(number.toString())` で書きます。
 
 ## 文字列の変換
 
