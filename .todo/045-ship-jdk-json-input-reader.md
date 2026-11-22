@@ -30,8 +30,10 @@ working until then.
   the class.
 - The release build then needs that JDK; keep `--release` of the baseline for the rest
   and check the javadoc and the source jar of the versioned entry.
-- Move the test to the shipped reader: `Model.JDK_JSON` of `ObjectInputValidatorTest` no
-  longer needs reflection for the reader. Remove `src/test/java28` and the reader from
+- Ship `JdkJsonWriter` (the `OutputWriter` of the same model, in `src/test/java28`) with
+  the reader, under the same entry point.
+- Move the test to the shipped reader and writer: `Model.JDK_JSON` and
+  `JsonText.JDK_JSON` of `ObjectInputValidatorTest` no longer need reflection. Remove `src/test/java28` and the reader from
   the README, and document the shipped one.
 - Replace the `jdk-json` profile and the `test-jdk-ea` job by the setup of the versioned
   entry.

@@ -144,8 +144,24 @@ Map<String, Object> form = tree.toMap(signupSchema.description());
 * `ParameterTree.parametersOf(tree)` is the reverse of `ParameterTree.of(parameters)` for any tree of `Map` and `List`.
 * `ParameterTree.of(parameters, maxIndex)` gives another index limit; `ParameterTree.DEFAULT_MAX_INDEX` is 255.
 
+## JSON trees
+
+`toMap` holds the values of the JDK types that the properties are read from, such as a `LocalDate`, so the tree that a JSON library makes of the map depends on how the library is configured. An `OutputWriter` (since 0.18.1), the counterpart of an `InputReader`, writes the map as the tree model of a JSON library, in the form that its reader reads back:
+
+```java
+JsonNode node = JsonNodeWriter.INSTANCE.write(employeeValidator.toMap(employee));
+// {"id":1,"first_name":"Taro","last_name":"Yamada","email":"taro@example.com","nickname":null,"role":"ADMIN"}
+
+employeeValidator.readingWith(JsonNodeReader.INSTANCE).validate(node); // Valid(employee)
+```
+
+* A writer implements `nullNode()`, `scalar(value)`, `object(properties)` and `array(elements)` for its tree model. [Jackson](integrations-jackson.md#jsonnodewriter) shows a complete writer for its `JsonNode`.
+* `scalar` is given a `String`, a `Boolean` or a `Number`. An enum constant is written as its name and a `Year` as its number. A `LocalDate`, `LocalTime`, `LocalDateTime`, `OffsetDateTime`, `ZonedDateTime`, `Instant`, `YearMonth`, `Duration`, `Period`, `UUID` and `URI` are written as the text that the validator parses. Any other value is an `IllegalArgumentException`.
+* For a tree model that has a node of its own for a type, override `value(Object)` and call `OutputWriter.super.value(value)` for the rest.
+* `write` takes any tree of `Map`, `Iterable` and values, so the map of a view (`SUMMARY.toMap(user)`) and of `reverse` is written in the same way.
+
 ## Round trip
 
-`validator.validate(validator.toMap(x))` is `Valid(x)` for every `x` that the validator creates. `reverse` keeps the round trip for a withheld property, because it writes it. A validator that is not a `ReversibleValueValidator`, such as `map(f)` without a reverse, a lambda or `anyOf`, is rejected by the schema at compile time.
+`validator.validate(validator.toMap(x))` is `Valid(x)` for every `x` that the validator creates, and so is `validator.readingWith(reader).validate(writer.write(validator.toMap(x)))` for a reader and a writer of the same tree model. `reverse` keeps the round trip for a withheld property, because it writes it. A validator that is not a `ReversibleValueValidator`, such as `map(f)` without a reverse, a lambda or `anyOf`, is rejected by the schema at compile time.
 
 The map is new; add what a statement needs (`map.put("updated_by", user)`). A nested map cannot be bound to a statement: read the columns of a row with `_embedded`, or bind the map under the names of the violations with `ParameterTree.parametersOf`.

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Period;
+import java.time.Year;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,13 +79,16 @@ class JsonSchemaTest {
 			._object("ttl", Duration.class)
 			._object("term", Period.class)
 			.defaultValue(Period.ofMonths(1))
-			.fromMap((id, site, ttl, term) -> id)
+			._object("since", Year.class)
+			.defaultValue(Year.of(2024))
+			.fromMap((id, site, ttl, term, since) -> id)
 			.description())).isEqualTo("""
 					{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{\
 					"id":{"type":"string","format":"uuid"},\
 					"site":{"type":"string","format":"uri-reference"},\
 					"ttl":{"type":"string","format":"duration"},\
-					"term":{"type":["string","null"],"format":"duration","default":"P1M"}},\
+					"term":{"type":["string","null"],"format":"duration","default":"P1M"},\
+					"since":{"type":["integer","null"],"default":2024}},\
 					"required":["id","site","ttl"]}""");
 	}
 

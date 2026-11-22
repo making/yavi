@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import am.ik.json.Json;
 import am.ik.yavi.core.ConstraintViolation;
 import am.ik.yavi.core.Presence;
 import am.ik.yavi.core.ReversibleValueValidator;
@@ -186,6 +187,16 @@ class ReversibleValidatorTest {
 				entry("active", true), entry("extra", "x"));
 		assertThat(employeeValidator.reverse(employee)).isEqualTo(map);
 		assertThat(employeeValidator.validate(map)).isEqualTo(Validated.successWith(employee));
+		// the map is written as the tree of a JSON library and read back from its text:
+		// a LocalDate is its text, as the validator reads it
+		for (ObjectInputValidatorTest.JsonText json : ObjectInputValidatorTest.JsonText.available()) {
+			assertThat(json.readBack(employeeValidator, map)).isEqualTo(Validated.successWith(employee));
+		}
+		assertThat(Json.stringify(TinyJsonWriter.INSTANCE.write(map))).contains("\"joined\":\"2024-04-01\"",
+				"\"addresses\":[{\"city\":\"Tokyo\",\"street\":\"1-1\"},{\"city\":\"Osaka\",\"street\":null}]");
+		assertThatThrownBy(() -> TinyJsonWriter.INSTANCE.write(Map.of("a", new Object())))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageStartingWith("A value of java.lang.Object is not written by the writer.");
 
 		// what has no value: null for a key that a named parameter needs, and no entry
 		// for a property that is absent or rejects null
@@ -199,6 +210,9 @@ class ReversibleValidatorTest {
 				entry("tags", null), entry("scores", null), entry("addresses", List.of()), entry("rates", Map.of()),
 				entry("active", false));
 		assertThat(employeeValidator.validate(written)).isEqualTo(Validated.successWith(empty));
+		for (ObjectInputValidatorTest.JsonText json : ObjectInputValidatorTest.JsonText.available()) {
+			assertThat(json.readBack(employeeValidator, written)).isEqualTo(Validated.successWith(empty));
+		}
 		final Employee cleared = new Employee(2, empty.name(), null, empty.email(), Optional.empty(), Role.USER,
 				empty.joined(), List.of(), List.of(), List.of(), Map.of(), Presence.presentNull(), null, false,
 				Map.of());

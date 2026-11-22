@@ -756,7 +756,9 @@ public sealed class ObjectInputValidator<X extends @Nullable Object> implements
 	 *
 	 * <p>
 	 * The validator that reads another input ({@link #readingWith(InputReader)},
-	 * {@link #readingParameters()}) is not reversible: what is written is a map.
+	 * {@link #readingParameters()}) is not reversible: what is written is a map. An
+	 * {@link am.ik.yavi.core.OutputWriter} writes the map as the tree that its reader
+	 * reads back: {@code writer.write(validator.toMap(x))}.
 	 *
 	 * @param <X> the type of the created object
 	 * @since 0.18.0
