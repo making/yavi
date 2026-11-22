@@ -59,7 +59,9 @@ public interface CoercibleInputReader<N> extends InputReader<N> {
 	 * reported with {@code object.type} like any other mismatch. A string is not trimmed,
 	 * a value that is not a string is read as this reader reads it, and nothing is
 	 * converted to a string: {@code 30} is not a {@code String}. Enum constants, temporal
-	 * types, {@code UUID} and {@code URI} are read from a string by every reader.
+	 * types, {@code UUID} and {@code URI} are read from a string by every reader, since a
+	 * string is their only form in a typed input such as a JSON document as well; this
+	 * reader adds only the types that a typed input writes in a form of their own.
 	 *
 	 * <p>
 	 * {@link #coercingStrings(StringCoercion)} takes more strings, such as {@code " 42 "}

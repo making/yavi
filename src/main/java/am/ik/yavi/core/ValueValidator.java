@@ -172,7 +172,8 @@ public interface ValueValidator<T, X extends @Nullable Object> {
 	 *
 	 * <p>
 	 * {@code null} is passed to this validator as is. Any other input must be an instance
-	 * of the given type or its representation in a JSON document:
+	 * of the given type or its representation in a JSON document, which writes a number
+	 * as a number and the other types below as a string, their only form there:
 	 * <ul>
 	 * <li>a number for a numeric type ({@code Integer}, {@code Long}, {@code Short},
 	 * {@code Byte}, {@code BigInteger}, {@code BigDecimal}, {@code Double},

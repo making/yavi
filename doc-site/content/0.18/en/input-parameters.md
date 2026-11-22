@@ -38,6 +38,7 @@ The rules are strict by default:
 
 * A number is a decimal number in the grammar of `new BigDecimal(String)`: an optional sign, digits, an optional fraction and an optional exponent, without surrounding white space or grouping separators. `"30"` and `"30.0"` are an `Integer`; `"30.5"`, `" 30"` and `"1,000"` are not.
 * A boolean is `"true"` or `"false"`.
+* An enum constant, a temporal value, a `UUID` and a `URI` are read from their string as they are in [a map](input-maps.md); coercion adds only the types that a map writes in a form of their own.
 * A string that does not stand for the type is reported with `object.type` (`"page" must be of type integer`), never with an exception. Nothing is converted to a string.
 
 `StringCoercion` relaxes the rules for text written by a person, such as the fields of a form:

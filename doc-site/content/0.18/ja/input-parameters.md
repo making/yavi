@@ -38,6 +38,7 @@ Validated<SearchForm> validated = searchFormValidator.validate(params);
 
 * 数値は `new BigDecimal(String)` の文法の十進数です。任意の符号、数字、任意の小数部、任意の指数を含み、前後の空白や桁区切りはありません。`"30"` と `"30.0"` は `Integer` で、`"30.5"`、`" 30"`、`"1,000"` はそうではありません。
 * 真偽値は `"true"` または `"false"` です。
+* enum 定数・時刻値・`UUID`・`URI` は [Map](input-maps.md) と同じく文字列から読み取られます。変換が加えるのは、Map では固有の書き方を持つ型だけです。
 * 型を表さない文字列は例外ではなく `object.type`（`"page" must be of type integer`）で報告されます。文字列への変換は行われません。
 
 `StringCoercion` は、フォームのフィールドなど人が書いたテキストのためにルールを緩めます。

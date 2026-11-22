@@ -57,7 +57,7 @@ age: "age" must be greater than or equal to 0
 
 ## Reading an object from a map
 
-The values are checked against the type of their property:
+The map is read as a tree of values that carry their own types, such as a parsed JSON object. A type that such a tree writes in a form of its own, a number or a boolean, is taken only in that form; a type that it can write only as a string, such as a date, is taken from that string. The values are checked against the type of their property:
 
 * A value that does not represent the type is reported with `object.type`: `"age" must be of type integer`. Nothing is coerced, so `"30"` is not a number in a map. Use [request parameters](input-parameters.md) for text.
 * A number whose value is kept is accepted whatever its Java type is: `30L` and `30.0` are an `Integer`, `30.5` is not.
